@@ -68,6 +68,7 @@ public class BlockTintCache {
    public void invalidateAll() {
       try {
          this.lock.writeLock().lock();
+         this.cache.values().forEach(BlockTintCache.CacheData::invalidate);
          this.cache.clear();
       } finally {
          this.lock.writeLock().unlock();
@@ -95,7 +96,10 @@ public class BlockTintCache {
          if (var15 == null) {
             var16 = new BlockTintCache.CacheData();
             if (this.cache.size() >= 256) {
-               this.cache.removeFirst();
+               BlockTintCache.CacheData var7 = (BlockTintCache.CacheData)this.cache.removeFirst();
+               if (var7 != null) {
+                  var7.invalidate();
+               }
             }
 
             this.cache.put(var3, var16);

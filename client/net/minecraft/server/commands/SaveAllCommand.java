@@ -25,13 +25,13 @@ public class SaveAllCommand {
    }
 
    private static int saveAll(CommandSourceStack var0, boolean var1) throws CommandSyntaxException {
-      var0.sendSuccess(Component.translatable("commands.save.saving"), false);
+      var0.sendSuccess(() -> Component.translatable("commands.save.saving"), false);
       MinecraftServer var2 = var0.getServer();
       boolean var3 = var2.saveEverything(true, var1, true);
       if (!var3) {
          throw ERROR_FAILED.create();
       } else {
-         var0.sendSuccess(Component.translatable("commands.save.success"), true);
+         var0.sendSuccess(() -> Component.translatable("commands.save.success"), true);
          return 1;
       }
    }

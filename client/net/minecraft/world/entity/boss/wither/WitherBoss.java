@@ -150,8 +150,8 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
    @Override
    public void aiStep() {
       Vec3 var1 = this.getDeltaMovement().multiply(1.0, 0.6, 1.0);
-      if (!this.level.isClientSide && this.getAlternativeTarget(0) > 0) {
-         Entity var2 = this.level.getEntity(this.getAlternativeTarget(0));
+      if (!this.level().isClientSide && this.getAlternativeTarget(0) > 0) {
+         Entity var2 = this.level().getEntity(this.getAlternativeTarget(0));
          if (var2 != null) {
             double var3 = var1.y;
             if (this.getY() < var2.getY() || !this.isPowered() && this.getY() < var2.getY() + 5.0) {
@@ -184,7 +184,7 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
          int var25 = this.getAlternativeTarget(var22 + 1);
          Entity var4 = null;
          if (var25 > 0) {
-            var4 = this.level.getEntity(var25);
+            var4 = this.level().getEntity(var25);
          }
 
          if (var4 != null) {
@@ -210,7 +210,7 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
          double var28 = this.getHeadX(var26);
          double var30 = this.getHeadY(var26);
          double var8 = this.getHeadZ(var26);
-         this.level
+         this.level()
             .addParticle(
                ParticleTypes.SMOKE,
                var28 + this.random.nextGaussian() * 0.30000001192092896,
@@ -220,8 +220,8 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
                0.0,
                0.0
             );
-         if (var23 && this.level.random.nextInt(4) == 0) {
-            this.level
+         if (var23 && this.level().random.nextInt(4) == 0) {
+            this.level()
                .addParticle(
                   ParticleTypes.ENTITY_EFFECT,
                   var28 + this.random.nextGaussian() * 0.30000001192092896,
@@ -236,7 +236,7 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
 
       if (this.getInvulnerableTicks() > 0) {
          for(int var27 = 0; var27 < 3; ++var27) {
-            this.level
+            this.level()
                .addParticle(
                   ParticleTypes.ENTITY_EFFECT,
                   this.getX() + this.random.nextGaussian(),
@@ -256,9 +256,9 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
          int var14 = this.getInvulnerableTicks() - 1;
          this.bossEvent.setProgress(1.0F - (float)var14 / 220.0F);
          if (var14 <= 0) {
-            this.level.explode(this, this.getX(), this.getEyeY(), this.getZ(), 7.0F, false, Level.ExplosionInteraction.MOB);
+            this.level().explode(this, this.getX(), this.getEyeY(), this.getZ(), 7.0F, false, Level.ExplosionInteraction.MOB);
             if (!this.isSilent()) {
-               this.level.globalLevelEvent(1023, this.blockPosition(), 0);
+               this.level().globalLevelEvent(1023, this.blockPosition(), 0);
             }
          }
 
@@ -272,9 +272,8 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
          for(int var1 = 1; var1 < 3; ++var1) {
             if (this.tickCount >= this.nextHeadUpdate[var1 - 1]) {
                this.nextHeadUpdate[var1 - 1] = this.tickCount + 10 + this.random.nextInt(10);
-               if ((this.level.getDifficulty() == Difficulty.NORMAL || this.level.getDifficulty() == Difficulty.HARD) && this.idleHeadUpdates[var1 - 1]++ > 15
-                  )
-                {
+               if ((this.level().getDifficulty() == Difficulty.NORMAL || this.level().getDifficulty() == Difficulty.HARD)
+                  && this.idleHeadUpdates[var1 - 1]++ > 15) {
                   float var2 = 10.0F;
                   float var3 = 5.0F;
                   double var4 = Mth.nextDouble(this.random, this.getX() - 10.0, this.getX() + 10.0);
@@ -286,7 +285,7 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
 
                int var15 = this.getAlternativeTarget(var1);
                if (var15 > 0) {
-                  LivingEntity var17 = (LivingEntity)this.level.getEntity(var15);
+                  LivingEntity var17 = (LivingEntity)this.level().getEntity(var15);
                   if (var17 != null && this.canAttack(var17) && !(this.distanceToSqr(var17) > 900.0) && this.hasLineOfSight(var17)) {
                      this.performRangedAttack(var1 + 1, var17);
                      this.nextHeadUpdate[var1 - 1] = this.tickCount + 40 + this.random.nextInt(20);
@@ -295,7 +294,7 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
                      this.setAlternativeTarget(var1, 0);
                   }
                } else {
-                  List var18 = this.level.getNearbyEntities(LivingEntity.class, TARGETING_CONDITIONS, this, this.getBoundingBox().inflate(20.0, 8.0, 20.0));
+                  List var18 = this.level().getNearbyEntities(LivingEntity.class, TARGETING_CONDITIONS, this, this.getBoundingBox().inflate(20.0, 8.0, 20.0));
                   if (!var18.isEmpty()) {
                      LivingEntity var20 = (LivingEntity)var18.get(this.random.nextInt(var18.size()));
                      this.setAlternativeTarget(var1, var20.getId());
@@ -312,7 +311,7 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
 
          if (this.destroyBlocksTick > 0) {
             --this.destroyBlocksTick;
-            if (this.destroyBlocksTick == 0 && this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+            if (this.destroyBlocksTick == 0 && this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
                int var13 = Mth.floor(this.getY());
                int var16 = Mth.floor(this.getX());
                int var19 = Mth.floor(this.getZ());
@@ -325,16 +324,16 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
                         int var9 = var13 + var7;
                         int var10 = var19 + var22;
                         BlockPos var11 = new BlockPos(var23, var9, var10);
-                        BlockState var12 = this.level.getBlockState(var11);
+                        BlockState var12 = this.level().getBlockState(var11);
                         if (canDestroy(var12)) {
-                           var21 = this.level.destroyBlock(var11, true, this) || var21;
+                           var21 = this.level().destroyBlock(var11, true, this) || var21;
                         }
                      }
                   }
                }
 
                if (var21) {
-                  this.level.levelEvent(null, 1022, this.blockPosition(), 0);
+                  this.level().levelEvent(null, 1022, this.blockPosition(), 0);
                }
             }
          }
@@ -416,7 +415,7 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
 
    private void performRangedAttack(int var1, double var2, double var4, double var6, boolean var8) {
       if (!this.isSilent()) {
-         this.level.levelEvent(null, 1024, this.blockPosition(), 0);
+         this.level().levelEvent(null, 1024, this.blockPosition(), 0);
       }
 
       double var9 = this.getHeadX(var1);
@@ -425,14 +424,14 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
       double var15 = var2 - var9;
       double var17 = var4 - var11;
       double var19 = var6 - var13;
-      WitherSkull var21 = new WitherSkull(this.level, this, var15, var17, var19);
+      WitherSkull var21 = new WitherSkull(this.level(), this, var15, var17, var19);
       var21.setOwner(this);
       if (var8) {
          var21.setDangerous(true);
       }
 
       var21.setPosRaw(var9, var11, var13);
-      this.level.addFreshEntity(var21);
+      this.level().addFreshEntity(var21);
    }
 
    @Override
@@ -484,7 +483,7 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
 
    @Override
    public void checkDespawn() {
-      if (this.level.getDifficulty() == Difficulty.PEACEFUL && this.shouldDespawnInPeaceful()) {
+      if (this.level().getDifficulty() == Difficulty.PEACEFUL && this.shouldDespawnInPeaceful()) {
          this.discard();
       } else {
          this.noActionTime = 0;

@@ -124,7 +124,7 @@ public class OverworldBiomes {
    public static Biome sparseJungle(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
       MobSpawnSettings.Builder var2 = new MobSpawnSettings.Builder();
       BiomeDefaultFeatures.baseJungleSpawns(var2);
-      return baseJungle(var0, var1, 0.8F, false, true, false, var2);
+      return baseJungle(var0, var1, 0.8F, false, true, false, var2, Musics.createGameMusic(SoundEvents.MUSIC_BIOME_SPARSE_JUNGLE));
    }
 
    public static Biome jungle(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
@@ -133,7 +133,7 @@ public class OverworldBiomes {
       var2.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.PARROT, 40, 1, 2))
          .addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.OCELOT, 2, 1, 3))
          .addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.PANDA, 1, 1, 2));
-      return baseJungle(var0, var1, 0.9F, false, false, true, var2);
+      return baseJungle(var0, var1, 0.9F, false, false, true, var2, Musics.createGameMusic(SoundEvents.MUSIC_BIOME_JUNGLE));
    }
 
    public static Biome bambooJungle(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
@@ -142,7 +142,7 @@ public class OverworldBiomes {
       var2.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.PARROT, 40, 1, 2))
          .addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.PANDA, 80, 1, 2))
          .addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.OCELOT, 2, 1, 1));
-      return baseJungle(var0, var1, 0.9F, true, false, true, var2);
+      return baseJungle(var0, var1, 0.9F, true, false, true, var2, Musics.createGameMusic(SoundEvents.MUSIC_BIOME_BAMBOO_JUNGLE));
    }
 
    private static Biome baseJungle(
@@ -152,39 +152,39 @@ public class OverworldBiomes {
       boolean var3,
       boolean var4,
       boolean var5,
-      MobSpawnSettings.Builder var6
+      MobSpawnSettings.Builder var6,
+      Music var7
    ) {
-      BiomeGenerationSettings.Builder var7 = new BiomeGenerationSettings.Builder(var0, var1);
-      globalOverworldGeneration(var7);
-      BiomeDefaultFeatures.addDefaultOres(var7);
-      BiomeDefaultFeatures.addDefaultSoftDisks(var7);
+      BiomeGenerationSettings.Builder var8 = new BiomeGenerationSettings.Builder(var0, var1);
+      globalOverworldGeneration(var8);
+      BiomeDefaultFeatures.addDefaultOres(var8);
+      BiomeDefaultFeatures.addDefaultSoftDisks(var8);
       if (var3) {
-         BiomeDefaultFeatures.addBambooVegetation(var7);
+         BiomeDefaultFeatures.addBambooVegetation(var8);
       } else {
          if (var5) {
-            BiomeDefaultFeatures.addLightBambooVegetation(var7);
+            BiomeDefaultFeatures.addLightBambooVegetation(var8);
          }
 
          if (var4) {
-            BiomeDefaultFeatures.addSparseJungleTrees(var7);
+            BiomeDefaultFeatures.addSparseJungleTrees(var8);
          } else {
-            BiomeDefaultFeatures.addJungleTrees(var7);
+            BiomeDefaultFeatures.addJungleTrees(var8);
          }
       }
 
-      BiomeDefaultFeatures.addWarmFlowers(var7);
-      BiomeDefaultFeatures.addJungleGrass(var7);
-      BiomeDefaultFeatures.addDefaultMushrooms(var7);
-      BiomeDefaultFeatures.addDefaultExtraVegetation(var7);
-      BiomeDefaultFeatures.addJungleVines(var7);
+      BiomeDefaultFeatures.addWarmFlowers(var8);
+      BiomeDefaultFeatures.addJungleGrass(var8);
+      BiomeDefaultFeatures.addDefaultMushrooms(var8);
+      BiomeDefaultFeatures.addDefaultExtraVegetation(var8);
+      BiomeDefaultFeatures.addJungleVines(var8);
       if (var4) {
-         BiomeDefaultFeatures.addSparseJungleMelons(var7);
+         BiomeDefaultFeatures.addSparseJungleMelons(var8);
       } else {
-         BiomeDefaultFeatures.addJungleMelons(var7);
+         BiomeDefaultFeatures.addJungleMelons(var8);
       }
 
-      Music var8 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_JUNGLE_AND_FOREST);
-      return biome(true, 0.95F, var2, var6, var7, var8);
+      return biome(true, 0.95F, var2, var6, var8, var7);
    }
 
    public static Biome windsweptHills(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1, boolean var2) {
@@ -225,7 +225,7 @@ public class OverworldBiomes {
       BiomeDefaultFeatures.addDefaultMushrooms(var3);
       BiomeDefaultFeatures.addDesertExtraVegetation(var3);
       BiomeDefaultFeatures.addDesertExtraDecoration(var3);
-      return biome(false, 2.0F, 0.0F, var2, var3, NORMAL_MUSIC);
+      return biome(false, 2.0F, 0.0F, var2, var3, Musics.createGameMusic(SoundEvents.MUSIC_BIOME_DESERT));
    }
 
    public static Biome plains(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1, boolean var2, boolean var3, boolean var4) {
@@ -342,6 +342,7 @@ public class OverworldBiomes {
                .foliageColorOverride(10387789)
                .grassColorOverride(9470285)
                .ambientMoodSound(AmbientMoodSettings.LEGACY_CAVE_SETTINGS)
+               .backgroundMusic(Musics.createGameMusic(SoundEvents.MUSIC_BIOME_BADLANDS))
                .build()
          )
          .mobSpawnSettings(var3.build())
@@ -461,9 +462,12 @@ public class OverworldBiomes {
    public static Biome forest(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1, boolean var2, boolean var3, boolean var4) {
       BiomeGenerationSettings.Builder var5 = new BiomeGenerationSettings.Builder(var0, var1);
       globalOverworldGeneration(var5);
+      Music var6;
       if (var4) {
+         var6 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_FLOWER_FOREST);
          var5.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, VegetationPlacements.FLOWER_FOREST_FLOWERS);
       } else {
+         var6 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_FOREST);
          BiomeDefaultFeatures.addForestFlowers(var5);
       }
 
@@ -490,18 +494,17 @@ public class OverworldBiomes {
 
       BiomeDefaultFeatures.addDefaultMushrooms(var5);
       BiomeDefaultFeatures.addDefaultExtraVegetation(var5);
-      MobSpawnSettings.Builder var6 = new MobSpawnSettings.Builder();
-      BiomeDefaultFeatures.farmAnimals(var6);
-      BiomeDefaultFeatures.commonSpawns(var6);
+      MobSpawnSettings.Builder var7 = new MobSpawnSettings.Builder();
+      BiomeDefaultFeatures.farmAnimals(var7);
+      BiomeDefaultFeatures.commonSpawns(var7);
       if (var4) {
-         var6.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.RABBIT, 4, 2, 3));
+         var7.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.RABBIT, 4, 2, 3));
       } else if (!var2) {
-         var6.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.WOLF, 5, 4, 4));
+         var7.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.WOLF, 5, 4, 4));
       }
 
-      float var7 = var2 ? 0.6F : 0.7F;
-      Music var8 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_JUNGLE_AND_FOREST);
-      return biome(true, var7, var2 ? 0.6F : 0.8F, var6, var5, var8);
+      float var8 = var2 ? 0.6F : 0.7F;
+      return biome(true, var8, var2 ? 0.6F : 0.8F, var7, var5, var6);
    }
 
    public static Biome taiga(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1, boolean var2) {
@@ -544,7 +547,7 @@ public class OverworldBiomes {
       BiomeDefaultFeatures.addForestGrass(var3);
       BiomeDefaultFeatures.addDefaultMushrooms(var3);
       BiomeDefaultFeatures.addDefaultExtraVegetation(var3);
-      Music var4 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_JUNGLE_AND_FOREST);
+      Music var4 = Musics.createGameMusic(SoundEvents.MUSIC_BIOME_FOREST);
       return new Biome.BiomeBuilder()
          .hasPrecipitation(true)
          .temperature(0.7F)

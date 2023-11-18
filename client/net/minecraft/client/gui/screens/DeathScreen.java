@@ -1,12 +1,11 @@
 package net.minecraft.client.gui.screens;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.ClickEvent;
@@ -92,26 +91,33 @@ public class DeathScreen extends Screen {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
-      fillGradient(var1, 0, 0, this.width, this.height, 1615855616, -1602211792);
-      var1.pushPose();
-      var1.scale(2.0F, 2.0F, 2.0F);
-      drawCenteredString(var1, this.font, this.title, this.width / 2 / 2, 30, 16777215);
-      var1.popPose();
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
+      var1.fillGradient(0, 0, this.width, this.height, 1615855616, -1602211792);
+      var1.pose().pushPose();
+      var1.pose().scale(2.0F, 2.0F, 2.0F);
+      var1.drawCenteredString(this.font, this.title, this.width / 2 / 2, 30, 16777215);
+      var1.pose().popPose();
       if (this.causeOfDeath != null) {
-         drawCenteredString(var1, this.font, this.causeOfDeath, this.width / 2, 85, 16777215);
+         var1.drawCenteredString(this.font, this.causeOfDeath, this.width / 2, 85, 16777215);
       }
 
-      drawCenteredString(var1, this.font, this.deathScore, this.width / 2, 100, 16777215);
+      var1.drawCenteredString(this.font, this.deathScore, this.width / 2, 100, 16777215);
       if (this.causeOfDeath != null && var3 > 85 && var3 < 85 + 9) {
          Style var5 = this.getClickedComponentStyleAt(var2);
-         this.renderComponentHoverEffect(var1, var5, var2, var3);
+         var1.renderComponentHoverEffect(this.font, var5, var2, var3);
       }
 
       super.render(var1, var2, var3, var4);
       if (this.exitToTitleButton != null && this.minecraft.getReportingContext().hasDraftReport()) {
-         RenderSystem.setShaderTexture(0, AbstractWidget.WIDGETS_LOCATION);
-         blit(var1, this.exitToTitleButton.getX() + this.exitToTitleButton.getWidth() - 17, this.exitToTitleButton.getY() + 3, 182, 24, 15, 15);
+         var1.blit(
+            AbstractWidget.WIDGETS_LOCATION,
+            this.exitToTitleButton.getX() + this.exitToTitleButton.getWidth() - 17,
+            this.exitToTitleButton.getY() + 3,
+            182,
+            24,
+            15,
+            15
+         );
       }
    }
 

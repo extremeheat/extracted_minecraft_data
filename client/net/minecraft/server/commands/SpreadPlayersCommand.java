@@ -24,13 +24,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Material;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.scores.Team;
 
@@ -120,9 +120,9 @@ public class SpreadPlayersCommand {
          spreadPositions(var1, (double)var2, var7, var9, var10, var12, var14, var16, var4, var18, var5);
          double var19 = setPlayerPositions(var6, var7, var18, var4, var5);
          var0.sendSuccess(
-            Component.translatable(
-               "commands.spreadplayers.success." + (var5 ? "teams" : "entities"), var18.length, var1.x, var1.y, String.format(Locale.ROOT, "%.2f", var19)
-            ),
+            () -> Component.translatable(
+                  "commands.spreadplayers.success." + (var5 ? "teams" : "entities"), var18.length, var1.x, var1.y, String.format(Locale.ROOT, "%.2f", var19)
+               ),
             true
          );
          return var18.length;
@@ -350,8 +350,7 @@ public class SpreadPlayersCommand {
       public boolean isSafe(BlockGetter var1, int var2) {
          BlockPos var3 = BlockPos.containing(this.x, (double)(this.getSpawnY(var1, var2) - 1), this.z);
          BlockState var4 = var1.getBlockState(var3);
-         Material var5 = var4.getMaterial();
-         return var3.getY() < var2 && !var5.isLiquid() && var5 != Material.FIRE;
+         return var3.getY() < var2 && !var4.liquid() && !var4.is(BlockTags.FIRE);
       }
 
       public void randomize(RandomSource var1, double var2, double var4, double var6, double var8) {

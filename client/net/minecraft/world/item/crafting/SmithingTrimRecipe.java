@@ -113,9 +113,9 @@ public class SmithingTrimRecipe implements SmithingRecipe {
       }
 
       public SmithingTrimRecipe fromJson(ResourceLocation var1, JsonObject var2) {
-         Ingredient var3 = Ingredient.fromJson(GsonHelper.getAsJsonObject(var2, "template"));
-         Ingredient var4 = Ingredient.fromJson(GsonHelper.getAsJsonObject(var2, "base"));
-         Ingredient var5 = Ingredient.fromJson(GsonHelper.getAsJsonObject(var2, "addition"));
+         Ingredient var3 = Ingredient.fromJson(GsonHelper.getNonNull(var2, "template"));
+         Ingredient var4 = Ingredient.fromJson(GsonHelper.getNonNull(var2, "base"));
+         Ingredient var5 = Ingredient.fromJson(GsonHelper.getNonNull(var2, "addition"));
          return new SmithingTrimRecipe(var1, var3, var4, var5);
       }
 

@@ -80,7 +80,7 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
    };
    private static final Item POISONOUS_FOOD = Items.COOKIE;
    private static final Set<Item> TAME_FOOD = Sets.newHashSet(
-      new Item[]{Items.WHEAT_SEEDS, Items.MELON_SEEDS, Items.PUMPKIN_SEEDS, Items.BEETROOT_SEEDS, Items.TORCHFLOWER_SEEDS}
+      new Item[]{Items.WHEAT_SEEDS, Items.MELON_SEEDS, Items.PUMPKIN_SEEDS, Items.BEETROOT_SEEDS, Items.TORCHFLOWER_SEEDS, Items.PITCHER_POD}
    );
    static final Map<EntityType<?>, SoundEvent> MOB_SOUND_MAP = Util.make(Maps.newHashMap(), var0 -> {
       var0.put(EntityType.BLAZE, SoundEvents.PARROT_IMITATE_BLAZE);
@@ -189,13 +189,13 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
 
    @Override
    public void aiStep() {
-      if (this.jukebox == null || !this.jukebox.closerToCenterThan(this.position(), 3.46) || !this.level.getBlockState(this.jukebox).is(Blocks.JUKEBOX)) {
+      if (this.jukebox == null || !this.jukebox.closerToCenterThan(this.position(), 3.46) || !this.level().getBlockState(this.jukebox).is(Blocks.JUKEBOX)) {
          this.partyParrot = false;
          this.jukebox = null;
       }
 
-      if (this.level.random.nextInt(400) == 0) {
-         imitateNearbyMobs(this.level, this);
+      if (this.level().random.nextInt(400) == 0) {
+         imitateNearbyMobs(this.level(), this);
       }
 
       super.aiStep();
@@ -215,15 +215,15 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
    private void calculateFlapping() {
       this.oFlap = this.flap;
       this.oFlapSpeed = this.flapSpeed;
-      this.flapSpeed += (float)(!this.onGround && !this.isPassenger() ? 4 : -1) * 0.3F;
+      this.flapSpeed += (float)(!this.onGround() && !this.isPassenger() ? 4 : -1) * 0.3F;
       this.flapSpeed = Mth.clamp(this.flapSpeed, 0.0F, 1.0F);
-      if (!this.onGround && this.flapping < 1.0F) {
+      if (!this.onGround() && this.flapping < 1.0F) {
          this.flapping = 1.0F;
       }
 
       this.flapping *= 0.9F;
       Vec3 var1 = this.getDeltaMovement();
-      if (!this.onGround && var1.y < 0.0) {
+      if (!this.onGround() && var1.y < 0.0) {
          this.setDeltaMovement(var1.multiply(1.0, 0.6, 1.0));
       }
 
@@ -257,7 +257,7 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
          }
 
          if (!this.isSilent()) {
-            this.level
+            this.level()
                .playSound(
                   null,
                   this.getX(),
@@ -270,16 +270,16 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
                );
          }
 
-         if (!this.level.isClientSide) {
+         if (!this.level().isClientSide) {
             if (this.random.nextInt(10) == 0) {
                this.tame(var1);
-               this.level.broadcastEntityEvent(this, (byte)7);
+               this.level().broadcastEntityEvent(this, (byte)7);
             } else {
-               this.level.broadcastEntityEvent(this, (byte)6);
+               this.level().broadcastEntityEvent(this, (byte)6);
             }
          }
 
-         return InteractionResult.sidedSuccess(this.level.isClientSide);
+         return InteractionResult.sidedSuccess(this.level().isClientSide);
       } else if (var3.is(POISONOUS_FOOD)) {
          if (!var1.getAbilities().instabuild) {
             var3.shrink(1);
@@ -290,13 +290,13 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
             this.hurt(this.damageSources().playerAttack(var1), 3.4028235E38F);
          }
 
-         return InteractionResult.sidedSuccess(this.level.isClientSide);
+         return InteractionResult.sidedSuccess(this.level().isClientSide);
       } else if (!this.isFlying() && this.isTame() && this.isOwnedBy(var1)) {
-         if (!this.level.isClientSide) {
+         if (!this.level().isClientSide) {
             this.setOrderedToSit(!this.isOrderedToSit());
          }
 
-         return InteractionResult.sidedSuccess(this.level.isClientSide);
+         return InteractionResult.sidedSuccess(this.level().isClientSide);
       } else {
          return super.mobInteract(var1, var2);
       }
@@ -334,7 +334,7 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
    @Nullable
    @Override
    public SoundEvent getAmbientSound() {
-      return getAmbient(this.level, this.level.random);
+      return getAmbient(this.level(), this.level().random);
    }
 
    public static SoundEvent getAmbient(Level var0, RandomSource var1) {
@@ -407,7 +407,7 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
       if (this.isInvulnerableTo(var1)) {
          return false;
       } else {
-         if (!this.level.isClientSide) {
+         if (!this.level().isClientSide) {
             this.setOrderedToSit(false);
          }
 
@@ -443,7 +443,7 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
 
    @Override
    public boolean isFlying() {
-      return !this.onGround;
+      return !this.onGround();
    }
 
    @Override
@@ -486,9 +486,9 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
             Mth.floor(this.mob.getZ() + 3.0)
          )) {
             if (!var1.equals(var6)) {
-               BlockState var7 = this.mob.level.getBlockState(var3.setWithOffset(var6, Direction.DOWN));
+               BlockState var7 = this.mob.level().getBlockState(var3.setWithOffset(var6, Direction.DOWN));
                boolean var8 = var7.getBlock() instanceof LeavesBlock || var7.is(BlockTags.LOGS);
-               if (var8 && this.mob.level.isEmptyBlock(var6) && this.mob.level.isEmptyBlock(var2.setWithOffset(var6, Direction.UP))) {
+               if (var8 && this.mob.level().isEmptyBlock(var6) && this.mob.level().isEmptyBlock(var2.setWithOffset(var6, Direction.UP))) {
                   return Vec3.atBottomCenterOf(var6);
                }
             }

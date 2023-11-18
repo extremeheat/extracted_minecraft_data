@@ -427,6 +427,8 @@ public class FireBlock extends BaseFireBlock {
       var0.setFlammable(Blocks.OXEYE_DAISY, 60, 100);
       var0.setFlammable(Blocks.CORNFLOWER, 60, 100);
       var0.setFlammable(Blocks.LILY_OF_THE_VALLEY, 60, 100);
+      var0.setFlammable(Blocks.TORCHFLOWER, 60, 100);
+      var0.setFlammable(Blocks.PITCHER_PLANT, 60, 100);
       var0.setFlammable(Blocks.WITHER_ROSE, 60, 100);
       var0.setFlammable(Blocks.PINK_PETALS, 60, 100);
       var0.setFlammable(Blocks.WHITE_WOOL, 30, 60);

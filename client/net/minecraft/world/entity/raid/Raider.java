@@ -84,12 +84,12 @@ public abstract class Raider extends PatrollingMonster {
 
    @Override
    public void aiStep() {
-      if (this.level instanceof ServerLevel && this.isAlive()) {
+      if (this.level() instanceof ServerLevel && this.isAlive()) {
          Raid var1 = this.getCurrentRaid();
          if (this.canJoinRaid()) {
             if (var1 == null) {
-               if (this.level.getGameTime() % 20L == 0L) {
-                  Raid var2 = ((ServerLevel)this.level).getRaidAt(this.blockPosition());
+               if (this.level().getGameTime() % 20L == 0L) {
+                  Raid var2 = ((ServerLevel)this.level()).getRaidAt(this.blockPosition());
                   if (var2 != null && Raids.canJoinRaid(this, var2)) {
                      var2.joinRaid(var2.getGroupsSpawned(), this, null, true);
                   }
@@ -115,7 +115,7 @@ public abstract class Raider extends PatrollingMonster {
    // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void die(DamageSource var1) {
-      if (this.level instanceof ServerLevel) {
+      if (this.level() instanceof ServerLevel) {
          Entity var2 = var1.getEntity();
          Raid var3 = this.getCurrentRaid();
          if (var3 != null) {
@@ -130,7 +130,7 @@ public abstract class Raider extends PatrollingMonster {
             var3.removeFromRaid(this, false);
          }
 
-         if (this.isPatrolLeader() && var3 == null && ((ServerLevel)this.level).getRaidAt(this.blockPosition()) == null) {
+         if (this.isPatrolLeader() && var3 == null && ((ServerLevel)this.level()).getRaidAt(this.blockPosition()) == null) {
             ItemStack var4 = this.getItemBySlot(EquipmentSlot.HEAD);
             Player var5 = null;
             if (var2 instanceof Player) {
@@ -154,7 +154,7 @@ public abstract class Raider extends PatrollingMonster {
 
                var11 = Mth.clamp(var11, 0, 4);
                MobEffectInstance var9 = new MobEffectInstance(MobEffects.BAD_OMEN, 120000, var11, false, false, true);
-               if (!this.level.getGameRules().getBoolean(GameRules.RULE_DISABLE_RAIDS)) {
+               if (!this.level().getGameRules().getBoolean(GameRules.RULE_DISABLE_RAIDS)) {
                   var5.addEffect(var9);
                }
             }
@@ -214,8 +214,8 @@ public abstract class Raider extends PatrollingMonster {
       this.wave = var1.getInt("Wave");
       this.canJoinRaid = var1.getBoolean("CanJoinRaid");
       if (var1.contains("RaidId", 3)) {
-         if (this.level instanceof ServerLevel) {
-            this.raid = ((ServerLevel)this.level).getRaids().get(var1.getInt("RaidId"));
+         if (this.level() instanceof ServerLevel) {
+            this.raid = ((ServerLevel)this.level()).getRaids().get(var1.getInt("RaidId"));
          }
 
          if (this.raid != null) {
@@ -315,7 +315,7 @@ public abstract class Raider extends PatrollingMonster {
          super.start();
          this.mob.getNavigation().stop();
 
-         for(Raider var3 : this.mob.level.getNearbyEntities(Raider.class, this.shoutTargeting, this.mob, this.mob.getBoundingBox().inflate(8.0, 8.0, 8.0))) {
+         for(Raider var3 : this.mob.level().getNearbyEntities(Raider.class, this.shoutTargeting, this.mob, this.mob.getBoundingBox().inflate(8.0, 8.0, 8.0))) {
             var3.setTarget(this.mob.getTarget());
          }
       }
@@ -325,7 +325,9 @@ public abstract class Raider extends PatrollingMonster {
          super.stop();
          LivingEntity var1 = this.mob.getTarget();
          if (var1 != null) {
-            for(Raider var4 : this.mob.level.getNearbyEntities(Raider.class, this.shoutTargeting, this.mob, this.mob.getBoundingBox().inflate(8.0, 8.0, 8.0))) {
+            for(Raider var4 : this.mob
+               .level()
+               .getNearbyEntities(Raider.class, this.shoutTargeting, this.mob, this.mob.getBoundingBox().inflate(8.0, 8.0, 8.0))) {
                var4.setTarget(var1);
                var4.setAggressive(true);
             }
@@ -375,7 +377,7 @@ public abstract class Raider extends PatrollingMonster {
             && !ItemStack.matches(this.mob.getItemBySlot(EquipmentSlot.HEAD), Raid.getLeaderBannerInstance())) {
             Raider var2 = var1.getLeader(this.mob.getWave());
             if (var2 == null || !var2.isAlive()) {
-               List var3 = this.mob.level.getEntitiesOfClass(ItemEntity.class, this.mob.getBoundingBox().inflate(16.0, 8.0, 16.0), Raider.ALLOWED_ITEMS);
+               List var3 = this.mob.level().getEntitiesOfClass(ItemEntity.class, this.mob.getBoundingBox().inflate(16.0, 8.0, 16.0), Raider.ALLOWED_ITEMS);
                if (!var3.isEmpty()) {
                   return this.mob.getNavigation().moveTo((Entity)var3.get(0), 1.149999976158142);
                }
@@ -390,7 +392,7 @@ public abstract class Raider extends PatrollingMonster {
       @Override
       public void tick() {
          if (this.mob.getNavigation().getTargetPos().closerToCenterThan(this.mob.position(), 1.414)) {
-            List var1 = this.mob.level.getEntitiesOfClass(ItemEntity.class, this.mob.getBoundingBox().inflate(4.0, 4.0, 4.0), Raider.ALLOWED_ITEMS);
+            List var1 = this.mob.level().getEntitiesOfClass(ItemEntity.class, this.mob.getBoundingBox().inflate(4.0, 4.0, 4.0), Raider.ALLOWED_ITEMS);
             if (!var1.isEmpty()) {
                this.mob.pickUpItem((ItemEntity)var1.get(0));
             }
@@ -466,7 +468,7 @@ public abstract class Raider extends PatrollingMonster {
       }
 
       private boolean hasSuitablePoi() {
-         ServerLevel var1 = (ServerLevel)this.raider.level;
+         ServerLevel var1 = (ServerLevel)this.raider.level();
          BlockPos var2 = this.raider.blockPosition();
          Optional var3 = var1.getPoiManager()
             .getRandom(var0 -> var0.is(PoiTypes.HOME), this::hasNotVisited, PoiManager.Occupancy.ANY, var2, 48, this.raider.random);

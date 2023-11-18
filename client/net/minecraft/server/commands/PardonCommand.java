@@ -44,7 +44,7 @@ public class PardonCommand {
          if (var2.isBanned(var5)) {
             var2.remove(var5);
             ++var3;
-            var0.sendSuccess(Component.translatable("commands.pardon.success", ComponentUtils.getDisplayName(var5)), true);
+            var0.sendSuccess(() -> Component.translatable("commands.pardon.success", ComponentUtils.getDisplayName(var5)), true);
          }
       }
 

@@ -1,22 +1,20 @@
 package net.minecraft.client.gui.screens.advancements;
 
 import com.google.common.collect.Maps;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Map;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiComponent;
-import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 
-public class AdvancementTab extends GuiComponent {
+public class AdvancementTab {
    private final Minecraft minecraft;
    private final AdvancementsScreen screen;
    private final AdvancementTabType type;
@@ -70,31 +68,25 @@ public class AdvancementTab extends GuiComponent {
       return this.display;
    }
 
-   public void drawTab(PoseStack var1, int var2, int var3, boolean var4) {
+   public void drawTab(GuiGraphics var1, int var2, int var3, boolean var4) {
       this.type.draw(var1, var2, var3, var4, this.index);
    }
 
-   public void drawIcon(PoseStack var1, int var2, int var3, ItemRenderer var4) {
-      this.type.drawIcon(var1, var2, var3, this.index, var4, this.icon);
+   public void drawIcon(GuiGraphics var1, int var2, int var3) {
+      this.type.drawIcon(var1, var2, var3, this.index, this.icon);
    }
 
-   public void drawContents(PoseStack var1, int var2, int var3) {
+   public void drawContents(GuiGraphics var1, int var2, int var3) {
       if (!this.centered) {
          this.scrollX = (double)(117 - (this.maxX + this.minX) / 2);
          this.scrollY = (double)(56 - (this.maxY + this.minY) / 2);
          this.centered = true;
       }
 
-      enableScissor(var2, var3, var2 + 234, var3 + 113);
-      var1.pushPose();
-      var1.translate((float)var2, (float)var3, 0.0F);
-      ResourceLocation var4 = this.display.getBackground();
-      if (var4 != null) {
-         RenderSystem.setShaderTexture(0, var4);
-      } else {
-         RenderSystem.setShaderTexture(0, TextureManager.INTENTIONAL_MISSING_TEXTURE);
-      }
-
+      var1.enableScissor(var2, var3, var2 + 234, var3 + 113);
+      var1.pose().pushPose();
+      var1.pose().translate((float)var2, (float)var3, 0.0F);
+      ResourceLocation var4 = Objects.requireNonNullElse(this.display.getBackground(), TextureManager.INTENTIONAL_MISSING_TEXTURE);
       int var5 = Mth.floor(this.scrollX);
       int var6 = Mth.floor(this.scrollY);
       int var7 = var5 % 16;
@@ -102,21 +94,21 @@ public class AdvancementTab extends GuiComponent {
 
       for(int var9 = -1; var9 <= 15; ++var9) {
          for(int var10 = -1; var10 <= 8; ++var10) {
-            blit(var1, var7 + 16 * var9, var8 + 16 * var10, 0.0F, 0.0F, 16, 16, 16, 16);
+            var1.blit(var4, var7 + 16 * var9, var8 + 16 * var10, 0.0F, 0.0F, 16, 16, 16, 16);
          }
       }
 
       this.root.drawConnectivity(var1, var5, var6, true);
       this.root.drawConnectivity(var1, var5, var6, false);
       this.root.draw(var1, var5, var6);
-      var1.popPose();
-      disableScissor();
+      var1.pose().popPose();
+      var1.disableScissor();
    }
 
-   public void drawTooltips(PoseStack var1, int var2, int var3, int var4, int var5) {
-      var1.pushPose();
-      var1.translate(0.0F, 0.0F, -200.0F);
-      fill(var1, 0, 0, 234, 113, Mth.floor(this.fade * 255.0F) << 24);
+   public void drawTooltips(GuiGraphics var1, int var2, int var3, int var4, int var5) {
+      var1.pose().pushPose();
+      var1.pose().translate(0.0F, 0.0F, -200.0F);
+      var1.fill(0, 0, 234, 113, Mth.floor(this.fade * 255.0F) << 24);
       boolean var6 = false;
       int var7 = Mth.floor(this.scrollX);
       int var8 = Mth.floor(this.scrollY);
@@ -130,7 +122,7 @@ public class AdvancementTab extends GuiComponent {
          }
       }
 
-      var1.popPose();
+      var1.pose().popPose();
       if (var6) {
          this.fade = Mth.clamp(this.fade + 0.02F, 0.0F, 0.3F);
       } else {

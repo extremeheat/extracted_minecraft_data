@@ -277,24 +277,26 @@ public class AdvancementCommands {
          if (var3.size() == 1) {
             if (var1.size() == 1) {
                var0.sendSuccess(
-                  Component.translatable(
-                     var2.getKey() + ".one.to.one.success",
-                     ((Advancement)var3.iterator().next()).getChatComponent(),
-                     ((ServerPlayer)var1.iterator().next()).getDisplayName()
-                  ),
+                  () -> Component.translatable(
+                        var2.getKey() + ".one.to.one.success",
+                        ((Advancement)var3.iterator().next()).getChatComponent(),
+                        ((ServerPlayer)var1.iterator().next()).getDisplayName()
+                     ),
                   true
                );
             } else {
                var0.sendSuccess(
-                  Component.translatable(var2.getKey() + ".one.to.many.success", ((Advancement)var3.iterator().next()).getChatComponent(), var1.size()), true
+                  () -> Component.translatable(var2.getKey() + ".one.to.many.success", ((Advancement)var3.iterator().next()).getChatComponent(), var1.size()),
+                  true
                );
             }
          } else if (var1.size() == 1) {
             var0.sendSuccess(
-               Component.translatable(var2.getKey() + ".many.to.one.success", var3.size(), ((ServerPlayer)var1.iterator().next()).getDisplayName()), true
+               () -> Component.translatable(var2.getKey() + ".many.to.one.success", var3.size(), ((ServerPlayer)var1.iterator().next()).getDisplayName()),
+               true
             );
          } else {
-            var0.sendSuccess(Component.translatable(var2.getKey() + ".many.to.many.success", var3.size(), var1.size()), true);
+            var0.sendSuccess(() -> Component.translatable(var2.getKey() + ".many.to.many.success", var3.size(), var1.size()), true);
          }
 
          return var4;
@@ -327,13 +329,13 @@ public class AdvancementCommands {
          } else {
             if (var1.size() == 1) {
                var0.sendSuccess(
-                  Component.translatable(
-                     var2.getKey() + ".criterion.to.one.success", var4, var3.getChatComponent(), ((ServerPlayer)var1.iterator().next()).getDisplayName()
-                  ),
+                  () -> Component.translatable(
+                        var2.getKey() + ".criterion.to.one.success", var4, var3.getChatComponent(), ((ServerPlayer)var1.iterator().next()).getDisplayName()
+                     ),
                   true
                );
             } else {
-               var0.sendSuccess(Component.translatable(var2.getKey() + ".criterion.to.many.success", var4, var3.getChatComponent(), var1.size()), true);
+               var0.sendSuccess(() -> Component.translatable(var2.getKey() + ".criterion.to.many.success", var4, var3.getChatComponent(), var1.size()), true);
             }
 
             return var5;

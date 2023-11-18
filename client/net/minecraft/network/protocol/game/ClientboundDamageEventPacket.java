@@ -20,7 +20,7 @@ public record ClientboundDamageEventPacket(int a, int b, int c, int d, Optional<
    public ClientboundDamageEventPacket(Entity var1, DamageSource var2) {
       this(
          var1.getId(),
-         var1.getLevel().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getId(var2.type()),
+         var1.level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getId(var2.type()),
          var2.getEntity() != null ? var2.getEntity().getId() : -1,
          var2.getDirectEntity() != null ? var2.getDirectEntity().getId() : -1,
          Optional.ofNullable(var2.sourcePositionRaw())

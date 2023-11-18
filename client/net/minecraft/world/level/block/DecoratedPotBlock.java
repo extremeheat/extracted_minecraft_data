@@ -1,12 +1,21 @@
 package net.minecraft.world.level.block;
 
+import java.util.List;
+import java.util.stream.Stream;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.Containers;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -21,18 +30,28 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.pathfinder.PathComputationType;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
-public class DecoratedPotBlock extends BaseEntityBlock {
+public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
+   public static final ResourceLocation SHERDS_DYNAMIC_DROP_ID = new ResourceLocation("sherds");
    private static final VoxelShape BOUNDING_BOX = Block.box(1.0, 0.0, 1.0, 15.0, 16.0, 15.0);
    private static final DirectionProperty HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
+   private static final BooleanProperty CRACKED = BlockStateProperties.CRACKED;
    private static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 
    protected DecoratedPotBlock(BlockBehaviour.Properties var1) {
       super(var1);
-      this.registerDefaultState(this.stateDefinition.any().setValue(HORIZONTAL_FACING, Direction.NORTH).setValue(WATERLOGGED, Boolean.valueOf(false)));
+      this.registerDefaultState(
+         this.stateDefinition
+            .any()
+            .setValue(HORIZONTAL_FACING, Direction.NORTH)
+            .setValue(WATERLOGGED, Boolean.valueOf(false))
+            .setValue(CRACKED, Boolean.valueOf(false))
+      );
    }
 
    @Override
@@ -49,7 +68,8 @@ public class DecoratedPotBlock extends BaseEntityBlock {
       FluidState var2 = var1.getLevel().getFluidState(var1.getClickedPos());
       return this.defaultBlockState()
          .setValue(HORIZONTAL_FACING, var1.getHorizontalDirection())
-         .setValue(WATERLOGGED, Boolean.valueOf(var2.getType() == Fluids.WATER));
+         .setValue(WATERLOGGED, Boolean.valueOf(var2.getType() == Fluids.WATER))
+         .setValue(CRACKED, Boolean.valueOf(false));
    }
 
    @Override
@@ -64,7 +84,7 @@ public class DecoratedPotBlock extends BaseEntityBlock {
 
    @Override
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(HORIZONTAL_FACING, WATERLOGGED);
+      var1.add(HORIZONTAL_FACING, WATERLOGGED, CRACKED);
    }
 
    @Nullable
@@ -73,37 +93,46 @@ public class DecoratedPotBlock extends BaseEntityBlock {
       return new DecoratedPotBlockEntity(var1, var2);
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
-   public void playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
-      if (!var1.isClientSide) {
-         BlockEntity var6 = var1.getBlockEntity(var2);
-         if (var6 instanceof DecoratedPotBlockEntity var5) {
-            var5.playerDestroy(var1, var2, var4.getMainHandItem(), var4);
-         }
+   public List<ItemStack> getDrops(BlockState var1, LootParams.Builder var2) {
+      BlockEntity var3 = var2.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
+      if (var3 instanceof DecoratedPotBlockEntity var4) {
+         var2.withDynamicDrop(SHERDS_DYNAMIC_DROP_ID, var1x -> var4.getDecorations().sorted().map(Item::getDefaultInstance).forEach(var1x));
       }
 
-      super.playerWillDestroy(var1, var2, var3, var4);
+      return super.getDrops(var1, var2);
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
-   public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var2.isClientSide) {
-         BlockEntity var6 = var2.getBlockEntity(var3);
-         if (var6 instanceof DecoratedPotBlockEntity var7 && !var7.isBroken()) {
-            Containers.dropItemStack(var2, (double)var3.getX(), (double)var3.getY(), (double)var3.getZ(), var7.getItem());
-            var2.playSound(null, var3, SoundEvents.DECORATED_POT_BREAK, SoundSource.PLAYERS, 1.0F, 1.0F);
-         }
+   public void playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
+      ItemStack var5 = var4.getMainHandItem();
+      BlockState var6 = var3;
+      if (var5.is(ItemTags.BREAKS_DECORATED_POTS) && !EnchantmentHelper.hasSilkTouch(var5)) {
+         var6 = var3.setValue(CRACKED, Boolean.valueOf(true));
+         var1.setBlock(var2, var6, 4);
       }
 
-      super.onRemove(var1, var2, var3, var4, var5);
+      super.playerWillDestroy(var1, var2, var6, var4);
    }
 
    @Override
    public FluidState getFluidState(BlockState var1) {
       return var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
+   }
+
+   @Override
+   public SoundType getSoundType(BlockState var1) {
+      return var1.getValue(CRACKED) ? SoundType.DECORATED_POT_CRACKED : SoundType.DECORATED_POT;
+   }
+
+   @Override
+   public void appendHoverText(ItemStack var1, @Nullable BlockGetter var2, List<Component> var3, TooltipFlag var4) {
+      super.appendHoverText(var1, var2, var3, var4);
+      DecoratedPotBlockEntity.Decorations var5 = DecoratedPotBlockEntity.Decorations.load(BlockItem.getBlockEntityData(var1));
+      if (!var5.equals(DecoratedPotBlockEntity.Decorations.EMPTY)) {
+         var3.add(CommonComponents.EMPTY);
+         Stream.of(var5.front(), var5.left(), var5.right(), var5.back())
+            .forEach(var1x -> var3.add(new ItemStack(var1x, 1).getHoverName().plainCopy().withStyle(ChatFormatting.GRAY)));
+      }
    }
 }

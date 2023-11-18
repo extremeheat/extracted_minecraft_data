@@ -557,7 +557,7 @@ public class Options {
       70,
       var0 -> Minecraft.getInstance().levelRenderer.needsUpdate()
    );
-   private static final MutableComponent TELEMETRY_TOOLTIP = Component.translatable(
+   private static final Component TELEMETRY_TOOLTIP = Component.translatable(
       "options.telemetry.button.tooltip", Component.translatable("options.telemetry.state.minimal"), Component.translatable("options.telemetry.state.all")
    );
    private final OptionInstance<Boolean> telemetryOptInExtra = OptionInstance.createBoolean(
@@ -648,6 +648,7 @@ public class Options {
       }
    }, OptionInstance.UnitDouble.INSTANCE, 0.5, var0 -> {
    });
+   public static final int AUTO_GUI_SCALE = 0;
    private static final int MAX_GUI_SCALE_INCLUSIVE = 2147483646;
    private final OptionInstance<Integer> guiScale = new OptionInstance<>(
       "options.guiScale",

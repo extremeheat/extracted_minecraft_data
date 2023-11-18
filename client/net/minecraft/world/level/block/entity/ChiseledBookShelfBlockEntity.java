@@ -105,6 +105,18 @@ public class ChiseledBookShelfBlockEntity extends BlockEntity implements Contain
    }
 
    @Override
+   public boolean canTakeItem(Container var1, int var2, ItemStack var3) {
+      return var1.hasAnyMatching(var2x -> {
+         if (var2x.isEmpty()) {
+            return true;
+         } else {
+            return ItemStack.isSameItemSameTags(var3, var2x)
+               && var2x.getCount() + var3.getCount() <= Math.min(var2x.getMaxStackSize(), var1.getMaxStackSize());
+         }
+      });
+   }
+
+   @Override
    public int getMaxStackSize() {
       return 1;
    }

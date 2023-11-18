@@ -1,14 +1,13 @@
 package net.minecraft.client.gui.components;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.LayoutElement;
 import net.minecraft.client.gui.narration.NarratableEntry;
@@ -28,7 +27,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 
-public abstract class AbstractWidget extends GuiComponent implements Renderable, GuiEventListener, LayoutElement, NarratableEntry {
+public abstract class AbstractWidget implements Renderable, GuiEventListener, LayoutElement, NarratableEntry {
    public static final ResourceLocation WIDGETS_LOCATION = new ResourceLocation("textures/gui/widgets.png");
    public static final ResourceLocation ACCESSIBILITY_TEXTURE = new ResourceLocation("textures/gui/accessibility.png");
    private static final double PERIOD_PER_SCROLLED_PIXEL = 0.5;
@@ -65,7 +64,7 @@ public abstract class AbstractWidget extends GuiComponent implements Renderable,
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       if (this.visible) {
          this.isHovered = var2 >= this.getX() && var3 >= this.getY() && var2 < this.getX() + this.width && var3 < this.getY() + this.height;
          this.renderWidget(var1, var2, var3, var4);
@@ -103,6 +102,11 @@ public abstract class AbstractWidget extends GuiComponent implements Renderable,
       this.tooltip = var1;
    }
 
+   @Nullable
+   public Tooltip getTooltip() {
+      return this.tooltip;
+   }
+
    public void setTooltipDelay(int var1) {
       this.tooltipMsDelay = var1;
    }
@@ -115,9 +119,9 @@ public abstract class AbstractWidget extends GuiComponent implements Renderable,
       return Component.translatable("gui.narrate.button", var0);
    }
 
-   public abstract void renderWidget(PoseStack var1, int var2, int var3, float var4);
+   public abstract void renderWidget(GuiGraphics var1, int var2, int var3, float var4);
 
-   protected static void renderScrollingString(PoseStack var0, Font var1, Component var2, int var3, int var4, int var5, int var6, int var7) {
+   protected static void renderScrollingString(GuiGraphics var0, Font var1, Component var2, int var3, int var4, int var5, int var6, int var7) {
       int var8 = var1.width(var2);
       int var9 = (var4 + var6 - 9) / 2 + 1;
       int var10 = var5 - var3;
@@ -127,22 +131,23 @@ public abstract class AbstractWidget extends GuiComponent implements Renderable,
          double var14 = Math.max((double)var11 * 0.5, 3.0);
          double var16 = Math.sin(1.5707963267948966 * Math.cos(6.283185307179586 * var12 / var14)) / 2.0 + 0.5;
          double var18 = Mth.lerp(var16, 0.0, (double)var11);
-         enableScissor(var3, var4, var5, var6);
-         drawString(var0, var1, var2, var3 - (int)var18, var9, var7);
-         disableScissor();
+         var0.enableScissor(var3, var4, var5, var6);
+         var0.drawString(var1, var2, var3 - (int)var18, var9, var7);
+         var0.disableScissor();
       } else {
-         drawCenteredString(var0, var1, var2, (var3 + var5) / 2, var9, var7);
+         var0.drawCenteredString(var1, var2, (var3 + var5) / 2, var9, var7);
       }
    }
 
-   protected void renderScrollingString(PoseStack var1, Font var2, int var3, int var4) {
+   protected void renderScrollingString(GuiGraphics var1, Font var2, int var3, int var4) {
       int var5 = this.getX() + var3;
       int var6 = this.getX() + this.getWidth() - var3;
       renderScrollingString(var1, var2, this.getMessage(), var5, this.getY(), var6, this.getY() + this.getHeight(), var4);
    }
 
-   public void renderTexture(PoseStack var1, ResourceLocation var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10, int var11) {
-      RenderSystem.setShaderTexture(0, var2);
+   public void renderTexture(
+      GuiGraphics var1, ResourceLocation var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10, int var11
+   ) {
       int var12 = var6;
       if (!this.isActive()) {
          var12 = var6 + var7 * 2;
@@ -151,7 +156,7 @@ public abstract class AbstractWidget extends GuiComponent implements Renderable,
       }
 
       RenderSystem.enableDepthTest();
-      blit(var1, var3, var4, (float)var5, (float)var12, var8, var9, var10, var11);
+      var1.blit(var2, var3, var4, (float)var5, (float)var12, var8, var9, var10, var11);
    }
 
    public void onClick(double var1, double var3) {

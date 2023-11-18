@@ -216,8 +216,8 @@ public class Creeper extends Monster implements PowerableMob {
       ItemStack var3 = var1.getItemInHand(var2);
       if (var3.is(ItemTags.CREEPER_IGNITERS)) {
          SoundEvent var4 = var3.is(Items.FIRE_CHARGE) ? SoundEvents.FIRECHARGE_USE : SoundEvents.FLINTANDSTEEL_USE;
-         this.level.playSound(var1, this.getX(), this.getY(), this.getZ(), var4, this.getSoundSource(), 1.0F, this.random.nextFloat() * 0.4F + 0.8F);
-         if (!this.level.isClientSide) {
+         this.level().playSound(var1, this.getX(), this.getY(), this.getZ(), var4, this.getSoundSource(), 1.0F, this.random.nextFloat() * 0.4F + 0.8F);
+         if (!this.level().isClientSide) {
             this.ignite();
             if (!var3.isDamageableItem()) {
                var3.shrink(1);
@@ -226,17 +226,17 @@ public class Creeper extends Monster implements PowerableMob {
             }
          }
 
-         return InteractionResult.sidedSuccess(this.level.isClientSide);
+         return InteractionResult.sidedSuccess(this.level().isClientSide);
       } else {
          return super.mobInteract(var1, var2);
       }
    }
 
    private void explodeCreeper() {
-      if (!this.level.isClientSide) {
+      if (!this.level().isClientSide) {
          float var1 = this.isPowered() ? 2.0F : 1.0F;
          this.dead = true;
-         this.level.explode(this, this.getX(), this.getY(), this.getZ(), (float)this.explosionRadius * var1, Level.ExplosionInteraction.MOB);
+         this.level().explode(this, this.getX(), this.getY(), this.getZ(), (float)this.explosionRadius * var1, Level.ExplosionInteraction.MOB);
          this.discard();
          this.spawnLingeringCloud();
       }
@@ -245,7 +245,7 @@ public class Creeper extends Monster implements PowerableMob {
    private void spawnLingeringCloud() {
       Collection var1 = this.getActiveEffects();
       if (!var1.isEmpty()) {
-         AreaEffectCloud var2 = new AreaEffectCloud(this.level, this.getX(), this.getY(), this.getZ());
+         AreaEffectCloud var2 = new AreaEffectCloud(this.level(), this.getX(), this.getY(), this.getZ());
          var2.setRadius(2.5F);
          var2.setRadiusOnUse(-0.5F);
          var2.setWaitTime(10);
@@ -256,7 +256,7 @@ public class Creeper extends Monster implements PowerableMob {
             var2.addEffect(new MobEffectInstance(var4));
          }
 
-         this.level.addFreshEntity(var2);
+         this.level().addFreshEntity(var2);
       }
    }
 

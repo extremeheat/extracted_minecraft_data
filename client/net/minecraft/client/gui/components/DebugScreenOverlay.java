@@ -4,15 +4,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.UnmodifiableIterator;
 import com.mojang.blaze3d.platform.GlUtil;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.BufferUploader;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
-import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.datafixers.DataFixUtils;
-import com.mojang.math.Transformation;
 import it.unimi.dsi.fastutil.longs.LongSets;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import java.lang.management.GarbageCollectorMXBean;
@@ -36,9 +28,9 @@ import net.minecraft.Util;
 import net.minecraft.client.ClientBrandRetriever;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiComponent;
-import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.PostChain;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -70,9 +62,8 @@ import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
-import org.joml.Matrix4f;
 
-public class DebugScreenOverlay extends GuiComponent {
+public class DebugScreenOverlay {
    private static final int COLOR_GREY = 14737632;
    private static final int MARGIN_RIGHT = 2;
    private static final int MARGIN_LEFT = 2;
@@ -112,26 +103,27 @@ public class DebugScreenOverlay extends GuiComponent {
       this.clientChunk = null;
    }
 
-   public void render(PoseStack var1) {
+   public void render(GuiGraphics var1) {
       this.minecraft.getProfiler().push("debug");
       Entity var2 = this.minecraft.getCameraEntity();
       this.block = var2.pick(20.0, 0.0F, false);
       this.liquid = var2.pick(20.0, 0.0F, true);
-      this.drawGameInformation(var1);
-      this.drawSystemInformation(var1);
-      if (this.minecraft.options.renderFpsChart) {
-         int var3 = this.minecraft.getWindow().getGuiScaledWidth();
-         this.drawChart(var1, this.minecraft.getFrameTimer(), 0, var3 / 2, true);
-         IntegratedServer var4 = this.minecraft.getSingleplayerServer();
-         if (var4 != null) {
-            this.drawChart(var1, var4.getFrameTimer(), var3 - Math.min(var3 / 2, 240), var3 / 2, false);
+      var1.drawManaged(() -> {
+         this.drawGameInformation(var1);
+         this.drawSystemInformation(var1);
+         if (this.minecraft.options.renderFpsChart) {
+            int var2x = var1.guiWidth();
+            this.drawChart(var1, this.minecraft.getFrameTimer(), 0, var2x / 2, true);
+            IntegratedServer var3 = this.minecraft.getSingleplayerServer();
+            if (var3 != null) {
+               this.drawChart(var1, var3.getFrameTimer(), var2x - Math.min(var2x / 2, 240), var2x / 2, false);
+            }
          }
-      }
-
+      });
       this.minecraft.getProfiler().pop();
    }
 
-   protected void drawGameInformation(PoseStack var1) {
+   protected void drawGameInformation(GuiGraphics var1) {
       List var2 = this.getGameInformation();
       var2.add("");
       boolean var3 = this.minecraft.getSingleplayerServer() != null;
@@ -143,32 +135,34 @@ public class DebugScreenOverlay extends GuiComponent {
             + (this.minecraft.options.renderFpsChart ? "visible" : "hidden")
       );
       var2.add("For help: press F3 + Q");
-
-      for(int var4 = 0; var4 < var2.size(); ++var4) {
-         String var5 = (String)var2.get(var4);
-         if (!Strings.isNullOrEmpty(var5)) {
-            byte var6 = 9;
-            int var7 = this.font.width(var5);
-            boolean var8 = true;
-            int var9 = 2 + var6 * var4;
-            fill(var1, 1, var9 - 1, 2 + var7 + 1, var9 + var6 - 1, -1873784752);
-            this.font.draw(var1, var5, 2.0F, (float)var9, 14737632);
-         }
-      }
+      this.renderLines(var1, var2, true);
    }
 
-   protected void drawSystemInformation(PoseStack var1) {
+   protected void drawSystemInformation(GuiGraphics var1) {
       List var2 = this.getSystemInformation();
+      this.renderLines(var1, var2, false);
+   }
 
-      for(int var3 = 0; var3 < var2.size(); ++var3) {
-         String var4 = (String)var2.get(var3);
-         if (!Strings.isNullOrEmpty(var4)) {
-            byte var5 = 9;
-            int var6 = this.font.width(var4);
-            int var7 = this.minecraft.getWindow().getGuiScaledWidth() - 2 - var6;
-            int var8 = 2 + var5 * var3;
-            fill(var1, var7 - 1, var8 - 1, var7 + var6 + 1, var8 + var5 - 1, -1873784752);
-            this.font.draw(var1, var4, (float)var7, (float)var8, 14737632);
+   private void renderLines(GuiGraphics var1, List<String> var2, boolean var3) {
+      byte var4 = 9;
+
+      for(int var5 = 0; var5 < var2.size(); ++var5) {
+         String var6 = (String)var2.get(var5);
+         if (!Strings.isNullOrEmpty(var6)) {
+            int var7 = this.font.width(var6);
+            int var8 = var3 ? 2 : var1.guiWidth() - 2 - var7;
+            int var9 = 2 + var4 * var5;
+            var1.fill(var8 - 1, var9 - 1, var8 + var7 + 1, var9 + var4 - 1, -1873784752);
+         }
+      }
+
+      for(int var10 = 0; var10 < var2.size(); ++var10) {
+         String var11 = (String)var2.get(var10);
+         if (!Strings.isNullOrEmpty(var11)) {
+            int var12 = this.font.width(var11);
+            int var13 = var3 ? 2 : var1.guiWidth() - 2 - var12;
+            int var14 = 2 + var4 * var10;
+            var1.drawString(this.font, var11, var13, var14, 14737632, false);
          }
       }
    }
@@ -509,8 +503,7 @@ public class DebugScreenOverlay extends GuiComponent {
       return var2.getName() + ": " + var4;
    }
 
-   private void drawChart(PoseStack var1, FrameTimer var2, int var3, int var4, boolean var5) {
-      RenderSystem.disableDepthTest();
+   private void drawChart(GuiGraphics var1, FrameTimer var2, int var3, int var4, boolean var5) {
       int var6 = var2.getLogStart();
       int var7 = var2.getLogEnd();
       long[] var8 = var2.getLog();
@@ -529,59 +522,45 @@ public class DebugScreenOverlay extends GuiComponent {
          var13 += (long)var18;
       }
 
-      int var27 = this.minecraft.getWindow().getGuiScaledHeight();
-      fill(var1, var3, var27 - 60, var3 + var12, var27, -1873784752);
-      RenderSystem.setShader(GameRenderer::getPositionColorShader);
-      BufferBuilder var28 = Tesselator.getInstance().getBuilder();
-      RenderSystem.enableBlend();
-      RenderSystem.defaultBlendFunc();
-      var28.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+      int var22 = var1.guiHeight();
+      var1.fill(RenderType.guiOverlay(), var3, var22 - 60, var3 + var12, var22, -1873784752);
 
-      for(Matrix4f var19 = Transformation.identity().getMatrix(); var9 != var7; var9 = var2.wrapIndex(var9 + 1)) {
-         int var20 = var2.scaleSampleTo(var8[var9], var5 ? 30 : 60, var5 ? 60 : 20);
-         int var21 = var5 ? 100 : 60;
-         int var22 = this.getSampleColor(Mth.clamp(var20, 0, var21), 0, var21 / 2, var21);
-         int var23 = var22 >> 24 & 0xFF;
-         int var24 = var22 >> 16 & 0xFF;
-         int var25 = var22 >> 8 & 0xFF;
-         int var26 = var22 & 0xFF;
-         var28.vertex(var19, (float)(var10 + 1), (float)var27, 0.0F).color(var24, var25, var26, var23).endVertex();
-         var28.vertex(var19, (float)(var10 + 1), (float)(var27 - var20 + 1), 0.0F).color(var24, var25, var26, var23).endVertex();
-         var28.vertex(var19, (float)var10, (float)(var27 - var20 + 1), 0.0F).color(var24, var25, var26, var23).endVertex();
-         var28.vertex(var19, (float)var10, (float)var27, 0.0F).color(var24, var25, var26, var23).endVertex();
+      while(var9 != var7) {
+         int var23 = var2.scaleSampleTo(var8[var9], var5 ? 30 : 60, var5 ? 60 : 20);
+         int var19 = var5 ? 100 : 60;
+         int var20 = this.getSampleColor(Mth.clamp(var23, 0, var19), 0, var19 / 2, var19);
+         var1.fill(RenderType.guiOverlay(), var10, var22 - var23, var10 + 1, var22, var20);
          ++var10;
+         var9 = var2.wrapIndex(var9 + 1);
       }
 
-      BufferUploader.drawWithShader(var28.end());
-      RenderSystem.disableBlend();
       if (var5) {
-         fill(var1, var3 + 1, var27 - 30 + 1, var3 + 14, var27 - 30 + 10, -1873784752);
-         this.font.draw(var1, "60 FPS", (float)(var3 + 2), (float)(var27 - 30 + 2), 14737632);
-         hLine(var1, var3, var3 + var12 - 1, var27 - 30, -1);
-         fill(var1, var3 + 1, var27 - 60 + 1, var3 + 14, var27 - 60 + 10, -1873784752);
-         this.font.draw(var1, "30 FPS", (float)(var3 + 2), (float)(var27 - 60 + 2), 14737632);
-         hLine(var1, var3, var3 + var12 - 1, var27 - 60, -1);
+         var1.fill(RenderType.guiOverlay(), var3 + 1, var22 - 30 + 1, var3 + 14, var22 - 30 + 10, -1873784752);
+         var1.drawString(this.font, "60 FPS", var3 + 2, var22 - 30 + 2, 14737632, false);
+         var1.hLine(RenderType.guiOverlay(), var3, var3 + var12 - 1, var22 - 30, -1);
+         var1.fill(RenderType.guiOverlay(), var3 + 1, var22 - 60 + 1, var3 + 14, var22 - 60 + 10, -1873784752);
+         var1.drawString(this.font, "30 FPS", var3 + 2, var22 - 60 + 2, 14737632, false);
+         var1.hLine(RenderType.guiOverlay(), var3, var3 + var12 - 1, var22 - 60, -1);
       } else {
-         fill(var1, var3 + 1, var27 - 60 + 1, var3 + 14, var27 - 60 + 10, -1873784752);
-         this.font.draw(var1, "20 TPS", (float)(var3 + 2), (float)(var27 - 60 + 2), 14737632);
-         hLine(var1, var3, var3 + var12 - 1, var27 - 60, -1);
+         var1.fill(RenderType.guiOverlay(), var3 + 1, var22 - 60 + 1, var3 + 14, var22 - 60 + 10, -1873784752);
+         var1.drawString(this.font, "20 TPS", var3 + 2, var22 - 60 + 2, 14737632, false);
+         var1.hLine(RenderType.guiOverlay(), var3, var3 + var12 - 1, var22 - 60, -1);
       }
 
-      hLine(var1, var3, var3 + var12 - 1, var27 - 1, -1);
-      vLine(var1, var3, var27 - 60, var27, -1);
-      vLine(var1, var3 + var12 - 1, var27 - 60, var27, -1);
-      int var29 = this.minecraft.options.framerateLimit().get();
-      if (var5 && var29 > 0 && var29 <= 250) {
-         hLine(var1, var3, var3 + var12 - 1, var27 - 1 - (int)(1800.0 / (double)var29), -16711681);
+      var1.hLine(RenderType.guiOverlay(), var3, var3 + var12 - 1, var22 - 1, -1);
+      var1.vLine(RenderType.guiOverlay(), var3, var22 - 60, var22, -1);
+      var1.vLine(RenderType.guiOverlay(), var3 + var12 - 1, var22 - 60, var22, -1);
+      int var24 = this.minecraft.options.framerateLimit().get();
+      if (var5 && var24 > 0 && var24 <= 250) {
+         var1.hLine(RenderType.guiOverlay(), var3, var3 + var12 - 1, var22 - 1 - (int)(1800.0 / (double)var24), -16711681);
       }
 
-      String var30 = var15 + " ms min";
-      String var31 = var13 / (long)var12 + " ms avg";
-      String var32 = var16 + " ms max";
-      this.font.drawShadow(var1, var30, (float)(var3 + 2), (float)(var27 - 60 - 9), 14737632);
-      this.font.drawShadow(var1, var31, (float)(var3 + var12 / 2 - this.font.width(var31) / 2), (float)(var27 - 60 - 9), 14737632);
-      this.font.drawShadow(var1, var32, (float)(var3 + var12 - this.font.width(var32)), (float)(var27 - 60 - 9), 14737632);
-      RenderSystem.enableDepthTest();
+      String var25 = var15 + " ms min";
+      String var26 = var13 / (long)var12 + " ms avg";
+      String var21 = var16 + " ms max";
+      var1.drawString(this.font, var25, var3 + 2, var22 - 60 - 9, 14737632);
+      var1.drawCenteredString(this.font, var26, var3 + var12 / 2, var22 - 60 - 9, 14737632);
+      var1.drawString(this.font, var21, var3 + var12 - this.font.width(var21), var22 - 60 - 9, 14737632);
    }
 
    private int getSampleColor(int var1, int var2, int var3, int var4) {

@@ -128,25 +128,26 @@ public class Bat extends AmbientCreature {
       BlockPos var2 = var1.above();
       if (this.isResting()) {
          boolean var3 = this.isSilent();
-         if (this.level.getBlockState(var2).isRedstoneConductor(this.level, var1)) {
+         if (this.level().getBlockState(var2).isRedstoneConductor(this.level(), var1)) {
             if (this.random.nextInt(200) == 0) {
                this.yHeadRot = (float)this.random.nextInt(360);
             }
 
-            if (this.level.getNearestPlayer(BAT_RESTING_TARGETING, this) != null) {
+            if (this.level().getNearestPlayer(BAT_RESTING_TARGETING, this) != null) {
                this.setResting(false);
                if (!var3) {
-                  this.level.levelEvent(null, 1025, var1, 0);
+                  this.level().levelEvent(null, 1025, var1, 0);
                }
             }
          } else {
             this.setResting(false);
             if (!var3) {
-               this.level.levelEvent(null, 1025, var1, 0);
+               this.level().levelEvent(null, 1025, var1, 0);
             }
          }
       } else {
-         if (this.targetPosition != null && (!this.level.isEmptyBlock(this.targetPosition) || this.targetPosition.getY() <= this.level.getMinBuildHeight())) {
+         if (this.targetPosition != null
+            && (!this.level().isEmptyBlock(this.targetPosition) || this.targetPosition.getY() <= this.level().getMinBuildHeight())) {
             this.targetPosition = null;
          }
 
@@ -172,7 +173,7 @@ public class Bat extends AmbientCreature {
          float var12 = Mth.wrapDegrees(var11 - this.getYRot());
          this.zza = 0.5F;
          this.setYRot(this.getYRot() + var12);
-         if (this.random.nextInt(100) == 0 && this.level.getBlockState(var2).isRedstoneConductor(this.level, var2)) {
+         if (this.random.nextInt(100) == 0 && this.level().getBlockState(var2).isRedstoneConductor(this.level(), var2)) {
             this.setResting(true);
          }
       }
@@ -197,7 +198,7 @@ public class Bat extends AmbientCreature {
       if (this.isInvulnerableTo(var1)) {
          return false;
       } else {
-         if (!this.level.isClientSide && this.isResting()) {
+         if (!this.level().isClientSide && this.isResting()) {
             this.setResting(false);
          }
 

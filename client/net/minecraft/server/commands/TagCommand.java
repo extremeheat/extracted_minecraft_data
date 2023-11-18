@@ -87,9 +87,9 @@ public class TagCommand {
          throw ERROR_ADD_FAILED.create();
       } else {
          if (var1.size() == 1) {
-            var0.sendSuccess(Component.translatable("commands.tag.add.success.single", var2, ((Entity)var1.iterator().next()).getDisplayName()), true);
+            var0.sendSuccess(() -> Component.translatable("commands.tag.add.success.single", var2, ((Entity)var1.iterator().next()).getDisplayName()), true);
          } else {
-            var0.sendSuccess(Component.translatable("commands.tag.add.success.multiple", var2, var1.size()), true);
+            var0.sendSuccess(() -> Component.translatable("commands.tag.add.success.multiple", var2, var1.size()), true);
          }
 
          return var3;
@@ -109,9 +109,9 @@ public class TagCommand {
          throw ERROR_REMOVE_FAILED.create();
       } else {
          if (var1.size() == 1) {
-            var0.sendSuccess(Component.translatable("commands.tag.remove.success.single", var2, ((Entity)var1.iterator().next()).getDisplayName()), true);
+            var0.sendSuccess(() -> Component.translatable("commands.tag.remove.success.single", var2, ((Entity)var1.iterator().next()).getDisplayName()), true);
          } else {
-            var0.sendSuccess(Component.translatable("commands.tag.remove.success.multiple", var2, var1.size()), true);
+            var0.sendSuccess(() -> Component.translatable("commands.tag.remove.success.multiple", var2, var1.size()), true);
          }
 
          return var3;
@@ -128,16 +128,16 @@ public class TagCommand {
       if (var1.size() == 1) {
          Entity var5 = (Entity)var1.iterator().next();
          if (var2.isEmpty()) {
-            var0.sendSuccess(Component.translatable("commands.tag.list.single.empty", var5.getDisplayName()), false);
+            var0.sendSuccess(() -> Component.translatable("commands.tag.list.single.empty", var5.getDisplayName()), false);
          } else {
             var0.sendSuccess(
-               Component.translatable("commands.tag.list.single.success", var5.getDisplayName(), var2.size(), ComponentUtils.formatList(var2)), false
+               () -> Component.translatable("commands.tag.list.single.success", var5.getDisplayName(), var2.size(), ComponentUtils.formatList(var2)), false
             );
          }
       } else if (var2.isEmpty()) {
-         var0.sendSuccess(Component.translatable("commands.tag.list.multiple.empty", var1.size()), false);
+         var0.sendSuccess(() -> Component.translatable("commands.tag.list.multiple.empty", var1.size()), false);
       } else {
-         var0.sendSuccess(Component.translatable("commands.tag.list.multiple.success", var1.size(), var2.size(), ComponentUtils.formatList(var2)), false);
+         var0.sendSuccess(() -> Component.translatable("commands.tag.list.multiple.success", var1.size(), var2.size(), ComponentUtils.formatList(var2)), false);
       }
 
       return var2.size();

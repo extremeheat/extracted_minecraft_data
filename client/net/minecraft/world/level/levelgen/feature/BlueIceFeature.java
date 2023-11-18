@@ -8,7 +8,6 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
-import net.minecraft.world.level.material.Material;
 
 public class BlueIceFeature extends Feature<NoneFeatureConfiguration> {
    public BlueIceFeature(Codec<NoneFeatureConfiguration> var1) {
@@ -49,7 +48,7 @@ public class BlueIceFeature extends Feature<NoneFeatureConfiguration> {
                if (var18 >= 1) {
                   BlockPos var19 = var2.offset(var4.nextInt(var18) - var4.nextInt(var18), var17, var4.nextInt(var18) - var4.nextInt(var18));
                   BlockState var10 = var3.getBlockState(var19);
-                  if (var10.getMaterial() == Material.AIR || var10.is(Blocks.WATER) || var10.is(Blocks.PACKED_ICE) || var10.is(Blocks.ICE)) {
+                  if (var10.isAir() || var10.is(Blocks.WATER) || var10.is(Blocks.PACKED_ICE) || var10.is(Blocks.ICE)) {
                      for(Direction var14 : Direction.values()) {
                         BlockState var15 = var3.getBlockState(var19.relative(var14));
                         if (var15.is(Blocks.BLUE_ICE)) {

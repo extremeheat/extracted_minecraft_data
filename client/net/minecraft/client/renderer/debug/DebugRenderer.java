@@ -14,6 +14,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
+import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -25,6 +26,7 @@ public class DebugRenderer {
    public final DebugRenderer.SimpleDebugRenderer chunkBorderRenderer;
    public final DebugRenderer.SimpleDebugRenderer heightMapRenderer;
    public final DebugRenderer.SimpleDebugRenderer collisionBoxRenderer;
+   public final DebugRenderer.SimpleDebugRenderer supportBlockRenderer;
    public final DebugRenderer.SimpleDebugRenderer neighborsUpdateRenderer;
    public final StructureRenderer structureRenderer;
    public final DebugRenderer.SimpleDebugRenderer lightDebugRenderer;
@@ -38,6 +40,7 @@ public class DebugRenderer {
    public final GoalSelectorDebugRenderer goalSelectorRenderer;
    public final GameTestDebugRenderer gameTestDebugRenderer;
    public final GameEventListenerRenderer gameEventListenerRenderer;
+   public final LightSectionDebugRenderer skyLightSectionDebugRenderer;
    private boolean renderChunkborder;
 
    public DebugRenderer(Minecraft var1) {
@@ -46,6 +49,7 @@ public class DebugRenderer {
       this.chunkBorderRenderer = new ChunkBorderRenderer(var1);
       this.heightMapRenderer = new HeightMapRenderer(var1);
       this.collisionBoxRenderer = new CollisionBoxRenderer(var1);
+      this.supportBlockRenderer = new SupportBlockRenderer(var1);
       this.neighborsUpdateRenderer = new NeighborsUpdateRenderer(var1);
       this.structureRenderer = new StructureRenderer(var1);
       this.lightDebugRenderer = new LightDebugRenderer(var1);
@@ -59,6 +63,7 @@ public class DebugRenderer {
       this.goalSelectorRenderer = new GoalSelectorDebugRenderer(var1);
       this.gameTestDebugRenderer = new GameTestDebugRenderer();
       this.gameEventListenerRenderer = new GameEventListenerRenderer(var1);
+      this.skyLightSectionDebugRenderer = new LightSectionDebugRenderer(var1, LightLayer.SKY);
    }
 
    public void clear() {
@@ -67,6 +72,7 @@ public class DebugRenderer {
       this.chunkBorderRenderer.clear();
       this.heightMapRenderer.clear();
       this.collisionBoxRenderer.clear();
+      this.supportBlockRenderer.clear();
       this.neighborsUpdateRenderer.clear();
       this.structureRenderer.clear();
       this.lightDebugRenderer.clear();
@@ -80,6 +86,7 @@ public class DebugRenderer {
       this.goalSelectorRenderer.clear();
       this.gameTestDebugRenderer.clear();
       this.gameEventListenerRenderer.clear();
+      this.skyLightSectionDebugRenderer.clear();
    }
 
    public boolean switchRenderChunkborder() {

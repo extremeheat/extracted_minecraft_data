@@ -237,7 +237,7 @@ public final class NativeImage implements AutoCloseable {
 
    public void setPixelRGBA(int var1, int var2, int var3) {
       if (this.format != NativeImage.Format.RGBA) {
-         throw new IllegalArgumentException(String.format(Locale.ROOT, "getPixelRGBA only works on RGBA images; have %s", this.format));
+         throw new IllegalArgumentException(String.format(Locale.ROOT, "setPixelRGBA only works on RGBA images; have %s", this.format));
       } else if (this.isOutsideBounds(var1, var2)) {
          throw new IllegalArgumentException(String.format(Locale.ROOT, "(%s, %s) outside of image bounds (%s, %s)", var1, var2, this.width, this.height));
       } else {
@@ -262,6 +262,20 @@ public final class NativeImage implements AutoCloseable {
          }
 
          return var2;
+      }
+   }
+
+   public void applyToAllPixels(IntUnaryOperator var1) {
+      if (this.format != NativeImage.Format.RGBA) {
+         throw new IllegalArgumentException(String.format(Locale.ROOT, "function application only works on RGBA images; have %s", this.format));
+      } else {
+         this.checkAllocated();
+         int var2 = this.width * this.height;
+         IntBuffer var3 = MemoryUtil.memIntBuffer(this.pixels, var2);
+
+         for(int var4 = 0; var4 < var2; ++var4) {
+            var3.put(var4, var1.applyAsInt(var3.get(var4)));
+         }
       }
    }
 
@@ -416,26 +430,28 @@ public final class NativeImage implements AutoCloseable {
    }
 
    private void _upload(int var1, int var2, int var3, int var4, int var5, int var6, int var7, boolean var8, boolean var9, boolean var10, boolean var11) {
-      RenderSystem.assertOnRenderThreadOrInit();
-      this.checkAllocated();
-      setFilter(var8, var10);
-      if (var6 == this.getWidth()) {
-         GlStateManager._pixelStore(3314, 0);
-      } else {
-         GlStateManager._pixelStore(3314, this.getWidth());
-      }
+      try {
+         RenderSystem.assertOnRenderThreadOrInit();
+         this.checkAllocated();
+         setFilter(var8, var10);
+         if (var6 == this.getWidth()) {
+            GlStateManager._pixelStore(3314, 0);
+         } else {
+            GlStateManager._pixelStore(3314, this.getWidth());
+         }
 
-      GlStateManager._pixelStore(3316, var4);
-      GlStateManager._pixelStore(3315, var5);
-      this.format.setUnpackPixelStoreState();
-      GlStateManager._texSubImage2D(3553, var1, var2, var3, var6, var7, this.format.glFormat(), 5121, this.pixels);
-      if (var9) {
-         GlStateManager._texParameter(3553, 10242, 33071);
-         GlStateManager._texParameter(3553, 10243, 33071);
-      }
-
-      if (var11) {
-         this.close();
+         GlStateManager._pixelStore(3316, var4);
+         GlStateManager._pixelStore(3315, var5);
+         this.format.setUnpackPixelStoreState();
+         GlStateManager._texSubImage2D(3553, var1, var2, var3, var6, var7, this.format.glFormat(), 5121, this.pixels);
+         if (var9) {
+            GlStateManager._texParameter(3553, 10242, 33071);
+            GlStateManager._texParameter(3553, 10243, 33071);
+         }
+      } finally {
+         if (var11) {
+            this.close();
+         }
       }
    }
 

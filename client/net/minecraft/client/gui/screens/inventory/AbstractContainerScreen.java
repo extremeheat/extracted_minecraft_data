@@ -3,14 +3,16 @@ package net.minecraft.client.gui.screens.inventory;
 import com.google.common.collect.Sets;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.datafixers.util.Pair;
+import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -83,14 +85,14 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       int var5 = this.leftPos;
       int var6 = this.topPos;
       this.renderBg(var1, var4, var2, var3);
       RenderSystem.disableDepthTest();
       super.render(var1, var2, var3, var4);
-      var1.pushPose();
-      var1.translate((float)var5, (float)var6, 0.0F);
+      var1.pose().pushPose();
+      var1.pose().translate((float)var5, (float)var6, 0.0F);
       this.hoveredSlot = null;
 
       for(int var7 = 0; var7 < this.menu.slots.size(); ++var7) {
@@ -103,7 +105,9 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
             this.hoveredSlot = var8;
             int var9 = var8.x;
             int var10 = var8.y;
-            renderSlotHighlight(var1, var9, var10, 0);
+            if (this.hoveredSlot.isHighlightable()) {
+               renderSlotHighlight(var1, var9, var10, 0);
+            }
          }
       }
 
@@ -114,11 +118,9 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
          int var16 = this.draggingItem.isEmpty() ? 8 : 16;
          String var18 = null;
          if (!this.draggingItem.isEmpty() && this.isSplittingStack) {
-            var13 = var13.copy();
-            var13.setCount(Mth.ceil((float)var13.getCount() / 2.0F));
+            var13 = var13.copyWithCount(Mth.ceil((float)var13.getCount() / 2.0F));
          } else if (this.isQuickCrafting && this.quickCraftSlots.size() > 1) {
-            var13 = var13.copy();
-            var13.setCount(this.quickCraftingRemainder);
+            var13 = var13.copyWithCount(this.quickCraftingRemainder);
             if (var13.isEmpty()) {
                var18 = ChatFormatting.YELLOW + "0";
             }
@@ -141,40 +143,41 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
          this.renderFloatingItem(var1, this.snapbackItem, var11, var12, null);
       }
 
-      var1.popPose();
+      var1.pose().popPose();
       RenderSystem.enableDepthTest();
    }
 
-   public static void renderSlotHighlight(PoseStack var0, int var1, int var2, int var3) {
-      RenderSystem.disableDepthTest();
-      RenderSystem.colorMask(true, true, true, false);
-      fillGradient(var0, var1, var2, var1 + 16, var2 + 16, -2130706433, -2130706433, var3);
-      RenderSystem.colorMask(true, true, true, true);
-      RenderSystem.enableDepthTest();
+   public static void renderSlotHighlight(GuiGraphics var0, int var1, int var2, int var3) {
+      var0.fillGradient(RenderType.guiOverlay(), var1, var2, var1 + 16, var2 + 16, -2130706433, -2130706433, var3);
    }
 
-   protected void renderTooltip(PoseStack var1, int var2, int var3) {
+   protected void renderTooltip(GuiGraphics var1, int var2, int var3) {
       if (this.menu.getCarried().isEmpty() && this.hoveredSlot != null && this.hoveredSlot.hasItem()) {
-         this.renderTooltip(var1, this.hoveredSlot.getItem(), var2, var3);
+         ItemStack var4 = this.hoveredSlot.getItem();
+         var1.renderTooltip(this.font, this.getTooltipFromContainerItem(var4), var4.getTooltipImage(), var2, var3);
       }
    }
 
-   private void renderFloatingItem(PoseStack var1, ItemStack var2, int var3, int var4, String var5) {
-      var1.pushPose();
-      var1.translate(0.0F, 0.0F, 232.0F);
-      this.itemRenderer.renderAndDecorateItem(var1, var2, var3, var4);
-      this.itemRenderer.renderGuiItemDecorations(var1, this.font, var2, var3, var4 - (this.draggingItem.isEmpty() ? 0 : 8), var5);
-      var1.popPose();
+   protected List<Component> getTooltipFromContainerItem(ItemStack var1) {
+      return getTooltipFromItem(this.minecraft, var1);
    }
 
-   protected void renderLabels(PoseStack var1, int var2, int var3) {
-      this.font.draw(var1, this.title, (float)this.titleLabelX, (float)this.titleLabelY, 4210752);
-      this.font.draw(var1, this.playerInventoryTitle, (float)this.inventoryLabelX, (float)this.inventoryLabelY, 4210752);
+   private void renderFloatingItem(GuiGraphics var1, ItemStack var2, int var3, int var4, String var5) {
+      var1.pose().pushPose();
+      var1.pose().translate(0.0F, 0.0F, 232.0F);
+      var1.renderItem(var2, var3, var4);
+      var1.renderItemDecorations(this.font, var2, var3, var4 - (this.draggingItem.isEmpty() ? 0 : 8), var5);
+      var1.pose().popPose();
    }
 
-   protected abstract void renderBg(PoseStack var1, float var2, int var3, int var4);
+   protected void renderLabels(GuiGraphics var1, int var2, int var3) {
+      var1.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, 4210752, false);
+      var1.drawString(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, 4210752, false);
+   }
 
-   private void renderSlot(PoseStack var1, Slot var2) {
+   protected abstract void renderBg(GuiGraphics var1, float var2, int var3, int var4);
+
+   private void renderSlot(GuiGraphics var1, Slot var2) {
       int var3 = var2.x;
       int var4 = var2.y;
       ItemStack var5 = var2.getItem();
@@ -183,52 +186,50 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       ItemStack var8 = this.menu.getCarried();
       String var9 = null;
       if (var2 == this.clickedSlot && !this.draggingItem.isEmpty() && this.isSplittingStack && !var5.isEmpty()) {
-         var5 = var5.copy();
-         var5.setCount(var5.getCount() / 2);
+         var5 = var5.copyWithCount(var5.getCount() / 2);
       } else if (this.isQuickCrafting && this.quickCraftSlots.contains(var2) && !var8.isEmpty()) {
          if (this.quickCraftSlots.size() == 1) {
             return;
          }
 
          if (AbstractContainerMenu.canItemQuickReplace(var2, var8, true) && this.menu.canDragTo(var2)) {
-            var5 = var8.copy();
             var6 = true;
-            AbstractContainerMenu.getQuickCraftSlotCount(
-               this.quickCraftSlots, this.quickCraftingType, var5, var2.getItem().isEmpty() ? 0 : var2.getItem().getCount()
-            );
-            int var10 = Math.min(var5.getMaxStackSize(), var2.getMaxStackSize(var5));
-            if (var5.getCount() > var10) {
+            int var10 = Math.min(var8.getMaxStackSize(), var2.getMaxStackSize(var8));
+            int var11 = var2.getItem().isEmpty() ? 0 : var2.getItem().getCount();
+            int var12 = AbstractContainerMenu.getQuickCraftPlaceCount(this.quickCraftSlots, this.quickCraftingType, var8) + var11;
+            if (var12 > var10) {
+               var12 = var10;
                var9 = ChatFormatting.YELLOW.toString() + var10;
-               var5.setCount(var10);
             }
+
+            var5 = var8.copyWithCount(var12);
          } else {
             this.quickCraftSlots.remove(var2);
             this.recalculateQuickCraftRemaining();
          }
       }
 
-      var1.pushPose();
-      var1.translate(0.0F, 0.0F, 100.0F);
+      var1.pose().pushPose();
+      var1.pose().translate(0.0F, 0.0F, 100.0F);
       if (var5.isEmpty() && var2.isActive()) {
-         Pair var12 = var2.getNoItemIcon();
-         if (var12 != null) {
-            TextureAtlasSprite var11 = this.minecraft.getTextureAtlas((ResourceLocation)var12.getFirst()).apply((ResourceLocation)var12.getSecond());
-            RenderSystem.setShaderTexture(0, var11.atlasLocation());
-            blit(var1, var3, var4, 0, 16, 16, var11);
+         Pair var13 = var2.getNoItemIcon();
+         if (var13 != null) {
+            TextureAtlasSprite var14 = this.minecraft.getTextureAtlas((ResourceLocation)var13.getFirst()).apply((ResourceLocation)var13.getSecond());
+            var1.blit(var3, var4, 0, 16, 16, var14);
             var7 = true;
          }
       }
 
       if (!var7) {
          if (var6) {
-            fill(var1, var3, var4, var3 + 16, var4 + 16, -2130706433);
+            var1.fill(var3, var4, var3 + 16, var4 + 16, -2130706433);
          }
 
-         this.itemRenderer.renderAndDecorateItem(var1, this.minecraft.player, var5, var3, var4, var2.x + var2.y * this.imageWidth);
-         this.itemRenderer.renderGuiItemDecorations(var1, this.font, var5, var3, var4, var9);
+         var1.renderItem(var5, var3, var4, var2.x + var2.y * this.imageWidth);
+         var1.renderItemDecorations(this.font, var5, var3, var4, var9);
       }
 
-      var1.popPose();
+      var1.pose().popPose();
    }
 
    private void recalculateQuickCraftRemaining() {
@@ -240,16 +241,11 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
             this.quickCraftingRemainder = var1.getCount();
 
             for(Slot var3 : this.quickCraftSlots) {
-               ItemStack var4 = var1.copy();
-               ItemStack var5 = var3.getItem();
-               int var6 = var5.isEmpty() ? 0 : var5.getCount();
-               AbstractContainerMenu.getQuickCraftSlotCount(this.quickCraftSlots, this.quickCraftingType, var4, var6);
-               int var7 = Math.min(var4.getMaxStackSize(), var3.getMaxStackSize(var4));
-               if (var4.getCount() > var7) {
-                  var4.setCount(var7);
-               }
-
-               this.quickCraftingRemainder -= var4.getCount() - var6;
+               ItemStack var4 = var3.getItem();
+               int var5 = var4.isEmpty() ? 0 : var4.getCount();
+               int var6 = Math.min(var1.getMaxStackSize(), var3.getMaxStackSize(var1));
+               int var7 = Math.min(AbstractContainerMenu.getQuickCraftPlaceCount(this.quickCraftSlots, this.quickCraftingType, var1) + var5, var6);
+               this.quickCraftingRemainder -= var7 - var5;
             }
          }
       }

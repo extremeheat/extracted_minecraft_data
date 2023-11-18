@@ -60,10 +60,10 @@ public class LevelSummary implements Comparable<LevelSummary> {
    }
 
    public int compareTo(LevelSummary var1) {
-      if (this.levelVersion.lastPlayed() < var1.levelVersion.lastPlayed()) {
+      if (this.getLastPlayed() < var1.getLastPlayed()) {
          return 1;
       } else {
-         return this.levelVersion.lastPlayed() > var1.levelVersion.lastPlayed() ? -1 : this.levelId.compareTo(var1.levelId);
+         return this.getLastPlayed() > var1.getLastPlayed() ? -1 : this.levelId.compareTo(var1.levelId);
       }
    }
 
@@ -193,6 +193,32 @@ public class LevelSummary implements Comparable<LevelSummary> {
 
       public String getTranslationKey() {
          return this.translationKey;
+      }
+   }
+
+   public static class SymlinkLevelSummary extends LevelSummary {
+      public SymlinkLevelSummary(String var1, Path var2) {
+         super(null, null, var1, false, false, false, var2);
+      }
+
+      @Override
+      public String getLevelName() {
+         return this.getLevelId();
+      }
+
+      @Override
+      public Component getInfo() {
+         return Component.translatable("symlink_warning.title").withStyle(var0 -> var0.withColor(-65536));
+      }
+
+      @Override
+      public long getLastPlayed() {
+         return -1L;
+      }
+
+      @Override
+      public boolean isDisabled() {
+         return false;
       }
    }
 }

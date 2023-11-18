@@ -1,8 +1,8 @@
 package com.mojang.realmsclient.gui.screens;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import net.minecraft.client.GameNarrator;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -31,10 +31,10 @@ public class RealmsConfirmScreen extends RealmsScreen {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderBackground(var1);
-      drawCenteredString(var1, this.font, this.title1, this.width / 2, row(3), 16777215);
-      drawCenteredString(var1, this.font, this.title2, this.width / 2, row(5), 16777215);
+      var1.drawCenteredString(this.font, this.title1, this.width / 2, row(3), 16777215);
+      var1.drawCenteredString(this.font, this.title2, this.width / 2, row(5), 16777215);
       super.render(var1, var2, var3, var4);
    }
 }

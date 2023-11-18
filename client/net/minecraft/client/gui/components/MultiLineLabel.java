@@ -1,11 +1,10 @@
 package net.minecraft.client.gui.components;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Arrays;
 import java.util.List;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.util.FormattedCharSequence;
@@ -13,27 +12,27 @@ import net.minecraft.util.FormattedCharSequence;
 public interface MultiLineLabel {
    MultiLineLabel EMPTY = new MultiLineLabel() {
       @Override
-      public int renderCentered(PoseStack var1, int var2, int var3) {
+      public int renderCentered(GuiGraphics var1, int var2, int var3) {
          return var3;
       }
 
       @Override
-      public int renderCentered(PoseStack var1, int var2, int var3, int var4, int var5) {
+      public int renderCentered(GuiGraphics var1, int var2, int var3, int var4, int var5) {
          return var3;
       }
 
       @Override
-      public int renderLeftAligned(PoseStack var1, int var2, int var3, int var4, int var5) {
+      public int renderLeftAligned(GuiGraphics var1, int var2, int var3, int var4, int var5) {
          return var3;
       }
 
       @Override
-      public int renderLeftAlignedNoShadow(PoseStack var1, int var2, int var3, int var4, int var5) {
+      public int renderLeftAlignedNoShadow(GuiGraphics var1, int var2, int var3, int var4, int var5) {
          return var3;
       }
 
       @Override
-      public void renderBackgroundCentered(PoseStack var1, int var2, int var3, int var4, int var5, int var6) {
+      public void renderBackgroundCentered(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6) {
       }
 
       @Override
@@ -90,16 +89,16 @@ public interface MultiLineLabel {
          private final int width = var1.stream().mapToInt(var0xx -> var0xx.width).max().orElse(0);
 
          @Override
-         public int renderCentered(PoseStack var1x, int var2, int var3) {
+         public int renderCentered(GuiGraphics var1x, int var2, int var3) {
             return this.renderCentered(var1x, var2, var3, 9, 16777215);
          }
 
          @Override
-         public int renderCentered(PoseStack var1x, int var2, int var3, int var4, int var5) {
+         public int renderCentered(GuiGraphics var1x, int var2, int var3, int var4, int var5) {
             int var6 = var3;
 
             for(MultiLineLabel.TextWithWidth var8 : var1) {
-               var0.drawShadow(var1x, var8.text, (float)(var2 - var8.width / 2), (float)var6, var5);
+               var1x.drawString(var0, var8.text, var2 - var8.width / 2, var6, var5);
                var6 += var4;
             }
 
@@ -107,11 +106,11 @@ public interface MultiLineLabel {
          }
 
          @Override
-         public int renderLeftAligned(PoseStack var1x, int var2, int var3, int var4, int var5) {
+         public int renderLeftAligned(GuiGraphics var1x, int var2, int var3, int var4, int var5) {
             int var6 = var3;
 
             for(MultiLineLabel.TextWithWidth var8 : var1) {
-               var0.drawShadow(var1x, var8.text, (float)var2, (float)var6, var5);
+               var1x.drawString(var0, var8.text, var2, var6, var5);
                var6 += var4;
             }
 
@@ -119,11 +118,11 @@ public interface MultiLineLabel {
          }
 
          @Override
-         public int renderLeftAlignedNoShadow(PoseStack var1x, int var2, int var3, int var4, int var5) {
+         public int renderLeftAlignedNoShadow(GuiGraphics var1x, int var2, int var3, int var4, int var5) {
             int var6 = var3;
 
             for(MultiLineLabel.TextWithWidth var8 : var1) {
-               var0.draw(var1x, var8.text, (float)var2, (float)var6, var5);
+               var1x.drawString(var0, var8.text, var2, var6, var5, false);
                var6 += var4;
             }
 
@@ -131,10 +130,10 @@ public interface MultiLineLabel {
          }
 
          @Override
-         public void renderBackgroundCentered(PoseStack var1x, int var2, int var3, int var4, int var5, int var6) {
+         public void renderBackgroundCentered(GuiGraphics var1x, int var2, int var3, int var4, int var5, int var6) {
             int var7 = var1.stream().mapToInt(var0xx -> var0xx.width).max().orElse(0);
             if (var7 > 0) {
-               GuiComponent.fill(var1x, var2 - var7 / 2 - var5, var3 - var5, var2 + var7 / 2 + var5, var3 + var1.size() * var4 + var5, var6);
+               var1x.fill(var2 - var7 / 2 - var5, var3 - var5, var2 + var7 / 2 + var5, var3 + var1.size() * var4 + var5, var6);
             }
          }
 
@@ -150,15 +149,15 @@ public interface MultiLineLabel {
       };
    }
 
-   int renderCentered(PoseStack var1, int var2, int var3);
+   int renderCentered(GuiGraphics var1, int var2, int var3);
 
-   int renderCentered(PoseStack var1, int var2, int var3, int var4, int var5);
+   int renderCentered(GuiGraphics var1, int var2, int var3, int var4, int var5);
 
-   int renderLeftAligned(PoseStack var1, int var2, int var3, int var4, int var5);
+   int renderLeftAligned(GuiGraphics var1, int var2, int var3, int var4, int var5);
 
-   int renderLeftAlignedNoShadow(PoseStack var1, int var2, int var3, int var4, int var5);
+   int renderLeftAlignedNoShadow(GuiGraphics var1, int var2, int var3, int var4, int var5);
 
-   void renderBackgroundCentered(PoseStack var1, int var2, int var3, int var4, int var5, int var6);
+   void renderBackgroundCentered(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6);
 
    int getLineCount();
 

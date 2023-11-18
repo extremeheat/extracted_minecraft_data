@@ -363,29 +363,31 @@ public class StructureTemplate {
    }
 
    public static List<StructureTemplate.StructureBlockInfo> processBlockInfos(
-      LevelAccessor var0, BlockPos var1, BlockPos var2, StructurePlaceSettings var3, List<StructureTemplate.StructureBlockInfo> var4
+      ServerLevelAccessor var0, BlockPos var1, BlockPos var2, StructurePlaceSettings var3, List<StructureTemplate.StructureBlockInfo> var4
    ) {
-      ArrayList var5 = Lists.newArrayList();
+      ArrayList var5 = new ArrayList();
+      Object var6 = new ArrayList();
 
-      for(StructureTemplate.StructureBlockInfo var7 : var4) {
-         BlockPos var8 = calculateRelativePosition(var3, var7.pos).offset(var1);
-         StructureTemplate.StructureBlockInfo var9 = new StructureTemplate.StructureBlockInfo(var8, var7.state, var7.nbt != null ? var7.nbt.copy() : null);
-         Iterator var10 = var3.getProcessors().iterator();
+      for(StructureTemplate.StructureBlockInfo var8 : var4) {
+         BlockPos var9 = calculateRelativePosition(var3, var8.pos).offset(var1);
+         StructureTemplate.StructureBlockInfo var10 = new StructureTemplate.StructureBlockInfo(var9, var8.state, var8.nbt != null ? var8.nbt.copy() : null);
+         Iterator var11 = var3.getProcessors().iterator();
 
-         while(var9 != null && var10.hasNext()) {
-            var9 = ((StructureProcessor)var10.next()).processBlock(var0, var1, var2, var7, var9, var3);
+         while(var10 != null && var11.hasNext()) {
+            var10 = ((StructureProcessor)var11.next()).processBlock(var0, var1, var2, var8, var10, var3);
          }
 
-         if (var9 != null) {
-            var5.add(var9);
+         if (var10 != null) {
+            var6.add(var10);
+            var5.add(var8);
          }
       }
 
-      for(StructureProcessor var12 : var3.getProcessors()) {
-         var12.finalizeStructure(var0, var1, var2, var3, var5);
+      for(StructureProcessor var13 : var3.getProcessors()) {
+         var6 = var13.finalizeProcessing(var0, var1, var2, var5, (List<StructureTemplate.StructureBlockInfo>)var6, var3);
       }
 
-      return var5;
+      return (List<StructureTemplate.StructureBlockInfo>)var6;
    }
 
    private void placeEntities(ServerLevelAccessor var1, BlockPos var2, Mirror var3, Rotation var4, BlockPos var5, @Nullable BoundingBox var6, boolean var7) {
@@ -749,10 +751,11 @@ public class StructureTemplate {
       }
    }
 
-   public static class StructureBlockInfo {
-      public final BlockPos pos;
-      public final BlockState state;
-      public final CompoundTag nbt;
+   public static record StructureBlockInfo(BlockPos a, BlockState b, @Nullable CompoundTag c) {
+      final BlockPos pos;
+      final BlockState state;
+      @Nullable
+      final CompoundTag nbt;
 
       public StructureBlockInfo(BlockPos var1, BlockState var2, @Nullable CompoundTag var3) {
          super();

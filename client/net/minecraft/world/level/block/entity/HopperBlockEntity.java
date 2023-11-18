@@ -361,13 +361,7 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
    }
 
    private static boolean canMergeItems(ItemStack var0, ItemStack var1) {
-      if (!var0.is(var1.getItem())) {
-         return false;
-      } else if (var0.getDamageValue() != var1.getDamageValue()) {
-         return false;
-      } else {
-         return var0.getCount() > var0.getMaxStackSize() ? false : ItemStack.tagMatches(var0, var1);
-      }
+      return var0.getCount() <= var0.getMaxStackSize() && ItemStack.isSameItemSameTags(var0, var1);
    }
 
    @Override

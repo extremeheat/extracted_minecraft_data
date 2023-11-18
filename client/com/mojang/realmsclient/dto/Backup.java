@@ -36,7 +36,7 @@ public class Backup extends ValueObject {
 
             for(Entry var6 : var3.entrySet()) {
                if (!((JsonElement)var6.getValue()).isJsonNull()) {
-                  var2.metadata.put(format((String)var6.getKey()), ((JsonElement)var6.getValue()).getAsString());
+                  var2.metadata.put((String)var6.getKey(), ((JsonElement)var6.getValue()).getAsString());
                }
             }
          }
@@ -45,24 +45,6 @@ public class Backup extends ValueObject {
       }
 
       return var2;
-   }
-
-   private static String format(String var0) {
-      String[] var1 = var0.split("_");
-      StringBuilder var2 = new StringBuilder();
-
-      for(String var6 : var1) {
-         if (var6 != null && var6.length() >= 1) {
-            if ("of".equals(var6)) {
-               var2.append(var6).append(" ");
-            } else {
-               char var7 = Character.toUpperCase(var6.charAt(0));
-               var2.append(var7).append(var6.substring(1)).append(" ");
-            }
-         }
-      }
-
-      return var2.toString();
    }
 
    public boolean isUploadedVersion() {

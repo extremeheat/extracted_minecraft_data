@@ -67,7 +67,7 @@ import net.minecraft.server.ServerScoreboard;
 import net.minecraft.server.bossevents.CustomBossEvent;
 import net.minecraft.server.commands.data.DataAccessor;
 import net.minecraft.server.commands.data.DataCommands;
-import net.minecraft.server.level.ChunkHolder;
+import net.minecraft.server.level.FullChunkStatus;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Attackable;
@@ -77,6 +77,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.OwnableEntity;
 import net.minecraft.world.entity.Targeting;
 import net.minecraft.world.entity.TraceableEntity;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -84,7 +85,9 @@ import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.PredicateManager;
+import net.minecraft.world.level.storage.loot.LootDataManager;
+import net.minecraft.world.level.storage.loot.LootDataType;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
@@ -108,8 +111,8 @@ public class ExecuteCommand {
          var1.onCommandComplete(var2, var3, var4);
       };
    private static final SuggestionProvider<CommandSourceStack> SUGGEST_PREDICATE = (var0, var1) -> {
-      PredicateManager var2 = ((CommandSourceStack)var0.getSource()).getServer().getPredicateManager();
-      return SharedSuggestionProvider.suggestResource(var2.getKeys(), var1);
+      LootDataManager var2 = ((CommandSourceStack)var0.getSource()).getServer().getLootData();
+      return SharedSuggestionProvider.suggestResource(var2.getKeys(LootDataType.PREDICATE), var1);
    };
 
    public ExecuteCommand() {
@@ -147,7 +150,7 @@ public class ExecuteCommand {
                                                          for(Entity var3 : EntityArgument.getOptionalEntities(var0x, "targets")) {
                                                             var1x.add(
                                                                ((CommandSourceStack)var0x.getSource())
-                                                                  .withLevel((ServerLevel)var3.level)
+                                                                  .withLevel((ServerLevel)var3.level())
                                                                   .withPosition(var3.position())
                                                                   .withRotation(var3.getRotationVector())
                                                             );
@@ -470,13 +473,12 @@ public class ExecuteCommand {
    }
 
    private static boolean isChunkLoaded(ServerLevel var0, BlockPos var1) {
-      int var2 = SectionPos.blockToSectionCoord(var1.getX());
-      int var3 = SectionPos.blockToSectionCoord(var1.getZ());
-      LevelChunk var4 = var0.getChunkSource().getChunkNow(var2, var3);
-      if (var4 != null) {
-         return var4.getFullStatus() == ChunkHolder.FullChunkStatus.ENTITY_TICKING;
-      } else {
+      ChunkPos var2 = new ChunkPos(var1);
+      LevelChunk var3 = var0.getChunkSource().getChunkNow(var2.x, var2.z);
+      if (var3 == null) {
          return false;
+      } else {
+         return var3.getFullStatus() == FullChunkStatus.ENTITY_TICKING && var0.areEntitiesLoaded(var2.toLong());
       }
    }
 
@@ -699,7 +701,7 @@ public class ExecuteCommand {
       return var0 ? var1x -> {
          int var2 = var1.test(var1x);
          if (var2 > 0) {
-            ((CommandSourceStack)var1x.getSource()).sendSuccess(Component.translatable("commands.execute.conditional.pass_count", var2), false);
+            ((CommandSourceStack)var1x.getSource()).sendSuccess(() -> Component.translatable("commands.execute.conditional.pass_count", var2), false);
             return var2;
          } else {
             throw ERROR_CONDITIONAL_FAILED.create();
@@ -707,7 +709,7 @@ public class ExecuteCommand {
       } : var1x -> {
          int var2 = var1.test(var1x);
          if (var2 == 0) {
-            ((CommandSourceStack)var1x.getSource()).sendSuccess(Component.translatable("commands.execute.conditional.pass"), false);
+            ((CommandSourceStack)var1x.getSource()).sendSuccess(() -> Component.translatable("commands.execute.conditional.pass"), false);
             return 1;
          } else {
             throw ERROR_CONDITIONAL_FAILED_COUNT.create(var2);
@@ -743,10 +745,13 @@ public class ExecuteCommand {
 
    private static boolean checkCustomPredicate(CommandSourceStack var0, LootItemCondition var1) {
       ServerLevel var2 = var0.getLevel();
-      LootContext.Builder var3 = new LootContext.Builder(var2)
+      LootParams var3 = new LootParams.Builder(var2)
          .withParameter(LootContextParams.ORIGIN, var0.getPosition())
-         .withOptionalParameter(LootContextParams.THIS_ENTITY, var0.getEntity());
-      return var1.test(var3.create(LootContextParamSets.COMMAND));
+         .withOptionalParameter(LootContextParams.THIS_ENTITY, var0.getEntity())
+         .create(LootContextParamSets.COMMAND);
+      LootContext var4 = new LootContext.Builder(var3).create(null);
+      var4.pushVisitedElement(LootContext.createVisitedEntry(var1));
+      return var1.test(var4);
    }
 
    private static Collection<CommandSourceStack> expect(CommandContext<CommandSourceStack> var0, boolean var1, boolean var2) {
@@ -758,7 +763,7 @@ public class ExecuteCommand {
    ) {
       return var1.fork(var0, var2x -> expect(var2x, var2, var3.test(var2x))).executes(var2x -> {
          if (var2 == var3.test(var2x)) {
-            ((CommandSourceStack)var2x.getSource()).sendSuccess(Component.translatable("commands.execute.conditional.pass"), false);
+            ((CommandSourceStack)var2x.getSource()).sendSuccess(() -> Component.translatable("commands.execute.conditional.pass"), false);
             return 1;
          } else {
             throw ERROR_CONDITIONAL_FAILED.create();
@@ -776,7 +781,7 @@ public class ExecuteCommand {
    private static int checkIfRegions(CommandContext<CommandSourceStack> var0, boolean var1) throws CommandSyntaxException {
       OptionalInt var2 = checkRegions(var0, var1);
       if (var2.isPresent()) {
-         ((CommandSourceStack)var0.getSource()).sendSuccess(Component.translatable("commands.execute.conditional.pass_count", var2.getAsInt()), false);
+         ((CommandSourceStack)var0.getSource()).sendSuccess(() -> Component.translatable("commands.execute.conditional.pass_count", var2.getAsInt()), false);
          return var2.getAsInt();
       } else {
          throw ERROR_CONDITIONAL_FAILED.create();
@@ -788,7 +793,7 @@ public class ExecuteCommand {
       if (var2.isPresent()) {
          throw ERROR_CONDITIONAL_FAILED_COUNT.create(var2.getAsInt());
       } else {
-         ((CommandSourceStack)var0.getSource()).sendSuccess(Component.translatable("commands.execute.conditional.pass"), false);
+         ((CommandSourceStack)var0.getSource()).sendSuccess(() -> Component.translatable("commands.execute.conditional.pass"), false);
          return 1;
       }
    }

@@ -30,14 +30,14 @@ public class RuleProcessor extends StructureProcessor {
       StructureTemplate.StructureBlockInfo var5,
       StructurePlaceSettings var6
    ) {
-      RandomSource var7 = RandomSource.create(Mth.getSeed(var5.pos));
-      BlockState var8 = var1.getBlockState(var5.pos);
+      RandomSource var7 = RandomSource.create(Mth.getSeed(var5.pos()));
+      BlockState var8 = var1.getBlockState(var5.pos());
       UnmodifiableIterator var9 = this.rules.iterator();
 
       while(var9.hasNext()) {
          ProcessorRule var10 = (ProcessorRule)var9.next();
-         if (var10.test(var5.state, var8, var4.pos, var5.pos, var3, var7)) {
-            return new StructureTemplate.StructureBlockInfo(var5.pos, var10.getOutputState(), var10.getOutputTag());
+         if (var10.test(var5.state(), var8, var4.pos(), var5.pos(), var3, var7)) {
+            return new StructureTemplate.StructureBlockInfo(var5.pos(), var10.getOutputState(), var10.getOutputTag(var7, var5.nbt()));
          }
       }
 

@@ -29,7 +29,7 @@ public abstract class DoorInteractGoal extends Goal {
       if (!this.hasDoor) {
          return false;
       } else {
-         BlockState var1 = this.mob.level.getBlockState(this.doorPos);
+         BlockState var1 = this.mob.level().getBlockState(this.doorPos);
          if (!(var1.getBlock() instanceof DoorBlock)) {
             this.hasDoor = false;
             return false;
@@ -41,9 +41,9 @@ public abstract class DoorInteractGoal extends Goal {
 
    protected void setOpen(boolean var1) {
       if (this.hasDoor) {
-         BlockState var2 = this.mob.level.getBlockState(this.doorPos);
+         BlockState var2 = this.mob.level().getBlockState(this.doorPos);
          if (var2.getBlock() instanceof DoorBlock) {
-            ((DoorBlock)var2.getBlock()).setOpen(this.mob, this.mob.level, var2, this.doorPos, var1);
+            ((DoorBlock)var2.getBlock()).setOpen(this.mob, this.mob.level(), var2, this.doorPos, var1);
          }
       }
    }
@@ -62,7 +62,7 @@ public abstract class DoorInteractGoal extends Goal {
                Node var4 = var2.getNode(var3);
                this.doorPos = new BlockPos(var4.x, var4.y + 1, var4.z);
                if (!(this.mob.distanceToSqr((double)this.doorPos.getX(), this.mob.getY(), (double)this.doorPos.getZ()) > 2.25)) {
-                  this.hasDoor = DoorBlock.isWoodenDoor(this.mob.level, this.doorPos);
+                  this.hasDoor = DoorBlock.isWoodenDoor(this.mob.level(), this.doorPos);
                   if (this.hasDoor) {
                      return true;
                   }
@@ -70,7 +70,7 @@ public abstract class DoorInteractGoal extends Goal {
             }
 
             this.doorPos = this.mob.blockPosition().above();
-            this.hasDoor = DoorBlock.isWoodenDoor(this.mob.level, this.doorPos);
+            this.hasDoor = DoorBlock.isWoodenDoor(this.mob.level(), this.doorPos);
             return this.hasDoor;
          } else {
             return false;

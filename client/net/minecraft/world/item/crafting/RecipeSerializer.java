@@ -45,7 +45,6 @@ public interface RecipeSerializer<T extends Recipe<?>> {
       "campfire_cooking", new SimpleCookingSerializer<>(CampfireCookingRecipe::new, 100)
    );
    RecipeSerializer<StonecutterRecipe> STONECUTTER = register("stonecutting", new SingleItemRecipe.Serializer<>(StonecutterRecipe::new));
-   RecipeSerializer<LegacyUpgradeRecipe> SMITHING = register("smithing", new LegacyUpgradeRecipe.Serializer());
    RecipeSerializer<SmithingTransformRecipe> SMITHING_TRANSFORM = register("smithing_transform", new SmithingTransformRecipe.Serializer());
    RecipeSerializer<SmithingTrimRecipe> SMITHING_TRIM = register("smithing_trim", new SmithingTrimRecipe.Serializer());
    RecipeSerializer<DecoratedPotRecipe> DECORATED_POT_RECIPE = register(

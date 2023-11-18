@@ -217,7 +217,7 @@ public class BigDripleafBlock extends HorizontalDirectionalBlock implements Bone
    }
 
    private static boolean canEntityTilt(BlockPos var0, Entity var1) {
-      return var1.isOnGround() && var1.position().y > (double)((float)var0.getY() + 0.6875F);
+      return var1.onGround() && var1.position().y > (double)((float)var0.getY() + 0.6875F);
    }
 
    private void setTiltAndScheduleTick(BlockState var1, Level var2, BlockPos var3, Tilt var4, @Nullable SoundEvent var5) {

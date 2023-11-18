@@ -54,7 +54,7 @@ public class LongJumpToRandomPos<E extends Mob> extends Behavior<E> {
    }
 
    public static <E extends Mob> boolean defaultAcceptableLandingSpot(E var0, BlockPos var1) {
-      Level var2 = var0.level;
+      Level var2 = var0.level();
       BlockPos var3 = var1.below();
       return var2.getBlockState(var3).isSolidRender(var2, var3)
          && var0.getPathfindingMalus(WalkNodeEvaluator.getBlockPathTypeStatic(var2, var1.mutable())) == 0.0F;
@@ -81,7 +81,7 @@ public class LongJumpToRandomPos<E extends Mob> extends Behavior<E> {
    }
 
    protected boolean checkExtraStartConditions(ServerLevel var1, Mob var2) {
-      boolean var3 = var2.isOnGround() && !var2.isInWater() && !var2.isInLava() && !var1.getBlockState(var2.blockPosition()).is(Blocks.HONEY_BLOCK);
+      boolean var3 = var2.onGround() && !var2.isInWater() && !var2.isInLava() && !var1.getBlockState(var2.blockPosition()).is(Blocks.HONEY_BLOCK);
       if (!var3) {
          var2.getBrain().setMemory(MemoryModuleType.LONG_JUMP_COOLDOWN_TICKS, this.timeBetweenLongJumps.sample(var1.random) / 2);
       }
@@ -130,7 +130,7 @@ public class LongJumpToRandomPos<E extends Mob> extends Behavior<E> {
             var2.setYRot(var2.yBodyRot);
             var2.setDiscardFriction(true);
             double var5 = this.chosenJump.length();
-            double var7 = var5 + var2.getJumpBoostPower();
+            double var7 = var5 + (double)var2.getJumpBoostPower();
             var2.setDeltaMovement(this.chosenJump.scale(var7 / var5));
             var2.getBrain().setMemory(MemoryModuleType.LONG_JUMP_MID_JUMP, true);
             var1.playSound(null, var2, this.getJumpSound.apply((E)var2), SoundSource.NEUTRAL, 1.0F, 1.0F);
@@ -253,7 +253,7 @@ public class LongJumpToRandomPos<E extends Mob> extends Behavior<E> {
 
       for(int var11 = 0; var11 < var8; ++var11) {
          var10 = var11 == var8 - 1 ? var4 : var10.add(var9.scale(var6 * 0.8999999761581421));
-         if (!var1.level.noCollision(var1, var2.makeBoundingBox(var10))) {
+         if (!var1.level().noCollision(var1, var2.makeBoundingBox(var10))) {
             return false;
          }
       }

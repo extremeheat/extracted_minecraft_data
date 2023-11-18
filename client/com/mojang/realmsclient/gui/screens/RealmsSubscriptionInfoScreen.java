@@ -1,6 +1,5 @@
 package com.mojang.realmsclient.gui.screens;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.client.RealmsClient;
 import com.mojang.realmsclient.dto.RealmsServer;
@@ -12,8 +11,9 @@ import java.util.TimeZone;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.GameNarrator;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.MultiLineTextWidget;
+import net.minecraft.client.gui.components.FittingMultiLineTextWidget;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -30,10 +30,6 @@ public class RealmsSubscriptionInfoScreen extends RealmsScreen {
    private static final Component DAYS_LEFT_LABEL = Component.translatable("mco.configure.world.subscription.recurring.daysleft");
    private static final Component SUBSCRIPTION_EXPIRED_TEXT = Component.translatable("mco.configure.world.subscription.expired");
    private static final Component SUBSCRIPTION_LESS_THAN_A_DAY_TEXT = Component.translatable("mco.configure.world.subscription.less_than_a_day");
-   private static final Component MONTH_SUFFIX = Component.translatable("mco.configure.world.subscription.month");
-   private static final Component MONTHS_SUFFIX = Component.translatable("mco.configure.world.subscription.months");
-   private static final Component DAY_SUFFIX = Component.translatable("mco.configure.world.subscription.day");
-   private static final Component DAYS_SUFFIX = Component.translatable("mco.configure.world.subscription.days");
    private static final Component UNKNOWN = Component.translatable("mco.configure.world.subscription.unknown");
    private static final Component RECURRING_INFO = Component.translatable("mco.configure.world.subscription.recurring.info");
    private final Screen lastScreen;
@@ -59,18 +55,19 @@ public class RealmsSubscriptionInfoScreen extends RealmsScreen {
          this.minecraft.keyboardHandler.setClipboard(var2);
          Util.getPlatform().openUri(var2);
       }).bounds(this.width / 2 - 100, row(6), 200, 20).build());
-      this.addRenderableWidget(
-         Button.builder(CommonComponents.GUI_BACK, var1 -> this.minecraft.setScreen(this.lastScreen)).bounds(this.width / 2 - 100, row(12), 200, 20).build()
-      );
       if (this.serverData.expired) {
          this.addRenderableWidget(Button.builder(Component.translatable("mco.configure.world.delete.button"), var1 -> {
             MutableComponent var2 = Component.translatable("mco.configure.world.delete.question.line1");
             MutableComponent var3 = Component.translatable("mco.configure.world.delete.question.line2");
-            this.minecraft.setScreen(new RealmsLongConfirmationScreen(this::deleteRealm, RealmsLongConfirmationScreen.Type.Warning, var2, var3, true));
+            this.minecraft.setScreen(new RealmsLongConfirmationScreen(this::deleteRealm, RealmsLongConfirmationScreen.Type.WARNING, var2, var3, true));
          }).bounds(this.width / 2 - 100, row(10), 200, 20).build());
       } else {
-         this.addRenderableWidget(new MultiLineTextWidget(this.width / 2 - 100, row(8), RECURRING_INFO, this.font).setColor(10526880).setMaxWidth(200));
+         this.addRenderableWidget(new FittingMultiLineTextWidget(this.width / 2 - 100, row(8), 200, 46, RECURRING_INFO, this.font).setColor(10526880));
       }
+
+      this.addRenderableWidget(
+         Button.builder(CommonComponents.GUI_BACK, var1 -> this.minecraft.setScreen(this.lastScreen)).bounds(this.width / 2 - 100, row(12), 200, 20).build()
+      );
    }
 
    @Override
@@ -131,19 +128,19 @@ public class RealmsSubscriptionInfoScreen extends RealmsScreen {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderBackground(var1);
       int var5 = this.width / 2 - 100;
-      drawCenteredString(var1, this.font, SUBSCRIPTION_TITLE, this.width / 2, 17, 16777215);
-      this.font.draw(var1, SUBSCRIPTION_START_LABEL, (float)var5, (float)row(0), 10526880);
-      this.font.draw(var1, this.startDate, (float)var5, (float)row(1), 16777215);
+      var1.drawCenteredString(this.font, SUBSCRIPTION_TITLE, this.width / 2, 17, 16777215);
+      var1.drawString(this.font, SUBSCRIPTION_START_LABEL, var5, row(0), 10526880, false);
+      var1.drawString(this.font, this.startDate, var5, row(1), 16777215, false);
       if (this.type == Subscription.SubscriptionType.NORMAL) {
-         this.font.draw(var1, TIME_LEFT_LABEL, (float)var5, (float)row(3), 10526880);
+         var1.drawString(this.font, TIME_LEFT_LABEL, var5, row(3), 10526880, false);
       } else if (this.type == Subscription.SubscriptionType.RECURRING) {
-         this.font.draw(var1, DAYS_LEFT_LABEL, (float)var5, (float)row(3), 10526880);
+         var1.drawString(this.font, DAYS_LEFT_LABEL, var5, row(3), 10526880, false);
       }
 
-      this.font.draw(var1, this.daysLeft, (float)var5, (float)row(4), 16777215);
+      var1.drawString(this.font, this.daysLeft, var5, row(4), 16777215, false);
       super.render(var1, var2, var3, var4);
    }
 
@@ -155,30 +152,15 @@ public class RealmsSubscriptionInfoScreen extends RealmsScreen {
       } else {
          int var2 = var1 / 30;
          int var3 = var1 % 30;
-         MutableComponent var4 = Component.empty();
-         if (var2 > 0) {
-            var4.append(Integer.toString(var2)).append(CommonComponents.SPACE);
-            if (var2 == 1) {
-               var4.append(MONTH_SUFFIX);
-            } else {
-               var4.append(MONTHS_SUFFIX);
-            }
+         boolean var4 = var2 > 0;
+         boolean var5 = var3 > 0;
+         if (var4 && var5) {
+            return Component.translatable("mco.configure.world.subscription.remaining.months.days", var2, var3);
+         } else if (var4) {
+            return Component.translatable("mco.configure.world.subscription.remaining.months", var2);
+         } else {
+            return var5 ? Component.translatable("mco.configure.world.subscription.remaining.days", var3) : Component.empty();
          }
-
-         if (var3 > 0) {
-            if (var2 > 0) {
-               var4.append(", ");
-            }
-
-            var4.append(Integer.toString(var3)).append(CommonComponents.SPACE);
-            if (var3 == 1) {
-               var4.append(DAY_SUFFIX);
-            } else {
-               var4.append(DAYS_SUFFIX);
-            }
-         }
-
-         return var4;
       }
    }
 }

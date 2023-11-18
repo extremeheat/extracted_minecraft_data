@@ -3,6 +3,7 @@ package net.minecraft.world.level.block;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -15,7 +16,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
-import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -86,14 +86,13 @@ public class CactusBlock extends Block {
    public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       for(Direction var5 : Direction.Plane.HORIZONTAL) {
          BlockState var6 = var2.getBlockState(var3.relative(var5));
-         Material var7 = var6.getMaterial();
-         if (var7.isSolid() || var2.getFluidState(var3.relative(var5)).is(FluidTags.LAVA)) {
+         if (var6.isSolid() || var2.getFluidState(var3.relative(var5)).is(FluidTags.LAVA)) {
             return false;
          }
       }
 
-      BlockState var8 = var2.getBlockState(var3.below());
-      return (var8.is(Blocks.CACTUS) || var8.is(Blocks.SAND) || var8.is(Blocks.RED_SAND)) && !var2.getBlockState(var3.above()).getMaterial().isLiquid();
+      BlockState var7 = var2.getBlockState(var3.below());
+      return (var7.is(Blocks.CACTUS) || var7.is(BlockTags.SAND)) && !var2.getBlockState(var3.above()).liquid();
    }
 
    @Override

@@ -21,4 +21,8 @@ public class ToggleKeyMapping extends KeyMapping {
          super.setDown(var1);
       }
    }
+
+   protected void reset() {
+      super.setDown(false);
+   }
 }

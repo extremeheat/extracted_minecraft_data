@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.screens.multiplayer;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import javax.annotation.Nullable;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Checkbox;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.screens.Screen;
@@ -49,7 +49,7 @@ public abstract class WarningScreen extends Screen {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderBackground(var1);
       this.renderTitle(var1);
       int var5 = this.width / 2 - this.message.getWidth() / 2;
@@ -57,8 +57,8 @@ public abstract class WarningScreen extends Screen {
       super.render(var1, var2, var3, var4);
    }
 
-   protected void renderTitle(PoseStack var1) {
-      drawString(var1, this.font, this.title, 25, 30, 16777215);
+   protected void renderTitle(GuiGraphics var1) {
+      var1.drawString(this.font, this.title, 25, 30, 16777215);
    }
 
    protected int getLineHeight() {

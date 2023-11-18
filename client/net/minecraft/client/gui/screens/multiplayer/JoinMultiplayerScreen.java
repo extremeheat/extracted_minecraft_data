@@ -1,14 +1,15 @@
 package net.minecraft.client.gui.screens.multiplayer;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.logging.LogUtils;
 import java.util.List;
 import javax.annotation.Nullable;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.layouts.FrameLayout;
 import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.layouts.SpacerElement;
+import net.minecraft.client.gui.navigation.CommonInputs;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.ConnectScreen;
 import net.minecraft.client.gui.screens.DirectJoinServerScreen;
@@ -147,6 +148,7 @@ public class JoinMultiplayerScreen extends Screen {
       }
 
       this.pinger.removeAll();
+      this.serverSelectionList.removed();
    }
 
    private void refreshServerList() {
@@ -220,11 +222,11 @@ public class JoinMultiplayerScreen extends Screen {
          this.refreshServerList();
          return true;
       } else if (this.serverSelectionList.getSelected() != null) {
-         if (var1 != 257 && var1 != 335) {
-            return this.serverSelectionList.keyPressed(var1, var2, var3);
-         } else {
+         if (CommonInputs.selected(var1)) {
             this.joinSelectedServer();
             return true;
+         } else {
+            return this.serverSelectionList.keyPressed(var1, var2, var3);
          }
       } else {
          return false;
@@ -232,14 +234,14 @@ public class JoinMultiplayerScreen extends Screen {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.toolTip = null;
       this.renderBackground(var1);
       this.serverSelectionList.render(var1, var2, var3, var4);
-      drawCenteredString(var1, this.font, this.title, this.width / 2, 20, 16777215);
+      var1.drawCenteredString(this.font, this.title, this.width / 2, 20, 16777215);
       super.render(var1, var2, var3, var4);
       if (this.toolTip != null) {
-         this.renderComponentTooltip(var1, this.toolTip, var2, var3);
+         var1.renderComponentTooltip(this.font, this.toolTip, var2, var3);
       }
    }
 
@@ -254,7 +256,7 @@ public class JoinMultiplayerScreen extends Screen {
    }
 
    private void join(ServerData var1) {
-      ConnectScreen.startConnecting(this, this.minecraft, ServerAddress.parseString(var1.ip), var1);
+      ConnectScreen.startConnecting(this, this.minecraft, ServerAddress.parseString(var1.ip), var1, false);
    }
 
    public void setSelected(ServerSelectionList.Entry var1) {

@@ -119,12 +119,17 @@ public class Interaction extends Entity implements Attackable, Targeting {
       return PushReaction.IGNORE;
    }
 
+   @Override
+   public boolean isIgnoringBlockTriggers() {
+      return true;
+   }
+
    // $QF: Could not properly define all variable types!
    // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public boolean skipAttackInteraction(Entity var1) {
       if (var1 instanceof Player var2) {
-         this.attack = new Interaction.PlayerAction(var2.getUUID(), this.level.getGameTime());
+         this.attack = new Interaction.PlayerAction(var2.getUUID(), this.level().getGameTime());
          if (var2 instanceof ServerPlayer var3) {
             CriteriaTriggers.PLAYER_HURT_ENTITY.trigger((ServerPlayer)var3, this, var2.damageSources().generic(), 1.0F, 1.0F, false);
          }
@@ -137,10 +142,10 @@ public class Interaction extends Entity implements Attackable, Targeting {
 
    @Override
    public InteractionResult interact(Player var1, InteractionHand var2) {
-      if (this.level.isClientSide) {
+      if (this.level().isClientSide) {
          return this.getResponse() ? InteractionResult.SUCCESS : InteractionResult.CONSUME;
       } else {
-         this.interaction = new Interaction.PlayerAction(var1.getUUID(), this.level.getGameTime());
+         this.interaction = new Interaction.PlayerAction(var1.getUUID(), this.level().getGameTime());
          return InteractionResult.CONSUME;
       }
    }
@@ -152,13 +157,13 @@ public class Interaction extends Entity implements Attackable, Targeting {
    @Nullable
    @Override
    public LivingEntity getLastAttacker() {
-      return this.attack != null ? this.level.getPlayerByUUID(this.attack.player()) : null;
+      return this.attack != null ? this.level().getPlayerByUUID(this.attack.player()) : null;
    }
 
    @Nullable
    @Override
    public LivingEntity getTarget() {
-      return this.interaction != null ? this.level.getPlayerByUUID(this.interaction.player()) : null;
+      return this.interaction != null ? this.level().getPlayerByUUID(this.interaction.player()) : null;
    }
 
    private void setWidth(float var1) {

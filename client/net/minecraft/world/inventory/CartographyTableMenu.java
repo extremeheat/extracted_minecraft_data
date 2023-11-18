@@ -66,7 +66,7 @@ public class CartographyTableMenu extends AbstractContainerMenu {
          public void onTake(Player var1, ItemStack var2) {
             CartographyTableMenu.this.slots.get(0).remove(1);
             CartographyTableMenu.this.slots.get(1).remove(1);
-            var2.getItem().onCraftedBy(var2, var1.level, var1);
+            var2.getItem().onCraftedBy(var2, var1.level(), var1);
             var3.execute((var1x, var2x) -> {
                long var3x = var1x.getGameTime();
                if (CartographyTableMenu.this.lastSoundTime != var3x) {
@@ -114,13 +114,11 @@ public class CartographyTableMenu extends AbstractContainerMenu {
          if (var6 != null) {
             ItemStack var7;
             if (var2.is(Items.PAPER) && !var6.locked && var6.scale < 4) {
-               var7 = var1.copy();
-               var7.setCount(1);
+               var7 = var1.copyWithCount(1);
                var7.getOrCreateTag().putInt("map_scale_direction", 1);
                this.broadcastChanges();
             } else if (var2.is(Items.GLASS_PANE) && !var6.locked) {
-               var7 = var1.copy();
-               var7.setCount(1);
+               var7 = var1.copyWithCount(1);
                var7.getOrCreateTag().putBoolean("map_to_lock", true);
                this.broadcastChanges();
             } else {
@@ -130,8 +128,7 @@ public class CartographyTableMenu extends AbstractContainerMenu {
                   return;
                }
 
-               var7 = var1.copy();
-               var7.setCount(2);
+               var7 = var1.copyWithCount(2);
                this.broadcastChanges();
             }
 
@@ -156,7 +153,7 @@ public class CartographyTableMenu extends AbstractContainerMenu {
          ItemStack var5 = var4.getItem();
          var3 = var5.copy();
          if (var2 == 2) {
-            var5.getItem().onCraftedBy(var5, var1.level, var1);
+            var5.getItem().onCraftedBy(var5, var1.level(), var1);
             if (!this.moveItemStackTo(var5, 3, 39, true)) {
                return ItemStack.EMPTY;
             }

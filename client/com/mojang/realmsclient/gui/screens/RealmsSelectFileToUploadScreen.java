@@ -1,7 +1,6 @@
 package com.mojang.realmsclient.gui.screens;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.logging.LogUtils;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -9,6 +8,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.network.chat.CommonComponents;
@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 
 public class RealmsSelectFileToUploadScreen extends RealmsScreen {
    private static final Logger LOGGER = LogUtils.getLogger();
+   private static final Component UNABLE_TO_LOAD_WORLD = Component.translatable("selectWorld.unable_to_load");
    static final Component WORLD_TEXT = Component.translatable("selectWorld.world");
    static final Component HARDCORE_TEXT = Component.translatable("mco.upload.hardcore").withStyle(var0 -> var0.withColor(-65536));
    static final Component CHEATS_TEXT = Component.translatable("selectWorld.cheats");
@@ -66,8 +67,7 @@ public class RealmsSelectFileToUploadScreen extends RealmsScreen {
          this.loadLevelList();
       } catch (Exception var2) {
          LOGGER.error("Couldn't load level list", var2);
-         this.minecraft
-            .setScreen(new RealmsGenericErrorScreen(Component.literal("Unable to load worlds"), Component.nullToEmpty(var2.getMessage()), this.lastScreen));
+         this.minecraft.setScreen(new RealmsGenericErrorScreen(UNABLE_TO_LOAD_WORLD, Component.nullToEmpty(var2.getMessage()), this.lastScreen));
          return;
       }
 
@@ -102,10 +102,10 @@ public class RealmsSelectFileToUploadScreen extends RealmsScreen {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderBackground(var1);
       this.worldSelectionList.render(var1, var2, var3, var4);
-      drawCenteredString(var1, this.font, this.title, this.width / 2, 13, 16777215);
+      var1.drawCenteredString(this.font, this.title, this.width / 2, 13, 16777215);
       super.render(var1, var2, var3, var4);
    }
 
@@ -130,14 +130,14 @@ public class RealmsSelectFileToUploadScreen extends RealmsScreen {
    class Entry extends ObjectSelectionList.Entry<RealmsSelectFileToUploadScreen.Entry> {
       private final LevelSummary levelSummary;
       private final String name;
-      private final String id;
+      private final Component id;
       private final Component info;
 
       public Entry(LevelSummary var2) {
          super();
          this.levelSummary = var2;
          this.name = var2.getLevelName();
-         this.id = var2.getLevelId() + " (" + RealmsSelectFileToUploadScreen.formatLastPlayed(var2) + ")";
+         this.id = Component.translatable("mco.upload.entry.id", var2.getLevelId(), RealmsSelectFileToUploadScreen.formatLastPlayed(var2));
          Object var3;
          if (var2.isHardcore()) {
             var3 = RealmsSelectFileToUploadScreen.HARDCORE_TEXT;
@@ -146,14 +146,14 @@ public class RealmsSelectFileToUploadScreen extends RealmsScreen {
          }
 
          if (var2.hasCheats()) {
-            var3 = ((Component)var3).copy().append(", ").append(RealmsSelectFileToUploadScreen.CHEATS_TEXT);
+            var3 = Component.translatable("mco.upload.entry.cheats", ((Component)var3).getString(), RealmsSelectFileToUploadScreen.CHEATS_TEXT);
          }
 
          this.info = (Component)var3;
       }
 
       @Override
-      public void render(PoseStack var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
+      public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
          this.renderItem(var1, var2, var4, var3);
       }
 
@@ -163,7 +163,7 @@ public class RealmsSelectFileToUploadScreen extends RealmsScreen {
          return true;
       }
 
-      protected void renderItem(PoseStack var1, int var2, int var3, int var4) {
+      protected void renderItem(GuiGraphics var1, int var2, int var3, int var4) {
          String var5;
          if (this.name.isEmpty()) {
             var5 = RealmsSelectFileToUploadScreen.WORLD_TEXT + " " + (var2 + 1);
@@ -171,9 +171,9 @@ public class RealmsSelectFileToUploadScreen extends RealmsScreen {
             var5 = this.name;
          }
 
-         RealmsSelectFileToUploadScreen.this.font.draw(var1, var5, (float)(var3 + 2), (float)(var4 + 1), 16777215);
-         RealmsSelectFileToUploadScreen.this.font.draw(var1, this.id, (float)(var3 + 2), (float)(var4 + 12), 8421504);
-         RealmsSelectFileToUploadScreen.this.font.draw(var1, this.info, (float)(var3 + 2), (float)(var4 + 12 + 10), 8421504);
+         var1.drawString(RealmsSelectFileToUploadScreen.this.font, var5, var3 + 2, var4 + 1, 16777215, false);
+         var1.drawString(RealmsSelectFileToUploadScreen.this.font, this.id, var3 + 2, var4 + 12, 8421504, false);
+         var1.drawString(RealmsSelectFileToUploadScreen.this.font, this.info, var3 + 2, var4 + 12 + 10, 8421504, false);
       }
 
       @Override
@@ -208,7 +208,7 @@ public class RealmsSelectFileToUploadScreen extends RealmsScreen {
       }
 
       @Override
-      public void renderBackground(PoseStack var1) {
+      public void renderBackground(GuiGraphics var1) {
          RealmsSelectFileToUploadScreen.this.renderBackground(var1);
       }
 

@@ -190,6 +190,16 @@ public class ChiseledBookShelfBlock extends BaseEntityBlock {
    }
 
    @Override
+   public BlockState rotate(BlockState var1, Rotation var2) {
+      return var1.setValue(HorizontalDirectionalBlock.FACING, var2.rotate(var1.getValue(HorizontalDirectionalBlock.FACING)));
+   }
+
+   @Override
+   public BlockState mirror(BlockState var1, Mirror var2) {
+      return var1.rotate(var2.getRotation(var1.getValue(HorizontalDirectionalBlock.FACING)));
+   }
+
+   @Override
    public boolean hasAnalogOutputSignal(BlockState var1) {
       return true;
    }

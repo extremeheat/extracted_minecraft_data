@@ -79,6 +79,22 @@ public class SuspendedTownParticle extends TextureSheetParticle {
       }
    }
 
+   public static class EggCrackProvider implements ParticleProvider<SimpleParticleType> {
+      private final SpriteSet sprite;
+
+      public EggCrackProvider(SpriteSet var1) {
+         super();
+         this.sprite = var1;
+      }
+
+      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+         SuspendedTownParticle var15 = new SuspendedTownParticle(var2, var3, var5, var7, var9, var11, var13);
+         var15.pickSprite(this.sprite);
+         var15.setColor(1.0F, 1.0F, 1.0F);
+         return var15;
+      }
+   }
+
    public static class HappyVillagerProvider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprite;
 

@@ -14,7 +14,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
-import net.minecraft.world.level.lighting.LayerLightEngine;
+import net.minecraft.world.level.lighting.LightEngine;
 
 public class NyliumBlock extends Block implements BonemealableBlock {
    protected NyliumBlock(BlockBehaviour.Properties var1) {
@@ -24,7 +24,7 @@ public class NyliumBlock extends Block implements BonemealableBlock {
    private static boolean canBeNylium(BlockState var0, LevelReader var1, BlockPos var2) {
       BlockPos var3 = var2.above();
       BlockState var4 = var1.getBlockState(var3);
-      int var5 = LayerLightEngine.getLightBlockInto(var1, var0, var2, var4, var3, Direction.UP, var4.getLightBlock(var1, var3));
+      int var5 = LightEngine.getLightBlockInto(var1, var0, var2, var4, var3, Direction.UP, var4.getLightBlock(var1, var3));
       return var5 < var1.getMaxLightLevel();
    }
 

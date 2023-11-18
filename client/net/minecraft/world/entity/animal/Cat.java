@@ -63,7 +63,7 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
-import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
@@ -364,7 +364,7 @@ public class Cat extends TamableAnimal implements VariantHolder<CatVariant> {
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
       Item var4 = var3.getItem();
-      if (this.level.isClientSide) {
+      if (this.level().isClientSide) {
          if (this.isTame() && this.isOwnedBy(var1)) {
             return InteractionResult.SUCCESS;
          } else {
@@ -404,9 +404,9 @@ public class Cat extends TamableAnimal implements VariantHolder<CatVariant> {
             if (this.random.nextInt(3) == 0) {
                this.tame(var1);
                this.setOrderedToSit(true);
-               this.level.broadcastEntityEvent(this, (byte)7);
+               this.level().broadcastEntityEvent(this, (byte)7);
             } else {
-               this.level.broadcastEntityEvent(this, (byte)6);
+               this.level().broadcastEntityEvent(this, (byte)6);
             }
 
             this.setPersistenceRequired();
@@ -505,7 +505,7 @@ public class Cat extends TamableAnimal implements VariantHolder<CatVariant> {
                }
 
                BlockPos var2 = this.ownerPlayer.blockPosition();
-               BlockState var3 = this.cat.level.getBlockState(var2);
+               BlockState var3 = this.cat.level().getBlockState(var2);
                if (var3.is(BlockTags.BEDS)) {
                   this.goalPos = var3.getOptionalValue(BedBlock.FACING).map(var1x -> var2.relative(var1x.getOpposite())).orElseGet(() -> new BlockPos(var2));
                   return !this.spaceIsOccupied();
@@ -517,7 +517,7 @@ public class Cat extends TamableAnimal implements VariantHolder<CatVariant> {
       }
 
       private boolean spaceIsOccupied() {
-         for(Cat var3 : this.cat.level.getEntitiesOfClass(Cat.class, new AABB(this.goalPos).inflate(2.0))) {
+         for(Cat var3 : this.cat.level().getEntitiesOfClass(Cat.class, new AABB(this.goalPos).inflate(2.0))) {
             if (var3 != this.cat && (var3.isLying() || var3.isRelaxStateOne())) {
                return true;
             }
@@ -547,8 +547,8 @@ public class Cat extends TamableAnimal implements VariantHolder<CatVariant> {
       @Override
       public void stop() {
          this.cat.setLying(false);
-         float var1 = this.cat.level.getTimeOfDay(1.0F);
-         if (this.ownerPlayer.getSleepTimer() >= 100 && (double)var1 > 0.77 && (double)var1 < 0.8 && (double)this.cat.level.getRandom().nextFloat() < 0.7) {
+         float var1 = this.cat.level().getTimeOfDay(1.0F);
+         if (this.ownerPlayer.getSleepTimer() >= 100 && (double)var1 > 0.77 && (double)var1 < 0.8 && (double)this.cat.level().getRandom().nextFloat() < 0.7) {
             this.giveMorningGift();
          }
 
@@ -566,18 +566,18 @@ public class Cat extends TamableAnimal implements VariantHolder<CatVariant> {
                (double)(var2.getX() + var1.nextInt(11) - 5), (double)(var2.getY() + var1.nextInt(5) - 2), (double)(var2.getZ() + var1.nextInt(11) - 5), false
             );
          var2.set(this.cat.blockPosition());
-         LootTable var3 = this.cat.level.getServer().getLootTables().get(BuiltInLootTables.CAT_MORNING_GIFT);
-         LootContext.Builder var4 = new LootContext.Builder((ServerLevel)this.cat.level)
+         LootTable var3 = this.cat.level().getServer().getLootData().getLootTable(BuiltInLootTables.CAT_MORNING_GIFT);
+         LootParams var4 = new LootParams.Builder((ServerLevel)this.cat.level())
             .withParameter(LootContextParams.ORIGIN, this.cat.position())
             .withParameter(LootContextParams.THIS_ENTITY, this.cat)
-            .withRandom(var1);
+            .create(LootContextParamSets.GIFT);
 
-         for(ItemStack var7 : var3.getRandomItems(var4.create(LootContextParamSets.GIFT))) {
+         for(ItemStack var7 : var3.getRandomItems(var4)) {
             this.cat
-               .level
+               .level()
                .addFreshEntity(
                   new ItemEntity(
-                     this.cat.level,
+                     this.cat.level(),
                      (double)var2.getX() - (double)Mth.sin(this.cat.yBodyRot * 0.017453292F),
                      (double)var2.getY(),
                      (double)var2.getZ() + (double)Mth.cos(this.cat.yBodyRot * 0.017453292F),

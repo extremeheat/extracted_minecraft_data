@@ -111,7 +111,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
          return false;
       } else {
          this.attackAnimationRemainingTicks = 10;
-         this.level.broadcastEntityEvent(this, (byte)4);
+         this.level().broadcastEntityEvent(this, (byte)4);
          this.playSound(SoundEvents.HOGLIN_ATTACK, 1.0F, this.getVoicePitch());
          HoglinAi.onHitTarget(this, (LivingEntity)var1);
          return HoglinBase.hurtAndThrowTarget(this, (LivingEntity)var1);
@@ -128,7 +128,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
    @Override
    public boolean hurt(DamageSource var1, float var2) {
       boolean var3 = super.hurt(var1, var2);
-      if (this.level.isClientSide) {
+      if (this.level().isClientSide) {
          return false;
       } else {
          if (var3 && var1.getEntity() instanceof LivingEntity) {
@@ -156,15 +156,15 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
 
    @Override
    protected void customServerAiStep() {
-      this.level.getProfiler().push("hoglinBrain");
-      this.getBrain().tick((ServerLevel)this.level, this);
-      this.level.getProfiler().pop();
+      this.level().getProfiler().push("hoglinBrain");
+      this.getBrain().tick((ServerLevel)this.level(), this);
+      this.level().getProfiler().pop();
       HoglinAi.updateActivity(this);
       if (this.isConverting()) {
          ++this.timeInOverworld;
          if (this.timeInOverworld > 300) {
             this.playSoundEvent(SoundEvents.HOGLIN_CONVERTED_TO_ZOMBIFIED);
-            this.finishConversion((ServerLevel)this.level);
+            this.finishConversion((ServerLevel)this.level());
          }
       } else {
          this.timeInOverworld = 0;
@@ -313,7 +313,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
    }
 
    public boolean isConverting() {
-      return !this.level.dimensionType().piglinSafe() && !this.isImmuneToZombification() && !this.isNoAi();
+      return !this.level().dimensionType().piglinSafe() && !this.isImmuneToZombification() && !this.isNoAi();
    }
 
    private void setCannotBeHunted(boolean var1) {
@@ -347,7 +347,7 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
 
    @Override
    protected SoundEvent getAmbientSound() {
-      return this.level.isClientSide ? null : HoglinAi.getSoundForCurrentActivity(this).orElse(null);
+      return this.level().isClientSide ? null : HoglinAi.getSoundForCurrentActivity(this).orElse(null);
    }
 
    @Override

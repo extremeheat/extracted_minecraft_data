@@ -34,7 +34,7 @@ public class ViewArea {
             for(int var4 = 0; var4 < this.chunkGridSizeY; ++var4) {
                for(int var5 = 0; var5 < this.chunkGridSizeZ; ++var5) {
                   int var6 = this.getChunkIndex(var3, var4, var5);
-                  this.chunks[var6] = var1.new RenderChunk(var1, var6, var3 * 16, var4 * 16, var5 * 16);
+                  this.chunks[var6] = var1.new RenderChunk(var6, var3 * 16, var4 * 16, var5 * 16);
                }
             }
          }

@@ -32,7 +32,7 @@ public class MeleeAttackGoal extends Goal {
 
    @Override
    public boolean canUse() {
-      long var1 = this.mob.level.getGameTime();
+      long var1 = this.mob.level().getGameTime();
       if (var1 - this.lastCanUseCheck < 20L) {
          return false;
       } else {

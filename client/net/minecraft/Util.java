@@ -65,6 +65,7 @@ import java.util.function.ToIntFunction;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
@@ -634,6 +635,16 @@ public class Util {
       }
    }
 
+   public static DataResult<long[]> fixedSize(LongStream var0, int var1) {
+      long[] var2 = var0.limit((long)(var1 + 1)).toArray();
+      if (var2.length != var1) {
+         Supplier var3 = () -> "Input is not a list of " + var1 + " longs";
+         return var2.length >= var1 ? DataResult.error(var3, Arrays.copyOf(var2, var1)) : DataResult.error(var3);
+      } else {
+         return DataResult.success(var2);
+      }
+   }
+
    public static <T> DataResult<List<T>> fixedSize(List<T> var0, int var1) {
       if (var0.size() != var1) {
          Supplier var2 = () -> "Input is not a list of " + var1 + " elements";
@@ -799,6 +810,14 @@ public class Util {
       } else {
          return (T)var0.result().orElseThrow();
       }
+   }
+
+   public static boolean isWhitespace(int var0) {
+      return Character.isWhitespace(var0) || Character.isSpaceChar(var0);
+   }
+
+   public static boolean isBlank(@Nullable String var0) {
+      return var0 != null && var0.length() != 0 ? var0.chars().allMatch(Util::isWhitespace) : true;
    }
 
    static enum IdentityStrategy implements Strategy<Object> {

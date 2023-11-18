@@ -22,8 +22,8 @@ public class ChanneledLightningTrigger extends SimpleCriterionTrigger<ChanneledL
       return ID;
    }
 
-   public ChanneledLightningTrigger.TriggerInstance createInstance(JsonObject var1, EntityPredicate.Composite var2, DeserializationContext var3) {
-      EntityPredicate.Composite[] var4 = EntityPredicate.Composite.fromJsonArray(var1, "victims", var3);
+   public ChanneledLightningTrigger.TriggerInstance createInstance(JsonObject var1, ContextAwarePredicate var2, DeserializationContext var3) {
+      ContextAwarePredicate[] var4 = EntityPredicate.fromJsonArray(var1, "victims", var3);
       return new ChanneledLightningTrigger.TriggerInstance(var2, var4);
    }
 
@@ -33,21 +33,21 @@ public class ChanneledLightningTrigger extends SimpleCriterionTrigger<ChanneledL
    }
 
    public static class TriggerInstance extends AbstractCriterionTriggerInstance {
-      private final EntityPredicate.Composite[] victims;
+      private final ContextAwarePredicate[] victims;
 
-      public TriggerInstance(EntityPredicate.Composite var1, EntityPredicate.Composite[] var2) {
+      public TriggerInstance(ContextAwarePredicate var1, ContextAwarePredicate[] var2) {
          super(ChanneledLightningTrigger.ID, var1);
          this.victims = var2;
       }
 
       public static ChanneledLightningTrigger.TriggerInstance channeledLightning(EntityPredicate... var0) {
          return new ChanneledLightningTrigger.TriggerInstance(
-            EntityPredicate.Composite.ANY, Stream.of(var0).map(EntityPredicate.Composite::wrap).toArray(var0x -> new EntityPredicate.Composite[var0x])
+            ContextAwarePredicate.ANY, Stream.of(var0).map(EntityPredicate::wrap).toArray(var0x -> new ContextAwarePredicate[var0x])
          );
       }
 
       public boolean matches(Collection<? extends LootContext> var1) {
-         for(EntityPredicate.Composite var5 : this.victims) {
+         for(ContextAwarePredicate var5 : this.victims) {
             boolean var6 = false;
 
             for(LootContext var8 : var1) {
@@ -68,7 +68,7 @@ public class ChanneledLightningTrigger extends SimpleCriterionTrigger<ChanneledL
       @Override
       public JsonObject serializeToJson(SerializationContext var1) {
          JsonObject var2 = super.serializeToJson(var1);
-         var2.add("victims", EntityPredicate.Composite.toJson(this.victims, var1));
+         var2.add("victims", ContextAwarePredicate.toJson(this.victims, var1));
          return var2;
       }
    }

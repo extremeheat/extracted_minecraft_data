@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
@@ -78,14 +79,14 @@ import org.slf4j.Logger;
 public final class ItemStack {
    public static final Codec<ItemStack> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               BuiltInRegistries.ITEM.byNameCodec().fieldOf("id").forGetter(var0x -> var0x.item),
-               Codec.INT.fieldOf("Count").forGetter(var0x -> var0x.count),
-               CompoundTag.CODEC.optionalFieldOf("tag").forGetter(var0x -> Optional.ofNullable(var0x.tag))
+               BuiltInRegistries.ITEM.byNameCodec().fieldOf("id").forGetter(ItemStack::getItem),
+               Codec.INT.fieldOf("Count").forGetter(ItemStack::getCount),
+               CompoundTag.CODEC.optionalFieldOf("tag").forGetter(var0x -> Optional.ofNullable(var0x.getTag()))
             )
             .apply(var0, ItemStack::new)
    );
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final ItemStack EMPTY = new ItemStack((Item)null);
+   public static final ItemStack EMPTY = new ItemStack((Void)null);
    public static final DecimalFormat ATTRIBUTE_MODIFIER_FORMAT = Util.make(
       new DecimalFormat("#.##"), var0 -> var0.setDecimalFormatSymbols(DecimalFormatSymbols.getInstance(Locale.ROOT))
    );
@@ -106,10 +107,10 @@ public final class ItemStack {
    private int count;
    private int popTime;
    @Deprecated
+   @Nullable
    private final Item item;
    @Nullable
    private CompoundTag tag;
-   private boolean emptyCacheFlag;
    @Nullable
    private Entity entityRepresentation;
    @Nullable
@@ -140,18 +141,16 @@ public final class ItemStack {
 
    public ItemStack(ItemLike var1, int var2) {
       super();
-      this.item = var1 == null ? null : var1.asItem();
+      this.item = var1.asItem();
       this.count = var2;
-      if (this.item != null && this.item.canBeDepleted()) {
+      if (this.item.canBeDepleted()) {
          this.setDamageValue(this.getDamageValue());
       }
-
-      this.updateEmptyCacheFlag();
    }
 
-   private void updateEmptyCacheFlag() {
-      this.emptyCacheFlag = false;
-      this.emptyCacheFlag = this.isEmpty();
+   private ItemStack(@Nullable Void var1) {
+      super();
+      this.item = null;
    }
 
    private ItemStack(CompoundTag var1) {
@@ -166,8 +165,6 @@ public final class ItemStack {
       if (this.getItem().canBeDepleted()) {
          this.setDamageValue(this.getDamageValue());
       }
-
-      this.updateEmptyCacheFlag();
    }
 
    public static ItemStack of(CompoundTag var0) {
@@ -180,13 +177,7 @@ public final class ItemStack {
    }
 
    public boolean isEmpty() {
-      if (this == EMPTY) {
-         return true;
-      } else if (this.getItem() == null || this.is(Items.AIR)) {
-         return true;
-      } else {
-         return this.count <= 0;
-      }
+      return this == EMPTY || this.item == Items.AIR || this.count <= 0;
    }
 
    public boolean isItemEnabled(FeatureFlagSet var1) {
@@ -194,15 +185,24 @@ public final class ItemStack {
    }
 
    public ItemStack split(int var1) {
-      int var2 = Math.min(var1, this.count);
-      ItemStack var3 = this.copy();
-      var3.setCount(var2);
+      int var2 = Math.min(var1, this.getCount());
+      ItemStack var3 = this.copyWithCount(var2);
       this.shrink(var2);
       return var3;
    }
 
+   public ItemStack copyAndClear() {
+      if (this.isEmpty()) {
+         return EMPTY;
+      } else {
+         ItemStack var1 = this.copy();
+         this.setCount(0);
+         return var1;
+      }
+   }
+
    public Item getItem() {
-      return this.emptyCacheFlag ? Items.AIR : this.item;
+      return this.isEmpty() ? Items.AIR : this.item;
    }
 
    public Holder<Item> getItemHolder() {
@@ -280,7 +280,7 @@ public final class ItemStack {
    }
 
    public boolean isDamageableItem() {
-      if (!this.emptyCacheFlag && this.getItem().getMaxDamage() > 0) {
+      if (!this.isEmpty() && this.getItem().getMaxDamage() > 0) {
          CompoundTag var1 = this.getTag();
          return var1 == null || !var1.getBoolean("Unbreakable");
       } else {
@@ -335,7 +335,7 @@ public final class ItemStack {
    }
 
    public <T extends LivingEntity> void hurtAndBreak(int var1, T var2, Consumer<T> var3) {
-      if (!var2.level.isClientSide && (!(var2 instanceof Player) || !((Player)var2).getAbilities().instabuild)) {
+      if (!var2.level().isClientSide && (!(var2 instanceof Player) || !((Player)var2).getAbilities().instabuild)) {
          if (this.isDamageableItem()) {
             if (this.hurt(var1, var2.getRandom(), var2 instanceof ServerPlayer ? (ServerPlayer)var2 : null)) {
                var3.accept(var2);
@@ -352,15 +352,15 @@ public final class ItemStack {
    }
 
    public boolean isBarVisible() {
-      return this.item.isBarVisible(this);
+      return this.getItem().isBarVisible(this);
    }
 
    public int getBarWidth() {
-      return this.item.getBarWidth(this);
+      return this.getItem().getBarWidth(this);
    }
 
    public int getBarColor() {
-      return this.item.getBarColor(this);
+      return this.getItem().getBarColor(this);
    }
 
    public boolean overrideStackedOnOther(Slot var1, ClickAction var2, Player var3) {
@@ -408,57 +408,33 @@ public final class ItemStack {
    }
 
    public ItemStack copyWithCount(int var1) {
-      ItemStack var2 = this.copy();
-      var2.setCount(var1);
-      return var2;
-   }
-
-   public static boolean tagMatches(ItemStack var0, ItemStack var1) {
-      if (var0.isEmpty() && var1.isEmpty()) {
-         return true;
-      } else if (var0.isEmpty() || var1.isEmpty()) {
-         return false;
-      } else if (var0.tag == null && var1.tag != null) {
-         return false;
+      if (this.isEmpty()) {
+         return EMPTY;
       } else {
-         return var0.tag == null || var0.tag.equals(var1.tag);
+         ItemStack var2 = this.copy();
+         var2.setCount(var1);
+         return var2;
       }
    }
 
    public static boolean matches(ItemStack var0, ItemStack var1) {
-      if (var0.isEmpty() && var1.isEmpty()) {
-         return true;
-      } else {
-         return !var0.isEmpty() && !var1.isEmpty() ? var0.matches(var1) : false;
-      }
-   }
-
-   private boolean matches(ItemStack var1) {
-      if (this.count != var1.count) {
-         return false;
-      } else if (!this.is(var1.getItem())) {
-         return false;
-      } else if (this.tag == null && var1.tag != null) {
-         return false;
-      } else {
-         return this.tag == null || this.tag.equals(var1.tag);
-      }
-   }
-
-   public static boolean isSame(ItemStack var0, ItemStack var1) {
       if (var0 == var1) {
          return true;
       } else {
-         return !var0.isEmpty() && !var1.isEmpty() ? var0.sameItem(var1) : false;
+         return var0.getCount() != var1.getCount() ? false : isSameItemSameTags(var0, var1);
       }
    }
 
-   public boolean sameItem(ItemStack var1) {
-      return !var1.isEmpty() && this.is(var1.getItem());
+   public static boolean isSameItem(ItemStack var0, ItemStack var1) {
+      return var0.is(var1.getItem());
    }
 
    public static boolean isSameItemSameTags(ItemStack var0, ItemStack var1) {
-      return var0.is(var1.getItem()) && tagMatches(var0, var1);
+      if (!var0.is(var1.getItem())) {
+         return false;
+      } else {
+         return var0.isEmpty() && var1.isEmpty() ? true : Objects.equals(var0.tag, var1.tag);
+      }
    }
 
    public String getDescriptionId() {
@@ -467,7 +443,7 @@ public final class ItemStack {
 
    @Override
    public String toString() {
-      return this.count + " " + this.getItem();
+      return this.getCount() + " " + this.getItem();
    }
 
    public void inventoryTick(Level var1, Entity var2, int var3, boolean var4) {
@@ -502,7 +478,7 @@ public final class ItemStack {
    }
 
    public boolean hasTag() {
-      return !this.emptyCacheFlag && this.tag != null && !this.tag.isEmpty();
+      return !this.isEmpty() && this.tag != null && !this.tag.isEmpty();
    }
 
    @Nullable
@@ -622,12 +598,12 @@ public final class ItemStack {
 
       int var20 = this.getHideFlags();
       if (shouldShowInTooltip(var20, ItemStack.TooltipPart.ADDITIONAL)) {
-         this.getItem().appendHoverText(this, var1 == null ? null : var1.level, var3, var2);
+         this.getItem().appendHoverText(this, var1 == null ? null : var1.level(), var3, var2);
       }
 
       if (this.hasTag()) {
          if (shouldShowInTooltip(var20, ItemStack.TooltipPart.UPGRADES) && var1 != null) {
-            ArmorTrim.appendUpgradeHoverText(this, var1.level.registryAccess(), var3);
+            ArmorTrim.appendUpgradeHoverText(this, var1.level().registryAccess(), var3);
          }
 
          if (shouldShowInTooltip(var20, ItemStack.TooltipPart.ENCHANTMENTS)) {
@@ -772,7 +748,7 @@ public final class ItemStack {
          }
       }
 
-      if (var1 != null && !this.getItem().isEnabled(var1.getLevel().enabledFeatures())) {
+      if (var1 != null && !this.getItem().isEnabled(var1.level().enabledFeatures())) {
          var3.add(DISABLED_ITEM_TOOLTIP);
       }
 
@@ -866,7 +842,7 @@ public final class ItemStack {
 
    @Nullable
    public Entity getEntityRepresentation() {
-      return !this.emptyCacheFlag ? this.entityRepresentation : null;
+      return !this.isEmpty() ? this.entityRepresentation : null;
    }
 
    public int getBaseRepairCost() {
@@ -925,7 +901,7 @@ public final class ItemStack {
       }
 
       MutableComponent var2 = ComponentUtils.wrapInSquareBrackets(var1);
-      if (!this.emptyCacheFlag) {
+      if (!this.isEmpty()) {
          var2.withStyle(this.getRarity().color)
             .withStyle(var1x -> var1x.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, new HoverEvent.ItemStackInfo(this))));
       }
@@ -958,16 +934,15 @@ public final class ItemStack {
    }
 
    public int getCount() {
-      return this.emptyCacheFlag ? 0 : this.count;
+      return this.isEmpty() ? 0 : this.count;
    }
 
    public void setCount(int var1) {
       this.count = var1;
-      this.updateEmptyCacheFlag();
    }
 
    public void grow(int var1) {
-      this.setCount(this.count + var1);
+      this.setCount(this.getCount() + var1);
    }
 
    public void shrink(int var1) {

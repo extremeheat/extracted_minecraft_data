@@ -35,7 +35,7 @@ public class InventoryMenu extends RecipeBookMenu<CraftingContainer> {
       EMPTY_ARMOR_SLOT_BOOTS, EMPTY_ARMOR_SLOT_LEGGINGS, EMPTY_ARMOR_SLOT_CHESTPLATE, EMPTY_ARMOR_SLOT_HELMET
    };
    private static final EquipmentSlot[] SLOT_IDS = new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
-   private final CraftingContainer craftSlots = new CraftingContainer(this, 2, 2);
+   private final CraftingContainer craftSlots = new TransientCraftingContainer(this, 2, 2);
    private final ResultContainer resultSlots = new ResultContainer();
    public final boolean active;
    private final Player owner;
@@ -132,19 +132,19 @@ public class InventoryMenu extends RecipeBookMenu<CraftingContainer> {
 
    @Override
    public boolean recipeMatches(Recipe<? super CraftingContainer> var1) {
-      return var1.matches(this.craftSlots, this.owner.level);
+      return var1.matches(this.craftSlots, this.owner.level());
    }
 
    @Override
    public void slotsChanged(Container var1) {
-      CraftingMenu.slotChangedCraftingGrid(this, this.owner.level, this.owner, this.craftSlots, this.resultSlots);
+      CraftingMenu.slotChangedCraftingGrid(this, this.owner.level(), this.owner, this.craftSlots, this.resultSlots);
    }
 
    @Override
    public void removed(Player var1) {
       super.removed(var1);
       this.resultSlots.clearContent();
-      if (!var1.level.isClientSide) {
+      if (!var1.level().isClientSide) {
          this.clearContainer(var1, this.craftSlots);
       }
    }

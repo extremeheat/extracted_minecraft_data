@@ -1,8 +1,6 @@
 package net.minecraft.client.gui.screens.advancements;
 
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.gui.GuiComponent;
-import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.item.ItemStack;
 
 enum AdvancementTabType {
@@ -29,7 +27,7 @@ enum AdvancementTabType {
       return this.max;
    }
 
-   public void draw(PoseStack var1, int var2, int var3, boolean var4, int var5) {
+   public void draw(GuiGraphics var1, int var2, int var3, boolean var4, int var5) {
       int var6 = this.textureX;
       if (var5 > 0) {
          var6 += this.width;
@@ -40,31 +38,31 @@ enum AdvancementTabType {
       }
 
       int var7 = var4 ? this.textureY + this.height : this.textureY;
-      GuiComponent.blit(var1, var2 + this.getX(var5), var3 + this.getY(var5), var6, var7, this.width, this.height);
+      var1.blit(AdvancementsScreen.TABS_LOCATION, var2 + this.getX(var5), var3 + this.getY(var5), var6, var7, this.width, this.height);
    }
 
-   public void drawIcon(PoseStack var1, int var2, int var3, int var4, ItemRenderer var5, ItemStack var6) {
-      int var7 = var2 + this.getX(var4);
-      int var8 = var3 + this.getY(var4);
+   public void drawIcon(GuiGraphics var1, int var2, int var3, int var4, ItemStack var5) {
+      int var6 = var2 + this.getX(var4);
+      int var7 = var3 + this.getY(var4);
       switch(this) {
          case ABOVE:
-            var7 += 6;
-            var8 += 9;
+            var6 += 6;
+            var7 += 9;
             break;
          case BELOW:
+            var6 += 6;
             var7 += 6;
-            var8 += 6;
             break;
          case LEFT:
-            var7 += 10;
-            var8 += 5;
+            var6 += 10;
+            var7 += 5;
             break;
          case RIGHT:
-            var7 += 6;
-            var8 += 5;
+            var6 += 6;
+            var7 += 5;
       }
 
-      var5.renderAndDecorateFakeItem(var1, var6, var7, var8);
+      var1.renderFakeItem(var5, var6, var7);
    }
 
    public int getX(int var1) {

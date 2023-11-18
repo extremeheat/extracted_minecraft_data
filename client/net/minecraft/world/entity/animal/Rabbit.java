@@ -92,7 +92,7 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
    @Override
    protected void registerGoals() {
       this.goalSelector.addGoal(1, new FloatGoal(this));
-      this.goalSelector.addGoal(1, new ClimbOnTopOfPowderSnowGoal(this, this.level));
+      this.goalSelector.addGoal(1, new ClimbOnTopOfPowderSnowGoal(this, this.level()));
       this.goalSelector.addGoal(1, new Rabbit.RabbitPanicGoal(this, 2.2));
       this.goalSelector.addGoal(2, new BreedGoal(this, 0.8));
       this.goalSelector.addGoal(3, new TemptGoal(this, 1.0, Ingredient.of(Items.CARROT, Items.GOLDEN_CARROT, Blocks.DANDELION), false));
@@ -106,19 +106,24 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
 
    @Override
    protected float getJumpPower() {
-      if (!this.horizontalCollision && (!this.moveControl.hasWanted() || !(this.moveControl.getWantedY() > this.getY() + 0.5))) {
-         Path var1 = this.navigation.getPath();
-         if (var1 != null && !var1.isDone()) {
-            Vec3 var2 = var1.getNextEntityPos(this);
-            if (var2.y > this.getY() + 0.5) {
-               return 0.5F;
-            }
-         }
-
-         return this.moveControl.getSpeedModifier() <= 0.6 ? 0.2F : 0.3F;
-      } else {
-         return 0.5F;
+      float var1 = 0.3F;
+      if (this.horizontalCollision || this.moveControl.hasWanted() && this.moveControl.getWantedY() > this.getY() + 0.5) {
+         var1 = 0.5F;
       }
+
+      Path var2 = this.navigation.getPath();
+      if (var2 != null && !var2.isDone()) {
+         Vec3 var3 = var2.getNextEntityPos(this);
+         if (var3.y > this.getY() + 0.5) {
+            var1 = 0.5F;
+         }
+      }
+
+      if (this.moveControl.getSpeedModifier() <= 0.6) {
+         var1 = 0.2F;
+      }
+
+      return var1 + this.getJumpBoostPower();
    }
 
    @Override
@@ -132,8 +137,8 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
          }
       }
 
-      if (!this.level.isClientSide) {
-         this.level.broadcastEntityEvent(this, (byte)1);
+      if (!this.level().isClientSide) {
+         this.level().broadcastEntityEvent(this, (byte)1);
       }
    }
 
@@ -179,7 +184,7 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
          }
       }
 
-      if (this.onGround) {
+      if (this.onGround()) {
          if (!this.wasOnGround) {
             this.setJumping(false);
             this.checkLandingDelay();
@@ -212,7 +217,7 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
          }
       }
 
-      this.wasOnGround = this.onGround;
+      this.wasOnGround = this.onGround();
    }
 
    @Override
@@ -488,7 +493,7 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
 
       @Override
       public void tick() {
-         if (this.rabbit.onGround && !this.rabbit.jumping && !((Rabbit.RabbitJumpControl)this.rabbit.jumpControl).wantJump()) {
+         if (this.rabbit.onGround() && !this.rabbit.jumping && !((Rabbit.RabbitJumpControl)this.rabbit.jumpControl).wantJump()) {
             this.rabbit.setSpeedModifier(0.0);
          } else if (this.hasWanted()) {
             this.rabbit.setSpeedModifier(this.nextJumpSpeed);
@@ -538,7 +543,7 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
       @Override
       public boolean canUse() {
          if (this.nextStartTick <= 0) {
-            if (!this.rabbit.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+            if (!this.rabbit.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
                return false;
             }
 
@@ -567,7 +572,7 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
                (float)this.rabbit.getMaxHeadXRot()
             );
          if (this.isReachedTarget()) {
-            Level var1 = this.rabbit.level;
+            Level var1 = this.rabbit.level();
             BlockPos var2 = this.blockPos.above();
             BlockState var3 = var1.getBlockState(var2);
             Block var4 = var3.getBlock();

@@ -1,6 +1,6 @@
 package net.minecraft.client.gui.screens;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.network.chat.CommonComponents;
@@ -43,9 +43,9 @@ public class AlertScreen extends Screen {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderBackground(var1);
-      drawCenteredString(var1, this.font, this.title, this.width / 2, 70, 16777215);
+      var1.drawCenteredString(this.font, this.title, this.width / 2, 70, 16777215);
       this.message.renderCentered(var1, this.width / 2, 90);
       super.render(var1, var2, var3, var4);
    }

@@ -19,9 +19,9 @@ public class PlayerHurtEntityTrigger extends SimpleCriterionTrigger<PlayerHurtEn
       return ID;
    }
 
-   public PlayerHurtEntityTrigger.TriggerInstance createInstance(JsonObject var1, EntityPredicate.Composite var2, DeserializationContext var3) {
+   public PlayerHurtEntityTrigger.TriggerInstance createInstance(JsonObject var1, ContextAwarePredicate var2, DeserializationContext var3) {
       DamagePredicate var4 = DamagePredicate.fromJson(var1.get("damage"));
-      EntityPredicate.Composite var5 = EntityPredicate.Composite.fromJson(var1, "entity", var3);
+      ContextAwarePredicate var5 = EntityPredicate.fromJson(var1, "entity", var3);
       return new PlayerHurtEntityTrigger.TriggerInstance(var2, var4, var5);
    }
 
@@ -32,36 +32,36 @@ public class PlayerHurtEntityTrigger extends SimpleCriterionTrigger<PlayerHurtEn
 
    public static class TriggerInstance extends AbstractCriterionTriggerInstance {
       private final DamagePredicate damage;
-      private final EntityPredicate.Composite entity;
+      private final ContextAwarePredicate entity;
 
-      public TriggerInstance(EntityPredicate.Composite var1, DamagePredicate var2, EntityPredicate.Composite var3) {
+      public TriggerInstance(ContextAwarePredicate var1, DamagePredicate var2, ContextAwarePredicate var3) {
          super(PlayerHurtEntityTrigger.ID, var1);
          this.damage = var2;
          this.entity = var3;
       }
 
       public static PlayerHurtEntityTrigger.TriggerInstance playerHurtEntity() {
-         return new PlayerHurtEntityTrigger.TriggerInstance(EntityPredicate.Composite.ANY, DamagePredicate.ANY, EntityPredicate.Composite.ANY);
+         return new PlayerHurtEntityTrigger.TriggerInstance(ContextAwarePredicate.ANY, DamagePredicate.ANY, ContextAwarePredicate.ANY);
       }
 
       public static PlayerHurtEntityTrigger.TriggerInstance playerHurtEntity(DamagePredicate var0) {
-         return new PlayerHurtEntityTrigger.TriggerInstance(EntityPredicate.Composite.ANY, var0, EntityPredicate.Composite.ANY);
+         return new PlayerHurtEntityTrigger.TriggerInstance(ContextAwarePredicate.ANY, var0, ContextAwarePredicate.ANY);
       }
 
       public static PlayerHurtEntityTrigger.TriggerInstance playerHurtEntity(DamagePredicate.Builder var0) {
-         return new PlayerHurtEntityTrigger.TriggerInstance(EntityPredicate.Composite.ANY, var0.build(), EntityPredicate.Composite.ANY);
+         return new PlayerHurtEntityTrigger.TriggerInstance(ContextAwarePredicate.ANY, var0.build(), ContextAwarePredicate.ANY);
       }
 
       public static PlayerHurtEntityTrigger.TriggerInstance playerHurtEntity(EntityPredicate var0) {
-         return new PlayerHurtEntityTrigger.TriggerInstance(EntityPredicate.Composite.ANY, DamagePredicate.ANY, EntityPredicate.Composite.wrap(var0));
+         return new PlayerHurtEntityTrigger.TriggerInstance(ContextAwarePredicate.ANY, DamagePredicate.ANY, EntityPredicate.wrap(var0));
       }
 
       public static PlayerHurtEntityTrigger.TriggerInstance playerHurtEntity(DamagePredicate var0, EntityPredicate var1) {
-         return new PlayerHurtEntityTrigger.TriggerInstance(EntityPredicate.Composite.ANY, var0, EntityPredicate.Composite.wrap(var1));
+         return new PlayerHurtEntityTrigger.TriggerInstance(ContextAwarePredicate.ANY, var0, EntityPredicate.wrap(var1));
       }
 
       public static PlayerHurtEntityTrigger.TriggerInstance playerHurtEntity(DamagePredicate.Builder var0, EntityPredicate var1) {
-         return new PlayerHurtEntityTrigger.TriggerInstance(EntityPredicate.Composite.ANY, var0.build(), EntityPredicate.Composite.wrap(var1));
+         return new PlayerHurtEntityTrigger.TriggerInstance(ContextAwarePredicate.ANY, var0.build(), EntityPredicate.wrap(var1));
       }
 
       public boolean matches(ServerPlayer var1, LootContext var2, DamageSource var3, float var4, float var5, boolean var6) {

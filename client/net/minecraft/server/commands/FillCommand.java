@@ -178,15 +178,16 @@ public class FillCommand {
             }
          }
 
-         for(BlockPos var15 : var7) {
-            Block var16 = var8.getBlockState(var15).getBlock();
-            var8.blockUpdated(var15, var16);
+         for(BlockPos var16 : var7) {
+            Block var17 = var8.getBlockState(var16).getBlock();
+            var8.blockUpdated(var16, var17);
          }
 
          if (var9 == 0) {
             throw ERROR_FAILED.create();
          } else {
-            var0.sendSuccess(Component.translatable("commands.fill.success", var9), true);
+            int var15 = var9;
+            var0.sendSuccess(() -> Component.translatable("commands.fill.success", var15), true);
             return var9;
          }
       }

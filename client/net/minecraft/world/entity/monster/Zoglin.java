@@ -176,7 +176,7 @@ public class Zoglin extends Monster implements Enemy, HoglinBase {
          return false;
       } else {
          this.attackAnimationRemainingTicks = 10;
-         this.level.broadcastEntityEvent(this, (byte)4);
+         this.level().broadcastEntityEvent(this, (byte)4);
          this.playSound(SoundEvents.ZOGLIN_ATTACK, 1.0F, this.getVoicePitch());
          return HoglinBase.hurtAndThrowTarget(this, (LivingEntity)var1);
       }
@@ -202,7 +202,7 @@ public class Zoglin extends Monster implements Enemy, HoglinBase {
    @Override
    public boolean hurt(DamageSource var1, float var2) {
       boolean var3 = super.hurt(var1, var2);
-      if (this.level.isClientSide) {
+      if (this.level().isClientSide) {
          return false;
       } else if (var3 && var1.getEntity() instanceof LivingEntity var4) {
          if (this.canAttack((LivingEntity)var4) && !BehaviorUtils.isOtherTargetMuchFurtherAwayThanCurrentAttackTarget(this, (LivingEntity)var4, 4.0)) {
@@ -238,16 +238,16 @@ public class Zoglin extends Monster implements Enemy, HoglinBase {
 
    @Override
    protected void customServerAiStep() {
-      this.level.getProfiler().push("zoglinBrain");
-      this.getBrain().tick((ServerLevel)this.level, this);
-      this.level.getProfiler().pop();
+      this.level().getProfiler().push("zoglinBrain");
+      this.getBrain().tick((ServerLevel)this.level(), this);
+      this.level().getProfiler().pop();
       this.updateActivity();
    }
 
    @Override
    public void setBaby(boolean var1) {
       this.getEntityData().set(DATA_BABY_ID, var1);
-      if (!this.level.isClientSide && var1) {
+      if (!this.level().isClientSide && var1) {
          this.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(0.5);
       }
    }
@@ -283,7 +283,7 @@ public class Zoglin extends Monster implements Enemy, HoglinBase {
 
    @Override
    protected SoundEvent getAmbientSound() {
-      if (this.level.isClientSide) {
+      if (this.level().isClientSide) {
          return null;
       } else {
          return this.brain.hasMemoryValue(MemoryModuleType.ATTACK_TARGET) ? SoundEvents.ZOGLIN_ANGRY : SoundEvents.ZOGLIN_AMBIENT;

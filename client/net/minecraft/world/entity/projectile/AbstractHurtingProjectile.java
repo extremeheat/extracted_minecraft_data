@@ -62,13 +62,13 @@ public abstract class AbstractHurtingProjectile extends Projectile {
    @Override
    public void tick() {
       Entity var1 = this.getOwner();
-      if (this.level.isClientSide || (var1 == null || !var1.isRemoved()) && this.level.hasChunkAt(this.blockPosition())) {
+      if (this.level().isClientSide || (var1 == null || !var1.isRemoved()) && this.level().hasChunkAt(this.blockPosition())) {
          super.tick();
          if (this.shouldBurn()) {
             this.setSecondsOnFire(1);
          }
 
-         HitResult var2 = ProjectileUtil.getHitResult(this, this::canHitEntity);
+         HitResult var2 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
          if (var2.getType() != HitResult.Type.MISS) {
             this.onHit(var2);
          }
@@ -83,14 +83,14 @@ public abstract class AbstractHurtingProjectile extends Projectile {
          if (this.isInWater()) {
             for(int var11 = 0; var11 < 4; ++var11) {
                float var12 = 0.25F;
-               this.level.addParticle(ParticleTypes.BUBBLE, var4 - var3.x * 0.25, var6 - var3.y * 0.25, var8 - var3.z * 0.25, var3.x, var3.y, var3.z);
+               this.level().addParticle(ParticleTypes.BUBBLE, var4 - var3.x * 0.25, var6 - var3.y * 0.25, var8 - var3.z * 0.25, var3.x, var3.y, var3.z);
             }
 
             var10 = 0.8F;
          }
 
          this.setDeltaMovement(var3.add(this.xPower, this.yPower, this.zPower).scale((double)var10));
-         this.level.addParticle(this.getTrailParticle(), var4, var6 + 0.5, var8, 0.0, 0.0, 0.0);
+         this.level().addParticle(this.getTrailParticle(), var4, var6 + 0.5, var8, 0.0, 0.0, 0.0);
          this.setPos(var4, var6, var8);
       } else {
          this.discard();
@@ -151,7 +151,7 @@ public abstract class AbstractHurtingProjectile extends Projectile {
          this.markHurt();
          Entity var3 = var1.getEntity();
          if (var3 != null) {
-            if (!this.level.isClientSide) {
+            if (!this.level().isClientSide) {
                Vec3 var4 = var3.getLookAngle();
                this.setDeltaMovement(var4);
                this.xPower = var4.x * 0.1;

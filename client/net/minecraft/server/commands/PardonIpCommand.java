@@ -44,7 +44,7 @@ public class PardonIpCommand {
             throw ERROR_NOT_BANNED.create();
          } else {
             var2.remove(var1);
-            var0.sendSuccess(Component.translatable("commands.pardonip.success", var1), true);
+            var0.sendSuccess(() -> Component.translatable("commands.pardonip.success", var1), true);
             return 1;
          }
       }

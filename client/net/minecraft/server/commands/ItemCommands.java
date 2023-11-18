@@ -33,8 +33,10 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.storage.loot.ItemModifierManager;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootDataManager;
+import net.minecraft.world.level.storage.loot.LootDataType;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
@@ -59,8 +61,8 @@ public class ItemCommands {
       (var0, var1) -> Component.translatable("commands.item.target.no_changed.known_item", var0, var1)
    );
    private static final SuggestionProvider<CommandSourceStack> SUGGEST_MODIFIER = (var0, var1) -> {
-      ItemModifierManager var2 = ((CommandSourceStack)var0.getSource()).getServer().getItemModifierManager();
-      return SharedSuggestionProvider.suggestResource(var2.getKeys(), var1);
+      LootDataManager var2 = ((CommandSourceStack)var0.getSource()).getServer().getLootData();
+      return SharedSuggestionProvider.suggestResource(var2.getKeys(LootDataType.MODIFIER), var1);
    };
 
    public ItemCommands() {
@@ -330,7 +332,7 @@ public class ItemCommands {
       if (var2 >= 0 && var2 < var4.getContainerSize()) {
          ItemStack var5 = applyModifier(var0, var3, var4.getItem(var2));
          var4.setItem(var2, var5);
-         var0.sendSuccess(Component.translatable("commands.item.block.set.success", var1.getX(), var1.getY(), var1.getZ(), var5.getDisplayName()), true);
+         var0.sendSuccess(() -> Component.translatable("commands.item.block.set.success", var1.getX(), var1.getY(), var1.getZ(), var5.getDisplayName()), true);
          return 1;
       } else {
          throw ERROR_TARGET_INAPPLICABLE_SLOT.create(var2);
@@ -359,13 +361,13 @@ public class ItemCommands {
          if (var4.size() == 1) {
             Entry var9 = (Entry)var4.entrySet().iterator().next();
             var0.sendSuccess(
-               Component.translatable(
-                  "commands.item.entity.set.success.single", ((Entity)var9.getKey()).getDisplayName(), ((ItemStack)var9.getValue()).getDisplayName()
-               ),
+               () -> Component.translatable(
+                     "commands.item.entity.set.success.single", ((Entity)var9.getKey()).getDisplayName(), ((ItemStack)var9.getValue()).getDisplayName()
+                  ),
                true
             );
          } else {
-            var0.sendSuccess(Component.translatable("commands.item.entity.set.success.multiple", var4.size()), true);
+            var0.sendSuccess(() -> Component.translatable("commands.item.entity.set.success.multiple", var4.size()), true);
          }
 
          return var4.size();
@@ -376,7 +378,7 @@ public class ItemCommands {
       Container var4 = getContainer(var0, var1, ERROR_TARGET_NOT_A_CONTAINER);
       if (var2 >= 0 && var2 < var4.getContainerSize()) {
          var4.setItem(var2, var3);
-         var0.sendSuccess(Component.translatable("commands.item.block.set.success", var1.getX(), var1.getY(), var1.getZ(), var3.getDisplayName()), true);
+         var0.sendSuccess(() -> Component.translatable("commands.item.block.set.success", var1.getX(), var1.getY(), var1.getZ(), var3.getDisplayName()), true);
          return 1;
       } else {
          throw ERROR_TARGET_INAPPLICABLE_SLOT.create(var2);
@@ -410,11 +412,13 @@ public class ItemCommands {
       } else {
          if (var4.size() == 1) {
             var0.sendSuccess(
-               Component.translatable("commands.item.entity.set.success.single", ((Entity)var4.iterator().next()).getDisplayName(), var3.getDisplayName()),
+               () -> Component.translatable(
+                     "commands.item.entity.set.success.single", ((Entity)var4.iterator().next()).getDisplayName(), var3.getDisplayName()
+                  ),
                true
             );
          } else {
-            var0.sendSuccess(Component.translatable("commands.item.entity.set.success.multiple", var4.size(), var3.getDisplayName()), true);
+            var0.sendSuccess(() -> Component.translatable("commands.item.entity.set.success.multiple", var4.size(), var3.getDisplayName()), true);
          }
 
          return var4.size();
@@ -455,10 +459,13 @@ public class ItemCommands {
 
    private static ItemStack applyModifier(CommandSourceStack var0, LootItemFunction var1, ItemStack var2) {
       ServerLevel var3 = var0.getLevel();
-      LootContext.Builder var4 = new LootContext.Builder(var3)
+      LootParams var4 = new LootParams.Builder(var3)
          .withParameter(LootContextParams.ORIGIN, var0.getPosition())
-         .withOptionalParameter(LootContextParams.THIS_ENTITY, var0.getEntity());
-      return var1.apply(var2, var4.create(LootContextParamSets.COMMAND));
+         .withOptionalParameter(LootContextParams.THIS_ENTITY, var0.getEntity())
+         .create(LootContextParamSets.COMMAND);
+      LootContext var5 = new LootContext.Builder(var4).create(null);
+      var5.pushVisitedElement(LootContext.createVisitedEntry(var1));
+      return var1.apply(var2, var5);
    }
 
    private static ItemStack getEntityItem(Entity var0, int var1) throws CommandSyntaxException {

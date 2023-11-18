@@ -24,7 +24,7 @@ public class HelpCommand {
          Map var2 = var0.getSmartUsage(var0.getRoot(), (CommandSourceStack)var1.getSource());
 
          for(String var4 : var2.values()) {
-            ((CommandSourceStack)var1.getSource()).sendSuccess(Component.literal("/" + var4), false);
+            ((CommandSourceStack)var1.getSource()).sendSuccess(() -> Component.literal("/" + var4), false);
          }
 
          return var2.size();
@@ -36,7 +36,7 @@ public class HelpCommand {
             Map var3 = var0.getSmartUsage(((ParsedCommandNode)Iterables.getLast(var2.getContext().getNodes())).getNode(), (CommandSourceStack)var1.getSource());
 
             for(String var5 : var3.values()) {
-               ((CommandSourceStack)var1.getSource()).sendSuccess(Component.literal("/" + var2.getReader().getString() + " " + var5), false);
+               ((CommandSourceStack)var1.getSource()).sendSuccess(() -> Component.literal("/" + var2.getReader().getString() + " " + var5), false);
             }
 
             return var3.size();

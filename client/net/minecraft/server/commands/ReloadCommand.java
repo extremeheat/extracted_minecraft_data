@@ -52,7 +52,7 @@ public class ReloadCommand {
          WorldData var4 = var2.getWorldData();
          Collection var5 = var3.getSelectedIds();
          Collection var6 = discoverNewPacks(var3, var4, var5);
-         var1.sendSuccess(Component.translatable("commands.reload.success"), true);
+         var1.sendSuccess(() -> Component.translatable("commands.reload.success"), true);
          reloadPacks(var6, var1);
          return 0;
       }));

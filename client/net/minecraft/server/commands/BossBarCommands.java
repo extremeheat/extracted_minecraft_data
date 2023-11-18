@@ -300,36 +300,36 @@ public class BossBarCommands {
    }
 
    private static int getValue(CommandSourceStack var0, CustomBossEvent var1) {
-      var0.sendSuccess(Component.translatable("commands.bossbar.get.value", var1.getDisplayName(), var1.getValue()), true);
+      var0.sendSuccess(() -> Component.translatable("commands.bossbar.get.value", var1.getDisplayName(), var1.getValue()), true);
       return var1.getValue();
    }
 
    private static int getMax(CommandSourceStack var0, CustomBossEvent var1) {
-      var0.sendSuccess(Component.translatable("commands.bossbar.get.max", var1.getDisplayName(), var1.getMax()), true);
+      var0.sendSuccess(() -> Component.translatable("commands.bossbar.get.max", var1.getDisplayName(), var1.getMax()), true);
       return var1.getMax();
    }
 
    private static int getVisible(CommandSourceStack var0, CustomBossEvent var1) {
       if (var1.isVisible()) {
-         var0.sendSuccess(Component.translatable("commands.bossbar.get.visible.visible", var1.getDisplayName()), true);
+         var0.sendSuccess(() -> Component.translatable("commands.bossbar.get.visible.visible", var1.getDisplayName()), true);
          return 1;
       } else {
-         var0.sendSuccess(Component.translatable("commands.bossbar.get.visible.hidden", var1.getDisplayName()), true);
+         var0.sendSuccess(() -> Component.translatable("commands.bossbar.get.visible.hidden", var1.getDisplayName()), true);
          return 0;
       }
    }
 
    private static int getPlayers(CommandSourceStack var0, CustomBossEvent var1) {
       if (var1.getPlayers().isEmpty()) {
-         var0.sendSuccess(Component.translatable("commands.bossbar.get.players.none", var1.getDisplayName()), true);
+         var0.sendSuccess(() -> Component.translatable("commands.bossbar.get.players.none", var1.getDisplayName()), true);
       } else {
          var0.sendSuccess(
-            Component.translatable(
-               "commands.bossbar.get.players.some",
-               var1.getDisplayName(),
-               var1.getPlayers().size(),
-               ComponentUtils.formatList(var1.getPlayers(), Player::getDisplayName)
-            ),
+            () -> Component.translatable(
+                  "commands.bossbar.get.players.some",
+                  var1.getDisplayName(),
+                  var1.getPlayers().size(),
+                  ComponentUtils.formatList(var1.getPlayers(), Player::getDisplayName)
+               ),
             true
          );
       }
@@ -347,9 +347,9 @@ public class BossBarCommands {
       } else {
          var1.setVisible(var2);
          if (var2) {
-            var0.sendSuccess(Component.translatable("commands.bossbar.set.visible.success.visible", var1.getDisplayName()), true);
+            var0.sendSuccess(() -> Component.translatable("commands.bossbar.set.visible.success.visible", var1.getDisplayName()), true);
          } else {
-            var0.sendSuccess(Component.translatable("commands.bossbar.set.visible.success.hidden", var1.getDisplayName()), true);
+            var0.sendSuccess(() -> Component.translatable("commands.bossbar.set.visible.success.hidden", var1.getDisplayName()), true);
          }
 
          return 0;
@@ -361,7 +361,7 @@ public class BossBarCommands {
          throw ERROR_NO_VALUE_CHANGE.create();
       } else {
          var1.setValue(var2);
-         var0.sendSuccess(Component.translatable("commands.bossbar.set.value.success", var1.getDisplayName(), var2), true);
+         var0.sendSuccess(() -> Component.translatable("commands.bossbar.set.value.success", var1.getDisplayName(), var2), true);
          return var2;
       }
    }
@@ -371,7 +371,7 @@ public class BossBarCommands {
          throw ERROR_NO_MAX_CHANGE.create();
       } else {
          var1.setMax(var2);
-         var0.sendSuccess(Component.translatable("commands.bossbar.set.max.success", var1.getDisplayName(), var2), true);
+         var0.sendSuccess(() -> Component.translatable("commands.bossbar.set.max.success", var1.getDisplayName(), var2), true);
          return var2;
       }
    }
@@ -381,7 +381,7 @@ public class BossBarCommands {
          throw ERROR_NO_COLOR_CHANGE.create();
       } else {
          var1.setColor(var2);
-         var0.sendSuccess(Component.translatable("commands.bossbar.set.color.success", var1.getDisplayName()), true);
+         var0.sendSuccess(() -> Component.translatable("commands.bossbar.set.color.success", var1.getDisplayName()), true);
          return 0;
       }
    }
@@ -391,7 +391,7 @@ public class BossBarCommands {
          throw ERROR_NO_STYLE_CHANGE.create();
       } else {
          var1.setOverlay(var2);
-         var0.sendSuccess(Component.translatable("commands.bossbar.set.style.success", var1.getDisplayName()), true);
+         var0.sendSuccess(() -> Component.translatable("commands.bossbar.set.style.success", var1.getDisplayName()), true);
          return 0;
       }
    }
@@ -402,7 +402,7 @@ public class BossBarCommands {
          throw ERROR_NO_NAME_CHANGE.create();
       } else {
          var1.setName(var3);
-         var0.sendSuccess(Component.translatable("commands.bossbar.set.name.success", var1.getDisplayName()), true);
+         var0.sendSuccess(() -> Component.translatable("commands.bossbar.set.name.success", var1.getDisplayName()), true);
          return 0;
       }
    }
@@ -413,12 +413,12 @@ public class BossBarCommands {
          throw ERROR_NO_PLAYER_CHANGE.create();
       } else {
          if (var1.getPlayers().isEmpty()) {
-            var0.sendSuccess(Component.translatable("commands.bossbar.set.players.success.none", var1.getDisplayName()), true);
+            var0.sendSuccess(() -> Component.translatable("commands.bossbar.set.players.success.none", var1.getDisplayName()), true);
          } else {
             var0.sendSuccess(
-               Component.translatable(
-                  "commands.bossbar.set.players.success.some", var1.getDisplayName(), var2.size(), ComponentUtils.formatList(var2, Player::getDisplayName)
-               ),
+               () -> Component.translatable(
+                     "commands.bossbar.set.players.success.some", var1.getDisplayName(), var2.size(), ComponentUtils.formatList(var2, Player::getDisplayName)
+                  ),
                true
             );
          }
@@ -430,10 +430,11 @@ public class BossBarCommands {
    private static int listBars(CommandSourceStack var0) {
       Collection var1 = var0.getServer().getCustomBossEvents().getEvents();
       if (var1.isEmpty()) {
-         var0.sendSuccess(Component.translatable("commands.bossbar.list.bars.none"), false);
+         var0.sendSuccess(() -> Component.translatable("commands.bossbar.list.bars.none"), false);
       } else {
          var0.sendSuccess(
-            Component.translatable("commands.bossbar.list.bars.some", var1.size(), ComponentUtils.formatList(var1, CustomBossEvent::getDisplayName)), false
+            () -> Component.translatable("commands.bossbar.list.bars.some", var1.size(), ComponentUtils.formatList(var1, CustomBossEvent::getDisplayName)),
+            false
          );
       }
 
@@ -446,7 +447,7 @@ public class BossBarCommands {
          throw ERROR_ALREADY_EXISTS.create(var1.toString());
       } else {
          CustomBossEvent var4 = var3.create(var1, ComponentUtils.updateForEntity(var0, var2, null, 0));
-         var0.sendSuccess(Component.translatable("commands.bossbar.create.success", var4.getDisplayName()), true);
+         var0.sendSuccess(() -> Component.translatable("commands.bossbar.create.success", var4.getDisplayName()), true);
          return var3.getEvents().size();
       }
    }
@@ -455,7 +456,7 @@ public class BossBarCommands {
       CustomBossEvents var2 = var0.getServer().getCustomBossEvents();
       var1.removeAllPlayers();
       var2.remove(var1);
-      var0.sendSuccess(Component.translatable("commands.bossbar.remove.success", var1.getDisplayName()), true);
+      var0.sendSuccess(() -> Component.translatable("commands.bossbar.remove.success", var1.getDisplayName()), true);
       return var2.getEvents().size();
    }
 

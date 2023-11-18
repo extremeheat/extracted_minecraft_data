@@ -5,8 +5,6 @@ import com.ibm.icu.text.ArabicShaping;
 import com.ibm.icu.text.ArabicShapingException;
 import com.ibm.icu.text.Bidi;
 import com.mojang.blaze3d.font.GlyphInfo;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.List;
 import java.util.function.Function;
@@ -53,34 +51,6 @@ public class Font {
       return this.fonts.apply(var1);
    }
 
-   public int drawShadow(PoseStack var1, String var2, float var3, float var4, int var5) {
-      return this.drawInternal(var2, var3, var4, var5, var1.last().pose(), true, this.isBidirectional());
-   }
-
-   public int drawShadow(PoseStack var1, String var2, float var3, float var4, int var5, boolean var6) {
-      return this.drawInternal(var2, var3, var4, var5, var1.last().pose(), true, var6);
-   }
-
-   public int draw(PoseStack var1, String var2, float var3, float var4, int var5) {
-      return this.drawInternal(var2, var3, var4, var5, var1.last().pose(), false, this.isBidirectional());
-   }
-
-   public int drawShadow(PoseStack var1, FormattedCharSequence var2, float var3, float var4, int var5) {
-      return this.drawInternal(var2, var3, var4, var5, var1.last().pose(), true);
-   }
-
-   public int drawShadow(PoseStack var1, Component var2, float var3, float var4, int var5) {
-      return this.drawInternal(var2.getVisualOrderText(), var3, var4, var5, var1.last().pose(), true);
-   }
-
-   public int draw(PoseStack var1, FormattedCharSequence var2, float var3, float var4, int var5) {
-      return this.drawInternal(var2, var3, var4, var5, var1.last().pose(), false);
-   }
-
-   public int draw(PoseStack var1, Component var2, float var3, float var4, int var5) {
-      return this.drawInternal(var2.getVisualOrderText(), var3, var4, var5, var1.last().pose(), false);
-   }
-
    public String bidirectionalShaping(String var1) {
       try {
          Bidi var2 = new Bidi(new ArabicShaping(8).shape(var1), 127);
@@ -89,24 +59,6 @@ public class Font {
       } catch (ArabicShapingException var3) {
          return var1;
       }
-   }
-
-   private int drawInternal(String var1, float var2, float var3, int var4, Matrix4f var5, boolean var6, boolean var7) {
-      if (var1 == null) {
-         return 0;
-      } else {
-         MultiBufferSource.BufferSource var8 = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
-         int var9 = this.drawInBatch(var1, var2, var3, var4, var6, var5, var8, Font.DisplayMode.NORMAL, 0, 15728880, var7);
-         var8.endBatch();
-         return var9;
-      }
-   }
-
-   private int drawInternal(FormattedCharSequence var1, float var2, float var3, int var4, Matrix4f var5, boolean var6) {
-      MultiBufferSource.BufferSource var7 = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
-      int var8 = this.drawInBatch(var1, var2, var3, var4, var6, var5, var7, Font.DisplayMode.NORMAL, 0, 15728880);
-      var7.endBatch();
-      return var8;
    }
 
    public int drawInBatch(
@@ -303,15 +255,6 @@ public class Font {
 
    public FormattedText substrByWidth(FormattedText var1, int var2) {
       return this.splitter.headByWidth(var1, var2, Style.EMPTY);
-   }
-
-   public void drawWordWrap(PoseStack var1, FormattedText var2, int var3, int var4, int var5, int var6) {
-      Matrix4f var7 = var1.last().pose();
-
-      for(FormattedCharSequence var9 : this.split(var2, var5)) {
-         this.drawInternal(var9, (float)var3, (float)var4, var6, var7, false);
-         var4 += 9;
-      }
    }
 
    public int wordWrapHeight(String var1, int var2) {

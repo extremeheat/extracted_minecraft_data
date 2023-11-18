@@ -23,17 +23,28 @@ public final class ProjectileUtil {
       super();
    }
 
-   public static HitResult getHitResult(Entity var0, Predicate<Entity> var1) {
+   public static HitResult getHitResultOnMoveVector(Entity var0, Predicate<Entity> var1) {
       Vec3 var2 = var0.getDeltaMovement();
-      Level var3 = var0.level;
+      Level var3 = var0.level();
       Vec3 var4 = var0.position();
-      Vec3 var5 = var4.add(var2);
-      Object var6 = var3.clip(new ClipContext(var4, var5, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, var0));
+      return getHitResult(var4, var0, var1, var2, var3);
+   }
+
+   public static HitResult getHitResultOnViewVector(Entity var0, Predicate<Entity> var1, double var2) {
+      Vec3 var4 = var0.getViewVector(0.0F).scale(var2);
+      Level var5 = var0.level();
+      Vec3 var6 = var0.getEyePosition();
+      return getHitResult(var6, var0, var1, var4, var5);
+   }
+
+   private static HitResult getHitResult(Vec3 var0, Entity var1, Predicate<Entity> var2, Vec3 var3, Level var4) {
+      Vec3 var5 = var0.add(var3);
+      Object var6 = var4.clip(new ClipContext(var0, var5, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, var1));
       if (((HitResult)var6).getType() != HitResult.Type.MISS) {
          var5 = ((HitResult)var6).getLocation();
       }
 
-      EntityHitResult var7 = getEntityHitResult(var3, var0, var4, var5, var0.getBoundingBox().expandTowards(var0.getDeltaMovement()).inflate(1.0), var1);
+      EntityHitResult var7 = getEntityHitResult(var4, var1, var0, var5, var1.getBoundingBox().expandTowards(var3).inflate(1.0), var2);
       if (var7 != null) {
          var6 = var7;
       }
@@ -43,7 +54,7 @@ public final class ProjectileUtil {
 
    @Nullable
    public static EntityHitResult getEntityHitResult(Entity var0, Vec3 var1, Vec3 var2, AABB var3, Predicate<Entity> var4, double var5) {
-      Level var7 = var0.level;
+      Level var7 = var0.level();
       double var8 = var5;
       Entity var10 = null;
       Vec3 var11 = null;
@@ -137,7 +148,7 @@ public final class ProjectileUtil {
 
    public static AbstractArrow getMobArrow(LivingEntity var0, ItemStack var1, float var2) {
       ArrowItem var3 = (ArrowItem)(var1.getItem() instanceof ArrowItem ? var1.getItem() : Items.ARROW);
-      AbstractArrow var4 = var3.createArrow(var0.level, var1, var0);
+      AbstractArrow var4 = var3.createArrow(var0.level(), var1, var0);
       var4.setEnchantmentEffectsFromEntity(var0, var2);
       if (var1.is(Items.TIPPED_ARROW) && var4 instanceof Arrow) {
          ((Arrow)var4).setEffectsFromItem(var1);

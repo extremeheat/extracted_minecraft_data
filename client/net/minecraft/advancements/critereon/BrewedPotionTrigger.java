@@ -21,7 +21,7 @@ public class BrewedPotionTrigger extends SimpleCriterionTrigger<BrewedPotionTrig
       return ID;
    }
 
-   public BrewedPotionTrigger.TriggerInstance createInstance(JsonObject var1, EntityPredicate.Composite var2, DeserializationContext var3) {
+   public BrewedPotionTrigger.TriggerInstance createInstance(JsonObject var1, ContextAwarePredicate var2, DeserializationContext var3) {
       Potion var4 = null;
       if (var1.has("potion")) {
          ResourceLocation var5 = new ResourceLocation(GsonHelper.getAsString(var1, "potion"));
@@ -39,13 +39,13 @@ public class BrewedPotionTrigger extends SimpleCriterionTrigger<BrewedPotionTrig
       @Nullable
       private final Potion potion;
 
-      public TriggerInstance(EntityPredicate.Composite var1, @Nullable Potion var2) {
+      public TriggerInstance(ContextAwarePredicate var1, @Nullable Potion var2) {
          super(BrewedPotionTrigger.ID, var1);
          this.potion = var2;
       }
 
       public static BrewedPotionTrigger.TriggerInstance brewedPotion() {
-         return new BrewedPotionTrigger.TriggerInstance(EntityPredicate.Composite.ANY, null);
+         return new BrewedPotionTrigger.TriggerInstance(ContextAwarePredicate.ANY, null);
       }
 
       public boolean matches(Potion var1) {

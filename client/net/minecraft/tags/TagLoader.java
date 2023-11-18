@@ -1,10 +1,7 @@
 package net.minecraft.tags;
 
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
 import com.google.common.collect.ImmutableSet.Builder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
@@ -16,14 +13,12 @@ import java.io.BufferedReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.Map.Entry;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -31,6 +26,7 @@ import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.DependencySorter;
 import org.slf4j.Logger;
 
 public class TagLoader<T> {
@@ -72,33 +68,6 @@ public class TagLoader<T> {
       return var2;
    }
 
-   private static void visitDependenciesAndElement(
-      Map<ResourceLocation, List<TagLoader.EntryWithSource>> var0,
-      Multimap<ResourceLocation, ResourceLocation> var1,
-      Set<ResourceLocation> var2,
-      ResourceLocation var3,
-      BiConsumer<ResourceLocation, List<TagLoader.EntryWithSource>> var4
-   ) {
-      if (var2.add(var3)) {
-         var1.get(var3).forEach(var4x -> visitDependenciesAndElement(var0, var1, var2, var4x, var4));
-         List var5 = (List)var0.get(var3);
-         if (var5 != null) {
-            var4.accept(var3, var5);
-         }
-      }
-   }
-
-   private static boolean isCyclic(Multimap<ResourceLocation, ResourceLocation> var0, ResourceLocation var1, ResourceLocation var2) {
-      Collection var3 = var0.get(var2);
-      return var3.contains(var1) ? true : var3.stream().anyMatch(var2x -> isCyclic(var0, var1, var2x));
-   }
-
-   private static void addDependencyIfNotCyclic(Multimap<ResourceLocation, ResourceLocation> var0, ResourceLocation var1, ResourceLocation var2) {
-      if (!isCyclic(var0, var1, var2)) {
-         var0.put(var1, var2);
-      }
-   }
-
    private Either<Collection<TagLoader.EntryWithSource>, Collection<T>> build(TagEntry.Lookup<T> var1, List<TagLoader.EntryWithSource> var2) {
       Builder var3 = ImmutableSet.builder();
       ArrayList var4 = new ArrayList();
@@ -127,32 +96,19 @@ public class TagLoader<T> {
             return (Collection<T>)var2.get(var1);
          }
       };
-      HashMultimap var4 = HashMultimap.create();
-      var1.forEach(
-         (var1x, var2x) -> var2x.forEach(var2xx -> var2xx.entry.visitRequiredDependencies(var2xxx -> addDependencyIfNotCyclic(var4, var1x, var2xxx)))
-      );
-      var1.forEach(
-         (var1x, var2x) -> var2x.forEach(var2xx -> var2xx.entry.visitOptionalDependencies(var2xxx -> addDependencyIfNotCyclic(var4, var1x, var2xxx)))
-      );
-      HashSet var5 = Sets.newHashSet();
-      var1.keySet()
-         .forEach(
-            var6 -> visitDependenciesAndElement(
-                  var1,
-                  var4,
-                  var5,
-                  var6,
-                  (var3xx, var4xx) -> this.build(var3, var4xx)
-                        .ifLeft(
-                           var1xxx -> LOGGER.error(
-                                 "Couldn't load tag {} as it is missing following references: {}",
-                                 var3xx,
-                                 var1xxx.stream().map(Objects::toString).collect(Collectors.joining(", "))
-                              )
-                        )
-                        .ifRight(var2xxx -> var2.put(var3xx, var2xxx))
+      DependencySorter var4 = new DependencySorter();
+      var1.forEach((var1x, var2x) -> var4.addEntry(var1x, new TagLoader.SortingEntry(var2x)));
+      var4.orderByDependencies(
+         (var3x, var4x) -> this.build(var3, var4x.entries)
+               .ifLeft(
+                  var1xx -> LOGGER.error(
+                        "Couldn't load tag {} as it is missing following references: {}",
+                        var3x,
+                        var1xx.stream().map(Objects::toString).collect(Collectors.joining(", "))
+                     )
                )
-         );
+               .ifRight(var2xx -> var2.put(var3x, var2xx))
+      );
       return var2;
    }
 
@@ -173,6 +129,25 @@ public class TagLoader<T> {
       @Override
       public String toString() {
          return this.entry + " (from " + this.source + ")";
+      }
+   }
+
+   static record SortingEntry(List<TagLoader.EntryWithSource> a) implements DependencySorter.Entry<ResourceLocation> {
+      final List<TagLoader.EntryWithSource> entries;
+
+      SortingEntry(List<TagLoader.EntryWithSource> var1) {
+         super();
+         this.entries = var1;
+      }
+
+      @Override
+      public void visitRequiredDependencies(Consumer<ResourceLocation> var1) {
+         this.entries.forEach(var1x -> var1x.entry.visitRequiredDependencies(var1));
+      }
+
+      @Override
+      public void visitOptionalDependencies(Consumer<ResourceLocation> var1) {
+         this.entries.forEach(var1x -> var1x.entry.visitOptionalDependencies(var1));
       }
    }
 }

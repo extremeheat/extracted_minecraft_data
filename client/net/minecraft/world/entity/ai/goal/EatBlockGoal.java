@@ -21,7 +21,7 @@ public class EatBlockGoal extends Goal {
    public EatBlockGoal(Mob var1) {
       super();
       this.mob = var1;
-      this.level = var1.level;
+      this.level = var1.level();
       this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK, Goal.Flag.JUMP));
    }
 

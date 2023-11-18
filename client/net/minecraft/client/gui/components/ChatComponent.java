@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.components;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +11,7 @@ import net.minecraft.Optionull;
 import net.minecraft.client.GuiMessage;
 import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.multiplayer.chat.ChatListener;
 import net.minecraft.network.chat.Component;
@@ -23,7 +22,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.ChatVisiblity;
 import org.slf4j.Logger;
 
-public class ChatComponent extends GuiComponent {
+public class ChatComponent {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int MAX_CHAT_HISTORY = 100;
    private static final int MESSAGE_NOT_FOUND = -1;
@@ -51,7 +50,7 @@ public class ChatComponent extends GuiComponent {
       }
    }
 
-   public void render(PoseStack var1, int var2, int var3, int var4) {
+   public void render(GuiGraphics var1, int var2, int var3, int var4) {
       if (!this.isChatHidden()) {
          int var5 = this.getLinesPerPage();
          int var6 = this.trimmedMessages.size();
@@ -59,10 +58,10 @@ public class ChatComponent extends GuiComponent {
             boolean var7 = this.isChatFocused();
             float var8 = (float)this.getScale();
             int var9 = Mth.ceil((float)this.getWidth() / var8);
-            int var10 = this.minecraft.getWindow().getGuiScaledHeight();
-            var1.pushPose();
-            var1.scale(var8, var8, 1.0F);
-            var1.translate(4.0F, 0.0F, 0.0F);
+            int var10 = var1.guiHeight();
+            var1.pose().pushPose();
+            var1.pose().scale(var8, var8, 1.0F);
+            var1.pose().translate(4.0F, 0.0F, 0.0F);
             int var11 = Mth.floor((float)(var10 - 40) / var8);
             int var12 = this.getMessageEndIndexAt(this.screenToChatX((double)var3), this.screenToChatY((double)var4));
             double var13 = this.minecraft.options.chatOpacity().get() * 0.8999999761581421 + 0.10000000149011612;
@@ -86,13 +85,13 @@ public class ChatComponent extends GuiComponent {
                         boolean var30 = false;
                         int var31 = var11 - var22 * var19;
                         int var32 = var31 + var20;
-                        var1.pushPose();
-                        var1.translate(0.0F, 0.0F, 50.0F);
-                        fill(var1, -4, var31 - var19, 0 + var9 + 4 + 4, var31, var29 << 24);
+                        var1.pose().pushPose();
+                        var1.pose().translate(0.0F, 0.0F, 50.0F);
+                        var1.fill(-4, var31 - var19, 0 + var9 + 4 + 4, var31, var29 << 24);
                         GuiMessageTag var33 = var24.tag();
                         if (var33 != null) {
                            int var34 = var33.indicatorColor() | var28 << 24;
-                           fill(var1, -4, var31 - var19, -2, var31, var34);
+                           var1.fill(-4, var31 - var19, -2, var31, var34);
                            if (var23 == var12 && var33.icon() != null) {
                               int var35 = this.getTagIconLeft(var24);
                               int var36 = var32 + 9;
@@ -100,9 +99,9 @@ public class ChatComponent extends GuiComponent {
                            }
                         }
 
-                        var1.translate(0.0F, 0.0F, 50.0F);
-                        this.minecraft.font.drawShadow(var1, var24.content(), 0.0F, (float)var32, 16777215 + (var28 << 24));
-                        var1.popPose();
+                        var1.pose().translate(0.0F, 0.0F, 50.0F);
+                        var1.drawString(this.minecraft.font, var24.content(), 0, var32, 16777215 + (var28 << 24));
+                        var1.pose().popPose();
                      }
                   }
                }
@@ -112,12 +111,12 @@ public class ChatComponent extends GuiComponent {
             if (var37 > 0L) {
                int var38 = (int)(128.0 * var13);
                int var40 = (int)(255.0 * var15);
-               var1.pushPose();
-               var1.translate(0.0F, (float)var11, 50.0F);
-               fill(var1, -2, 0, var9 + 4, 9, var40 << 24);
-               var1.translate(0.0F, 0.0F, 50.0F);
-               this.minecraft.font.drawShadow(var1, Component.translatable("chat.queue", var37), 0.0F, 1.0F, 16777215 + (var38 << 24));
-               var1.popPose();
+               var1.pose().pushPose();
+               var1.pose().translate(0.0F, (float)var11, 50.0F);
+               var1.fill(-2, 0, var9 + 4, 9, var40 << 24);
+               var1.pose().translate(0.0F, 0.0F, 50.0F);
+               var1.drawString(this.minecraft.font, Component.translatable("chat.queue", var37), 0, 1, 16777215 + (var38 << 24));
+               var1.pose().popPose();
             }
 
             if (var7) {
@@ -130,17 +129,17 @@ public class ChatComponent extends GuiComponent {
                   int var44 = var27 > 0 ? 170 : 96;
                   int var45 = this.newMessageSinceScroll ? 13382451 : 3355562;
                   int var46 = var9 + 4;
-                  fill(var1, var46, -var27, var46 + 2, -var27 - var43, var45 + (var44 << 24));
-                  fill(var1, var46 + 2, -var27, var46 + 1, -var27 - var43, 13421772 + (var44 << 24));
+                  var1.fill(var46, -var27, var46 + 2, -var27 - var43, var45 + (var44 << 24));
+                  var1.fill(var46 + 2, -var27, var46 + 1, -var27 - var43, 13421772 + (var44 << 24));
                }
             }
 
-            var1.popPose();
+            var1.pose().popPose();
          }
       }
    }
 
-   private void drawTagIcon(PoseStack var1, int var2, int var3, GuiMessageTag.Icon var4) {
+   private void drawTagIcon(GuiGraphics var1, int var2, int var3, GuiMessageTag.Icon var4) {
       int var5 = var3 - var4.height - 1;
       var4.draw(var1, var2, var5);
    }

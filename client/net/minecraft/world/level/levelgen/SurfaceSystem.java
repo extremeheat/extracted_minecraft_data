@@ -22,7 +22,6 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.levelgen.carver.CarvingContext;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
-import net.minecraft.world.level.material.Material;
 
 public class SurfaceSystem {
    private static final BlockState WHITE_TERRACOTTA = Blocks.WHITE_TERRACOTTA.defaultBlockState();
@@ -263,11 +262,7 @@ public class SurfaceSystem {
 
          for(int var28 = Math.max(var7, (int)var20 + 1); var28 >= var1; --var28) {
             if (var3.getBlock(var28).isAir() && var28 < (int)var22 && var24.nextDouble() > 0.01
-               || var3.getBlock(var28).getMaterial() == Material.WATER
-                  && var28 > (int)var12
-                  && var28 < this.seaLevel
-                  && var12 != 0.0
-                  && var24.nextDouble() > 0.15) {
+               || var3.getBlock(var28).is(Blocks.WATER) && var28 > (int)var12 && var28 < this.seaLevel && var12 != 0.0 && var24.nextDouble() > 0.15) {
                if (var27 <= var25 && var28 > var26) {
                   var3.setBlock(var28, SNOW_BLOCK);
                   ++var27;

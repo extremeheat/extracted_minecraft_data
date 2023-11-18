@@ -70,6 +70,19 @@ public class ExtraCodecs {
          return DataResult.error(var2::getMessage);
       }
    });
+   public static final Codec<Component> FLAT_COMPONENT = Codec.STRING.flatXmap(var0 -> {
+      try {
+         return DataResult.success(Component.Serializer.fromJson(var0));
+      } catch (JsonParseException var2) {
+         return DataResult.error(var2::getMessage);
+      }
+   }, var0 -> {
+      try {
+         return DataResult.success(Component.Serializer.toJson(var0));
+      } catch (IllegalArgumentException var2) {
+         return DataResult.error(var2::getMessage);
+      }
+   });
    public static final Codec<Vector3f> VECTOR3F = Codec.FLOAT
       .listOf()
       .comapFlatMap(
@@ -176,6 +189,10 @@ public class ExtraCodecs {
    public static final Codec<String> NON_EMPTY_STRING = validate(
       Codec.STRING, var0 -> var0.isEmpty() ? DataResult.error(() -> "Expected non-empty string") : DataResult.success(var0)
    );
+   public static final Codec<Integer> CODEPOINT = Codec.STRING.comapFlatMap(var0 -> {
+      int[] var1 = var0.codePoints().toArray();
+      return var1.length != 1 ? DataResult.error(() -> "Expected one codepoint, got: " + var0) : DataResult.success(var1[0]);
+   }, Character::toString);
 
    public ExtraCodecs() {
       super();
@@ -285,6 +302,10 @@ public class ExtraCodecs {
    }
 
    public static <T> Codec<T> validate(Codec<T> var0, Function<T, DataResult<T>> var1) {
+      return var0.flatXmap(var1, var1);
+   }
+
+   public static <T> MapCodec<T> validate(MapCodec<T> var0, Function<T, DataResult<T>> var1) {
       return var0.flatXmap(var1, var1);
    }
 

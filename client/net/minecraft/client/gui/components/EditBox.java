@@ -1,8 +1,5 @@
 package net.minecraft.client.gui.components;
 
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -13,11 +10,13 @@ import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
@@ -342,40 +341,27 @@ public class EditBox extends AbstractWidget implements Renderable {
    }
 
    @Override
-   public boolean mouseClicked(double var1, double var3, int var5) {
-      if (this.isVisible() && var5 == 0) {
-         boolean var6 = var1 >= (double)this.getX()
-            && var1 < (double)(this.getX() + this.width)
-            && var3 >= (double)this.getY()
-            && var3 < (double)(this.getY() + this.height);
-         if (this.canLoseFocus) {
-            this.setFocused(var6);
-         }
-
-         if (this.isFocused() && var6 && var5 == 0) {
-            int var7 = Mth.floor(var1) - this.getX();
-            if (this.bordered) {
-               var7 -= 4;
-            }
-
-            String var8 = this.font.plainSubstrByWidth(this.value.substring(this.displayPos), this.getInnerWidth());
-            this.moveCursorTo(this.font.plainSubstrByWidth(var8, var7).length() + this.displayPos);
-            return true;
-         } else {
-            return false;
-         }
-      } else {
-         return false;
+   public void onClick(double var1, double var3) {
+      int var5 = Mth.floor(var1) - this.getX();
+      if (this.bordered) {
+         var5 -= 4;
       }
+
+      String var6 = this.font.plainSubstrByWidth(this.value.substring(this.displayPos), this.getInnerWidth());
+      this.moveCursorTo(this.font.plainSubstrByWidth(var6, var5).length() + this.displayPos);
    }
 
    @Override
-   public void renderWidget(PoseStack var1, int var2, int var3, float var4) {
+   public void playDownSound(SoundManager var1) {
+   }
+
+   @Override
+   public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       if (this.isVisible()) {
          if (this.isBordered()) {
             int var5 = this.isFocused() ? -1 : -6250336;
-            fill(var1, this.getX() - 1, this.getY() - 1, this.getX() + this.width + 1, this.getY() + this.height + 1, var5);
-            fill(var1, this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height, -16777216);
+            var1.fill(this.getX() - 1, this.getY() - 1, this.getX() + this.width + 1, this.getY() + this.height + 1, var5);
+            var1.fill(this.getX(), this.getY(), this.getX() + this.width, this.getY() + this.height, -16777216);
          }
 
          int var17 = this.isEditable ? this.textColor : this.textColorUneditable;
@@ -393,7 +379,7 @@ public class EditBox extends AbstractWidget implements Renderable {
 
          if (!var8.isEmpty()) {
             String var14 = var9 ? var8.substring(0, var6) : var8;
-            var13 = this.font.drawShadow(var1, this.formatter.apply(var14, this.displayPos), (float)var11, (float)var12, var17);
+            var13 = var1.drawString(this.font, this.formatter.apply(var14, this.displayPos), var11, var12, var17);
          }
 
          boolean var18 = this.cursorPos < this.value.length() || this.value.length() >= this.getMaxLength();
@@ -406,22 +392,22 @@ public class EditBox extends AbstractWidget implements Renderable {
          }
 
          if (!var8.isEmpty() && var9 && var6 < var8.length()) {
-            this.font.drawShadow(var1, this.formatter.apply(var8.substring(var6), this.cursorPos), (float)var13, (float)var12, var17);
+            var1.drawString(this.font, this.formatter.apply(var8.substring(var6), this.cursorPos), var13, var12, var17);
          }
 
          if (this.hint != null && var8.isEmpty() && !this.isFocused()) {
-            this.font.drawShadow(var1, this.hint, (float)var13, (float)var12, var17);
+            var1.drawString(this.font, this.hint, var13, var12, var17);
          }
 
          if (!var18 && this.suggestion != null) {
-            this.font.drawShadow(var1, this.suggestion, (float)(var15 - 1), (float)var12, -8355712);
+            var1.drawString(this.font, this.suggestion, var15 - 1, var12, -8355712);
          }
 
          if (var10) {
             if (var18) {
-               GuiComponent.fill(var1, var15, var12 - 1, var15 + 1, var12 + 1 + 9, -3092272);
+               var1.fill(RenderType.guiOverlay(), var15, var12 - 1, var15 + 1, var12 + 1 + 9, -3092272);
             } else {
-               this.font.drawShadow(var1, "_", (float)var15, (float)var12, var17);
+               var1.drawString(this.font, "_", var15, var12, var17);
             }
          }
 
@@ -432,7 +418,7 @@ public class EditBox extends AbstractWidget implements Renderable {
       }
    }
 
-   private void renderHighlight(PoseStack var1, int var2, int var3, int var4, int var5) {
+   private void renderHighlight(GuiGraphics var1, int var2, int var3, int var4, int var5) {
       if (var2 < var4) {
          int var6 = var2;
          var2 = var4;
@@ -453,10 +439,7 @@ public class EditBox extends AbstractWidget implements Renderable {
          var2 = this.getX() + this.width;
       }
 
-      RenderSystem.enableColorLogicOp();
-      RenderSystem.logicOp(GlStateManager.LogicOp.OR_REVERSE);
-      fill(var1, var2, var3, var4, var5, -16776961);
-      RenderSystem.disableColorLogicOp();
+      var1.fill(RenderType.guiTextHighlight(), var2, var3, var4, var5, -16776961);
    }
 
    public void setMaxLength(int var1) {

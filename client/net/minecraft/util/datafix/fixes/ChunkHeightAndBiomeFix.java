@@ -268,7 +268,6 @@ public class ChunkHeightAndBiomeFix extends DataFix {
          return updateCarvingMasks(var0, 24, 0);
       } else {
          var0 = updateHeightmaps(var0);
-         var0 = addPaddingEntries(var0, "Lights");
          var0 = addPaddingEntries(var0, "LiquidsToBeTicked");
          var0 = addPaddingEntries(var0, "PostProcessing");
          var0 = addPaddingEntries(var0, "ToBeTicked");
@@ -305,13 +304,13 @@ public class ChunkHeightAndBiomeFix extends DataFix {
                      }
 
                      if (var10 && var9.cardinality() != var9.size()) {
-                        Dynamic var25 = "full".equals(var7) ? var0.createString("heightmaps") : var6;
+                        Dynamic var24 = "full".equals(var7) ? var0.createString("heightmaps") : var6;
                         var0 = var0.set(
                            "below_zero_retrogen",
                            var0.createMap(
                               ImmutableMap.of(
                                  var0.createString("target_status"),
-                                 var25,
+                                 var24,
                                  var0.createString("missing_bedrock"),
                                  var0.createLongList(LongStream.of(var9.toLongArray()))
                               )

@@ -4,6 +4,7 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -48,7 +49,7 @@ public class FarmBlock extends Block {
    @Override
    public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       BlockState var4 = var2.getBlockState(var3.above());
-      return !var4.getMaterial().isSolid() || var4.getBlock() instanceof FenceGateBlock || var4.getBlock() instanceof MovingPistonBlock;
+      return !var4.isSolid() || var4.getBlock() instanceof FenceGateBlock || var4.getBlock() instanceof MovingPistonBlock;
    }
 
    @Override
@@ -79,7 +80,7 @@ public class FarmBlock extends Block {
       if (!isNearWater(var2, var3) && !var2.isRainingAt(var3.above())) {
          if (var5 > 0) {
             var2.setBlock(var3, var1.setValue(MOISTURE, Integer.valueOf(var5 - 1)), 2);
-         } else if (!isUnderCrops(var2, var3)) {
+         } else if (!shouldMaintainFarmland(var2, var3)) {
             turnToDirt(null, var1, var2, var3);
          }
       } else if (var5 < 7) {
@@ -106,9 +107,8 @@ public class FarmBlock extends Block {
       var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var0, var4));
    }
 
-   private static boolean isUnderCrops(BlockGetter var0, BlockPos var1) {
-      Block var2 = var0.getBlockState(var1.above()).getBlock();
-      return var2 instanceof CropBlock || var2 instanceof StemBlock || var2 instanceof AttachedStemBlock;
+   private static boolean shouldMaintainFarmland(BlockGetter var0, BlockPos var1) {
+      return var0.getBlockState(var1.above()).is(BlockTags.MAINTAINS_FARMLAND);
    }
 
    private static boolean isNearWater(LevelReader var0, BlockPos var1) {

@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
 import net.minecraft.client.gui.screens.recipebook.RecipeUpdateListener;
@@ -31,7 +30,7 @@ public class CraftingScreen extends AbstractContainerScreen<CraftingMenu> implem
       this.addRenderableWidget(new ImageButton(this.leftPos + 5, this.height / 2 - 49, 20, 18, 0, 0, 19, RECIPE_BUTTON_LOCATION, var1 -> {
          this.recipeBookComponent.toggleVisibility();
          this.leftPos = this.recipeBookComponent.updateScreenPosition(this.width, this.imageWidth);
-         ((ImageButton)var1).setPosition(this.leftPos + 5, this.height / 2 - 49);
+         var1.setPosition(this.leftPos + 5, this.height / 2 - 49);
       }));
       this.addWidget(this.recipeBookComponent);
       this.setInitialFocus(this.recipeBookComponent);
@@ -45,7 +44,7 @@ public class CraftingScreen extends AbstractContainerScreen<CraftingMenu> implem
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderBackground(var1);
       if (this.recipeBookComponent.isVisible() && this.widthTooNarrow) {
          this.renderBg(var1, var4, var2, var3);
@@ -61,11 +60,10 @@ public class CraftingScreen extends AbstractContainerScreen<CraftingMenu> implem
    }
 
    @Override
-   protected void renderBg(PoseStack var1, float var2, int var3, int var4) {
-      RenderSystem.setShaderTexture(0, CRAFTING_TABLE_LOCATION);
+   protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       int var5 = this.leftPos;
       int var6 = (this.height - this.imageHeight) / 2;
-      blit(var1, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
+      var1.blit(CRAFTING_TABLE_LOCATION, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
    }
 
    @Override

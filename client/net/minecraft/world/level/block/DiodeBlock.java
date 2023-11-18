@@ -10,6 +10,7 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.SignalGetter;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -119,24 +120,12 @@ public abstract class DiodeBlock extends HorizontalDirectionalBlock {
       }
    }
 
-   protected int getAlternateSignal(LevelReader var1, BlockPos var2, BlockState var3) {
+   protected int getAlternateSignal(SignalGetter var1, BlockPos var2, BlockState var3) {
       Direction var4 = var3.getValue(FACING);
       Direction var5 = var4.getClockWise();
       Direction var6 = var4.getCounterClockWise();
-      return Math.max(this.getAlternateSignalAt(var1, var2.relative(var5), var5), this.getAlternateSignalAt(var1, var2.relative(var6), var6));
-   }
-
-   protected int getAlternateSignalAt(LevelReader var1, BlockPos var2, Direction var3) {
-      BlockState var4 = var1.getBlockState(var2);
-      if (this.isAlternateInput(var4)) {
-         if (var4.is(Blocks.REDSTONE_BLOCK)) {
-            return 15;
-         } else {
-            return var4.is(Blocks.REDSTONE_WIRE) ? var4.getValue(RedStoneWireBlock.POWER) : var1.getDirectSignal(var2, var3);
-         }
-      } else {
-         return 0;
-      }
+      boolean var7 = this.sideInputDiodesOnly();
+      return Math.max(var1.getControlInputSignal(var2.relative(var5), var5, var7), var1.getControlInputSignal(var2.relative(var6), var6, var7));
    }
 
    @Override
@@ -176,8 +165,8 @@ public abstract class DiodeBlock extends HorizontalDirectionalBlock {
       var1.updateNeighborsAtExceptFromFacing(var5, this, var4);
    }
 
-   protected boolean isAlternateInput(BlockState var1) {
-      return var1.isSignalSource();
+   protected boolean sideInputDiodesOnly() {
+      return false;
    }
 
    protected int getOutputSignal(BlockGetter var1, BlockPos var2, BlockState var3) {

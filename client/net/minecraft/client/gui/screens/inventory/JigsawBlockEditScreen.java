@@ -1,8 +1,8 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
@@ -185,18 +185,18 @@ public class JigsawBlockEditScreen extends Screen {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderBackground(var1);
-      drawString(var1, this.font, POOL_LABEL, this.width / 2 - 153, 10, 10526880);
+      var1.drawString(this.font, POOL_LABEL, this.width / 2 - 153, 10, 10526880);
       this.poolEdit.render(var1, var2, var3, var4);
-      drawString(var1, this.font, NAME_LABEL, this.width / 2 - 153, 45, 10526880);
+      var1.drawString(this.font, NAME_LABEL, this.width / 2 - 153, 45, 10526880);
       this.nameEdit.render(var1, var2, var3, var4);
-      drawString(var1, this.font, TARGET_LABEL, this.width / 2 - 153, 80, 10526880);
+      var1.drawString(this.font, TARGET_LABEL, this.width / 2 - 153, 80, 10526880);
       this.targetEdit.render(var1, var2, var3, var4);
-      drawString(var1, this.font, FINAL_STATE_LABEL, this.width / 2 - 153, 115, 10526880);
+      var1.drawString(this.font, FINAL_STATE_LABEL, this.width / 2 - 153, 115, 10526880);
       this.finalStateEdit.render(var1, var2, var3, var4);
       if (JigsawBlock.getFrontFacing(this.jigsawEntity.getBlockState()).getAxis().isVertical()) {
-         drawString(var1, this.font, JOINT_LABEL, this.width / 2 - 153, 156, 16777215);
+         var1.drawString(this.font, JOINT_LABEL, this.width / 2 - 153, 156, 16777215);
       }
 
       super.render(var1, var2, var3, var4);

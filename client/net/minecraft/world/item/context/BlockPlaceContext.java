@@ -15,7 +15,7 @@ public class BlockPlaceContext extends UseOnContext {
    protected boolean replaceClicked = true;
 
    public BlockPlaceContext(Player var1, InteractionHand var2, ItemStack var3, BlockHitResult var4) {
-      this(var1.level, var1, var2, var3, var4);
+      this(var1.level(), var1, var2, var3, var4);
    }
 
    public BlockPlaceContext(UseOnContext var1) {

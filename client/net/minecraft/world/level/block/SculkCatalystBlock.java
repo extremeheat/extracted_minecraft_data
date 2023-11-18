@@ -2,10 +2,7 @@ package net.minecraft.world.level.block;
 
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.util.valueproviders.IntProvider;
@@ -20,10 +17,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.gameevent.GameEventListener;
 
 public class SculkCatalystBlock extends BaseEntityBlock {
-   public static final int PULSE_TICKS = 8;
    public static final BooleanProperty PULSE = BlockStateProperties.BLOOM;
    private final IntProvider xpRange = ConstantInt.of(5);
 
@@ -44,23 +39,10 @@ public class SculkCatalystBlock extends BaseEntityBlock {
       }
    }
 
-   public static void bloom(ServerLevel var0, BlockPos var1, BlockState var2, RandomSource var3) {
-      var0.setBlock(var1, var2.setValue(PULSE, Boolean.valueOf(true)), 3);
-      var0.scheduleTick(var1, var2.getBlock(), 8);
-      var0.sendParticles(ParticleTypes.SCULK_SOUL, (double)var1.getX() + 0.5, (double)var1.getY() + 1.15, (double)var1.getZ() + 0.5, 2, 0.2, 0.0, 0.2, 0.0);
-      var0.playSound(null, var1, SoundEvents.SCULK_CATALYST_BLOOM, SoundSource.BLOCKS, 2.0F, 0.6F + var3.nextFloat() * 0.4F);
-   }
-
    @Nullable
    @Override
    public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
       return new SculkCatalystBlockEntity(var1, var2);
-   }
-
-   @Nullable
-   @Override
-   public <T extends BlockEntity> GameEventListener getListener(ServerLevel var1, T var2) {
-      return var2 instanceof SculkCatalystBlockEntity ? (SculkCatalystBlockEntity)var2 : null;
    }
 
    @Nullable

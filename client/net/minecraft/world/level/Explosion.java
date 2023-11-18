@@ -34,7 +34,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
@@ -128,9 +128,8 @@ public class Explosion {
                   double var23 = Mth.lerp(var17, var2.minY, var2.maxY);
                   double var25 = Mth.lerp(var19, var2.minZ, var2.maxZ);
                   Vec3 var27 = new Vec3(var21 + var9, var23, var25 + var11);
-                  if (var1.level.clip(new ClipContext(var27, var0, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, var1)).getType() == HitResult.Type.MISS
-                     )
-                   {
+                  if (var1.level().clip(new ClipContext(var27, var0, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, var1)).getType()
+                     == HitResult.Type.MISS) {
                      ++var13;
                   }
 
@@ -283,8 +282,7 @@ public class Explosion {
                   Level var11 = this.level;
                   if (var11 instanceof ServerLevel var10) {
                      BlockEntity var17 = var7.hasBlockEntity() ? this.level.getBlockEntity(var6) : null;
-                     LootContext.Builder var12 = new LootContext.Builder((ServerLevel)var10)
-                        .withRandom(this.level.random)
+                     LootParams.Builder var12 = new LootParams.Builder((ServerLevel)var10)
                         .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(var6))
                         .withParameter(LootContextParams.TOOL, ItemStack.EMPTY)
                         .withOptionalParameter(LootContextParams.BLOCK_ENTITY, var17)

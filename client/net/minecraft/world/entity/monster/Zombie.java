@@ -175,7 +175,7 @@ public class Zombie extends Monster {
    @Override
    public void setBaby(boolean var1) {
       this.getEntityData().set(DATA_BABY_ID, var1);
-      if (this.level != null && !this.level.isClientSide) {
+      if (this.level() != null && !this.level().isClientSide) {
          AttributeInstance var2 = this.getAttribute(Attributes.MOVEMENT_SPEED);
          var2.removeModifier(SPEED_MODIFIER_BABY);
          if (var1) {
@@ -199,7 +199,7 @@ public class Zombie extends Monster {
 
    @Override
    public void tick() {
-      if (!this.level.isClientSide && this.isAlive() && !this.isNoAi()) {
+      if (!this.level().isClientSide && this.isAlive() && !this.isNoAi()) {
          if (this.isUnderWaterConverting()) {
             --this.conversionTime;
             if (this.conversionTime < 0) {
@@ -255,14 +255,14 @@ public class Zombie extends Monster {
    protected void doUnderWaterConversion() {
       this.convertToZombieType(EntityType.DROWNED);
       if (!this.isSilent()) {
-         this.level.levelEvent(null, 1040, this.blockPosition(), 0);
+         this.level().levelEvent(null, 1040, this.blockPosition(), 0);
       }
    }
 
    protected void convertToZombieType(EntityType<? extends Zombie> var1) {
       Zombie var2 = this.convertTo(var1, true);
       if (var2 != null) {
-         var2.handleAttributes(var2.level.getCurrentDifficultyAt(var2.blockPosition()).getSpecialMultiplier());
+         var2.handleAttributes(var2.level().getCurrentDifficultyAt(var2.blockPosition()).getSpecialMultiplier());
          var2.setCanBreakDoors(var2.supportsBreakDoorGoal() && this.canBreakDoors());
       }
    }
@@ -275,23 +275,23 @@ public class Zombie extends Monster {
    public boolean hurt(DamageSource var1, float var2) {
       if (!super.hurt(var1, var2)) {
          return false;
-      } else if (!(this.level instanceof ServerLevel)) {
+      } else if (!(this.level() instanceof ServerLevel)) {
          return false;
       } else {
-         ServerLevel var3 = (ServerLevel)this.level;
+         ServerLevel var3 = (ServerLevel)this.level();
          LivingEntity var4 = this.getTarget();
          if (var4 == null && var1.getEntity() instanceof LivingEntity) {
             var4 = (LivingEntity)var1.getEntity();
          }
 
          if (var4 != null
-            && this.level.getDifficulty() == Difficulty.HARD
+            && this.level().getDifficulty() == Difficulty.HARD
             && (double)this.random.nextFloat() < this.getAttributeValue(Attributes.SPAWN_REINFORCEMENTS_CHANCE)
-            && this.level.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING)) {
+            && this.level().getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING)) {
             int var5 = Mth.floor(this.getX());
             int var6 = Mth.floor(this.getY());
             int var7 = Mth.floor(this.getZ());
-            Zombie var8 = new Zombie(this.level);
+            Zombie var8 = new Zombie(this.level());
 
             for(int var9 = 0; var9 < 50; ++var9) {
                int var10 = var5 + Mth.nextInt(this.random, 7, 40) * Mth.nextInt(this.random, -1, 1);
@@ -300,15 +300,15 @@ public class Zombie extends Monster {
                BlockPos var13 = new BlockPos(var10, var11, var12);
                EntityType var14 = var8.getType();
                SpawnPlacements.Type var15 = SpawnPlacements.getPlacementType(var14);
-               if (NaturalSpawner.isSpawnPositionOk(var15, this.level, var13, var14)
-                  && SpawnPlacements.checkSpawnRules(var14, var3, MobSpawnType.REINFORCEMENT, var13, this.level.random)) {
+               if (NaturalSpawner.isSpawnPositionOk(var15, this.level(), var13, var14)
+                  && SpawnPlacements.checkSpawnRules(var14, var3, MobSpawnType.REINFORCEMENT, var13, this.level().random)) {
                   var8.setPos((double)var10, (double)var11, (double)var12);
-                  if (!this.level.hasNearbyAlivePlayer((double)var10, (double)var11, (double)var12, 7.0)
-                     && this.level.isUnobstructed(var8)
-                     && this.level.noCollision(var8)
-                     && !this.level.containsAnyLiquid(var8.getBoundingBox())) {
+                  if (!this.level().hasNearbyAlivePlayer((double)var10, (double)var11, (double)var12, 7.0)
+                     && this.level().isUnobstructed(var8)
+                     && this.level().noCollision(var8)
+                     && !this.level().containsAnyLiquid(var8.getBoundingBox())) {
                      var8.setTarget(var4);
-                     var8.finalizeSpawn(var3, this.level.getCurrentDifficultyAt(var8.blockPosition()), MobSpawnType.REINFORCEMENT, null, null);
+                     var8.finalizeSpawn(var3, this.level().getCurrentDifficultyAt(var8.blockPosition()), MobSpawnType.REINFORCEMENT, null, null);
                      var3.addFreshEntityWithPassengers(var8);
                      this.getAttribute(Attributes.SPAWN_REINFORCEMENTS_CHANCE)
                         .addPermanentModifier(
@@ -332,7 +332,7 @@ public class Zombie extends Monster {
    public boolean doHurtTarget(Entity var1) {
       boolean var2 = super.doHurtTarget(var1);
       if (var2) {
-         float var3 = this.level.getCurrentDifficultyAt(this.blockPosition()).getEffectiveDifficulty();
+         float var3 = this.level().getCurrentDifficultyAt(this.blockPosition()).getEffectiveDifficulty();
          if (this.getMainHandItem().isEmpty() && this.isOnFire() && this.random.nextFloat() < var3 * 0.3F) {
             var1.setSecondsOnFire(2 * (int)var3);
          }
@@ -373,7 +373,7 @@ public class Zombie extends Monster {
    @Override
    protected void populateDefaultEquipmentSlots(RandomSource var1, DifficultyInstance var2) {
       super.populateDefaultEquipmentSlots(var1, var2);
-      if (var1.nextFloat() < (this.level.getDifficulty() == Difficulty.HARD ? 0.05F : 0.01F)) {
+      if (var1.nextFloat() < (this.level().getDifficulty() == Difficulty.HARD ? 0.05F : 0.01F)) {
          int var3 = var1.nextInt(3);
          if (var3 == 0) {
             this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_SWORD));
@@ -406,8 +406,8 @@ public class Zombie extends Monster {
    // $QF: Could not properly define all variable types!
    // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
-   public boolean wasKilled(ServerLevel var1, LivingEntity var2) {
-      boolean var3 = super.wasKilled(var1, var2);
+   public boolean killedEntity(ServerLevel var1, LivingEntity var2) {
+      boolean var3 = super.killedEntity(var1, var2);
       if ((var1.getDifficulty() == Difficulty.NORMAL || var1.getDifficulty() == Difficulty.HARD) && var2 instanceof Villager var4) {
          if (var1.getDifficulty() != Difficulty.HARD && this.random.nextBoolean()) {
             return var3;
@@ -471,7 +471,7 @@ public class Zombie extends Monster {
                      this.startRiding(var10);
                   }
                } else if ((double)var6.nextFloat() < 0.05) {
-                  Chicken var13 = EntityType.CHICKEN.create(this.level);
+                  Chicken var13 = EntityType.CHICKEN.create(this.level());
                   if (var13 != null) {
                      var13.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
                      var13.finalizeSpawn(var1, var2, MobSpawnType.JOCKEY, null, null);

@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.screens.recipebook.AbstractFurnaceRecipeBookComponent;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
@@ -34,7 +33,7 @@ public abstract class AbstractFurnaceScreen<T extends AbstractFurnaceMenu> exten
       this.addRenderableWidget(new ImageButton(this.leftPos + 20, this.height / 2 - 49, 20, 18, 0, 0, 19, RECIPE_BUTTON_LOCATION, var1 -> {
          this.recipeBookComponent.toggleVisibility();
          this.leftPos = this.recipeBookComponent.updateScreenPosition(this.width, this.imageWidth);
-         ((ImageButton)var1).setPosition(this.leftPos + 20, this.height / 2 - 49);
+         var1.setPosition(this.leftPos + 20, this.height / 2 - 49);
       }));
       this.titleLabelX = (this.imageWidth - this.font.width(this.title)) / 2;
    }
@@ -46,7 +45,7 @@ public abstract class AbstractFurnaceScreen<T extends AbstractFurnaceMenu> exten
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderBackground(var1);
       if (this.recipeBookComponent.isVisible() && this.widthTooNarrow) {
          this.renderBg(var1, var4, var2, var3);
@@ -62,18 +61,17 @@ public abstract class AbstractFurnaceScreen<T extends AbstractFurnaceMenu> exten
    }
 
    @Override
-   protected void renderBg(PoseStack var1, float var2, int var3, int var4) {
-      RenderSystem.setShaderTexture(0, this.texture);
+   protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       int var5 = this.leftPos;
       int var6 = this.topPos;
-      blit(var1, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
+      var1.blit(this.texture, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
       if (this.menu.isLit()) {
          int var7 = this.menu.getLitProgress();
-         blit(var1, var5 + 56, var6 + 36 + 12 - var7, 176, 12 - var7, 14, var7 + 1);
+         var1.blit(this.texture, var5 + 56, var6 + 36 + 12 - var7, 176, 12 - var7, 14, var7 + 1);
       }
 
       int var8 = this.menu.getBurnProgress();
-      blit(var1, var5 + 79, var6 + 34, 176, 14, var8 + 1, 16);
+      var1.blit(this.texture, var5 + 79, var6 + 34, 176, 14, var8 + 1, 16);
    }
 
    @Override

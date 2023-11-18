@@ -179,9 +179,9 @@ public class MapItemSavedData extends SavedData {
          MapItemSavedData.HoldingPlayer var4 = this.carriedBy.get(var7);
          String var5 = var4.player.getName().getString();
          if (!var4.player.isRemoved() && (var4.player.getInventory().contains(var2) || var2.isFramed())) {
-            if (!var2.isFramed() && var4.player.level.dimension() == this.dimension && this.trackingPosition) {
+            if (!var2.isFramed() && var4.player.level().dimension() == this.dimension && this.trackingPosition) {
                this.addDecoration(
-                  MapDecoration.Type.PLAYER, var4.player.level, var5, var4.player.getX(), var4.player.getZ(), (double)var4.player.getYRot(), null
+                  MapDecoration.Type.PLAYER, var4.player.level(), var5, var4.player.getX(), var4.player.getZ(), (double)var4.player.getYRot(), null
                );
             }
          } else {
@@ -202,7 +202,7 @@ public class MapItemSavedData extends SavedData {
          MapFrame var6 = new MapFrame(var10, var8.getDirection().get2DDataValue() * 90, var8.getId());
          this.addDecoration(
             MapDecoration.Type.FRAME,
-            var1.level,
+            var1.level(),
             "frame-" + var8.getId(),
             (double)var10.getX(),
             (double)var10.getZ(),
@@ -221,7 +221,7 @@ public class MapItemSavedData extends SavedData {
             if (!this.decorations.containsKey(var14.getString("id"))) {
                this.addDecoration(
                   MapDecoration.Type.byIcon(var14.getByte("type")),
-                  var1.level,
+                  var1.level(),
                   var14.getString("id"),
                   var14.getDouble("x"),
                   var14.getDouble("z"),

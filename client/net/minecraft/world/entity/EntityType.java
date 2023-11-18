@@ -201,8 +201,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       "boat", EntityType.Builder.<Boat>of(Boat::new, MobCategory.MISC).sized(1.375F, 0.5625F).clientTrackingRange(10)
    );
    public static final EntityType<Camel> CAMEL = register(
-      "camel",
-      EntityType.Builder.<Camel>of(Camel::new, MobCategory.CREATURE).sized(1.7F, 2.375F).clientTrackingRange(10).requiredFeatures(FeatureFlags.UPDATE_1_20)
+      "camel", EntityType.Builder.<Camel>of(Camel::new, MobCategory.CREATURE).sized(1.7F, 2.375F).clientTrackingRange(10)
    );
    public static final EntityType<Cat> CAT = register(
       "cat", EntityType.Builder.<Cat>of(Cat::new, MobCategory.CREATURE).sized(0.6F, 0.7F).clientTrackingRange(8)
@@ -462,8 +461,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       EntityType.Builder.<SmallFireball>of(SmallFireball::new, MobCategory.MISC).sized(0.3125F, 0.3125F).clientTrackingRange(4).updateInterval(10)
    );
    public static final EntityType<Sniffer> SNIFFER = register(
-      "sniffer",
-      EntityType.Builder.<Sniffer>of(Sniffer::new, MobCategory.CREATURE).sized(1.9F, 1.75F).clientTrackingRange(10).requiredFeatures(FeatureFlags.UPDATE_1_20)
+      "sniffer", EntityType.Builder.<Sniffer>of(Sniffer::new, MobCategory.CREATURE).sized(1.9F, 1.75F).clientTrackingRange(10)
    );
    public static final EntityType<SnowGolem> SNOW_GOLEM = register(
       "snow_golem", EntityType.Builder.<SnowGolem>of(SnowGolem::new, MobCategory.MISC).immuneTo(Blocks.POWDER_SNOW).sized(0.7F, 1.9F).clientTrackingRange(8)

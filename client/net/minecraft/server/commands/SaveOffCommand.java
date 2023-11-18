@@ -31,7 +31,7 @@ public class SaveOffCommand {
             if (!var2) {
                throw ERROR_ALREADY_OFF.create();
             } else {
-               var1.sendSuccess(Component.translatable("commands.save.disabled"), true);
+               var1.sendSuccess(() -> Component.translatable("commands.save.disabled"), true);
                return 1;
             }
          })

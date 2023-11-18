@@ -1,16 +1,15 @@
 package net.minecraft.world.level.levelgen;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Charsets;
-import com.google.common.hash.HashFunction;
-import com.google.common.hash.Hashing;
-import com.google.common.primitives.Longs;
+import com.mojang.serialization.Codec;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
 public class XoroshiroRandomSource implements RandomSource {
    private static final float FLOAT_UNIT = 5.9604645E-8F;
    private static final double DOUBLE_UNIT = 1.1102230246251565E-16;
+   public static final Codec<XoroshiroRandomSource> CODEC = Xoroshiro128PlusPlus.CODEC
+      .xmap(var0 -> new XoroshiroRandomSource(var0), var0 -> var0.randomNumberGenerator);
    private Xoroshiro128PlusPlus randomNumberGenerator;
    private final MarsagliaPolarGaussian gaussianSource = new MarsagliaPolarGaussian(this);
 
@@ -19,9 +18,19 @@ public class XoroshiroRandomSource implements RandomSource {
       this.randomNumberGenerator = new Xoroshiro128PlusPlus(RandomSupport.upgradeSeedTo128bit(var1));
    }
 
+   public XoroshiroRandomSource(RandomSupport.Seed128bit var1) {
+      super();
+      this.randomNumberGenerator = new Xoroshiro128PlusPlus(var1);
+   }
+
    public XoroshiroRandomSource(long var1, long var3) {
       super();
       this.randomNumberGenerator = new Xoroshiro128PlusPlus(var1, var3);
+   }
+
+   private XoroshiroRandomSource(Xoroshiro128PlusPlus var1) {
+      super();
+      this.randomNumberGenerator = var1;
    }
 
    @Override
@@ -102,7 +111,6 @@ public class XoroshiroRandomSource implements RandomSource {
    }
 
    public static class XoroshiroPositionalRandomFactory implements PositionalRandomFactory {
-      private static final HashFunction MD5_128 = Hashing.md5();
       private final long seedLo;
       private final long seedHi;
 
@@ -121,10 +129,8 @@ public class XoroshiroRandomSource implements RandomSource {
 
       @Override
       public RandomSource fromHashOf(String var1) {
-         byte[] var2 = MD5_128.hashString(var1, Charsets.UTF_8).asBytes();
-         long var3 = Longs.fromBytes(var2[0], var2[1], var2[2], var2[3], var2[4], var2[5], var2[6], var2[7]);
-         long var5 = Longs.fromBytes(var2[8], var2[9], var2[10], var2[11], var2[12], var2[13], var2[14], var2[15]);
-         return new XoroshiroRandomSource(var3 ^ this.seedLo, var5 ^ this.seedHi);
+         RandomSupport.Seed128bit var2 = RandomSupport.seedFromHashOf(var1);
+         return new XoroshiroRandomSource(var2.xor(this.seedLo, this.seedHi));
       }
 
       @VisibleForTesting

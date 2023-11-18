@@ -98,7 +98,7 @@ public class GoAndGiveItemsToTarget<E extends LivingEntity & InventoryCarrier> e
    public static void throwItem(LivingEntity var0, ItemStack var1, Vec3 var2) {
       Vec3 var3 = new Vec3(0.20000000298023224, 0.30000001192092896, 0.20000000298023224);
       BehaviorUtils.throwItem(var0, var1, var2, var3, 0.2F);
-      Level var4 = var0.level;
+      Level var4 = var0.level();
       if (var4.getGameTime() % 7L == 0L && var4.random.nextDouble() < 0.9) {
          float var5 = Util.<Float>getRandom(Allay.THROW_SOUND_PITCHES, var4.getRandom());
          var4.playSound(null, var0, SoundEvents.ALLAY_THROW, SoundSource.NEUTRAL, 1.0F, var5);

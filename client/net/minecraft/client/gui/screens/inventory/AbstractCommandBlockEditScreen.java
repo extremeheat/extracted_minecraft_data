@@ -1,8 +1,8 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CommandSuggestions;
 import net.minecraft.client.gui.components.CycleButton;
@@ -31,6 +31,9 @@ public abstract class AbstractCommandBlockEditScreen extends Screen {
    @Override
    public void tick() {
       this.commandEdit.tick();
+      if (!this.getCommandBlock().isValid()) {
+         this.onClose();
+      }
    }
 
    abstract BaseCommandBlock getCommandBlock();
@@ -130,15 +133,15 @@ public abstract class AbstractCommandBlockEditScreen extends Screen {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderBackground(var1);
-      drawCenteredString(var1, this.font, SET_COMMAND_LABEL, this.width / 2, 20, 16777215);
-      drawString(var1, this.font, COMMAND_LABEL, this.width / 2 - 150, 40, 10526880);
+      var1.drawCenteredString(this.font, SET_COMMAND_LABEL, this.width / 2, 20, 16777215);
+      var1.drawString(this.font, COMMAND_LABEL, this.width / 2 - 150, 40, 10526880);
       this.commandEdit.render(var1, var2, var3, var4);
       int var5 = 75;
       if (!this.previousEdit.getValue().isEmpty()) {
          var5 += 5 * 9 + 1 + this.getPreviousY() - 135;
-         drawString(var1, this.font, PREVIOUS_OUTPUT_LABEL, this.width / 2 - 150, var5 + 4, 10526880);
+         var1.drawString(this.font, PREVIOUS_OUTPUT_LABEL, this.width / 2 - 150, var5 + 4, 10526880);
          this.previousEdit.render(var1, var2, var3, var4);
       }
 

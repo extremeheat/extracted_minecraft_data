@@ -72,12 +72,12 @@ public class RideCommand {
          throw ERROR_MOUNTING_PLAYER.create();
       } else if (var1.getSelfAndPassengers().anyMatch(var1x -> var1x == var2)) {
          throw ERROR_MOUNTING_LOOP.create();
-      } else if (var1.getLevel() != var2.getLevel()) {
+      } else if (var1.level() != var2.level()) {
          throw ERROR_WRONG_DIMENSION.create();
       } else if (!var1.startRiding(var2, true)) {
          throw ERROR_MOUNT_FAILED.create(var1.getDisplayName(), var2.getDisplayName());
       } else {
-         var0.sendSuccess(Component.translatable("commands.ride.mount.success", var1.getDisplayName(), var2.getDisplayName()), true);
+         var0.sendSuccess(() -> Component.translatable("commands.ride.mount.success", var1.getDisplayName(), var2.getDisplayName()), true);
          return 1;
       }
    }
@@ -88,7 +88,7 @@ public class RideCommand {
          throw ERROR_NOT_RIDING.create(var1.getDisplayName());
       } else {
          var1.stopRiding();
-         var0.sendSuccess(Component.translatable("commands.ride.dismount.success", var1.getDisplayName(), var2.getDisplayName()), true);
+         var0.sendSuccess(() -> Component.translatable("commands.ride.dismount.success", var1.getDisplayName(), var2.getDisplayName()), true);
          return 1;
       }
    }

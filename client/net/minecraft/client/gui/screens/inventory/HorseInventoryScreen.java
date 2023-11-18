@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.animal.horse.AbstractChestedHorse;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
@@ -18,30 +17,28 @@ public class HorseInventoryScreen extends AbstractContainerScreen<HorseInventory
    public HorseInventoryScreen(HorseInventoryMenu var1, Inventory var2, AbstractHorse var3) {
       super(var1, var2, var3.getDisplayName());
       this.horse = var3;
-      this.passEvents = false;
    }
 
    // $QF: Could not properly define all variable types!
    // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
-   protected void renderBg(PoseStack var1, float var2, int var3, int var4) {
-      RenderSystem.setShaderTexture(0, HORSE_INVENTORY_LOCATION);
+   protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       int var5 = (this.width - this.imageWidth) / 2;
       int var6 = (this.height - this.imageHeight) / 2;
-      blit(var1, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
+      var1.blit(HORSE_INVENTORY_LOCATION, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
       if (this.horse instanceof AbstractChestedHorse var7 && var7.hasChest()) {
-         blit(var1, var5 + 79, var6 + 17, 0, this.imageHeight, var7.getInventoryColumns() * 18, 54);
+         var1.blit(HORSE_INVENTORY_LOCATION, var5 + 79, var6 + 17, 0, this.imageHeight, var7.getInventoryColumns() * 18, 54);
       }
 
       if (this.horse.isSaddleable()) {
-         blit(var1, var5 + 7, var6 + 35 - 18, 18, this.imageHeight + 54, 18, 18);
+         var1.blit(HORSE_INVENTORY_LOCATION, var5 + 7, var6 + 35 - 18, 18, this.imageHeight + 54, 18, 18);
       }
 
       if (this.horse.canWearArmor()) {
          if (this.horse instanceof Llama) {
-            blit(var1, var5 + 7, var6 + 35, 36, this.imageHeight + 54, 18, 18);
+            var1.blit(HORSE_INVENTORY_LOCATION, var5 + 7, var6 + 35, 36, this.imageHeight + 54, 18, 18);
          } else {
-            blit(var1, var5 + 7, var6 + 35, 0, this.imageHeight + 54, 18, 18);
+            var1.blit(HORSE_INVENTORY_LOCATION, var5 + 7, var6 + 35, 0, this.imageHeight + 54, 18, 18);
          }
       }
 
@@ -51,7 +48,7 @@ public class HorseInventoryScreen extends AbstractContainerScreen<HorseInventory
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderBackground(var1);
       this.xMouse = (float)var2;
       this.yMouse = (float)var3;

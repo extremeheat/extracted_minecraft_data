@@ -2,11 +2,9 @@ package net.minecraft.client.gui.spectator;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.ArrayList;
 import java.util.List;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.spectator.SpectatorGui;
 import net.minecraft.client.gui.spectator.categories.SpectatorPage;
 import net.minecraft.network.chat.CommonComponents;
@@ -32,7 +30,7 @@ public class SpectatorMenu {
       }
 
       @Override
-      public void renderIcon(PoseStack var1, float var2, int var3) {
+      public void renderIcon(GuiGraphics var1, float var2, int var3) {
       }
 
       @Override
@@ -129,9 +127,8 @@ public class SpectatorMenu {
       }
 
       @Override
-      public void renderIcon(PoseStack var1, float var2, int var3) {
-         RenderSystem.setShaderTexture(0, SpectatorGui.SPECTATOR_LOCATION);
-         GuiComponent.blit(var1, 0, 0, 128.0F, 0.0F, 16, 16, 256, 256);
+      public void renderIcon(GuiGraphics var1, float var2, int var3) {
+         var1.blit(SpectatorGui.SPECTATOR_LOCATION, 0, 0, 128.0F, 0.0F, 16, 16, 256, 256);
       }
 
       @Override
@@ -161,12 +158,11 @@ public class SpectatorMenu {
       }
 
       @Override
-      public void renderIcon(PoseStack var1, float var2, int var3) {
-         RenderSystem.setShaderTexture(0, SpectatorGui.SPECTATOR_LOCATION);
+      public void renderIcon(GuiGraphics var1, float var2, int var3) {
          if (this.direction < 0) {
-            GuiComponent.blit(var1, 0, 0, 144.0F, 0.0F, 16, 16, 256, 256);
+            var1.blit(SpectatorGui.SPECTATOR_LOCATION, 0, 0, 144.0F, 0.0F, 16, 16, 256, 256);
          } else {
-            GuiComponent.blit(var1, 0, 0, 160.0F, 0.0F, 16, 16, 256, 256);
+            var1.blit(SpectatorGui.SPECTATOR_LOCATION, 0, 0, 160.0F, 0.0F, 16, 16, 256, 256);
          }
       }
 

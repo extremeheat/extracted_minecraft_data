@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens.reporting;
 
 import com.mojang.authlib.minecraft.report.AbuseReportLimits;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import java.util.UUID;
@@ -10,6 +9,7 @@ import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Optionull;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineEditBox;
 import net.minecraft.client.gui.components.MultiLineLabel;
@@ -205,16 +205,16 @@ public class ChatReportScreen extends Screen {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       int var5 = this.width / 2;
       this.renderBackground(var1);
-      drawCenteredString(var1, this.font, this.title, var5, 10, 16777215);
-      drawCenteredString(var1, this.font, OBSERVED_WHAT_LABEL, var5, this.selectChatTop() - 9 - 6, 16777215);
+      var1.drawCenteredString(this.font, this.title, var5, 10, 16777215);
+      var1.drawCenteredString(this.font, OBSERVED_WHAT_LABEL, var5, this.selectChatTop() - 9 - 6, 16777215);
       if (this.reasonDescriptionLabel != null) {
          this.reasonDescriptionLabel.renderLeftAligned(var1, this.contentLeft(), this.selectInfoTop() + 20 + 5, 9, 16777215);
       }
 
-      drawString(var1, this.font, MORE_COMMENTS_LABEL, this.contentLeft(), this.commentBoxTop() - 9 - 6, 16777215);
+      var1.drawString(this.font, MORE_COMMENTS_LABEL, this.contentLeft(), this.commentBoxTop() - 9 - 6, 16777215);
       super.render(var1, var2, var3, var4);
    }
 
@@ -321,8 +321,8 @@ public class ChatReportScreen extends Screen {
       }
 
       @Override
-      protected void renderTitle(PoseStack var1) {
-         drawString(var1, this.font, this.title, this.width / 2 - 155, 30, 16777215);
+      protected void renderTitle(GuiGraphics var1) {
+         var1.drawString(this.font, this.title, this.width / 2 - 155, 30, 16777215);
       }
    }
 }

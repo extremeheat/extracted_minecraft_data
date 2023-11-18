@@ -22,7 +22,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
@@ -44,7 +44,7 @@ public interface ContainerEntity extends Container, MenuProvider {
 
    void clearItemStacks();
 
-   Level getLevel();
+   Level level();
 
    boolean isRemoved();
 
@@ -88,26 +88,24 @@ public interface ContainerEntity extends Container, MenuProvider {
 
    default InteractionResult interactWithContainerVehicle(Player var1) {
       var1.openMenu(this);
-      return !var1.level.isClientSide ? InteractionResult.CONSUME : InteractionResult.SUCCESS;
+      return !var1.level().isClientSide ? InteractionResult.CONSUME : InteractionResult.SUCCESS;
    }
 
    default void unpackChestVehicleLootTable(@Nullable Player var1) {
-      MinecraftServer var2 = this.getLevel().getServer();
+      MinecraftServer var2 = this.level().getServer();
       if (this.getLootTable() != null && var2 != null) {
-         LootTable var3 = var2.getLootTables().get(this.getLootTable());
+         LootTable var3 = var2.getLootData().getLootTable(this.getLootTable());
          if (var1 != null) {
             CriteriaTriggers.GENERATE_LOOT.trigger((ServerPlayer)var1, this.getLootTable());
          }
 
          this.setLootTable(null);
-         LootContext.Builder var4 = new LootContext.Builder((ServerLevel)this.getLevel())
-            .withParameter(LootContextParams.ORIGIN, this.position())
-            .withOptionalRandomSeed(this.getLootTableSeed());
+         LootParams.Builder var4 = new LootParams.Builder((ServerLevel)this.level()).withParameter(LootContextParams.ORIGIN, this.position());
          if (var1 != null) {
             var4.withLuck(var1.getLuck()).withParameter(LootContextParams.THIS_ENTITY, var1);
          }
 
-         var3.fill(this, var4.create(LootContextParamSets.CHEST));
+         var3.fill(this, var4.create(LootContextParamSets.CHEST), this.getLootTableSeed());
       }
    }
 

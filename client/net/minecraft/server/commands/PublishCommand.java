@@ -71,7 +71,7 @@ public class PublishCommand {
       } else if (!var0.getServer().publishServer(var3, var2, var1)) {
          throw ERROR_FAILED.create();
       } else {
-         var0.sendSuccess(getSuccessMessage(var1), true);
+         var0.sendSuccess(() -> getSuccessMessage(var1), true);
          return var1;
       }
    }

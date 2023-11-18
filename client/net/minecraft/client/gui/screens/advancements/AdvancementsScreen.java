@@ -2,12 +2,12 @@ package net.minecraft.client.gui.screens.advancements;
 
 import com.google.common.collect.Maps;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.client.GameNarrator;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientAdvancements;
 import net.minecraft.client.multiplayer.ClientPacketListener;
@@ -17,7 +17,7 @@ import net.minecraft.resources.ResourceLocation;
 
 public class AdvancementsScreen extends Screen implements ClientAdvancements.Listener {
    private static final ResourceLocation WINDOW_LOCATION = new ResourceLocation("textures/gui/advancements/window.png");
-   private static final ResourceLocation TABS_LOCATION = new ResourceLocation("textures/gui/advancements/tabs.png");
+   public static final ResourceLocation TABS_LOCATION = new ResourceLocation("textures/gui/advancements/tabs.png");
    public static final int WINDOW_WIDTH = 252;
    public static final int WINDOW_HEIGHT = 140;
    private static final int WINDOW_INSIDE_X = 9;
@@ -94,7 +94,7 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       int var5 = (this.width - 252) / 2;
       int var6 = (this.height - 140) / 2;
       this.renderBackground(var1);
@@ -119,51 +119,48 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
       }
    }
 
-   private void renderInside(PoseStack var1, int var2, int var3, int var4, int var5) {
+   private void renderInside(GuiGraphics var1, int var2, int var3, int var4, int var5) {
       AdvancementTab var6 = this.selectedTab;
       if (var6 == null) {
-         fill(var1, var4 + 9, var5 + 18, var4 + 9 + 234, var5 + 18 + 113, -16777216);
+         var1.fill(var4 + 9, var5 + 18, var4 + 9 + 234, var5 + 18 + 113, -16777216);
          int var7 = var4 + 9 + 117;
-         drawCenteredString(var1, this.font, NO_ADVANCEMENTS_LABEL, var7, var5 + 18 + 56 - 9 / 2, -1);
-         drawCenteredString(var1, this.font, VERY_SAD_LABEL, var7, var5 + 18 + 113 - 9, -1);
+         var1.drawCenteredString(this.font, NO_ADVANCEMENTS_LABEL, var7, var5 + 18 + 56 - 9 / 2, -1);
+         var1.drawCenteredString(this.font, VERY_SAD_LABEL, var7, var5 + 18 + 113 - 9, -1);
       } else {
          var6.drawContents(var1, var4 + 9, var5 + 18);
       }
    }
 
-   public void renderWindow(PoseStack var1, int var2, int var3) {
+   public void renderWindow(GuiGraphics var1, int var2, int var3) {
       RenderSystem.enableBlend();
-      RenderSystem.setShaderTexture(0, WINDOW_LOCATION);
-      blit(var1, var2, var3, 0, 0, 252, 140);
+      var1.blit(WINDOW_LOCATION, var2, var3, 0, 0, 252, 140);
       if (this.tabs.size() > 1) {
-         RenderSystem.setShaderTexture(0, TABS_LOCATION);
-
          for(AdvancementTab var5 : this.tabs.values()) {
             var5.drawTab(var1, var2, var3, var5 == this.selectedTab);
          }
 
          for(AdvancementTab var7 : this.tabs.values()) {
-            var7.drawIcon(var1, var2, var3, this.itemRenderer);
+            var7.drawIcon(var1, var2, var3);
          }
       }
 
-      this.font.draw(var1, TITLE, (float)(var2 + 8), (float)(var3 + 6), 4210752);
+      var1.drawString(this.font, TITLE, var2 + 8, var3 + 6, 4210752, false);
    }
 
-   private void renderTooltips(PoseStack var1, int var2, int var3, int var4, int var5) {
+   private void renderTooltips(GuiGraphics var1, int var2, int var3, int var4, int var5) {
       if (this.selectedTab != null) {
-         var1.pushPose();
-         var1.translate((float)(var4 + 9), (float)(var5 + 18), 400.0F);
+         var1.pose().pushPose();
+         var1.pose().translate((float)(var4 + 9), (float)(var5 + 18), 400.0F);
          RenderSystem.enableDepthTest();
          this.selectedTab.drawTooltips(var1, var2 - var4 - 9, var3 - var5 - 18, var4, var5);
          RenderSystem.disableDepthTest();
-         var1.popPose();
+         var1.pose().popPose();
       }
 
       if (this.tabs.size() > 1) {
          for(AdvancementTab var7 : this.tabs.values()) {
             if (var7.isMouseOver(var4, var5, (double)var2, (double)var3)) {
-               this.renderTooltip(var1, var7.getTitle(), var2, var3);
+               var1.renderTooltip(this.font, var7.getTitle(), var2, var3);
             }
          }
       }

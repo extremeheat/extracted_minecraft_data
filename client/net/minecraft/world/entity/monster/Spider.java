@@ -82,7 +82,7 @@ public class Spider extends Monster {
    @Override
    public void tick() {
       super.tick();
-      if (!this.level.isClientSide) {
+      if (!this.level().isClientSide) {
          this.setClimbing(this.horizontalCollision);
       }
    }
@@ -158,7 +158,7 @@ public class Spider extends Monster {
       var4 = super.finalizeSpawn(var1, var2, var3, var4, var5);
       RandomSource var6 = var1.getRandom();
       if (var6.nextInt(100) == 0) {
-         Skeleton var7 = EntityType.SKELETON.create(this.level);
+         Skeleton var7 = EntityType.SKELETON.create(this.level());
          if (var7 != null) {
             var7.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
             var7.finalizeSpawn(var1, var2, var3, null, null);

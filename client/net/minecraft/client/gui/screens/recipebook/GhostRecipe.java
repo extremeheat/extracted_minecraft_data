@@ -1,14 +1,12 @@
 package net.minecraft.client.gui.screens.recipebook;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -51,7 +49,7 @@ public class GhostRecipe {
       this.recipe = var1;
    }
 
-   public void render(PoseStack var1, Minecraft var2, int var3, int var4, boolean var5, float var6) {
+   public void render(GuiGraphics var1, Minecraft var2, int var3, int var4, boolean var5, float var6) {
       if (!Screen.hasControlDown()) {
          this.time += var6;
       }
@@ -61,19 +59,16 @@ public class GhostRecipe {
          int var9 = var8.getX() + var3;
          int var10 = var8.getY() + var4;
          if (var7 == 0 && var5) {
-            GuiComponent.fill(var1, var9 - 4, var10 - 4, var9 + 20, var10 + 20, 822018048);
+            var1.fill(var9 - 4, var10 - 4, var9 + 20, var10 + 20, 822018048);
          } else {
-            GuiComponent.fill(var1, var9, var10, var9 + 16, var10 + 16, 822018048);
+            var1.fill(var9, var10, var9 + 16, var10 + 16, 822018048);
          }
 
          ItemStack var11 = var8.getItem();
-         ItemRenderer var12 = var2.getItemRenderer();
-         var12.renderAndDecorateFakeItem(var1, var11, var9, var10);
-         RenderSystem.depthFunc(516);
-         GuiComponent.fill(var1, var9, var10, var9 + 16, var10 + 16, 822083583);
-         RenderSystem.depthFunc(515);
+         var1.renderFakeItem(var11, var9, var10);
+         var1.fill(RenderType.guiGhostRecipeOverlay(), var9, var10, var9 + 16, var10 + 16, 822083583);
          if (var7 == 0) {
-            var12.renderGuiItemDecorations(var1, var2.font, var11, var9, var10);
+            var1.renderItemDecorations(var2.font, var11, var9, var10);
          }
       }
    }

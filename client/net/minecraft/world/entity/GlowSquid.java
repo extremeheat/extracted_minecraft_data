@@ -74,7 +74,7 @@ public class GlowSquid extends Squid {
          this.setDarkTicks(var1 - 1);
       }
 
-      this.level.addParticle(ParticleTypes.GLOW, this.getRandomX(0.6), this.getRandomY(), this.getRandomZ(0.6), 0.0, 0.0, 0.0);
+      this.level().addParticle(ParticleTypes.GLOW, this.getRandomX(0.6), this.getRandomY(), this.getRandomZ(0.6), 0.0, 0.0, 0.0);
    }
 
    @Override

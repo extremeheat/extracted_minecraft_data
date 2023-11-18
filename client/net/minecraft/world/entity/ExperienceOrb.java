@@ -69,7 +69,7 @@ public class ExperienceOrb extends Entity {
          this.setDeltaMovement(this.getDeltaMovement().add(0.0, -0.03, 0.0));
       }
 
-      if (this.level.getFluidState(this.blockPosition()).is(FluidTags.LAVA)) {
+      if (this.level().getFluidState(this.blockPosition()).is(FluidTags.LAVA)) {
          this.setDeltaMovement(
             (double)((this.random.nextFloat() - this.random.nextFloat()) * 0.2F),
             0.20000000298023224,
@@ -77,7 +77,7 @@ public class ExperienceOrb extends Entity {
          );
       }
 
-      if (!this.level.noCollision(this.getBoundingBox())) {
+      if (!this.level().noCollision(this.getBoundingBox())) {
          this.moveTowardsClosestSpace(this.getX(), (this.getBoundingBox().minY + this.getBoundingBox().maxY) / 2.0, this.getZ());
       }
 
@@ -104,12 +104,12 @@ public class ExperienceOrb extends Entity {
 
       this.move(MoverType.SELF, this.getDeltaMovement());
       float var6 = 0.98F;
-      if (this.onGround) {
-         var6 = this.level.getBlockState(BlockPos.containing(this.getX(), this.getY() - 1.0, this.getZ())).getBlock().getFriction() * 0.98F;
+      if (this.onGround()) {
+         var6 = this.level().getBlockState(this.getBlockPosBelowThatAffectsMyMovement()).getBlock().getFriction() * 0.98F;
       }
 
       this.setDeltaMovement(this.getDeltaMovement().multiply((double)var6, 0.98, (double)var6));
-      if (this.onGround) {
+      if (this.onGround()) {
          this.setDeltaMovement(this.getDeltaMovement().multiply(1.0, -0.9, 1.0));
       }
 
@@ -119,13 +119,18 @@ public class ExperienceOrb extends Entity {
       }
    }
 
+   @Override
+   protected BlockPos getBlockPosBelowThatAffectsMyMovement() {
+      return this.getOnPos(0.999999F);
+   }
+
    private void scanForEntities() {
       if (this.followingPlayer == null || this.followingPlayer.distanceToSqr(this) > 64.0) {
-         this.followingPlayer = this.level.getNearestPlayer(this, 8.0);
+         this.followingPlayer = this.level().getNearestPlayer(this, 8.0);
       }
 
-      if (this.level instanceof ServerLevel) {
-         for(ExperienceOrb var3 : this.level.getEntities(EntityTypeTest.forClass(ExperienceOrb.class), this.getBoundingBox().inflate(0.5), this::canMerge)) {
+      if (this.level() instanceof ServerLevel) {
+         for(ExperienceOrb var3 : this.level().getEntities(EntityTypeTest.forClass(ExperienceOrb.class), this.getBoundingBox().inflate(0.5), this::canMerge)) {
             this.merge(var3);
          }
       }
@@ -182,7 +187,7 @@ public class ExperienceOrb extends Entity {
    public boolean hurt(DamageSource var1, float var2) {
       if (this.isInvulnerableTo(var1)) {
          return false;
-      } else if (this.level.isClientSide) {
+      } else if (this.level().isClientSide) {
          return true;
       } else {
          this.markHurt();
@@ -213,7 +218,7 @@ public class ExperienceOrb extends Entity {
 
    @Override
    public void playerTouch(Player var1) {
-      if (!this.level.isClientSide) {
+      if (!this.level().isClientSide) {
          if (var1.takeXpDelay == 0) {
             var1.takeXpDelay = 2;
             var1.take(this, 1);

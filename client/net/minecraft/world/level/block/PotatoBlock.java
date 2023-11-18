@@ -32,6 +32,6 @@ public class PotatoBlock extends CropBlock {
 
    @Override
    public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return SHAPE_BY_AGE[var1.getValue(this.getAgeProperty())];
+      return SHAPE_BY_AGE[this.getAge(var1)];
    }
 }

@@ -154,6 +154,13 @@ public class TextureMapping {
       return new TextureMapping().put(TextureSlot.SIDE, getBlockTexture(var0, "_side")).put(TextureSlot.TOP, getBlockTexture(var0, "_top"));
    }
 
+   public static TextureMapping pottedAzalea(Block var0) {
+      return new TextureMapping()
+         .put(TextureSlot.PLANT, getBlockTexture(var0, "_plant"))
+         .put(TextureSlot.SIDE, getBlockTexture(var0, "_side"))
+         .put(TextureSlot.TOP, getBlockTexture(var0, "_top"));
+   }
+
    public static TextureMapping logColumn(Block var0) {
       return new TextureMapping()
          .put(TextureSlot.SIDE, getBlockTexture(var0))
@@ -294,6 +301,17 @@ public class TextureMapping {
          .put(TextureSlot.SOUTH, getBlockTexture(var0, "_front"))
          .put(TextureSlot.EAST, getBlockTexture(var0, "_side"))
          .put(TextureSlot.WEST, getBlockTexture(var0, "_side"));
+   }
+
+   public static TextureMapping snifferEgg(String var0) {
+      return new TextureMapping()
+         .put(TextureSlot.PARTICLE, getBlockTexture(Blocks.SNIFFER_EGG, var0 + "_north"))
+         .put(TextureSlot.BOTTOM, getBlockTexture(Blocks.SNIFFER_EGG, var0 + "_bottom"))
+         .put(TextureSlot.TOP, getBlockTexture(Blocks.SNIFFER_EGG, var0 + "_top"))
+         .put(TextureSlot.NORTH, getBlockTexture(Blocks.SNIFFER_EGG, var0 + "_north"))
+         .put(TextureSlot.SOUTH, getBlockTexture(Blocks.SNIFFER_EGG, var0 + "_south"))
+         .put(TextureSlot.EAST, getBlockTexture(Blocks.SNIFFER_EGG, var0 + "_east"))
+         .put(TextureSlot.WEST, getBlockTexture(Blocks.SNIFFER_EGG, var0 + "_west"));
    }
 
    public static TextureMapping campfire(Block var0) {

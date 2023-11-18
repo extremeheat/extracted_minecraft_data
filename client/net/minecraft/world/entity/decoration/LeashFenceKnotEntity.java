@@ -84,12 +84,12 @@ public class LeashFenceKnotEntity extends HangingEntity {
 
    @Override
    public InteractionResult interact(Player var1, InteractionHand var2) {
-      if (this.level.isClientSide) {
+      if (this.level().isClientSide) {
          return InteractionResult.SUCCESS;
       } else {
          boolean var3 = false;
          double var4 = 7.0;
-         List var6 = this.level
+         List var6 = this.level()
             .getEntitiesOfClass(
                Mob.class, new AABB(this.getX() - 7.0, this.getY() - 7.0, this.getZ() - 7.0, this.getX() + 7.0, this.getY() + 7.0, this.getZ() + 7.0)
             );
@@ -124,7 +124,7 @@ public class LeashFenceKnotEntity extends HangingEntity {
 
    @Override
    public boolean survives() {
-      return this.level.getBlockState(this.pos).is(BlockTags.FENCES);
+      return this.level().getBlockState(this.pos).is(BlockTags.FENCES);
    }
 
    public static LeashFenceKnotEntity getOrCreateKnot(Level var0, BlockPos var1) {

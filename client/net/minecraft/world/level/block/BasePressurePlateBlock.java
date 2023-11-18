@@ -7,6 +7,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -15,7 +16,6 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockSetType;
 import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -41,7 +41,7 @@ public abstract class BasePressurePlateBlock extends Block {
    }
 
    @Override
-   public boolean isPossibleToRespawnInThis() {
+   public boolean isPossibleToRespawnInThis(BlockState var1) {
       return true;
    }
 
@@ -129,9 +129,8 @@ public abstract class BasePressurePlateBlock extends Block {
       return true;
    }
 
-   @Override
-   public PushReaction getPistonPushReaction(BlockState var1) {
-      return PushReaction.DESTROY;
+   protected static int getEntityCount(Level var0, AABB var1, Class<? extends Entity> var2) {
+      return var0.getEntitiesOfClass(var2, var1, EntitySelector.NO_SPECTATORS.and(var0x -> !var0x.isIgnoringBlockTriggers())).size();
    }
 
    protected abstract int getSignalStrength(Level var1, BlockPos var2);

@@ -97,6 +97,14 @@ public class TelemetryPropertyMap {
          return this;
       }
 
+      public <T> TelemetryPropertyMap.Builder putIfNotNull(TelemetryProperty<T> var1, @Nullable T var2) {
+         if (var2 != null) {
+            this.entries.put(var1, var2);
+         }
+
+         return this;
+      }
+
       public TelemetryPropertyMap.Builder putAll(TelemetryPropertyMap var1) {
          this.entries.putAll(var1.entries);
          return this;

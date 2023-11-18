@@ -119,25 +119,43 @@ public abstract class FoliagePlacer {
    ) {
       this.placeLeavesRow(var1, var2, var3, var4, var5, var6, var7, var8);
       int var11 = var8 ? 1 : 0;
-      BlockPos.MutableBlockPos var12 = new BlockPos.MutableBlockPos();
+      BlockPos var12 = var5.below();
+      BlockPos.MutableBlockPos var13 = new BlockPos.MutableBlockPos();
 
-      for(Direction var14 : Direction.Plane.HORIZONTAL) {
-         Direction var15 = var14.getClockWise();
-         int var16 = var15.getAxisDirection() == Direction.AxisDirection.POSITIVE ? var6 + var11 : var6;
-         var12.setWithOffset(var5, 0, var7 - 1, 0).move(var15, var16).move(var14, -var6);
-         int var17 = -var6;
+      for(Direction var15 : Direction.Plane.HORIZONTAL) {
+         Direction var16 = var15.getClockWise();
+         int var17 = var16.getAxisDirection() == Direction.AxisDirection.POSITIVE ? var6 + var11 : var6;
+         var13.setWithOffset(var5, 0, var7 - 1, 0).move(var16, var17).move(var15, -var6);
+         int var18 = -var6;
 
-         while(var17 < var6 + var11) {
-            boolean var18 = var2.isSet(var12.move(Direction.UP));
-            var12.move(Direction.DOWN);
-            if (var18 && !(var3.nextFloat() > var9) && tryPlaceLeaf(var1, var2, var3, var4, var12) && !(var3.nextFloat() > var10)) {
-               tryPlaceLeaf(var1, var2, var3, var4, var12.move(Direction.DOWN));
-               var12.move(Direction.UP);
+         while(var18 < var6 + var11) {
+            boolean var19 = var2.isSet(var13.move(Direction.UP));
+            var13.move(Direction.DOWN);
+            if (var19 && tryPlaceExtension(var1, var2, var3, var4, var9, var12, var13)) {
+               var13.move(Direction.DOWN);
+               tryPlaceExtension(var1, var2, var3, var4, var10, var12, var13);
+               var13.move(Direction.UP);
             }
 
-            ++var17;
-            var12.move(var14);
+            ++var18;
+            var13.move(var15);
          }
+      }
+   }
+
+   private static boolean tryPlaceExtension(
+      LevelSimulatedReader var0,
+      FoliagePlacer.FoliageSetter var1,
+      RandomSource var2,
+      TreeConfiguration var3,
+      float var4,
+      BlockPos var5,
+      BlockPos.MutableBlockPos var6
+   ) {
+      if (var6.distManhattan(var5) >= 7) {
+         return false;
+      } else {
+         return var2.nextFloat() > var4 ? false : tryPlaceLeaf(var0, var1, var2, var3, var6);
       }
    }
 

@@ -35,7 +35,6 @@ import net.minecraft.world.entity.monster.Vindicator;
 import net.minecraft.world.entity.monster.Zoglin;
 import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionUtils;
@@ -44,7 +43,6 @@ import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
-import org.apache.commons.lang3.ArrayUtils;
 
 public class WanderingTrader extends AbstractVillager {
    private static final int NUMBER_OF_TRADE_OFFERS = 5;
@@ -66,14 +64,14 @@ public class WanderingTrader extends AbstractVillager {
                this,
                PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.INVISIBILITY),
                SoundEvents.WANDERING_TRADER_DISAPPEARED,
-               var1 -> this.level.isNight() && !var1.isInvisible()
+               var1 -> this.level().isNight() && !var1.isInvisible()
             )
          );
       this.goalSelector
          .addGoal(
             0,
             new UseItemGoal<>(
-               this, new ItemStack(Items.MILK_BUCKET), SoundEvents.WANDERING_TRADER_REAPPEARED, var1 -> this.level.isDay() && var1.isInvisible()
+               this, new ItemStack(Items.MILK_BUCKET), SoundEvents.WANDERING_TRADER_REAPPEARED, var1 -> this.level().isDay() && var1.isInvisible()
             )
          );
       this.goalSelector.addGoal(1, new TradeWithPlayerGoal(this));
@@ -113,14 +111,14 @@ public class WanderingTrader extends AbstractVillager {
          }
 
          if (this.getOffers().isEmpty()) {
-            return InteractionResult.sidedSuccess(this.level.isClientSide);
+            return InteractionResult.sidedSuccess(this.level().isClientSide);
          } else {
-            if (!this.level.isClientSide) {
+            if (!this.level().isClientSide) {
                this.setTradingPlayer(var1);
                this.openTradingScreen(var1, this.getDisplayName(), 1);
             }
 
-            return InteractionResult.sidedSuccess(this.level.isClientSide);
+            return InteractionResult.sidedSuccess(this.level().isClientSide);
          }
       } else {
          return super.mobInteract(var1, var2);
@@ -132,20 +130,13 @@ public class WanderingTrader extends AbstractVillager {
       VillagerTrades.ItemListing[] var1 = (VillagerTrades.ItemListing[])VillagerTrades.WANDERING_TRADER_TRADES.get(1);
       VillagerTrades.ItemListing[] var2 = (VillagerTrades.ItemListing[])VillagerTrades.WANDERING_TRADER_TRADES.get(2);
       if (var1 != null && var2 != null) {
-         if (this.level.enabledFeatures().contains(FeatureFlags.UPDATE_1_20)) {
-            VillagerTrades.ItemListing[] var3 = (VillagerTrades.ItemListing[])VillagerTrades.WANDERING_TRADER_TRADES_1_20.get(1);
-            if (var3 != null) {
-               var1 = (VillagerTrades.ItemListing[])ArrayUtils.addAll(var1, var3);
-            }
-         }
-
-         MerchantOffers var7 = this.getOffers();
-         this.addOffersFromItemListings(var7, var1, 5);
+         MerchantOffers var3 = this.getOffers();
+         this.addOffersFromItemListings(var3, var1, 5);
          int var4 = this.random.nextInt(var2.length);
          VillagerTrades.ItemListing var5 = var2[var4];
          MerchantOffer var6 = var5.getOffer(this, this.random);
          if (var6 != null) {
-            var7.add(var6);
+            var3.add(var6);
          }
       }
    }
@@ -182,7 +173,7 @@ public class WanderingTrader extends AbstractVillager {
    protected void rewardTradeXp(MerchantOffer var1) {
       if (var1.shouldRewardExp()) {
          int var2 = 3 + this.random.nextInt(4);
-         this.level.addFreshEntity(new ExperienceOrb(this.level, this.getX(), this.getY() + 0.5, this.getZ(), var2));
+         this.level().addFreshEntity(new ExperienceOrb(this.level(), this.getX(), this.getY() + 0.5, this.getZ(), var2));
       }
    }
 
@@ -227,7 +218,7 @@ public class WanderingTrader extends AbstractVillager {
    @Override
    public void aiStep() {
       super.aiStep();
-      if (!this.level.isClientSide) {
+      if (!this.level().isClientSide) {
          this.maybeDespawn();
       }
    }

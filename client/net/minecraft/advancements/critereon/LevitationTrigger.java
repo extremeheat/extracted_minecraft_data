@@ -17,7 +17,7 @@ public class LevitationTrigger extends SimpleCriterionTrigger<LevitationTrigger.
       return ID;
    }
 
-   public LevitationTrigger.TriggerInstance createInstance(JsonObject var1, EntityPredicate.Composite var2, DeserializationContext var3) {
+   public LevitationTrigger.TriggerInstance createInstance(JsonObject var1, ContextAwarePredicate var2, DeserializationContext var3) {
       DistancePredicate var4 = DistancePredicate.fromJson(var1.get("distance"));
       MinMaxBounds.Ints var5 = MinMaxBounds.Ints.fromJson(var1.get("duration"));
       return new LevitationTrigger.TriggerInstance(var2, var4, var5);
@@ -31,14 +31,14 @@ public class LevitationTrigger extends SimpleCriterionTrigger<LevitationTrigger.
       private final DistancePredicate distance;
       private final MinMaxBounds.Ints duration;
 
-      public TriggerInstance(EntityPredicate.Composite var1, DistancePredicate var2, MinMaxBounds.Ints var3) {
+      public TriggerInstance(ContextAwarePredicate var1, DistancePredicate var2, MinMaxBounds.Ints var3) {
          super(LevitationTrigger.ID, var1);
          this.distance = var2;
          this.duration = var3;
       }
 
       public static LevitationTrigger.TriggerInstance levitated(DistancePredicate var0) {
-         return new LevitationTrigger.TriggerInstance(EntityPredicate.Composite.ANY, var0, MinMaxBounds.Ints.ANY);
+         return new LevitationTrigger.TriggerInstance(ContextAwarePredicate.ANY, var0, MinMaxBounds.Ints.ANY);
       }
 
       public boolean matches(ServerPlayer var1, Vec3 var2, int var3) {

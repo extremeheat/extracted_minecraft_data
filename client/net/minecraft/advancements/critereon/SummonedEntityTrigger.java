@@ -18,8 +18,8 @@ public class SummonedEntityTrigger extends SimpleCriterionTrigger<SummonedEntity
       return ID;
    }
 
-   public SummonedEntityTrigger.TriggerInstance createInstance(JsonObject var1, EntityPredicate.Composite var2, DeserializationContext var3) {
-      EntityPredicate.Composite var4 = EntityPredicate.Composite.fromJson(var1, "entity", var3);
+   public SummonedEntityTrigger.TriggerInstance createInstance(JsonObject var1, ContextAwarePredicate var2, DeserializationContext var3) {
+      ContextAwarePredicate var4 = EntityPredicate.fromJson(var1, "entity", var3);
       return new SummonedEntityTrigger.TriggerInstance(var2, var4);
    }
 
@@ -29,15 +29,15 @@ public class SummonedEntityTrigger extends SimpleCriterionTrigger<SummonedEntity
    }
 
    public static class TriggerInstance extends AbstractCriterionTriggerInstance {
-      private final EntityPredicate.Composite entity;
+      private final ContextAwarePredicate entity;
 
-      public TriggerInstance(EntityPredicate.Composite var1, EntityPredicate.Composite var2) {
+      public TriggerInstance(ContextAwarePredicate var1, ContextAwarePredicate var2) {
          super(SummonedEntityTrigger.ID, var1);
          this.entity = var2;
       }
 
       public static SummonedEntityTrigger.TriggerInstance summonedEntity(EntityPredicate.Builder var0) {
-         return new SummonedEntityTrigger.TriggerInstance(EntityPredicate.Composite.ANY, EntityPredicate.Composite.wrap(var0.build()));
+         return new SummonedEntityTrigger.TriggerInstance(ContextAwarePredicate.ANY, EntityPredicate.wrap(var0.build()));
       }
 
       public boolean matches(LootContext var1) {

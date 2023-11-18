@@ -14,13 +14,13 @@ public class ClientboundLevelChunkWithLightPacket implements Packet<ClientGamePa
    private final ClientboundLevelChunkPacketData chunkData;
    private final ClientboundLightUpdatePacketData lightData;
 
-   public ClientboundLevelChunkWithLightPacket(LevelChunk var1, LevelLightEngine var2, @Nullable BitSet var3, @Nullable BitSet var4, boolean var5) {
+   public ClientboundLevelChunkWithLightPacket(LevelChunk var1, LevelLightEngine var2, @Nullable BitSet var3, @Nullable BitSet var4) {
       super();
-      ChunkPos var6 = var1.getPos();
-      this.x = var6.x;
-      this.z = var6.z;
+      ChunkPos var5 = var1.getPos();
+      this.x = var5.x;
+      this.z = var5.z;
       this.chunkData = new ClientboundLevelChunkPacketData(var1);
-      this.lightData = new ClientboundLightUpdatePacketData(var6, var2, var3, var4, var5);
+      this.lightData = new ClientboundLightUpdatePacketData(var5, var2, var3, var4);
    }
 
    public ClientboundLevelChunkWithLightPacket(FriendlyByteBuf var1) {

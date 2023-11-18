@@ -37,7 +37,7 @@ import net.minecraft.world.phys.Vec3;
 
 public class Chicken extends Animal {
    private static final Ingredient FOOD_ITEMS = Ingredient.of(
-      Items.WHEAT_SEEDS, Items.MELON_SEEDS, Items.PUMPKIN_SEEDS, Items.BEETROOT_SEEDS, Items.TORCHFLOWER_SEEDS
+      Items.WHEAT_SEEDS, Items.MELON_SEEDS, Items.PUMPKIN_SEEDS, Items.BEETROOT_SEEDS, Items.TORCHFLOWER_SEEDS, Items.PITCHER_POD
    );
    public float flap;
    public float flapSpeed;
@@ -79,20 +79,20 @@ public class Chicken extends Animal {
       super.aiStep();
       this.oFlap = this.flap;
       this.oFlapSpeed = this.flapSpeed;
-      this.flapSpeed += (this.onGround ? -1.0F : 4.0F) * 0.3F;
+      this.flapSpeed += (this.onGround() ? -1.0F : 4.0F) * 0.3F;
       this.flapSpeed = Mth.clamp(this.flapSpeed, 0.0F, 1.0F);
-      if (!this.onGround && this.flapping < 1.0F) {
+      if (!this.onGround() && this.flapping < 1.0F) {
          this.flapping = 1.0F;
       }
 
       this.flapping *= 0.9F;
       Vec3 var1 = this.getDeltaMovement();
-      if (!this.onGround && var1.y < 0.0) {
+      if (!this.onGround() && var1.y < 0.0) {
          this.setDeltaMovement(var1.multiply(1.0, 0.6, 1.0));
       }
 
       this.flap += this.flapping * 2.0F;
-      if (!this.level.isClientSide && this.isAlive() && !this.isBaby() && !this.isChickenJockey() && --this.eggTime <= 0) {
+      if (!this.level().isClientSide && this.isAlive() && !this.isBaby() && !this.isChickenJockey() && --this.eggTime <= 0) {
          this.playSound(SoundEvents.CHICKEN_EGG, 1.0F, (this.random.nextFloat() - this.random.nextFloat()) * 0.2F + 1.0F);
          this.spawnAtLocation(Items.EGG);
          this.gameEvent(GameEvent.ENTITY_PLACE);
@@ -167,13 +167,13 @@ public class Chicken extends Animal {
    }
 
    @Override
-   public void positionRider(Entity var1) {
-      super.positionRider(var1);
-      float var2 = Mth.sin(this.yBodyRot * 0.017453292F);
-      float var3 = Mth.cos(this.yBodyRot * 0.017453292F);
-      float var4 = 0.1F;
-      float var5 = 0.0F;
-      var1.setPos(this.getX() + (double)(0.1F * var2), this.getY(0.5) + var1.getMyRidingOffset() + 0.0, this.getZ() - (double)(0.1F * var3));
+   protected void positionRider(Entity var1, Entity.MoveFunction var2) {
+      super.positionRider(var1, var2);
+      float var3 = Mth.sin(this.yBodyRot * 0.017453292F);
+      float var4 = Mth.cos(this.yBodyRot * 0.017453292F);
+      float var5 = 0.1F;
+      float var6 = 0.0F;
+      var2.accept(var1, this.getX() + (double)(0.1F * var3), this.getY(0.5) + var1.getMyRidingOffset() + 0.0, this.getZ() - (double)(0.1F * var4));
       if (var1 instanceof LivingEntity) {
          ((LivingEntity)var1).yBodyRot = this.yBodyRot;
       }

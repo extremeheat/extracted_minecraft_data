@@ -14,7 +14,6 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -40,17 +39,18 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootDataManager;
+import net.minecraft.world.level.storage.loot.LootDataType;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
-import net.minecraft.world.level.storage.loot.LootTables;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
 
 public class LootCommand {
    public static final SuggestionProvider<CommandSourceStack> SUGGEST_LOOT_TABLE = (var0, var1) -> {
-      LootTables var2 = ((CommandSourceStack)var0.getSource()).getServer().getLootTables();
-      return SharedSuggestionProvider.suggestResource(var2.getIds(), var1);
+      LootDataManager var2 = ((CommandSourceStack)var0.getSource()).getServer().getLootData();
+      return SharedSuggestionProvider.suggestResource(var2.getKeys(LootDataType.TABLE), var1);
    };
    private static final DynamicCommandExceptionType ERROR_NO_HELD_ITEMS = new DynamicCommandExceptionType(
       var0 -> Component.translatable("commands.drop.no_held_items", var0)
@@ -348,10 +348,7 @@ public class LootCommand {
    }
 
    private static boolean canMergeItems(ItemStack var0, ItemStack var1) {
-      return var0.is(var1.getItem())
-         && var0.getDamageValue() == var1.getDamageValue()
-         && var0.getCount() <= var0.getMaxStackSize()
-         && Objects.equals(var0.getTag(), var1.getTag());
+      return var0.getCount() <= var0.getMaxStackSize() && ItemStack.isSameItemSameTags(var0, var1);
    }
 
    private static int playerGive(Collection<ServerPlayer> var0, List<ItemStack> var1, LootCommand.Callback var2) throws CommandSyntaxException {
@@ -411,18 +408,18 @@ public class LootCommand {
    private static void callback(CommandSourceStack var0, List<ItemStack> var1) {
       if (var1.size() == 1) {
          ItemStack var2 = (ItemStack)var1.get(0);
-         var0.sendSuccess(Component.translatable("commands.drop.success.single", var2.getCount(), var2.getDisplayName()), false);
+         var0.sendSuccess(() -> Component.translatable("commands.drop.success.single", var2.getCount(), var2.getDisplayName()), false);
       } else {
-         var0.sendSuccess(Component.translatable("commands.drop.success.multiple", var1.size()), false);
+         var0.sendSuccess(() -> Component.translatable("commands.drop.success.multiple", var1.size()), false);
       }
    }
 
    private static void callback(CommandSourceStack var0, List<ItemStack> var1, ResourceLocation var2) {
       if (var1.size() == 1) {
          ItemStack var3 = (ItemStack)var1.get(0);
-         var0.sendSuccess(Component.translatable("commands.drop.success.single_with_table", var3.getCount(), var3.getDisplayName(), var2), false);
+         var0.sendSuccess(() -> Component.translatable("commands.drop.success.single_with_table", var3.getCount(), var3.getDisplayName(), var2), false);
       } else {
-         var0.sendSuccess(Component.translatable("commands.drop.success.multiple_with_table", var1.size(), var2), false);
+         var0.sendSuccess(() -> Component.translatable("commands.drop.success.multiple_with_table", var1.size(), var2), false);
       }
    }
 
@@ -440,7 +437,7 @@ public class LootCommand {
       ServerLevel var5 = var4.getLevel();
       BlockState var6 = var5.getBlockState(var1);
       BlockEntity var7 = var5.getBlockEntity(var1);
-      LootContext.Builder var8 = new LootContext.Builder(var5)
+      LootParams.Builder var8 = new LootParams.Builder(var5)
          .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(var1))
          .withParameter(LootContextParams.BLOCK_STATE, var6)
          .withOptionalParameter(LootContextParams.BLOCK_ENTITY, var7)
@@ -456,10 +453,10 @@ public class LootCommand {
       } else {
          ResourceLocation var3 = ((LivingEntity)var1).getLootTable();
          CommandSourceStack var4 = (CommandSourceStack)var0.getSource();
-         LootContext.Builder var5 = new LootContext.Builder(var4.getLevel());
+         LootParams.Builder var5 = new LootParams.Builder(var4.getLevel());
          Entity var6 = var4.getEntity();
-         if (var6 instanceof Player) {
-            var5.withParameter(LootContextParams.LAST_DAMAGE_PLAYER, (Player)var6);
+         if (var6 instanceof Player var7) {
+            var5.withParameter(LootContextParams.LAST_DAMAGE_PLAYER, var7);
          }
 
          var5.withParameter(LootContextParams.DAMAGE_SOURCE, var1.damageSources().magic());
@@ -467,25 +464,27 @@ public class LootCommand {
          var5.withOptionalParameter(LootContextParams.KILLER_ENTITY, var6);
          var5.withParameter(LootContextParams.THIS_ENTITY, var1);
          var5.withParameter(LootContextParams.ORIGIN, var4.getPosition());
-         LootTable var7 = var4.getServer().getLootTables().get(var3);
-         ObjectArrayList var8 = var7.getRandomItems(var5.create(LootContextParamSets.ENTITY));
-         return var2.accept(var0, var8, var2x -> callback(var4, var2x, var3));
+         LootParams var10 = var5.create(LootContextParamSets.ENTITY);
+         LootTable var8 = var4.getServer().getLootData().getLootTable(var3);
+         ObjectArrayList var9 = var8.getRandomItems(var10);
+         return var2.accept(var0, var9, var2x -> callback(var4, var2x, var3));
       }
    }
 
    private static int dropChestLoot(CommandContext<CommandSourceStack> var0, ResourceLocation var1, LootCommand.DropConsumer var2) throws CommandSyntaxException {
       CommandSourceStack var3 = (CommandSourceStack)var0.getSource();
-      LootContext.Builder var4 = new LootContext.Builder(var3.getLevel())
+      LootParams var4 = new LootParams.Builder(var3.getLevel())
          .withOptionalParameter(LootContextParams.THIS_ENTITY, var3.getEntity())
-         .withParameter(LootContextParams.ORIGIN, var3.getPosition());
-      return drop(var0, var1, var4.create(LootContextParamSets.CHEST), var2);
+         .withParameter(LootContextParams.ORIGIN, var3.getPosition())
+         .create(LootContextParamSets.CHEST);
+      return drop(var0, var1, var4, var2);
    }
 
    private static int dropFishingLoot(
       CommandContext<CommandSourceStack> var0, ResourceLocation var1, BlockPos var2, ItemStack var3, LootCommand.DropConsumer var4
    ) throws CommandSyntaxException {
       CommandSourceStack var5 = (CommandSourceStack)var0.getSource();
-      LootContext var6 = new LootContext.Builder(var5.getLevel())
+      LootParams var6 = new LootParams.Builder(var5.getLevel())
          .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(var2))
          .withParameter(LootContextParams.TOOL, var3)
          .withOptionalParameter(LootContextParams.THIS_ENTITY, var5.getEntity())
@@ -493,9 +492,9 @@ public class LootCommand {
       return drop(var0, var1, var6, var4);
    }
 
-   private static int drop(CommandContext<CommandSourceStack> var0, ResourceLocation var1, LootContext var2, LootCommand.DropConsumer var3) throws CommandSyntaxException {
+   private static int drop(CommandContext<CommandSourceStack> var0, ResourceLocation var1, LootParams var2, LootCommand.DropConsumer var3) throws CommandSyntaxException {
       CommandSourceStack var4 = (CommandSourceStack)var0.getSource();
-      LootTable var5 = var4.getServer().getLootTables().get(var1);
+      LootTable var5 = var4.getServer().getLootData().getLootTable(var1);
       ObjectArrayList var6 = var5.getRandomItems(var2);
       return var3.accept(var0, var6, var1x -> callback(var4, var1x));
    }

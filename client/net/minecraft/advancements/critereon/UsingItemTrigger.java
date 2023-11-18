@@ -17,7 +17,7 @@ public class UsingItemTrigger extends SimpleCriterionTrigger<UsingItemTrigger.Tr
       return ID;
    }
 
-   public UsingItemTrigger.TriggerInstance createInstance(JsonObject var1, EntityPredicate.Composite var2, DeserializationContext var3) {
+   public UsingItemTrigger.TriggerInstance createInstance(JsonObject var1, ContextAwarePredicate var2, DeserializationContext var3) {
       ItemPredicate var4 = ItemPredicate.fromJson(var1.get("item"));
       return new UsingItemTrigger.TriggerInstance(var2, var4);
    }
@@ -29,13 +29,13 @@ public class UsingItemTrigger extends SimpleCriterionTrigger<UsingItemTrigger.Tr
    public static class TriggerInstance extends AbstractCriterionTriggerInstance {
       private final ItemPredicate item;
 
-      public TriggerInstance(EntityPredicate.Composite var1, ItemPredicate var2) {
+      public TriggerInstance(ContextAwarePredicate var1, ItemPredicate var2) {
          super(UsingItemTrigger.ID, var1);
          this.item = var2;
       }
 
       public static UsingItemTrigger.TriggerInstance lookingAt(EntityPredicate.Builder var0, ItemPredicate.Builder var1) {
-         return new UsingItemTrigger.TriggerInstance(EntityPredicate.Composite.wrap(var0.build()), var1.build());
+         return new UsingItemTrigger.TriggerInstance(EntityPredicate.wrap(var0.build()), var1.build());
       }
 
       public boolean matches(ItemStack var1) {

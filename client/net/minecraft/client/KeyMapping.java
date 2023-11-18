@@ -65,6 +65,16 @@ public class KeyMapping implements Comparable<KeyMapping> {
       }
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   public static void resetToggleKeys() {
+      for(KeyMapping var1 : ALL.values()) {
+         if (var1 instanceof ToggleKeyMapping var2) {
+            var2.reset();
+         }
+      }
+   }
+
    public static void resetMapping() {
       MAP.clear();
 

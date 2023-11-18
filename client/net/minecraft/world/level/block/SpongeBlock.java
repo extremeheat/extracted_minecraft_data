@@ -1,21 +1,18 @@
 package net.minecraft.world.level.block;
 
-import com.google.common.collect.Lists;
-import java.util.LinkedList;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.FluidTags;
-import net.minecraft.util.Tuple;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.level.material.Material;
 
 public class SpongeBlock extends Block {
    public static final int MAX_DEPTH = 6;
    public static final int MAX_COUNT = 64;
+   private static final Direction[] ALL_DIRECTIONS = Direction.values();
 
    protected SpongeBlock(BlockBehaviour.Properties var1) {
       super(var1);
@@ -42,49 +39,39 @@ public class SpongeBlock extends Block {
    }
 
    private boolean removeWaterBreadthFirstSearch(Level var1, BlockPos var2) {
-      LinkedList var3 = Lists.newLinkedList();
-      var3.add(new Tuple<>(var2, 0));
-      int var4 = 0;
-
-      while(!var3.isEmpty()) {
-         Tuple var5 = (Tuple)var3.poll();
-         BlockPos var6 = (BlockPos)var5.getA();
-         int var7 = var5.getB();
-
-         for(Direction var11 : Direction.values()) {
-            BlockPos var12 = var6.relative(var11);
-            BlockState var13 = var1.getBlockState(var12);
-            FluidState var14 = var1.getFluidState(var12);
-            Material var15 = var13.getMaterial();
-            if (var14.is(FluidTags.WATER)) {
-               if (var13.getBlock() instanceof BucketPickup && !((BucketPickup)var13.getBlock()).pickupBlock(var1, var12, var13).isEmpty()) {
-                  ++var4;
-                  if (var7 < 6) {
-                     var3.add(new Tuple<>(var12, var7 + 1));
-                  }
-               } else if (var13.getBlock() instanceof LiquidBlock) {
-                  var1.setBlock(var12, Blocks.AIR.defaultBlockState(), 3);
-                  ++var4;
-                  if (var7 < 6) {
-                     var3.add(new Tuple<>(var12, var7 + 1));
-                  }
-               } else if (var15 == Material.WATER_PLANT || var15 == Material.REPLACEABLE_WATER_PLANT) {
-                  BlockEntity var16 = var13.hasBlockEntity() ? var1.getBlockEntity(var12) : null;
-                  dropResources(var13, var1, var12, var16);
-                  var1.setBlock(var12, Blocks.AIR.defaultBlockState(), 3);
-                  ++var4;
-                  if (var7 < 6) {
-                     var3.add(new Tuple<>(var12, var7 + 1));
-                  }
+      return BlockPos.breadthFirstTraversal(var2, 6, 65, (var0, var1x) -> {
+         for(Direction var5 : ALL_DIRECTIONS) {
+            var1x.accept(var0.relative(var5));
+         }
+      }, var2x -> {
+         if (var2x.equals(var2)) {
+            return true;
+         } else {
+            BlockState var3 = var1.getBlockState(var2x);
+            FluidState var4 = var1.getFluidState(var2x);
+            if (!var4.is(FluidTags.WATER)) {
+               return false;
+            } else {
+               Block var6 = var3.getBlock();
+               if (var6 instanceof BucketPickup var5 && !var5.pickupBlock(var1, var2x, var3).isEmpty()) {
+                  return true;
                }
+
+               if (var3.getBlock() instanceof LiquidBlock) {
+                  var1.setBlock(var2x, Blocks.AIR.defaultBlockState(), 3);
+               } else {
+                  if (!var3.is(Blocks.KELP) && !var3.is(Blocks.KELP_PLANT) && !var3.is(Blocks.SEAGRASS) && !var3.is(Blocks.TALL_SEAGRASS)) {
+                     return false;
+                  }
+
+                  BlockEntity var7 = var3.hasBlockEntity() ? var1.getBlockEntity(var2x) : null;
+                  dropResources(var3, var1, var2x, var7);
+                  var1.setBlock(var2x, Blocks.AIR.defaultBlockState(), 3);
+               }
+
+               return true;
             }
          }
-
-         if (var4 > 64) {
-            break;
-         }
-      }
-
-      return var4 > 0;
+      }) > 1;
    }
 }

@@ -105,50 +105,46 @@ public class MatrixUtil {
       var1.transpose();
       var1.mul(var0);
       Quaternionf var2 = eigenvalueJacobi(var1, 5);
-      boolean var3 = (double)var1.m00 < 1.0E-6;
-      boolean var4 = (double)var1.m11 < 1.0E-6;
-      Matrix3f var6 = var0.rotate(var2);
-      float var7 = 1.0F;
-      Quaternionf var8 = new Quaternionf();
+      float var3 = var1.m00;
+      float var4 = var1.m11;
+      boolean var5 = (double)var3 < 1.0E-6;
+      boolean var6 = (double)var4 < 1.0E-6;
+      Matrix3f var8 = var0.rotate(var2);
       Quaternionf var9 = new Quaternionf();
-      GivensParameters var10;
-      if (var3) {
-         var10 = qrGivensQuat(var6.m11, -var6.m10);
+      Quaternionf var10 = new Quaternionf();
+      GivensParameters var11;
+      if (var5) {
+         var11 = qrGivensQuat(var8.m11, -var8.m10);
       } else {
-         var10 = qrGivensQuat(var6.m00, var6.m01);
+         var11 = qrGivensQuat(var8.m00, var8.m01);
       }
 
-      Quaternionf var11 = var10.aroundZ(var9);
-      Matrix3f var12 = var10.aroundZ(var1);
-      var7 *= var12.m22;
-      var8.mul(var11);
-      var12.transpose().mul(var6);
-      if (var3) {
-         var10 = qrGivensQuat(var12.m22, -var12.m20);
+      Quaternionf var12 = var11.aroundZ(var10);
+      Matrix3f var13 = var11.aroundZ(var1);
+      var9.mul(var12);
+      var13.transpose().mul(var8);
+      if (var5) {
+         var11 = qrGivensQuat(var13.m22, -var13.m20);
       } else {
-         var10 = qrGivensQuat(var12.m00, var12.m02);
+         var11 = qrGivensQuat(var13.m00, var13.m02);
       }
 
-      var10 = var10.inverse();
-      Quaternionf var13 = var10.aroundY(var9);
-      Matrix3f var14 = var10.aroundY(var6);
-      var7 *= var14.m11;
-      var8.mul(var13);
-      var14.transpose().mul(var12);
-      if (var4) {
-         var10 = qrGivensQuat(var14.m22, -var14.m21);
+      var11 = var11.inverse();
+      Quaternionf var14 = var11.aroundY(var10);
+      Matrix3f var15 = var11.aroundY(var8);
+      var9.mul(var14);
+      var15.transpose().mul(var13);
+      if (var6) {
+         var11 = qrGivensQuat(var15.m22, -var15.m21);
       } else {
-         var10 = qrGivensQuat(var14.m11, var14.m12);
+         var11 = qrGivensQuat(var15.m11, var15.m12);
       }
 
-      Quaternionf var15 = var10.aroundX(var9);
-      Matrix3f var16 = var10.aroundX(var12);
-      var7 *= var16.m00;
-      var8.mul(var15);
-      var16.transpose().mul(var14);
-      var7 = 1.0F / var7;
-      var8.mul(Math.sqrt(var7));
-      Vector3f var17 = new Vector3f(var16.m00 * var7, var16.m11 * var7, var16.m22 * var7);
-      return Triple.of(var8, var17, var2.conjugate());
+      Quaternionf var16 = var11.aroundX(var10);
+      Matrix3f var17 = var11.aroundX(var13);
+      var9.mul(var16);
+      var17.transpose().mul(var15);
+      Vector3f var18 = new Vector3f(var17.m00, var17.m11, var17.m22);
+      return Triple.of(var9, var18, var2.conjugate());
    }
 }

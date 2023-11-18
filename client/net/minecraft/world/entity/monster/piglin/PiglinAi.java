@@ -66,7 +66,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
-import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
@@ -436,12 +436,9 @@ public class PiglinAi {
    }
 
    private static List<ItemStack> getBarterResponseItems(Piglin var0) {
-      LootTable var1 = var0.level.getServer().getLootTables().get(BuiltInLootTables.PIGLIN_BARTERING);
+      LootTable var1 = var0.level().getServer().getLootData().getLootTable(BuiltInLootTables.PIGLIN_BARTERING);
       return var1.getRandomItems(
-         new LootContext.Builder((ServerLevel)var0.level)
-            .withParameter(LootContextParams.THIS_ENTITY, var0)
-            .withRandom(var0.level.random)
-            .create(LootContextParamSets.PIGLIN_BARTER)
+         new LootParams.Builder((ServerLevel)var0.level()).withParameter(LootContextParams.THIS_ENTITY, var0).create(LootContextParamSets.PIGLIN_BARTER)
       );
    }
 
@@ -449,7 +446,7 @@ public class PiglinAi {
       if (var1.getType() != EntityType.HOGLIN) {
          return false;
       } else {
-         return RandomSource.create(var0.level.getGameTime()).nextFloat() < 0.1F;
+         return RandomSource.create(var0.level().getGameTime()).nextFloat() < 0.1F;
       }
    }
 
@@ -531,9 +528,9 @@ public class PiglinAi {
    }
 
    public static void angerNearbyPiglins(Player var0, boolean var1) {
-      List var2 = var0.level.getEntitiesOfClass(Piglin.class, var0.getBoundingBox().inflate(16.0));
+      List var2 = var0.level().getEntitiesOfClass(Piglin.class, var0.getBoundingBox().inflate(16.0));
       var2.stream().filter(PiglinAi::isIdle).filter(var2x -> !var1 || BehaviorUtils.canSee(var2x, var0)).forEach(var1x -> {
-         if (var1x.level.getGameRules().getBoolean(GameRules.RULE_UNIVERSAL_ANGER)) {
+         if (var1x.level().getGameRules().getBoolean(GameRules.RULE_UNIVERSAL_ANGER)) {
             setAngerTargetToNearestTargetablePlayerIfFound(var1x, var0);
          } else {
             setAngerTarget(var1x, var0);
@@ -595,7 +592,7 @@ public class PiglinAi {
       if (!var0.getBrain().isActive(Activity.AVOID)) {
          if (Sensor.isEntityAttackableIgnoringLineOfSight(var0, var1)) {
             if (!BehaviorUtils.isOtherTargetMuchFurtherAwayThanCurrentAttackTarget(var0, var1, 4.0)) {
-               if (var1.getType() == EntityType.PLAYER && var0.level.getGameRules().getBoolean(GameRules.RULE_UNIVERSAL_ANGER)) {
+               if (var1.getType() == EntityType.PLAYER && var0.level().getGameRules().getBoolean(GameRules.RULE_UNIVERSAL_ANGER)) {
                   setAngerTargetToNearestTargetablePlayerIfFound(var0, var1);
                   broadcastUniversalAnger(var0);
                } else {
@@ -661,7 +658,7 @@ public class PiglinAi {
    private static BehaviorControl<LivingEntity> babySometimesRideBabyHoglin() {
       SetEntityLookTargetSometimes.Ticker var0 = new SetEntityLookTargetSometimes.Ticker(RIDE_START_INTERVAL);
       return CopyMemoryWithExpiry.create(
-         var1 -> var1.isBaby() && var0.tickDownAndCheck(var1.level.random),
+         var1 -> var1.isBaby() && var0.tickDownAndCheck(var1.level().random),
          MemoryModuleType.NEAREST_VISIBLE_BABY_HOGLIN,
          MemoryModuleType.RIDE_TARGET,
          RIDE_DURATION
@@ -688,7 +685,7 @@ public class PiglinAi {
             dontKillAnyMoreHoglinsForAWhile(var0);
          }
 
-         if (var1.getType() == EntityType.PLAYER && var0.level.getGameRules().getBoolean(GameRules.RULE_UNIVERSAL_ANGER)) {
+         if (var1.getType() == EntityType.PLAYER && var0.level().getGameRules().getBoolean(GameRules.RULE_UNIVERSAL_ANGER)) {
             var0.getBrain().setMemoryWithExpiry(MemoryModuleType.UNIVERSAL_ANGER, true, 600L);
          }
       }
@@ -767,12 +764,12 @@ public class PiglinAi {
       var0.getBrain().eraseMemory(MemoryModuleType.ANGRY_AT);
       var0.getBrain().eraseMemory(MemoryModuleType.ATTACK_TARGET);
       var0.getBrain().eraseMemory(MemoryModuleType.WALK_TARGET);
-      var0.getBrain().setMemoryWithExpiry(MemoryModuleType.AVOID_TARGET, var1, (long)RETREAT_DURATION.sample(var0.level.random));
+      var0.getBrain().setMemoryWithExpiry(MemoryModuleType.AVOID_TARGET, var1, (long)RETREAT_DURATION.sample(var0.level().random));
       dontKillAnyMoreHoglinsForAWhile(var0);
    }
 
    protected static void dontKillAnyMoreHoglinsForAWhile(AbstractPiglin var0) {
-      var0.getBrain().setMemoryWithExpiry(MemoryModuleType.HUNTED_RECENTLY, true, (long)TIME_BETWEEN_HUNTS.sample(var0.level.random));
+      var0.getBrain().setMemoryWithExpiry(MemoryModuleType.HUNTED_RECENTLY, true, (long)TIME_BETWEEN_HUNTS.sample(var0.level().random));
    }
 
    private static void eat(Piglin var0) {

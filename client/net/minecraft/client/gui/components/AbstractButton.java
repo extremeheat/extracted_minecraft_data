@@ -1,9 +1,10 @@
 package net.minecraft.client.gui.components;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.navigation.CommonInputs;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
@@ -22,19 +23,18 @@ public abstract class AbstractButton extends AbstractWidget {
    public abstract void onPress();
 
    @Override
-   public void renderWidget(PoseStack var1, int var2, int var3, float var4) {
+   public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       Minecraft var5 = Minecraft.getInstance();
-      RenderSystem.setShaderTexture(0, WIDGETS_LOCATION);
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
+      var1.setColor(1.0F, 1.0F, 1.0F, this.alpha);
       RenderSystem.enableBlend();
       RenderSystem.enableDepthTest();
-      blitNineSliced(var1, this.getX(), this.getY(), this.getWidth(), this.getHeight(), 20, 4, 200, 20, 0, this.getTextureY());
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+      var1.blitNineSliced(WIDGETS_LOCATION, this.getX(), this.getY(), this.getWidth(), this.getHeight(), 20, 4, 200, 20, 0, this.getTextureY());
+      var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
       int var6 = this.active ? 16777215 : 10526880;
       this.renderString(var1, var5.font, var6 | Mth.ceil(this.alpha * 255.0F) << 24);
    }
 
-   public void renderString(PoseStack var1, Font var2, int var3) {
+   public void renderString(GuiGraphics var1, Font var2, int var3) {
       this.renderScrollingString(var1, var2, 2, var3);
    }
 
@@ -58,12 +58,12 @@ public abstract class AbstractButton extends AbstractWidget {
    public boolean keyPressed(int var1, int var2, int var3) {
       if (!this.active || !this.visible) {
          return false;
-      } else if (var1 != 257 && var1 != 32 && var1 != 335) {
-         return false;
-      } else {
+      } else if (CommonInputs.selected(var1)) {
          this.playDownSound(Minecraft.getInstance().getSoundManager());
          this.onPress();
          return true;
+      } else {
+         return false;
       }
    }
 }

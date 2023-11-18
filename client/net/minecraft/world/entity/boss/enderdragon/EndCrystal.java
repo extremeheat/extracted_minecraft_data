@@ -51,10 +51,10 @@ public class EndCrystal extends Entity {
    @Override
    public void tick() {
       ++this.time;
-      if (this.level instanceof ServerLevel) {
+      if (this.level() instanceof ServerLevel) {
          BlockPos var1 = this.blockPosition();
-         if (((ServerLevel)this.level).dragonFight() != null && this.level.getBlockState(var1).isAir()) {
-            this.level.setBlockAndUpdate(var1, BaseFireBlock.getState(this.level, var1));
+         if (((ServerLevel)this.level()).getDragonFight() != null && this.level().getBlockState(var1).isAir()) {
+            this.level().setBlockAndUpdate(var1, BaseFireBlock.getState(this.level(), var1));
          }
       }
    }
@@ -91,11 +91,11 @@ public class EndCrystal extends Entity {
       } else if (var1.getEntity() instanceof EnderDragon) {
          return false;
       } else {
-         if (!this.isRemoved() && !this.level.isClientSide) {
+         if (!this.isRemoved() && !this.level().isClientSide) {
             this.remove(Entity.RemovalReason.KILLED);
             if (!var1.is(DamageTypeTags.IS_EXPLOSION)) {
                DamageSource var3 = var1.getEntity() != null ? this.damageSources().explosion(this, var1.getEntity()) : null;
-               this.level.explode(this, var3, null, this.getX(), this.getY(), this.getZ(), 6.0F, false, Level.ExplosionInteraction.BLOCK);
+               this.level().explode(this, var3, null, this.getX(), this.getY(), this.getZ(), 6.0F, false, Level.ExplosionInteraction.BLOCK);
             }
 
             this.onDestroyedBy(var1);
@@ -112,8 +112,8 @@ public class EndCrystal extends Entity {
    }
 
    private void onDestroyedBy(DamageSource var1) {
-      if (this.level instanceof ServerLevel) {
-         EndDragonFight var2 = ((ServerLevel)this.level).dragonFight();
+      if (this.level() instanceof ServerLevel) {
+         EndDragonFight var2 = ((ServerLevel)this.level()).getDragonFight();
          if (var2 != null) {
             var2.onCrystalDestroyed(this, var1);
          }

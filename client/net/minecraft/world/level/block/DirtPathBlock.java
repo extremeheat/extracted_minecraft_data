@@ -50,7 +50,7 @@ public class DirtPathBlock extends Block {
    @Override
    public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       BlockState var4 = var2.getBlockState(var3.above());
-      return !var4.getMaterial().isSolid() || var4.getBlock() instanceof FenceGateBlock;
+      return !var4.isSolid() || var4.getBlock() instanceof FenceGateBlock;
    }
 
    @Override

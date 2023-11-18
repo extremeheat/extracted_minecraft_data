@@ -40,6 +40,8 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootDataType;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
@@ -475,19 +477,21 @@ public class EntitySelectorOptions {
                ResourceLocation var2 = ResourceLocation.read(var0.getReader());
                var0.addPredicate(
                   var2x -> {
-                     if (!(var2x.level instanceof ServerLevel)) {
+                     if (!(var2x.level() instanceof ServerLevel)) {
                         return false;
                      } else {
-                        ServerLevel var3 = (ServerLevel)var2x.level;
-                        LootItemCondition var4 = var3.getServer().getPredicateManager().get(var2);
+                        ServerLevel var3 = (ServerLevel)var2x.level();
+                        LootItemCondition var4 = var3.getServer().getLootData().getElement(LootDataType.PREDICATE, var2);
                         if (var4 == null) {
                            return false;
                         } else {
-                           LootContext var5 = new LootContext.Builder(var3)
+                           LootParams var5 = new LootParams.Builder(var3)
                               .withParameter(LootContextParams.THIS_ENTITY, var2x)
                               .withParameter(LootContextParams.ORIGIN, var2x.position())
                               .create(LootContextParamSets.SELECTOR);
-                           return var1 ^ var4.test(var5);
+                           LootContext var6 = new LootContext.Builder(var5).create(null);
+                           var6.pushVisitedElement(LootContext.createVisitedEntry(var4));
+                           return var1 ^ var4.test(var6);
                         }
                      }
                   }

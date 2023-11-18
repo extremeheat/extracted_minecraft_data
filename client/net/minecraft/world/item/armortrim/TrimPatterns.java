@@ -26,15 +26,17 @@ public class TrimPatterns {
    public static final ResourceKey<TrimPattern> SNOUT = registryKey("snout");
    public static final ResourceKey<TrimPattern> RIB = registryKey("rib");
    public static final ResourceKey<TrimPattern> SPIRE = registryKey("spire");
+   public static final ResourceKey<TrimPattern> WAYFINDER = registryKey("wayfinder");
+   public static final ResourceKey<TrimPattern> SHAPER = registryKey("shaper");
+   public static final ResourceKey<TrimPattern> SILENCE = registryKey("silence");
+   public static final ResourceKey<TrimPattern> RAISER = registryKey("raiser");
+   public static final ResourceKey<TrimPattern> HOST = registryKey("host");
 
    public TrimPatterns() {
       super();
    }
 
    public static void bootstrap(BootstapContext<TrimPattern> var0) {
-   }
-
-   public static void nextUpdate(BootstapContext<TrimPattern> var0) {
       register(var0, Items.SENTRY_ARMOR_TRIM_SMITHING_TEMPLATE, SENTRY);
       register(var0, Items.DUNE_ARMOR_TRIM_SMITHING_TEMPLATE, DUNE);
       register(var0, Items.COAST_ARMOR_TRIM_SMITHING_TEMPLATE, COAST);
@@ -46,6 +48,11 @@ public class TrimPatterns {
       register(var0, Items.SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE, SNOUT);
       register(var0, Items.RIB_ARMOR_TRIM_SMITHING_TEMPLATE, RIB);
       register(var0, Items.SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE, SPIRE);
+      register(var0, Items.WAYFINDER_ARMOR_TRIM_SMITHING_TEMPLATE, WAYFINDER);
+      register(var0, Items.SHAPER_ARMOR_TRIM_SMITHING_TEMPLATE, SHAPER);
+      register(var0, Items.SILENCE_ARMOR_TRIM_SMITHING_TEMPLATE, SILENCE);
+      register(var0, Items.RAISER_ARMOR_TRIM_SMITHING_TEMPLATE, RAISER);
+      register(var0, Items.HOST_ARMOR_TRIM_SMITHING_TEMPLATE, HOST);
    }
 
    public static Optional<Holder.Reference<TrimPattern>> getFromTemplate(RegistryAccess var0, ItemStack var1) {

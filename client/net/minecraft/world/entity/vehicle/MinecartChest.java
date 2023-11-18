@@ -58,7 +58,7 @@ public class MinecartChest extends AbstractMinecartContainer {
 
    @Override
    public void stopOpen(Player var1) {
-      this.level.gameEvent(GameEvent.CONTAINER_CLOSE, this.position(), GameEvent.Context.of(var1));
+      this.level().gameEvent(GameEvent.CONTAINER_CLOSE, this.position(), GameEvent.Context.of(var1));
    }
 
    @Override

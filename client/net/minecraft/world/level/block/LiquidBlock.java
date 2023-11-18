@@ -24,7 +24,7 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.pathfinder.PathComputationType;
-import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -98,7 +98,7 @@ public class LiquidBlock extends Block implements BucketPickup {
    }
 
    @Override
-   public List<ItemStack> getDrops(BlockState var1, LootContext.Builder var2) {
+   public List<ItemStack> getDrops(BlockState var1, LootParams.Builder var2) {
       return Collections.emptyList();
    }
 

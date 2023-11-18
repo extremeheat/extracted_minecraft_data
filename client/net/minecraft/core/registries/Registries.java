@@ -26,6 +26,7 @@ import net.minecraft.world.entity.npc.VillagerType;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.entity.schedule.Schedule;
 import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Instrument;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.alchemy.Potion;
@@ -77,6 +78,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.PosRuleTestTy
 import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTestType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
+import net.minecraft.world.level.levelgen.structure.templatesystem.rule.blockentity.RuleBlockEntityModifierType;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryType;
@@ -100,6 +102,7 @@ public class Registries {
    public static final ResourceKey<Registry<Codec<? extends ChunkGenerator>>> CHUNK_GENERATOR = createRegistryKey("worldgen/chunk_generator");
    public static final ResourceKey<Registry<ChunkStatus>> CHUNK_STATUS = createRegistryKey("chunk_status");
    public static final ResourceKey<Registry<ArgumentTypeInfo<?, ?>>> COMMAND_ARGUMENT_TYPE = createRegistryKey("command_argument_type");
+   public static final ResourceKey<Registry<CreativeModeTab>> CREATIVE_MODE_TAB = createRegistryKey("creative_mode_tab");
    public static final ResourceKey<Registry<ResourceLocation>> CUSTOM_STAT = createRegistryKey("custom_stat");
    public static final ResourceKey<Registry<DamageType>> DAMAGE_TYPE = createRegistryKey("damage_type");
    public static final ResourceKey<Registry<Codec<? extends DensityFunction>>> DENSITY_FUNCTION_TYPE = createRegistryKey("worldgen/density_function_type");
@@ -140,6 +143,7 @@ public class Registries {
    public static final ResourceKey<Registry<RecipeType<?>>> RECIPE_TYPE = createRegistryKey("recipe_type");
    public static final ResourceKey<Registry<RootPlacerType<?>>> ROOT_PLACER_TYPE = createRegistryKey("worldgen/root_placer_type");
    public static final ResourceKey<Registry<RuleTestType<?>>> RULE_TEST = createRegistryKey("rule_test");
+   public static final ResourceKey<Registry<RuleBlockEntityModifierType<?>>> RULE_BLOCK_ENTITY_MODIFIER = createRegistryKey("rule_block_entity_modifier");
    public static final ResourceKey<Registry<Schedule>> SCHEDULE = createRegistryKey("schedule");
    public static final ResourceKey<Registry<SensorType<?>>> SENSOR_TYPE = createRegistryKey("sensor_type");
    public static final ResourceKey<Registry<SoundEvent>> SOUND_EVENT = createRegistryKey("sound_event");

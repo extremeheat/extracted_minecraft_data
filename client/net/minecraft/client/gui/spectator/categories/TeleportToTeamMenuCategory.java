@@ -1,13 +1,11 @@
 package net.minecraft.client.gui.spectator.categories;
 
 import com.mojang.authlib.GameProfile;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.PlayerFaceRenderer;
 import net.minecraft.client.gui.components.spectator.SpectatorGui;
 import net.minecraft.client.gui.spectator.SpectatorMenu;
@@ -58,9 +56,8 @@ public class TeleportToTeamMenuCategory implements SpectatorMenuCategory, Specta
    }
 
    @Override
-   public void renderIcon(PoseStack var1, float var2, int var3) {
-      RenderSystem.setShaderTexture(0, SpectatorGui.SPECTATOR_LOCATION);
-      GuiComponent.blit(var1, 0, 0, 16.0F, 0.0F, 16, 16, 256, 256);
+   public void renderIcon(GuiGraphics var1, float var2, int var3) {
+      var1.blit(SpectatorGui.SPECTATOR_LOCATION, 0, 0, 16.0F, 0.0F, 16, 16, 256, 256);
    }
 
    @Override
@@ -110,19 +107,18 @@ public class TeleportToTeamMenuCategory implements SpectatorMenuCategory, Specta
       }
 
       @Override
-      public void renderIcon(PoseStack var1, float var2, int var3) {
+      public void renderIcon(GuiGraphics var1, float var2, int var3) {
          Integer var4 = this.team.getColor().getColor();
          if (var4 != null) {
             float var5 = (float)(var4 >> 16 & 0xFF) / 255.0F;
             float var6 = (float)(var4 >> 8 & 0xFF) / 255.0F;
             float var7 = (float)(var4 & 0xFF) / 255.0F;
-            GuiComponent.fill(var1, 1, 1, 15, 15, Mth.color(var5 * var2, var6 * var2, var7 * var2) | var3 << 24);
+            var1.fill(1, 1, 15, 15, Mth.color(var5 * var2, var6 * var2, var7 * var2) | var3 << 24);
          }
 
-         RenderSystem.setShaderTexture(0, this.iconSkin);
-         RenderSystem.setShaderColor(var2, var2, var2, (float)var3 / 255.0F);
-         PlayerFaceRenderer.draw(var1, 2, 2, 12);
-         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+         var1.setColor(var2, var2, var2, (float)var3 / 255.0F);
+         PlayerFaceRenderer.draw(var1, this.iconSkin, 2, 2, 12);
+         var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
       }
 
       @Override

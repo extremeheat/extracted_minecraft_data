@@ -95,7 +95,7 @@ public class TridentItem extends Item implements Vanishable {
                   var12 *= var14 / var13;
                   var5.push((double)var10, (double)var11, (double)var12);
                   var5.startAutoSpinAttack(20);
-                  if (var5.isOnGround()) {
+                  if (var5.onGround()) {
                      float var15 = 1.1999999F;
                      var5.move(MoverType.SELF, new Vec3(0.0, 1.1999999284744263, 0.0));
                   }

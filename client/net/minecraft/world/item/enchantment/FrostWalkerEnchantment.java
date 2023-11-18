@@ -6,9 +6,8 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.LiquidBlock;
+import net.minecraft.world.level.block.FrostedIceBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Material;
 import net.minecraft.world.phys.shapes.CollisionContext;
 
 public class FrostWalkerEnchantment extends Enchantment {
@@ -37,7 +36,7 @@ public class FrostWalkerEnchantment extends Enchantment {
    }
 
    public static void onEntityMoved(LivingEntity var0, Level var1, BlockPos var2, int var3) {
-      if (var0.isOnGround()) {
+      if (var0.onGround()) {
          BlockState var4 = Blocks.FROSTED_ICE.defaultBlockState();
          int var5 = Math.min(16, 2 + var3);
          BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos();
@@ -48,10 +47,7 @@ public class FrostWalkerEnchantment extends Enchantment {
                BlockState var9 = var1.getBlockState(var6);
                if (var9.isAir()) {
                   BlockState var10 = var1.getBlockState(var8);
-                  if (var10.getMaterial() == Material.WATER
-                     && var10.getValue(LiquidBlock.LEVEL) == 0
-                     && var4.canSurvive(var1, var8)
-                     && var1.isUnobstructed(var4, var8, CollisionContext.empty())) {
+                  if (var10 == FrostedIceBlock.meltsInto() && var4.canSurvive(var1, var8) && var1.isUnobstructed(var4, var8, CollisionContext.empty())) {
                      var1.setBlockAndUpdate(var8, var4);
                      var1.scheduleTick(var8, Blocks.FROSTED_ICE, Mth.nextInt(var0.getRandom(), 60, 120));
                   }

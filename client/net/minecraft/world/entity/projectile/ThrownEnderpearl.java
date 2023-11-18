@@ -43,7 +43,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
       super.onHit(var1);
 
       for(int var2 = 0; var2 < 32; ++var2) {
-         this.level
+         this.level()
             .addParticle(
                ParticleTypes.PORTAL,
                this.getX(),
@@ -55,15 +55,15 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
             );
       }
 
-      if (!this.level.isClientSide && !this.isRemoved()) {
+      if (!this.level().isClientSide && !this.isRemoved()) {
          Entity var5 = this.getOwner();
          if (var5 instanceof ServerPlayer var3) {
-            if (var3.connection.isAcceptingMessages() && var3.level == this.level && !var3.isSleeping()) {
-               if (this.random.nextFloat() < 0.05F && this.level.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING)) {
-                  Endermite var4 = EntityType.ENDERMITE.create(this.level);
+            if (var3.connection.isAcceptingMessages() && var3.level() == this.level() && !var3.isSleeping()) {
+               if (this.random.nextFloat() < 0.05F && this.level().getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING)) {
+                  Endermite var4 = EntityType.ENDERMITE.create(this.level());
                   if (var4 != null) {
                      var4.moveTo(var5.getX(), var5.getY(), var5.getZ(), var5.getYRot(), var5.getXRot());
-                     this.level.addFreshEntity(var4);
+                     this.level().addFreshEntity(var4);
                   }
                }
 
@@ -99,7 +99,7 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
    @Override
    public Entity changeDimension(ServerLevel var1) {
       Entity var2 = this.getOwner();
-      if (var2 != null && var2.level.dimension() != var1.dimension()) {
+      if (var2 != null && var2.level().dimension() != var1.dimension()) {
          this.setOwner(null);
       }
 

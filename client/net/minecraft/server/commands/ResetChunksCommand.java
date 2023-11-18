@@ -93,7 +93,7 @@ public class ResetChunksCommand {
       long var31 = System.currentTimeMillis();
       int var32 = (var1 * 2 + 1) * (var1 * 2 + 1);
       UnmodifiableIterator var33 = ImmutableList.of(
-            ChunkStatus.BIOMES, ChunkStatus.NOISE, ChunkStatus.SURFACE, ChunkStatus.CARVERS, ChunkStatus.LIQUID_CARVERS, ChunkStatus.FEATURES
+            ChunkStatus.BIOMES, ChunkStatus.NOISE, ChunkStatus.SURFACE, ChunkStatus.CARVERS, ChunkStatus.FEATURES, ChunkStatus.INITIALIZE_LIGHT
          )
          .iterator();
 
@@ -129,7 +129,7 @@ public class ResetChunksCommand {
                   var19 = var19.thenComposeAsync(
                      var5x -> var35.generate(var30::tell, var3, var4.getGenerator(), var3.getStructureManager(), var4.getLightEngine(), var0xx -> {
                            throw new UnsupportedOperationException("Not creating full chunks here");
-                        }, var24, true).thenApply(var1xx -> {
+                        }, var24).thenApply(var1xx -> {
                            if (var35 == ChunkStatus.NOISE) {
                               var1xx.left().ifPresent(var0xxx -> Heightmap.primeHeightmaps(var0xxx, ChunkStatus.POST_FEATURES));
                            }
@@ -142,7 +142,7 @@ public class ResetChunksCommand {
          }
 
          var0.getServer().managedBlock(var19::isDone);
-         LOGGER.debug(var35.getName() + " took " + (System.currentTimeMillis() - var17) + " ms");
+         LOGGER.debug(var35 + " took " + (System.currentTimeMillis() - var17) + " ms");
       }
 
       long var34 = System.currentTimeMillis();
@@ -169,11 +169,16 @@ public class ResetChunksCommand {
       LOGGER.debug("blockChanged took " + (System.currentTimeMillis() - var34) + " ms");
       long var37 = System.currentTimeMillis() - var31;
       var0.sendSuccess(
-         Component.literal(
-            String.format(
-               Locale.ROOT, "%d chunks have been reset. This took %d ms for %d chunks, or %02f ms per chunk", var32, var37, var32, (float)var37 / (float)var32
-            )
-         ),
+         () -> Component.literal(
+               String.format(
+                  Locale.ROOT,
+                  "%d chunks have been reset. This took %d ms for %d chunks, or %02f ms per chunk",
+                  var32,
+                  var37,
+                  var32,
+                  (float)var37 / (float)var32
+               )
+            ),
          true
       );
       return 1;

@@ -40,7 +40,7 @@ public class RaftModel extends ListModel<Boat> {
             .addBox(-14.0F, -11.0F, -4.0F, 28.0F, 20.0F, 4.0F)
             .texOffs(0, 0)
             .addBox(-14.0F, -9.0F, -8.0F, 28.0F, 16.0F, 4.0F),
-         PartPose.offsetAndRotation(0.0F, -3.0F, 1.0F, 1.5708F, 0.0F, 0.0F)
+         PartPose.offsetAndRotation(0.0F, -2.0F, 1.0F, 1.5708F, 0.0F, 0.0F)
       );
       boolean var1 = true;
       boolean var2 = true;
@@ -49,12 +49,12 @@ public class RaftModel extends ListModel<Boat> {
       var0.addOrReplaceChild(
          "left_paddle",
          CubeListBuilder.create().texOffs(0, 24).addBox(-1.0F, 0.0F, -5.0F, 2.0F, 2.0F, 18.0F).addBox(-1.001F, -3.0F, 8.0F, 1.0F, 6.0F, 7.0F),
-         PartPose.offsetAndRotation(3.0F, -5.0F, 9.0F, 0.0F, 0.0F, 0.19634955F)
+         PartPose.offsetAndRotation(3.0F, -4.0F, 9.0F, 0.0F, 0.0F, 0.19634955F)
       );
       var0.addOrReplaceChild(
          "right_paddle",
          CubeListBuilder.create().texOffs(40, 24).addBox(-1.0F, 0.0F, -5.0F, 2.0F, 2.0F, 18.0F).addBox(0.001F, -3.0F, 8.0F, 1.0F, 6.0F, 7.0F),
-         PartPose.offsetAndRotation(3.0F, -5.0F, -9.0F, 0.0F, 3.1415927F, 0.19634955F)
+         PartPose.offsetAndRotation(3.0F, -4.0F, -9.0F, 0.0F, 3.1415927F, 0.19634955F)
       );
    }
 

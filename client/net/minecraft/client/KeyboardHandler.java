@@ -132,8 +132,8 @@ public class KeyboardHandler {
                if (this.minecraft.player.isReducedDebugInfo()) {
                   return false;
                } else {
-                  ClientPacketListener var7 = this.minecraft.player.connection;
-                  if (var7 == null) {
+                  ClientPacketListener var8 = this.minecraft.player.connection;
+                  if (var8 == null) {
                      return false;
                   }
 
@@ -142,7 +142,7 @@ public class KeyboardHandler {
                      String.format(
                         Locale.ROOT,
                         "/execute in %s run tp @s %.2f %.2f %.2f %.2f %.2f",
-                        this.minecraft.player.level.dimension().location(),
+                        this.minecraft.player.level().dimension().location(),
                         this.minecraft.player.getX(),
                         this.minecraft.player.getY(),
                         this.minecraft.player.getZ(),
@@ -219,12 +219,13 @@ public class KeyboardHandler {
                var4.addMessage(Component.translatable("debug.gamemodes.help"));
                return true;
             case 83:
-               Path var5 = TextureUtil.getDebugTexturePath(this.minecraft.gameDirectory.toPath()).toAbsolutePath();
-               this.minecraft.getTextureManager().dumpAllSheets(var5);
-               MutableComponent var6 = Component.literal(var5.toString())
+               Path var5 = this.minecraft.gameDirectory.toPath().toAbsolutePath();
+               Path var6 = TextureUtil.getDebugTexturePath(var5);
+               this.minecraft.getTextureManager().dumpAllSheets(var6);
+               MutableComponent var7 = Component.literal(var5.relativize(var6).toString())
                   .withStyle(ChatFormatting.UNDERLINE)
-                  .withStyle(var1x -> var1x.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, var5.toFile().toString())));
-               this.debugFeedbackTranslated("debug.dump_dynamic_textures", var6);
+                  .withStyle(var1x -> var1x.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, var6.toFile().toString())));
+               this.debugFeedbackTranslated("debug.dump_dynamic_textures", var7);
                return true;
             case 84:
                this.debugFeedbackTranslated("debug.reload_resourcepacks.message");
@@ -250,7 +251,7 @@ public class KeyboardHandler {
          switch(var3.getType()) {
             case BLOCK:
                BlockPos var8 = ((BlockHitResult)var3).getBlockPos();
-               BlockState var9 = this.minecraft.player.level.getBlockState(var8);
+               BlockState var9 = this.minecraft.player.level().getBlockState(var8);
                if (var1) {
                   if (var2) {
                      this.minecraft.player.connection.getDebugQueryHandler().queryBlockEntityTag(var8, var3x -> {
@@ -258,7 +259,7 @@ public class KeyboardHandler {
                         this.debugFeedbackTranslated("debug.inspect.server.block");
                      });
                   } else {
-                     BlockEntity var10 = this.minecraft.player.level.getBlockEntity(var8);
+                     BlockEntity var10 = this.minecraft.player.level().getBlockEntity(var8);
                      CompoundTag var7 = var10 != null ? var10.saveWithoutMetadata() : null;
                      this.copyCreateBlockCommand(var9, var8, var7);
                      this.debugFeedbackTranslated("debug.inspect.client.block");
@@ -398,7 +399,7 @@ public class KeyboardHandler {
             }
          }
 
-         if (this.minecraft.screen == null || this.minecraft.screen.passEvents) {
+         if (this.minecraft.screen == null) {
             InputConstants.Key var12 = InputConstants.getKey(var3, var4);
             if (var5 == 0) {
                KeyMapping.set(var12, false);
@@ -417,17 +418,15 @@ public class KeyboardHandler {
                }
 
                boolean var13 = false;
-               if (this.minecraft.screen == null) {
-                  if (var3 == 256) {
-                     boolean var10 = InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 292);
-                     this.minecraft.pauseGame(var10);
-                  }
+               if (var3 == 256) {
+                  boolean var10 = InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 292);
+                  this.minecraft.pauseGame(var10);
+               }
 
-                  var13 = InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 292) && this.handleDebugKeys(var3);
-                  this.handledDebugKey |= var13;
-                  if (var3 == 290) {
-                     this.minecraft.options.hideGui = !this.minecraft.options.hideGui;
-                  }
+               var13 = InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 292) && this.handleDebugKeys(var3);
+               this.handledDebugKey |= var13;
+               if (var3 == 290) {
+                  this.minecraft.options.hideGui = !this.minecraft.options.hideGui;
                }
 
                if (var13) {

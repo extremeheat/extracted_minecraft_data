@@ -12,7 +12,7 @@ public class GoToTargetLocation {
    }
 
    private static BlockPos getNearbyPos(Mob var0, BlockPos var1) {
-      RandomSource var2 = var0.level.random;
+      RandomSource var2 = var0.level().random;
       return var1.offset(getRandomOffset(var2), 0, getRandomOffset(var2));
    }
 

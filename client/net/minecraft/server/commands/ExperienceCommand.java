@@ -138,7 +138,7 @@ public class ExperienceCommand {
 
    private static int queryExperience(CommandSourceStack var0, ServerPlayer var1, ExperienceCommand.Type var2) {
       int var3 = var2.query.applyAsInt(var1);
-      var0.sendSuccess(Component.translatable("commands.experience.query." + var2.name, var1.getDisplayName(), var3), false);
+      var0.sendSuccess(() -> Component.translatable("commands.experience.query." + var2.name, var1.getDisplayName(), var3), false);
       return var3;
    }
 
@@ -149,11 +149,13 @@ public class ExperienceCommand {
 
       if (var1.size() == 1) {
          var0.sendSuccess(
-            Component.translatable("commands.experience.add." + var3.name + ".success.single", var2, ((ServerPlayer)var1.iterator().next()).getDisplayName()),
+            () -> Component.translatable(
+                  "commands.experience.add." + var3.name + ".success.single", var2, ((ServerPlayer)var1.iterator().next()).getDisplayName()
+               ),
             true
          );
       } else {
-         var0.sendSuccess(Component.translatable("commands.experience.add." + var3.name + ".success.multiple", var2, var1.size()), true);
+         var0.sendSuccess(() -> Component.translatable("commands.experience.add." + var3.name + ".success.multiple", var2, var1.size()), true);
       }
 
       return var1.size();
@@ -173,13 +175,13 @@ public class ExperienceCommand {
       } else {
          if (var1.size() == 1) {
             var0.sendSuccess(
-               Component.translatable(
-                  "commands.experience.set." + var3.name + ".success.single", var2, ((ServerPlayer)var1.iterator().next()).getDisplayName()
-               ),
+               () -> Component.translatable(
+                     "commands.experience.set." + var3.name + ".success.single", var2, ((ServerPlayer)var1.iterator().next()).getDisplayName()
+                  ),
                true
             );
          } else {
-            var0.sendSuccess(Component.translatable("commands.experience.set." + var3.name + ".success.multiple", var2, var1.size()), true);
+            var0.sendSuccess(() -> Component.translatable("commands.experience.set." + var3.name + ".success.multiple", var2, var1.size()), true);
          }
 
          return var1.size();

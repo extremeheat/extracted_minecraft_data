@@ -1,9 +1,9 @@
 package net.minecraft.client.gui.screens;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Arrays;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.OptionsList;
 import net.minecraft.network.chat.CommonComponents;
@@ -43,7 +43,7 @@ public class SoundOptionsScreen extends OptionsSubScreen {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.basicListRender(var1, this.list, var2, var3, var4);
    }
 }

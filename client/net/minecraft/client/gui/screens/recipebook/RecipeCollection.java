@@ -37,7 +37,7 @@ public class RecipeCollection {
 
       for(int var4 = 1; var4 < var2; ++var4) {
          ItemStack var5 = ((Recipe)var1.get(var4)).getResultItem(var0);
-         if (!ItemStack.isSame(var3, var5) || !ItemStack.tagMatches(var3, var5)) {
+         if (!ItemStack.isSameItemSameTags(var3, var5)) {
             return false;
          }
       }

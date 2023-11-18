@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.screens;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Options;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.OptionsList;
 import net.minecraft.network.chat.Component;
 
@@ -25,10 +25,10 @@ public class OptionsSubScreen extends Screen {
       this.minecraft.setScreen(this.lastScreen);
    }
 
-   protected void basicListRender(PoseStack var1, OptionsList var2, int var3, int var4, float var5) {
+   protected void basicListRender(GuiGraphics var1, OptionsList var2, int var3, int var4, float var5) {
       this.renderBackground(var1);
       var2.render(var1, var3, var4, var5);
-      drawCenteredString(var1, this.font, this.title, this.width / 2, 20, 16777215);
+      var1.drawCenteredString(this.font, this.title, this.width / 2, 20, 16777215);
       super.render(var1, var3, var4, var5);
    }
 }

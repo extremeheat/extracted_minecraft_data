@@ -118,7 +118,7 @@ public class ItemInHandRenderer {
 
    public void renderItem(LivingEntity var1, ItemStack var2, ItemDisplayContext var3, boolean var4, PoseStack var5, MultiBufferSource var6, int var7) {
       if (!var2.isEmpty()) {
-         this.itemRenderer.renderStatic(var1, var2, var3, var4, var5, var6, var1.level, var7, OverlayTexture.NO_OVERLAY, var1.getId() + var3.ordinal());
+         this.itemRenderer.renderStatic(var1, var2, var3, var4, var5, var6, var1.level(), var7, OverlayTexture.NO_OVERLAY, var1.getId() + var3.ordinal());
       }
    }
 
@@ -257,26 +257,27 @@ public class ItemInHandRenderer {
 
    private void applyBrushTransform(PoseStack var1, float var2, HumanoidArm var3, ItemStack var4, float var5) {
       this.applyItemArmTransform(var1, var3, var5);
-      float var6 = (float)this.minecraft.player.getUseItemRemainingTicks() - var2 + 1.0F;
-      float var7 = 1.0F - var6 / (float)var4.getUseDuration();
-      float var8 = -90.0F;
-      float var9 = 60.0F;
-      boolean var10 = true;
+      float var6 = (float)(this.minecraft.player.getUseItemRemainingTicks() % 10);
+      float var7 = var6 - var2 + 1.0F;
+      float var8 = 1.0F - var7 / 10.0F;
+      float var9 = -90.0F;
+      float var10 = 60.0F;
       float var11 = 150.0F;
       float var12 = -15.0F;
-      float var13 = -15.0F + 75.0F * Mth.cos(var7 * 45.0F * 3.1415927F);
+      boolean var13 = true;
+      float var14 = -15.0F + 75.0F * Mth.cos(var8 * 2.0F * 3.1415927F);
       if (var3 != HumanoidArm.RIGHT) {
          var1.translate(0.1, 0.83, 0.35);
          var1.mulPose(Axis.XP.rotationDegrees(-80.0F));
          var1.mulPose(Axis.YP.rotationDegrees(-90.0F));
-         var1.mulPose(Axis.XP.rotationDegrees(var13));
+         var1.mulPose(Axis.XP.rotationDegrees(var14));
          var1.translate(-0.3, 0.22, 0.35);
       } else {
          var1.translate(-0.25, 0.22, 0.35);
          var1.mulPose(Axis.XP.rotationDegrees(-80.0F));
          var1.mulPose(Axis.YP.rotationDegrees(90.0F));
          var1.mulPose(Axis.ZP.rotationDegrees(0.0F));
-         var1.mulPose(Axis.XP.rotationDegrees(var13));
+         var1.mulPose(Axis.XP.rotationDegrees(var14));
       }
    }
 

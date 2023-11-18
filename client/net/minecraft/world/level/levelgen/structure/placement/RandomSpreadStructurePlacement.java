@@ -5,31 +5,35 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import net.minecraft.core.Vec3i;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
 import net.minecraft.world.level.levelgen.LegacyRandomSource;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
 
 public class RandomSpreadStructurePlacement extends StructurePlacement {
-   public static final Codec<RandomSpreadStructurePlacement> CODEC = RecordCodecBuilder.mapCodec(
-         var0 -> placementCodec(var0)
-               .and(
-                  var0.group(
-                     Codec.intRange(0, 4096).fieldOf("spacing").forGetter(RandomSpreadStructurePlacement::spacing),
-                     Codec.intRange(0, 4096).fieldOf("separation").forGetter(RandomSpreadStructurePlacement::separation),
-                     RandomSpreadType.CODEC.optionalFieldOf("spread_type", RandomSpreadType.LINEAR).forGetter(RandomSpreadStructurePlacement::spreadType)
+   public static final Codec<RandomSpreadStructurePlacement> CODEC = ExtraCodecs.validate(
+         RecordCodecBuilder.mapCodec(
+            var0 -> placementCodec(var0)
+                  .and(
+                     var0.group(
+                        Codec.intRange(0, 4096).fieldOf("spacing").forGetter(RandomSpreadStructurePlacement::spacing),
+                        Codec.intRange(0, 4096).fieldOf("separation").forGetter(RandomSpreadStructurePlacement::separation),
+                        RandomSpreadType.CODEC.optionalFieldOf("spread_type", RandomSpreadType.LINEAR).forGetter(RandomSpreadStructurePlacement::spreadType)
+                     )
                   )
-               )
-               .apply(var0, RandomSpreadStructurePlacement::new)
-      )
-      .flatXmap(
-         var0 -> var0.spacing <= var0.separation ? DataResult.error(() -> "Spacing has to be larger than separation") : DataResult.success(var0),
-         DataResult::success
+                  .apply(var0, RandomSpreadStructurePlacement::new)
+         ),
+         RandomSpreadStructurePlacement::validate
       )
       .codec();
    private final int spacing;
    private final int separation;
    private final RandomSpreadType spreadType;
+
+   private static DataResult<RandomSpreadStructurePlacement> validate(RandomSpreadStructurePlacement var0) {
+      return var0.spacing <= var0.separation ? DataResult.error(() -> "Spacing has to be larger than separation") : DataResult.success(var0);
+   }
 
    public RandomSpreadStructurePlacement(
       Vec3i var1,

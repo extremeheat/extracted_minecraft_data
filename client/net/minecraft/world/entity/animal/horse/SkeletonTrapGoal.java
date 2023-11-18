@@ -23,12 +23,12 @@ public class SkeletonTrapGoal extends Goal {
 
    @Override
    public boolean canUse() {
-      return this.horse.level.hasNearbyAlivePlayer(this.horse.getX(), this.horse.getY(), this.horse.getZ(), 10.0);
+      return this.horse.level().hasNearbyAlivePlayer(this.horse.getX(), this.horse.getY(), this.horse.getZ(), 10.0);
    }
 
    @Override
    public void tick() {
-      ServerLevel var1 = (ServerLevel)this.horse.level;
+      ServerLevel var1 = (ServerLevel)this.horse.level();
       DifficultyInstance var2 = var1.getCurrentDifficultyAt(this.horse.blockPosition());
       this.horse.setTrap(false);
       this.horse.setTamed(true);
@@ -60,9 +60,9 @@ public class SkeletonTrapGoal extends Goal {
 
    @Nullable
    private AbstractHorse createHorse(DifficultyInstance var1) {
-      SkeletonHorse var2 = EntityType.SKELETON_HORSE.create(this.horse.level);
+      SkeletonHorse var2 = EntityType.SKELETON_HORSE.create(this.horse.level());
       if (var2 != null) {
-         var2.finalizeSpawn((ServerLevel)this.horse.level, var1, MobSpawnType.TRIGGERED, null, null);
+         var2.finalizeSpawn((ServerLevel)this.horse.level(), var1, MobSpawnType.TRIGGERED, null, null);
          var2.setPos(this.horse.getX(), this.horse.getY(), this.horse.getZ());
          var2.invulnerableTime = 60;
          var2.setPersistenceRequired();
@@ -75,9 +75,9 @@ public class SkeletonTrapGoal extends Goal {
 
    @Nullable
    private Skeleton createSkeleton(DifficultyInstance var1, AbstractHorse var2) {
-      Skeleton var3 = EntityType.SKELETON.create(var2.level);
+      Skeleton var3 = EntityType.SKELETON.create(var2.level());
       if (var3 != null) {
-         var3.finalizeSpawn((ServerLevel)var2.level, var1, MobSpawnType.TRIGGERED, null, null);
+         var3.finalizeSpawn((ServerLevel)var2.level(), var1, MobSpawnType.TRIGGERED, null, null);
          var3.setPos(var2.getX(), var2.getY(), var2.getZ());
          var3.invulnerableTime = 60;
          var3.setPersistenceRequired();

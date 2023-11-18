@@ -154,7 +154,7 @@ public class WorldBorderCommand {
          throw ERROR_SAME_DAMAGE_BUFFER.create();
       } else {
          var2.setDamageSafeZone((double)var1);
-         var0.sendSuccess(Component.translatable("commands.worldborder.damage.buffer.success", String.format(Locale.ROOT, "%.2f", var1)), true);
+         var0.sendSuccess(() -> Component.translatable("commands.worldborder.damage.buffer.success", String.format(Locale.ROOT, "%.2f", var1)), true);
          return (int)var1;
       }
    }
@@ -165,7 +165,7 @@ public class WorldBorderCommand {
          throw ERROR_SAME_DAMAGE_AMOUNT.create();
       } else {
          var2.setDamagePerBlock((double)var1);
-         var0.sendSuccess(Component.translatable("commands.worldborder.damage.amount.success", String.format(Locale.ROOT, "%.2f", var1)), true);
+         var0.sendSuccess(() -> Component.translatable("commands.worldborder.damage.amount.success", String.format(Locale.ROOT, "%.2f", var1)), true);
          return (int)var1;
       }
    }
@@ -176,7 +176,7 @@ public class WorldBorderCommand {
          throw ERROR_SAME_WARNING_TIME.create();
       } else {
          var2.setWarningTime(var1);
-         var0.sendSuccess(Component.translatable("commands.worldborder.warning.time.success", var1), true);
+         var0.sendSuccess(() -> Component.translatable("commands.worldborder.warning.time.success", var1), true);
          return var1;
       }
    }
@@ -187,14 +187,14 @@ public class WorldBorderCommand {
          throw ERROR_SAME_WARNING_DISTANCE.create();
       } else {
          var2.setWarningBlocks(var1);
-         var0.sendSuccess(Component.translatable("commands.worldborder.warning.distance.success", var1), true);
+         var0.sendSuccess(() -> Component.translatable("commands.worldborder.warning.distance.success", var1), true);
          return var1;
       }
    }
 
    private static int getSize(CommandSourceStack var0) {
       double var1 = var0.getServer().overworld().getWorldBorder().getSize();
-      var0.sendSuccess(Component.translatable("commands.worldborder.get", String.format(Locale.ROOT, "%.0f", var1)), false);
+      var0.sendSuccess(() -> Component.translatable("commands.worldborder.get", String.format(Locale.ROOT, "%.0f", var1)), false);
       return Mth.floor(var1 + 0.5);
    }
 
@@ -205,9 +205,9 @@ public class WorldBorderCommand {
       } else if (!((double)Math.abs(var1.x) > 2.9999984E7) && !((double)Math.abs(var1.y) > 2.9999984E7)) {
          var2.setCenter((double)var1.x, (double)var1.y);
          var0.sendSuccess(
-            Component.translatable(
-               "commands.worldborder.center.success", String.format(Locale.ROOT, "%.2f", var1.x), String.format(Locale.ROOT, "%.2f", var1.y)
-            ),
+            () -> Component.translatable(
+                  "commands.worldborder.center.success", String.format(Locale.ROOT, "%.2f", var1.x), String.format(Locale.ROOT, "%.2f", var1.y)
+               ),
             true
          );
          return 0;
@@ -230,16 +230,16 @@ public class WorldBorderCommand {
             var5.lerpSizeBetween(var6, var1, var3);
             if (var1 > var6) {
                var0.sendSuccess(
-                  Component.translatable("commands.worldborder.set.grow", String.format(Locale.ROOT, "%.1f", var1), Long.toString(var3 / 1000L)), true
+                  () -> Component.translatable("commands.worldborder.set.grow", String.format(Locale.ROOT, "%.1f", var1), Long.toString(var3 / 1000L)), true
                );
             } else {
                var0.sendSuccess(
-                  Component.translatable("commands.worldborder.set.shrink", String.format(Locale.ROOT, "%.1f", var1), Long.toString(var3 / 1000L)), true
+                  () -> Component.translatable("commands.worldborder.set.shrink", String.format(Locale.ROOT, "%.1f", var1), Long.toString(var3 / 1000L)), true
                );
             }
          } else {
             var5.setSize(var1);
-            var0.sendSuccess(Component.translatable("commands.worldborder.set.immediate", String.format(Locale.ROOT, "%.1f", var1)), true);
+            var0.sendSuccess(() -> Component.translatable("commands.worldborder.set.immediate", String.format(Locale.ROOT, "%.1f", var1)), true);
          }
 
          return (int)(var1 - var6);

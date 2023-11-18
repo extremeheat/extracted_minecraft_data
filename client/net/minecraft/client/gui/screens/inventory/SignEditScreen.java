@@ -1,9 +1,8 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import javax.annotation.Nullable;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.blockentity.SignRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -20,8 +19,8 @@ public class SignEditScreen extends AbstractSignEditScreen {
    @Nullable
    private SignRenderer.SignModel signModel;
 
-   public SignEditScreen(SignBlockEntity var1, boolean var2) {
-      super(var1, var2);
+   public SignEditScreen(SignBlockEntity var1, boolean var2, boolean var3) {
+      super(var1, var2, var3);
    }
 
    @Override
@@ -31,24 +30,24 @@ public class SignEditScreen extends AbstractSignEditScreen {
    }
 
    @Override
-   protected void offsetSign(PoseStack var1, BlockState var2) {
+   protected void offsetSign(GuiGraphics var1, BlockState var2) {
       super.offsetSign(var1, var2);
       boolean var3 = var2.getBlock() instanceof StandingSignBlock;
       if (!var3) {
-         var1.translate(0.0F, 35.0F, 0.0F);
+         var1.pose().translate(0.0F, 35.0F, 0.0F);
       }
    }
 
    @Override
-   protected void renderSignBackground(PoseStack var1, MultiBufferSource.BufferSource var2, BlockState var3) {
+   protected void renderSignBackground(GuiGraphics var1, BlockState var2) {
       if (this.signModel != null) {
-         boolean var4 = var3.getBlock() instanceof StandingSignBlock;
-         var1.translate(0.0F, 31.0F, 0.0F);
-         var1.scale(62.500004F, 62.500004F, -62.500004F);
-         Material var5 = Sheets.getSignMaterial(this.woodType);
-         VertexConsumer var6 = var5.buffer(var2, this.signModel::renderType);
-         this.signModel.stick.visible = var4;
-         this.signModel.root.render(var1, var6, 15728880, OverlayTexture.NO_OVERLAY);
+         boolean var3 = var2.getBlock() instanceof StandingSignBlock;
+         var1.pose().translate(0.0F, 31.0F, 0.0F);
+         var1.pose().scale(62.500004F, 62.500004F, -62.500004F);
+         Material var4 = Sheets.getSignMaterial(this.woodType);
+         VertexConsumer var5 = var4.buffer(var1.bufferSource(), this.signModel::renderType);
+         this.signModel.stick.visible = var3;
+         this.signModel.root.render(var1.pose(), var5, 15728880, OverlayTexture.NO_OVERLAY);
       }
    }
 

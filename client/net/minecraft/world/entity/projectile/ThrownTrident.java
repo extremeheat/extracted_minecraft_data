@@ -58,7 +58,7 @@ public class ThrownTrident extends AbstractArrow {
       byte var2 = this.entityData.get(ID_LOYALTY);
       if (var2 > 0 && (this.dealtDamage || this.isNoPhysics()) && var1 != null) {
          if (!this.isAcceptibleReturnOwner()) {
-            if (!this.level.isClientSide && this.pickup == AbstractArrow.Pickup.ALLOWED) {
+            if (!this.level().isClientSide && this.pickup == AbstractArrow.Pickup.ALLOWED) {
                this.spawnAtLocation(this.getPickupItem(), 0.1F);
             }
 
@@ -67,7 +67,7 @@ public class ThrownTrident extends AbstractArrow {
             this.setNoPhysics(true);
             Vec3 var3 = var1.getEyePosition().subtract(this.position());
             this.setPosRaw(this.getX(), this.getY() + var3.y * 0.015 * (double)var2, this.getZ());
-            if (this.level.isClientSide) {
+            if (this.level().isClientSide) {
                this.yOld = this.getY();
             }
 
@@ -139,14 +139,14 @@ public class ThrownTrident extends AbstractArrow {
 
       this.setDeltaMovement(this.getDeltaMovement().multiply(-0.01, -0.1, -0.01));
       float var11 = 1.0F;
-      if (this.level instanceof ServerLevel && this.level.isThundering() && this.isChanneling()) {
+      if (this.level() instanceof ServerLevel && this.level().isThundering() && this.isChanneling()) {
          BlockPos var8 = var2.blockPosition();
-         if (this.level.canSeeSky(var8)) {
-            LightningBolt var9 = EntityType.LIGHTNING_BOLT.create(this.level);
+         if (this.level().canSeeSky(var8)) {
+            LightningBolt var9 = EntityType.LIGHTNING_BOLT.create(this.level());
             if (var9 != null) {
                var9.moveTo(Vec3.atBottomCenterOf(var8));
                var9.setCause(var10 instanceof ServerPlayer ? (ServerPlayer)var10 : null);
-               this.level.addFreshEntity(var9);
+               this.level().addFreshEntity(var9);
                var6 = SoundEvents.TRIDENT_THUNDER;
                var11 = 5.0F;
             }

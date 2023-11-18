@@ -1,10 +1,13 @@
 package net.minecraft.util;
 
-import com.mojang.authlib.yggdrasil.ServicesKeyInfo;
+import com.mojang.authlib.yggdrasil.ServicesKeySet;
+import com.mojang.authlib.yggdrasil.ServicesKeyType;
 import com.mojang.logging.LogUtils;
 import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
+import java.util.Collection;
+import javax.annotation.Nullable;
 import org.slf4j.Logger;
 
 public interface SignatureValidator {
@@ -35,16 +38,18 @@ public interface SignatureValidator {
       };
    }
 
-   static SignatureValidator from(ServicesKeyInfo var0) {
-      return (var1, var2) -> {
-         Signature var3 = var0.signature();
+   @Nullable
+   static SignatureValidator from(ServicesKeySet var0, ServicesKeyType var1) {
+      Collection var2 = var0.keys(var1);
+      return var2.isEmpty() ? null : (var1x, var2x) -> var2.stream().anyMatch(var2xx -> {
+            Signature var3 = var2xx.signature();
 
-         try {
-            return verifySignature(var1, var2, var3);
-         } catch (SignatureException var5) {
-            LOGGER.error("Failed to verify Services signature", var5);
-            return false;
-         }
-      };
+            try {
+               return verifySignature(var1x, var2x, var3);
+            } catch (SignatureException var5) {
+               LOGGER.error("Failed to verify Services signature", var5);
+               return false;
+            }
+         });
    }
 }

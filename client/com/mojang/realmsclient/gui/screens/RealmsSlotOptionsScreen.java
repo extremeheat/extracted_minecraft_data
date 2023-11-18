@@ -1,12 +1,12 @@
 package com.mojang.realmsclient.gui.screens;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.realmsclient.dto.RealmsServer;
 import com.mojang.realmsclient.dto.RealmsWorldOptions;
 import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
@@ -253,10 +253,10 @@ public class RealmsSlotOptionsScreen extends RealmsScreen {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderBackground(var1);
-      drawCenteredString(var1, this.font, this.title, this.width / 2, 17, 16777215);
-      this.font.draw(var1, NAME_LABEL, (float)(this.column1X + this.columnWidth / 2 - this.font.width(NAME_LABEL) / 2), (float)(row(0) - 5), 16777215);
+      var1.drawCenteredString(this.font, this.title, this.width / 2, 17, 16777215);
+      var1.drawString(this.font, NAME_LABEL, this.column1X + this.columnWidth / 2 - this.font.width(NAME_LABEL) / 2, row(0) - 5, 16777215, false);
       this.nameEdit.render(var1, var2, var3, var4);
       super.render(var1, var2, var3, var4);
    }

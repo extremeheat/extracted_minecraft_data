@@ -27,7 +27,7 @@ public class FireworkEntityRenderer extends EntityRenderer<FireworkRocketEntity>
          var4.mulPose(Axis.XP.rotationDegrees(90.0F));
       }
 
-      this.itemRenderer.renderStatic(var1.getItem(), ItemDisplayContext.GROUND, var6, OverlayTexture.NO_OVERLAY, var4, var5, var1.level, var1.getId());
+      this.itemRenderer.renderStatic(var1.getItem(), ItemDisplayContext.GROUND, var6, OverlayTexture.NO_OVERLAY, var4, var5, var1.level(), var1.getId());
       var4.popPose();
       super.render(var1, var2, var3, var4, var5, var6);
    }

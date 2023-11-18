@@ -19,7 +19,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
@@ -46,20 +46,19 @@ public class AdvancementRewards {
 
    public void grant(ServerPlayer var1) {
       var1.giveExperiencePoints(this.experience);
-      LootContext var2 = new LootContext.Builder(var1.getLevel())
+      LootParams var2 = new LootParams.Builder(var1.serverLevel())
          .withParameter(LootContextParams.THIS_ENTITY, var1)
          .withParameter(LootContextParams.ORIGIN, var1.position())
-         .withRandom(var1.getRandom())
          .create(LootContextParamSets.ADVANCEMENT_REWARD);
       boolean var3 = false;
 
       for(ResourceLocation var7 : this.loot) {
-         ObjectListIterator var8 = var1.server.getLootTables().get(var7).getRandomItems(var2).iterator();
+         ObjectListIterator var8 = var1.server.getLootData().getLootTable(var7).getRandomItems(var2).iterator();
 
          while(var8.hasNext()) {
             ItemStack var9 = (ItemStack)var8.next();
             if (var1.addItem(var9)) {
-               var1.level
+               var1.level()
                   .playSound(
                      null,
                      var1.getX(),

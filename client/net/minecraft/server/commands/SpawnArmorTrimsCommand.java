@@ -20,7 +20,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.ArmorMaterials;
@@ -69,7 +68,12 @@ public class SpawnArmorTrimsCommand {
       TrimPatterns.TIDE,
       TrimPatterns.SNOUT,
       TrimPatterns.RIB,
-      TrimPatterns.SPIRE
+      TrimPatterns.SPIRE,
+      TrimPatterns.WAYFINDER,
+      TrimPatterns.SHAPER,
+      TrimPatterns.SILENCE,
+      TrimPatterns.RAISER,
+      TrimPatterns.HOST
    );
    private static final List<ResourceKey<TrimMaterial>> VANILLA_TRIM_MATERIALS = List.of(
       TrimMaterials.QUARTZ,
@@ -92,14 +96,13 @@ public class SpawnArmorTrimsCommand {
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
       var0.register(
-         (LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("spawn_armor_trims")
-               .requires(var0x -> var0x.hasPermission(2) && var0x.getLevel().enabledFeatures().contains(FeatureFlags.UPDATE_1_20)))
+         (LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("spawn_armor_trims").requires(var0x -> var0x.hasPermission(2)))
             .executes(var0x -> spawnArmorTrims((CommandSourceStack)var0x.getSource(), ((CommandSourceStack)var0x.getSource()).getPlayerOrException()))
       );
    }
 
    private static int spawnArmorTrims(CommandSourceStack var0, Player var1) {
-      Level var2 = var1.getLevel();
+      Level var2 = var1.level();
       NonNullList var3 = NonNullList.create();
       Registry var4 = var2.registryAccess().registryOrThrow(Registries.TRIM_PATTERN);
       Registry var5 = var2.registryAccess().registryOrThrow(Registries.TRIM_MATERIAL);
@@ -152,7 +155,7 @@ public class SpawnArmorTrimsCommand {
          ++var10;
       }
 
-      var0.sendSuccess(Component.literal("Armorstands with trimmed armor spawned around you"), true);
+      var0.sendSuccess(() -> Component.literal("Armorstands with trimmed armor spawned around you"), true);
       return 1;
    }
 }

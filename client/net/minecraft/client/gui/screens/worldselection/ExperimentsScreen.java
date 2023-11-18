@@ -1,14 +1,12 @@
 package net.minecraft.client.gui.screens.worldselection;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.objects.Object2BooleanLinkedOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
 import net.minecraft.client.gui.components.StringWidget;
@@ -96,13 +94,22 @@ public class ExperimentsScreen extends Screen {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderBackground(var1);
-      RenderSystem.setShaderTexture(0, GuiComponent.BACKGROUND_LOCATION);
-      RenderSystem.setShaderColor(0.125F, 0.125F, 0.125F, 1.0F);
+      var1.setColor(0.125F, 0.125F, 0.125F, 1.0F);
       boolean var5 = true;
-      blit(var1, 0, this.layout.getHeaderHeight(), 0.0F, 0.0F, this.width, this.height - this.layout.getHeaderHeight() - this.layout.getFooterHeight(), 32, 32);
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+      var1.blit(
+         BACKGROUND_LOCATION,
+         0,
+         this.layout.getHeaderHeight(),
+         0.0F,
+         0.0F,
+         this.width,
+         this.height - this.layout.getHeaderHeight() - this.layout.getFooterHeight(),
+         32,
+         32
+      );
+      var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
       super.render(var1, var2, var3, var4);
    }
 }

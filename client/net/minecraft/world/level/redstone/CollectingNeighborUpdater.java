@@ -28,7 +28,7 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
 
    @Override
    public void shapeUpdate(Direction var1, BlockState var2, BlockPos var3, BlockPos var4, int var5, int var6) {
-      this.addAndRun(var3, new CollectingNeighborUpdater.ShapeUpdate(var1, var2, var3.immutable(), var4.immutable(), var5));
+      this.addAndRun(var3, new CollectingNeighborUpdater.ShapeUpdate(var1, var2, var3.immutable(), var4.immutable(), var5, var6));
    }
 
    @Override
@@ -146,25 +146,27 @@ public class CollectingNeighborUpdater implements NeighborUpdater {
       boolean runNext(Level var1);
    }
 
-   static record ShapeUpdate(Direction a, BlockState b, BlockPos c, BlockPos d, int e) implements CollectingNeighborUpdater.NeighborUpdates {
+   static record ShapeUpdate(Direction a, BlockState b, BlockPos c, BlockPos d, int e, int f) implements CollectingNeighborUpdater.NeighborUpdates {
       private final Direction direction;
       private final BlockState state;
       private final BlockPos pos;
       private final BlockPos neighborPos;
       private final int updateFlags;
+      private final int updateLimit;
 
-      ShapeUpdate(Direction var1, BlockState var2, BlockPos var3, BlockPos var4, int var5) {
+      ShapeUpdate(Direction var1, BlockState var2, BlockPos var3, BlockPos var4, int var5, int var6) {
          super();
          this.direction = var1;
          this.state = var2;
          this.pos = var3;
          this.neighborPos = var4;
          this.updateFlags = var5;
+         this.updateLimit = var6;
       }
 
       @Override
       public boolean runNext(Level var1) {
-         NeighborUpdater.executeShapeUpdate(var1, this.direction, this.state, this.pos, this.neighborPos, this.updateFlags, 512);
+         NeighborUpdater.executeShapeUpdate(var1, this.direction, this.state, this.pos, this.neighborPos, this.updateFlags, this.updateLimit);
          return false;
       }
    }

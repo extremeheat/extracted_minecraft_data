@@ -26,7 +26,7 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.PistonType;
 import net.minecraft.world.level.pathfinder.PathComputationType;
-import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -88,7 +88,7 @@ public class MovingPistonBlock extends BaseEntityBlock {
    }
 
    @Override
-   public List<ItemStack> getDrops(BlockState var1, LootContext.Builder var2) {
+   public List<ItemStack> getDrops(BlockState var1, LootParams.Builder var2) {
       PistonMovingBlockEntity var3 = this.getBlockEntity(var2.getLevel(), BlockPos.containing(var2.getParameter(LootContextParams.ORIGIN)));
       return var3 == null ? Collections.emptyList() : var3.getMovedState().getDrops(var2);
    }

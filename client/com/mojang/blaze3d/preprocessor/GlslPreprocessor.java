@@ -9,8 +9,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
 import net.minecraft.FileUtil;
+import net.minecraft.Util;
 import net.minecraft.util.StringUtil;
-import org.apache.commons.lang3.StringUtils;
 
 public abstract class GlslPreprocessor {
    private static final String C_COMMENT = "/\\*(?:[^*]|\\*+[^*/])*\\*+/";
@@ -62,7 +62,7 @@ public abstract class GlslPreprocessor {
                   int var14 = var2.sourceId;
                   List var15 = this.processImports(var13, var2, var10 ? FileUtil.getFullResourcePath(var12) : "");
                   var15.set(0, String.format(Locale.ROOT, "#line %d %d\n%s", 0, var14, this.processVersions((String)var15.get(0), var2)));
-                  if (!StringUtils.isBlank(var11)) {
+                  if (!Util.isBlank(var11)) {
                      var7.add(var11);
                   }
 
@@ -80,7 +80,7 @@ public abstract class GlslPreprocessor {
       }
 
       String var16 = var1.substring(var5);
-      if (!StringUtils.isBlank(var16)) {
+      if (!Util.isBlank(var16)) {
          var7.add(var6 + var16);
       }
 

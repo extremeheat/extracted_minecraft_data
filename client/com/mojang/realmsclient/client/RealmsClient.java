@@ -31,6 +31,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
@@ -98,18 +99,8 @@ public class RealmsClient {
       String var2 = var0.getUser().getSessionId();
       if (!initialized) {
          initialized = true;
-         String var3 = System.getenv("realms.environment");
-         if (var3 == null) {
-            var3 = System.getProperty("realms.environment");
-         }
-
-         if (var3 != null) {
-            if ("LOCAL".equals(var3)) {
-               switchToLocal();
-            } else if ("STAGE".equals(var3)) {
-               switchToStage();
-            }
-         }
+         Optional var3 = Optional.ofNullable(System.getenv("realms.environment")).or(() -> Optional.ofNullable(System.getProperty("realms.environment")));
+         var3.flatMap(RealmsClient.Environment::byName).ifPresent(var0x -> currentEnvironment = var0x);
       }
 
       return new RealmsClient(var2, var1, var0);
@@ -478,6 +469,17 @@ public class RealmsClient {
       private Environment(String var3, String var4) {
          this.baseUrl = var3;
          this.protocol = var4;
+      }
+
+      public static Optional<RealmsClient.Environment> byName(String var0) {
+         String var1 = var0.toLowerCase(Locale.ROOT);
+
+         return switch(var1) {
+            case "production" -> Optional.of(PRODUCTION);
+            case "local" -> Optional.of(LOCAL);
+            case "stage" -> Optional.of(STAGE);
+            default -> Optional.empty();
+         };
       }
    }
 }

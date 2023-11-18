@@ -20,8 +20,6 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraft.world.level.material.Material;
-import net.minecraft.world.level.material.PushReaction;
 
 public class SculkVeinBlock extends MultifaceBlock implements SculkBehaviour, SimpleWaterloggedBlock {
    private static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
@@ -170,11 +168,6 @@ public class SculkVeinBlock extends MultifaceBlock implements SculkBehaviour, Si
       return var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
    }
 
-   @Override
-   public PushReaction getPistonPushReaction(BlockState var1) {
-      return PushReaction.DESTROY;
-   }
-
    class SculkVeinSpreaderConfig extends MultifaceSpreader.DefaultSpreaderConfig {
       private final MultifaceSpreader.SpreadType[] spreadTypes;
 
@@ -194,16 +187,13 @@ public class SculkVeinBlock extends MultifaceBlock implements SculkBehaviour, Si
                }
             }
 
-            FluidState var9 = var5.getFluidState();
-            if (!var9.isEmpty() && !var9.is(Fluids.WATER)) {
+            FluidState var8 = var5.getFluidState();
+            if (!var8.isEmpty() && !var8.is(Fluids.WATER)) {
+               return false;
+            } else if (var5.is(BlockTags.FIRE)) {
                return false;
             } else {
-               Material var8 = var5.getMaterial();
-               if (var8 == Material.FIRE) {
-                  return false;
-               } else {
-                  return var5.canBeReplaced() || super.stateCanBeReplaced(var1, var2, var3, var4, var5);
-               }
+               return var5.canBeReplaced() || super.stateCanBeReplaced(var1, var2, var3, var4, var5);
             }
          } else {
             return false;

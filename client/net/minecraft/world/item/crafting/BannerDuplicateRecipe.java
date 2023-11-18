@@ -66,9 +66,7 @@ public class BannerDuplicateRecipe extends CustomRecipe {
          if (!var4.isEmpty()) {
             int var5 = BannerBlockEntity.getPatternCount(var4);
             if (var5 > 0 && var5 <= 6) {
-               ItemStack var6 = var4.copy();
-               var6.setCount(1);
-               return var6;
+               return var4.copyWithCount(1);
             }
          }
       }
@@ -85,9 +83,7 @@ public class BannerDuplicateRecipe extends CustomRecipe {
             if (var4.getItem().hasCraftingRemainingItem()) {
                var2.set(var3, new ItemStack(var4.getItem().getCraftingRemainingItem()));
             } else if (var4.hasTag() && BannerBlockEntity.getPatternCount(var4) > 0) {
-               ItemStack var5 = var4.copy();
-               var5.setCount(1);
-               var2.set(var3, var5);
+               var2.set(var3, var4.copyWithCount(1));
             }
          }
       }

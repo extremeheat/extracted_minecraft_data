@@ -1,9 +1,9 @@
 package net.minecraft.client.gui.screens;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -58,10 +58,10 @@ public class ConfirmLinkScreen extends ConfirmScreen {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       if (this.showWarning) {
-         drawCenteredString(var1, this.font, WARNING_TEXT, this.width / 2, 110, 16764108);
+         var1.drawCenteredString(this.font, WARNING_TEXT, this.width / 2, 110, 16764108);
       }
    }
 

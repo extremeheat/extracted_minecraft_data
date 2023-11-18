@@ -1,10 +1,7 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
 import javax.annotation.Nullable;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
@@ -23,18 +20,17 @@ public class CartographyTableScreen extends AbstractContainerScreen<CartographyT
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       this.renderTooltip(var1, var2, var3);
    }
 
    @Override
-   protected void renderBg(PoseStack var1, float var2, int var3, int var4) {
+   protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       this.renderBackground(var1);
-      RenderSystem.setShaderTexture(0, BG_LOCATION);
       int var5 = this.leftPos;
       int var6 = this.topPos;
-      blit(var1, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
+      var1.blit(BG_LOCATION, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
       ItemStack var7 = this.menu.getSlot(1).getItem();
       boolean var8 = var7.is(Items.MAP);
       boolean var9 = var7.is(Items.PAPER);
@@ -50,13 +46,13 @@ public class CartographyTableScreen extends AbstractContainerScreen<CartographyT
             if (var13.locked) {
                var14 = true;
                if (var9 || var10) {
-                  blit(var1, var5 + 35, var6 + 31, this.imageWidth + 50, 132, 28, 21);
+                  var1.blit(BG_LOCATION, var5 + 35, var6 + 31, this.imageWidth + 50, 132, 28, 21);
                }
             }
 
             if (var9 && var13.scale >= 4) {
                var14 = true;
-               blit(var1, var5 + 35, var6 + 31, this.imageWidth + 50, 132, 28, 21);
+               var1.blit(BG_LOCATION, var5 + 35, var6 + 31, this.imageWidth + 50, 132, 28, 21);
             }
          }
       } else {
@@ -68,45 +64,42 @@ public class CartographyTableScreen extends AbstractContainerScreen<CartographyT
    }
 
    private void renderResultingMap(
-      PoseStack var1, @Nullable Integer var2, @Nullable MapItemSavedData var3, boolean var4, boolean var5, boolean var6, boolean var7
+      GuiGraphics var1, @Nullable Integer var2, @Nullable MapItemSavedData var3, boolean var4, boolean var5, boolean var6, boolean var7
    ) {
       int var8 = this.leftPos;
       int var9 = this.topPos;
       if (var5 && !var7) {
-         blit(var1, var8 + 67, var9 + 13, this.imageWidth, 66, 66, 66);
+         var1.blit(BG_LOCATION, var8 + 67, var9 + 13, this.imageWidth, 66, 66, 66);
          this.renderMap(var1, var2, var3, var8 + 85, var9 + 31, 0.226F);
       } else if (var4) {
-         blit(var1, var8 + 67 + 16, var9 + 13, this.imageWidth, 132, 50, 66);
+         var1.blit(BG_LOCATION, var8 + 67 + 16, var9 + 13, this.imageWidth, 132, 50, 66);
          this.renderMap(var1, var2, var3, var8 + 86, var9 + 16, 0.34F);
-         RenderSystem.setShaderTexture(0, BG_LOCATION);
-         var1.pushPose();
-         var1.translate(0.0F, 0.0F, 1.0F);
-         blit(var1, var8 + 67, var9 + 13 + 16, this.imageWidth, 132, 50, 66);
+         var1.pose().pushPose();
+         var1.pose().translate(0.0F, 0.0F, 1.0F);
+         var1.blit(BG_LOCATION, var8 + 67, var9 + 13 + 16, this.imageWidth, 132, 50, 66);
          this.renderMap(var1, var2, var3, var8 + 70, var9 + 32, 0.34F);
-         var1.popPose();
+         var1.pose().popPose();
       } else if (var6) {
-         blit(var1, var8 + 67, var9 + 13, this.imageWidth, 0, 66, 66);
+         var1.blit(BG_LOCATION, var8 + 67, var9 + 13, this.imageWidth, 0, 66, 66);
          this.renderMap(var1, var2, var3, var8 + 71, var9 + 17, 0.45F);
-         RenderSystem.setShaderTexture(0, BG_LOCATION);
-         var1.pushPose();
-         var1.translate(0.0F, 0.0F, 1.0F);
-         blit(var1, var8 + 66, var9 + 12, 0, this.imageHeight, 66, 66);
-         var1.popPose();
+         var1.pose().pushPose();
+         var1.pose().translate(0.0F, 0.0F, 1.0F);
+         var1.blit(BG_LOCATION, var8 + 66, var9 + 12, 0, this.imageHeight, 66, 66);
+         var1.pose().popPose();
       } else {
-         blit(var1, var8 + 67, var9 + 13, this.imageWidth, 0, 66, 66);
+         var1.blit(BG_LOCATION, var8 + 67, var9 + 13, this.imageWidth, 0, 66, 66);
          this.renderMap(var1, var2, var3, var8 + 71, var9 + 17, 0.45F);
       }
    }
 
-   private void renderMap(PoseStack var1, @Nullable Integer var2, @Nullable MapItemSavedData var3, int var4, int var5, float var6) {
+   private void renderMap(GuiGraphics var1, @Nullable Integer var2, @Nullable MapItemSavedData var3, int var4, int var5, float var6) {
       if (var2 != null && var3 != null) {
-         var1.pushPose();
-         var1.translate((float)var4, (float)var5, 1.0F);
-         var1.scale(var6, var6, 1.0F);
-         MultiBufferSource.BufferSource var7 = MultiBufferSource.immediate(Tesselator.getInstance().getBuilder());
-         this.minecraft.gameRenderer.getMapRenderer().render(var1, var7, var2, var3, true, 15728880);
-         var7.endBatch();
-         var1.popPose();
+         var1.pose().pushPose();
+         var1.pose().translate((float)var4, (float)var5, 1.0F);
+         var1.pose().scale(var6, var6, 1.0F);
+         this.minecraft.gameRenderer.getMapRenderer().render(var1.pose(), var1.bufferSource(), var2, var3, true, 15728880);
+         var1.flush();
+         var1.pose().popPose();
       }
    }
 }

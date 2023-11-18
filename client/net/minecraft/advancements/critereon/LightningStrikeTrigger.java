@@ -21,9 +21,9 @@ public class LightningStrikeTrigger extends SimpleCriterionTrigger<LightningStri
       return ID;
    }
 
-   public LightningStrikeTrigger.TriggerInstance createInstance(JsonObject var1, EntityPredicate.Composite var2, DeserializationContext var3) {
-      EntityPredicate.Composite var4 = EntityPredicate.Composite.fromJson(var1, "lightning", var3);
-      EntityPredicate.Composite var5 = EntityPredicate.Composite.fromJson(var1, "bystander", var3);
+   public LightningStrikeTrigger.TriggerInstance createInstance(JsonObject var1, ContextAwarePredicate var2, DeserializationContext var3) {
+      ContextAwarePredicate var4 = EntityPredicate.fromJson(var1, "lightning", var3);
+      ContextAwarePredicate var5 = EntityPredicate.fromJson(var1, "bystander", var3);
       return new LightningStrikeTrigger.TriggerInstance(var2, var4, var5);
    }
 
@@ -34,26 +34,24 @@ public class LightningStrikeTrigger extends SimpleCriterionTrigger<LightningStri
    }
 
    public static class TriggerInstance extends AbstractCriterionTriggerInstance {
-      private final EntityPredicate.Composite lightning;
-      private final EntityPredicate.Composite bystander;
+      private final ContextAwarePredicate lightning;
+      private final ContextAwarePredicate bystander;
 
-      public TriggerInstance(EntityPredicate.Composite var1, EntityPredicate.Composite var2, EntityPredicate.Composite var3) {
+      public TriggerInstance(ContextAwarePredicate var1, ContextAwarePredicate var2, ContextAwarePredicate var3) {
          super(LightningStrikeTrigger.ID, var1);
          this.lightning = var2;
          this.bystander = var3;
       }
 
       public static LightningStrikeTrigger.TriggerInstance lighthingStrike(EntityPredicate var0, EntityPredicate var1) {
-         return new LightningStrikeTrigger.TriggerInstance(
-            EntityPredicate.Composite.ANY, EntityPredicate.Composite.wrap(var0), EntityPredicate.Composite.wrap(var1)
-         );
+         return new LightningStrikeTrigger.TriggerInstance(ContextAwarePredicate.ANY, EntityPredicate.wrap(var0), EntityPredicate.wrap(var1));
       }
 
       public boolean matches(LootContext var1, List<LootContext> var2) {
          if (!this.lightning.matches(var1)) {
             return false;
          } else {
-            return this.bystander == EntityPredicate.Composite.ANY || !var2.stream().noneMatch(this.bystander::matches);
+            return this.bystander == ContextAwarePredicate.ANY || !var2.stream().noneMatch(this.bystander::matches);
          }
       }
 

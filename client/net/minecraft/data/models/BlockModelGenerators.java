@@ -47,6 +47,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LayeredCauldronBlock;
 import net.minecraft.world.level.block.MangrovePropaguleBlock;
+import net.minecraft.world.level.block.PitcherCropBlock;
+import net.minecraft.world.level.block.SnifferEggBlock;
 import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.BambooLeaves;
 import net.minecraft.world.level.block.state.properties.BellAttachType;
@@ -298,27 +300,26 @@ public class BlockModelGenerators {
       this.blockStateOutput.accept(createRotatedVariant(var1, var2));
    }
 
-   private void createSuspiciousSandBlock() {
+   private void createBrushableBlock(Block var1) {
       this.blockStateOutput
          .accept(
-            MultiVariantGenerator.multiVariant(Blocks.SUSPICIOUS_SAND)
+            MultiVariantGenerator.multiVariant(var1)
                .with(
                   PropertyDispatch.property(BlockStateProperties.DUSTED)
                      .generate(
-                        var1 -> {
-                           String var2 = "_" + var1;
-                           ResourceLocation var3 = TextureMapping.getBlockTexture(Blocks.SUSPICIOUS_SAND, var2);
+                        var2 -> {
+                           String var3 = "_" + var2;
+                           ResourceLocation var4 = TextureMapping.getBlockTexture(var1, var3);
                            return Variant.variant()
                               .with(
                                  VariantProperties.MODEL,
-                                 ModelTemplates.CUBE_ALL
-                                    .createWithSuffix(Blocks.SUSPICIOUS_SAND, var2, new TextureMapping().put(TextureSlot.ALL, var3), this.modelOutput)
+                                 ModelTemplates.CUBE_ALL.createWithSuffix(var1, var3, new TextureMapping().put(TextureSlot.ALL, var4), this.modelOutput)
                               );
                         }
                      )
                )
          );
-      this.delegateItemModel(Blocks.SUSPICIOUS_SAND, TextureMapping.getBlockTexture(Blocks.SUSPICIOUS_SAND, "_0"));
+      this.delegateItemModel(var1, TextureMapping.getBlockTexture(var1, "_0"));
    }
 
    static BlockStateGenerator createButton(Block var0, ResourceLocation var1, ResourceLocation var2) {
@@ -1175,7 +1176,7 @@ public class BlockModelGenerators {
       this.blockStateOutput.accept(createAxisAlignedPillarBlock(var1, var2));
    }
 
-   private void createAxisAlignedPillarBlock(Block var1, TexturedModel.Provider var2) {
+   public void createAxisAlignedPillarBlock(Block var1, TexturedModel.Provider var2) {
       ResourceLocation var3 = var2.create(var1, this.modelOutput);
       this.blockStateOutput.accept(createAxisAlignedPillarBlock(var1, var3));
    }
@@ -1226,11 +1227,11 @@ public class BlockModelGenerators {
          );
    }
 
-   private void createTrivialCube(Block var1) {
+   public void createTrivialCube(Block var1) {
       this.createTrivialBlock(var1, TexturedModel.CUBE);
    }
 
-   private void createTrivialBlock(Block var1, TexturedModel.Provider var2) {
+   public void createTrivialBlock(Block var1, TexturedModel.Provider var2) {
       this.blockStateOutput.accept(createSimpleBlock(var1, var2.create(var1, this.modelOutput)));
    }
 
@@ -1392,6 +1393,26 @@ public class BlockModelGenerators {
                      .generate(var3x -> Variant.variant().with(VariantProperties.MODEL, ModelTemplates.STEMS[var3x].create(var1, var3, this.modelOutput)))
                )
          );
+   }
+
+   private void createPitcherPlant() {
+      Block var1 = Blocks.PITCHER_PLANT;
+      this.createSimpleFlatItemModel(var1.asItem());
+      ResourceLocation var2 = ModelLocationUtils.getModelLocation(var1, "_top");
+      ResourceLocation var3 = ModelLocationUtils.getModelLocation(var1, "_bottom");
+      this.createDoubleBlock(var1, var2, var3);
+   }
+
+   private void createPitcherCrop() {
+      Block var1 = Blocks.PITCHER_CROP;
+      this.createSimpleFlatItemModel(var1.asItem());
+      PropertyDispatch var2 = PropertyDispatch.properties(PitcherCropBlock.AGE, BlockStateProperties.DOUBLE_BLOCK_HALF).generate((var1x, var2x) -> {
+         return switch(var2x) {
+            case UPPER -> Variant.variant().with(VariantProperties.MODEL, ModelLocationUtils.getModelLocation(var1, "_top_stage_" + var1x));
+            case LOWER -> Variant.variant().with(VariantProperties.MODEL, ModelLocationUtils.getModelLocation(var1, "_bottom_stage_" + var1x));
+         };
+      });
+      this.blockStateOutput.accept(MultiVariantGenerator.multiVariant(var1).with(var2));
    }
 
    private void createCoral(Block var1, Block var2, Block var3, Block var4, Block var5, Block var6, Block var7, Block var8) {
@@ -1980,7 +2001,13 @@ public class BlockModelGenerators {
    }
 
    private void createPottedAzalea(Block var1) {
-      ResourceLocation var2 = ModelTemplates.POTTED_AZALEA.create(var1, TextureMapping.cubeTop(var1), this.modelOutput);
+      ResourceLocation var2;
+      if (var1 == Blocks.POTTED_FLOWERING_AZALEA) {
+         var2 = ModelTemplates.POTTED_FLOWERING_AZALEA.create(var1, TextureMapping.pottedAzalea(var1), this.modelOutput);
+      } else {
+         var2 = ModelTemplates.POTTED_AZALEA.create(var1, TextureMapping.pottedAzalea(var1), this.modelOutput);
+      }
+
       this.blockStateOutput.accept(createSimpleBlock(var1, var2));
    }
 
@@ -2262,6 +2289,18 @@ public class BlockModelGenerators {
    private void createCraftingTableLike(Block var1, Block var2, BiFunction<Block, Block, TextureMapping> var3) {
       TextureMapping var4 = (TextureMapping)var3.apply(var1, var2);
       this.blockStateOutput.accept(createSimpleBlock(var1, ModelTemplates.CUBE.create(var1, var4, this.modelOutput)));
+   }
+
+   public void createGenericCube(Block var1) {
+      TextureMapping var2 = new TextureMapping()
+         .put(TextureSlot.PARTICLE, TextureMapping.getBlockTexture(var1, "_particle"))
+         .put(TextureSlot.DOWN, TextureMapping.getBlockTexture(var1, "_down"))
+         .put(TextureSlot.UP, TextureMapping.getBlockTexture(var1, "_up"))
+         .put(TextureSlot.NORTH, TextureMapping.getBlockTexture(var1, "_north"))
+         .put(TextureSlot.SOUTH, TextureMapping.getBlockTexture(var1, "_south"))
+         .put(TextureSlot.EAST, TextureMapping.getBlockTexture(var1, "_east"))
+         .put(TextureSlot.WEST, TextureMapping.getBlockTexture(var1, "_west"));
+      this.blockStateOutput.accept(createSimpleBlock(var1, ModelTemplates.CUBE.create(var1, var2, this.modelOutput)));
    }
 
    private void createPumpkins() {
@@ -3283,8 +3322,29 @@ public class BlockModelGenerators {
             MultiVariantGenerator.multiVariant(Blocks.SCULK_SENSOR)
                .with(
                   PropertyDispatch.property(BlockStateProperties.SCULK_SENSOR_PHASE)
-                     .generate(var2x -> Variant.variant().with(VariantProperties.MODEL, var2x == SculkSensorPhase.ACTIVE ? var2 : var1))
+                     .generate(
+                        var2x -> Variant.variant()
+                              .with(VariantProperties.MODEL, var2x != SculkSensorPhase.ACTIVE && var2x != SculkSensorPhase.COOLDOWN ? var1 : var2)
+                     )
                )
+         );
+   }
+
+   private void createCalibratedSculkSensor() {
+      ResourceLocation var1 = ModelLocationUtils.getModelLocation(Blocks.CALIBRATED_SCULK_SENSOR, "_inactive");
+      ResourceLocation var2 = ModelLocationUtils.getModelLocation(Blocks.CALIBRATED_SCULK_SENSOR, "_active");
+      this.delegateItemModel(Blocks.CALIBRATED_SCULK_SENSOR, var1);
+      this.blockStateOutput
+         .accept(
+            MultiVariantGenerator.multiVariant(Blocks.CALIBRATED_SCULK_SENSOR)
+               .with(
+                  PropertyDispatch.property(BlockStateProperties.SCULK_SENSOR_PHASE)
+                     .generate(
+                        var2x -> Variant.variant()
+                              .with(VariantProperties.MODEL, var2x != SculkSensorPhase.ACTIVE && var2x != SculkSensorPhase.COOLDOWN ? var1 : var2)
+                     )
+               )
+               .with(createHorizontalFacingDispatch())
          );
    }
 
@@ -3843,6 +3903,27 @@ public class BlockModelGenerators {
          );
    }
 
+   private void createSnifferEgg() {
+      this.createSimpleFlatItemModel(Items.SNIFFER_EGG);
+      Function var1 = var1x -> {
+         String var2 = switch(var1x) {
+            case 1 -> "_slightly_cracked";
+            case 2 -> "_very_cracked";
+            default -> "_not_cracked";
+         };
+         TextureMapping var3 = TextureMapping.snifferEgg(var2);
+         return ModelTemplates.SNIFFER_EGG.createWithSuffix(Blocks.SNIFFER_EGG, var2, var3, this.modelOutput);
+      };
+      this.blockStateOutput
+         .accept(
+            MultiVariantGenerator.multiVariant(Blocks.SNIFFER_EGG)
+               .with(
+                  PropertyDispatch.property(SnifferEggBlock.HATCH)
+                     .generate(var1x -> Variant.variant().with(VariantProperties.MODEL, (ResourceLocation)var1.apply(var1x)))
+               )
+         );
+   }
+
    private void createMultiface(Block var1) {
       this.createSimpleFlatItemModel(var1);
       ResourceLocation var2 = ModelLocationUtils.getModelLocation(var1);
@@ -4273,12 +4354,14 @@ public class BlockModelGenerators {
       this.createTripwire();
       this.createTripwireHook();
       this.createTurtleEgg();
+      this.createSnifferEgg();
       this.createMultiface(Blocks.VINE);
       this.createMultiface(Blocks.GLOW_LICHEN);
       this.createMultiface(Blocks.SCULK_VEIN);
       this.createMagmaBlock();
       this.createJigsaw();
       this.createSculkSensor();
+      this.createCalibratedSculkSensor();
       this.createSculkShrieker();
       this.createFrogspawnBlock();
       this.createMangrovePropagule();
@@ -4306,7 +4389,8 @@ public class BlockModelGenerators {
       this.createRotatedVariantBlock(Blocks.DIRT);
       this.createRotatedVariantBlock(Blocks.ROOTED_DIRT);
       this.createRotatedVariantBlock(Blocks.SAND);
-      this.createSuspiciousSandBlock();
+      this.createBrushableBlock(Blocks.SUSPICIOUS_SAND);
+      this.createBrushableBlock(Blocks.SUSPICIOUS_GRAVEL);
       this.createRotatedVariantBlock(Blocks.RED_SAND);
       this.createRotatedMirroredVariantBlock(Blocks.BEDROCK);
       this.createTrivialBlock(Blocks.REINFORCED_DEEPSLATE, TexturedModel.CUBE_TOP_BOTTOM);
@@ -4325,7 +4409,9 @@ public class BlockModelGenerators {
       this.createCropBlock(Blocks.NETHER_WART, BlockStateProperties.AGE_3, 0, 1, 1, 2);
       this.createCropBlock(Blocks.POTATOES, BlockStateProperties.AGE_7, 0, 0, 1, 1, 2, 2, 2, 3);
       this.createCropBlock(Blocks.WHEAT, BlockStateProperties.AGE_7, 0, 1, 2, 3, 4, 5, 6, 7);
-      this.createCrossBlock(Blocks.TORCHFLOWER_CROP, BlockModelGenerators.TintState.NOT_TINTED, BlockStateProperties.AGE_2, 0, 1, 2);
+      this.createCrossBlock(Blocks.TORCHFLOWER_CROP, BlockModelGenerators.TintState.NOT_TINTED, BlockStateProperties.AGE_1, 0, 1);
+      this.createPitcherCrop();
+      this.createPitcherPlant();
       this.blockEntityModels(ModelLocationUtils.decorateBlockModelLocation("decorated_pot"), Blocks.TERRACOTTA).createWithoutBlockItem(Blocks.DECORATED_POT);
       this.blockEntityModels(ModelLocationUtils.decorateBlockModelLocation("banner"), Blocks.OAK_PLANKS)
          .createWithCustomBlockItemModel(
@@ -4577,7 +4663,7 @@ public class BlockModelGenerators {
       this.createCrossBlockWithDefaultItem(Blocks.GRASS, BlockModelGenerators.TintState.TINTED);
       this.createCrossBlock(Blocks.SUGAR_CANE, BlockModelGenerators.TintState.TINTED);
       this.createSimpleFlatItemModel(Items.SUGAR_CANE);
-      this.createGrowingPlant(Blocks.KELP, Blocks.KELP_PLANT, BlockModelGenerators.TintState.TINTED);
+      this.createGrowingPlant(Blocks.KELP, Blocks.KELP_PLANT, BlockModelGenerators.TintState.NOT_TINTED);
       this.createSimpleFlatItemModel(Items.KELP);
       this.skipAutoItemBlock(Blocks.KELP_PLANT);
       this.createCrossBlock(Blocks.HANGING_ROOTS, BlockModelGenerators.TintState.NOT_TINTED);

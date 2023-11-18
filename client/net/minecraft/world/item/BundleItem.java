@@ -131,8 +131,7 @@ public class BundleItem extends Item {
                var6.remove(var8);
                var6.add(0, var8);
             } else {
-               ItemStack var10 = var1.copy();
-               var10.setCount(var5);
+               ItemStack var10 = var1.copyWithCount(var5);
                CompoundTag var11 = new CompoundTag();
                var10.save(var11);
                var6.add(0, var11);
@@ -244,14 +243,14 @@ public class BundleItem extends Item {
    }
 
    private void playRemoveOneSound(Entity var1) {
-      var1.playSound(SoundEvents.BUNDLE_REMOVE_ONE, 0.8F, 0.8F + var1.getLevel().getRandom().nextFloat() * 0.4F);
+      var1.playSound(SoundEvents.BUNDLE_REMOVE_ONE, 0.8F, 0.8F + var1.level().getRandom().nextFloat() * 0.4F);
    }
 
    private void playInsertSound(Entity var1) {
-      var1.playSound(SoundEvents.BUNDLE_INSERT, 0.8F, 0.8F + var1.getLevel().getRandom().nextFloat() * 0.4F);
+      var1.playSound(SoundEvents.BUNDLE_INSERT, 0.8F, 0.8F + var1.level().getRandom().nextFloat() * 0.4F);
    }
 
    private void playDropContentsSound(Entity var1) {
-      var1.playSound(SoundEvents.BUNDLE_DROP_CONTENTS, 0.8F, 0.8F + var1.getLevel().getRandom().nextFloat() * 0.4F);
+      var1.playSound(SoundEvents.BUNDLE_DROP_CONTENTS, 0.8F, 0.8F + var1.level().getRandom().nextFloat() * 0.4F);
    }
 }

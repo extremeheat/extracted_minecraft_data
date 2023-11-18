@@ -42,14 +42,17 @@ public class ResultSlot extends Slot {
       this.removeCount += var1;
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected void checkTakeAchievements(ItemStack var1) {
       if (this.removeCount > 0) {
-         var1.onCraftedBy(this.player.level, this.player, this.removeCount);
+         var1.onCraftedBy(this.player.level(), this.player, this.removeCount);
       }
 
-      if (this.container instanceof RecipeHolder) {
-         ((RecipeHolder)this.container).awardUsedRecipes(this.player);
+      Container var3 = this.container;
+      if (var3 instanceof RecipeHolder var2) {
+         var2.awardUsedRecipes(this.player, this.craftSlots.getItems());
       }
 
       this.removeCount = 0;
@@ -58,7 +61,7 @@ public class ResultSlot extends Slot {
    @Override
    public void onTake(Player var1, ItemStack var2) {
       this.checkTakeAchievements(var2);
-      NonNullList var3 = var1.level.getRecipeManager().getRemainingItemsFor(RecipeType.CRAFTING, this.craftSlots, var1.level);
+      NonNullList var3 = var1.level().getRecipeManager().getRemainingItemsFor(RecipeType.CRAFTING, this.craftSlots, var1.level());
 
       for(int var4 = 0; var4 < var3.size(); ++var4) {
          ItemStack var5 = this.craftSlots.getItem(var4);
@@ -71,7 +74,7 @@ public class ResultSlot extends Slot {
          if (!var6.isEmpty()) {
             if (var5.isEmpty()) {
                this.craftSlots.setItem(var4, var6);
-            } else if (ItemStack.isSame(var5, var6) && ItemStack.tagMatches(var5, var6)) {
+            } else if (ItemStack.isSameItemSameTags(var5, var6)) {
                var6.grow(var5.getCount());
                this.craftSlots.setItem(var4, var6);
             } else if (!this.player.getInventory().add(var6)) {

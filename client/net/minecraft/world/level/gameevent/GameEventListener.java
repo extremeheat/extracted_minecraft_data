@@ -21,4 +21,8 @@ public interface GameEventListener {
       private DeliveryMode() {
       }
    }
+
+   public interface Holder<T extends GameEventListener> {
+      T getListener();
+   }
 }

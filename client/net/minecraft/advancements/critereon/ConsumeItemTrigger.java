@@ -19,7 +19,7 @@ public class ConsumeItemTrigger extends SimpleCriterionTrigger<ConsumeItemTrigge
       return ID;
    }
 
-   public ConsumeItemTrigger.TriggerInstance createInstance(JsonObject var1, EntityPredicate.Composite var2, DeserializationContext var3) {
+   public ConsumeItemTrigger.TriggerInstance createInstance(JsonObject var1, ContextAwarePredicate var2, DeserializationContext var3) {
       return new ConsumeItemTrigger.TriggerInstance(var2, ItemPredicate.fromJson(var1.get("item")));
    }
 
@@ -30,22 +30,22 @@ public class ConsumeItemTrigger extends SimpleCriterionTrigger<ConsumeItemTrigge
    public static class TriggerInstance extends AbstractCriterionTriggerInstance {
       private final ItemPredicate item;
 
-      public TriggerInstance(EntityPredicate.Composite var1, ItemPredicate var2) {
+      public TriggerInstance(ContextAwarePredicate var1, ItemPredicate var2) {
          super(ConsumeItemTrigger.ID, var1);
          this.item = var2;
       }
 
       public static ConsumeItemTrigger.TriggerInstance usedItem() {
-         return new ConsumeItemTrigger.TriggerInstance(EntityPredicate.Composite.ANY, ItemPredicate.ANY);
+         return new ConsumeItemTrigger.TriggerInstance(ContextAwarePredicate.ANY, ItemPredicate.ANY);
       }
 
       public static ConsumeItemTrigger.TriggerInstance usedItem(ItemPredicate var0) {
-         return new ConsumeItemTrigger.TriggerInstance(EntityPredicate.Composite.ANY, var0);
+         return new ConsumeItemTrigger.TriggerInstance(ContextAwarePredicate.ANY, var0);
       }
 
       public static ConsumeItemTrigger.TriggerInstance usedItem(ItemLike var0) {
          return new ConsumeItemTrigger.TriggerInstance(
-            EntityPredicate.Composite.ANY,
+            ContextAwarePredicate.ANY,
             new ItemPredicate(
                null,
                ImmutableSet.of(var0.asItem()),

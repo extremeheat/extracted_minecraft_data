@@ -1,11 +1,10 @@
 package net.minecraft.client.gui.screens.inventory;
 
 import com.google.common.collect.Ordering;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.MobEffectTextureManager;
 import net.minecraft.network.chat.CommonComponents;
@@ -23,7 +22,7 @@ public abstract class EffectRenderingInventoryScreen<T extends AbstractContainer
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       this.renderEffects(var1, var2, var3);
    }
@@ -34,7 +33,7 @@ public abstract class EffectRenderingInventoryScreen<T extends AbstractContainer
       return var2 >= 32;
    }
 
-   private void renderEffects(PoseStack var1, int var2, int var3) {
+   private void renderEffects(GuiGraphics var1, int var2, int var3) {
       int var4 = this.leftPos + this.imageWidth + 2;
       int var5 = this.width - var4;
       Collection var6 = this.minecraft.player.getActiveEffects();
@@ -64,48 +63,46 @@ public abstract class EffectRenderingInventoryScreen<T extends AbstractContainer
 
             if (var11 != null) {
                List var14 = List.of(this.getEffectName(var11), MobEffectUtil.formatDuration(var11, 1.0F));
-               this.renderTooltip(var1, var14, Optional.empty(), var2, var3);
+               var1.renderTooltip(this.font, var14, Optional.empty(), var2, var3);
             }
          }
       }
    }
 
-   private void renderBackgrounds(PoseStack var1, int var2, int var3, Iterable<MobEffectInstance> var4, boolean var5) {
-      RenderSystem.setShaderTexture(0, INVENTORY_LOCATION);
+   private void renderBackgrounds(GuiGraphics var1, int var2, int var3, Iterable<MobEffectInstance> var4, boolean var5) {
       int var6 = this.topPos;
 
       for(MobEffectInstance var8 : var4) {
          if (var5) {
-            blit(var1, var2, var6, 0, 166, 120, 32);
+            var1.blit(INVENTORY_LOCATION, var2, var6, 0, 166, 120, 32);
          } else {
-            blit(var1, var2, var6, 0, 198, 32, 32);
+            var1.blit(INVENTORY_LOCATION, var2, var6, 0, 198, 32, 32);
          }
 
          var6 += var3;
       }
    }
 
-   private void renderIcons(PoseStack var1, int var2, int var3, Iterable<MobEffectInstance> var4, boolean var5) {
+   private void renderIcons(GuiGraphics var1, int var2, int var3, Iterable<MobEffectInstance> var4, boolean var5) {
       MobEffectTextureManager var6 = this.minecraft.getMobEffectTextures();
       int var7 = this.topPos;
 
       for(MobEffectInstance var9 : var4) {
          MobEffect var10 = var9.getEffect();
          TextureAtlasSprite var11 = var6.get(var10);
-         RenderSystem.setShaderTexture(0, var11.atlasLocation());
-         blit(var1, var2 + (var5 ? 6 : 7), var7 + 7, 0, 18, 18, var11);
+         var1.blit(var2 + (var5 ? 6 : 7), var7 + 7, 0, 18, 18, var11);
          var7 += var3;
       }
    }
 
-   private void renderLabels(PoseStack var1, int var2, int var3, Iterable<MobEffectInstance> var4) {
+   private void renderLabels(GuiGraphics var1, int var2, int var3, Iterable<MobEffectInstance> var4) {
       int var5 = this.topPos;
 
       for(MobEffectInstance var7 : var4) {
          Component var8 = this.getEffectName(var7);
-         this.font.drawShadow(var1, var8, (float)(var2 + 10 + 18), (float)(var5 + 6), 16777215);
+         var1.drawString(this.font, var8, var2 + 10 + 18, var5 + 6, 16777215);
          Component var9 = MobEffectUtil.formatDuration(var7, 1.0F);
-         this.font.drawShadow(var1, var9, (float)(var2 + 10 + 18), (float)(var5 + 6 + 10), 8355711);
+         var1.drawString(this.font, var9, var2 + 10 + 18, var5 + 6 + 10, 8355711);
          var5 += var3;
       }
    }

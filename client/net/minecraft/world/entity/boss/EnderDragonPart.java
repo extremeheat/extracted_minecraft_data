@@ -17,7 +17,7 @@ public class EnderDragonPart extends Entity {
    private final EntityDimensions size;
 
    public EnderDragonPart(EnderDragon var1, String var2, float var3, float var4) {
-      super(var1.getType(), var1.level);
+      super(var1.getType(), var1.level());
       this.size = EntityDimensions.scalable(var3, var4);
       this.refreshDimensions();
       this.parentMob = var1;

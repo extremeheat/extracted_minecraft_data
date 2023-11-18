@@ -13,8 +13,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeManager;
-import net.minecraft.world.level.storage.loot.ItemModifierManager;
-import net.minecraft.world.level.storage.loot.PredicateManager;
+import net.minecraft.world.level.storage.loot.LootDataManager;
+import net.minecraft.world.level.storage.loot.LootDataType;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
@@ -59,8 +59,8 @@ public class ResourceLocationArgument implements ArgumentType<ResourceLocation> 
 
    public static LootItemCondition getPredicate(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
       ResourceLocation var2 = getId(var0, var1);
-      PredicateManager var3 = ((CommandSourceStack)var0.getSource()).getServer().getPredicateManager();
-      LootItemCondition var4 = var3.get(var2);
+      LootDataManager var3 = ((CommandSourceStack)var0.getSource()).getServer().getLootData();
+      LootItemCondition var4 = var3.getElement(LootDataType.PREDICATE, var2);
       if (var4 == null) {
          throw ERROR_UNKNOWN_PREDICATE.create(var2);
       } else {
@@ -70,8 +70,8 @@ public class ResourceLocationArgument implements ArgumentType<ResourceLocation> 
 
    public static LootItemFunction getItemModifier(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
       ResourceLocation var2 = getId(var0, var1);
-      ItemModifierManager var3 = ((CommandSourceStack)var0.getSource()).getServer().getItemModifierManager();
-      LootItemFunction var4 = var3.get(var2);
+      LootDataManager var3 = ((CommandSourceStack)var0.getSource()).getServer().getLootData();
+      LootItemFunction var4 = var3.getElement(LootDataType.MODIFIER, var2);
       if (var4 == null) {
          throw ERROR_UNKNOWN_ITEM_MODIFIER.create(var2);
       } else {

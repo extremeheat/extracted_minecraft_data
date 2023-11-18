@@ -167,7 +167,7 @@ public class TeleportCommand {
          performTeleport(
             var0,
             var4,
-            (ServerLevel)var2.level,
+            (ServerLevel)var2.level(),
             var2.getX(),
             var2.getY(),
             var2.getZ(),
@@ -180,10 +180,11 @@ public class TeleportCommand {
 
       if (var1.size() == 1) {
          var0.sendSuccess(
-            Component.translatable("commands.teleport.success.entity.single", ((Entity)var1.iterator().next()).getDisplayName(), var2.getDisplayName()), true
+            () -> Component.translatable("commands.teleport.success.entity.single", ((Entity)var1.iterator().next()).getDisplayName(), var2.getDisplayName()),
+            true
          );
       } else {
-         var0.sendSuccess(Component.translatable("commands.teleport.success.entity.multiple", var1.size(), var2.getDisplayName()), true);
+         var0.sendSuccess(() -> Component.translatable("commands.teleport.success.entity.multiple", var1.size(), var2.getDisplayName()), true);
       }
 
       return var1.size();
@@ -235,20 +236,20 @@ public class TeleportCommand {
 
       if (var1.size() == 1) {
          var0.sendSuccess(
-            Component.translatable(
-               "commands.teleport.success.location.single",
-               ((Entity)var1.iterator().next()).getDisplayName(),
-               formatDouble(var6.x),
-               formatDouble(var6.y),
-               formatDouble(var6.z)
-            ),
+            () -> Component.translatable(
+                  "commands.teleport.success.location.single",
+                  ((Entity)var1.iterator().next()).getDisplayName(),
+                  formatDouble(var6.x),
+                  formatDouble(var6.y),
+                  formatDouble(var6.z)
+               ),
             true
          );
       } else {
          var0.sendSuccess(
-            Component.translatable(
-               "commands.teleport.success.location.multiple", var1.size(), formatDouble(var6.x), formatDouble(var6.y), formatDouble(var6.z)
-            ),
+            () -> Component.translatable(
+                  "commands.teleport.success.location.multiple", var1.size(), formatDouble(var6.x), formatDouble(var6.y), formatDouble(var6.z)
+               ),
             true
          );
       }

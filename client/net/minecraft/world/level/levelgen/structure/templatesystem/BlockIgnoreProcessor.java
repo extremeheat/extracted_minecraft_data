@@ -38,7 +38,7 @@ public class BlockIgnoreProcessor extends StructureProcessor {
       StructureTemplate.StructureBlockInfo var5,
       StructurePlaceSettings var6
    ) {
-      return this.toIgnore.contains(var5.state.getBlock()) ? null : var5;
+      return this.toIgnore.contains(var5.state().getBlock()) ? null : var5;
    }
 
    @Override

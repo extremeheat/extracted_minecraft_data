@@ -1,8 +1,6 @@
 package net.minecraft.client.gui.components;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -24,10 +22,9 @@ public class ImageWidget extends AbstractWidget {
    }
 
    @Override
-   public void renderWidget(PoseStack var1, int var2, int var3, float var4) {
-      RenderSystem.setShaderTexture(0, this.imageLocation);
+   public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       int var5 = this.getWidth();
       int var6 = this.getHeight();
-      GuiComponent.blit(var1, this.getX(), this.getY(), 0.0F, 0.0F, var5, var6, var5, var6);
+      var1.blit(this.imageLocation, this.getX(), this.getY(), 0.0F, 0.0F, var5, var6, var5, var6);
    }
 }

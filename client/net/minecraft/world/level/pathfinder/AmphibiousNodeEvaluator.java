@@ -74,7 +74,7 @@ public class AmphibiousNodeEvaluator extends WalkNodeEvaluator {
 
       for(int var11 = 0; var11 < var3; ++var11) {
          Node var12 = var1[var11];
-         if (var12.type == BlockPathTypes.WATER && this.prefersShallowSwimming && var12.y < this.mob.level.getSeaLevel() - 10) {
+         if (var12.type == BlockPathTypes.WATER && this.prefersShallowSwimming && var12.y < this.mob.level().getSeaLevel() - 10) {
             ++var12.costMalus;
          }
       }

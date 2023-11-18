@@ -30,7 +30,7 @@ public class GroundPathNavigation extends PathNavigation {
 
    @Override
    protected boolean canUpdatePath() {
-      return this.mob.isOnGround() || this.isInLiquid() || this.mob.isPassenger();
+      return this.mob.onGround() || this.isInLiquid() || this.mob.isPassenger();
    }
 
    @Override
@@ -58,12 +58,12 @@ public class GroundPathNavigation extends PathNavigation {
          var1 = var3;
       }
 
-      if (!this.level.getBlockState(var1).getMaterial().isSolid()) {
+      if (!this.level.getBlockState(var1).isSolid()) {
          return super.createPath(var1, var2);
       } else {
          BlockPos var4 = var1.above();
 
-         while(var4.getY() < this.level.getMaxBuildHeight() && this.level.getBlockState(var4).getMaterial().isSolid()) {
+         while(var4.getY() < this.level.getMaxBuildHeight() && this.level.getBlockState(var4).isSolid()) {
             var4 = var4.above();
          }
 

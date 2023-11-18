@@ -9,18 +9,15 @@ public abstract class SectionTracker extends DynamicGraphMinFixedPoint {
    }
 
    @Override
-   protected boolean isSource(long var1) {
-      return var1 == 9223372036854775807L;
-   }
-
-   @Override
    protected void checkNeighborsAfterUpdate(long var1, int var3, boolean var4) {
-      for(int var5 = -1; var5 <= 1; ++var5) {
-         for(int var6 = -1; var6 <= 1; ++var6) {
-            for(int var7 = -1; var7 <= 1; ++var7) {
-               long var8 = SectionPos.offset(var1, var5, var6, var7);
-               if (var8 != var1) {
-                  this.checkNeighbor(var1, var8, var3, var4);
+      if (!var4 || var3 < this.levelCount - 2) {
+         for(int var5 = -1; var5 <= 1; ++var5) {
+            for(int var6 = -1; var6 <= 1; ++var6) {
+               for(int var7 = -1; var7 <= 1; ++var7) {
+                  long var8 = SectionPos.offset(var1, var5, var6, var7);
+                  if (var8 != var1) {
+                     this.checkNeighbor(var1, var8, var3, var4);
+                  }
                }
             }
          }
@@ -58,7 +55,7 @@ public abstract class SectionTracker extends DynamicGraphMinFixedPoint {
 
    @Override
    protected int computeLevelFromNeighbor(long var1, long var3, int var5) {
-      return var1 == 9223372036854775807L ? this.getLevelFromSource(var3) : var5 + 1;
+      return this.isSource(var1) ? this.getLevelFromSource(var3) : var5 + 1;
    }
 
    protected abstract int getLevelFromSource(long var1);

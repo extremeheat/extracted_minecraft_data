@@ -38,9 +38,16 @@ public class Advancement {
    private final String[][] requirements;
    private final Set<Advancement> children = Sets.newLinkedHashSet();
    private final Component chatComponent;
+   private final boolean sendsTelemetryEvent;
 
    public Advancement(
-      ResourceLocation var1, @Nullable Advancement var2, @Nullable DisplayInfo var3, AdvancementRewards var4, Map<String, Criterion> var5, String[][] var6
+      ResourceLocation var1,
+      @Nullable Advancement var2,
+      @Nullable DisplayInfo var3,
+      AdvancementRewards var4,
+      Map<String, Criterion> var5,
+      String[][] var6,
+      boolean var7
    ) {
       super();
       this.id = var1;
@@ -49,6 +56,7 @@ public class Advancement {
       this.parent = var2;
       this.rewards = var4;
       this.requirements = var6;
+      this.sendsTelemetryEvent = var7;
       if (var2 != null) {
          var2.addChild(this);
       }
@@ -56,16 +64,18 @@ public class Advancement {
       if (var3 == null) {
          this.chatComponent = Component.literal(var1.toString());
       } else {
-         Component var7 = var3.getTitle();
-         ChatFormatting var8 = var3.getFrame().getChatColor();
-         MutableComponent var9 = ComponentUtils.mergeStyles(var7.copy(), Style.EMPTY.withColor(var8)).append("\n").append(var3.getDescription());
-         MutableComponent var10 = var7.copy().withStyle(var1x -> var1x.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, var9)));
-         this.chatComponent = ComponentUtils.wrapInSquareBrackets(var10).withStyle(var8);
+         Component var8 = var3.getTitle();
+         ChatFormatting var9 = var3.getFrame().getChatColor();
+         MutableComponent var10 = ComponentUtils.mergeStyles(var8.copy(), Style.EMPTY.withColor(var9)).append("\n").append(var3.getDescription());
+         MutableComponent var11 = var8.copy().withStyle(var1x -> var1x.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, var10)));
+         this.chatComponent = ComponentUtils.wrapInSquareBrackets(var11).withStyle(var9);
       }
    }
 
    public Advancement.Builder deconstruct() {
-      return new Advancement.Builder(this.parent == null ? null : this.parent.getId(), this.display, this.rewards, this.criteria, this.requirements);
+      return new Advancement.Builder(
+         this.parent == null ? null : this.parent.getId(), this.display, this.rewards, this.criteria, this.requirements, this.sendsTelemetryEvent
+      );
    }
 
    @Nullable
@@ -95,6 +105,10 @@ public class Advancement {
       return this.display;
    }
 
+   public boolean sendsTelemetryEvent() {
+      return this.sendsTelemetryEvent;
+   }
+
    public AdvancementRewards getRewards() {
       return this.rewards;
    }
@@ -113,6 +127,8 @@ public class Advancement {
          + this.criteria
          + ", requirements="
          + Arrays.deepToString(this.requirements)
+         + ", sendsTelemetryEvent="
+         + this.sendsTelemetryEvent
          + "}";
    }
 
@@ -173,22 +189,29 @@ public class Advancement {
       @Nullable
       private String[][] requirements;
       private RequirementsStrategy requirementsStrategy = RequirementsStrategy.AND;
+      private final boolean sendsTelemetryEvent;
 
-      Builder(@Nullable ResourceLocation var1, @Nullable DisplayInfo var2, AdvancementRewards var3, Map<String, Criterion> var4, String[][] var5) {
+      Builder(@Nullable ResourceLocation var1, @Nullable DisplayInfo var2, AdvancementRewards var3, Map<String, Criterion> var4, String[][] var5, boolean var6) {
          super();
          this.parentId = var1;
          this.display = var2;
          this.rewards = var3;
          this.criteria = var4;
          this.requirements = var5;
+         this.sendsTelemetryEvent = var6;
       }
 
-      private Builder() {
+      private Builder(boolean var1) {
          super();
+         this.sendsTelemetryEvent = var1;
       }
 
       public static Advancement.Builder advancement() {
-         return new Advancement.Builder();
+         return new Advancement.Builder(true);
+      }
+
+      public static Advancement.Builder recipeAdvancement() {
+         return new Advancement.Builder(false);
       }
 
       public Advancement.Builder parent(Advancement var1) {
@@ -270,7 +293,7 @@ public class Advancement {
                this.requirements = this.requirementsStrategy.createRequirements(this.criteria.keySet());
             }
 
-            return new Advancement(var1, this.parent, this.display, this.rewards, this.criteria, this.requirements);
+            return new Advancement(var1, this.parent, this.display, this.rewards, this.criteria, this.requirements, this.sendsTelemetryEvent);
          }
       }
 
@@ -317,6 +340,7 @@ public class Advancement {
          }
 
          var1.add("requirements", var13);
+         var1.addProperty("sends_telemetry_event", this.sendsTelemetryEvent);
          return var1;
       }
 
@@ -337,6 +361,8 @@ public class Advancement {
                var1.writeUtf(var9);
             }
          }
+
+         var1.writeBoolean(this.sendsTelemetryEvent);
       }
 
       @Override
@@ -351,6 +377,8 @@ public class Advancement {
             + this.criteria
             + ", requirements="
             + Arrays.deepToString(this.requirements)
+            + ", sends_telemetry_event="
+            + this.sendsTelemetryEvent
             + "}";
       }
 
@@ -380,8 +408,8 @@ public class Advancement {
                var7 = new String[var5.size()][];
                int var16 = 0;
 
-               for(String var22 : var5.keySet()) {
-                  var7[var16++] = new String[]{var22};
+               for(String var23 : var5.keySet()) {
+                  var7[var16++] = new String[]{var23};
                }
             }
 
@@ -397,24 +425,25 @@ public class Advancement {
                }
             }
 
-            for(String var21 : var5.keySet()) {
-               boolean var24 = false;
+            for(String var22 : var5.keySet()) {
+               boolean var25 = false;
 
-               for(String[] var28 : var7) {
-                  if (ArrayUtils.contains(var28, var21)) {
-                     var24 = true;
+               for(String[] var29 : var7) {
+                  if (ArrayUtils.contains(var29, var22)) {
+                     var25 = true;
                      break;
                   }
                }
 
-               if (!var24) {
+               if (!var25) {
                   throw new JsonSyntaxException(
-                     "Criterion '" + var21 + "' isn't a requirement for completion. This isn't supported behaviour, all criteria must be required."
+                     "Criterion '" + var22 + "' isn't a requirement for completion. This isn't supported behaviour, all criteria must be required."
                   );
                }
             }
 
-            return new Advancement.Builder(var2, var3, var4, var5, var7);
+            boolean var19 = GsonHelper.getAsBoolean(var0, "sends_telemetry_event", false);
+            return new Advancement.Builder(var2, var3, var4, var5, var7, var19);
          }
       }
 
@@ -432,7 +461,8 @@ public class Advancement {
             }
          }
 
-         return new Advancement.Builder(var1, var2, AdvancementRewards.EMPTY, var3, var4);
+         boolean var7 = var0.readBoolean();
+         return new Advancement.Builder(var1, var2, AdvancementRewards.EMPTY, var3, var4, var7);
       }
 
       public Map<String, Criterion> getCriteria() {

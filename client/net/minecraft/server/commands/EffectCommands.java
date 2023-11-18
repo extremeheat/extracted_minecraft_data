@@ -197,13 +197,13 @@ public class EffectCommands {
       } else {
          if (var1.size() == 1) {
             var0.sendSuccess(
-               Component.translatable(
-                  "commands.effect.give.success.single", var6.getDisplayName(), ((Entity)var1.iterator().next()).getDisplayName(), var8 / 20
-               ),
+               () -> Component.translatable(
+                     "commands.effect.give.success.single", var6.getDisplayName(), ((Entity)var1.iterator().next()).getDisplayName(), var8 / 20
+                  ),
                true
             );
          } else {
-            var0.sendSuccess(Component.translatable("commands.effect.give.success.multiple", var6.getDisplayName(), var1.size(), var8 / 20), true);
+            var0.sendSuccess(() -> Component.translatable("commands.effect.give.success.multiple", var6.getDisplayName(), var1.size(), var8 / 20), true);
          }
 
          return var7;
@@ -224,10 +224,10 @@ public class EffectCommands {
       } else {
          if (var1.size() == 1) {
             var0.sendSuccess(
-               Component.translatable("commands.effect.clear.everything.success.single", ((Entity)var1.iterator().next()).getDisplayName()), true
+               () -> Component.translatable("commands.effect.clear.everything.success.single", ((Entity)var1.iterator().next()).getDisplayName()), true
             );
          } else {
-            var0.sendSuccess(Component.translatable("commands.effect.clear.everything.success.multiple", var1.size()), true);
+            var0.sendSuccess(() -> Component.translatable("commands.effect.clear.everything.success.multiple", var1.size()), true);
          }
 
          return var2;
@@ -249,13 +249,13 @@ public class EffectCommands {
       } else {
          if (var1.size() == 1) {
             var0.sendSuccess(
-               Component.translatable(
-                  "commands.effect.clear.specific.success.single", var3.getDisplayName(), ((Entity)var1.iterator().next()).getDisplayName()
-               ),
+               () -> Component.translatable(
+                     "commands.effect.clear.specific.success.single", var3.getDisplayName(), ((Entity)var1.iterator().next()).getDisplayName()
+                  ),
                true
             );
          } else {
-            var0.sendSuccess(Component.translatable("commands.effect.clear.specific.success.multiple", var3.getDisplayName(), var1.size()), true);
+            var0.sendSuccess(() -> Component.translatable("commands.effect.clear.specific.success.multiple", var3.getDisplayName(), var1.size()), true);
          }
 
          return var4;

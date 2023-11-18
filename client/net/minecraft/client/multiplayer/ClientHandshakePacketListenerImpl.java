@@ -50,6 +50,8 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
    private final boolean newWorld;
    @Nullable
    private final Duration worldLoadDuration;
+   @Nullable
+   private String minigameName;
 
    public ClientHandshakePacketListenerImpl(
       Connection var1, Minecraft var2, @Nullable ServerData var3, @Nullable Screen var4, boolean var5, @Nullable Duration var6, Consumer<Component> var7
@@ -134,7 +136,7 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
                this.connection,
                this.serverData,
                this.localGameProfile,
-               this.minecraft.getTelemetryManager().createWorldSessionManager(this.newWorld, this.worldLoadDuration)
+               this.minecraft.getTelemetryManager().createWorldSessionManager(this.newWorld, this.worldLoadDuration, this.minigameName)
             )
          );
    }
@@ -169,5 +171,9 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
    public void handleCustomQuery(ClientboundCustomQueryPacket var1) {
       this.updateStatus.accept(Component.translatable("connect.negotiating"));
       this.connection.send(new ServerboundCustomQueryPacket(var1.getTransactionId(), null));
+   }
+
+   public void setMinigameName(String var1) {
+      this.minigameName = var1;
    }
 }

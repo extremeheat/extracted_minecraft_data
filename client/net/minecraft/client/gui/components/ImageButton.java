@@ -1,6 +1,6 @@
 package net.minecraft.client.gui.components;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -38,7 +38,7 @@ public class ImageButton extends Button {
    }
 
    @Override
-   public void renderWidget(PoseStack var1, int var2, int var3, float var4) {
+   public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderTexture(
          var1,
          this.resourceLocation,

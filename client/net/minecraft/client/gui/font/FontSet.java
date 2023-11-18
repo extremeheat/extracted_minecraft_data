@@ -27,8 +27,10 @@ public class FontSet implements AutoCloseable {
    private BakedGlyph missingGlyph;
    private BakedGlyph whiteGlyph;
    private final List<GlyphProvider> providers = Lists.newArrayList();
-   private final Int2ObjectMap<BakedGlyph> glyphs = new Int2ObjectOpenHashMap();
-   private final Int2ObjectMap<FontSet.GlyphInfoFilter> glyphInfos = new Int2ObjectOpenHashMap();
+   private final CodepointMap<BakedGlyph> glyphs = new CodepointMap<>(var0 -> new BakedGlyph[var0], var0 -> new BakedGlyph[var0][]);
+   private final CodepointMap<FontSet.GlyphInfoFilter> glyphInfos = new CodepointMap<>(
+      var0 -> new FontSet.GlyphInfoFilter[var0], var0 -> new FontSet.GlyphInfoFilter[var0][]
+   );
    private final Int2ObjectMap<IntList> glyphsByWidth = new Int2ObjectOpenHashMap();
    private final List<FontTexture> textures = Lists.newArrayList();
 
@@ -120,7 +122,7 @@ public class FontSet implements AutoCloseable {
    }
 
    public GlyphInfo getGlyphInfo(int var1, boolean var2) {
-      return ((FontSet.GlyphInfoFilter)this.glyphInfos.computeIfAbsent(var1, this::computeGlyphInfo)).select(var2);
+      return this.glyphInfos.computeIfAbsent(var1, this::computeGlyphInfo).select(var2);
    }
 
    private BakedGlyph computeBakedGlyph(int var1) {
@@ -135,7 +137,7 @@ public class FontSet implements AutoCloseable {
    }
 
    public BakedGlyph getGlyph(int var1) {
-      return (BakedGlyph)this.glyphs.computeIfAbsent(var1, this::computeBakedGlyph);
+      return this.glyphs.computeIfAbsent(var1, this::computeBakedGlyph);
    }
 
    private BakedGlyph stitch(SheetGlyphInfo var1) {
@@ -146,9 +148,12 @@ public class FontSet implements AutoCloseable {
          }
       }
 
-      FontTexture var5 = new FontTexture(this.name.withPath(var1x -> var1x + "/" + this.textures.size()), var1.isColored());
+      ResourceLocation var7 = this.name.withSuffix("/" + this.textures.size());
+      boolean var8 = var1.isColored();
+      GlyphRenderTypes var9 = var8 ? GlyphRenderTypes.createForColorTexture(var7) : GlyphRenderTypes.createForIntensityTexture(var7);
+      FontTexture var5 = new FontTexture(var9, var8);
       this.textures.add(var5);
-      this.textureManager.register(var5.getName(), var5);
+      this.textureManager.register(var7, var5);
       BakedGlyph var6 = var5.add(var1);
       return var6 == null ? this.missingGlyph : var6;
    }

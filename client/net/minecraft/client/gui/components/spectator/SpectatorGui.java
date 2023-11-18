@@ -1,11 +1,10 @@
 package net.minecraft.client.gui.components.spectator;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.spectator.SpectatorMenu;
 import net.minecraft.client.gui.spectator.SpectatorMenuItem;
 import net.minecraft.client.gui.spectator.SpectatorMenuListener;
@@ -14,7 +13,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 
-public class SpectatorGui extends GuiComponent implements SpectatorMenuListener {
+public class SpectatorGui implements SpectatorMenuListener {
    private static final ResourceLocation WIDGETS_LOCATION = new ResourceLocation("textures/gui/widgets.png");
    public static final ResourceLocation SPECTATOR_LOCATION = new ResourceLocation("textures/gui/spectator_widgets.png");
    private static final long FADE_OUT_DELAY = 5000L;
@@ -43,68 +42,66 @@ public class SpectatorGui extends GuiComponent implements SpectatorMenuListener 
       return Mth.clamp((float)var1 / 2000.0F, 0.0F, 1.0F);
    }
 
-   public void renderHotbar(PoseStack var1) {
+   public void renderHotbar(GuiGraphics var1) {
       if (this.menu != null) {
          float var2 = this.getHotbarAlpha();
          if (var2 <= 0.0F) {
             this.menu.exit();
          } else {
-            int var3 = this.minecraft.getWindow().getGuiScaledWidth() / 2;
-            var1.pushPose();
-            var1.translate(0.0F, 0.0F, -90.0F);
-            int var4 = Mth.floor((float)this.minecraft.getWindow().getGuiScaledHeight() - 22.0F * var2);
+            int var3 = var1.guiWidth() / 2;
+            var1.pose().pushPose();
+            var1.pose().translate(0.0F, 0.0F, -90.0F);
+            int var4 = Mth.floor((float)var1.guiHeight() - 22.0F * var2);
             SpectatorPage var5 = this.menu.getCurrentPage();
             this.renderPage(var1, var2, var3, var4, var5);
-            var1.popPose();
+            var1.pose().popPose();
          }
       }
    }
 
-   protected void renderPage(PoseStack var1, float var2, int var3, int var4, SpectatorPage var5) {
+   protected void renderPage(GuiGraphics var1, float var2, int var3, int var4, SpectatorPage var5) {
       RenderSystem.enableBlend();
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, var2);
-      RenderSystem.setShaderTexture(0, WIDGETS_LOCATION);
-      blit(var1, var3 - 91, var4, 0, 0, 182, 22);
+      var1.setColor(1.0F, 1.0F, 1.0F, var2);
+      var1.blit(WIDGETS_LOCATION, var3 - 91, var4, 0, 0, 182, 22);
       if (var5.getSelectedSlot() >= 0) {
-         blit(var1, var3 - 91 - 1 + var5.getSelectedSlot() * 20, var4 - 1, 0, 22, 24, 22);
+         var1.blit(WIDGETS_LOCATION, var3 - 91 - 1 + var5.getSelectedSlot() * 20, var4 - 1, 0, 22, 24, 22);
       }
 
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+      var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
 
       for(int var6 = 0; var6 < 9; ++var6) {
-         this.renderSlot(var1, var6, this.minecraft.getWindow().getGuiScaledWidth() / 2 - 90 + var6 * 20 + 2, (float)(var4 + 3), var2, var5.getItem(var6));
+         this.renderSlot(var1, var6, var1.guiWidth() / 2 - 90 + var6 * 20 + 2, (float)(var4 + 3), var2, var5.getItem(var6));
       }
 
       RenderSystem.disableBlend();
    }
 
-   private void renderSlot(PoseStack var1, int var2, int var3, float var4, float var5, SpectatorMenuItem var6) {
-      RenderSystem.setShaderTexture(0, SPECTATOR_LOCATION);
+   private void renderSlot(GuiGraphics var1, int var2, int var3, float var4, float var5, SpectatorMenuItem var6) {
       if (var6 != SpectatorMenu.EMPTY_SLOT) {
          int var7 = (int)(var5 * 255.0F);
-         var1.pushPose();
-         var1.translate((float)var3, var4, 0.0F);
+         var1.pose().pushPose();
+         var1.pose().translate((float)var3, var4, 0.0F);
          float var8 = var6.isEnabled() ? 1.0F : 0.25F;
-         RenderSystem.setShaderColor(var8, var8, var8, var5);
+         var1.setColor(var8, var8, var8, var5);
          var6.renderIcon(var1, var8, var7);
-         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-         var1.popPose();
+         var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+         var1.pose().popPose();
          if (var7 > 3 && var6.isEnabled()) {
             Component var9 = this.minecraft.options.keyHotbarSlots[var2].getTranslatedKeyMessage();
-            this.minecraft.font.drawShadow(var1, var9, (float)(var3 + 19 - 2 - this.minecraft.font.width(var9)), var4 + 6.0F + 3.0F, 16777215 + (var7 << 24));
+            var1.drawString(this.minecraft.font, var9, var3 + 19 - 2 - this.minecraft.font.width(var9), (int)var4 + 6 + 3, 16777215 + (var7 << 24));
          }
       }
    }
 
-   public void renderTooltip(PoseStack var1) {
+   public void renderTooltip(GuiGraphics var1) {
       int var2 = (int)(this.getHotbarAlpha() * 255.0F);
       if (var2 > 3 && this.menu != null) {
          SpectatorMenuItem var3 = this.menu.getSelectedItem();
          Component var4 = var3 == SpectatorMenu.EMPTY_SLOT ? this.menu.getSelectedCategory().getPrompt() : var3.getName();
          if (var4 != null) {
-            int var5 = (this.minecraft.getWindow().getGuiScaledWidth() - this.minecraft.font.width(var4)) / 2;
-            int var6 = this.minecraft.getWindow().getGuiScaledHeight() - 35;
-            this.minecraft.font.drawShadow(var1, var4, (float)var5, (float)var6, 16777215 + (var2 << 24));
+            int var5 = (var1.guiWidth() - this.minecraft.font.width(var4)) / 2;
+            int var6 = var1.guiHeight() - 35;
+            var1.drawString(this.minecraft.font, var4, var5, var6, 16777215 + (var2 << 24));
          }
       }
    }

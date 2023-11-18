@@ -4,13 +4,14 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import java.util.Map;
 import java.util.Optional;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.HangingSignItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -18,6 +19,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.HangingSignBlockEntity;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -68,12 +71,18 @@ public class CeilingHangingSignBlock extends SignBlock {
       BlockEntity var8 = var2.getBlockEntity(var3);
       if (var8 instanceof SignBlockEntity var7) {
          ItemStack var9 = var4.getItemInHand(var5);
-         if (!var7.hasAnyClickCommands(var4) && var9.getItem() instanceof BlockItem) {
+         if (this.shouldTryToChainAnotherHangingSign(var4, var6, (SignBlockEntity)var7, var9)) {
             return InteractionResult.PASS;
          }
       }
 
       return super.use(var1, var2, var3, var4, var5, var6);
+   }
+
+   private boolean shouldTryToChainAnotherHangingSign(Player var1, BlockHitResult var2, SignBlockEntity var3, ItemStack var4) {
+      return !var3.canExecuteClickCommands(var3.isFacingFrontText(var1), var1)
+         && var4.getItem() instanceof HangingSignItem
+         && var2.getDirection().equals(Direction.DOWN);
    }
 
    @Override
@@ -130,6 +139,11 @@ public class CeilingHangingSignBlock extends SignBlock {
    }
 
    @Override
+   public float getYRotationDegrees(BlockState var1) {
+      return RotationSegment.convertToDegrees(var1.getValue(ROTATION));
+   }
+
+   @Override
    public BlockState rotate(BlockState var1, Rotation var2) {
       return var1.setValue(ROTATION, Integer.valueOf(var2.rotate(var1.getValue(ROTATION), 16)));
    }
@@ -147,5 +161,11 @@ public class CeilingHangingSignBlock extends SignBlock {
    @Override
    public BlockEntity newBlockEntity(BlockPos var1, BlockState var2) {
       return new HangingSignBlockEntity(var1, var2);
+   }
+
+   @Nullable
+   @Override
+   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
+      return createTickerHelper(var3, BlockEntityType.HANGING_SIGN, SignBlockEntity::tick);
    }
 }

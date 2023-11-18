@@ -2,9 +2,11 @@ package net.minecraft.client.renderer.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
 import com.mojang.math.Transformation;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nullable;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -20,8 +22,7 @@ import net.minecraft.world.entity.Display;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 
-public abstract class DisplayRenderer<T extends Display> extends EntityRenderer<T> {
-   private static final float MAX_SHADOW_RADIUS = 64.0F;
+public abstract class DisplayRenderer<T extends Display, S> extends EntityRenderer<T> {
    private final EntityRenderDispatcher entityRenderDispatcher;
 
    protected DisplayRenderer(EntityRendererProvider.Context var1) {
@@ -34,35 +35,44 @@ public abstract class DisplayRenderer<T extends Display> extends EntityRenderer<
    }
 
    public void render(T var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
-      float var7 = var1.calculateInterpolationProgress(var3);
-      this.shadowRadius = Math.min(var1.getShadowRadius(var7), 64.0F);
-      this.shadowStrength = var1.getShadowStrength(var7);
-      int var8 = var1.getPackedBrightnessOverride();
-      int var9 = var8 != -1 ? var8 : var6;
-      super.render((T)var1, var2, var3, var4, var5, var9);
-      var4.pushPose();
-      var4.mulPose(this.calculateOrientation((T)var1));
-      Transformation var10 = var1.transformation(var7);
-      var4.mulPoseMatrix(var10.getMatrix());
-      var4.last().normal().rotate(var10.getLeftRotation()).rotate(var10.getRightRotation());
-      this.renderInner((T)var1, var4, var5, var9, var7);
-      var4.popPose();
+      Display.RenderState var7 = var1.renderState();
+      if (var7 != null) {
+         Object var8 = this.getSubState((T)var1);
+         if (var8 != null) {
+            float var9 = var1.calculateInterpolationProgress(var3);
+            this.shadowRadius = var7.shadowRadius().get(var9);
+            this.shadowStrength = var7.shadowStrength().get(var9);
+            int var10 = var7.brightnessOverride();
+            int var11 = var10 != -1 ? var10 : var6;
+            super.render((T)var1, var2, var3, var4, var5, var11);
+            var4.pushPose();
+            var4.mulPose(this.calculateOrientation(var7, (T)var1));
+            Transformation var12 = var7.transformation().get(var9);
+            var4.mulPoseMatrix(var12.getMatrix());
+            var4.last().normal().rotate(var12.getLeftRotation()).rotate(var12.getRightRotation());
+            this.renderInner((T)var1, (S)var8, var4, var5, var11, var9);
+            var4.popPose();
+         }
+      }
    }
 
-   private Quaternionf calculateOrientation(T var1) {
-      Camera var2 = this.entityRenderDispatcher.camera;
+   private Quaternionf calculateOrientation(Display.RenderState var1, T var2) {
+      Camera var3 = this.entityRenderDispatcher.camera;
 
-      return switch(var1.getBillboardConstraints()) {
-         case FIXED -> var1.orientation();
-         case HORIZONTAL -> new Quaternionf().rotationYXZ(-0.017453292F * var1.getYRot(), -0.017453292F * var2.getXRot(), 0.0F);
-         case VERTICAL -> new Quaternionf().rotationYXZ(3.1415927F - 0.017453292F * var2.getYRot(), 0.017453292F * var1.getXRot(), 0.0F);
-         case CENTER -> new Quaternionf().rotationYXZ(3.1415927F - 0.017453292F * var2.getYRot(), -0.017453292F * var2.getXRot(), 0.0F);
+      return switch(var1.billboardConstraints()) {
+         case FIXED -> var2.orientation();
+         case HORIZONTAL -> new Quaternionf().rotationYXZ(-0.017453292F * var2.getYRot(), -0.017453292F * var3.getXRot(), 0.0F);
+         case VERTICAL -> new Quaternionf().rotationYXZ(3.1415927F - 0.017453292F * var3.getYRot(), 0.017453292F * var2.getXRot(), 0.0F);
+         case CENTER -> new Quaternionf().rotationYXZ(3.1415927F - 0.017453292F * var3.getYRot(), -0.017453292F * var3.getXRot(), 0.0F);
       };
    }
 
-   protected abstract void renderInner(T var1, PoseStack var2, MultiBufferSource var3, int var4, float var5);
+   @Nullable
+   protected abstract S getSubState(T var1);
 
-   public static class BlockDisplayRenderer extends DisplayRenderer<Display.BlockDisplay> {
+   protected abstract void renderInner(T var1, S var2, PoseStack var3, MultiBufferSource var4, int var5, float var6);
+
+   public static class BlockDisplayRenderer extends DisplayRenderer<Display.BlockDisplay, Display.BlockDisplay.BlockRenderState> {
       private final BlockRenderDispatcher blockRenderer;
 
       protected BlockDisplayRenderer(EntityRendererProvider.Context var1) {
@@ -70,12 +80,19 @@ public abstract class DisplayRenderer<T extends Display> extends EntityRenderer<
          this.blockRenderer = var1.getBlockRenderDispatcher();
       }
 
-      public void renderInner(Display.BlockDisplay var1, PoseStack var2, MultiBufferSource var3, int var4, float var5) {
-         this.blockRenderer.renderSingleBlock(var1.getBlockState(), var2, var3, var4, OverlayTexture.NO_OVERLAY);
+      @Nullable
+      protected Display.BlockDisplay.BlockRenderState getSubState(Display.BlockDisplay var1) {
+         return var1.blockRenderState();
+      }
+
+      public void renderInner(
+         Display.BlockDisplay var1, Display.BlockDisplay.BlockRenderState var2, PoseStack var3, MultiBufferSource var4, int var5, float var6
+      ) {
+         this.blockRenderer.renderSingleBlock(var2.blockState(), var3, var4, var5, OverlayTexture.NO_OVERLAY);
       }
    }
 
-   public static class ItemDisplayRenderer extends DisplayRenderer<Display.ItemDisplay> {
+   public static class ItemDisplayRenderer extends DisplayRenderer<Display.ItemDisplay, Display.ItemDisplay.ItemRenderState> {
       private final ItemRenderer itemRenderer;
 
       protected ItemDisplayRenderer(EntityRendererProvider.Context var1) {
@@ -83,13 +100,18 @@ public abstract class DisplayRenderer<T extends Display> extends EntityRenderer<
          this.itemRenderer = var1.getItemRenderer();
       }
 
-      public void renderInner(Display.ItemDisplay var1, PoseStack var2, MultiBufferSource var3, int var4, float var5) {
-         this.itemRenderer
-            .renderStatic(var1.getItemStack(), var1.getItemTransform(), var4, OverlayTexture.NO_OVERLAY, var2, var3, var1.getLevel(), var1.getId());
+      @Nullable
+      protected Display.ItemDisplay.ItemRenderState getSubState(Display.ItemDisplay var1) {
+         return var1.itemRenderState();
+      }
+
+      public void renderInner(Display.ItemDisplay var1, Display.ItemDisplay.ItemRenderState var2, PoseStack var3, MultiBufferSource var4, int var5, float var6) {
+         var3.mulPose(Axis.YP.rotation(3.1415927F));
+         this.itemRenderer.renderStatic(var2.itemStack(), var2.itemTransform(), var5, OverlayTexture.NO_OVERLAY, var3, var4, var1.level(), var1.getId());
       }
    }
 
-   public static class TextDisplayRenderer extends DisplayRenderer<Display.TextDisplay> {
+   public static class TextDisplayRenderer extends DisplayRenderer<Display.TextDisplay, Display.TextDisplay.TextRenderState> {
       private final Font font;
 
       protected TextDisplayRenderer(EntityRendererProvider.Context var1) {
@@ -111,58 +133,63 @@ public abstract class DisplayRenderer<T extends Display> extends EntityRenderer<
          return new Display.TextDisplay.CachedInfo(var4, var5);
       }
 
-      public void renderInner(Display.TextDisplay var1, PoseStack var2, MultiBufferSource var3, int var4, float var5) {
-         byte var6 = var1.getFlags();
-         boolean var7 = (var6 & 2) != 0;
-         boolean var8 = (var6 & 4) != 0;
-         boolean var9 = (var6 & 1) != 0;
-         Display.TextDisplay.Align var10 = Display.TextDisplay.getAlign(var6);
-         byte var11 = var1.getTextOpacity(var5);
-         int var12;
-         if (var8) {
-            float var13 = Minecraft.getInstance().options.getBackgroundOpacity(0.25F);
-            var12 = (int)(var13 * 255.0F) << 24;
+      @Nullable
+      protected Display.TextDisplay.TextRenderState getSubState(Display.TextDisplay var1) {
+         return var1.textRenderState();
+      }
+
+      public void renderInner(Display.TextDisplay var1, Display.TextDisplay.TextRenderState var2, PoseStack var3, MultiBufferSource var4, int var5, float var6) {
+         byte var7 = var2.flags();
+         boolean var8 = (var7 & 2) != 0;
+         boolean var9 = (var7 & 4) != 0;
+         boolean var10 = (var7 & 1) != 0;
+         Display.TextDisplay.Align var11 = Display.TextDisplay.getAlign(var7);
+         byte var12 = (byte)var2.textOpacity().get(var6);
+         int var13;
+         if (var9) {
+            float var14 = Minecraft.getInstance().options.getBackgroundOpacity(0.25F);
+            var13 = (int)(var14 * 255.0F) << 24;
          } else {
-            var12 = var1.getBackgroundColor(var5);
+            var13 = var2.backgroundColor().get(var6);
          }
 
-         float var22 = 0.0F;
-         Matrix4f var14 = var2.last().pose();
-         var14.rotate(3.1415927F, 0.0F, 1.0F, 0.0F);
-         var14.scale(-0.025F, -0.025F, -0.025F);
-         Display.TextDisplay.CachedInfo var15 = var1.cacheDisplay(this::splitLines);
-         int var16 = 9 + 1;
-         int var17 = var15.width();
-         int var18 = var15.lines().size() * var16;
-         var14.translate(1.0F - (float)var17 / 2.0F, (float)(-var18), 0.0F);
-         if (var12 != 0) {
-            VertexConsumer var19 = var3.getBuffer(var7 ? RenderType.textBackgroundSeeThrough() : RenderType.textBackground());
-            var19.vertex(var14, -1.0F, -1.0F, 0.0F).color(var12).uv2(var4).endVertex();
-            var19.vertex(var14, -1.0F, (float)var18, 0.0F).color(var12).uv2(var4).endVertex();
-            var19.vertex(var14, (float)var17, (float)var18, 0.0F).color(var12).uv2(var4).endVertex();
-            var19.vertex(var14, (float)var17, -1.0F, 0.0F).color(var12).uv2(var4).endVertex();
+         float var23 = 0.0F;
+         Matrix4f var15 = var3.last().pose();
+         var15.rotate(3.1415927F, 0.0F, 1.0F, 0.0F);
+         var15.scale(-0.025F, -0.025F, -0.025F);
+         Display.TextDisplay.CachedInfo var16 = var1.cacheDisplay(this::splitLines);
+         int var17 = 9 + 1;
+         int var18 = var16.width();
+         int var19 = var16.lines().size() * var17;
+         var15.translate(1.0F - (float)var18 / 2.0F, (float)(-var19), 0.0F);
+         if (var13 != 0) {
+            VertexConsumer var20 = var4.getBuffer(var8 ? RenderType.textBackgroundSeeThrough() : RenderType.textBackground());
+            var20.vertex(var15, -1.0F, -1.0F, 0.0F).color(var13).uv2(var5).endVertex();
+            var20.vertex(var15, -1.0F, (float)var19, 0.0F).color(var13).uv2(var5).endVertex();
+            var20.vertex(var15, (float)var18, (float)var19, 0.0F).color(var13).uv2(var5).endVertex();
+            var20.vertex(var15, (float)var18, -1.0F, 0.0F).color(var13).uv2(var5).endVertex();
          }
 
-         for(Display.TextDisplay.CachedLine var20 : var15.lines()) {
-            float var21 = switch(var10) {
+         for(Display.TextDisplay.CachedLine var21 : var16.lines()) {
+            float var22 = switch(var11) {
                case LEFT -> 0.0F;
-               case RIGHT -> (float)(var17 - var20.width());
-               case CENTER -> (float)var17 / 2.0F - (float)var20.width() / 2.0F;
+               case RIGHT -> (float)(var18 - var21.width());
+               case CENTER -> (float)var18 / 2.0F - (float)var21.width() / 2.0F;
             };
             this.font
                .drawInBatch(
-                  var20.contents(),
-                  var21,
+                  var21.contents(),
                   var22,
-                  var11 << 24 | 16777215,
-                  var9,
-                  var14,
-                  var3,
-                  var7 ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.POLYGON_OFFSET,
+                  var23,
+                  var12 << 24 | 16777215,
+                  var10,
+                  var15,
+                  var4,
+                  var8 ? Font.DisplayMode.SEE_THROUGH : Font.DisplayMode.POLYGON_OFFSET,
                   0,
-                  var4
+                  var5
                );
-            var22 += (float)var16;
+            var23 += (float)var17;
          }
       }
    }

@@ -151,14 +151,14 @@ public class Boat extends Entity implements VariantHolder<Boat.Type> {
 
    @Override
    public double getPassengersRidingOffset() {
-      return this.getVariant() == Boat.Type.BAMBOO ? 0.3 : -0.1;
+      return this.getVariant() == Boat.Type.BAMBOO ? 0.25 : -0.1;
    }
 
    @Override
    public boolean hurt(DamageSource var1, float var2) {
       if (this.isInvulnerableTo(var1)) {
          return false;
-      } else if (!this.level.isClientSide && !this.isRemoved()) {
+      } else if (!this.level().isClientSide && !this.isRemoved()) {
          this.setHurtDir(-this.getHurtDir());
          this.setHurtTime(10);
          this.setDamage(this.getDamage() + var2 * 10.0F);
@@ -166,7 +166,7 @@ public class Boat extends Entity implements VariantHolder<Boat.Type> {
          this.gameEvent(GameEvent.ENTITY_DAMAGE, var1.getEntity());
          boolean var3 = var1.getEntity() instanceof Player && ((Player)var1.getEntity()).getAbilities().instabuild;
          if (var3 || this.getDamage() > 40.0F) {
-            if (!var3 && this.level.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
+            if (!var3 && this.level().getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
                this.destroy(var1);
             }
 
@@ -185,7 +185,7 @@ public class Boat extends Entity implements VariantHolder<Boat.Type> {
 
    @Override
    public void onAboveBubbleCol(boolean var1) {
-      if (!this.level.isClientSide) {
+      if (!this.level().isClientSide) {
          this.isAboveBubbleColumn = true;
          this.bubbleColumnDirectionIsDown = var1;
          if (this.getBubbleTime() == 0) {
@@ -193,7 +193,7 @@ public class Boat extends Entity implements VariantHolder<Boat.Type> {
          }
       }
 
-      this.level
+      this.level()
          .addParticle(
             ParticleTypes.SPLASH,
             this.getX() + (double)this.random.nextFloat(),
@@ -204,7 +204,7 @@ public class Boat extends Entity implements VariantHolder<Boat.Type> {
             0.0
          );
       if (this.random.nextInt(20) == 0) {
-         this.level
+         this.level()
             .playLocalSound(
                this.getX(), this.getY(), this.getZ(), this.getSwimSplashSound(), this.getSoundSource(), 1.0F, 0.8F + 0.4F * this.random.nextFloat(), false
             );
@@ -274,7 +274,7 @@ public class Boat extends Entity implements VariantHolder<Boat.Type> {
          ++this.outOfControlTicks;
       }
 
-      if (!this.level.isClientSide && this.outOfControlTicks >= 60.0F) {
+      if (!this.level().isClientSide && this.outOfControlTicks >= 60.0F) {
          this.ejectPassengers();
       }
 
@@ -294,9 +294,9 @@ public class Boat extends Entity implements VariantHolder<Boat.Type> {
          }
 
          this.floatBoat();
-         if (this.level.isClientSide) {
+         if (this.level().isClientSide) {
             this.controlBoat();
-            this.level.sendPacketToServer(new ServerboundPaddleBoatPacket(this.getPaddleState(0), this.getPaddleState(1)));
+            this.level().sendPacketToServer(new ServerboundPaddleBoatPacket(this.getPaddleState(0), this.getPaddleState(1)));
          }
 
          this.move(MoverType.SELF, this.getDeltaMovement());
@@ -316,7 +316,7 @@ public class Boat extends Entity implements VariantHolder<Boat.Type> {
                   Vec3 var3 = this.getViewVector(1.0F);
                   double var4 = var1 == 1 ? -var3.z : var3.z;
                   double var6 = var1 == 1 ? var3.x : -var3.x;
-                  this.level
+                  this.level()
                      .playSound(
                         null, this.getX() + var4, this.getY(), this.getZ() + var6, var2, this.getSoundSource(), 1.0F, 0.8F + 0.4F * this.random.nextFloat()
                      );
@@ -330,10 +330,10 @@ public class Boat extends Entity implements VariantHolder<Boat.Type> {
       }
 
       this.checkInsideBlocks();
-      List var8 = this.level
+      List var8 = this.level()
          .getEntities(this, this.getBoundingBox().inflate(0.20000000298023224, -0.009999999776482582, 0.20000000298023224), EntitySelector.pushableBy(this));
       if (!var8.isEmpty()) {
-         boolean var9 = !this.level.isClientSide && !(this.getControllingPassenger() instanceof Player);
+         boolean var9 = !this.level().isClientSide && !(this.getControllingPassenger() instanceof Player);
 
          for(int var10 = 0; var10 < var8.size(); ++var10) {
             Entity var11 = (Entity)var8.get(var10);
@@ -355,7 +355,7 @@ public class Boat extends Entity implements VariantHolder<Boat.Type> {
    }
 
    private void tickBubbleColumn() {
-      if (this.level.isClientSide) {
+      if (this.level().isClientSide) {
          int var1 = this.getBubbleTime();
          if (var1 > 0) {
             this.bubbleMultiplier += 0.05F;
@@ -365,7 +365,7 @@ public class Boat extends Entity implements VariantHolder<Boat.Type> {
 
          this.bubbleMultiplier = Mth.clamp(this.bubbleMultiplier, 0.0F, 1.0F);
          this.bubbleAngleO = this.bubbleAngle;
-         this.bubbleAngle = 10.0F * (float)Math.sin((double)(0.5F * (float)this.level.getGameTime())) * this.bubbleMultiplier;
+         this.bubbleAngle = 10.0F * (float)Math.sin((double)(0.5F * (float)this.level().getGameTime())) * this.bubbleMultiplier;
       } else {
          if (!this.isAboveBubbleColumn) {
             this.setBubbleTime(0);
@@ -469,9 +469,9 @@ public class Boat extends Entity implements VariantHolder<Boat.Type> {
          for(int var11 = var2; var11 < var3; ++var11) {
             for(int var12 = var6; var12 < var7; ++var12) {
                var8.set(var11, var9, var12);
-               FluidState var13 = this.level.getFluidState(var8);
+               FluidState var13 = this.level().getFluidState(var8);
                if (var13.is(FluidTags.WATER)) {
-                  var10 = Math.max(var10, var13.getHeight(this.level, var8));
+                  var10 = Math.max(var10, var13.getHeight(this.level(), var8));
                }
 
                if (var10 >= 1.0F) {
@@ -509,10 +509,10 @@ public class Boat extends Entity implements VariantHolder<Boat.Type> {
                for(int var16 = var5; var16 < var6; ++var16) {
                   if (var15 <= 0 || var16 != var5 && var16 != var6 - 1) {
                      var12.set(var13, var16, var14);
-                     BlockState var17 = this.level.getBlockState(var12);
+                     BlockState var17 = this.level().getBlockState(var12);
                      if (!(var17.getBlock() instanceof WaterlilyBlock)
                         && Shapes.joinIsNotEmpty(
-                           var17.getCollisionShape(this.level, var12).move((double)var13, (double)var16, (double)var14), var9, BooleanOp.AND
+                           var17.getCollisionShape(this.level(), var12).move((double)var13, (double)var16, (double)var14), var9, BooleanOp.AND
                         )) {
                         var10 += var17.getBlock().getFriction();
                         ++var11;
@@ -542,9 +542,9 @@ public class Boat extends Entity implements VariantHolder<Boat.Type> {
          for(int var11 = var4; var11 < var5; ++var11) {
             for(int var12 = var6; var12 < var7; ++var12) {
                var9.set(var10, var11, var12);
-               FluidState var13 = this.level.getFluidState(var9);
+               FluidState var13 = this.level().getFluidState(var9);
                if (var13.is(FluidTags.WATER)) {
-                  float var14 = (float)var11 + var13.getHeight(this.level, var9);
+                  float var14 = (float)var11 + var13.getHeight(this.level(), var9);
                   this.waterLevel = Math.max((double)var14, this.waterLevel);
                   var8 |= var1.minY < (double)var14;
                }
@@ -572,8 +572,8 @@ public class Boat extends Entity implements VariantHolder<Boat.Type> {
          for(int var13 = var6; var13 < var7; ++var13) {
             for(int var14 = var8; var14 < var9; ++var14) {
                var11.set(var12, var13, var14);
-               FluidState var15 = this.level.getFluidState(var11);
-               if (var15.is(FluidTags.WATER) && var2 < (double)((float)var11.getY() + var15.getHeight(this.level, var11))) {
+               FluidState var15 = this.level().getFluidState(var11);
+               if (var15.is(FluidTags.WATER) && var2 < (double)((float)var11.getY() + var15.getHeight(this.level(), var11))) {
                   if (!var15.isSource()) {
                      return Boat.Status.UNDER_FLOWING_WATER;
                   }
@@ -668,32 +668,32 @@ public class Boat extends Entity implements VariantHolder<Boat.Type> {
    }
 
    @Override
-   public void positionRider(Entity var1) {
+   protected void positionRider(Entity var1, Entity.MoveFunction var2) {
       if (this.hasPassenger(var1)) {
-         float var2 = this.getSinglePassengerXOffset();
-         float var3 = (float)((this.isRemoved() ? 0.009999999776482582 : this.getPassengersRidingOffset()) + var1.getMyRidingOffset());
+         float var3 = this.getSinglePassengerXOffset();
+         float var4 = (float)((this.isRemoved() ? 0.009999999776482582 : this.getPassengersRidingOffset()) + var1.getMyRidingOffset());
          if (this.getPassengers().size() > 1) {
-            int var4 = this.getPassengers().indexOf(var1);
-            if (var4 == 0) {
-               var2 = 0.2F;
+            int var5 = this.getPassengers().indexOf(var1);
+            if (var5 == 0) {
+               var3 = 0.2F;
             } else {
-               var2 = -0.6F;
+               var3 = -0.6F;
             }
 
             if (var1 instanceof Animal) {
-               var2 += 0.2F;
+               var3 += 0.2F;
             }
          }
 
-         Vec3 var6 = new Vec3((double)var2, 0.0, 0.0).yRot(-this.getYRot() * 0.017453292F - 1.5707964F);
-         var1.setPos(this.getX() + var6.x, this.getY() + (double)var3, this.getZ() + var6.z);
+         Vec3 var7 = new Vec3((double)var3, 0.0, 0.0).yRot(-this.getYRot() * 0.017453292F - 1.5707964F);
+         var2.accept(var1, this.getX() + var7.x, this.getY() + (double)var4, this.getZ() + var7.z);
          var1.setYRot(var1.getYRot() + this.deltaRotation);
          var1.setYHeadRot(var1.getYHeadRot() + this.deltaRotation);
          this.clampRotation(var1);
          if (var1 instanceof Animal && this.getPassengers().size() == this.getMaxPassengers()) {
-            int var5 = var1.getId() % 2 == 0 ? 90 : 270;
-            var1.setYBodyRot(((Animal)var1).yBodyRot + (float)var5);
-            var1.setYHeadRot(var1.getYHeadRot() + (float)var5);
+            int var6 = var1.getId() % 2 == 0 ? 90 : 270;
+            var1.setYBodyRot(((Animal)var1).yBodyRot + (float)var6);
+            var1.setYHeadRot(var1.getYHeadRot() + (float)var6);
          }
       }
    }
@@ -705,14 +705,14 @@ public class Boat extends Entity implements VariantHolder<Boat.Type> {
       double var5 = this.getZ() + var2.z;
       BlockPos var7 = BlockPos.containing(var3, this.getBoundingBox().maxY, var5);
       BlockPos var8 = var7.below();
-      if (!this.level.isWaterAt(var8)) {
+      if (!this.level().isWaterAt(var8)) {
          ArrayList var9 = Lists.newArrayList();
-         double var10 = this.level.getBlockFloorHeight(var7);
+         double var10 = this.level().getBlockFloorHeight(var7);
          if (DismountHelper.isBlockFloorValid(var10)) {
             var9.add(new Vec3(var3, (double)var7.getY() + var10, var5));
          }
 
-         double var12 = this.level.getBlockFloorHeight(var8);
+         double var12 = this.level().getBlockFloorHeight(var8);
          if (DismountHelper.isBlockFloorValid(var12)) {
             var9.add(new Vec3(var3, (double)var8.getY() + var12, var5));
          }
@@ -723,7 +723,7 @@ public class Boat extends Entity implements VariantHolder<Boat.Type> {
             Pose var15 = (Pose)var14.next();
 
             for(Vec3 var17 : var9) {
-               if (DismountHelper.canDismountTo(this.level, var17, var1, var15)) {
+               if (DismountHelper.canDismountTo(this.level(), var17, var1, var15)) {
                   var1.setPose(var15);
                   return var17;
                }
@@ -765,7 +765,7 @@ public class Boat extends Entity implements VariantHolder<Boat.Type> {
       if (var1.isSecondaryUseActive()) {
          return InteractionResult.PASS;
       } else if (this.outOfControlTicks < 60.0F) {
-         if (!this.level.isClientSide) {
+         if (!this.level().isClientSide) {
             return var1.startRiding(this) ? InteractionResult.CONSUME : InteractionResult.PASS;
          } else {
             return InteractionResult.SUCCESS;
@@ -787,9 +787,9 @@ public class Boat extends Entity implements VariantHolder<Boat.Type> {
                }
 
                this.causeFallDamage(this.fallDistance, 1.0F, this.damageSources().fall());
-               if (!this.level.isClientSide && !this.isRemoved()) {
+               if (!this.level().isClientSide && !this.isRemoved()) {
                   this.kill();
-                  if (this.level.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
+                  if (this.level().getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
                      for(int var6 = 0; var6 < 3; ++var6) {
                         this.spawnAtLocation(this.getVariant().getPlanks());
                      }
@@ -802,7 +802,7 @@ public class Boat extends Entity implements VariantHolder<Boat.Type> {
             }
 
             this.resetFallDistance();
-         } else if (!this.level.getFluidState(this.blockPosition().below()).is(FluidTags.WATER) && var1 < 0.0) {
+         } else if (!this.level().getFluidState(this.blockPosition().below()).is(FluidTags.WATER) && var1 < 0.0) {
             this.fallDistance -= (float)var1;
          }
       }

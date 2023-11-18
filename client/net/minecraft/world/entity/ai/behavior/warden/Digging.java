@@ -20,11 +20,11 @@ public class Digging<E extends Warden> extends Behavior<E> {
    }
 
    protected boolean checkExtraStartConditions(ServerLevel var1, E var2) {
-      return var2.isOnGround() || var2.isInWater() || var2.isInLava();
+      return var2.onGround() || var2.isInWater() || var2.isInLava();
    }
 
    protected void start(ServerLevel var1, E var2, long var3) {
-      if (var2.isOnGround()) {
+      if (var2.onGround()) {
          var2.setPose(Pose.DIGGING);
          var2.playSound(SoundEvents.WARDEN_DIG, 5.0F, 1.0F);
       } else {

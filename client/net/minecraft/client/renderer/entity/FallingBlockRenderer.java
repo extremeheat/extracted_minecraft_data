@@ -26,7 +26,7 @@ public class FallingBlockRenderer extends EntityRenderer<FallingBlockEntity> {
    public void render(FallingBlockEntity var1, float var2, float var3, PoseStack var4, MultiBufferSource var5, int var6) {
       BlockState var7 = var1.getBlockState();
       if (var7.getRenderShape() == RenderShape.MODEL) {
-         Level var8 = var1.getLevel();
+         Level var8 = var1.level();
          if (var7 != var8.getBlockState(var1.blockPosition()) && var7.getRenderShape() != RenderShape.INVISIBLE) {
             var4.pushPose();
             BlockPos var9 = BlockPos.containing(var1.getX(), var1.getBoundingBox().maxY, var1.getZ());

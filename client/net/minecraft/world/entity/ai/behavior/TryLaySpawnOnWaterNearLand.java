@@ -25,7 +25,7 @@ public class TryLaySpawnOnWaterNearLand {
                .apply(
                   var1,
                   (var1x, var2, var3) -> (var2x, var3x, var4) -> {
-                        if (!var3x.isInWater() && var3x.isOnGround()) {
+                        if (!var3x.isInWater() && var3x.onGround()) {
                            BlockPos var6 = var3x.blockPosition().below();
          
                            for(Direction var8 : Direction.Plane.HORIZONTAL) {

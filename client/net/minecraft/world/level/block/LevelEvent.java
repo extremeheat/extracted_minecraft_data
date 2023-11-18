@@ -66,6 +66,7 @@ public class LevelEvent {
    public static final int PARTICLES_SCULK_CHARGE = 3006;
    public static final int PARTICLES_SCULK_SHRIEK = 3007;
    public static final int PARTICLES_AND_SOUND_BRUSH_BLOCK_COMPLETE = 3008;
+   public static final int PARTICLES_EGG_CRACK = 3009;
 
    public LevelEvent() {
       super();

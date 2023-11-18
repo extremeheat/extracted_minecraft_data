@@ -15,7 +15,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.BundleItem;
 import net.minecraft.world.item.CompassItem;
 import net.minecraft.world.item.CrossbowItem;
@@ -87,11 +86,9 @@ public class ItemProperties {
       ClampedItemPropertyFunction var0 = (var0x, var1, var2, var3) -> {
          if (!var0x.is(ItemTags.TRIMMABLE_ARMOR)) {
             return -1.0F / 0.0F;
-         } else if (var1 == null) {
-            return 0.0F;
          } else {
-            return !var1.enabledFeatures().contains(FeatureFlags.UPDATE_1_20)
-               ? -1.0F / 0.0F
+            return var1 == null
+               ? 0.0F
                : ArmorTrim.getTrim(var1.registryAccess(), var0x).map(ArmorTrim::material).map(Holder::value).map(TrimMaterial::itemModelIndex).orElse(0.0F);
          }
       };
@@ -126,8 +123,8 @@ public class ItemProperties {
             if (var5 == null) {
                return 0.0F;
             } else {
-               if (var2 == null && ((Entity)var5).level instanceof ClientLevel) {
-                  var2 = (ClientLevel)((Entity)var5).level;
+               if (var2 == null && ((Entity)var5).level() instanceof ClientLevel) {
+                  var2 = (ClientLevel)((Entity)var5).level();
                }
 
                if (var2 == null) {

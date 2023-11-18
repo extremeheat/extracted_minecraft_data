@@ -6,7 +6,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
@@ -16,13 +15,16 @@ import java.io.Reader;
 import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.GameNarrator;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.LogoRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.Music;
+import net.minecraft.sounds.Musics;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.RandomSource;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 public class WinScreen extends Screen {
@@ -43,6 +45,7 @@ public class WinScreen extends Screen {
    private final IntSet speedupModifiers = new IntOpenHashSet();
    private float scrollSpeed;
    private final float unmodifiedScrollSpeed;
+   private int direction;
    private final LogoRenderer logoRenderer = new LogoRenderer(false);
 
    public WinScreen(boolean var1, Runnable var2) {
@@ -55,11 +58,14 @@ public class WinScreen extends Screen {
          this.unmodifiedScrollSpeed = 0.5F;
       }
 
+      this.direction = 1;
       this.scrollSpeed = this.unmodifiedScrollSpeed;
    }
 
    private float calculateScrollSpeed() {
-      return this.speedupActive ? this.unmodifiedScrollSpeed * (5.0F + (float)this.speedupModifiers.size() * 15.0F) : this.unmodifiedScrollSpeed;
+      return this.speedupActive
+         ? this.unmodifiedScrollSpeed * (5.0F + (float)this.speedupModifiers.size() * 15.0F) * (float)this.direction
+         : this.unmodifiedScrollSpeed * (float)this.direction;
    }
 
    @Override
@@ -74,7 +80,9 @@ public class WinScreen extends Screen {
 
    @Override
    public boolean keyPressed(int var1, int var2, int var3) {
-      if (var1 == 341 || var1 == 345) {
+      if (var1 == 265) {
+         this.direction = -1;
+      } else if (var1 == 341 || var1 == 345) {
          this.speedupModifiers.add(var1);
       } else if (var1 == 32) {
          this.speedupActive = true;
@@ -86,6 +94,10 @@ public class WinScreen extends Screen {
 
    @Override
    public boolean keyReleased(int var1, int var2, int var3) {
+      if (var1 == 265) {
+         this.direction = 1;
+      }
+
       if (var1 == 32) {
          this.speedupActive = false;
       } else if (var1 == 341 || var1 == 345) {
@@ -167,19 +179,29 @@ public class WinScreen extends Screen {
          this.addEmptyLine();
          this.addEmptyLine();
 
-         for(JsonElement var9 : var5.getAsJsonArray("titles")) {
+         for(JsonElement var9 : var5.getAsJsonArray("disciplines")) {
             JsonObject var10 = var9.getAsJsonObject();
-            String var11 = var10.get("title").getAsString();
-            JsonArray var12 = var10.getAsJsonArray("names");
-            this.addCreditsLine(Component.literal(var11).withStyle(ChatFormatting.GRAY), false);
-
-            for(JsonElement var14 : var12) {
-               String var15 = var14.getAsString();
-               this.addCreditsLine(Component.literal("           ").append(var15).withStyle(ChatFormatting.WHITE), false);
+            String var11 = var10.get("discipline").getAsString();
+            if (StringUtils.isNotEmpty(var11)) {
+               this.addCreditsLine(Component.literal(var11).withStyle(ChatFormatting.YELLOW), true);
+               this.addEmptyLine();
+               this.addEmptyLine();
             }
 
-            this.addEmptyLine();
-            this.addEmptyLine();
+            for(JsonElement var14 : var10.getAsJsonArray("titles")) {
+               JsonObject var15 = var14.getAsJsonObject();
+               String var16 = var15.get("title").getAsString();
+               JsonArray var17 = var15.getAsJsonArray("names");
+               this.addCreditsLine(Component.literal(var16).withStyle(ChatFormatting.GRAY), false);
+
+               for(JsonElement var19 : var17) {
+                  String var20 = var19.getAsString();
+                  this.addCreditsLine(Component.literal("           ").append(var20).withStyle(ChatFormatting.WHITE), false);
+               }
+
+               this.addEmptyLine();
+               this.addEmptyLine();
+            }
          }
       }
    }
@@ -189,7 +211,7 @@ public class WinScreen extends Screen {
    }
 
    private void addPoemLines(String var1) {
-      this.lines.addAll(this.minecraft.font.split(Component.literal(var1), 274));
+      this.lines.addAll(this.minecraft.font.split(Component.literal(var1), 256));
    }
 
    private void addCreditsLine(Component var1, boolean var2) {
@@ -200,8 +222,7 @@ public class WinScreen extends Screen {
       this.lines.add(var1.getVisualOrderText());
    }
 
-   private void renderBg(PoseStack var1) {
-      RenderSystem.setShaderTexture(0, GuiComponent.BACKGROUND_LOCATION);
+   private void renderBg(GuiGraphics var1) {
       int var2 = this.width;
       float var3 = this.scroll * 0.5F;
       boolean var4 = true;
@@ -219,20 +240,20 @@ public class WinScreen extends Screen {
 
       var6 *= var6;
       var6 = var6 * 96.0F / 255.0F;
-      RenderSystem.setShaderColor(var6, var6, var6, 1.0F);
-      blit(var1, 0, 0, 0, 0.0F, var3, var2, this.height, 64, 64);
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+      var1.setColor(var6, var6, var6, 1.0F);
+      var1.blit(BACKGROUND_LOCATION, 0, 0, 0, 0.0F, var3, var2, this.height, 64, 64);
+      var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
-      this.scroll += var4 * this.scrollSpeed;
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
+      this.scroll = Math.max(0.0F, this.scroll + var4 * this.scrollSpeed);
       this.renderBg(var1);
-      int var5 = this.width / 2 - 137;
+      int var5 = this.width / 2 - 128;
       int var6 = this.height + 50;
       float var7 = -this.scroll;
-      var1.pushPose();
-      var1.translate(0.0F, var7, 0.0F);
+      var1.pose().pushPose();
+      var1.pose().translate(0.0F, var7, 0.0F);
       this.logoRenderer.renderLogo(var1, this.width, 1.0F, var6);
       int var8 = var6 + 100;
 
@@ -240,30 +261,39 @@ public class WinScreen extends Screen {
          if (var9 == this.lines.size() - 1) {
             float var10 = (float)var8 + var7 - (float)(this.height / 2 - 6);
             if (var10 < 0.0F) {
-               var1.translate(0.0F, -var10, 0.0F);
+               var1.pose().translate(0.0F, -var10, 0.0F);
             }
          }
 
          if ((float)var8 + var7 + 12.0F + 8.0F > 0.0F && (float)var8 + var7 < (float)this.height) {
             FormattedCharSequence var11 = this.lines.get(var9);
             if (this.centeredLines.contains(var9)) {
-               this.font.drawShadow(var1, var11, (float)(var5 + (274 - this.font.width(var11)) / 2), (float)var8, 16777215);
+               var1.drawCenteredString(this.font, var11, var5 + 128, var8, 16777215);
             } else {
-               this.font.drawShadow(var1, var11, (float)var5, (float)var8, 16777215);
+               var1.drawString(this.font, var11, var5, var8, 16777215);
             }
          }
 
          var8 += 12;
       }
 
-      var1.popPose();
-      RenderSystem.setShaderTexture(0, VIGNETTE_LOCATION);
+      var1.pose().popPose();
       RenderSystem.enableBlend();
       RenderSystem.blendFunc(GlStateManager.SourceFactor.ZERO, GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR);
-      blit(var1, 0, 0, 0, 0.0F, 0.0F, this.width, this.height, this.width, this.height);
+      var1.blit(VIGNETTE_LOCATION, 0, 0, 0, 0.0F, 0.0F, this.width, this.height, this.width, this.height);
       RenderSystem.disableBlend();
       RenderSystem.defaultBlendFunc();
       super.render(var1, var2, var3, var4);
+   }
+
+   @Override
+   public void removed() {
+      this.minecraft.getMusicManager().stopPlaying(Musics.CREDITS);
+   }
+
+   @Override
+   public Music getBackgroundMusic() {
+      return Musics.CREDITS;
    }
 
    @FunctionalInterface

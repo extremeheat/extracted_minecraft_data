@@ -1,8 +1,8 @@
 package com.mojang.realmsclient.gui.screens;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.Util;
 import net.minecraft.client.GameNarrator;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.screens.Screen;
@@ -46,7 +46,7 @@ public class RealmsParentalConsentScreen extends RealmsScreen {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderBackground(var1);
       this.messageLines.renderCentered(var1, this.width / 2, 15, 15, 16777215);
       super.render(var1, var2, var3, var4);

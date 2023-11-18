@@ -16,7 +16,6 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -107,10 +106,5 @@ public class AmethystClusterBlock extends AmethystBlock implements SimpleWaterlo
    @Override
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(WATERLOGGED, FACING);
-   }
-
-   @Override
-   public PushReaction getPistonPushReaction(BlockState var1) {
-      return PushReaction.DESTROY;
    }
 }

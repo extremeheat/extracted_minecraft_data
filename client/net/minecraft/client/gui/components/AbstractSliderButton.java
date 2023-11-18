@@ -1,11 +1,12 @@
 package net.minecraft.client.gui.components;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.InputType;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.navigation.CommonInputs;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -62,16 +63,17 @@ public abstract class AbstractSliderButton extends AbstractWidget {
    }
 
    @Override
-   public void renderWidget(PoseStack var1, int var2, int var3, float var4) {
+   public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       Minecraft var5 = Minecraft.getInstance();
-      RenderSystem.setShaderTexture(0, SLIDER_LOCATION);
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.alpha);
+      var1.setColor(1.0F, 1.0F, 1.0F, this.alpha);
       RenderSystem.enableBlend();
       RenderSystem.defaultBlendFunc();
       RenderSystem.enableDepthTest();
-      blitNineSliced(var1, this.getX(), this.getY(), this.getWidth(), this.getHeight(), 20, 4, 200, 20, 0, this.getTextureY());
-      blitNineSliced(var1, this.getX() + (int)(this.value * (double)(this.width - 8)), this.getY(), 8, 20, 20, 4, 200, 20, 0, this.getHandleTextureY());
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+      var1.blitNineSliced(SLIDER_LOCATION, this.getX(), this.getY(), this.getWidth(), this.getHeight(), 20, 4, 200, 20, 0, this.getTextureY());
+      var1.blitNineSliced(
+         SLIDER_LOCATION, this.getX() + (int)(this.value * (double)(this.width - 8)), this.getY(), 8, 20, 20, 4, 200, 20, 0, this.getHandleTextureY()
+      );
+      var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
       int var6 = this.active ? 16777215 : 10526880;
       this.renderScrollingString(var1, var5.font, 2, var6 | Mth.ceil(this.alpha * 255.0F) << 24);
    }
@@ -96,7 +98,10 @@ public abstract class AbstractSliderButton extends AbstractWidget {
 
    @Override
    public boolean keyPressed(int var1, int var2, int var3) {
-      if (var1 != 32 && var1 != 257 && var1 != 335) {
+      if (CommonInputs.selected(var1)) {
+         this.canChangeValue = !this.canChangeValue;
+         return true;
+      } else {
          if (this.canChangeValue) {
             boolean var4 = var1 == 263;
             if (var4 || var1 == 262) {
@@ -107,9 +112,6 @@ public abstract class AbstractSliderButton extends AbstractWidget {
          }
 
          return false;
-      } else {
-         this.canChangeValue = !this.canChangeValue;
-         return true;
       }
    }
 

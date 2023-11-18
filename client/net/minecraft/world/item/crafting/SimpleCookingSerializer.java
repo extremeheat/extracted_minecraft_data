@@ -24,7 +24,7 @@ public class SimpleCookingSerializer<T extends AbstractCookingRecipe> implements
       Object var5 = GsonHelper.isArrayNode(var2, "ingredient")
          ? GsonHelper.getAsJsonArray(var2, "ingredient")
          : GsonHelper.getAsJsonObject(var2, "ingredient");
-      Ingredient var6 = Ingredient.fromJson((JsonElement)var5);
+      Ingredient var6 = Ingredient.fromJson((JsonElement)var5, false);
       String var7 = GsonHelper.getAsString(var2, "result");
       ResourceLocation var8 = new ResourceLocation(var7);
       ItemStack var9 = new ItemStack(

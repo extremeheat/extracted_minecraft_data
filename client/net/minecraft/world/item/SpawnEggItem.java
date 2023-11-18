@@ -100,11 +100,10 @@ public class SpawnEggItem extends Item {
       } else if (!(var1 instanceof ServerLevel)) {
          return InteractionResultHolder.success(var4);
       } else {
-         BlockHitResult var6 = var5;
-         BlockPos var7 = var6.getBlockPos();
+         BlockPos var7 = var5.getBlockPos();
          if (!(var1.getBlockState(var7).getBlock() instanceof LiquidBlock)) {
             return InteractionResultHolder.pass(var4);
-         } else if (var1.mayInteract(var2, var7) && var2.mayUseItemAt(var7, var6.getDirection(), var4)) {
+         } else if (var1.mayInteract(var2, var7) && var2.mayUseItemAt(var7, var5.getDirection(), var4)) {
             EntityType var8 = this.getType(var4.getTag());
             Entity var9 = var8.spawn((ServerLevel)var1, var4, var2, var7, MobSpawnType.SPAWN_EGG, false, false);
             if (var9 == null) {

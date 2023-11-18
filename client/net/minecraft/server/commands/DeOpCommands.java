@@ -41,7 +41,7 @@ public class DeOpCommands {
          if (var2.isOp(var5)) {
             var2.deop(var5);
             ++var3;
-            var0.sendSuccess(Component.translatable("commands.deop.success", ((GameProfile)var1.iterator().next()).getName()), true);
+            var0.sendSuccess(() -> Component.translatable("commands.deop.success", ((GameProfile)var1.iterator().next()).getName()), true);
          }
       }
 

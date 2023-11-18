@@ -17,7 +17,7 @@ public class LootTableTrigger extends SimpleCriterionTrigger<LootTableTrigger.Tr
       return ID;
    }
 
-   protected LootTableTrigger.TriggerInstance createInstance(JsonObject var1, EntityPredicate.Composite var2, DeserializationContext var3) {
+   protected LootTableTrigger.TriggerInstance createInstance(JsonObject var1, ContextAwarePredicate var2, DeserializationContext var3) {
       ResourceLocation var4 = new ResourceLocation(GsonHelper.getAsString(var1, "loot_table"));
       return new LootTableTrigger.TriggerInstance(var2, var4);
    }
@@ -29,13 +29,13 @@ public class LootTableTrigger extends SimpleCriterionTrigger<LootTableTrigger.Tr
    public static class TriggerInstance extends AbstractCriterionTriggerInstance {
       private final ResourceLocation lootTable;
 
-      public TriggerInstance(EntityPredicate.Composite var1, ResourceLocation var2) {
+      public TriggerInstance(ContextAwarePredicate var1, ResourceLocation var2) {
          super(LootTableTrigger.ID, var1);
          this.lootTable = var2;
       }
 
       public static LootTableTrigger.TriggerInstance lootTableUsed(ResourceLocation var0) {
-         return new LootTableTrigger.TriggerInstance(EntityPredicate.Composite.ANY, var0);
+         return new LootTableTrigger.TriggerInstance(ContextAwarePredicate.ANY, var0);
       }
 
       public boolean matches(ResourceLocation var1) {

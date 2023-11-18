@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.projectile;
 
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -36,7 +35,7 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
 
    public void setItem(ItemStack var1) {
       if (!var1.is(Items.ENDER_EYE) || var1.hasTag()) {
-         this.getEntityData().set(DATA_ITEM_STACK, Util.make(var1.copy(), var0 -> var0.setCount(1)));
+         this.getEntityData().set(DATA_ITEM_STACK, var1.copyWithCount(1));
       }
    }
 
@@ -109,7 +108,7 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
       double var8 = var1.horizontalDistance();
       this.setXRot(Projectile.lerpRotation(this.xRotO, (float)(Mth.atan2(var1.y, var8) * 57.2957763671875)));
       this.setYRot(Projectile.lerpRotation(this.yRotO, (float)(Mth.atan2(var1.x, var1.z) * 57.2957763671875)));
-      if (!this.level.isClientSide) {
+      if (!this.level().isClientSide) {
          double var10 = this.tx - var2;
          double var12 = this.tz - var6;
          float var14 = (float)Math.sqrt(var10 * var10 + var12 * var12);
@@ -129,10 +128,10 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
       float var21 = 0.25F;
       if (this.isInWater()) {
          for(int var11 = 0; var11 < 4; ++var11) {
-            this.level.addParticle(ParticleTypes.BUBBLE, var2 - var1.x * 0.25, var4 - var1.y * 0.25, var6 - var1.z * 0.25, var1.x, var1.y, var1.z);
+            this.level().addParticle(ParticleTypes.BUBBLE, var2 - var1.x * 0.25, var4 - var1.y * 0.25, var6 - var1.z * 0.25, var1.x, var1.y, var1.z);
          }
       } else {
-         this.level
+         this.level()
             .addParticle(
                ParticleTypes.PORTAL,
                var2 - var1.x * 0.25 + this.random.nextDouble() * 0.6 - 0.3,
@@ -144,16 +143,16 @@ public class EyeOfEnder extends Entity implements ItemSupplier {
             );
       }
 
-      if (!this.level.isClientSide) {
+      if (!this.level().isClientSide) {
          this.setPos(var2, var4, var6);
          ++this.life;
-         if (this.life > 80 && !this.level.isClientSide) {
+         if (this.life > 80 && !this.level().isClientSide) {
             this.playSound(SoundEvents.ENDER_EYE_DEATH, 1.0F, 1.0F);
             this.discard();
             if (this.surviveAfterDeath) {
-               this.level.addFreshEntity(new ItemEntity(this.level, this.getX(), this.getY(), this.getZ(), this.getItem()));
+               this.level().addFreshEntity(new ItemEntity(this.level(), this.getX(), this.getY(), this.getZ(), this.getItem()));
             } else {
-               this.level.levelEvent(2003, this.blockPosition(), 0);
+               this.level().levelEvent(2003, this.blockPosition(), 0);
             }
          }
       } else {

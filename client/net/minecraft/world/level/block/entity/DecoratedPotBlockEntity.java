@@ -1,11 +1,9 @@
 package net.minecraft.world.level.block.entity;
 
-import java.util.ArrayList;
-import java.util.List;
-import net.minecraft.Util;
+import java.util.stream.Stream;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.NonNullList;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -13,31 +11,16 @@ import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
-import net.minecraft.tags.ItemTags;
-import net.minecraft.world.Containers;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
 public class DecoratedPotBlockEntity extends BlockEntity {
-   private static final String TAG_SHARDS = "shards";
-   private static final int SHARDS_IN_POT = 4;
-   private boolean isBroken = false;
-   private final List<Item> shards = Util.make(new ArrayList<>(4), var0 -> {
-      var0.add(Items.BRICK);
-      var0.add(Items.BRICK);
-      var0.add(Items.BRICK);
-      var0.add(Items.BRICK);
-   });
+   public static final String TAG_SHERDS = "sherds";
+   private DecoratedPotBlockEntity.Decorations decorations = DecoratedPotBlockEntity.Decorations.EMPTY;
 
    public DecoratedPotBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.DECORATED_POT, var1, var2);
@@ -46,34 +29,13 @@ public class DecoratedPotBlockEntity extends BlockEntity {
    @Override
    protected void saveAdditional(CompoundTag var1) {
       super.saveAdditional(var1);
-      saveShards(this.shards, var1);
+      this.decorations.save(var1);
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void load(CompoundTag var1) {
       super.load(var1);
-      if (var1.contains("shards", 9)) {
-         ListTag var2 = var1.getList("shards", 8);
-         this.shards.clear();
-         int var3 = Math.min(4, var2.size());
-
-         for(int var4 = 0; var4 < var3; ++var4) {
-            Tag var6 = var2.get(var4);
-            if (var6 instanceof StringTag var5) {
-               this.shards.add(BuiltInRegistries.ITEM.get(new ResourceLocation(var5.getAsString())));
-            } else {
-               this.shards.add(Items.BRICK);
-            }
-         }
-
-         int var7 = 4 - var3;
-
-         for(int var8 = 0; var8 < var7; ++var8) {
-            this.shards.add(Items.BRICK);
-         }
-      }
+      this.decorations = DecoratedPotBlockEntity.Decorations.load(var1);
    }
 
    public ClientboundBlockEntityDataPacket getUpdatePacket() {
@@ -85,55 +47,62 @@ public class DecoratedPotBlockEntity extends BlockEntity {
       return this.saveWithoutMetadata();
    }
 
-   public static void saveShards(List<Item> var0, CompoundTag var1) {
-      ListTag var2 = new ListTag();
-
-      for(Item var4 : var0) {
-         var2.add(StringTag.valueOf(BuiltInRegistries.ITEM.getKey(var4).toString()));
-      }
-
-      var1.put("shards", var2);
-   }
-
-   public ItemStack getItem() {
-      ItemStack var1 = new ItemStack(Blocks.DECORATED_POT);
-      CompoundTag var2 = new CompoundTag();
-      saveShards(this.shards, var2);
-      BlockItem.setBlockEntityData(var1, BlockEntityType.DECORATED_POT, var2);
-      return var1;
-   }
-
-   public List<Item> getShards() {
-      return this.shards;
-   }
-
-   public void playerDestroy(Level var1, BlockPos var2, ItemStack var3, Player var4) {
-      if (var4.isCreative()) {
-         this.isBroken = true;
-      } else {
-         if (var3.is(ItemTags.BREAKS_DECORATED_POTS) && !EnchantmentHelper.hasSilkTouch(var3)) {
-            List var5 = this.getShards();
-            NonNullList var6 = NonNullList.createWithCapacity(var5.size());
-            var6.addAll(0, var5.stream().map(Item::getDefaultInstance).toList());
-            Containers.dropContents(var1, var2, var6);
-            this.isBroken = true;
-            var1.playSound(null, var2, SoundEvents.DECORATED_POT_SHATTER, SoundSource.PLAYERS, 1.0F, 1.0F);
-         }
-      }
-   }
-
-   public boolean isBroken() {
-      return this.isBroken;
-   }
-
    public Direction getDirection() {
       return this.getBlockState().getValue(BlockStateProperties.HORIZONTAL_FACING);
    }
 
+   public DecoratedPotBlockEntity.Decorations getDecorations() {
+      return this.decorations;
+   }
+
    public void setFromItem(ItemStack var1) {
-      CompoundTag var2 = BlockItem.getBlockEntityData(var1);
-      if (var2 != null) {
-         this.load(var2);
+      this.decorations = DecoratedPotBlockEntity.Decorations.load(BlockItem.getBlockEntityData(var1));
+   }
+
+   public static record Decorations(Item b, Item c, Item d, Item e) {
+      private final Item back;
+      private final Item left;
+      private final Item right;
+      private final Item front;
+      public static final DecoratedPotBlockEntity.Decorations EMPTY = new DecoratedPotBlockEntity.Decorations(
+         Items.BRICK, Items.BRICK, Items.BRICK, Items.BRICK
+      );
+
+      public Decorations(Item var1, Item var2, Item var3, Item var4) {
+         super();
+         this.back = var1;
+         this.left = var2;
+         this.right = var3;
+         this.front = var4;
+      }
+
+      public CompoundTag save(CompoundTag var1) {
+         ListTag var2 = new ListTag();
+         this.sorted().forEach(var1x -> var2.add(StringTag.valueOf(BuiltInRegistries.ITEM.getKey(var1x).toString())));
+         var1.put("sherds", var2);
+         return var1;
+      }
+
+      public Stream<Item> sorted() {
+         return Stream.of(this.back, this.left, this.right, this.front);
+      }
+
+      public static DecoratedPotBlockEntity.Decorations load(@Nullable CompoundTag var0) {
+         if (var0 != null && var0.contains("sherds", 9)) {
+            ListTag var1 = var0.getList("sherds", 8);
+            return new DecoratedPotBlockEntity.Decorations(itemFromTag(var1, 0), itemFromTag(var1, 1), itemFromTag(var1, 2), itemFromTag(var1, 3));
+         } else {
+            return EMPTY;
+         }
+      }
+
+      private static Item itemFromTag(ListTag var0, int var1) {
+         if (var1 >= var0.size()) {
+            return Items.BRICK;
+         } else {
+            Tag var2 = var0.get(var1);
+            return BuiltInRegistries.ITEM.get(new ResourceLocation(var2.getAsString()));
+         }
       }
    }
 }

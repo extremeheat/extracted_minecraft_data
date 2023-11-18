@@ -58,9 +58,9 @@ public class SpectateCommand {
       } else {
          var2.setCamera(var1);
          if (var1 != null) {
-            var0.sendSuccess(Component.translatable("commands.spectate.success.started", var1.getDisplayName()), false);
+            var0.sendSuccess(() -> Component.translatable("commands.spectate.success.started", var1.getDisplayName()), false);
          } else {
-            var0.sendSuccess(Component.translatable("commands.spectate.success.stopped"), false);
+            var0.sendSuccess(() -> Component.translatable("commands.spectate.success.stopped"), false);
          }
 
          return 1;

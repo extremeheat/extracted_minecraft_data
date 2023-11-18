@@ -58,6 +58,7 @@ public abstract class AbstractMinecart extends Entity {
    );
    protected static final float WATER_SLOWDOWN_FACTOR = 0.95F;
    private boolean flipped;
+   private boolean onRails;
    private static final Map<RailShape, Pair<Vec3i, Vec3i>> EXITS = Util.make(Maps.newEnumMap(RailShape.class), var0 -> {
       Vec3i var1 = Direction.WEST.getNormal();
       Vec3i var2 = Direction.EAST.getNormal();
@@ -177,12 +178,14 @@ public abstract class AbstractMinecart extends Entity {
 
                for(int[] var16 : var3) {
                   var5.set(var4.getX() + var16[0], var4.getY() + var12, var4.getZ() + var16[1]);
-                  double var17 = this.level
-                     .getBlockFloorHeight(DismountHelper.nonClimbableShape(this.level, var5), () -> DismountHelper.nonClimbableShape(this.level, var5.below()));
+                  double var17 = this.level()
+                     .getBlockFloorHeight(
+                        DismountHelper.nonClimbableShape(this.level(), var5), () -> DismountHelper.nonClimbableShape(this.level(), var5.below())
+                     );
                   if (DismountHelper.isBlockFloorValid(var17)) {
                      AABB var19 = new AABB((double)(-var10), 0.0, (double)(-var10), (double)var10, (double)var9.height, (double)var10);
                      Vec3 var20 = Vec3.upFromBottomCenterOf(var5, var17);
-                     if (DismountHelper.canDismountTo(this.level, var1, var19.move(var20))) {
+                     if (DismountHelper.canDismountTo(this.level(), var1, var19.move(var20))) {
                         var1.setPose(var8);
                         return var20;
                      }
@@ -199,7 +202,7 @@ public abstract class AbstractMinecart extends Entity {
             Pose var23 = (Pose)var22.next();
             double var24 = (double)var1.getDimensions(var23).height;
             int var25 = Mth.ceil(var21 - (double)var5.getY() + var24);
-            double var26 = DismountHelper.findCeilingFrom(var5, var25, var1x -> this.level.getBlockState(var1x).getCollisionShape(this.level, var1x));
+            double var26 = DismountHelper.findCeilingFrom(var5, var25, var1x -> this.level().getBlockState(var1x).getCollisionShape(this.level(), var1x));
             if (var21 + var24 <= var26) {
                var1.setPose(var23);
                break;
@@ -212,7 +215,7 @@ public abstract class AbstractMinecart extends Entity {
 
    @Override
    public boolean hurt(DamageSource var1, float var2) {
-      if (this.level.isClientSide || this.isRemoved()) {
+      if (this.level().isClientSide || this.isRemoved()) {
          return true;
       } else if (this.isInvulnerableTo(var1)) {
          return false;
@@ -238,13 +241,13 @@ public abstract class AbstractMinecart extends Entity {
 
    @Override
    protected float getBlockSpeedFactor() {
-      BlockState var1 = this.level.getBlockState(this.blockPosition());
+      BlockState var1 = this.level().getBlockState(this.blockPosition());
       return var1.is(BlockTags.RAILS) ? 1.0F : super.getBlockSpeedFactor();
    }
 
    public void destroy(DamageSource var1) {
       this.kill();
-      if (this.level.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
+      if (this.level().getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
          ItemStack var2 = new ItemStack(this.getDropItem());
          if (this.hasCustomName()) {
             var2.setHoverName(this.getCustomName());
@@ -287,9 +290,9 @@ public abstract class AbstractMinecart extends Entity {
          this.setDamage(this.getDamage() - 1.0F);
       }
 
-      this.checkOutOfWorld();
+      this.checkBelowWorld();
       this.handleNetherPortal();
-      if (this.level.isClientSide) {
+      if (this.level().isClientSide) {
          if (this.lSteps > 0) {
             double var16 = this.getX() + (this.lx - this.getX()) / (double)this.lSteps;
             double var17 = this.getY() + (this.ly - this.getY()) / (double)this.lSteps;
@@ -313,13 +316,14 @@ public abstract class AbstractMinecart extends Entity {
          int var15 = Mth.floor(this.getX());
          int var2 = Mth.floor(this.getY());
          int var3 = Mth.floor(this.getZ());
-         if (this.level.getBlockState(new BlockPos(var15, var2 - 1, var3)).is(BlockTags.RAILS)) {
+         if (this.level().getBlockState(new BlockPos(var15, var2 - 1, var3)).is(BlockTags.RAILS)) {
             --var2;
          }
 
          BlockPos var4 = new BlockPos(var15, var2, var3);
-         BlockState var5 = this.level.getBlockState(var4);
-         if (BaseRailBlock.isRail(var5)) {
+         BlockState var5 = this.level().getBlockState(var4);
+         this.onRails = BaseRailBlock.isRail(var5);
+         if (this.onRails) {
             this.moveAlongTrack(var4, var5);
             if (var5.is(Blocks.ACTIVATOR_RAIL)) {
                this.activateMinecart(var15, var2, var3, var5.getValue(PoweredRailBlock.POWERED));
@@ -347,7 +351,7 @@ public abstract class AbstractMinecart extends Entity {
 
          this.setRot(this.getYRot(), this.getXRot());
          if (this.getMinecartType() == AbstractMinecart.Type.RIDEABLE && this.getDeltaMovement().horizontalDistanceSqr() > 0.01) {
-            List var19 = this.level
+            List var19 = this.level()
                .getEntities(this, this.getBoundingBox().inflate(0.20000000298023224, 0.0, 0.20000000298023224), EntitySelector.pushableBy(this));
             if (!var19.isEmpty()) {
                for(int var20 = 0; var20 < var19.size(); ++var20) {
@@ -364,7 +368,7 @@ public abstract class AbstractMinecart extends Entity {
                }
             }
          } else {
-            for(Entity var13 : this.level.getEntities(this, this.getBoundingBox().inflate(0.20000000298023224, 0.0, 0.20000000298023224))) {
+            for(Entity var13 : this.level().getEntities(this, this.getBoundingBox().inflate(0.20000000298023224, 0.0, 0.20000000298023224))) {
                if (!this.hasPassenger(var13) && var13.isPushable() && var13 instanceof AbstractMinecart) {
                   var13.push(this);
                }
@@ -392,12 +396,12 @@ public abstract class AbstractMinecart extends Entity {
       double var1 = this.getMaxSpeed();
       Vec3 var3 = this.getDeltaMovement();
       this.setDeltaMovement(Mth.clamp(var3.x, -var1, var1), var3.y, Mth.clamp(var3.z, -var1, var1));
-      if (this.onGround) {
+      if (this.onGround()) {
          this.setDeltaMovement(this.getDeltaMovement().scale(0.5));
       }
 
       this.move(MoverType.SELF, this.getDeltaMovement());
-      if (!this.onGround) {
+      if (!this.onGround()) {
          this.setDeltaMovement(this.getDeltaMovement().scale(0.95));
       }
    }
@@ -561,8 +565,13 @@ public abstract class AbstractMinecart extends Entity {
       }
    }
 
+   @Override
+   public boolean isOnRails() {
+      return this.onRails;
+   }
+
    private boolean isRedstoneConductor(BlockPos var1) {
-      return this.level.getBlockState(var1).isRedstoneConductor(this.level, var1);
+      return this.level().getBlockState(var1).isRedstoneConductor(this.level(), var1);
    }
 
    protected void applyNaturalSlowdown() {
@@ -581,11 +590,11 @@ public abstract class AbstractMinecart extends Entity {
       int var9 = Mth.floor(var1);
       int var10 = Mth.floor(var3);
       int var11 = Mth.floor(var5);
-      if (this.level.getBlockState(new BlockPos(var9, var10 - 1, var11)).is(BlockTags.RAILS)) {
+      if (this.level().getBlockState(new BlockPos(var9, var10 - 1, var11)).is(BlockTags.RAILS)) {
          --var10;
       }
 
-      BlockState var12 = this.level.getBlockState(new BlockPos(var9, var10, var11));
+      BlockState var12 = this.level().getBlockState(new BlockPos(var9, var10, var11));
       if (BaseRailBlock.isRail(var12)) {
          RailShape var13 = var12.getValue(((BaseRailBlock)var12.getBlock()).getShapeProperty());
          var3 = (double)var10;
@@ -620,11 +629,11 @@ public abstract class AbstractMinecart extends Entity {
       int var7 = Mth.floor(var1);
       int var8 = Mth.floor(var3);
       int var9 = Mth.floor(var5);
-      if (this.level.getBlockState(new BlockPos(var7, var8 - 1, var9)).is(BlockTags.RAILS)) {
+      if (this.level().getBlockState(new BlockPos(var7, var8 - 1, var9)).is(BlockTags.RAILS)) {
          --var8;
       }
 
-      BlockState var10 = this.level.getBlockState(new BlockPos(var7, var8, var9));
+      BlockState var10 = this.level().getBlockState(new BlockPos(var7, var8, var9));
       if (BaseRailBlock.isRail(var10)) {
          RailShape var11 = var10.getValue(((BaseRailBlock)var10.getBlock()).getShapeProperty());
          Pair var12 = exits(var11);
@@ -674,7 +683,7 @@ public abstract class AbstractMinecart extends Entity {
    @Override
    protected void readAdditionalSaveData(CompoundTag var1) {
       if (var1.getBoolean("CustomDisplayTile")) {
-         this.setDisplayBlockState(NbtUtils.readBlockState(this.level.holderLookup(Registries.BLOCK), var1.getCompound("DisplayState")));
+         this.setDisplayBlockState(NbtUtils.readBlockState(this.level().holderLookup(Registries.BLOCK), var1.getCompound("DisplayState")));
          this.setDisplayOffset(var1.getInt("DisplayOffset"));
       }
    }
@@ -690,7 +699,7 @@ public abstract class AbstractMinecart extends Entity {
 
    @Override
    public void push(Entity var1) {
-      if (!this.level.isClientSide) {
+      if (!this.level().isClientSide) {
          if (!var1.noPhysics && !this.noPhysics) {
             if (!this.hasPassenger(var1)) {
                double var2 = var1.getX() - this.getX();

@@ -9,7 +9,8 @@ import net.minecraft.world.level.storage.loot.Serializer;
 
 public class LootItemConditions {
    public static final LootItemConditionType INVERTED = register("inverted", new InvertedLootItemCondition.Serializer());
-   public static final LootItemConditionType ALTERNATIVE = register("alternative", new AlternativeLootItemCondition.Serializer());
+   public static final LootItemConditionType ANY_OF = register("any_of", new AnyOfCondition.Serializer());
+   public static final LootItemConditionType ALL_OF = register("all_of", new AllOfCondition.Serializer());
    public static final LootItemConditionType RANDOM_CHANCE = register("random_chance", new LootItemRandomChanceCondition.Serializer());
    public static final LootItemConditionType RANDOM_CHANCE_WITH_LOOTING = register(
       "random_chance_with_looting", new LootItemRandomChanceWithLootingCondition.Serializer()
@@ -41,44 +42,36 @@ public class LootItemConditions {
    }
 
    public static <T> Predicate<T> andConditions(Predicate<T>[] var0) {
-      switch(var0.length) {
-         case 0:
-            return var0x -> true;
-         case 1:
-            return var0[0];
-         case 2:
-            return var0[0].and(var0[1]);
-         default:
-            return var1 -> {
-               for(Predicate var5 : var0) {
-                  if (!var5.test(var1)) {
-                     return false;
-                  }
-               }
+      return switch(var0.length) {
+         case 0 -> var0x -> true;
+         case 1 -> var0[0];
+         case 2 -> var0[0].and(var0[1]);
+         default -> var1 -> {
+         for(Predicate var5 : var0) {
+            if (!var5.test(var1)) {
+               return false;
+            }
+         }
 
-               return true;
-            };
-      }
+         return true;
+      };
+      };
    }
 
    public static <T> Predicate<T> orConditions(Predicate<T>[] var0) {
-      switch(var0.length) {
-         case 0:
-            return var0x -> false;
-         case 1:
-            return var0[0];
-         case 2:
-            return var0[0].or(var0[1]);
-         default:
-            return var1 -> {
-               for(Predicate var5 : var0) {
-                  if (var5.test(var1)) {
-                     return true;
-                  }
-               }
+      return switch(var0.length) {
+         case 0 -> var0x -> false;
+         case 1 -> var0[0];
+         case 2 -> var0[0].or(var0[1]);
+         default -> var1 -> {
+         for(Predicate var5 : var0) {
+            if (var5.test(var1)) {
+               return true;
+            }
+         }
 
-               return false;
-            };
-      }
+         return false;
+      };
+      };
    }
 }

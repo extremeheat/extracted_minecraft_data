@@ -179,9 +179,9 @@ public class ParticleEngine implements PreparableReloadListener {
       this.register(ParticleTypes.SMALL_FLAME, FlameParticle.SmallFlameProvider::new);
       this.register(ParticleTypes.DRIPPING_DRIPSTONE_WATER, DripParticle::createDripstoneWaterHangParticle);
       this.register(ParticleTypes.FALLING_DRIPSTONE_WATER, DripParticle::createDripstoneWaterFallParticle);
-      this.register(ParticleTypes.DRIPPING_CHERRY_LEAVES, DripParticle::createCherryLeavesHangParticle);
-      this.register(ParticleTypes.FALLING_CHERRY_LEAVES, DripParticle::createCherryLeavesFallParticle);
-      this.register(ParticleTypes.LANDING_CHERRY_LEAVES, DripParticle::createCherryLeavesLandParticle);
+      this.register(
+         ParticleTypes.CHERRY_LEAVES, var0 -> (var1, var2, var3, var5, var7, var9, var11, var13) -> new CherryParticle(var2, var3, var5, var7, var0)
+      );
       this.register(ParticleTypes.DRIPPING_DRIPSTONE_LAVA, DripParticle::createDripstoneLavaHangParticle);
       this.register(ParticleTypes.FALLING_DRIPSTONE_LAVA, DripParticle::createDripstoneLavaFallParticle);
       this.register(ParticleTypes.VIBRATION, VibrationSignalParticle.Provider::new);
@@ -192,6 +192,7 @@ public class ParticleEngine implements PreparableReloadListener {
       this.register(ParticleTypes.ELECTRIC_SPARK, GlowParticle.ElectricSparkProvider::new);
       this.register(ParticleTypes.SCRAPE, GlowParticle.ScrapeProvider::new);
       this.register(ParticleTypes.SHRIEK, ShriekParticle.Provider::new);
+      this.register(ParticleTypes.EGG_CRACK, SuspendedTownParticle.EggCrackProvider::new);
    }
 
    private <T extends ParticleOptions> void register(ParticleType<T> var1, ParticleProvider<T> var2) {

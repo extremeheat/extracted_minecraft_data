@@ -29,15 +29,15 @@ public class PathfindToRaidGoal<T extends Raider> extends Goal {
          && !this.mob.isVehicle()
          && this.mob.hasActiveRaid()
          && !this.mob.getCurrentRaid().isOver()
-         && !((ServerLevel)this.mob.level).isVillage(this.mob.blockPosition());
+         && !((ServerLevel)this.mob.level()).isVillage(this.mob.blockPosition());
    }
 
    @Override
    public boolean canContinueToUse() {
       return this.mob.hasActiveRaid()
          && !this.mob.getCurrentRaid().isOver()
-         && this.mob.level instanceof ServerLevel
-         && !((ServerLevel)this.mob.level).isVillage(this.mob.blockPosition());
+         && this.mob.level() instanceof ServerLevel
+         && !((ServerLevel)this.mob.level()).isVillage(this.mob.blockPosition());
    }
 
    @Override
@@ -62,7 +62,7 @@ public class PathfindToRaidGoal<T extends Raider> extends Goal {
       if (var1.isActive()) {
          HashSet var2 = Sets.newHashSet();
          List var3 = this.mob
-            .level
+            .level()
             .getEntitiesOfClass(Raider.class, this.mob.getBoundingBox().inflate(16.0), var1x -> !var1x.hasActiveRaid() && Raids.canJoinRaid(var1x, var1));
          var2.addAll(var3);
 

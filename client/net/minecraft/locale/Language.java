@@ -38,24 +38,17 @@ public abstract class Language {
    private static Language loadDefault() {
       Builder var0 = ImmutableMap.builder();
       BiConsumer var1 = var0::put;
-      String var2 = "/assets/minecraft/lang/en_us.json";
-
-      try (InputStream var3 = Language.class.getResourceAsStream("/assets/minecraft/lang/en_us.json")) {
-         loadFromJson(var3, var1);
-      } catch (JsonParseException | IOException var8) {
-         LOGGER.error("Couldn't read strings from {}", "/assets/minecraft/lang/en_us.json", var8);
-      }
-
-      final ImmutableMap var9 = var0.build();
+      parseTranslations(var1, "/assets/minecraft/lang/en_us.json");
+      final ImmutableMap var2 = var0.build();
       return new Language() {
          @Override
-         public String getOrDefault(String var1, String var2) {
-            return var9.getOrDefault(var1, var2);
+         public String getOrDefault(String var1, String var2x) {
+            return var2.getOrDefault(var1, var2x);
          }
 
          @Override
          public boolean has(String var1) {
-            return var9.containsKey(var1);
+            return var2.containsKey(var1);
          }
 
          @Override
@@ -66,11 +59,20 @@ public abstract class Language {
          @Override
          public FormattedCharSequence getVisualOrder(FormattedText var1) {
             return var1x -> var1.visit(
-                     (var1xx, var2) -> StringDecomposer.iterateFormatted(var2, var1xx, var1x) ? Optional.empty() : FormattedText.STOP_ITERATION, Style.EMPTY
+                     (var1xx, var2xxx) -> StringDecomposer.iterateFormatted(var2xxx, var1xx, var1x) ? Optional.empty() : FormattedText.STOP_ITERATION,
+                     Style.EMPTY
                   )
                   .isPresent();
          }
       };
+   }
+
+   private static void parseTranslations(BiConsumer<String, String> var0, String var1) {
+      try (InputStream var2 = Language.class.getResourceAsStream(var1)) {
+         loadFromJson(var2, var0);
+      } catch (JsonParseException | IOException var7) {
+         LOGGER.error("Couldn't read strings from {}", var1, var7);
+      }
    }
 
    public static void loadFromJson(InputStream var0, BiConsumer<String, String> var1) {

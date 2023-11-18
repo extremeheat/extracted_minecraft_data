@@ -1,11 +1,10 @@
 package net.minecraft.util.datafix.fixes;
 
 import com.google.common.collect.ImmutableMap;
-import com.mojang.datafixers.schemas.Schema;
 import java.util.Map;
 
-public class RecipesFix extends RecipesRenameFix {
-   private static final Map<String, String> RECIPES = ImmutableMap.builder()
+public class RecipesFix {
+   public static final Map<String, String> RECIPES = ImmutableMap.builder()
       .put("minecraft:acacia_wooden_slab", "minecraft:acacia_slab")
       .put("minecraft:birch_wooden_slab", "minecraft:birch_slab")
       .put("minecraft:black_stained_hardened_clay", "minecraft:black_terracotta")
@@ -62,7 +61,7 @@ public class RecipesFix extends RecipesRenameFix {
       .put("minecraft:yellow_stained_hardened_clay", "minecraft:yellow_terracotta")
       .build();
 
-   public RecipesFix(Schema var1, boolean var2) {
-      super(var1, var2, "Recipes fix", var0 -> RECIPES.getOrDefault(var0, var0));
+   public RecipesFix() {
+      super();
    }
 }

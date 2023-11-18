@@ -1125,6 +1125,12 @@ public class VanillaEntityLoot extends EntityLootSubProvider {
                )
                .when(LootItemKilledByPlayerCondition.killedByPlayer())
                .when(LootItemRandomChanceWithLootingCondition.randomChanceAndLootingBoost(0.025F, 0.01F))
+         )
+         .withPool(
+            LootPool.lootPool()
+               .setRolls(ConstantValue.exactly(1.0F))
+               .add(EmptyLootItem.emptyItem().setWeight(4))
+               .add(LootItem.lootTableItem(Items.TIDE_ARMOR_TRIM_SMITHING_TEMPLATE).setWeight(1))
          );
    }
 }

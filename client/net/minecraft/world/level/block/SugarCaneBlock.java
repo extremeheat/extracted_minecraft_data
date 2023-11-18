@@ -76,7 +76,7 @@ public class SugarCaneBlock extends Block {
       if (var4.is(this)) {
          return true;
       } else {
-         if (var4.is(BlockTags.DIRT) || var4.is(Blocks.SAND) || var4.is(Blocks.RED_SAND)) {
+         if (var4.is(BlockTags.DIRT) || var4.is(BlockTags.SAND)) {
             BlockPos var5 = var3.below();
 
             for(Direction var7 : Direction.Plane.HORIZONTAL) {

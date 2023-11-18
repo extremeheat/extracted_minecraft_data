@@ -68,7 +68,7 @@ public record ChatType(ChatTypeDecoration j, ChatTypeDecoration k) {
    }
 
    public static ChatType.Bound bind(ResourceKey<ChatType> var0, Entity var1) {
-      return bind(var0, var1.level.registryAccess(), var1.getDisplayName());
+      return bind(var0, var1.level().registryAccess(), var1.getDisplayName());
    }
 
    public static ChatType.Bound bind(ResourceKey<ChatType> var0, CommandSourceStack var1) {

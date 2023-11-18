@@ -15,7 +15,7 @@ public abstract class PathfinderMob extends Mob {
    }
 
    public float getWalkTargetValue(BlockPos var1) {
-      return this.getWalkTargetValue(var1, this.level);
+      return this.getWalkTargetValue(var1, this.level());
    }
 
    public float getWalkTargetValue(BlockPos var1, LevelReader var2) {
@@ -35,7 +35,7 @@ public abstract class PathfinderMob extends Mob {
    protected void tickLeash() {
       super.tickLeash();
       Entity var1 = this.getLeashHolder();
-      if (var1 != null && var1.level == this.level) {
+      if (var1 != null && var1.level() == this.level()) {
          this.restrictTo(var1.blockPosition(), 5);
          float var2 = this.distanceTo(var1);
          if (this instanceof TamableAnimal && ((TamableAnimal)this).isInSittingPose()) {

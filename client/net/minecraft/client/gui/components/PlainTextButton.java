@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.components;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.Style;
@@ -20,8 +20,8 @@ public class PlainTextButton extends Button {
    }
 
    @Override
-   public void renderWidget(PoseStack var1, int var2, int var3, float var4) {
+   public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       Component var5 = this.isHoveredOrFocused() ? this.underlinedMessage : this.message;
-      drawString(var1, this.font, var5, this.getX(), this.getY(), 16777215 | Mth.ceil(this.alpha * 255.0F) << 24);
+      var1.drawString(this.font, var5, this.getX(), this.getY(), 16777215 | Mth.ceil(this.alpha * 255.0F) << 24);
    }
 }

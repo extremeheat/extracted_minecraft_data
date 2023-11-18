@@ -51,14 +51,16 @@ public class DragonHoldingPatternPhase extends AbstractDragonPhaseInstance {
 
    private void findNewTarget() {
       if (this.currentPath != null && this.currentPath.isDone()) {
-         BlockPos var1 = this.dragon.level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, new BlockPos(EndPodiumFeature.END_PODIUM_LOCATION));
+         BlockPos var1 = this.dragon
+            .level()
+            .getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, new BlockPos(EndPodiumFeature.getLocation(this.dragon.getFightOrigin())));
          int var2 = this.dragon.getDragonFight() == null ? 0 : this.dragon.getDragonFight().getCrystalsAlive();
          if (this.dragon.getRandom().nextInt(var2 + 3) == 0) {
             this.dragon.getPhaseManager().setPhase(EnderDragonPhase.LANDING_APPROACH);
             return;
          }
 
-         Player var5 = this.dragon.level.getNearestPlayer(NEW_TARGET_TARGETING, this.dragon, (double)var1.getX(), (double)var1.getY(), (double)var1.getZ());
+         Player var5 = this.dragon.level().getNearestPlayer(NEW_TARGET_TARGETING, this.dragon, (double)var1.getX(), (double)var1.getY(), (double)var1.getZ());
          double var3;
          if (var5 != null) {
             var3 = var1.distToCenterSqr(var5.position()) / 512.0;

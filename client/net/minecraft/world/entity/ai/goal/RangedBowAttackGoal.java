@@ -1,7 +1,9 @@
 package net.minecraft.world.entity.ai.goal;
 
 import java.util.EnumSet;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.RangedAttackMob;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
@@ -66,6 +68,8 @@ public class RangedBowAttackGoal<T extends Monster & RangedAttackMob> extends Go
       return true;
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void tick() {
       LivingEntity var1 = this.mob.getTarget();
@@ -111,6 +115,11 @@ public class RangedBowAttackGoal<T extends Monster & RangedAttackMob> extends Go
             }
 
             this.mob.getMoveControl().strafe(this.strafingBackwards ? -0.5F : 0.5F, this.strafingClockwise ? 0.5F : -0.5F);
+            Entity var7 = this.mob.getControlledVehicle();
+            if (var7 instanceof Mob var6) {
+               var6.lookAt(var1, 30.0F, 30.0F);
+            }
+
             this.mob.lookAt(var1, 30.0F, 30.0F);
          } else {
             this.mob.getLookControl().setLookAt(var1, 30.0F, 30.0F);
@@ -120,10 +129,10 @@ public class RangedBowAttackGoal<T extends Monster & RangedAttackMob> extends Go
             if (!var4 && this.seeTime < -60) {
                this.mob.stopUsingItem();
             } else if (var4) {
-               int var6 = this.mob.getTicksUsingItem();
-               if (var6 >= 20) {
+               int var8 = this.mob.getTicksUsingItem();
+               if (var8 >= 20) {
                   this.mob.stopUsingItem();
-                  this.mob.performRangedAttack(var1, BowItem.getPowerForTime(var6));
+                  this.mob.performRangedAttack(var1, BowItem.getPowerForTime(var8));
                   this.attackTime = this.attackIntervalMin;
                }
             }

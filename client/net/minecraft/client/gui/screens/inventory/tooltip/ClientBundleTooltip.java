@@ -1,11 +1,8 @@
 package net.minecraft.client.gui.screens.inventory.tooltip;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.tooltip.BundleTooltip;
@@ -38,38 +35,38 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
    }
 
    @Override
-   public void renderImage(Font var1, int var2, int var3, PoseStack var4, ItemRenderer var5) {
-      int var6 = this.gridSizeX();
-      int var7 = this.gridSizeY();
-      boolean var8 = this.weight >= 64;
-      int var9 = 0;
+   public void renderImage(Font var1, int var2, int var3, GuiGraphics var4) {
+      int var5 = this.gridSizeX();
+      int var6 = this.gridSizeY();
+      boolean var7 = this.weight >= 64;
+      int var8 = 0;
 
-      for(int var10 = 0; var10 < var7; ++var10) {
-         for(int var11 = 0; var11 < var6; ++var11) {
-            int var12 = var2 + var11 * 18 + 1;
-            int var13 = var3 + var10 * 20 + 1;
-            this.renderSlot(var12, var13, var9++, var8, var1, var4, var5);
+      for(int var9 = 0; var9 < var6; ++var9) {
+         for(int var10 = 0; var10 < var5; ++var10) {
+            int var11 = var2 + var10 * 18 + 1;
+            int var12 = var3 + var9 * 20 + 1;
+            this.renderSlot(var11, var12, var8++, var7, var4, var1);
          }
       }
 
-      this.drawBorder(var2, var3, var6, var7, var4);
+      this.drawBorder(var2, var3, var5, var6, var4);
    }
 
-   private void renderSlot(int var1, int var2, int var3, boolean var4, Font var5, PoseStack var6, ItemRenderer var7) {
+   private void renderSlot(int var1, int var2, int var3, boolean var4, GuiGraphics var5, Font var6) {
       if (var3 >= this.items.size()) {
-         this.blit(var6, var1, var2, var4 ? ClientBundleTooltip.Texture.BLOCKED_SLOT : ClientBundleTooltip.Texture.SLOT);
+         this.blit(var5, var1, var2, var4 ? ClientBundleTooltip.Texture.BLOCKED_SLOT : ClientBundleTooltip.Texture.SLOT);
       } else {
-         ItemStack var8 = this.items.get(var3);
-         this.blit(var6, var1, var2, ClientBundleTooltip.Texture.SLOT);
-         var7.renderAndDecorateItem(var6, var8, var1 + 1, var2 + 1, var3);
-         var7.renderGuiItemDecorations(var6, var5, var8, var1 + 1, var2 + 1);
+         ItemStack var7 = this.items.get(var3);
+         this.blit(var5, var1, var2, ClientBundleTooltip.Texture.SLOT);
+         var5.renderItem(var7, var1 + 1, var2 + 1, var3);
+         var5.renderItemDecorations(var6, var7, var1 + 1, var2 + 1);
          if (var3 == 0) {
-            AbstractContainerScreen.renderSlotHighlight(var6, var1 + 1, var2 + 1, 0);
+            AbstractContainerScreen.renderSlotHighlight(var5, var1 + 1, var2 + 1, 0);
          }
       }
    }
 
-   private void drawBorder(int var1, int var2, int var3, int var4, PoseStack var5) {
+   private void drawBorder(int var1, int var2, int var3, int var4, GuiGraphics var5) {
       this.blit(var5, var1, var2, ClientBundleTooltip.Texture.BORDER_CORNER_TOP);
       this.blit(var5, var1 + var3 * 18 + 1, var2, ClientBundleTooltip.Texture.BORDER_CORNER_TOP);
 
@@ -87,9 +84,8 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
       this.blit(var5, var1 + var3 * 18 + 1, var2 + var4 * 20, ClientBundleTooltip.Texture.BORDER_CORNER_BOTTOM);
    }
 
-   private void blit(PoseStack var1, int var2, int var3, ClientBundleTooltip.Texture var4) {
-      RenderSystem.setShaderTexture(0, TEXTURE_LOCATION);
-      GuiComponent.blit(var1, var2, var3, 0, (float)var4.x, (float)var4.y, var4.w, var4.h, 128, 128);
+   private void blit(GuiGraphics var1, int var2, int var3, ClientBundleTooltip.Texture var4) {
+      var1.blit(TEXTURE_LOCATION, var2, var3, 0, (float)var4.x, (float)var4.y, var4.w, var4.h, 128, 128);
    }
 
    private int gridSizeX() {

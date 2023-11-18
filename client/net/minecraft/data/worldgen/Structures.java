@@ -333,5 +333,16 @@ public class Structures {
             116
          )
       );
+      var0.register(
+         BuiltinStructures.TRAIL_RUINS,
+         new JigsawStructure(
+            structure(var1.getOrThrow(BiomeTags.HAS_TRAIL_RUINS), Map.of(), GenerationStep.Decoration.UNDERGROUND_STRUCTURES, TerrainAdjustment.BURY),
+            var2.getOrThrow(TrailRuinsStructurePools.START),
+            7,
+            ConstantHeight.of(VerticalAnchor.absolute(-15)),
+            false,
+            Heightmap.Types.WORLD_SURFACE_WG
+         )
+      );
    }
 }

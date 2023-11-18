@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
@@ -35,8 +36,8 @@ public class SocialInteractionsPlayerList extends ContainerObjectSelectionList<P
    }
 
    @Override
-   protected void enableScissor() {
-      enableScissor(this.x0, this.y0 + 4, this.x1, this.y1);
+   protected void enableScissor(GuiGraphics var1) {
+      var1.enableScissor(this.x0, this.y0 + 4, this.x1, this.y1);
    }
 
    public void updatePlayerList(Collection<UUID> var1, double var2, boolean var4) {

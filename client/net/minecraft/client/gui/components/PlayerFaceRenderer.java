@@ -1,8 +1,8 @@
 package net.minecraft.client.gui.components;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.resources.ResourceLocation;
 
 public class PlayerFaceRenderer {
    public static final int SKIN_HEAD_U = 8;
@@ -20,24 +20,24 @@ public class PlayerFaceRenderer {
       super();
    }
 
-   public static void draw(PoseStack var0, int var1, int var2, int var3) {
-      draw(var0, var1, var2, var3, true, false);
+   public static void draw(GuiGraphics var0, ResourceLocation var1, int var2, int var3, int var4) {
+      draw(var0, var1, var2, var3, var4, true, false);
    }
 
-   public static void draw(PoseStack var0, int var1, int var2, int var3, boolean var4, boolean var5) {
-      int var6 = 8 + (var5 ? 8 : 0);
-      int var7 = 8 * (var5 ? -1 : 1);
-      GuiComponent.blit(var0, var1, var2, var3, var3, 8.0F, (float)var6, 8, var7, 64, 64);
-      if (var4) {
-         drawHat(var0, var1, var2, var3, var5);
+   public static void draw(GuiGraphics var0, ResourceLocation var1, int var2, int var3, int var4, boolean var5, boolean var6) {
+      int var7 = 8 + (var6 ? 8 : 0);
+      int var8 = 8 * (var6 ? -1 : 1);
+      var0.blit(var1, var2, var3, var4, var4, 8.0F, (float)var7, 8, var8, 64, 64);
+      if (var5) {
+         drawHat(var0, var1, var2, var3, var4, var6);
       }
    }
 
-   private static void drawHat(PoseStack var0, int var1, int var2, int var3, boolean var4) {
-      int var5 = 8 + (var4 ? 8 : 0);
-      int var6 = 8 * (var4 ? -1 : 1);
+   private static void drawHat(GuiGraphics var0, ResourceLocation var1, int var2, int var3, int var4, boolean var5) {
+      int var6 = 8 + (var5 ? 8 : 0);
+      int var7 = 8 * (var5 ? -1 : 1);
       RenderSystem.enableBlend();
-      GuiComponent.blit(var0, var1, var2, var3, var3, 40.0F, (float)var5, 8, var6, 64, 64);
+      var0.blit(var1, var2, var3, var4, var4, 40.0F, (float)var6, 8, var7, 64, 64);
       RenderSystem.disableBlend();
    }
 }

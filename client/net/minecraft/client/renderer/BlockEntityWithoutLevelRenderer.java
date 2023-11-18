@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import net.minecraft.Util;
 import net.minecraft.client.model.ShieldModel;
 import net.minecraft.client.model.SkullModelBase;
 import net.minecraft.client.model.TridentModel;
@@ -48,7 +49,6 @@ import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.entity.TrappedChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import org.apache.commons.lang3.StringUtils;
 
 public class BlockEntityWithoutLevelRenderer implements ResourceManagerReloadListener {
    private static final ShulkerBoxBlockEntity[] SHULKER_BOXES = Arrays.stream(DyeColor.values())
@@ -92,7 +92,7 @@ public class BlockEntityWithoutLevelRenderer implements ResourceManagerReloadLis
                CompoundTag var18 = var1.getTag();
                if (var18.contains("SkullOwner", 10)) {
                   var16 = NbtUtils.readGameProfile(var18.getCompound("SkullOwner"));
-               } else if (var18.contains("SkullOwner", 8) && !StringUtils.isBlank(var18.getString("SkullOwner"))) {
+               } else if (var18.contains("SkullOwner", 8) && !Util.isBlank(var18.getString("SkullOwner"))) {
                   var16 = new GameProfile(null, var18.getString("SkullOwner"));
                   var18.remove("SkullOwner");
                   SkullBlockEntity.updateGameprofile(var16, var1x -> var18.put("SkullOwner", NbtUtils.writeGameProfile(new CompoundTag(), var1x)));

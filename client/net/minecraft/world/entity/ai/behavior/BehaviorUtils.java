@@ -84,13 +84,13 @@ public class BehaviorUtils {
 
    public static void throwItem(LivingEntity var0, ItemStack var1, Vec3 var2, Vec3 var3, float var4) {
       double var5 = var0.getEyeY() - (double)var4;
-      ItemEntity var7 = new ItemEntity(var0.level, var0.getX(), var5, var0.getZ(), var1);
+      ItemEntity var7 = new ItemEntity(var0.level(), var0.getX(), var5, var0.getZ(), var1);
       var7.setThrower(var0.getUUID());
       Vec3 var8 = var2.subtract(var0.position());
       var8 = var8.normalize().multiply(var3.x, var3.y, var3.z);
       var7.setDeltaMovement(var8);
       var7.setDefaultPickUpDelay();
-      var0.level.addFreshEntity(var7);
+      var0.level().addFreshEntity(var7);
    }
 
    public static SectionPos findSectionClosestToVillage(ServerLevel var0, SectionPos var1, int var2) {
@@ -141,7 +141,7 @@ public class BehaviorUtils {
 
    public static Optional<LivingEntity> getLivingEntityFromUUIDMemory(LivingEntity var0, MemoryModuleType<UUID> var1) {
       Optional var2 = var0.getBrain().getMemory(var1);
-      return var2.<Entity>map(var1x -> ((ServerLevel)var0.level).getEntity(var1x)).map(var0x -> var0x instanceof LivingEntity var1x ? var1x : null);
+      return var2.<Entity>map(var1x -> ((ServerLevel)var0.level()).getEntity(var1x)).map(var0x -> var0x instanceof LivingEntity var1x ? var1x : null);
    }
 
    @Nullable
@@ -151,7 +151,7 @@ public class BehaviorUtils {
 
       while(
          var3 != null
-            && !var0.level.getBlockState(BlockPos.containing(var3)).isPathfindable(var0.level, BlockPos.containing(var3), PathComputationType.WATER)
+            && !var0.level().getBlockState(BlockPos.containing(var3)).isPathfindable(var0.level(), BlockPos.containing(var3), PathComputationType.WATER)
             && var4++ < 10
       ) {
          var3 = DefaultRandomPos.getPos(var0, var1, var2);

@@ -361,9 +361,9 @@ public class TeamCommand {
       }
 
       if (var1.size() == 1) {
-         var0.sendSuccess(Component.translatable("commands.team.leave.success.single", var1.iterator().next()), true);
+         var0.sendSuccess(() -> Component.translatable("commands.team.leave.success.single", var1.iterator().next()), true);
       } else {
-         var0.sendSuccess(Component.translatable("commands.team.leave.success.multiple", var1.size()), true);
+         var0.sendSuccess(() -> Component.translatable("commands.team.leave.success.multiple", var1.size()), true);
       }
 
       return var1.size();
@@ -377,9 +377,9 @@ public class TeamCommand {
       }
 
       if (var2.size() == 1) {
-         var0.sendSuccess(Component.translatable("commands.team.join.success.single", var2.iterator().next(), var1.getFormattedDisplayName()), true);
+         var0.sendSuccess(() -> Component.translatable("commands.team.join.success.single", var2.iterator().next(), var1.getFormattedDisplayName()), true);
       } else {
-         var0.sendSuccess(Component.translatable("commands.team.join.success.multiple", var2.size(), var1.getFormattedDisplayName()), true);
+         var0.sendSuccess(() -> Component.translatable("commands.team.join.success.multiple", var2.size(), var1.getFormattedDisplayName()), true);
       }
 
       return var2.size();
@@ -391,7 +391,7 @@ public class TeamCommand {
       } else {
          var1.setNameTagVisibility(var2);
          var0.sendSuccess(
-            Component.translatable("commands.team.option.nametagVisibility.success", var1.getFormattedDisplayName(), var2.getDisplayName()), true
+            () -> Component.translatable("commands.team.option.nametagVisibility.success", var1.getFormattedDisplayName(), var2.getDisplayName()), true
          );
          return 0;
       }
@@ -403,7 +403,7 @@ public class TeamCommand {
       } else {
          var1.setDeathMessageVisibility(var2);
          var0.sendSuccess(
-            Component.translatable("commands.team.option.deathMessageVisibility.success", var1.getFormattedDisplayName(), var2.getDisplayName()), true
+            () -> Component.translatable("commands.team.option.deathMessageVisibility.success", var1.getFormattedDisplayName(), var2.getDisplayName()), true
          );
          return 0;
       }
@@ -414,7 +414,9 @@ public class TeamCommand {
          throw ERROR_TEAM_COLLISION_UNCHANGED.create();
       } else {
          var1.setCollisionRule(var2);
-         var0.sendSuccess(Component.translatable("commands.team.option.collisionRule.success", var1.getFormattedDisplayName(), var2.getDisplayName()), true);
+         var0.sendSuccess(
+            () -> Component.translatable("commands.team.option.collisionRule.success", var1.getFormattedDisplayName(), var2.getDisplayName()), true
+         );
          return 0;
       }
    }
@@ -429,7 +431,8 @@ public class TeamCommand {
       } else {
          var1.setSeeFriendlyInvisibles(var2);
          var0.sendSuccess(
-            Component.translatable("commands.team.option.seeFriendlyInvisibles." + (var2 ? "enabled" : "disabled"), var1.getFormattedDisplayName()), true
+            () -> Component.translatable("commands.team.option.seeFriendlyInvisibles." + (var2 ? "enabled" : "disabled"), var1.getFormattedDisplayName()),
+            true
          );
          return 0;
       }
@@ -444,7 +447,9 @@ public class TeamCommand {
          }
       } else {
          var1.setAllowFriendlyFire(var2);
-         var0.sendSuccess(Component.translatable("commands.team.option.friendlyfire." + (var2 ? "enabled" : "disabled"), var1.getFormattedDisplayName()), true);
+         var0.sendSuccess(
+            () -> Component.translatable("commands.team.option.friendlyfire." + (var2 ? "enabled" : "disabled"), var1.getFormattedDisplayName()), true
+         );
          return 0;
       }
    }
@@ -454,7 +459,7 @@ public class TeamCommand {
          throw ERROR_TEAM_ALREADY_NAME.create();
       } else {
          var1.setDisplayName(var2);
-         var0.sendSuccess(Component.translatable("commands.team.option.name.success", var1.getFormattedDisplayName()), true);
+         var0.sendSuccess(() -> Component.translatable("commands.team.option.name.success", var1.getFormattedDisplayName()), true);
          return 0;
       }
    }
@@ -464,7 +469,7 @@ public class TeamCommand {
          throw ERROR_TEAM_ALREADY_COLOR.create();
       } else {
          var1.setColor(var2);
-         var0.sendSuccess(Component.translatable("commands.team.option.color.success", var1.getFormattedDisplayName(), var2.getName()), true);
+         var0.sendSuccess(() -> Component.translatable("commands.team.option.color.success", var1.getFormattedDisplayName(), var2.getName()), true);
          return 0;
       }
    }
@@ -479,7 +484,7 @@ public class TeamCommand {
             var2.removePlayerFromTeam(var5, var1);
          }
 
-         var0.sendSuccess(Component.translatable("commands.team.empty.success", var3.size(), var1.getFormattedDisplayName()), true);
+         var0.sendSuccess(() -> Component.translatable("commands.team.empty.success", var3.size(), var1.getFormattedDisplayName()), true);
          return var3.size();
       }
    }
@@ -487,7 +492,7 @@ public class TeamCommand {
    private static int deleteTeam(CommandSourceStack var0, PlayerTeam var1) {
       ServerScoreboard var2 = var0.getServer().getScoreboard();
       var2.removePlayerTeam(var1);
-      var0.sendSuccess(Component.translatable("commands.team.remove.success", var1.getFormattedDisplayName()), true);
+      var0.sendSuccess(() -> Component.translatable("commands.team.remove.success", var1.getFormattedDisplayName()), true);
       return var2.getPlayerTeams().size();
    }
 
@@ -502,7 +507,7 @@ public class TeamCommand {
       } else {
          PlayerTeam var4 = var3.addPlayerTeam(var1);
          var4.setDisplayName(var2);
-         var0.sendSuccess(Component.translatable("commands.team.add.success", var4.getFormattedDisplayName()), true);
+         var0.sendSuccess(() -> Component.translatable("commands.team.add.success", var4.getFormattedDisplayName()), true);
          return var3.getPlayerTeams().size();
       }
    }
@@ -510,10 +515,11 @@ public class TeamCommand {
    private static int listMembers(CommandSourceStack var0, PlayerTeam var1) {
       Collection var2 = var1.getPlayers();
       if (var2.isEmpty()) {
-         var0.sendSuccess(Component.translatable("commands.team.list.members.empty", var1.getFormattedDisplayName()), false);
+         var0.sendSuccess(() -> Component.translatable("commands.team.list.members.empty", var1.getFormattedDisplayName()), false);
       } else {
          var0.sendSuccess(
-            Component.translatable("commands.team.list.members.success", var1.getFormattedDisplayName(), var2.size(), ComponentUtils.formatList(var2)), false
+            () -> Component.translatable("commands.team.list.members.success", var1.getFormattedDisplayName(), var2.size(), ComponentUtils.formatList(var2)),
+            false
          );
       }
 
@@ -523,10 +529,10 @@ public class TeamCommand {
    private static int listTeams(CommandSourceStack var0) {
       Collection var1 = var0.getServer().getScoreboard().getPlayerTeams();
       if (var1.isEmpty()) {
-         var0.sendSuccess(Component.translatable("commands.team.list.teams.empty"), false);
+         var0.sendSuccess(() -> Component.translatable("commands.team.list.teams.empty"), false);
       } else {
          var0.sendSuccess(
-            Component.translatable("commands.team.list.teams.success", var1.size(), ComponentUtils.formatList(var1, PlayerTeam::getFormattedDisplayName)),
+            () -> Component.translatable("commands.team.list.teams.success", var1.size(), ComponentUtils.formatList(var1, PlayerTeam::getFormattedDisplayName)),
             false
          );
       }
@@ -536,13 +542,13 @@ public class TeamCommand {
 
    private static int setPrefix(CommandSourceStack var0, PlayerTeam var1, Component var2) {
       var1.setPlayerPrefix(var2);
-      var0.sendSuccess(Component.translatable("commands.team.option.prefix.success", var2), false);
+      var0.sendSuccess(() -> Component.translatable("commands.team.option.prefix.success", var2), false);
       return 1;
    }
 
    private static int setSuffix(CommandSourceStack var0, PlayerTeam var1, Component var2) {
       var1.setPlayerSuffix(var2);
-      var0.sendSuccess(Component.translatable("commands.team.option.suffix.success", var2), false);
+      var0.sendSuccess(() -> Component.translatable("commands.team.option.suffix.success", var2), false);
       return 1;
    }
 }

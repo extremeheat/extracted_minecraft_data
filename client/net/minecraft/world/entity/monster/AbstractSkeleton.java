@@ -164,13 +164,13 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
    }
 
    public void reassessWeaponGoal() {
-      if (this.level != null && !this.level.isClientSide) {
+      if (this.level() != null && !this.level().isClientSide) {
          this.goalSelector.removeGoal(this.meleeGoal);
          this.goalSelector.removeGoal(this.bowGoal);
          ItemStack var1 = this.getItemInHand(ProjectileUtil.getWeaponHoldingHand(this, Items.BOW));
          if (var1.is(Items.BOW)) {
             byte var2 = 20;
-            if (this.level.getDifficulty() != Difficulty.HARD) {
+            if (this.level().getDifficulty() != Difficulty.HARD) {
                var2 = 40;
             }
 
@@ -190,9 +190,9 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
       double var7 = var1.getY(0.3333333333333333) - var4.getY();
       double var9 = var1.getZ() - this.getZ();
       double var11 = Math.sqrt(var5 * var5 + var9 * var9);
-      var4.shoot(var5, var7 + var11 * 0.20000000298023224, var9, 1.6F, (float)(14 - this.level.getDifficulty().getId() * 4));
+      var4.shoot(var5, var7 + var11 * 0.20000000298023224, var9, 1.6F, (float)(14 - this.level().getDifficulty().getId() * 4));
       this.playSound(SoundEvents.SKELETON_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
-      this.level.addFreshEntity(var4);
+      this.level().addFreshEntity(var4);
    }
 
    protected AbstractArrow getArrow(ItemStack var1, float var2) {
@@ -213,7 +213,7 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
    @Override
    public void setItemSlot(EquipmentSlot var1, ItemStack var2) {
       super.setItemSlot(var1, var2);
-      if (!this.level.isClientSide) {
+      if (!this.level().isClientSide) {
          this.reassessWeaponGoal();
       }
    }

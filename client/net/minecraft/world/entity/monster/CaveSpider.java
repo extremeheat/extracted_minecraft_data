@@ -32,9 +32,9 @@ public class CaveSpider extends Spider {
       if (super.doHurtTarget(var1)) {
          if (var1 instanceof LivingEntity) {
             byte var2 = 0;
-            if (this.level.getDifficulty() == Difficulty.NORMAL) {
+            if (this.level().getDifficulty() == Difficulty.NORMAL) {
                var2 = 7;
-            } else if (this.level.getDifficulty() == Difficulty.HARD) {
+            } else if (this.level().getDifficulty() == Difficulty.HARD) {
                var2 = 15;
             }
 

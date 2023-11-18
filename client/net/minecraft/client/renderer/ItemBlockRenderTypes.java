@@ -73,7 +73,6 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.DANDELION, var3);
       var0.put(Blocks.POPPY, var3);
       var0.put(Blocks.BLUE_ORCHID, var3);
-      var0.put(Blocks.TORCHFLOWER, var3);
       var0.put(Blocks.ALLIUM, var3);
       var0.put(Blocks.AZURE_BLUET, var3);
       var0.put(Blocks.RED_TULIP, var3);
@@ -178,7 +177,10 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.END_ROD, var3);
       var0.put(Blocks.CHORUS_PLANT, var3);
       var0.put(Blocks.CHORUS_FLOWER, var3);
+      var0.put(Blocks.TORCHFLOWER, var3);
       var0.put(Blocks.TORCHFLOWER_CROP, var3);
+      var0.put(Blocks.PITCHER_PLANT, var3);
+      var0.put(Blocks.PITCHER_CROP, var3);
       var0.put(Blocks.BEETROOTS, var3);
       var0.put(Blocks.KELP, var3);
       var0.put(Blocks.KELP_PLANT, var3);
@@ -258,6 +260,7 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.SMALL_DRIPLEAF, var3);
       var0.put(Blocks.HANGING_ROOTS, var3);
       var0.put(Blocks.SCULK_SENSOR, var3);
+      var0.put(Blocks.CALIBRATED_SCULK_SENSOR, var3);
       var0.put(Blocks.SCULK_VEIN, var3);
       var0.put(Blocks.SCULK_SHRIEKER, var3);
       var0.put(Blocks.MANGROVE_PROPAGULE, var3);

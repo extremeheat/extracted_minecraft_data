@@ -12,7 +12,8 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.LootDataId;
+import net.minecraft.world.level.storage.loot.LootDataType;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
@@ -55,16 +56,10 @@ public class SetContainerLootTable extends LootItemConditionalFunction {
 
    @Override
    public void validate(ValidationContext var1) {
-      if (var1.hasVisitedTable(this.name)) {
-         var1.reportProblem("Table " + this.name + " is recursively called");
-      } else {
-         super.validate(var1);
-         LootTable var2 = var1.resolveLootTable(this.name);
-         if (var2 == null) {
-            var1.reportProblem("Unknown loot table called " + this.name);
-         } else {
-            var2.validate(var1.enterTable("->{" + this.name + "}", this.name));
-         }
+      super.validate(var1);
+      LootDataId var2 = new LootDataId<>(LootDataType.TABLE, this.name);
+      if (var1.resolver().getElementOptional(var2).isEmpty()) {
+         var1.reportProblem("Missing loot table used for container: " + this.name);
       }
    }
 

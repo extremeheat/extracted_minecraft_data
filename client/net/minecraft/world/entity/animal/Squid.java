@@ -106,7 +106,7 @@ public class Squid extends WaterAnimal {
       this.oldTentacleAngle = this.tentacleAngle;
       this.tentacleMovement += this.tentacleSpeed;
       if ((double)this.tentacleMovement > 6.283185307179586) {
-         if (this.level.isClientSide) {
+         if (this.level().isClientSide) {
             this.tentacleMovement = 6.2831855F;
          } else {
             this.tentacleMovement -= 6.2831855F;
@@ -114,7 +114,7 @@ public class Squid extends WaterAnimal {
                this.tentacleSpeed = 1.0F / (this.random.nextFloat() + 1.0F) * 0.2F;
             }
 
-            this.level.broadcastEntityEvent(this, (byte)19);
+            this.level().broadcastEntityEvent(this, (byte)19);
          }
       }
 
@@ -134,7 +134,7 @@ public class Squid extends WaterAnimal {
             this.rotateSpeed *= 0.99F;
          }
 
-         if (!this.level.isClientSide) {
+         if (!this.level().isClientSide) {
             this.setDeltaMovement((double)(this.tx * this.speed), (double)(this.ty * this.speed), (double)(this.tz * this.speed));
          }
 
@@ -146,7 +146,7 @@ public class Squid extends WaterAnimal {
          this.xBodyRot += (-((float)Mth.atan2(var2, var4.y)) * 57.295776F - this.xBodyRot) * 0.1F;
       } else {
          this.tentacleAngle = Mth.abs(Mth.sin(this.tentacleMovement)) * 3.1415927F * 0.25F;
-         if (!this.level.isClientSide) {
+         if (!this.level().isClientSide) {
             double var5 = this.getDeltaMovement().y;
             if (this.hasEffect(MobEffects.LEVITATION)) {
                var5 = 0.05 * (double)(this.getEffect(MobEffects.LEVITATION).getAmplifier() + 1);
@@ -164,7 +164,7 @@ public class Squid extends WaterAnimal {
    @Override
    public boolean hurt(DamageSource var1, float var2) {
       if (super.hurt(var1, var2) && this.getLastHurtByMob() != null) {
-         if (!this.level.isClientSide) {
+         if (!this.level().isClientSide) {
             this.spawnInk();
          }
 
@@ -186,7 +186,7 @@ public class Squid extends WaterAnimal {
       for(int var2 = 0; var2 < 30; ++var2) {
          Vec3 var3 = this.rotateVector(new Vec3((double)this.random.nextFloat() * 0.6 - 0.3, -1.0, (double)this.random.nextFloat() * 0.6 - 0.3));
          Vec3 var4 = var3.scale(0.3 + (double)(this.random.nextFloat() * 2.0F));
-         ((ServerLevel)this.level).sendParticles(this.getInkParticle(), var1.x, var1.y + 0.5, var1.z, 0, var4.x, var4.y, var4.z, 0.10000000149011612);
+         ((ServerLevel)this.level()).sendParticles(this.getInkParticle(), var1.x, var1.y + 0.5, var1.z, 0, var4.x, var4.y, var4.z, 0.10000000149011612);
       }
    }
 
@@ -254,9 +254,9 @@ public class Squid extends WaterAnimal {
          LivingEntity var1 = Squid.this.getLastHurtByMob();
          if (var1 != null) {
             Vec3 var2 = new Vec3(Squid.this.getX() - var1.getX(), Squid.this.getY() - var1.getY(), Squid.this.getZ() - var1.getZ());
-            BlockState var3 = Squid.this.level
+            BlockState var3 = Squid.this.level()
                .getBlockState(BlockPos.containing(Squid.this.getX() + var2.x, Squid.this.getY() + var2.y, Squid.this.getZ() + var2.z));
-            FluidState var4 = Squid.this.level
+            FluidState var4 = Squid.this.level()
                .getFluidState(BlockPos.containing(Squid.this.getX() + var2.x, Squid.this.getY() + var2.y, Squid.this.getZ() + var2.z));
             if (var4.is(FluidTags.WATER) || var3.isAir()) {
                double var5 = var2.length();
@@ -280,7 +280,7 @@ public class Squid extends WaterAnimal {
             }
 
             if (this.fleeTicks % 10 == 5) {
-               Squid.this.level.addParticle(ParticleTypes.BUBBLE, Squid.this.getX(), Squid.this.getY(), Squid.this.getZ(), 0.0, 0.0, 0.0);
+               Squid.this.level().addParticle(ParticleTypes.BUBBLE, Squid.this.getX(), Squid.this.getY(), Squid.this.getZ(), 0.0, 0.0, 0.0);
             }
          }
       }

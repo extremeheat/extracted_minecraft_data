@@ -334,6 +334,11 @@ public abstract class AbstractContainerMenu {
                }
 
                ItemStack var20 = this.getCarried().copy();
+               if (var20.isEmpty()) {
+                  this.resetQuickCraft();
+                  return;
+               }
+
                int var28 = this.getCarried().getCount();
 
                for(Slot var10 : this.quickcraftSlots) {
@@ -343,16 +348,11 @@ public abstract class AbstractContainerMenu {
                      && var10.mayPlace(var11)
                      && (this.quickcraftType == 2 || var11.getCount() >= this.quickcraftSlots.size())
                      && this.canDragTo(var10)) {
-                     ItemStack var12 = var20.copy();
-                     int var13 = var10.hasItem() ? var10.getItem().getCount() : 0;
-                     getQuickCraftSlotCount(this.quickcraftSlots, this.quickcraftType, var12, var13);
-                     int var14 = Math.min(var12.getMaxStackSize(), var10.getMaxStackSize(var12));
-                     if (var12.getCount() > var14) {
-                        var12.setCount(var14);
-                     }
-
-                     var28 -= var12.getCount() - var13;
-                     var10.setByPlayer(var12);
+                     int var12 = var10.hasItem() ? var10.getItem().getCount() : 0;
+                     int var13 = Math.min(var20.getMaxStackSize(), var10.getMaxStackSize(var20));
+                     int var14 = Math.min(getQuickCraftPlaceCount(this.quickcraftSlots, this.quickcraftType, var20) + var12, var13);
+                     var28 -= var14 - var12;
+                     var10.setByPlayer(var20.copyWithCount(var14));
                   }
                }
 
@@ -389,7 +389,7 @@ public abstract class AbstractContainerMenu {
 
             ItemStack var32 = this.quickMoveStack(var4, var1);
 
-            while(!var32.isEmpty() && ItemStack.isSame(var26.getItem(), var32)) {
+            while(!var32.isEmpty() && ItemStack.isSameItem(var26.getItem(), var32)) {
                var32 = this.quickMoveStack(var4, var1);
             }
          } else {
@@ -475,9 +475,8 @@ public abstract class AbstractContainerMenu {
       } else if (var3 == ClickType.CLONE && var4.getAbilities().instabuild && this.getCarried().isEmpty() && var1 >= 0) {
          Slot var18 = this.slots.get(var1);
          if (var18.hasItem()) {
-            ItemStack var25 = var18.getItem().copy();
-            var25.setCount(var25.getMaxStackSize());
-            this.setCarried(var25);
+            ItemStack var25 = var18.getItem();
+            this.setCarried(var25.copyWithCount(var25.getMaxStackSize()));
          }
       } else if (var3 == ClickType.THROW && this.getCarried().isEmpty() && var1 >= 0) {
          Slot var17 = this.slots.get(var1);
@@ -508,7 +507,7 @@ public abstract class AbstractContainerMenu {
    }
 
    private boolean tryItemClickBehaviourOverride(Player var1, ClickAction var2, Slot var3, ItemStack var4, ItemStack var5) {
-      FeatureFlagSet var6 = var1.getLevel().enabledFeatures();
+      FeatureFlagSet var6 = var1.level().enabledFeatures();
       if (var5.isItemEnabled(var6) && var5.overrideStackedOnOther(var3, var2, var1)) {
          return true;
       } else {
@@ -692,19 +691,13 @@ public abstract class AbstractContainerMenu {
       }
    }
 
-   public static void getQuickCraftSlotCount(Set<Slot> var0, int var1, ItemStack var2, int var3) {
-      switch(var1) {
-         case 0:
-            var2.setCount(Mth.floor((float)var2.getCount() / (float)var0.size()));
-            break;
-         case 1:
-            var2.setCount(1);
-            break;
-         case 2:
-            var2.setCount(var2.getItem().getMaxStackSize());
-      }
-
-      var2.grow(var3);
+   public static int getQuickCraftPlaceCount(Set<Slot> var0, int var1, ItemStack var2) {
+      return switch(var1) {
+         case 0 -> Mth.floor((float)var2.getCount() / (float)var0.size());
+         case 1 -> 1;
+         case 2 -> var2.getItem().getMaxStackSize();
+         default -> var2.getCount();
+      };
    }
 
    public boolean canDragTo(Slot var1) {

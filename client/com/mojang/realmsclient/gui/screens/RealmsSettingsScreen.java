@@ -1,7 +1,7 @@
 package com.mojang.realmsclient.gui.screens;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.realmsclient.dto.RealmsServer;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.CommonComponents;
@@ -54,7 +54,7 @@ public class RealmsSettingsScreen extends RealmsScreen {
                } else {
                   this.minecraft.setScreen(this);
                }
-            }, RealmsLongConfirmationScreen.Type.Info, var2x, var3x, true));
+            }, RealmsLongConfirmationScreen.Type.INFO, var2x, var3x, true));
          } else {
             this.configureWorldScreen.openTheWorld(false, this);
          }
@@ -82,11 +82,11 @@ public class RealmsSettingsScreen extends RealmsScreen {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderBackground(var1);
-      drawCenteredString(var1, this.font, this.title, this.width / 2, 17, 16777215);
-      this.font.draw(var1, NAME_LABEL, (float)(this.width / 2 - 106), (float)row(3), 10526880);
-      this.font.draw(var1, DESCRIPTION_LABEL, (float)(this.width / 2 - 106), (float)row(7), 10526880);
+      var1.drawCenteredString(this.font, this.title, this.width / 2, 17, 16777215);
+      var1.drawString(this.font, NAME_LABEL, this.width / 2 - 106, row(3), 10526880, false);
+      var1.drawString(this.font, DESCRIPTION_LABEL, this.width / 2 - 106, row(7), 10526880, false);
       this.nameEdit.render(var1, var2, var3, var4);
       this.descEdit.render(var1, var2, var3, var4);
       super.render(var1, var2, var3, var4);

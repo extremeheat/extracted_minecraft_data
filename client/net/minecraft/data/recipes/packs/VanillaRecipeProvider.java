@@ -1,10 +1,15 @@
 package net.minecraft.data.recipes.packs;
 
 import com.google.common.collect.ImmutableList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import net.minecraft.advancements.Advancement;
-import net.minecraft.advancements.critereon.EntityPredicate;
+import net.minecraft.advancements.critereon.ContextAwarePredicate;
 import net.minecraft.advancements.critereon.ImpossibleTrigger;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 import net.minecraft.advancements.critereon.ItemPredicate;
@@ -21,9 +26,11 @@ import net.minecraft.data.recipes.ShapelessRecipeBuilder;
 import net.minecraft.data.recipes.SimpleCookingRecipeBuilder;
 import net.minecraft.data.recipes.SingleItemRecipeBuilder;
 import net.minecraft.data.recipes.SpecialRecipeBuilder;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
@@ -51,7 +58,9 @@ public class VanillaRecipeProvider extends RecipeProvider {
       return CompletableFuture.allOf(
          super.run(var1),
          this.buildAdvancement(
-            var1, RecipeBuilder.ROOT_RECIPE_ADVANCEMENT, Advancement.Builder.advancement().addCriterion("impossible", new ImpossibleTrigger.TriggerInstance())
+            var1,
+            RecipeBuilder.ROOT_RECIPE_ADVANCEMENT,
+            Advancement.Builder.recipeAdvancement().addCriterion("impossible", new ImpossibleTrigger.TriggerInstance())
          )
       );
    }
@@ -93,98 +102,128 @@ public class VanillaRecipeProvider extends RecipeProvider {
       woodenBoat(var1, Items.OAK_BOAT, Blocks.OAK_PLANKS);
       woodenBoat(var1, Items.SPRUCE_BOAT, Blocks.SPRUCE_PLANKS);
       woodenBoat(var1, Items.MANGROVE_BOAT, Blocks.MANGROVE_PLANKS);
-      coloredWoolFromWhiteWoolAndDye(var1, Blocks.BLACK_WOOL, Items.BLACK_DYE);
+      List var2 = List.of(
+         Items.BLACK_DYE,
+         Items.BLUE_DYE,
+         Items.BROWN_DYE,
+         Items.CYAN_DYE,
+         Items.GRAY_DYE,
+         Items.GREEN_DYE,
+         Items.LIGHT_BLUE_DYE,
+         Items.LIGHT_GRAY_DYE,
+         Items.LIME_DYE,
+         Items.MAGENTA_DYE,
+         Items.ORANGE_DYE,
+         Items.PINK_DYE,
+         Items.PURPLE_DYE,
+         Items.RED_DYE,
+         Items.YELLOW_DYE,
+         Items.WHITE_DYE
+      );
+      List var3 = List.of(
+         Items.BLACK_WOOL,
+         Items.BLUE_WOOL,
+         Items.BROWN_WOOL,
+         Items.CYAN_WOOL,
+         Items.GRAY_WOOL,
+         Items.GREEN_WOOL,
+         Items.LIGHT_BLUE_WOOL,
+         Items.LIGHT_GRAY_WOOL,
+         Items.LIME_WOOL,
+         Items.MAGENTA_WOOL,
+         Items.ORANGE_WOOL,
+         Items.PINK_WOOL,
+         Items.PURPLE_WOOL,
+         Items.RED_WOOL,
+         Items.YELLOW_WOOL,
+         Items.WHITE_WOOL
+      );
+      List var4 = List.of(
+         Items.BLACK_BED,
+         Items.BLUE_BED,
+         Items.BROWN_BED,
+         Items.CYAN_BED,
+         Items.GRAY_BED,
+         Items.GREEN_BED,
+         Items.LIGHT_BLUE_BED,
+         Items.LIGHT_GRAY_BED,
+         Items.LIME_BED,
+         Items.MAGENTA_BED,
+         Items.ORANGE_BED,
+         Items.PINK_BED,
+         Items.PURPLE_BED,
+         Items.RED_BED,
+         Items.YELLOW_BED,
+         Items.WHITE_BED
+      );
+      List var5 = List.of(
+         Items.BLACK_CARPET,
+         Items.BLUE_CARPET,
+         Items.BROWN_CARPET,
+         Items.CYAN_CARPET,
+         Items.GRAY_CARPET,
+         Items.GREEN_CARPET,
+         Items.LIGHT_BLUE_CARPET,
+         Items.LIGHT_GRAY_CARPET,
+         Items.LIME_CARPET,
+         Items.MAGENTA_CARPET,
+         Items.ORANGE_CARPET,
+         Items.PINK_CARPET,
+         Items.PURPLE_CARPET,
+         Items.RED_CARPET,
+         Items.YELLOW_CARPET,
+         Items.WHITE_CARPET
+      );
+      colorBlockWithDye(var1, var2, var3, "wool");
+      colorBlockWithDye(var1, var2, var4, "bed");
+      colorBlockWithDye(var1, var2, var5, "carpet");
       carpet(var1, Blocks.BLACK_CARPET, Blocks.BLACK_WOOL);
-      coloredCarpetFromWhiteCarpetAndDye(var1, Blocks.BLACK_CARPET, Items.BLACK_DYE);
       bedFromPlanksAndWool(var1, Items.BLACK_BED, Blocks.BLACK_WOOL);
-      bedFromWhiteBedAndDye(var1, Items.BLACK_BED, Items.BLACK_DYE);
       banner(var1, Items.BLACK_BANNER, Blocks.BLACK_WOOL);
-      coloredWoolFromWhiteWoolAndDye(var1, Blocks.BLUE_WOOL, Items.BLUE_DYE);
       carpet(var1, Blocks.BLUE_CARPET, Blocks.BLUE_WOOL);
-      coloredCarpetFromWhiteCarpetAndDye(var1, Blocks.BLUE_CARPET, Items.BLUE_DYE);
       bedFromPlanksAndWool(var1, Items.BLUE_BED, Blocks.BLUE_WOOL);
-      bedFromWhiteBedAndDye(var1, Items.BLUE_BED, Items.BLUE_DYE);
       banner(var1, Items.BLUE_BANNER, Blocks.BLUE_WOOL);
-      coloredWoolFromWhiteWoolAndDye(var1, Blocks.BROWN_WOOL, Items.BROWN_DYE);
       carpet(var1, Blocks.BROWN_CARPET, Blocks.BROWN_WOOL);
-      coloredCarpetFromWhiteCarpetAndDye(var1, Blocks.BROWN_CARPET, Items.BROWN_DYE);
       bedFromPlanksAndWool(var1, Items.BROWN_BED, Blocks.BROWN_WOOL);
-      bedFromWhiteBedAndDye(var1, Items.BROWN_BED, Items.BROWN_DYE);
       banner(var1, Items.BROWN_BANNER, Blocks.BROWN_WOOL);
-      coloredWoolFromWhiteWoolAndDye(var1, Blocks.CYAN_WOOL, Items.CYAN_DYE);
       carpet(var1, Blocks.CYAN_CARPET, Blocks.CYAN_WOOL);
-      coloredCarpetFromWhiteCarpetAndDye(var1, Blocks.CYAN_CARPET, Items.CYAN_DYE);
       bedFromPlanksAndWool(var1, Items.CYAN_BED, Blocks.CYAN_WOOL);
-      bedFromWhiteBedAndDye(var1, Items.CYAN_BED, Items.CYAN_DYE);
       banner(var1, Items.CYAN_BANNER, Blocks.CYAN_WOOL);
-      coloredWoolFromWhiteWoolAndDye(var1, Blocks.GRAY_WOOL, Items.GRAY_DYE);
       carpet(var1, Blocks.GRAY_CARPET, Blocks.GRAY_WOOL);
-      coloredCarpetFromWhiteCarpetAndDye(var1, Blocks.GRAY_CARPET, Items.GRAY_DYE);
       bedFromPlanksAndWool(var1, Items.GRAY_BED, Blocks.GRAY_WOOL);
-      bedFromWhiteBedAndDye(var1, Items.GRAY_BED, Items.GRAY_DYE);
       banner(var1, Items.GRAY_BANNER, Blocks.GRAY_WOOL);
-      coloredWoolFromWhiteWoolAndDye(var1, Blocks.GREEN_WOOL, Items.GREEN_DYE);
       carpet(var1, Blocks.GREEN_CARPET, Blocks.GREEN_WOOL);
-      coloredCarpetFromWhiteCarpetAndDye(var1, Blocks.GREEN_CARPET, Items.GREEN_DYE);
       bedFromPlanksAndWool(var1, Items.GREEN_BED, Blocks.GREEN_WOOL);
-      bedFromWhiteBedAndDye(var1, Items.GREEN_BED, Items.GREEN_DYE);
       banner(var1, Items.GREEN_BANNER, Blocks.GREEN_WOOL);
-      coloredWoolFromWhiteWoolAndDye(var1, Blocks.LIGHT_BLUE_WOOL, Items.LIGHT_BLUE_DYE);
       carpet(var1, Blocks.LIGHT_BLUE_CARPET, Blocks.LIGHT_BLUE_WOOL);
-      coloredCarpetFromWhiteCarpetAndDye(var1, Blocks.LIGHT_BLUE_CARPET, Items.LIGHT_BLUE_DYE);
       bedFromPlanksAndWool(var1, Items.LIGHT_BLUE_BED, Blocks.LIGHT_BLUE_WOOL);
-      bedFromWhiteBedAndDye(var1, Items.LIGHT_BLUE_BED, Items.LIGHT_BLUE_DYE);
       banner(var1, Items.LIGHT_BLUE_BANNER, Blocks.LIGHT_BLUE_WOOL);
-      coloredWoolFromWhiteWoolAndDye(var1, Blocks.LIGHT_GRAY_WOOL, Items.LIGHT_GRAY_DYE);
       carpet(var1, Blocks.LIGHT_GRAY_CARPET, Blocks.LIGHT_GRAY_WOOL);
-      coloredCarpetFromWhiteCarpetAndDye(var1, Blocks.LIGHT_GRAY_CARPET, Items.LIGHT_GRAY_DYE);
       bedFromPlanksAndWool(var1, Items.LIGHT_GRAY_BED, Blocks.LIGHT_GRAY_WOOL);
-      bedFromWhiteBedAndDye(var1, Items.LIGHT_GRAY_BED, Items.LIGHT_GRAY_DYE);
       banner(var1, Items.LIGHT_GRAY_BANNER, Blocks.LIGHT_GRAY_WOOL);
-      coloredWoolFromWhiteWoolAndDye(var1, Blocks.LIME_WOOL, Items.LIME_DYE);
       carpet(var1, Blocks.LIME_CARPET, Blocks.LIME_WOOL);
-      coloredCarpetFromWhiteCarpetAndDye(var1, Blocks.LIME_CARPET, Items.LIME_DYE);
       bedFromPlanksAndWool(var1, Items.LIME_BED, Blocks.LIME_WOOL);
-      bedFromWhiteBedAndDye(var1, Items.LIME_BED, Items.LIME_DYE);
       banner(var1, Items.LIME_BANNER, Blocks.LIME_WOOL);
-      coloredWoolFromWhiteWoolAndDye(var1, Blocks.MAGENTA_WOOL, Items.MAGENTA_DYE);
       carpet(var1, Blocks.MAGENTA_CARPET, Blocks.MAGENTA_WOOL);
-      coloredCarpetFromWhiteCarpetAndDye(var1, Blocks.MAGENTA_CARPET, Items.MAGENTA_DYE);
       bedFromPlanksAndWool(var1, Items.MAGENTA_BED, Blocks.MAGENTA_WOOL);
-      bedFromWhiteBedAndDye(var1, Items.MAGENTA_BED, Items.MAGENTA_DYE);
       banner(var1, Items.MAGENTA_BANNER, Blocks.MAGENTA_WOOL);
-      coloredWoolFromWhiteWoolAndDye(var1, Blocks.ORANGE_WOOL, Items.ORANGE_DYE);
       carpet(var1, Blocks.ORANGE_CARPET, Blocks.ORANGE_WOOL);
-      coloredCarpetFromWhiteCarpetAndDye(var1, Blocks.ORANGE_CARPET, Items.ORANGE_DYE);
       bedFromPlanksAndWool(var1, Items.ORANGE_BED, Blocks.ORANGE_WOOL);
-      bedFromWhiteBedAndDye(var1, Items.ORANGE_BED, Items.ORANGE_DYE);
       banner(var1, Items.ORANGE_BANNER, Blocks.ORANGE_WOOL);
-      coloredWoolFromWhiteWoolAndDye(var1, Blocks.PINK_WOOL, Items.PINK_DYE);
       carpet(var1, Blocks.PINK_CARPET, Blocks.PINK_WOOL);
-      coloredCarpetFromWhiteCarpetAndDye(var1, Blocks.PINK_CARPET, Items.PINK_DYE);
       bedFromPlanksAndWool(var1, Items.PINK_BED, Blocks.PINK_WOOL);
-      bedFromWhiteBedAndDye(var1, Items.PINK_BED, Items.PINK_DYE);
       banner(var1, Items.PINK_BANNER, Blocks.PINK_WOOL);
-      coloredWoolFromWhiteWoolAndDye(var1, Blocks.PURPLE_WOOL, Items.PURPLE_DYE);
       carpet(var1, Blocks.PURPLE_CARPET, Blocks.PURPLE_WOOL);
-      coloredCarpetFromWhiteCarpetAndDye(var1, Blocks.PURPLE_CARPET, Items.PURPLE_DYE);
       bedFromPlanksAndWool(var1, Items.PURPLE_BED, Blocks.PURPLE_WOOL);
-      bedFromWhiteBedAndDye(var1, Items.PURPLE_BED, Items.PURPLE_DYE);
       banner(var1, Items.PURPLE_BANNER, Blocks.PURPLE_WOOL);
-      coloredWoolFromWhiteWoolAndDye(var1, Blocks.RED_WOOL, Items.RED_DYE);
       carpet(var1, Blocks.RED_CARPET, Blocks.RED_WOOL);
-      coloredCarpetFromWhiteCarpetAndDye(var1, Blocks.RED_CARPET, Items.RED_DYE);
       bedFromPlanksAndWool(var1, Items.RED_BED, Blocks.RED_WOOL);
-      bedFromWhiteBedAndDye(var1, Items.RED_BED, Items.RED_DYE);
       banner(var1, Items.RED_BANNER, Blocks.RED_WOOL);
       carpet(var1, Blocks.WHITE_CARPET, Blocks.WHITE_WOOL);
       bedFromPlanksAndWool(var1, Items.WHITE_BED, Blocks.WHITE_WOOL);
       banner(var1, Items.WHITE_BANNER, Blocks.WHITE_WOOL);
-      coloredWoolFromWhiteWoolAndDye(var1, Blocks.YELLOW_WOOL, Items.YELLOW_DYE);
       carpet(var1, Blocks.YELLOW_CARPET, Blocks.YELLOW_WOOL);
-      coloredCarpetFromWhiteCarpetAndDye(var1, Blocks.YELLOW_CARPET, Items.YELLOW_DYE);
       bedFromPlanksAndWool(var1, Items.YELLOW_BED, Blocks.YELLOW_WOOL);
-      bedFromWhiteBedAndDye(var1, Items.YELLOW_BED, Items.YELLOW_DYE);
       banner(var1, Items.YELLOW_BANNER, Blocks.YELLOW_WOOL);
       carpet(var1, Blocks.MOSS_CARPET, Blocks.MOSS_BLOCK);
       stainedGlassFromGlassAndDye(var1, Blocks.BLACK_STAINED_GLASS, Items.BLACK_DYE);
@@ -517,7 +556,7 @@ public class VanillaRecipeProvider extends RecipeProvider {
          .unlockedBy(
             "has_lots_of_items",
             new InventoryChangeTrigger.TriggerInstance(
-               EntityPredicate.Composite.ANY, MinMaxBounds.Ints.atLeast(10), MinMaxBounds.Ints.ANY, MinMaxBounds.Ints.ANY, new ItemPredicate[0]
+               ContextAwarePredicate.ANY, MinMaxBounds.Ints.atLeast(10), MinMaxBounds.Ints.ANY, MinMaxBounds.Ints.ANY, new ItemPredicate[0]
             )
          )
          .save(var1);
@@ -631,6 +670,7 @@ public class VanillaRecipeProvider extends RecipeProvider {
       ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, Items.CYAN_DYE, 2)
          .requires(Items.BLUE_DYE)
          .requires(Items.GREEN_DYE)
+         .group("cyan_dye")
          .unlockedBy("has_green_dye", has(Items.GREEN_DYE))
          .unlockedBy("has_blue_dye", has(Items.BLUE_DYE))
          .save(var1);
@@ -1955,6 +1995,13 @@ public class VanillaRecipeProvider extends RecipeProvider {
          .pattern("SSS")
          .unlockedBy("has_echo_shard", has(Items.ECHO_SHARD))
          .save(var1);
+      ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, Items.CALIBRATED_SCULK_SENSOR)
+         .define('#', Items.AMETHYST_SHARD)
+         .define('X', Items.SCULK_SENSOR)
+         .pattern(" # ")
+         .pattern("#X#")
+         .unlockedBy("has_amethyst_shard", has(Items.AMETHYST_SHARD))
+         .save(var1);
       threeByThreePacker(var1, RecipeCategory.MISC, Items.MUSIC_DISC_5, Items.DISC_FRAGMENT_5);
       SpecialRecipeBuilder.special(RecipeSerializer.ARMOR_DYE).save(var1, "armor_dye");
       SpecialRecipeBuilder.special(RecipeSerializer.BANNER_DUPLICATE).save(var1, "banner_duplicate");
@@ -2505,14 +2552,103 @@ public class VanillaRecipeProvider extends RecipeProvider {
       stonecutterResultFromBase(var1, RecipeCategory.BUILDING_BLOCKS, Blocks.DEEPSLATE_TILE_SLAB, Blocks.DEEPSLATE_TILES, 2);
       stonecutterResultFromBase(var1, RecipeCategory.BUILDING_BLOCKS, Blocks.DEEPSLATE_TILE_STAIRS, Blocks.DEEPSLATE_TILES);
       stonecutterResultFromBase(var1, RecipeCategory.DECORATIONS, Blocks.DEEPSLATE_TILE_WALL, Blocks.DEEPSLATE_TILES);
-      legacyNetheriteSmithing(var1, Items.DIAMOND_CHESTPLATE, RecipeCategory.COMBAT, Items.NETHERITE_CHESTPLATE);
-      legacyNetheriteSmithing(var1, Items.DIAMOND_LEGGINGS, RecipeCategory.COMBAT, Items.NETHERITE_LEGGINGS);
-      legacyNetheriteSmithing(var1, Items.DIAMOND_HELMET, RecipeCategory.COMBAT, Items.NETHERITE_HELMET);
-      legacyNetheriteSmithing(var1, Items.DIAMOND_BOOTS, RecipeCategory.COMBAT, Items.NETHERITE_BOOTS);
-      legacyNetheriteSmithing(var1, Items.DIAMOND_SWORD, RecipeCategory.COMBAT, Items.NETHERITE_SWORD);
-      legacyNetheriteSmithing(var1, Items.DIAMOND_AXE, RecipeCategory.TOOLS, Items.NETHERITE_AXE);
-      legacyNetheriteSmithing(var1, Items.DIAMOND_PICKAXE, RecipeCategory.TOOLS, Items.NETHERITE_PICKAXE);
-      legacyNetheriteSmithing(var1, Items.DIAMOND_HOE, RecipeCategory.TOOLS, Items.NETHERITE_HOE);
-      legacyNetheriteSmithing(var1, Items.DIAMOND_SHOVEL, RecipeCategory.TOOLS, Items.NETHERITE_SHOVEL);
+      smithingTrims().forEach((var1x, var2x) -> trimSmithing(var1, var1x, var2x));
+      netheriteSmithing(var1, Items.DIAMOND_CHESTPLATE, RecipeCategory.COMBAT, Items.NETHERITE_CHESTPLATE);
+      netheriteSmithing(var1, Items.DIAMOND_LEGGINGS, RecipeCategory.COMBAT, Items.NETHERITE_LEGGINGS);
+      netheriteSmithing(var1, Items.DIAMOND_HELMET, RecipeCategory.COMBAT, Items.NETHERITE_HELMET);
+      netheriteSmithing(var1, Items.DIAMOND_BOOTS, RecipeCategory.COMBAT, Items.NETHERITE_BOOTS);
+      netheriteSmithing(var1, Items.DIAMOND_SWORD, RecipeCategory.COMBAT, Items.NETHERITE_SWORD);
+      netheriteSmithing(var1, Items.DIAMOND_AXE, RecipeCategory.TOOLS, Items.NETHERITE_AXE);
+      netheriteSmithing(var1, Items.DIAMOND_PICKAXE, RecipeCategory.TOOLS, Items.NETHERITE_PICKAXE);
+      netheriteSmithing(var1, Items.DIAMOND_HOE, RecipeCategory.TOOLS, Items.NETHERITE_HOE);
+      netheriteSmithing(var1, Items.DIAMOND_SHOVEL, RecipeCategory.TOOLS, Items.NETHERITE_SHOVEL);
+      copySmithingTemplate(var1, Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE, Items.NETHERRACK);
+      copySmithingTemplate(var1, Items.SENTRY_ARMOR_TRIM_SMITHING_TEMPLATE, Items.COBBLESTONE);
+      copySmithingTemplate(var1, Items.DUNE_ARMOR_TRIM_SMITHING_TEMPLATE, Items.SANDSTONE);
+      copySmithingTemplate(var1, Items.COAST_ARMOR_TRIM_SMITHING_TEMPLATE, Items.COBBLESTONE);
+      copySmithingTemplate(var1, Items.WILD_ARMOR_TRIM_SMITHING_TEMPLATE, Items.MOSSY_COBBLESTONE);
+      copySmithingTemplate(var1, Items.WARD_ARMOR_TRIM_SMITHING_TEMPLATE, Items.COBBLED_DEEPSLATE);
+      copySmithingTemplate(var1, Items.EYE_ARMOR_TRIM_SMITHING_TEMPLATE, Items.END_STONE);
+      copySmithingTemplate(var1, Items.VEX_ARMOR_TRIM_SMITHING_TEMPLATE, Items.COBBLESTONE);
+      copySmithingTemplate(var1, Items.TIDE_ARMOR_TRIM_SMITHING_TEMPLATE, Items.PRISMARINE);
+      copySmithingTemplate(var1, Items.SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE, Items.BLACKSTONE);
+      copySmithingTemplate(var1, Items.RIB_ARMOR_TRIM_SMITHING_TEMPLATE, Items.NETHERRACK);
+      copySmithingTemplate(var1, Items.SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE, Items.PURPUR_BLOCK);
+      copySmithingTemplate(var1, Items.SILENCE_ARMOR_TRIM_SMITHING_TEMPLATE, Items.COBBLED_DEEPSLATE);
+      copySmithingTemplate(var1, Items.WAYFINDER_ARMOR_TRIM_SMITHING_TEMPLATE, Items.TERRACOTTA);
+      copySmithingTemplate(var1, Items.SHAPER_ARMOR_TRIM_SMITHING_TEMPLATE, Items.TERRACOTTA);
+      copySmithingTemplate(var1, Items.RAISER_ARMOR_TRIM_SMITHING_TEMPLATE, Items.TERRACOTTA);
+      copySmithingTemplate(var1, Items.HOST_ARMOR_TRIM_SMITHING_TEMPLATE, Items.TERRACOTTA);
+      threeByThreePacker(var1, RecipeCategory.BUILDING_BLOCKS, Blocks.BAMBOO_BLOCK, Items.BAMBOO);
+      planksFromLogs(var1, Blocks.BAMBOO_PLANKS, ItemTags.BAMBOO_BLOCKS, 2);
+      mosaicBuilder(var1, RecipeCategory.DECORATIONS, Blocks.BAMBOO_MOSAIC, Blocks.BAMBOO_SLAB);
+      woodenBoat(var1, Items.BAMBOO_RAFT, Blocks.BAMBOO_PLANKS);
+      chestBoat(var1, Items.BAMBOO_CHEST_RAFT, Items.BAMBOO_RAFT);
+      hangingSign(var1, Items.OAK_HANGING_SIGN, Blocks.STRIPPED_OAK_LOG);
+      hangingSign(var1, Items.SPRUCE_HANGING_SIGN, Blocks.STRIPPED_SPRUCE_LOG);
+      hangingSign(var1, Items.BIRCH_HANGING_SIGN, Blocks.STRIPPED_BIRCH_LOG);
+      hangingSign(var1, Items.JUNGLE_HANGING_SIGN, Blocks.STRIPPED_JUNGLE_LOG);
+      hangingSign(var1, Items.ACACIA_HANGING_SIGN, Blocks.STRIPPED_ACACIA_LOG);
+      hangingSign(var1, Items.CHERRY_HANGING_SIGN, Blocks.STRIPPED_CHERRY_LOG);
+      hangingSign(var1, Items.DARK_OAK_HANGING_SIGN, Blocks.STRIPPED_DARK_OAK_LOG);
+      hangingSign(var1, Items.MANGROVE_HANGING_SIGN, Blocks.STRIPPED_MANGROVE_LOG);
+      hangingSign(var1, Items.BAMBOO_HANGING_SIGN, Items.STRIPPED_BAMBOO_BLOCK);
+      hangingSign(var1, Items.CRIMSON_HANGING_SIGN, Blocks.STRIPPED_CRIMSON_STEM);
+      hangingSign(var1, Items.WARPED_HANGING_SIGN, Blocks.STRIPPED_WARPED_STEM);
+      ShapedRecipeBuilder.shaped(RecipeCategory.BUILDING_BLOCKS, Blocks.CHISELED_BOOKSHELF)
+         .define('#', ItemTags.PLANKS)
+         .define('X', ItemTags.WOODEN_SLABS)
+         .pattern("###")
+         .pattern("XXX")
+         .pattern("###")
+         .unlockedBy("has_book", has(Items.BOOK))
+         .save(var1);
+      oneToOneConversionRecipe(var1, Items.ORANGE_DYE, Blocks.TORCHFLOWER, "orange_dye");
+      oneToOneConversionRecipe(var1, Items.CYAN_DYE, Blocks.PITCHER_PLANT, "cyan_dye", 2);
+      planksFromLog(var1, Blocks.CHERRY_PLANKS, ItemTags.CHERRY_LOGS, 4);
+      woodFromLogs(var1, Blocks.CHERRY_WOOD, Blocks.CHERRY_LOG);
+      woodFromLogs(var1, Blocks.STRIPPED_CHERRY_WOOD, Blocks.STRIPPED_CHERRY_LOG);
+      woodenBoat(var1, Items.CHERRY_BOAT, Blocks.CHERRY_PLANKS);
+      chestBoat(var1, Items.CHERRY_CHEST_BOAT, Items.CHERRY_BOAT);
+      oneToOneConversionRecipe(var1, Items.PINK_DYE, Items.PINK_PETALS, "pink_dye", 1);
+      ShapedRecipeBuilder.shaped(RecipeCategory.TOOLS, Items.BRUSH)
+         .define('X', Items.FEATHER)
+         .define('#', Items.COPPER_INGOT)
+         .define('I', Items.STICK)
+         .pattern("X")
+         .pattern("#")
+         .pattern("I")
+         .unlockedBy("has_copper_ingot", has(Items.COPPER_INGOT))
+         .save(var1);
+      ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, Items.DECORATED_POT)
+         .define('#', Items.BRICK)
+         .pattern(" # ")
+         .pattern("# #")
+         .pattern(" # ")
+         .unlockedBy("has_brick", has(ItemTags.DECORATED_POT_INGREDIENTS))
+         .save(var1, "decorated_pot_simple");
+      SpecialRecipeBuilder.special(RecipeSerializer.DECORATED_POT_RECIPE).save(var1, "decorated_pot");
+   }
+
+   public static Map<Item, ResourceLocation> smithingTrims() {
+      return Stream.of(
+            Items.TIDE_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.COAST_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.VEX_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.WARD_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.EYE_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.DUNE_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.WILD_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.RIB_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.SENTRY_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.WAYFINDER_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.SHAPER_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.SILENCE_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.RAISER_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.HOST_ARMOR_TRIM_SMITHING_TEMPLATE
+         )
+         .collect(Collectors.toMap(Function.identity(), var0 -> new ResourceLocation(getItemName(var0) + "_smithing_trim")));
    }
 }

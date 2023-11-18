@@ -11,6 +11,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientHandshakePacketListenerImpl;
 import net.minecraft.client.multiplayer.chat.report.ReportEnvironment;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
+import net.minecraft.client.quickplay.QuickPlayLog;
 import net.minecraft.network.Connection;
 import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.chat.CommonComponents;
@@ -54,13 +55,15 @@ public class RealmsConnect {
                      return;
                   }
    
-                  RealmsConnect.this.connection
-                     .setListener(
-                        new ClientHandshakePacketListenerImpl(
-                           RealmsConnect.this.connection, var3, var1.toServerData(var4), RealmsConnect.this.onlineScreen, false, null, var0 -> {
-                           }
-                        )
-                     );
+                  ClientHandshakePacketListenerImpl var2 = new ClientHandshakePacketListenerImpl(
+                     RealmsConnect.this.connection, var3, var1.toServerData(var4), RealmsConnect.this.onlineScreen, false, null, var0 -> {
+                     }
+                  );
+                  if (var1.worldType == RealmsServer.WorldType.MINIGAME) {
+                     var2.setMinigameName(var1.minigameName);
+                  }
+   
+                  RealmsConnect.this.connection.setListener(var2);
                   if (RealmsConnect.this.aborted) {
                      return;
                   }
@@ -70,10 +73,11 @@ public class RealmsConnect {
                      return;
                   }
    
-                  String var2 = var3.getUser().getName();
-                  UUID var6 = var3.getUser().getProfileId();
-                  RealmsConnect.this.connection.send(new ServerboundHelloPacket(var2, Optional.ofNullable(var6)));
+                  String var6 = var3.getUser().getName();
+                  UUID var8 = var3.getUser().getProfileId();
+                  RealmsConnect.this.connection.send(new ServerboundHelloPacket(var6, Optional.ofNullable(var8)));
                   var3.updateReportEnvironment(ReportEnvironment.realm(var1));
+                  var3.quickPlayLog().setWorldData(QuickPlayLog.Type.REALMS, String.valueOf(var1.id), var1.name);
                } catch (Exception var5x) {
                   var3.getDownloadedPackSource().clearServerPack();
                   if (RealmsConnect.this.aborted) {

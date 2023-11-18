@@ -2,9 +2,15 @@ package net.minecraft.server.dedicated;
 
 import com.google.common.base.MoreObjects;
 import com.mojang.logging.LogUtils;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CodingErrorAction;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
@@ -27,19 +33,40 @@ public abstract class Settings<T extends Settings<T>> {
    }
 
    public static Properties loadFromFile(Path var0) {
-      Properties var1 = new Properties();
+      try {
+         try {
+            Properties var13;
+            try (InputStream var1 = Files.newInputStream(var0)) {
+               CharsetDecoder var11 = StandardCharsets.UTF_8
+                  .newDecoder()
+                  .onMalformedInput(CodingErrorAction.REPORT)
+                  .onUnmappableCharacter(CodingErrorAction.REPORT);
+               Properties var12 = new Properties();
+               var12.load(new InputStreamReader(var1, var11));
+               var13 = var12;
+            }
 
-      try (InputStream var2 = Files.newInputStream(var0)) {
-         var1.load(var2);
-      } catch (IOException var7) {
-         LOGGER.error("Failed to load properties from file: {}", var0);
+            return var13;
+         } catch (CharacterCodingException var9) {
+            LOGGER.info("Failed to load properties as UTF-8 from file {}, trying ISO_8859_1", var0);
+
+            Properties var4;
+            try (BufferedReader var2 = Files.newBufferedReader(var0, StandardCharsets.ISO_8859_1)) {
+               Properties var3 = new Properties();
+               var3.load(var2);
+               var4 = var3;
+            }
+
+            return var4;
+         }
+      } catch (IOException var10) {
+         LOGGER.error("Failed to load properties from file: {}", var0, var10);
+         return new Properties();
       }
-
-      return var1;
    }
 
    public void store(Path var1) {
-      try (OutputStream var2 = Files.newOutputStream(var1)) {
+      try (BufferedWriter var2 = Files.newBufferedWriter(var1, StandardCharsets.UTF_8)) {
          this.properties.store(var2, "Minecraft server properties");
       } catch (IOException var7) {
          LOGGER.error("Failed to store properties to file: {}", var1);

@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens.inventory.tooltip;
 
 import net.minecraft.client.gui.components.AbstractWidget;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.util.Mth;
 import org.joml.Vector2i;
 import org.joml.Vector2ic;
@@ -19,23 +18,23 @@ public class MenuTooltipPositioner implements ClientTooltipPositioner {
    }
 
    @Override
-   public Vector2ic positionTooltip(Screen var1, int var2, int var3, int var4, int var5) {
-      Vector2i var6 = new Vector2i(var2 + 12, var3);
-      if (var6.x + var4 > var1.width - 5) {
-         var6.x = Math.max(var2 - 12 - var4, 9);
+   public Vector2ic positionTooltip(int var1, int var2, int var3, int var4, int var5, int var6) {
+      Vector2i var7 = new Vector2i(var3 + 12, var4);
+      if (var7.x + var5 > var1 - 5) {
+         var7.x = Math.max(var3 - 12 - var5, 9);
       }
 
-      var6.y += 3;
-      int var7 = var5 + 3 + 3;
-      int var8 = this.widget.getY() + this.widget.getHeight() + 3 + getOffset(0, 0, this.widget.getHeight());
-      int var9 = var1.height - 5;
-      if (var8 + var7 <= var9) {
-         var6.y += getOffset(var6.y, this.widget.getY(), this.widget.getHeight());
+      var7.y += 3;
+      int var8 = var6 + 3 + 3;
+      int var9 = this.widget.getY() + this.widget.getHeight() + 3 + getOffset(0, 0, this.widget.getHeight());
+      int var10 = var2 - 5;
+      if (var9 + var8 <= var10) {
+         var7.y += getOffset(var7.y, this.widget.getY(), this.widget.getHeight());
       } else {
-         var6.y -= var7 + getOffset(var6.y, this.widget.getY() + this.widget.getHeight(), this.widget.getHeight());
+         var7.y -= var8 + getOffset(var7.y, this.widget.getY() + this.widget.getHeight(), this.widget.getHeight());
       }
 
-      return var6;
+      return var7;
    }
 
    private static int getOffset(int var0, int var1, int var2) {

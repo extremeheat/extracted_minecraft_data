@@ -1,17 +1,23 @@
 package net.minecraft.client.gui.components;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 
-public class LogoRenderer extends GuiComponent {
+public class LogoRenderer {
    public static final ResourceLocation MINECRAFT_LOGO = new ResourceLocation("textures/gui/title/minecraft.png");
+   public static final ResourceLocation EASTER_EGG_LOGO = new ResourceLocation("textures/gui/title/minceraft.png");
    public static final ResourceLocation MINECRAFT_EDITION = new ResourceLocation("textures/gui/title/edition.png");
-   public static final int LOGO_WIDTH = 274;
+   public static final int LOGO_WIDTH = 256;
    public static final int LOGO_HEIGHT = 44;
+   private static final int LOGO_TEXTURE_WIDTH = 256;
+   private static final int LOGO_TEXTURE_HEIGHT = 64;
+   private static final int EDITION_WIDTH = 128;
+   private static final int EDITION_HEIGHT = 14;
+   private static final int EDITION_TEXTURE_WIDTH = 128;
+   private static final int EDITION_TEXTURE_HEIGHT = 16;
    public static final int DEFAULT_HEIGHT_OFFSET = 30;
+   private static final int EDITION_LOGO_OVERLAP = 7;
    private final boolean showEasterEgg = (double)RandomSource.create().nextFloat() < 1.0E-4;
    private final boolean keepLogoThroughFade;
 
@@ -20,31 +26,17 @@ public class LogoRenderer extends GuiComponent {
       this.keepLogoThroughFade = var1;
    }
 
-   public void renderLogo(PoseStack var1, int var2, float var3) {
+   public void renderLogo(GuiGraphics var1, int var2, float var3) {
       this.renderLogo(var1, var2, var3, 30);
    }
 
-   public void renderLogo(PoseStack var1, int var2, float var3, int var4) {
-      RenderSystem.setShaderTexture(0, MINECRAFT_LOGO);
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, this.keepLogoThroughFade ? 1.0F : var3);
-      int var5 = var2 / 2 - 137;
-      if (this.showEasterEgg) {
-         blitOutlineBlack(var5, var4, (var1x, var2x) -> {
-            blit(var1, var1x, var2x, 0, 0, 99, 44);
-            blit(var1, var1x + 99, var2x, 129, 0, 27, 44);
-            blit(var1, var1x + 99 + 26, var2x, 126, 0, 3, 44);
-            blit(var1, var1x + 99 + 26 + 3, var2x, 99, 0, 26, 44);
-            blit(var1, var1x + 155, var2x, 0, 45, 155, 44);
-         });
-      } else {
-         blitOutlineBlack(var5, var4, (var1x, var2x) -> {
-            blit(var1, var1x, var2x, 0, 0, 155, 44);
-            blit(var1, var1x + 155, var2x, 0, 45, 155, 44);
-         });
-      }
-
-      RenderSystem.setShaderTexture(0, MINECRAFT_EDITION);
-      blit(var1, var5 + 88, var4 + 37, 0.0F, 0.0F, 98, 14, 128, 16);
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+   public void renderLogo(GuiGraphics var1, int var2, float var3, int var4) {
+      var1.setColor(1.0F, 1.0F, 1.0F, this.keepLogoThroughFade ? 1.0F : var3);
+      int var5 = var2 / 2 - 128;
+      var1.blit(this.showEasterEgg ? EASTER_EGG_LOGO : MINECRAFT_LOGO, var5, var4, 0.0F, 0.0F, 256, 44, 256, 64);
+      int var6 = var2 / 2 - 64;
+      int var7 = var4 + 44 - 7;
+      var1.blit(MINECRAFT_EDITION, var6, var7, 0.0F, 0.0F, 128, 14, 128, 16);
+      var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
    }
 }

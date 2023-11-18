@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -66,20 +66,21 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
    }
 
    private void onNameChanged(String var1) {
-      if (!var1.isEmpty()) {
-         String var2 = var1;
-         Slot var3 = this.menu.getSlot(0);
-         if (var3 != null && var3.hasItem() && !var3.getItem().hasCustomHoverName() && var1.equals(var3.getItem().getHoverName().getString())) {
-            var2 = "";
+      Slot var2 = this.menu.getSlot(0);
+      if (var2.hasItem()) {
+         String var3 = var1;
+         if (!var2.getItem().hasCustomHoverName() && var1.equals(var2.getItem().getHoverName().getString())) {
+            var3 = "";
          }
 
-         this.menu.setItemName(var2);
-         this.minecraft.player.connection.send(new ServerboundRenameItemPacket(var2));
+         if (this.menu.setItemName(var3)) {
+            this.minecraft.player.connection.send(new ServerboundRenameItemPacket(var3));
+         }
       }
    }
 
    @Override
-   protected void renderLabels(PoseStack var1, int var2, int var3) {
+   protected void renderLabels(GuiGraphics var1, int var2, int var3) {
       super.renderLabels(var1, var2, var3);
       int var4 = this.menu.getCost();
       if (var4 > 0) {
@@ -100,27 +101,27 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
          if (var6 != null) {
             int var7 = this.imageWidth - 8 - this.font.width((FormattedText)var6) - 2;
             boolean var8 = true;
-            fill(var1, var7 - 2, 67, this.imageWidth - 8, 79, 1325400064);
-            this.font.drawShadow(var1, (Component)var6, (float)var7, 69.0F, var5);
+            var1.fill(var7 - 2, 67, this.imageWidth - 8, 79, 1325400064);
+            var1.drawString(this.font, (Component)var6, var7, 69, var5);
          }
       }
    }
 
    @Override
-   protected void renderBg(PoseStack var1, float var2, int var3, int var4) {
+   protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       super.renderBg(var1, var2, var3, var4);
-      blit(var1, this.leftPos + 59, this.topPos + 20, 0, this.imageHeight + (this.menu.getSlot(0).hasItem() ? 0 : 16), 110, 16);
+      var1.blit(ANVIL_LOCATION, this.leftPos + 59, this.topPos + 20, 0, this.imageHeight + (this.menu.getSlot(0).hasItem() ? 0 : 16), 110, 16);
    }
 
    @Override
-   public void renderFg(PoseStack var1, int var2, int var3, float var4) {
+   public void renderFg(GuiGraphics var1, int var2, int var3, float var4) {
       this.name.render(var1, var2, var3, var4);
    }
 
    @Override
-   protected void renderErrorIcon(PoseStack var1, int var2, int var3) {
+   protected void renderErrorIcon(GuiGraphics var1, int var2, int var3) {
       if ((this.menu.getSlot(0).hasItem() || this.menu.getSlot(1).hasItem()) && !this.menu.getSlot(this.menu.getResultSlot()).hasItem()) {
-         blit(var1, var2 + 99, var3 + 45, this.imageWidth, 0, 28, 21);
+         var1.blit(ANVIL_LOCATION, var2 + 99, var3 + 45, this.imageWidth, 0, 28, 21);
       }
    }
 

@@ -72,11 +72,20 @@ public class GsonHelper {
       return !isValidNode(var0, var1) ? false : var0.get(var1).isJsonPrimitive();
    }
 
-   public static boolean isValidNode(JsonObject var0, String var1) {
+   public static boolean isValidNode(@Nullable JsonObject var0, String var1) {
       if (var0 == null) {
          return false;
       } else {
          return var0.get(var1) != null;
+      }
+   }
+
+   public static JsonElement getNonNull(JsonObject var0, String var1) {
+      JsonElement var2 = var0.get(var1);
+      if (var2 != null && !var2.isJsonNull()) {
+         return var2;
+      } else {
+         throw new JsonSyntaxException("Missing field " + var1);
       }
    }
 

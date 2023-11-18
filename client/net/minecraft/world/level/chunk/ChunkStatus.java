@@ -35,41 +35,23 @@ public class ChunkStatus {
    public static final EnumSet<Heightmap.Types> POST_FEATURES = EnumSet.of(
       Heightmap.Types.OCEAN_FLOOR, Heightmap.Types.WORLD_SURFACE, Heightmap.Types.MOTION_BLOCKING, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES
    );
-   private static final ChunkStatus.LoadingTask PASSTHROUGH_LOAD_TASK = (var0, var1, var2, var3, var4, var5) -> {
-      if (var5 instanceof ProtoChunk var6 && !var5.getStatus().isOrAfter(var0)) {
-         var6.setStatus(var0);
-      }
-
-      return CompletableFuture.completedFuture(Either.left(var5));
-   };
+   private static final ChunkStatus.LoadingTask PASSTHROUGH_LOAD_TASK = (var0, var1, var2, var3, var4, var5) -> CompletableFuture.completedFuture(
+         Either.left(var5)
+      );
    public static final ChunkStatus EMPTY = registerSimple(
       "empty", null, -1, PRE_FEATURES, ChunkStatus.ChunkType.PROTOCHUNK, (var0, var1, var2, var3, var4) -> {
       }
    );
    public static final ChunkStatus STRUCTURE_STARTS = register(
-      "structure_starts", EMPTY, 0, PRE_FEATURES, ChunkStatus.ChunkType.PROTOCHUNK, (var0, var1, var2, var3, var4, var5, var6, var7, var8, var9) -> {
-         if (!var8.getStatus().isOrAfter(var0)) {
-            if (var2.getServer().getWorldData().worldGenOptions().generateStructures()) {
-               var3.createStructures(var2.registryAccess(), var2.getChunkSource().getGeneratorState(), var2.structureManager(), var8, var4);
-            }
-   
-            if (var8 instanceof ProtoChunk var10) {
-               var10.setStatus(var0);
-            }
-   
-            var2.onStructureStartsAvailable(var8);
+      "structure_starts", EMPTY, 0, false, PRE_FEATURES, ChunkStatus.ChunkType.PROTOCHUNK, (var0, var1, var2, var3, var4, var5, var6, var7, var8) -> {
+         if (var2.getServer().getWorldData().worldGenOptions().generateStructures()) {
+            var3.createStructures(var2.registryAccess(), var2.getChunkSource().getGeneratorState(), var2.structureManager(), var8, var4);
          }
    
+         var2.onStructureStartsAvailable(var8);
          return CompletableFuture.completedFuture(Either.left(var8));
       }, (var0, var1, var2, var3, var4, var5) -> {
-         if (!var5.getStatus().isOrAfter(var0)) {
-            if (var5 instanceof ProtoChunk var6) {
-               var6.setStatus(var0);
-            }
-   
-            var1.onStructureStartsAvailable(var5);
-         }
-   
+         var1.onStructureStartsAvailable(var5);
          return CompletableFuture.completedFuture(Either.left(var5));
       }
    );
@@ -85,20 +67,10 @@ public class ChunkStatus {
       8,
       PRE_FEATURES,
       ChunkStatus.ChunkType.PROTOCHUNK,
-      (var0, var1, var2, var3, var4, var5, var6, var7, var8, var9) -> {
-         if (!var9 && var8.getStatus().isOrAfter(var0)) {
-            return CompletableFuture.completedFuture(Either.left(var8));
-         } else {
-            WorldGenRegion var10 = new WorldGenRegion(var2, var7, var0, -1);
-            return var3.createBiomes(var1, var2.getChunkSource().randomState(), Blender.of(var10), var2.structureManager().forWorldGenRegion(var10), var8)
-               .thenApply(var1x -> {
-                  if (var1x instanceof ProtoChunk) {
-                     ((ProtoChunk)var1x).setStatus(var0);
-                  }
-      
-                  return Either.left(var1x);
-               });
-         }
+      (var0, var1, var2, var3, var4, var5, var6, var7, var8) -> {
+         WorldGenRegion var9 = new WorldGenRegion(var2, var7, var0, -1);
+         return var3.createBiomes(var1, var2.getChunkSource().randomState(), Blender.of(var9), var2.structureManager().forWorldGenRegion(var9), var8)
+            .thenApply(var0x -> Either.left(var0x));
       }
    );
    public static final ChunkStatus NOISE = register(
@@ -107,28 +79,22 @@ public class ChunkStatus {
       8,
       PRE_FEATURES,
       ChunkStatus.ChunkType.PROTOCHUNK,
-      (var0, var1, var2, var3, var4, var5, var6, var7, var8, var9) -> {
-         if (!var9 && var8.getStatus().isOrAfter(var0)) {
-            return CompletableFuture.completedFuture(Either.left(var8));
-         } else {
-            WorldGenRegion var10 = new WorldGenRegion(var2, var7, var0, 0);
-            return var3.fillFromNoise(var1, Blender.of(var10), var2.getChunkSource().randomState(), var2.structureManager().forWorldGenRegion(var10), var8)
-               .thenApply(var1x -> {
-                  if (var1x instanceof ProtoChunk var2x) {
-                     BelowZeroRetrogen var3x = ((ProtoChunk)var2x).getBelowZeroRetrogen();
-                     if (var3x != null) {
-                        BelowZeroRetrogen.replaceOldBedrock((ProtoChunk)var2x);
-                        if (var3x.hasBedrockHoles()) {
-                           var3x.applyBedrockMask((ProtoChunk)var2x);
-                        }
+      (var0, var1, var2, var3, var4, var5, var6, var7, var8) -> {
+         WorldGenRegion var9 = new WorldGenRegion(var2, var7, var0, 0);
+         return var3.fillFromNoise(var1, Blender.of(var9), var2.getChunkSource().randomState(), var2.structureManager().forWorldGenRegion(var9), var8)
+            .thenApply(var0x -> {
+               if (var0x instanceof ProtoChunk var1x) {
+                  BelowZeroRetrogen var2x = ((ProtoChunk)var1x).getBelowZeroRetrogen();
+                  if (var2x != null) {
+                     BelowZeroRetrogen.replaceOldBedrock((ProtoChunk)var1x);
+                     if (var2x.hasBedrockHoles()) {
+                        var2x.applyBedrockMask((ProtoChunk)var1x);
                      }
-      
-                     ((ProtoChunk)var2x).setStatus(var0);
                   }
+               }
       
-                  return Either.left(var1x);
-               });
-         }
+               return Either.left(var0x);
+            });
       }
    );
    public static final ChunkStatus SURFACE = registerSimple(
@@ -141,7 +107,7 @@ public class ChunkStatus {
       "carvers",
       SURFACE,
       8,
-      PRE_FEATURES,
+      POST_FEATURES,
       ChunkStatus.ChunkType.PROTOCHUNK,
       (var0, var1, var2, var3, var4) -> {
          WorldGenRegion var5 = new WorldGenRegion(var1, var3, var0, 0);
@@ -160,44 +126,41 @@ public class ChunkStatus {
          );
       }
    );
-   public static final ChunkStatus LIQUID_CARVERS = registerSimple(
-      "liquid_carvers", CARVERS, 8, POST_FEATURES, ChunkStatus.ChunkType.PROTOCHUNK, (var0, var1, var2, var3, var4) -> {
-      }
-   );
-   public static final ChunkStatus FEATURES = register(
+   public static final ChunkStatus FEATURES = registerSimple(
       "features",
-      LIQUID_CARVERS,
+      CARVERS,
       8,
       POST_FEATURES,
       ChunkStatus.ChunkType.PROTOCHUNK,
-      (var0, var1, var2, var3, var4, var5, var6, var7, var8, var9) -> {
-         ProtoChunk var10 = (ProtoChunk)var8;
-         var10.setLightEngine(var5);
-         if (var9 || !var8.getStatus().isOrAfter(var0)) {
-            Heightmap.primeHeightmaps(
-               var8,
-               EnumSet.of(
-                  Heightmap.Types.MOTION_BLOCKING, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Heightmap.Types.OCEAN_FLOOR, Heightmap.Types.WORLD_SURFACE
-               )
-            );
-            WorldGenRegion var11 = new WorldGenRegion(var2, var7, var0, 1);
-            var3.applyBiomeDecoration(var11, var8, var2.structureManager().forWorldGenRegion(var11));
-            Blender.generateBorderTicks(var11, var8);
-            var10.setStatus(var0);
-         }
-   
-         return var5.retainData(var8).thenApply(Either::left);
-      },
-      (var0, var1, var2, var3, var4, var5) -> var3.retainData(var5).thenApply(Either::left)
+      (var0, var1, var2, var3, var4) -> {
+         Heightmap.primeHeightmaps(
+            var4,
+            EnumSet.of(Heightmap.Types.MOTION_BLOCKING, Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, Heightmap.Types.OCEAN_FLOOR, Heightmap.Types.WORLD_SURFACE)
+         );
+         WorldGenRegion var5 = new WorldGenRegion(var1, var3, var0, 1);
+         var2.applyBiomeDecoration(var5, var4, var1.structureManager().forWorldGenRegion(var5));
+         Blender.generateBorderTicks(var5, var4);
+      }
+   );
+   public static final ChunkStatus INITIALIZE_LIGHT = register(
+      "initialize_light",
+      FEATURES,
+      0,
+      false,
+      POST_FEATURES,
+      ChunkStatus.ChunkType.PROTOCHUNK,
+      (var0, var1, var2, var3, var4, var5, var6, var7, var8) -> initializeLight(var5, var8),
+      (var0, var1, var2, var3, var4, var5) -> initializeLight(var3, var5)
    );
    public static final ChunkStatus LIGHT = register(
       "light",
-      FEATURES,
+      INITIALIZE_LIGHT,
       1,
+      true,
       POST_FEATURES,
       ChunkStatus.ChunkType.PROTOCHUNK,
-      (var0, var1, var2, var3, var4, var5, var6, var7, var8, var9) -> lightChunk(var0, var5, var8),
-      (var0, var1, var2, var3, var4, var5) -> lightChunk(var0, var3, var5)
+      (var0, var1, var2, var3, var4, var5, var6, var7, var8) -> lightChunk(var5, var8),
+      (var0, var1, var2, var3, var4, var5) -> lightChunk(var3, var5)
    );
    public static final ChunkStatus SPAWN = registerSimple(
       "spawn", LIGHT, 0, POST_FEATURES, ChunkStatus.ChunkType.PROTOCHUNK, (var0, var1, var2, var3, var4) -> {
@@ -206,23 +169,20 @@ public class ChunkStatus {
          }
       }
    );
-   public static final ChunkStatus HEIGHTMAPS = registerSimple(
-      "heightmaps", SPAWN, 0, POST_FEATURES, ChunkStatus.ChunkType.PROTOCHUNK, (var0, var1, var2, var3, var4) -> {
-      }
-   );
    public static final ChunkStatus FULL = register(
       "full",
-      HEIGHTMAPS,
+      SPAWN,
       0,
+      false,
       POST_FEATURES,
       ChunkStatus.ChunkType.LEVELCHUNK,
-      (var0, var1, var2, var3, var4, var5, var6, var7, var8, var9) -> var6.apply(var8),
+      (var0, var1, var2, var3, var4, var5, var6, var7, var8) -> var6.apply(var8),
       (var0, var1, var2, var3, var4, var5) -> var4.apply(var5)
    );
    private static final List<ChunkStatus> STATUS_BY_RANGE = ImmutableList.of(
       FULL,
-      FEATURES,
-      LIQUID_CARVERS,
+      INITIALIZE_LIGHT,
+      CARVERS,
       BIOMES,
       STRUCTURE_STARTS,
       STRUCTURE_STARTS,
@@ -245,24 +205,25 @@ public class ChunkStatus {
          var0.add(0, var1);
       }
    });
-   private final String name;
    private final int index;
    private final ChunkStatus parent;
    private final ChunkStatus.GenerationTask generationTask;
    private final ChunkStatus.LoadingTask loadingTask;
    private final int range;
+   private final boolean hasLoadDependencies;
    private final ChunkStatus.ChunkType chunkType;
    private final EnumSet<Heightmap.Types> heightmapsAfter;
 
-   private static CompletableFuture<Either<ChunkAccess, ChunkHolder.ChunkLoadingFailure>> lightChunk(
-      ChunkStatus var0, ThreadedLevelLightEngine var1, ChunkAccess var2
-   ) {
-      boolean var3 = isLighted(var0, var2);
-      if (!var2.getStatus().isOrAfter(var0)) {
-         ((ProtoChunk)var2).setStatus(var0);
-      }
+   private static CompletableFuture<Either<ChunkAccess, ChunkHolder.ChunkLoadingFailure>> initializeLight(ThreadedLevelLightEngine var0, ChunkAccess var1) {
+      var1.initializeLightSources();
+      ((ProtoChunk)var1).setLightEngine(var0);
+      boolean var2 = isLighted(var1);
+      return var0.initializeLight(var1, var2).thenApply(Either::left);
+   }
 
-      return var1.lightChunk(var2, var3).thenApply(Either::left);
+   private static CompletableFuture<Either<ChunkAccess, ChunkHolder.ChunkLoadingFailure>> lightChunk(ThreadedLevelLightEngine var0, ChunkAccess var1) {
+      boolean var2 = isLighted(var1);
+      return var0.lightChunk(var1, var2).thenApply(Either::left);
    }
 
    private static ChunkStatus registerSimple(
@@ -274,19 +235,20 @@ public class ChunkStatus {
    private static ChunkStatus register(
       String var0, @Nullable ChunkStatus var1, int var2, EnumSet<Heightmap.Types> var3, ChunkStatus.ChunkType var4, ChunkStatus.GenerationTask var5
    ) {
-      return register(var0, var1, var2, var3, var4, var5, PASSTHROUGH_LOAD_TASK);
+      return register(var0, var1, var2, false, var3, var4, var5, PASSTHROUGH_LOAD_TASK);
    }
 
    private static ChunkStatus register(
       String var0,
       @Nullable ChunkStatus var1,
       int var2,
-      EnumSet<Heightmap.Types> var3,
-      ChunkStatus.ChunkType var4,
-      ChunkStatus.GenerationTask var5,
-      ChunkStatus.LoadingTask var6
+      boolean var3,
+      EnumSet<Heightmap.Types> var4,
+      ChunkStatus.ChunkType var5,
+      ChunkStatus.GenerationTask var6,
+      ChunkStatus.LoadingTask var7
    ) {
-      return Registry.register(BuiltInRegistries.CHUNK_STATUS, var0, new ChunkStatus(var0, var1, var2, var3, var4, var5, var6));
+      return Registry.register(BuiltInRegistries.CHUNK_STATUS, var0, new ChunkStatus(var1, var2, var3, var4, var5, var6, var7));
    }
 
    public static List<ChunkStatus> getStatusList() {
@@ -302,8 +264,8 @@ public class ChunkStatus {
       return var0;
    }
 
-   private static boolean isLighted(ChunkStatus var0, ChunkAccess var1) {
-      return var1.getStatus().isOrAfter(var0) && var1.isLightCorrect();
+   private static boolean isLighted(ChunkAccess var0) {
+      return var0.getStatus().isOrAfter(LIGHT) && var0.isLightCorrect();
    }
 
    public static ChunkStatus getStatusAroundFullChunk(int var0) {
@@ -323,31 +285,27 @@ public class ChunkStatus {
    }
 
    ChunkStatus(
-      String var1,
-      @Nullable ChunkStatus var2,
-      int var3,
+      @Nullable ChunkStatus var1,
+      int var2,
+      boolean var3,
       EnumSet<Heightmap.Types> var4,
       ChunkStatus.ChunkType var5,
       ChunkStatus.GenerationTask var6,
       ChunkStatus.LoadingTask var7
    ) {
       super();
-      this.name = var1;
-      this.parent = var2 == null ? this : var2;
+      this.parent = var1 == null ? this : var1;
       this.generationTask = var6;
       this.loadingTask = var7;
-      this.range = var3;
+      this.range = var2;
+      this.hasLoadDependencies = var3;
       this.chunkType = var5;
       this.heightmapsAfter = var4;
-      this.index = var2 == null ? 0 : var2.getIndex() + 1;
+      this.index = var1 == null ? 0 : var1.getIndex() + 1;
    }
 
    public int getIndex() {
       return this.index;
-   }
-
-   public String getName() {
-      return this.name;
    }
 
    public ChunkStatus getParent() {
@@ -361,16 +319,21 @@ public class ChunkStatus {
       StructureTemplateManager var4,
       ThreadedLevelLightEngine var5,
       Function<ChunkAccess, CompletableFuture<Either<ChunkAccess, ChunkHolder.ChunkLoadingFailure>>> var6,
-      List<ChunkAccess> var7,
-      boolean var8
+      List<ChunkAccess> var7
    ) {
-      ChunkAccess var9 = (ChunkAccess)var7.get(var7.size() / 2);
-      ProfiledDuration var10 = JvmProfiler.INSTANCE.onChunkGenerate(var9.getPos(), var2.dimension(), this.name);
-      CompletableFuture var11 = this.generationTask.doWork(this, var1, var2, var3, var4, var5, var6, var7, var9, var8);
-      return var10 != null ? var11.thenApply(var1x -> {
-         var10.finish();
-         return var1x;
-      }) : var11;
+      ChunkAccess var8 = (ChunkAccess)var7.get(var7.size() / 2);
+      ProfiledDuration var9 = JvmProfiler.INSTANCE.onChunkGenerate(var8.getPos(), var2.dimension(), this.toString());
+      return this.generationTask.doWork(this, var1, var2, var3, var4, var5, var6, var7, var8).thenApply(var3x -> {
+         if (var8 instanceof ProtoChunk var4x && !var4x.getStatus().isOrAfter(this)) {
+            var4x.setStatus(this);
+         }
+
+         if (var9 != null) {
+            var9.finish();
+         }
+
+         return var3x;
+      });
    }
 
    public CompletableFuture<Either<ChunkAccess, ChunkHolder.ChunkLoadingFailure>> load(
@@ -385,6 +348,10 @@ public class ChunkStatus {
 
    public int getRange() {
       return this.range;
+   }
+
+   public boolean hasLoadDependencies() {
+      return this.hasLoadDependencies;
    }
 
    public ChunkStatus.ChunkType getChunkType() {
@@ -426,8 +393,7 @@ public class ChunkStatus {
          ThreadedLevelLightEngine var6,
          Function<ChunkAccess, CompletableFuture<Either<ChunkAccess, ChunkHolder.ChunkLoadingFailure>>> var7,
          List<ChunkAccess> var8,
-         ChunkAccess var9,
-         boolean var10
+         ChunkAccess var9
       );
    }
 
@@ -443,8 +409,6 @@ public class ChunkStatus {
    }
 
    interface SimpleGenerationTask extends ChunkStatus.GenerationTask {
-      // $QF: Could not properly define all variable types!
-      // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       default CompletableFuture<Either<ChunkAccess, ChunkHolder.ChunkLoadingFailure>> doWork(
          ChunkStatus var1,
@@ -455,16 +419,9 @@ public class ChunkStatus {
          ThreadedLevelLightEngine var6,
          Function<ChunkAccess, CompletableFuture<Either<ChunkAccess, ChunkHolder.ChunkLoadingFailure>>> var7,
          List<ChunkAccess> var8,
-         ChunkAccess var9,
-         boolean var10
+         ChunkAccess var9
       ) {
-         if (var10 || !var9.getStatus().isOrAfter(var1)) {
-            this.doWork(var1, var3, var4, var8, var9);
-            if (var9 instanceof ProtoChunk var11) {
-               var11.setStatus(var1);
-            }
-         }
-
+         this.doWork(var1, var3, var4, var8, var9);
          return CompletableFuture.completedFuture(Either.left(var9));
       }
 

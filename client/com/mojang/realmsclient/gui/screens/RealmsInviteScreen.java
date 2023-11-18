@@ -1,11 +1,13 @@
 package com.mojang.realmsclient.gui.screens;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.client.RealmsClient;
 import com.mojang.realmsclient.dto.RealmsServer;
+import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.client.GameNarrator;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
@@ -16,14 +18,18 @@ import org.slf4j.Logger;
 
 public class RealmsInviteScreen extends RealmsScreen {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final Component NAME_LABEL = Component.translatable("mco.configure.world.invite.profile.name");
-   private static final Component NO_SUCH_PLAYER_ERROR_TEXT = Component.translatable("mco.configure.world.players.error");
+   private static final Component NAME_LABEL = Component.translatable("mco.configure.world.invite.profile.name").withStyle(var0 -> var0.withColor(-6250336));
+   private static final Component INVITING_PLAYER_TEXT = Component.translatable("mco.configure.world.players.inviting")
+      .withStyle(var0 -> var0.withColor(-6250336));
+   private static final Component NO_SUCH_PLAYER_ERROR_TEXT = Component.translatable("mco.configure.world.players.error")
+      .withStyle(var0 -> var0.withColor(-65536));
    private EditBox profileName;
+   private Button inviteButton;
    private final RealmsServer serverData;
    private final RealmsConfigureWorldScreen configureScreen;
    private final Screen lastScreen;
    @Nullable
-   private Component errorMsg;
+   private Component message;
 
    public RealmsInviteScreen(RealmsConfigureWorldScreen var1, Screen var2, RealmsServer var3) {
       super(GameNarrator.NO_TITLE);
@@ -44,7 +50,7 @@ public class RealmsInviteScreen extends RealmsScreen {
       );
       this.addWidget(this.profileName);
       this.setInitialFocus(this.profileName);
-      this.addRenderableWidget(
+      this.inviteButton = this.addRenderableWidget(
          Button.builder(Component.translatable("mco.configure.world.buttons.invite"), var1 -> this.onInvite())
             .bounds(this.width / 2 - 100, row(10), 200, 20)
             .build()
@@ -55,27 +61,37 @@ public class RealmsInviteScreen extends RealmsScreen {
    }
 
    private void onInvite() {
-      RealmsClient var1 = RealmsClient.create();
-      if (this.profileName.getValue() != null && !this.profileName.getValue().isEmpty()) {
-         try {
-            RealmsServer var2 = var1.invite(this.serverData.id, this.profileName.getValue().trim());
-            if (var2 != null) {
-               this.serverData.players = var2.players;
+      if (Util.isBlank(this.profileName.getValue())) {
+         this.showMessage(NO_SUCH_PLAYER_ERROR_TEXT);
+      } else {
+         long var1 = this.serverData.id;
+         String var3 = this.profileName.getValue().trim();
+         this.inviteButton.active = false;
+         this.profileName.setEditable(false);
+         this.showMessage(INVITING_PLAYER_TEXT);
+         CompletableFuture.<RealmsServer>supplyAsync(() -> {
+            try {
+               return RealmsClient.create().invite(var1, var3);
+            } catch (Exception var4) {
+               LOGGER.error("Couldn't invite user");
+               return null;
+            }
+         }, Util.ioPool()).thenAcceptAsync(var1x -> {
+            if (var1x != null) {
+               this.serverData.players = var1x.players;
                this.minecraft.setScreen(new RealmsPlayerScreen(this.configureScreen, this.serverData));
             } else {
-               this.showError(NO_SUCH_PLAYER_ERROR_TEXT);
+               this.showMessage(NO_SUCH_PLAYER_ERROR_TEXT);
             }
-         } catch (Exception var3) {
-            LOGGER.error("Couldn't invite user");
-            this.showError(NO_SUCH_PLAYER_ERROR_TEXT);
-         }
-      } else {
-         this.showError(NO_SUCH_PLAYER_ERROR_TEXT);
+
+            this.profileName.setEditable(true);
+            this.inviteButton.active = true;
+         }, this.screenExecutor);
       }
    }
 
-   private void showError(Component var1) {
-      this.errorMsg = var1;
+   private void showMessage(Component var1) {
+      this.message = var1;
       this.minecraft.getNarrator().sayNow(var1);
    }
 
@@ -90,11 +106,11 @@ public class RealmsInviteScreen extends RealmsScreen {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderBackground(var1);
-      this.font.draw(var1, NAME_LABEL, (float)(this.width / 2 - 100), (float)row(1), 10526880);
-      if (this.errorMsg != null) {
-         drawCenteredString(var1, this.font, this.errorMsg, this.width / 2, row(5), 16711680);
+      var1.drawString(this.font, NAME_LABEL, this.width / 2 - 100, row(1), -1, false);
+      if (this.message != null) {
+         var1.drawCenteredString(this.font, this.message, this.width / 2, row(5), -1);
       }
 
       this.profileName.render(var1, var2, var3, var4);

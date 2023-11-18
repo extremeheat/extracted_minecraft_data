@@ -41,11 +41,17 @@ public class FurnaceResultSlot extends Slot {
       this.checkTakeAchievements(var1);
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    protected void checkTakeAchievements(ItemStack var1) {
-      var1.onCraftedBy(this.player.level, this.player, this.removeCount);
-      if (this.player instanceof ServerPlayer && this.container instanceof AbstractFurnaceBlockEntity) {
-         ((AbstractFurnaceBlockEntity)this.container).awardUsedRecipesAndPopExperience((ServerPlayer)this.player);
+      var1.onCraftedBy(this.player.level(), this.player, this.removeCount);
+      Player var4 = this.player;
+      if (var4 instanceof ServerPlayer var2) {
+         Container var5 = this.container;
+         if (var5 instanceof AbstractFurnaceBlockEntity var3) {
+            var3.awardUsedRecipesAndPopExperience((ServerPlayer)var2);
+         }
       }
 
       this.removeCount = 0;

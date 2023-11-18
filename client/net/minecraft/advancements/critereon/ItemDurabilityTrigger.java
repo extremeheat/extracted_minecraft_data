@@ -17,7 +17,7 @@ public class ItemDurabilityTrigger extends SimpleCriterionTrigger<ItemDurability
       return ID;
    }
 
-   public ItemDurabilityTrigger.TriggerInstance createInstance(JsonObject var1, EntityPredicate.Composite var2, DeserializationContext var3) {
+   public ItemDurabilityTrigger.TriggerInstance createInstance(JsonObject var1, ContextAwarePredicate var2, DeserializationContext var3) {
       ItemPredicate var4 = ItemPredicate.fromJson(var1.get("item"));
       MinMaxBounds.Ints var5 = MinMaxBounds.Ints.fromJson(var1.get("durability"));
       MinMaxBounds.Ints var6 = MinMaxBounds.Ints.fromJson(var1.get("delta"));
@@ -33,7 +33,7 @@ public class ItemDurabilityTrigger extends SimpleCriterionTrigger<ItemDurability
       private final MinMaxBounds.Ints durability;
       private final MinMaxBounds.Ints delta;
 
-      public TriggerInstance(EntityPredicate.Composite var1, ItemPredicate var2, MinMaxBounds.Ints var3, MinMaxBounds.Ints var4) {
+      public TriggerInstance(ContextAwarePredicate var1, ItemPredicate var2, MinMaxBounds.Ints var3, MinMaxBounds.Ints var4) {
          super(ItemDurabilityTrigger.ID, var1);
          this.item = var2;
          this.durability = var3;
@@ -41,10 +41,10 @@ public class ItemDurabilityTrigger extends SimpleCriterionTrigger<ItemDurability
       }
 
       public static ItemDurabilityTrigger.TriggerInstance changedDurability(ItemPredicate var0, MinMaxBounds.Ints var1) {
-         return changedDurability(EntityPredicate.Composite.ANY, var0, var1);
+         return changedDurability(ContextAwarePredicate.ANY, var0, var1);
       }
 
-      public static ItemDurabilityTrigger.TriggerInstance changedDurability(EntityPredicate.Composite var0, ItemPredicate var1, MinMaxBounds.Ints var2) {
+      public static ItemDurabilityTrigger.TriggerInstance changedDurability(ContextAwarePredicate var0, ItemPredicate var1, MinMaxBounds.Ints var2) {
          return new ItemDurabilityTrigger.TriggerInstance(var0, var1, var2, MinMaxBounds.Ints.ANY);
       }
 

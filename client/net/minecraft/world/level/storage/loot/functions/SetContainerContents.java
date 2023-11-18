@@ -44,7 +44,7 @@ public class SetContainerContents extends LootItemConditionalFunction {
          return var1;
       } else {
          NonNullList var3 = NonNullList.create();
-         this.entries.forEach(var2x -> var2x.expand(var2, var2xx -> var2xx.createItemStack(LootTable.createStackSplitter(var2, var3::add), var2)));
+         this.entries.forEach(var2x -> var2x.expand(var2, var2xx -> var2xx.createItemStack(LootTable.createStackSplitter(var2.getLevel(), var3::add), var2)));
          CompoundTag var4 = new CompoundTag();
          ContainerHelper.saveAllItems(var4, var3);
          CompoundTag var5 = BlockItem.getBlockEntityData(var1);

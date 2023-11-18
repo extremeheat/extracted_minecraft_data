@@ -82,9 +82,9 @@ public abstract class SingleItemRecipe implements Recipe<Container> {
          String var3 = GsonHelper.getAsString(var2, "group", "");
          Ingredient var4;
          if (GsonHelper.isArrayNode(var2, "ingredient")) {
-            var4 = Ingredient.fromJson(GsonHelper.getAsJsonArray(var2, "ingredient"));
+            var4 = Ingredient.fromJson(GsonHelper.getAsJsonArray(var2, "ingredient"), false);
          } else {
-            var4 = Ingredient.fromJson(GsonHelper.getAsJsonObject(var2, "ingredient"));
+            var4 = Ingredient.fromJson(GsonHelper.getAsJsonObject(var2, "ingredient"), false);
          }
 
          String var5 = GsonHelper.getAsString(var2, "result");

@@ -39,14 +39,14 @@ public class BlockAgeProcessor extends StructureProcessor {
       StructureTemplate.StructureBlockInfo var5,
       StructurePlaceSettings var6
    ) {
-      RandomSource var7 = var6.getRandom(var5.pos);
-      BlockState var8 = var5.state;
-      BlockPos var9 = var5.pos;
+      RandomSource var7 = var6.getRandom(var5.pos());
+      BlockState var8 = var5.state();
+      BlockPos var9 = var5.pos();
       BlockState var10 = null;
       if (var8.is(Blocks.STONE_BRICKS) || var8.is(Blocks.STONE) || var8.is(Blocks.CHISELED_STONE_BRICKS)) {
          var10 = this.maybeReplaceFullStoneBlock(var7);
       } else if (var8.is(BlockTags.STAIRS)) {
-         var10 = this.maybeReplaceStairs(var7, var5.state);
+         var10 = this.maybeReplaceStairs(var7, var5.state());
       } else if (var8.is(BlockTags.SLABS)) {
          var10 = this.maybeReplaceSlab(var7);
       } else if (var8.is(BlockTags.WALLS)) {
@@ -55,7 +55,7 @@ public class BlockAgeProcessor extends StructureProcessor {
          var10 = this.maybeReplaceObsidian(var7);
       }
 
-      return var10 != null ? new StructureTemplate.StructureBlockInfo(var9, var10, var5.nbt) : var5;
+      return var10 != null ? new StructureTemplate.StructureBlockInfo(var9, var10, var5.nbt()) : var5;
    }
 
    @Nullable

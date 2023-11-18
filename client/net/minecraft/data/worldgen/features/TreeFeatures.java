@@ -21,6 +21,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.HugeMushroomBlock;
 import net.minecraft.world.level.block.MangrovePropaguleBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.blockpredicates.BlockPredicate;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.HugeFungusConfiguration;
@@ -164,6 +165,65 @@ public class TreeFeatures {
 
    public static void bootstrap(BootstapContext<ConfiguredFeature<?, ?>> var0) {
       HolderGetter var1 = var0.lookup(Registries.BLOCK);
+      BlockPredicate var2 = BlockPredicate.matchesBlocks(
+         Blocks.OAK_SAPLING,
+         Blocks.SPRUCE_SAPLING,
+         Blocks.BIRCH_SAPLING,
+         Blocks.JUNGLE_SAPLING,
+         Blocks.ACACIA_SAPLING,
+         Blocks.CHERRY_SAPLING,
+         Blocks.DARK_OAK_SAPLING,
+         Blocks.MANGROVE_PROPAGULE,
+         Blocks.DANDELION,
+         Blocks.TORCHFLOWER,
+         Blocks.POPPY,
+         Blocks.BLUE_ORCHID,
+         Blocks.ALLIUM,
+         Blocks.AZURE_BLUET,
+         Blocks.RED_TULIP,
+         Blocks.ORANGE_TULIP,
+         Blocks.WHITE_TULIP,
+         Blocks.PINK_TULIP,
+         Blocks.OXEYE_DAISY,
+         Blocks.CORNFLOWER,
+         Blocks.WITHER_ROSE,
+         Blocks.LILY_OF_THE_VALLEY,
+         Blocks.BROWN_MUSHROOM,
+         Blocks.RED_MUSHROOM,
+         Blocks.WHEAT,
+         Blocks.SUGAR_CANE,
+         Blocks.ATTACHED_PUMPKIN_STEM,
+         Blocks.ATTACHED_MELON_STEM,
+         Blocks.PUMPKIN_STEM,
+         Blocks.MELON_STEM,
+         Blocks.LILY_PAD,
+         Blocks.NETHER_WART,
+         Blocks.COCOA,
+         Blocks.CARROTS,
+         Blocks.POTATOES,
+         Blocks.CHORUS_PLANT,
+         Blocks.CHORUS_FLOWER,
+         Blocks.TORCHFLOWER_CROP,
+         Blocks.PITCHER_CROP,
+         Blocks.BEETROOTS,
+         Blocks.SWEET_BERRY_BUSH,
+         Blocks.WARPED_FUNGUS,
+         Blocks.CRIMSON_FUNGUS,
+         Blocks.WEEPING_VINES,
+         Blocks.WEEPING_VINES_PLANT,
+         Blocks.TWISTING_VINES,
+         Blocks.TWISTING_VINES_PLANT,
+         Blocks.CAVE_VINES,
+         Blocks.CAVE_VINES_PLANT,
+         Blocks.SPORE_BLOSSOM,
+         Blocks.AZALEA,
+         Blocks.FLOWERING_AZALEA,
+         Blocks.MOSS_CARPET,
+         Blocks.PINK_PETALS,
+         Blocks.BIG_DRIPLEAF,
+         Blocks.BIG_DRIPLEAF_STEM,
+         Blocks.SMALL_DRIPLEAF
+      );
       FeatureUtils.register(
          var0,
          CRIMSON_FUNGUS,
@@ -173,6 +233,7 @@ public class TreeFeatures {
             Blocks.CRIMSON_STEM.defaultBlockState(),
             Blocks.NETHER_WART_BLOCK.defaultBlockState(),
             Blocks.SHROOMLIGHT.defaultBlockState(),
+            var2,
             false
          )
       );
@@ -185,6 +246,7 @@ public class TreeFeatures {
             Blocks.CRIMSON_STEM.defaultBlockState(),
             Blocks.NETHER_WART_BLOCK.defaultBlockState(),
             Blocks.SHROOMLIGHT.defaultBlockState(),
+            var2,
             true
          )
       );
@@ -197,6 +259,7 @@ public class TreeFeatures {
             Blocks.WARPED_STEM.defaultBlockState(),
             Blocks.WARPED_WART_BLOCK.defaultBlockState(),
             Blocks.SHROOMLIGHT.defaultBlockState(),
+            var2,
             false
          )
       );
@@ -209,6 +272,7 @@ public class TreeFeatures {
             Blocks.WARPED_STEM.defaultBlockState(),
             Blocks.WARPED_WART_BLOCK.defaultBlockState(),
             Blocks.SHROOMLIGHT.defaultBlockState(),
+            var2,
             true
          )
       );
@@ -247,11 +311,11 @@ public class TreeFeatures {
             2
          )
       );
-      BeehiveDecorator var2 = new BeehiveDecorator(0.002F);
-      BeehiveDecorator var3 = new BeehiveDecorator(0.01F);
-      BeehiveDecorator var4 = new BeehiveDecorator(0.02F);
-      BeehiveDecorator var5 = new BeehiveDecorator(0.05F);
-      BeehiveDecorator var6 = new BeehiveDecorator(1.0F);
+      BeehiveDecorator var3 = new BeehiveDecorator(0.002F);
+      BeehiveDecorator var4 = new BeehiveDecorator(0.01F);
+      BeehiveDecorator var5 = new BeehiveDecorator(0.02F);
+      BeehiveDecorator var6 = new BeehiveDecorator(0.05F);
+      BeehiveDecorator var7 = new BeehiveDecorator(1.0F);
       FeatureUtils.register(var0, OAK, Feature.TREE, createOak().build());
       FeatureUtils.register(
          var0,
@@ -283,7 +347,7 @@ public class TreeFeatures {
             .build()
       );
       FeatureUtils.register(var0, CHERRY, Feature.TREE, cherry().build());
-      FeatureUtils.register(var0, CHERRY_BEES_005, Feature.TREE, cherry().decorators(List.of(var5)).build());
+      FeatureUtils.register(var0, CHERRY_BEES_005, Feature.TREE, cherry().decorators(List.of(var6)).build());
       FeatureUtils.register(
          var0,
          SPRUCE,
@@ -365,8 +429,8 @@ public class TreeFeatures {
             .decorators(ImmutableList.of(new AlterGroundDecorator(BlockStateProvider.simple(Blocks.PODZOL))))
             .build()
       );
-      FeatureUtils.register(var0, SUPER_BIRCH_BEES_0002, Feature.TREE, createSuperBirch().decorators(ImmutableList.of(var2)).build());
-      FeatureUtils.register(var0, SUPER_BIRCH_BEES, Feature.TREE, createSuperBirch().decorators(ImmutableList.of(var6)).build());
+      FeatureUtils.register(var0, SUPER_BIRCH_BEES_0002, Feature.TREE, createSuperBirch().decorators(ImmutableList.of(var3)).build());
+      FeatureUtils.register(var0, SUPER_BIRCH_BEES, Feature.TREE, createSuperBirch().decorators(ImmutableList.of(var7)).build());
       FeatureUtils.register(
          var0,
          SWAMP_OAK,
@@ -450,7 +514,7 @@ public class TreeFeatures {
                      2,
                      List.of(Direction.DOWN)
                   ),
-                  var3
+                  var4
                )
             )
             .ignoreVines()
@@ -501,21 +565,21 @@ public class TreeFeatures {
                      2,
                      List.of(Direction.DOWN)
                   ),
-                  var3
+                  var4
                )
             )
             .ignoreVines()
             .build()
       );
-      FeatureUtils.register(var0, OAK_BEES_0002, Feature.TREE, createOak().decorators(List.of(var2)).build());
-      FeatureUtils.register(var0, OAK_BEES_002, Feature.TREE, createOak().decorators(List.of(var4)).build());
-      FeatureUtils.register(var0, OAK_BEES_005, Feature.TREE, createOak().decorators(List.of(var5)).build());
-      FeatureUtils.register(var0, BIRCH_BEES_0002, Feature.TREE, createBirch().decorators(List.of(var2)).build());
-      FeatureUtils.register(var0, BIRCH_BEES_002, Feature.TREE, createBirch().decorators(List.of(var4)).build());
-      FeatureUtils.register(var0, BIRCH_BEES_005, Feature.TREE, createBirch().decorators(List.of(var5)).build());
-      FeatureUtils.register(var0, FANCY_OAK_BEES_0002, Feature.TREE, createFancyOak().decorators(List.of(var2)).build());
-      FeatureUtils.register(var0, FANCY_OAK_BEES_002, Feature.TREE, createFancyOak().decorators(List.of(var4)).build());
-      FeatureUtils.register(var0, FANCY_OAK_BEES_005, Feature.TREE, createFancyOak().decorators(List.of(var5)).build());
-      FeatureUtils.register(var0, FANCY_OAK_BEES, Feature.TREE, createFancyOak().decorators(List.of(var6)).build());
+      FeatureUtils.register(var0, OAK_BEES_0002, Feature.TREE, createOak().decorators(List.of(var3)).build());
+      FeatureUtils.register(var0, OAK_BEES_002, Feature.TREE, createOak().decorators(List.of(var5)).build());
+      FeatureUtils.register(var0, OAK_BEES_005, Feature.TREE, createOak().decorators(List.of(var6)).build());
+      FeatureUtils.register(var0, BIRCH_BEES_0002, Feature.TREE, createBirch().decorators(List.of(var3)).build());
+      FeatureUtils.register(var0, BIRCH_BEES_002, Feature.TREE, createBirch().decorators(List.of(var5)).build());
+      FeatureUtils.register(var0, BIRCH_BEES_005, Feature.TREE, createBirch().decorators(List.of(var6)).build());
+      FeatureUtils.register(var0, FANCY_OAK_BEES_0002, Feature.TREE, createFancyOak().decorators(List.of(var3)).build());
+      FeatureUtils.register(var0, FANCY_OAK_BEES_002, Feature.TREE, createFancyOak().decorators(List.of(var5)).build());
+      FeatureUtils.register(var0, FANCY_OAK_BEES_005, Feature.TREE, createFancyOak().decorators(List.of(var6)).build());
+      FeatureUtils.register(var0, FANCY_OAK_BEES, Feature.TREE, createFancyOak().decorators(List.of(var7)).build());
    }
 }

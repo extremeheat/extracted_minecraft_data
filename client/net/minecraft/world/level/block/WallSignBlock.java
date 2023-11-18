@@ -18,6 +18,7 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
@@ -56,7 +57,7 @@ public class WallSignBlock extends SignBlock {
 
    @Override
    public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      return var2.getBlockState(var3.relative(var1.getValue(FACING).getOpposite())).getMaterial().isSolid();
+      return var2.getBlockState(var3.relative(var1.getValue(FACING).getOpposite())).isSolid();
    }
 
    @Nullable
@@ -86,6 +87,17 @@ public class WallSignBlock extends SignBlock {
       return var2.getOpposite() == var1.getValue(FACING) && !var1.canSurvive(var4, var5)
          ? Blocks.AIR.defaultBlockState()
          : super.updateShape(var1, var2, var3, var4, var5, var6);
+   }
+
+   @Override
+   public float getYRotationDegrees(BlockState var1) {
+      return var1.getValue(FACING).toYRot();
+   }
+
+   @Override
+   public Vec3 getSignHitboxCenterPosition(BlockState var1) {
+      VoxelShape var2 = AABBS.get(var1.getValue(FACING));
+      return var2.bounds().getCenter();
    }
 
    @Override

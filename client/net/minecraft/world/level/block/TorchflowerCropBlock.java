@@ -17,11 +17,10 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class TorchflowerCropBlock extends CropBlock {
    public static final int MAX_AGE = 2;
-   public static final IntegerProperty AGE = BlockStateProperties.AGE_2;
+   public static final IntegerProperty AGE = BlockStateProperties.AGE_1;
    private static final float AABB_OFFSET = 3.0F;
-   private static final VoxelShape[] SHAPE_BY_AGE = new VoxelShape[]{
-      Block.box(5.0, 0.0, 5.0, 11.0, 10.0, 11.0), Block.box(5.0, 0.0, 5.0, 11.0, 10.0, 11.0), Block.box(5.0, 0.0, 5.0, 11.0, 10.0, 11.0)
-   };
+   private static final VoxelShape[] SHAPE_BY_AGE = new VoxelShape[]{Block.box(5.0, 0.0, 5.0, 11.0, 6.0, 11.0), Block.box(5.0, 0.0, 5.0, 11.0, 10.0, 11.0)};
+   private static final int BONEMEAL_INCREASE = 1;
 
    public TorchflowerCropBlock(BlockBehaviour.Properties var1) {
       super(var1);
@@ -34,11 +33,11 @@ public class TorchflowerCropBlock extends CropBlock {
 
    @Override
    public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return SHAPE_BY_AGE[var1.getValue(this.getAgeProperty())];
+      return SHAPE_BY_AGE[this.getAge(var1)];
    }
 
    @Override
-   public IntegerProperty getAgeProperty() {
+   protected IntegerProperty getAgeProperty() {
       return AGE;
    }
 
@@ -66,6 +65,6 @@ public class TorchflowerCropBlock extends CropBlock {
 
    @Override
    protected int getBonemealAgeIncrease(Level var1) {
-      return super.getBonemealAgeIncrease(var1) / 3;
+      return 1;
    }
 }

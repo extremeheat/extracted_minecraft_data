@@ -2,12 +2,10 @@ package net.minecraft.world.level.chunk;
 
 import com.google.common.collect.Lists;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
-import it.unimi.dsi.fastutil.shorts.ShortList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -30,6 +28,7 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.level.lighting.LevelLightEngine;
+import net.minecraft.world.level.lighting.LightEngine;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
@@ -42,7 +41,6 @@ public class ProtoChunk extends ChunkAccess {
    private volatile LevelLightEngine lightEngine;
    private volatile ChunkStatus status = ChunkStatus.EMPTY;
    private final List<CompoundTag> entities = Lists.newArrayList();
-   private final List<BlockPos> lights = Lists.newArrayList();
    private final Map<GenerationStep.Carving, CarvingMask> carvingMasks = new Object2ObjectArrayMap();
    @Nullable
    private BelowZeroRetrogen belowZeroRetrogen;
@@ -105,29 +103,6 @@ public class ProtoChunk extends ChunkAccess {
       }
    }
 
-   @Override
-   public Stream<BlockPos> getLights() {
-      return this.lights.stream();
-   }
-
-   public ShortList[] getPackedLights() {
-      ShortList[] var1 = new ShortList[this.getSectionsCount()];
-
-      for(BlockPos var3 : this.lights) {
-         ChunkAccess.getOrCreateOffsetList(var1, this.getSectionIndex(var3.getY())).add(packOffsetCoordinates(var3));
-      }
-
-      return var1;
-   }
-
-   public void addLight(short var1, int var2) {
-      this.addLight(unpackOffsetCoordinates(var1, this.getSectionYFromSectionIndex(var2), this.chunkPos));
-   }
-
-   public void addLight(BlockPos var1) {
-      this.lights.add(var1.immutable());
-   }
-
    @Nullable
    @Override
    public BlockState setBlockState(BlockPos var1, BlockState var2, boolean var3) {
@@ -136,49 +111,50 @@ public class ProtoChunk extends ChunkAccess {
       int var6 = var1.getZ();
       if (var5 >= this.getMinBuildHeight() && var5 < this.getMaxBuildHeight()) {
          int var7 = this.getSectionIndex(var5);
-         if (this.sections[var7].hasOnlyAir() && var2.is(Blocks.AIR)) {
+         LevelChunkSection var8 = this.getSection(var7);
+         boolean var9 = var8.hasOnlyAir();
+         if (var9 && var2.is(Blocks.AIR)) {
             return var2;
          } else {
-            if (var2.getLightEmission() > 0) {
-               this.lights.add(new BlockPos((var4 & 15) + this.getPos().getMinBlockX(), var5, (var6 & 15) + this.getPos().getMinBlockZ()));
-            }
+            int var10 = SectionPos.sectionRelative(var4);
+            int var11 = SectionPos.sectionRelative(var5);
+            int var12 = SectionPos.sectionRelative(var6);
+            BlockState var13 = var8.setBlockState(var10, var11, var12, var2);
+            if (this.status.isOrAfter(ChunkStatus.INITIALIZE_LIGHT)) {
+               boolean var14 = var8.hasOnlyAir();
+               if (var14 != var9) {
+                  this.lightEngine.updateSectionStatus(var1, var14);
+               }
 
-            LevelChunkSection var8 = this.getSection(var7);
-            BlockState var9 = var8.setBlockState(var4 & 15, var5 & 15, var6 & 15, var2);
-            if (this.status.isOrAfter(ChunkStatus.FEATURES)
-               && var2 != var9
-               && (
-                  var2.getLightBlock(this, var1) != var9.getLightBlock(this, var1)
-                     || var2.getLightEmission() != var9.getLightEmission()
-                     || var2.useShapeForLightOcclusion()
-                     || var9.useShapeForLightOcclusion()
-               )) {
-               this.lightEngine.checkBlock(var1);
-            }
-
-            EnumSet var10 = this.getStatus().heightmapsAfter();
-            EnumSet var11 = null;
-
-            for(Heightmap.Types var13 : var10) {
-               Heightmap var14 = this.heightmaps.get(var13);
-               if (var14 == null) {
-                  if (var11 == null) {
-                     var11 = EnumSet.noneOf(Heightmap.Types.class);
-                  }
-
-                  var11.add(var13);
+               if (LightEngine.hasDifferentLightProperties(this, var1, var13, var2)) {
+                  this.skyLightSources.update(this, var10, var5, var12);
+                  this.lightEngine.checkBlock(var1);
                }
             }
 
-            if (var11 != null) {
-               Heightmap.primeHeightmaps(this, var11);
+            EnumSet var19 = this.getStatus().heightmapsAfter();
+            EnumSet var15 = null;
+
+            for(Heightmap.Types var17 : var19) {
+               Heightmap var18 = this.heightmaps.get(var17);
+               if (var18 == null) {
+                  if (var15 == null) {
+                     var15 = EnumSet.noneOf(Heightmap.Types.class);
+                  }
+
+                  var15.add(var17);
+               }
             }
 
-            for(Heightmap.Types var16 : var10) {
-               this.heightmaps.get(var16).update(var4 & 15, var5, var6 & 15, var2);
+            if (var15 != null) {
+               Heightmap.primeHeightmaps(this, var15);
             }
 
-            return var9;
+            for(Heightmap.Types var21 : var19) {
+               this.heightmaps.get(var21).update(var10, var5, var12, var2);
+            }
+
+            return var13;
          }
       } else {
          return Blocks.VOID_AIR.defaultBlockState();
@@ -247,11 +223,10 @@ public class ProtoChunk extends ChunkAccess {
 
    @Override
    public Holder<Biome> getNoiseBiome(int var1, int var2, int var3) {
-      if (!this.getStatus().isOrAfter(ChunkStatus.BIOMES)
-         && (this.belowZeroRetrogen == null || !this.belowZeroRetrogen.targetStatus().isOrAfter(ChunkStatus.BIOMES))) {
-         throw new IllegalStateException("Asking for biomes before we have biomes");
-      } else {
+      if (this.getHighestGeneratedStatus().isOrAfter(ChunkStatus.BIOMES)) {
          return super.getNoiseBiome(var1, var2, var3);
+      } else {
+         throw new IllegalStateException("Asking for biomes before we have biomes");
       }
    }
 

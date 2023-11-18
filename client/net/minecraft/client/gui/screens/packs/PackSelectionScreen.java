@@ -3,7 +3,6 @@ package net.minecraft.client.gui.screens.packs;
 import com.google.common.collect.Maps;
 import com.google.common.hash.Hashing;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.logging.LogUtils;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,6 +24,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ComponentPath;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.toasts.SystemToast;
@@ -158,12 +158,12 @@ public class PackSelectionScreen extends Screen {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderDirtBackground(var1);
       this.availablePackList.render(var1, var2, var3, var4);
       this.selectedPackList.render(var1, var2, var3, var4);
-      drawCenteredString(var1, this.font, this.title, this.width / 2, 8, 16777215);
-      drawCenteredString(var1, this.font, DRAG_AND_DROP, this.width / 2, 20, 16777215);
+      var1.drawCenteredString(this.font, this.title, this.width / 2, 8, 16777215);
+      var1.drawCenteredString(this.font, DRAG_AND_DROP, this.width / 2, 20, 16777215);
       super.render(var1, var2, var3, var4);
    }
 

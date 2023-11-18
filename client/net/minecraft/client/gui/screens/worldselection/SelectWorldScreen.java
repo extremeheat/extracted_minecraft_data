@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.screens.worldselection;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.logging.LogUtils;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
@@ -24,11 +24,6 @@ public class SelectWorldScreen extends Screen {
    public SelectWorldScreen(Screen var1) {
       super(Component.translatable("selectWorld.title"));
       this.lastScreen = var1;
-   }
-
-   @Override
-   public boolean mouseScrolled(double var1, double var3, double var5) {
-      return super.mouseScrolled(var1, var3, var5);
    }
 
    @Override
@@ -99,10 +94,10 @@ public class SelectWorldScreen extends Screen {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.list.render(var1, var2, var3, var4);
       this.searchBox.render(var1, var2, var3, var4);
-      drawCenteredString(var1, this.font, this.title, this.width / 2, 8, 16777215);
+      var1.drawCenteredString(this.font, this.title, this.width / 2, 8, 16777215);
       super.render(var1, var2, var3, var4);
    }
 

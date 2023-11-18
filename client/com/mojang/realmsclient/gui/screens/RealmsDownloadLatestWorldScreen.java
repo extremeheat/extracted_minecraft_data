@@ -2,7 +2,6 @@ package com.mojang.realmsclient.gui.screens;
 
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.RateLimiter;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.Unit;
 import com.mojang.realmsclient.client.FileDownload;
@@ -15,6 +14,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.GameNarrator;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
@@ -86,7 +86,7 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
                this.checked = true;
                this.minecraft.setScreen(this);
                this.downloadSave();
-            }, RealmsLongConfirmationScreen.Type.Warning, var1, var2, false));
+            }, RealmsLongConfirmationScreen.Type.WARNING, var1, var2, false));
          } else {
             this.downloadSave();
          }
@@ -144,10 +144,10 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderBackground(var1);
-      drawCenteredString(var1, this.font, this.downloadTitle, this.width / 2, 20, 16777215);
-      drawCenteredString(var1, this.font, this.status, this.width / 2, 50, 16777215);
+      var1.drawCenteredString(this.font, this.downloadTitle, this.width / 2, 20, 16777215);
+      var1.drawCenteredString(this.font, this.status, this.width / 2, 50, 16777215);
       if (this.showDots) {
          this.drawDots(var1);
       }
@@ -158,32 +158,32 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
       }
 
       if (this.errorMessage != null) {
-         drawCenteredString(var1, this.font, this.errorMessage, this.width / 2, 110, 16711680);
+         var1.drawCenteredString(this.font, this.errorMessage, this.width / 2, 110, 16711680);
       }
 
       super.render(var1, var2, var3, var4);
    }
 
-   private void drawDots(PoseStack var1) {
+   private void drawDots(GuiGraphics var1) {
       int var2 = this.font.width(this.status);
       if (this.animTick % 10 == 0) {
          ++this.dotIndex;
       }
 
-      this.font.draw(var1, DOTS[this.dotIndex % DOTS.length], (float)(this.width / 2 + var2 / 2 + 5), 50.0F, 16777215);
+      var1.drawString(this.font, DOTS[this.dotIndex % DOTS.length], this.width / 2 + var2 / 2 + 5, 50, 16777215, false);
    }
 
-   private void drawProgressBar(PoseStack var1) {
+   private void drawProgressBar(GuiGraphics var1) {
       double var2 = Math.min((double)this.downloadStatus.bytesWritten / (double)this.downloadStatus.totalBytes, 1.0);
       this.progress = String.format(Locale.ROOT, "%.1f", var2 * 100.0);
       int var4 = (this.width - 200) / 2;
       int var5 = var4 + (int)Math.round(200.0 * var2);
-      fill(var1, var4 - 1, 79, var5 + 1, 175, -2501934);
-      fill(var1, var4, 80, var5, 95, -8355712);
-      drawCenteredString(var1, this.font, this.progress + " %", this.width / 2, 84, 16777215);
+      var1.fill(var4 - 1, 79, var5 + 1, 96, -2501934);
+      var1.fill(var4, 80, var5, 95, -8355712);
+      var1.drawCenteredString(this.font, Component.translatable("mco.download.percent", this.progress), this.width / 2, 84, 16777215);
    }
 
-   private void drawDownloadSpeed(PoseStack var1) {
+   private void drawDownloadSpeed(GuiGraphics var1) {
       if (this.animTick % 20 == 0) {
          if (this.previousWrittenBytes != null) {
             long var2 = Util.getMillis() - this.previousTimeSnapshot;
@@ -202,11 +202,12 @@ public class RealmsDownloadLatestWorldScreen extends RealmsScreen {
       }
    }
 
-   private void drawDownloadSpeed0(PoseStack var1, long var2) {
+   private void drawDownloadSpeed0(GuiGraphics var1, long var2) {
       if (var2 > 0L) {
          int var4 = this.font.width(this.progress);
-         String var5 = "(" + Unit.humanReadable(var2) + "/s)";
-         this.font.draw(var1, var5, (float)(this.width / 2 + var4 / 2 + 15), 84.0F, 16777215);
+         var1.drawString(
+            this.font, Component.translatable("mco.download.speed", Unit.humanReadable(var2)), this.width / 2 + var4 / 2 + 15, 84, 16777215, false
+         );
       }
    }
 

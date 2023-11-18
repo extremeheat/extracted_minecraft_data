@@ -153,7 +153,7 @@ public class MultiPlayerGameMode {
                   var4.attack(this.minecraft.level, var1, this.minecraft.player);
                }
 
-               if (var5 && var4.getDestroyProgress(this.minecraft.player, this.minecraft.player.level, var1) >= 1.0F) {
+               if (var5 && var4.getDestroyProgress(this.minecraft.player, this.minecraft.player.level(), var1) >= 1.0F) {
                   this.destroyBlock(var1);
                } else {
                   this.isDestroying = true;
@@ -161,7 +161,7 @@ public class MultiPlayerGameMode {
                   this.destroyingItem = this.minecraft.player.getMainHandItem();
                   this.destroyProgress = 0.0F;
                   this.destroyTicks = 0.0F;
-                  this.minecraft.level.destroyBlockProgress(this.minecraft.player.getId(), this.destroyBlockPos, (int)(this.destroyProgress * 10.0F) - 1);
+                  this.minecraft.level.destroyBlockProgress(this.minecraft.player.getId(), this.destroyBlockPos, this.getDestroyStage());
                }
 
                return new ServerboundPlayerActionPacket(ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK, var1, var2, var4x);
@@ -205,7 +205,7 @@ public class MultiPlayerGameMode {
             this.isDestroying = false;
             return false;
          } else {
-            this.destroyProgress += var3.getDestroyProgress(this.minecraft.player, this.minecraft.player.level, var1);
+            this.destroyProgress += var3.getDestroyProgress(this.minecraft.player, this.minecraft.player.level(), var1);
             if (this.destroyTicks % 4.0F == 0.0F) {
                SoundType var4 = var3.getSoundType();
                this.minecraft
@@ -235,7 +235,7 @@ public class MultiPlayerGameMode {
                this.destroyDelay = 5;
             }
 
-            this.minecraft.level.destroyBlockProgress(this.minecraft.player.getId(), this.destroyBlockPos, (int)(this.destroyProgress * 10.0F) - 1);
+            this.minecraft.level.destroyBlockProgress(this.minecraft.player.getId(), this.destroyBlockPos, this.getDestroyStage());
             return true;
          }
       } else {
@@ -266,14 +266,7 @@ public class MultiPlayerGameMode {
 
    private boolean sameDestroyTarget(BlockPos var1) {
       ItemStack var2 = this.minecraft.player.getMainHandItem();
-      boolean var3 = this.destroyingItem.isEmpty() && var2.isEmpty();
-      if (!this.destroyingItem.isEmpty() && !var2.isEmpty()) {
-         var3 = var2.is(this.destroyingItem.getItem())
-            && ItemStack.tagMatches(var2, this.destroyingItem)
-            && (var2.isDamageableItem() || var2.getDamageValue() == this.destroyingItem.getDamageValue());
-      }
-
-      return var1.equals(this.destroyBlockPos) && var3;
+      return var1.equals(this.destroyBlockPos) && ItemStack.isSameItemSameTags(var2, this.destroyingItem);
    }
 
    private void ensureHasSentCarriedItem() {
@@ -341,8 +334,7 @@ public class MultiPlayerGameMode {
          return InteractionResult.PASS;
       } else {
          this.ensureHasSentCarriedItem();
-         this.connection
-            .send(new ServerboundMovePlayerPacket.PosRot(var1.getX(), var1.getY(), var1.getZ(), var1.getYRot(), var1.getXRot(), var1.isOnGround()));
+         this.connection.send(new ServerboundMovePlayerPacket.PosRot(var1.getX(), var1.getY(), var1.getZ(), var1.getYRot(), var1.getXRot(), var1.onGround()));
          MutableObject var3 = new MutableObject();
          this.startPrediction(this.minecraft.level, var4 -> {
             ServerboundUseItemPacket var5 = new ServerboundUseItemPacket(var2, var4);
@@ -484,6 +476,10 @@ public class MultiPlayerGameMode {
 
    public boolean isDestroying() {
       return this.isDestroying;
+   }
+
+   public int getDestroyStage() {
+      return this.destroyProgress > 0.0F ? (int)(this.destroyProgress * 10.0F) : -1;
    }
 
    public void handlePickItem(int var1) {

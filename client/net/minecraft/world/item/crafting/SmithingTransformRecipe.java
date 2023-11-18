@@ -84,9 +84,9 @@ public class SmithingTransformRecipe implements SmithingRecipe {
       }
 
       public SmithingTransformRecipe fromJson(ResourceLocation var1, JsonObject var2) {
-         Ingredient var3 = Ingredient.fromJson(GsonHelper.getAsJsonObject(var2, "template"));
-         Ingredient var4 = Ingredient.fromJson(GsonHelper.getAsJsonObject(var2, "base"));
-         Ingredient var5 = Ingredient.fromJson(GsonHelper.getAsJsonObject(var2, "addition"));
+         Ingredient var3 = Ingredient.fromJson(GsonHelper.getNonNull(var2, "template"));
+         Ingredient var4 = Ingredient.fromJson(GsonHelper.getNonNull(var2, "base"));
+         Ingredient var5 = Ingredient.fromJson(GsonHelper.getNonNull(var2, "addition"));
          ItemStack var6 = ShapedRecipe.itemStackFromJson(GsonHelper.getAsJsonObject(var2, "result"));
          return new SmithingTransformRecipe(var1, var3, var4, var5, var6);
       }

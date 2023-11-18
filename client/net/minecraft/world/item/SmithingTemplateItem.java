@@ -8,7 +8,6 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.armortrim.TrimPattern;
 import net.minecraft.world.level.Level;
 
@@ -81,7 +80,7 @@ public class SmithingTemplateItem extends Item {
    public SmithingTemplateItem(
       Component var1, Component var2, Component var3, Component var4, Component var5, List<ResourceLocation> var6, List<ResourceLocation> var7
    ) {
-      super(new Item.Properties().requiredFeatures(FeatureFlags.UPDATE_1_20));
+      super(new Item.Properties());
       this.appliesTo = var1;
       this.ingredients = var2;
       this.upgradeDescription = var3;

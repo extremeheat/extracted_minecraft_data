@@ -43,15 +43,19 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 public class EntityRenderDispatcher implements ResourceManagerReloadListener {
    private static final RenderType SHADOW_RENDER_TYPE = RenderType.entityShadow(new ResourceLocation("textures/misc/shadow.png"));
+   private static final float MAX_SHADOW_RADIUS = 32.0F;
+   private static final float SHADOW_POWER_FALLOFF_Y = 0.5F;
    private Map<EntityType<?>, EntityRenderer<?>> renderers = ImmutableMap.of();
    private Map<String, EntityRenderer<? extends Player>> playerRenderers = ImmutableMap.of();
    public final TextureManager textureManager;
@@ -145,7 +149,7 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
             double var21 = this.distanceToSqr(var1.getX(), var1.getY(), var1.getZ());
             float var23 = (float)((1.0 - var21 / 256.0) * (double)var13.shadowStrength);
             if (var23 > 0.0F) {
-               renderShadow(var10, var11, var1, var23, var9, this.level, var13.shadowRadius);
+               renderShadow(var10, var11, var1, var23, var9, this.level, Math.min(var13.shadowRadius, 32.0F));
             }
          }
 
@@ -271,58 +275,78 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
          var7 = var6 * 0.5F;
       }
 
-      double var24 = Mth.lerp((double)var4, var2.xOld, var2.getX());
+      double var29 = Mth.lerp((double)var4, var2.xOld, var2.getX());
       double var10 = Mth.lerp((double)var4, var2.yOld, var2.getY());
       double var12 = Mth.lerp((double)var4, var2.zOld, var2.getZ());
-      int var14 = Mth.floor(var24 - (double)var7);
-      int var15 = Mth.floor(var24 + (double)var7);
-      int var16 = Mth.floor(var10 - (double)var7);
-      int var17 = Mth.floor(var10);
-      int var18 = Mth.floor(var12 - (double)var7);
-      int var19 = Mth.floor(var12 + (double)var7);
-      PoseStack.Pose var20 = var0.last();
-      VertexConsumer var21 = var1.getBuffer(SHADOW_RENDER_TYPE);
+      float var14 = Math.min(var3 / 0.5F, var7);
+      int var15 = Mth.floor(var29 - (double)var7);
+      int var16 = Mth.floor(var29 + (double)var7);
+      int var17 = Mth.floor(var10 - (double)var14);
+      int var18 = Mth.floor(var10);
+      int var19 = Mth.floor(var12 - (double)var7);
+      int var20 = Mth.floor(var12 + (double)var7);
+      PoseStack.Pose var21 = var0.last();
+      VertexConsumer var22 = var1.getBuffer(SHADOW_RENDER_TYPE);
+      BlockPos.MutableBlockPos var23 = new BlockPos.MutableBlockPos();
 
-      for(BlockPos var23 : BlockPos.betweenClosed(new BlockPos(var14, var16, var18), new BlockPos(var15, var17, var19))) {
-         renderBlockShadow(var20, var21, var5, var23, var24, var10, var12, var7, var3);
+      for(int var24 = var19; var24 <= var20; ++var24) {
+         for(int var25 = var15; var25 <= var16; ++var25) {
+            var23.set(var25, 0, var24);
+            ChunkAccess var26 = var5.getChunk(var23);
+
+            for(int var27 = var17; var27 <= var18; ++var27) {
+               var23.setY(var27);
+               float var28 = var3 - (float)(var10 - (double)var23.getY()) * 0.5F;
+               renderBlockShadow(var21, var22, var26, var5, var23, var29, var10, var12, var7, var28);
+            }
+         }
       }
    }
 
    private static void renderBlockShadow(
-      PoseStack.Pose var0, VertexConsumer var1, LevelReader var2, BlockPos var3, double var4, double var6, double var8, float var10, float var11
+      PoseStack.Pose var0,
+      VertexConsumer var1,
+      ChunkAccess var2,
+      LevelReader var3,
+      BlockPos var4,
+      double var5,
+      double var7,
+      double var9,
+      float var11,
+      float var12
    ) {
-      BlockPos var12 = var3.below();
-      BlockState var13 = var2.getBlockState(var12);
-      if (var13.getRenderShape() != RenderShape.INVISIBLE && var2.getMaxLocalRawBrightness(var3) > 3) {
-         if (var13.isCollisionShapeFullBlock(var2, var12)) {
-            VoxelShape var14 = var13.getShape(var2, var3.below());
-            if (!var14.isEmpty()) {
-               float var15 = LightTexture.getBrightness(var2.dimensionType(), var2.getMaxLocalRawBrightness(var3));
-               float var16 = (float)(((double)var11 - (var6 - (double)var3.getY()) / 2.0) * 0.5 * (double)var15);
-               if (var16 >= 0.0F) {
-                  if (var16 > 1.0F) {
-                     var16 = 1.0F;
+      BlockPos var13 = var4.below();
+      BlockState var14 = var2.getBlockState(var13);
+      if (var14.getRenderShape() != RenderShape.INVISIBLE && var3.getMaxLocalRawBrightness(var4) > 3) {
+         if (var14.isCollisionShapeFullBlock(var2, var13)) {
+            VoxelShape var15 = var14.getShape(var2, var13);
+            if (!var15.isEmpty()) {
+               float var16 = LightTexture.getBrightness(var3.dimensionType(), var3.getMaxLocalRawBrightness(var4));
+               float var17 = var12 * 0.5F * var16;
+               if (var17 >= 0.0F) {
+                  if (var17 > 1.0F) {
+                     var17 = 1.0F;
                   }
 
-                  AABB var17 = var14.bounds();
-                  double var18 = (double)var3.getX() + var17.minX;
-                  double var20 = (double)var3.getX() + var17.maxX;
-                  double var22 = (double)var3.getY() + var17.minY;
-                  double var24 = (double)var3.getZ() + var17.minZ;
-                  double var26 = (double)var3.getZ() + var17.maxZ;
-                  float var28 = (float)(var18 - var4);
-                  float var29 = (float)(var20 - var4);
-                  float var30 = (float)(var22 - var6);
-                  float var31 = (float)(var24 - var8);
-                  float var32 = (float)(var26 - var8);
-                  float var33 = -var28 / 2.0F / var10 + 0.5F;
-                  float var34 = -var29 / 2.0F / var10 + 0.5F;
-                  float var35 = -var31 / 2.0F / var10 + 0.5F;
-                  float var36 = -var32 / 2.0F / var10 + 0.5F;
-                  shadowVertex(var0, var1, var16, var28, var30, var31, var33, var35);
-                  shadowVertex(var0, var1, var16, var28, var30, var32, var33, var36);
-                  shadowVertex(var0, var1, var16, var29, var30, var32, var34, var36);
-                  shadowVertex(var0, var1, var16, var29, var30, var31, var34, var35);
+                  AABB var18 = var15.bounds();
+                  double var19 = (double)var4.getX() + var18.minX;
+                  double var21 = (double)var4.getX() + var18.maxX;
+                  double var23 = (double)var4.getY() + var18.minY;
+                  double var25 = (double)var4.getZ() + var18.minZ;
+                  double var27 = (double)var4.getZ() + var18.maxZ;
+                  float var29 = (float)(var19 - var5);
+                  float var30 = (float)(var21 - var5);
+                  float var31 = (float)(var23 - var7);
+                  float var32 = (float)(var25 - var9);
+                  float var33 = (float)(var27 - var9);
+                  float var34 = -var29 / 2.0F / var11 + 0.5F;
+                  float var35 = -var30 / 2.0F / var11 + 0.5F;
+                  float var36 = -var32 / 2.0F / var11 + 0.5F;
+                  float var37 = -var33 / 2.0F / var11 + 0.5F;
+                  shadowVertex(var0, var1, var17, var29, var31, var32, var34, var36);
+                  shadowVertex(var0, var1, var17, var29, var31, var33, var34, var37);
+                  shadowVertex(var0, var1, var17, var30, var31, var33, var35, var37);
+                  shadowVertex(var0, var1, var17, var30, var31, var32, var35, var36);
                }
             }
          }
@@ -330,13 +354,8 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
    }
 
    private static void shadowVertex(PoseStack.Pose var0, VertexConsumer var1, float var2, float var3, float var4, float var5, float var6, float var7) {
-      var1.vertex(var0.pose(), var3, var4, var5)
-         .color(1.0F, 1.0F, 1.0F, var2)
-         .uv(var6, var7)
-         .overlayCoords(OverlayTexture.NO_OVERLAY)
-         .uv2(15728880)
-         .normal(var0.normal(), 0.0F, 1.0F, 0.0F)
-         .endVertex();
+      Vector3f var8 = var0.pose().transformPosition(var3, var4, var5, new Vector3f());
+      var1.vertex(var8.x(), var8.y(), var8.z(), 1.0F, 1.0F, 1.0F, var2, var6, var7, OverlayTexture.NO_OVERLAY, 15728880, 0.0F, 1.0F, 0.0F);
    }
 
    public void setLevel(@Nullable Level var1) {

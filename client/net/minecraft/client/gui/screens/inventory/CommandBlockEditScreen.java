@@ -37,15 +37,11 @@ public class CommandBlockEditScreen extends AbstractCommandBlockEditScreen {
       super.init();
       this.modeButton = this.addRenderableWidget(
          CycleButton.<CommandBlockEntity.Mode>builder(var0 -> {
-               switch(var0) {
-                  case SEQUENCE:
-                     return Component.translatable("advMode.mode.sequence");
-                  case AUTO:
-                     return Component.translatable("advMode.mode.auto");
-                  case REDSTONE:
-                  default:
-                     return Component.translatable("advMode.mode.redstone");
-               }
+               return switch(var0) {
+                  case SEQUENCE -> Component.translatable("advMode.mode.sequence");
+                  case AUTO -> Component.translatable("advMode.mode.auto");
+                  case REDSTONE -> Component.translatable("advMode.mode.redstone");
+               };
             })
             .withValues(CommandBlockEntity.Mode.values())
             .displayOnlyValue()

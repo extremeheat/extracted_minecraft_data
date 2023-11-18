@@ -24,7 +24,6 @@ import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraft.world.level.material.Material;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -32,7 +31,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class WalkNodeEvaluator extends NodeEvaluator {
    public static final double SPACE_BETWEEN_WALL_POSTS = 0.5;
    private static final double DEFAULT_MOB_JUMP_HEIGHT = 1.125;
-   protected float oldWaterCost;
    private final Long2ObjectMap<BlockPathTypes> pathTypesByPosCache = new Long2ObjectOpenHashMap();
    private final Object2BooleanMap<AABB> collisionCache = new Object2BooleanOpenHashMap();
 
@@ -43,12 +41,12 @@ public class WalkNodeEvaluator extends NodeEvaluator {
    @Override
    public void prepare(PathNavigationRegion var1, Mob var2) {
       super.prepare(var1, var2);
-      this.oldWaterCost = var2.getPathfindingMalus(BlockPathTypes.WATER);
+      var2.onPathfindingStart();
    }
 
    @Override
    public void done() {
-      this.mob.setPathfindingMalus(BlockPathTypes.WATER, this.oldWaterCost);
+      this.mob.onPathfindingDone();
       this.pathTypesByPosCache.clear();
       this.collisionCache.clear();
       super.done();
@@ -69,14 +67,14 @@ public class WalkNodeEvaluator extends NodeEvaluator {
 
                var3 = this.level.getBlockState(var2.set(this.mob.getX(), (double)(++var1), this.mob.getZ()));
             }
-         } else if (this.mob.isOnGround()) {
+         } else if (this.mob.onGround()) {
             var1 = Mth.floor(this.mob.getY() + 0.5);
          } else {
             BlockPos var4 = this.mob.blockPosition();
 
             while(
                (this.level.getBlockState(var4).isAir() || this.level.getBlockState(var4).isPathfindable(this.level, var4, PathComputationType.LAND))
-                  && var4.getY() > this.mob.level.getMinBuildHeight()
+                  && var4.getY() > this.mob.level().getMinBuildHeight()
             ) {
                var4 = var4.below();
             }
@@ -284,7 +282,7 @@ public class WalkNodeEvaluator extends NodeEvaluator {
                   return var9;
                }
 
-               while(var2 > this.mob.level.getMinBuildHeight()) {
+               while(var2 > this.mob.level().getMinBuildHeight()) {
                   var13 = this.getCachedBlockType(this.mob, var1, --var2, var3);
                   if (var13 != BlockPathTypes.WATER) {
                      return var9;
@@ -299,7 +297,7 @@ public class WalkNodeEvaluator extends NodeEvaluator {
                int var18 = var2;
 
                while(var13 == BlockPathTypes.OPEN) {
-                  if (--var2 < this.mob.level.getMinBuildHeight()) {
+                  if (--var2 < this.mob.level().getMinBuildHeight()) {
                      return this.getBlockedNode(var1, var18, var3);
                   }
 
@@ -461,6 +459,10 @@ public class WalkNodeEvaluator extends NodeEvaluator {
          if (var6 == BlockPathTypes.POWDER_SNOW) {
             var5 = BlockPathTypes.DANGER_POWDER_SNOW;
          }
+
+         if (var6 == BlockPathTypes.DAMAGE_CAUTIOUS) {
+            var5 = BlockPathTypes.DAMAGE_CAUTIOUS;
+         }
       }
 
       if (var5 == BlockPathTypes.WALKABLE) {
@@ -492,6 +494,10 @@ public class WalkNodeEvaluator extends NodeEvaluator {
                   if (var0.getFluidState(var1).is(FluidTags.WATER)) {
                      return BlockPathTypes.WATER_BORDER;
                   }
+
+                  if (var9.is(Blocks.WITHER_ROSE) || var9.is(Blocks.POINTED_DRIPSTONE)) {
+                     return BlockPathTypes.DAMAGE_CAUTIOUS;
+                  }
                }
             }
          }
@@ -500,10 +506,11 @@ public class WalkNodeEvaluator extends NodeEvaluator {
       return var2;
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    protected static BlockPathTypes getBlockPathTypeRaw(BlockGetter var0, BlockPos var1) {
       BlockState var2 = var0.getBlockState(var1);
       Block var3 = var2.getBlock();
-      Material var4 = var2.getMaterial();
       if (var2.isAir()) {
          return BlockPathTypes.OPEN;
       } else if (var2.is(BlockTags.TRAPDOORS) || var2.is(Blocks.LILY_PAD) || var2.is(Blocks.BIG_DRIPLEAF)) {
@@ -516,18 +523,18 @@ public class WalkNodeEvaluator extends NodeEvaluator {
          return BlockPathTypes.STICKY_HONEY;
       } else if (var2.is(Blocks.COCOA)) {
          return BlockPathTypes.COCOA;
-      } else {
-         FluidState var5 = var0.getFluidState(var1);
-         if (var5.is(FluidTags.LAVA)) {
+      } else if (!var2.is(Blocks.WITHER_ROSE) && !var2.is(Blocks.POINTED_DRIPSTONE)) {
+         FluidState var4 = var0.getFluidState(var1);
+         if (var4.is(FluidTags.LAVA)) {
             return BlockPathTypes.LAVA;
          } else if (isBurningBlock(var2)) {
             return BlockPathTypes.DAMAGE_FIRE;
-         } else if (DoorBlock.isWoodenDoor(var2) && !var2.getValue(DoorBlock.OPEN)) {
-            return BlockPathTypes.DOOR_WOOD_CLOSED;
-         } else if (var3 instanceof DoorBlock && var4 == Material.METAL && !var2.getValue(DoorBlock.OPEN)) {
-            return BlockPathTypes.DOOR_IRON_CLOSED;
-         } else if (var3 instanceof DoorBlock && var2.getValue(DoorBlock.OPEN)) {
-            return BlockPathTypes.DOOR_OPEN;
+         } else if (var3 instanceof DoorBlock var5) {
+            if (var2.getValue(DoorBlock.OPEN)) {
+               return BlockPathTypes.DOOR_OPEN;
+            } else {
+               return var5.type().canOpenByHand() ? BlockPathTypes.DOOR_WOOD_CLOSED : BlockPathTypes.DOOR_IRON_CLOSED;
+            }
          } else if (var3 instanceof BaseRailBlock) {
             return BlockPathTypes.RAIL;
          } else if (var3 instanceof LeavesBlock) {
@@ -536,11 +543,13 @@ public class WalkNodeEvaluator extends NodeEvaluator {
             if (!var2.isPathfindable(var0, var1, PathComputationType.LAND)) {
                return BlockPathTypes.BLOCKED;
             } else {
-               return var5.is(FluidTags.WATER) ? BlockPathTypes.WATER : BlockPathTypes.OPEN;
+               return var4.is(FluidTags.WATER) ? BlockPathTypes.WATER : BlockPathTypes.OPEN;
             }
          } else {
             return BlockPathTypes.FENCE;
          }
+      } else {
+         return BlockPathTypes.DAMAGE_CAUTIOUS;
       }
    }
 

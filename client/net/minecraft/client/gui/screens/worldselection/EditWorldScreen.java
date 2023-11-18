@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens.worldselection;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import java.io.IOException;
@@ -9,6 +8,7 @@ import java.nio.file.Path;
 import net.minecraft.FileUtil;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.toasts.SystemToast;
@@ -21,6 +21,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.LevelSummary;
+import net.minecraft.world.level.validation.ContentValidationException;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 
@@ -132,7 +133,7 @@ public class EditWorldScreen extends Screen {
    public static void makeBackupAndShowToast(LevelStorageSource var0, String var1) {
       boolean var2 = false;
 
-      try (LevelStorageSource.LevelStorageAccess var3 = var0.createAccess(var1)) {
+      try (LevelStorageSource.LevelStorageAccess var3 = var0.validateAndCreateAccess(var1)) {
          var2 = true;
          makeBackupAndShowToast(var3);
       } catch (IOException var8) {
@@ -141,6 +142,9 @@ public class EditWorldScreen extends Screen {
          }
 
          LOGGER.warn("Failed to create backup of level {}", var1, var8);
+      } catch (ContentValidationException var9) {
+         LOGGER.warn("{}", var9.getMessage());
+         SystemToast.onWorldAccessFailure(Minecraft.getInstance(), var1);
       }
    }
 
@@ -168,10 +172,10 @@ public class EditWorldScreen extends Screen {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderBackground(var1);
-      drawCenteredString(var1, this.font, this.title, this.width / 2, 15, 16777215);
-      drawString(var1, this.font, NAME_LABEL, this.width / 2 - 100, 24, 10526880);
+      var1.drawCenteredString(this.font, this.title, this.width / 2, 15, 16777215);
+      var1.drawString(this.font, NAME_LABEL, this.width / 2 - 100, 24, 10526880);
       this.nameEdit.render(var1, var2, var3, var4);
       super.render(var1, var2, var3, var4);
    }

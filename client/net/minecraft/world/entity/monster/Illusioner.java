@@ -99,7 +99,7 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
    @Override
    public void aiStep() {
       super.aiStep();
-      if (this.level.isClientSide && this.isInvisible()) {
+      if (this.level().isClientSide && this.isInvisible()) {
          --this.clientSideIllusionTicks;
          if (this.clientSideIllusionTicks < 0) {
             this.clientSideIllusionTicks = 0;
@@ -120,10 +120,10 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
             }
 
             for(int var5 = 0; var5 < 16; ++var5) {
-               this.level.addParticle(ParticleTypes.CLOUD, this.getRandomX(0.5), this.getRandomY(), this.getZ(0.5), 0.0, 0.0, 0.0);
+               this.level().addParticle(ParticleTypes.CLOUD, this.getRandomX(0.5), this.getRandomY(), this.getZ(0.5), 0.0, 0.0, 0.0);
             }
 
-            this.level.playLocalSound(this.getX(), this.getY(), this.getZ(), SoundEvents.ILLUSIONER_MIRROR_MOVE, this.getSoundSource(), 1.0F, 1.0F, false);
+            this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), SoundEvents.ILLUSIONER_MIRROR_MOVE, this.getSoundSource(), 1.0F, 1.0F, false);
          } else if (this.hurtTime == this.hurtDuration - 1) {
             this.clientSideIllusionTicks = 3;
 
@@ -199,9 +199,9 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
       double var7 = var1.getY(0.3333333333333333) - var4.getY();
       double var9 = var1.getZ() - this.getZ();
       double var11 = Math.sqrt(var5 * var5 + var9 * var9);
-      var4.shoot(var5, var7 + var11 * 0.20000000298023224, var9, 1.6F, (float)(14 - this.level.getDifficulty().getId() * 4));
+      var4.shoot(var5, var7 + var11 * 0.20000000298023224, var9, 1.6F, (float)(14 - this.level().getDifficulty().getId() * 4));
       this.playSound(SoundEvents.SKELETON_SHOOT, 1.0F, 1.0F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
-      this.level.addFreshEntity(var4);
+      this.level().addFreshEntity(var4);
    }
 
    @Override
@@ -229,7 +229,7 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
          } else if (Illusioner.this.getTarget().getId() == this.lastTargetId) {
             return false;
          } else {
-            return Illusioner.this.level.getCurrentDifficultyAt(Illusioner.this.blockPosition()).isHarderThan((float)Difficulty.NORMAL.ordinal());
+            return Illusioner.this.level().getCurrentDifficultyAt(Illusioner.this.blockPosition()).isHarderThan((float)Difficulty.NORMAL.ordinal());
          }
       }
 

@@ -65,7 +65,7 @@ public class RootSystemFeature extends Feature<RootSystemConfiguration> {
          var4.move(Direction.UP);
          if (var2.allowedTreePosition.test(var0, var4) && spaceForTree(var0, var2, var4)) {
             BlockPos var7 = var4.below();
-            if (var0.getFluidState(var7).is(FluidTags.LAVA) || !var0.getBlockState(var7).getMaterial().isSolid()) {
+            if (var0.getFluidState(var7).is(FluidTags.LAVA) || !var0.getBlockState(var7).isSolid()) {
                return false;
             }
 

@@ -17,6 +17,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.SignalGetter;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DirectionalBlock;
@@ -131,7 +132,7 @@ public class PistonBaseBlock extends DirectionalBlock {
       }
    }
 
-   private boolean getNeighborSignal(Level var1, BlockPos var2, Direction var3) {
+   private boolean getNeighborSignal(SignalGetter var1, BlockPos var2, Direction var3) {
       for(Direction var7 : Direction.values()) {
          if (var7 != var3 && var1.hasSignal(var2.relative(var7), var7)) {
             return true;
@@ -158,14 +159,15 @@ public class PistonBaseBlock extends DirectionalBlock {
    @Override
    public boolean triggerEvent(BlockState var1, Level var2, BlockPos var3, int var4, int var5) {
       Direction var6 = var1.getValue(FACING);
+      BlockState var7 = var1.setValue(EXTENDED, Boolean.valueOf(true));
       if (!var2.isClientSide) {
-         boolean var7 = this.getNeighborSignal(var2, var3, var6);
-         if (var7 && (var4 == 1 || var4 == 2)) {
-            var2.setBlock(var3, var1.setValue(EXTENDED, Boolean.valueOf(true)), 2);
+         boolean var8 = this.getNeighborSignal(var2, var3, var6);
+         if (var8 && (var4 == 1 || var4 == 2)) {
+            var2.setBlock(var3, var7, 2);
             return false;
          }
 
-         if (!var7 && var4 == 0) {
+         if (!var8 && var4 == 0) {
             return false;
          }
       }
@@ -175,44 +177,44 @@ public class PistonBaseBlock extends DirectionalBlock {
             return false;
          }
 
-         var2.setBlock(var3, var1.setValue(EXTENDED, Boolean.valueOf(true)), 67);
+         var2.setBlock(var3, var7, 67);
          var2.playSound(null, var3, SoundEvents.PISTON_EXTEND, SoundSource.BLOCKS, 0.5F, var2.random.nextFloat() * 0.25F + 0.6F);
-         var2.gameEvent(null, GameEvent.PISTON_EXTEND, var3);
+         var2.gameEvent(GameEvent.BLOCK_ACTIVATE, var3, GameEvent.Context.of(var7));
       } else if (var4 == 1 || var4 == 2) {
-         BlockEntity var14 = var2.getBlockEntity(var3.relative(var6));
-         if (var14 instanceof PistonMovingBlockEntity) {
-            ((PistonMovingBlockEntity)var14).finalTick();
+         BlockEntity var15 = var2.getBlockEntity(var3.relative(var6));
+         if (var15 instanceof PistonMovingBlockEntity) {
+            ((PistonMovingBlockEntity)var15).finalTick();
          }
 
-         BlockState var8 = Blocks.MOVING_PISTON
+         BlockState var9 = Blocks.MOVING_PISTON
             .defaultBlockState()
             .setValue(MovingPistonBlock.FACING, var6)
             .setValue(MovingPistonBlock.TYPE, this.isSticky ? PistonType.STICKY : PistonType.DEFAULT);
-         var2.setBlock(var3, var8, 20);
+         var2.setBlock(var3, var9, 20);
          var2.setBlockEntity(
             MovingPistonBlock.newMovingBlockEntity(
-               var3, var8, this.defaultBlockState().setValue(FACING, Direction.from3DDataValue(var5 & 7)), var6, false, true
+               var3, var9, this.defaultBlockState().setValue(FACING, Direction.from3DDataValue(var5 & 7)), var6, false, true
             )
          );
-         var2.blockUpdated(var3, var8.getBlock());
-         var8.updateNeighbourShapes(var2, var3, 2);
+         var2.blockUpdated(var3, var9.getBlock());
+         var9.updateNeighbourShapes(var2, var3, 2);
          if (this.isSticky) {
-            BlockPos var9 = var3.offset(var6.getStepX() * 2, var6.getStepY() * 2, var6.getStepZ() * 2);
-            BlockState var10 = var2.getBlockState(var9);
-            boolean var11 = false;
-            if (var10.is(Blocks.MOVING_PISTON)) {
-               BlockEntity var12 = var2.getBlockEntity(var9);
-               if (var12 instanceof PistonMovingBlockEntity var13 && var13.getDirection() == var6 && var13.isExtending()) {
-                  var13.finalTick();
-                  var11 = true;
+            BlockPos var10 = var3.offset(var6.getStepX() * 2, var6.getStepY() * 2, var6.getStepZ() * 2);
+            BlockState var11 = var2.getBlockState(var10);
+            boolean var12 = false;
+            if (var11.is(Blocks.MOVING_PISTON)) {
+               BlockEntity var13 = var2.getBlockEntity(var10);
+               if (var13 instanceof PistonMovingBlockEntity var14 && var14.getDirection() == var6 && var14.isExtending()) {
+                  var14.finalTick();
+                  var12 = true;
                }
             }
 
-            if (!var11) {
+            if (!var12) {
                if (var4 != 1
-                  || var10.isAir()
-                  || !isPushable(var10, var2, var9, var6.getOpposite(), false, var6)
-                  || var10.getPistonPushReaction() != PushReaction.NORMAL && !var10.is(Blocks.PISTON) && !var10.is(Blocks.STICKY_PISTON)) {
+                  || var11.isAir()
+                  || !isPushable(var11, var2, var10, var6.getOpposite(), false, var6)
+                  || var11.getPistonPushReaction() != PushReaction.NORMAL && !var11.is(Blocks.PISTON) && !var11.is(Blocks.STICKY_PISTON)) {
                   var2.removeBlock(var3.relative(var6), false);
                } else {
                   this.moveBlocks(var2, var3, var6, false);
@@ -223,7 +225,7 @@ public class PistonBaseBlock extends DirectionalBlock {
          }
 
          var2.playSound(null, var3, SoundEvents.PISTON_CONTRACT, SoundSource.BLOCKS, 0.5F, var2.random.nextFloat() * 0.15F + 0.6F);
-         var2.gameEvent(null, GameEvent.PISTON_CONTRACT, var3);
+         var2.gameEvent(GameEvent.BLOCK_DEACTIVATE, var3, GameEvent.Context.of(var9));
       }
 
       return true;

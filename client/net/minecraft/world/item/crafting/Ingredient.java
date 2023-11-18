@@ -133,16 +133,20 @@ public final class Ingredient implements Predicate<ItemStack> {
    }
 
    public static Ingredient fromJson(@Nullable JsonElement var0) {
+      return fromJson(var0, true);
+   }
+
+   public static Ingredient fromJson(@Nullable JsonElement var0, boolean var1) {
       if (var0 == null || var0.isJsonNull()) {
          throw new JsonSyntaxException("Item cannot be null");
       } else if (var0.isJsonObject()) {
          return fromValues(Stream.of(valueFromJson(var0.getAsJsonObject())));
       } else if (var0.isJsonArray()) {
-         JsonArray var1 = var0.getAsJsonArray();
-         if (var1.size() == 0) {
+         JsonArray var2 = var0.getAsJsonArray();
+         if (var2.size() == 0 && !var1) {
             throw new JsonSyntaxException("Item array cannot be empty, at least one item must be defined");
          } else {
-            return fromValues(StreamSupport.stream(var1.spliterator(), false).map(var0x -> valueFromJson(GsonHelper.convertToJsonObject(var0x, "item"))));
+            return fromValues(StreamSupport.stream(var2.spliterator(), false).map(var0x -> valueFromJson(GsonHelper.convertToJsonObject(var0x, "item"))));
          }
       } else {
          throw new JsonSyntaxException("Expected item to be object or array of objects");

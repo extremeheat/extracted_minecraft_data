@@ -17,7 +17,6 @@ import net.minecraft.world.level.block.entity.SpawnerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
-import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import org.slf4j.Logger;
 
@@ -53,13 +52,12 @@ public class MonsterRoomFeature extends Feature<NoneFeatureConfiguration> {
          for(int var17 = -1; var17 <= 4; ++var17) {
             for(int var18 = var13; var18 <= var14; ++var18) {
                BlockPos var19 = var3.offset(var16, var17, var18);
-               Material var20 = var5.getBlockState(var19).getMaterial();
-               boolean var21 = var20.isSolid();
-               if (var17 == -1 && !var21) {
+               boolean var20 = var5.getBlockState(var19).isSolid();
+               if (var17 == -1 && !var20) {
                   return false;
                }
 
-               if (var17 == 4 && !var21) {
+               if (var17 == 4 && !var20) {
                   return false;
                }
 
@@ -80,9 +78,9 @@ public class MonsterRoomFeature extends Feature<NoneFeatureConfiguration> {
                   BlockPos var33 = var3.offset(var25, var28, var31);
                   BlockState var35 = var5.getBlockState(var33);
                   if (var25 == var8 || var28 == -1 || var31 == var13 || var25 == var9 || var28 == 4 || var31 == var14) {
-                     if (var33.getY() >= var5.getMinBuildHeight() && !var5.getBlockState(var33.below()).getMaterial().isSolid()) {
+                     if (var33.getY() >= var5.getMinBuildHeight() && !var5.getBlockState(var33.below()).isSolid()) {
                         var5.setBlock(var33, AIR, 2);
-                     } else if (var35.getMaterial().isSolid() && !var35.is(Blocks.CHEST)) {
+                     } else if (var35.isSolid() && !var35.is(Blocks.CHEST)) {
                         if (var28 == -1 && var4.nextInt(4) != 0) {
                            this.safeSetBlock(var5, var33, Blocks.MOSSY_COBBLESTONE.defaultBlockState(), var2);
                         } else {
@@ -101,19 +99,19 @@ public class MonsterRoomFeature extends Feature<NoneFeatureConfiguration> {
                int var32 = var3.getX() + var4.nextInt(var7 * 2 + 1) - var7;
                int var34 = var3.getY();
                int var36 = var3.getZ() + var4.nextInt(var12 * 2 + 1) - var12;
-               BlockPos var37 = new BlockPos(var32, var34, var36);
-               if (var5.isEmptyBlock(var37)) {
+               BlockPos var21 = new BlockPos(var32, var34, var36);
+               if (var5.isEmptyBlock(var21)) {
                   int var22 = 0;
 
                   for(Direction var24 : Direction.Plane.HORIZONTAL) {
-                     if (var5.getBlockState(var37.relative(var24)).getMaterial().isSolid()) {
+                     if (var5.getBlockState(var21.relative(var24)).isSolid()) {
                         ++var22;
                      }
                   }
 
                   if (var22 == 1) {
-                     this.safeSetBlock(var5, var37, StructurePiece.reorient(var5, var37, Blocks.CHEST.defaultBlockState()), var2);
-                     RandomizableContainerBlockEntity.setLootTable(var5, var4, var37, BuiltInLootTables.SIMPLE_DUNGEON);
+                     this.safeSetBlock(var5, var21, StructurePiece.reorient(var5, var21, Blocks.CHEST.defaultBlockState()), var2);
+                     RandomizableContainerBlockEntity.setLootTable(var5, var4, var21, BuiltInLootTables.SIMPLE_DUNGEON);
                      break;
                   }
                }

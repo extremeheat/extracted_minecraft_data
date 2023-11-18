@@ -139,7 +139,7 @@ public class DataPackCommand {
       PackRepository var3 = var0.getServer().getPackRepository();
       ArrayList var4 = Lists.newArrayList(var3.getSelectedPacks());
       var2.apply(var4, var1);
-      var0.sendSuccess(Component.translatable("commands.datapack.modify.enable", var1.getChatLink(true)), true);
+      var0.sendSuccess(() -> Component.translatable("commands.datapack.modify.enable", var1.getChatLink(true)), true);
       ReloadCommand.reloadPacks(var4.stream().map(Pack::getId).collect(Collectors.toList()), var0);
       return var4.size();
    }
@@ -148,7 +148,7 @@ public class DataPackCommand {
       PackRepository var2 = var0.getServer().getPackRepository();
       ArrayList var3 = Lists.newArrayList(var2.getSelectedPacks());
       var3.remove(var1);
-      var0.sendSuccess(Component.translatable("commands.datapack.modify.disable", var1.getChatLink(true)), true);
+      var0.sendSuccess(() -> Component.translatable("commands.datapack.modify.disable", var1.getChatLink(true)), true);
       ReloadCommand.reloadPacks(var3.stream().map(Pack::getId).collect(Collectors.toList()), var0);
       return var3.size();
    }
@@ -165,10 +165,12 @@ public class DataPackCommand {
       FeatureFlagSet var4 = var0.enabledFeatures();
       List var5 = var3.stream().filter(var2x -> !var2.contains(var2x) && var2x.getRequestedFeatures().isSubsetOf(var4)).toList();
       if (var5.isEmpty()) {
-         var0.sendSuccess(Component.translatable("commands.datapack.list.available.none"), false);
+         var0.sendSuccess(() -> Component.translatable("commands.datapack.list.available.none"), false);
       } else {
          var0.sendSuccess(
-            Component.translatable("commands.datapack.list.available.success", var5.size(), ComponentUtils.formatList(var5, var0x -> var0x.getChatLink(false))),
+            () -> Component.translatable(
+                  "commands.datapack.list.available.success", var5.size(), ComponentUtils.formatList(var5, var0xx -> var0xx.getChatLink(false))
+               ),
             false
          );
       }
@@ -181,10 +183,12 @@ public class DataPackCommand {
       var1.reload();
       Collection var2 = var1.getSelectedPacks();
       if (var2.isEmpty()) {
-         var0.sendSuccess(Component.translatable("commands.datapack.list.enabled.none"), false);
+         var0.sendSuccess(() -> Component.translatable("commands.datapack.list.enabled.none"), false);
       } else {
          var0.sendSuccess(
-            Component.translatable("commands.datapack.list.enabled.success", var2.size(), ComponentUtils.formatList(var2, var0x -> var0x.getChatLink(true))),
+            () -> Component.translatable(
+                  "commands.datapack.list.enabled.success", var2.size(), ComponentUtils.formatList(var2, var0xx -> var0xx.getChatLink(true))
+               ),
             false
          );
       }

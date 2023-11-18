@@ -17,7 +17,7 @@ public class UsedEnderEyeTrigger extends SimpleCriterionTrigger<UsedEnderEyeTrig
       return ID;
    }
 
-   public UsedEnderEyeTrigger.TriggerInstance createInstance(JsonObject var1, EntityPredicate.Composite var2, DeserializationContext var3) {
+   public UsedEnderEyeTrigger.TriggerInstance createInstance(JsonObject var1, ContextAwarePredicate var2, DeserializationContext var3) {
       MinMaxBounds.Doubles var4 = MinMaxBounds.Doubles.fromJson(var1.get("distance"));
       return new UsedEnderEyeTrigger.TriggerInstance(var2, var4);
    }
@@ -32,7 +32,7 @@ public class UsedEnderEyeTrigger extends SimpleCriterionTrigger<UsedEnderEyeTrig
    public static class TriggerInstance extends AbstractCriterionTriggerInstance {
       private final MinMaxBounds.Doubles level;
 
-      public TriggerInstance(EntityPredicate.Composite var1, MinMaxBounds.Doubles var2) {
+      public TriggerInstance(ContextAwarePredicate var1, MinMaxBounds.Doubles var2) {
          super(UsedEnderEyeTrigger.ID, var1);
          this.level = var2;
       }

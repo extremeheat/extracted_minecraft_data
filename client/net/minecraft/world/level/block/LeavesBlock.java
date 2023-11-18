@@ -1,5 +1,6 @@
 package net.minecraft.world.level.block;
 
+import java.util.OptionalInt;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -102,10 +103,14 @@ public class LeavesBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    private static int getDistanceAt(BlockState var0) {
+      return getOptionalDistanceAt(var0).orElse(7);
+   }
+
+   public static OptionalInt getOptionalDistanceAt(BlockState var0) {
       if (var0.is(BlockTags.LOGS)) {
-         return 0;
+         return OptionalInt.of(0);
       } else {
-         return var0.getBlock() instanceof LeavesBlock ? var0.getValue(DISTANCE) : 7;
+         return var0.hasProperty(DISTANCE) ? OptionalInt.of(var0.getValue(DISTANCE)) : OptionalInt.empty();
       }
    }
 

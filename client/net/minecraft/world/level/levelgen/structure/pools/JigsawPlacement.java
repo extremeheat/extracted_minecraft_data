@@ -137,9 +137,9 @@ public class JigsawPlacement {
       Optional var7 = Optional.empty();
 
       for(StructureTemplate.StructureBlockInfo var9 : var6) {
-         ResourceLocation var10 = ResourceLocation.tryParse(var9.nbt.getString("name"));
+         ResourceLocation var10 = ResourceLocation.tryParse(var9.nbt().getString("name"));
          if (var1.equals(var10)) {
-            var7 = Optional.of(var9.pos);
+            var7 = Optional.of(var9.pos());
             break;
          }
       }
@@ -256,8 +256,8 @@ public class JigsawPlacement {
 
          label129:
          for(StructureTemplate.StructureBlockInfo var16 : var7.getShuffledJigsawBlocks(this.structureTemplateManager, var8, var9, this.random)) {
-            Direction var17 = JigsawBlock.getFrontFacing(var16.state);
-            BlockPos var18 = var16.pos;
+            Direction var17 = JigsawBlock.getFrontFacing(var16.state());
+            BlockPos var18 = var16.pos();
             BlockPos var19 = var18.relative(var17);
             int var20 = var18.getY() - var14;
             int var21 = -1;
@@ -306,7 +306,7 @@ public class JigsawPlacement {
                               var35 = var33.stream()
                                  .mapToInt(
                                     var2x -> {
-                                       if (!var34.isInside(var2x.pos.relative(JigsawBlock.getFrontFacing(var2x.state)))) {
+                                       if (!var34.isInside(var2x.pos().relative(JigsawBlock.getFrontFacing(var2x.state())))) {
                                           return 0;
                                        } else {
                                           ResourceKey var3x = readPoolName(var2x);
@@ -332,14 +332,14 @@ public class JigsawPlacement {
 
                            for(StructureTemplate.StructureBlockInfo var37 : var33) {
                               if (JigsawBlock.canAttach(var16, var37)) {
-                                 BlockPos var38 = var37.pos;
+                                 BlockPos var38 = var37.pos();
                                  BlockPos var39 = var19.subtract(var38);
                                  BoundingBox var40 = var30.getBoundingBox(this.structureTemplateManager, var39, var32);
                                  int var41 = var40.minY();
                                  StructureTemplatePool.Projection var42 = var30.getProjection();
                                  boolean var43 = var42 == StructureTemplatePool.Projection.RIGID;
                                  int var44 = var38.getY();
-                                 int var45 = var20 - var44 + JigsawBlock.getFrontFacing(var16.state).getStepY();
+                                 int var45 = var20 - var44 + JigsawBlock.getFrontFacing(var16.state()).getStepY();
                                  int var46;
                                  if (var11 && var43) {
                                     var46 = var14 + var45;
@@ -406,7 +406,7 @@ public class JigsawPlacement {
       }
 
       private static ResourceKey<StructureTemplatePool> readPoolName(StructureTemplate.StructureBlockInfo var0) {
-         return ResourceKey.create(Registries.TEMPLATE_POOL, new ResourceLocation(var0.nbt.getString("pool")));
+         return ResourceKey.create(Registries.TEMPLATE_POOL, new ResourceLocation(var0.nbt().getString("pool")));
       }
    }
 }

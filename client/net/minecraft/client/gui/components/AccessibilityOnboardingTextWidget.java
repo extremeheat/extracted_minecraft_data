@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.components;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.sounds.SoundManager;
@@ -27,17 +27,17 @@ public class AccessibilityOnboardingTextWidget extends MultiLineTextWidget {
    }
 
    @Override
-   public void renderWidget(PoseStack var1, int var2, int var3, float var4) {
+   public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       int var5 = this.getX() - 3;
       int var6 = this.getY() - 3;
       int var7 = this.getX() + this.getWidth() + 3;
       int var8 = this.getY() + this.getHeight() + 3;
       int var9 = this.isFocused() ? -1 : -6250336;
-      fill(var1, var5 - 1, var6 - 1, var5, var8 + 1, var9);
-      fill(var1, var7, var6 - 1, var7 + 1, var8 + 1, var9);
-      fill(var1, var5, var6, var7, var6 - 1, var9);
-      fill(var1, var5, var8, var7, var8 + 1, var9);
-      fill(var1, var5, var6, var7, var8, 1426063360);
+      var1.fill(var5 - 1, var6 - 1, var5, var8 + 1, var9);
+      var1.fill(var7, var6 - 1, var7 + 1, var8 + 1, var9);
+      var1.fill(var5, var6, var7, var6 - 1, var9);
+      var1.fill(var5, var8, var7, var8 + 1, var9);
+      var1.fill(var5, var6, var7, var8, 1426063360);
       super.renderWidget(var1, var2, var3, var4);
    }
 

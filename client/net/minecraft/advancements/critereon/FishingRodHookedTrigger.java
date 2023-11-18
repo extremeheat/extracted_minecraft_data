@@ -23,9 +23,9 @@ public class FishingRodHookedTrigger extends SimpleCriterionTrigger<FishingRodHo
       return ID;
    }
 
-   public FishingRodHookedTrigger.TriggerInstance createInstance(JsonObject var1, EntityPredicate.Composite var2, DeserializationContext var3) {
+   public FishingRodHookedTrigger.TriggerInstance createInstance(JsonObject var1, ContextAwarePredicate var2, DeserializationContext var3) {
       ItemPredicate var4 = ItemPredicate.fromJson(var1.get("rod"));
-      EntityPredicate.Composite var5 = EntityPredicate.Composite.fromJson(var1, "entity", var3);
+      ContextAwarePredicate var5 = EntityPredicate.fromJson(var1, "entity", var3);
       ItemPredicate var6 = ItemPredicate.fromJson(var1.get("item"));
       return new FishingRodHookedTrigger.TriggerInstance(var2, var4, var5, var6);
    }
@@ -37,10 +37,10 @@ public class FishingRodHookedTrigger extends SimpleCriterionTrigger<FishingRodHo
 
    public static class TriggerInstance extends AbstractCriterionTriggerInstance {
       private final ItemPredicate rod;
-      private final EntityPredicate.Composite entity;
+      private final ContextAwarePredicate entity;
       private final ItemPredicate item;
 
-      public TriggerInstance(EntityPredicate.Composite var1, ItemPredicate var2, EntityPredicate.Composite var3, ItemPredicate var4) {
+      public TriggerInstance(ContextAwarePredicate var1, ItemPredicate var2, ContextAwarePredicate var3, ItemPredicate var4) {
          super(FishingRodHookedTrigger.ID, var1);
          this.rod = var2;
          this.entity = var3;
@@ -48,7 +48,7 @@ public class FishingRodHookedTrigger extends SimpleCriterionTrigger<FishingRodHo
       }
 
       public static FishingRodHookedTrigger.TriggerInstance fishedItem(ItemPredicate var0, EntityPredicate var1, ItemPredicate var2) {
-         return new FishingRodHookedTrigger.TriggerInstance(EntityPredicate.Composite.ANY, var0, EntityPredicate.Composite.wrap(var1), var2);
+         return new FishingRodHookedTrigger.TriggerInstance(ContextAwarePredicate.ANY, var0, EntityPredicate.wrap(var1), var2);
       }
 
       public boolean matches(ItemStack var1, LootContext var2, Collection<ItemStack> var3) {

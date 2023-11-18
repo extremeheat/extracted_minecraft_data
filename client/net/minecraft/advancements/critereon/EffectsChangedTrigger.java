@@ -20,9 +20,9 @@ public class EffectsChangedTrigger extends SimpleCriterionTrigger<EffectsChanged
       return ID;
    }
 
-   public EffectsChangedTrigger.TriggerInstance createInstance(JsonObject var1, EntityPredicate.Composite var2, DeserializationContext var3) {
+   public EffectsChangedTrigger.TriggerInstance createInstance(JsonObject var1, ContextAwarePredicate var2, DeserializationContext var3) {
       MobEffectsPredicate var4 = MobEffectsPredicate.fromJson(var1.get("effects"));
-      EntityPredicate.Composite var5 = EntityPredicate.Composite.fromJson(var1, "source", var3);
+      ContextAwarePredicate var5 = EntityPredicate.fromJson(var1, "source", var3);
       return new EffectsChangedTrigger.TriggerInstance(var2, var4, var5);
    }
 
@@ -33,27 +33,27 @@ public class EffectsChangedTrigger extends SimpleCriterionTrigger<EffectsChanged
 
    public static class TriggerInstance extends AbstractCriterionTriggerInstance {
       private final MobEffectsPredicate effects;
-      private final EntityPredicate.Composite source;
+      private final ContextAwarePredicate source;
 
-      public TriggerInstance(EntityPredicate.Composite var1, MobEffectsPredicate var2, EntityPredicate.Composite var3) {
+      public TriggerInstance(ContextAwarePredicate var1, MobEffectsPredicate var2, ContextAwarePredicate var3) {
          super(EffectsChangedTrigger.ID, var1);
          this.effects = var2;
          this.source = var3;
       }
 
       public static EffectsChangedTrigger.TriggerInstance hasEffects(MobEffectsPredicate var0) {
-         return new EffectsChangedTrigger.TriggerInstance(EntityPredicate.Composite.ANY, var0, EntityPredicate.Composite.ANY);
+         return new EffectsChangedTrigger.TriggerInstance(ContextAwarePredicate.ANY, var0, ContextAwarePredicate.ANY);
       }
 
       public static EffectsChangedTrigger.TriggerInstance gotEffectsFrom(EntityPredicate var0) {
-         return new EffectsChangedTrigger.TriggerInstance(EntityPredicate.Composite.ANY, MobEffectsPredicate.ANY, EntityPredicate.Composite.wrap(var0));
+         return new EffectsChangedTrigger.TriggerInstance(ContextAwarePredicate.ANY, MobEffectsPredicate.ANY, EntityPredicate.wrap(var0));
       }
 
       public boolean matches(ServerPlayer var1, @Nullable LootContext var2) {
          if (!this.effects.matches((LivingEntity)var1)) {
             return false;
          } else {
-            return this.source == EntityPredicate.Composite.ANY || var2 != null && this.source.matches(var2);
+            return this.source == ContextAwarePredicate.ANY || var2 != null && this.source.matches(var2);
          }
       }
 

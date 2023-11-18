@@ -3,18 +3,15 @@ package net.minecraft.client.gui.screens.debug;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.List;
-import java.util.Optional;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.MultiPlayerGameMode;
-import net.minecraft.client.renderer.entity.ItemRenderer;
-import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
@@ -34,8 +31,8 @@ public class GameModeSwitcherScreen extends Screen {
    private static final Component SELECT_KEY = Component.translatable(
       "debug.gamemodes.select_next", Component.translatable("debug.gamemodes.press_f4").withStyle(ChatFormatting.AQUA)
    );
-   private final Optional<GameModeSwitcherScreen.GameModeIcon> previousHovered;
-   private Optional<GameModeSwitcherScreen.GameModeIcon> currentlyHovered = Optional.empty();
+   private final GameModeSwitcherScreen.GameModeIcon previousHovered;
+   private GameModeSwitcherScreen.GameModeIcon currentlyHovered;
    private int firstMouseX;
    private int firstMouseY;
    private boolean setFirstMousePos;
@@ -44,6 +41,7 @@ public class GameModeSwitcherScreen extends Screen {
    public GameModeSwitcherScreen() {
       super(GameNarrator.NO_TITLE);
       this.previousHovered = GameModeSwitcherScreen.GameModeIcon.getFromGameType(this.getDefaultSelected());
+      this.currentlyHovered = this.previousHovered;
    }
 
    private GameType getDefaultSelected() {
@@ -59,9 +57,7 @@ public class GameModeSwitcherScreen extends Screen {
    @Override
    protected void init() {
       super.init();
-      this.currentlyHovered = this.previousHovered.isPresent()
-         ? this.previousHovered
-         : GameModeSwitcherScreen.GameModeIcon.getFromGameType(this.minecraft.gameMode.getPlayerMode());
+      this.currentlyHovered = this.previousHovered;
 
       for(int var1 = 0; var1 < GameModeSwitcherScreen.GameModeIcon.VALUES.length; ++var1) {
          GameModeSwitcherScreen.GameModeIcon var2 = GameModeSwitcherScreen.GameModeIcon.VALUES[var1];
@@ -70,18 +66,17 @@ public class GameModeSwitcherScreen extends Screen {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       if (!this.checkToClose()) {
-         var1.pushPose();
+         var1.pose().pushPose();
          RenderSystem.enableBlend();
-         RenderSystem.setShaderTexture(0, GAMEMODE_SWITCHER_LOCATION);
          int var5 = this.width / 2 - 62;
          int var6 = this.height / 2 - 31 - 27;
-         blit(var1, var5, var6, 0.0F, 0.0F, 125, 75, 128, 128);
-         var1.popPose();
+         var1.blit(GAMEMODE_SWITCHER_LOCATION, var5, var6, 0.0F, 0.0F, 125, 75, 128, 128);
+         var1.pose().popPose();
          super.render(var1, var2, var3, var4);
-         this.currentlyHovered.ifPresent(var2x -> drawCenteredString(var1, this.font, var2x.getName(), this.width / 2, this.height / 2 - 31 - 20, -1));
-         drawCenteredString(var1, this.font, SELECT_KEY, this.width / 2, this.height / 2 + 5, 16777215);
+         var1.drawCenteredString(this.font, this.currentlyHovered.getName(), this.width / 2, this.height / 2 - 31 - 20, -1);
+         var1.drawCenteredString(this.font, SELECT_KEY, this.width / 2, this.height / 2 + 5, 16777215);
          if (!this.setFirstMousePos) {
             this.firstMouseX = var2;
             this.firstMouseY = var3;
@@ -92,9 +87,9 @@ public class GameModeSwitcherScreen extends Screen {
 
          for(GameModeSwitcherScreen.GameModeSlot var9 : this.slots) {
             var9.render(var1, var2, var3, var4);
-            this.currentlyHovered.ifPresent(var1x -> var9.setSelected(var1x == var9.icon));
+            var9.setSelected(this.currentlyHovered == var9.icon);
             if (!var7 && var9.isHoveredOrFocused()) {
-               this.currentlyHovered = Optional.of(var9.icon);
+               this.currentlyHovered = var9.icon;
             }
          }
       }
@@ -104,12 +99,11 @@ public class GameModeSwitcherScreen extends Screen {
       switchToHoveredGameMode(this.minecraft, this.currentlyHovered);
    }
 
-   private static void switchToHoveredGameMode(Minecraft var0, Optional<GameModeSwitcherScreen.GameModeIcon> var1) {
-      if (var0.gameMode != null && var0.player != null && var1.isPresent()) {
-         Optional var2 = GameModeSwitcherScreen.GameModeIcon.getFromGameType(var0.gameMode.getPlayerMode());
-         GameModeSwitcherScreen.GameModeIcon var3 = (GameModeSwitcherScreen.GameModeIcon)var1.get();
-         if (var2.isPresent() && var0.player.hasPermissions(2) && var3 != var2.get()) {
-            var0.player.connection.sendUnsignedCommand(var3.getCommand());
+   private static void switchToHoveredGameMode(Minecraft var0, GameModeSwitcherScreen.GameModeIcon var1) {
+      if (var0.gameMode != null && var0.player != null) {
+         GameModeSwitcherScreen.GameModeIcon var2 = GameModeSwitcherScreen.GameModeIcon.getFromGameType(var0.gameMode.getPlayerMode());
+         if (var0.player.hasPermissions(2) && var1 != var2) {
+            var0.player.connection.sendUnsignedCommand(var1.getCommand());
          }
       }
    }
@@ -126,9 +120,9 @@ public class GameModeSwitcherScreen extends Screen {
 
    @Override
    public boolean keyPressed(int var1, int var2, int var3) {
-      if (var1 == 293 && this.currentlyHovered.isPresent()) {
+      if (var1 == 293) {
          this.setFirstMousePos = false;
-         this.currentlyHovered = this.currentlyHovered.get().getNext();
+         this.currentlyHovered = this.currentlyHovered.getNext();
          return true;
       } else {
          return super.keyPressed(var1, var2, var3);
@@ -159,8 +153,8 @@ public class GameModeSwitcherScreen extends Screen {
          this.renderStack = var5;
       }
 
-      void drawIcon(PoseStack var1, ItemRenderer var2, int var3, int var4) {
-         var2.renderAndDecorateItem(var1, this.renderStack, var3, var4);
+      void drawIcon(GuiGraphics var1, int var2, int var3) {
+         var1.renderItem(this.renderStack, var2, var3);
       }
 
       Component getName() {
@@ -171,32 +165,22 @@ public class GameModeSwitcherScreen extends Screen {
          return this.command;
       }
 
-      Optional<GameModeSwitcherScreen.GameModeIcon> getNext() {
-         switch(this) {
-            case CREATIVE:
-               return Optional.of(SURVIVAL);
-            case SURVIVAL:
-               return Optional.of(ADVENTURE);
-            case ADVENTURE:
-               return Optional.of(SPECTATOR);
-            default:
-               return Optional.of(CREATIVE);
-         }
+      GameModeSwitcherScreen.GameModeIcon getNext() {
+         return switch(this) {
+            case CREATIVE -> SURVIVAL;
+            case SURVIVAL -> ADVENTURE;
+            case ADVENTURE -> SPECTATOR;
+            case SPECTATOR -> CREATIVE;
+         };
       }
 
-      static Optional<GameModeSwitcherScreen.GameModeIcon> getFromGameType(GameType var0) {
-         switch(var0) {
-            case SPECTATOR:
-               return Optional.of(SPECTATOR);
-            case SURVIVAL:
-               return Optional.of(SURVIVAL);
-            case CREATIVE:
-               return Optional.of(CREATIVE);
-            case ADVENTURE:
-               return Optional.of(ADVENTURE);
-            default:
-               return Optional.empty();
-         }
+      static GameModeSwitcherScreen.GameModeIcon getFromGameType(GameType var0) {
+         return switch(var0) {
+            case SPECTATOR -> SPECTATOR;
+            case SURVIVAL -> SURVIVAL;
+            case CREATIVE -> CREATIVE;
+            case ADVENTURE -> ADVENTURE;
+         };
       }
    }
 
@@ -210,12 +194,11 @@ public class GameModeSwitcherScreen extends Screen {
       }
 
       @Override
-      public void renderWidget(PoseStack var1, int var2, int var3, float var4) {
-         Minecraft var5 = Minecraft.getInstance();
-         this.drawSlot(var1, var5.getTextureManager());
-         this.icon.drawIcon(var1, GameModeSwitcherScreen.this.itemRenderer, this.getX() + 5, this.getY() + 5);
+      public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
+         this.drawSlot(var1);
+         this.icon.drawIcon(var1, this.getX() + 5, this.getY() + 5);
          if (this.isSelected) {
-            this.drawSelection(var1, var5.getTextureManager());
+            this.drawSelection(var1);
          }
       }
 
@@ -233,20 +216,12 @@ public class GameModeSwitcherScreen extends Screen {
          this.isSelected = var1;
       }
 
-      private void drawSlot(PoseStack var1, TextureManager var2) {
-         RenderSystem.setShaderTexture(0, GameModeSwitcherScreen.GAMEMODE_SWITCHER_LOCATION);
-         var1.pushPose();
-         var1.translate((float)this.getX(), (float)this.getY(), 0.0F);
-         blit(var1, 0, 0, 0.0F, 75.0F, 26, 26, 128, 128);
-         var1.popPose();
+      private void drawSlot(GuiGraphics var1) {
+         var1.blit(GameModeSwitcherScreen.GAMEMODE_SWITCHER_LOCATION, this.getX(), this.getY(), 0.0F, 75.0F, 26, 26, 128, 128);
       }
 
-      private void drawSelection(PoseStack var1, TextureManager var2) {
-         RenderSystem.setShaderTexture(0, GameModeSwitcherScreen.GAMEMODE_SWITCHER_LOCATION);
-         var1.pushPose();
-         var1.translate((float)this.getX(), (float)this.getY(), 0.0F);
-         blit(var1, 0, 0, 26.0F, 75.0F, 26, 26, 128, 128);
-         var1.popPose();
+      private void drawSelection(GuiGraphics var1) {
+         var1.blit(GameModeSwitcherScreen.GAMEMODE_SWITCHER_LOCATION, this.getX(), this.getY(), 26.0F, 75.0F, 26, 26, 128, 128);
       }
    }
 }

@@ -13,8 +13,8 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.critereon.ContextAwarePredicate;
 import net.minecraft.advancements.critereon.EnterBlockTrigger;
-import net.minecraft.advancements.critereon.EntityPredicate;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.advancements.critereon.MinMaxBounds;
@@ -31,6 +31,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.HoneycombItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
@@ -151,13 +152,6 @@ public abstract class RecipeProvider implements DataProvider {
       }
    }
 
-   @Deprecated
-   protected static void legacyNetheriteSmithing(Consumer<FinishedRecipe> var0, Item var1, RecipeCategory var2, Item var3) {
-      LegacyUpgradeRecipeBuilder.smithing(Ingredient.of(var1), Ingredient.of(Items.NETHERITE_INGOT), var2, var3)
-         .unlocks("has_netherite_ingot", has(Items.NETHERITE_INGOT))
-         .save(var0, getItemName(var3) + "_smithing");
-   }
-
    protected static void netheriteSmithing(Consumer<FinishedRecipe> var0, Item var1, RecipeCategory var2, Item var3) {
       SmithingTransformRecipeBuilder.smithing(
             Ingredient.of(Items.NETHERITE_UPGRADE_SMITHING_TEMPLATE), Ingredient.of(var1), Ingredient.of(Items.NETHERITE_INGOT), var2, var3
@@ -166,12 +160,12 @@ public abstract class RecipeProvider implements DataProvider {
          .save(var0, getItemName(var3) + "_smithing");
    }
 
-   protected static void trimSmithing(Consumer<FinishedRecipe> var0, Item var1) {
+   protected static void trimSmithing(Consumer<FinishedRecipe> var0, Item var1, ResourceLocation var2) {
       SmithingTrimRecipeBuilder.smithingTrim(
             Ingredient.of(var1), Ingredient.of(ItemTags.TRIMMABLE_ARMOR), Ingredient.of(ItemTags.TRIM_MATERIALS), RecipeCategory.MISC
          )
          .unlocks("has_smithing_trim_template", has(var1))
-         .save(var0, getItemName(var1) + "_smithing_trim");
+         .save(var0, var2);
    }
 
    protected static void twoByTwoPacker(Consumer<FinishedRecipe> var0, RecipeCategory var1, ItemLike var2, ItemLike var3) {
@@ -287,13 +281,17 @@ public abstract class RecipeProvider implements DataProvider {
          .save(var0);
    }
 
-   protected static void coloredWoolFromWhiteWoolAndDye(Consumer<FinishedRecipe> var0, ItemLike var1, ItemLike var2) {
-      ShapelessRecipeBuilder.shapeless(RecipeCategory.BUILDING_BLOCKS, var1)
-         .requires(var2)
-         .requires(Blocks.WHITE_WOOL)
-         .group("wool")
-         .unlockedBy("has_white_wool", has(Blocks.WHITE_WOOL))
-         .save(var0);
+   protected static void colorBlockWithDye(Consumer<FinishedRecipe> var0, List<Item> var1, List<Item> var2, String var3) {
+      for(int var4 = 0; var4 < var1.size(); ++var4) {
+         Item var5 = (Item)var1.get(var4);
+         Item var6 = (Item)var2.get(var4);
+         ShapelessRecipeBuilder.shapeless(RecipeCategory.BUILDING_BLOCKS, var6)
+            .requires(var5)
+            .requires(Ingredient.of(var2.stream().filter(var1x -> !var1x.equals(var6)).map(ItemStack::new)))
+            .group(var3)
+            .unlockedBy("has_needed_dye", has(var5))
+            .save(var0, "dye_" + getItemName(var6));
+      }
    }
 
    protected static void carpet(Consumer<FinishedRecipe> var0, ItemLike var1, ItemLike var2) {
@@ -305,19 +303,6 @@ public abstract class RecipeProvider implements DataProvider {
          .save(var0);
    }
 
-   protected static void coloredCarpetFromWhiteCarpetAndDye(Consumer<FinishedRecipe> var0, ItemLike var1, ItemLike var2) {
-      ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, var1, 8)
-         .define('#', Blocks.WHITE_CARPET)
-         .define('$', var2)
-         .pattern("###")
-         .pattern("#$#")
-         .pattern("###")
-         .group("carpet")
-         .unlockedBy("has_white_carpet", has(Blocks.WHITE_CARPET))
-         .unlockedBy(getHasName(var2), has(var2))
-         .save(var0, getConversionRecipeName(var1, Blocks.WHITE_CARPET));
-   }
-
    protected static void bedFromPlanksAndWool(Consumer<FinishedRecipe> var0, ItemLike var1, ItemLike var2) {
       ShapedRecipeBuilder.shaped(RecipeCategory.DECORATIONS, var1)
          .define('#', var2)
@@ -327,15 +312,6 @@ public abstract class RecipeProvider implements DataProvider {
          .group("bed")
          .unlockedBy(getHasName(var2), has(var2))
          .save(var0);
-   }
-
-   protected static void bedFromWhiteBedAndDye(Consumer<FinishedRecipe> var0, ItemLike var1, ItemLike var2) {
-      ShapelessRecipeBuilder.shapeless(RecipeCategory.DECORATIONS, var1)
-         .requires(Items.WHITE_BED)
-         .requires(var2)
-         .group("dyed_bed")
-         .unlockedBy("has_bed", has(Items.WHITE_BED))
-         .save(var0, getConversionRecipeName(var1, Items.WHITE_BED));
    }
 
    protected static void banner(Consumer<FinishedRecipe> var0, ItemLike var1, ItemLike var2) {
@@ -597,7 +573,7 @@ public abstract class RecipeProvider implements DataProvider {
    }
 
    private static EnterBlockTrigger.TriggerInstance insideOf(Block var0) {
-      return new EnterBlockTrigger.TriggerInstance(EntityPredicate.Composite.ANY, var0, StatePropertiesPredicate.ANY);
+      return new EnterBlockTrigger.TriggerInstance(ContextAwarePredicate.ANY, var0, StatePropertiesPredicate.ANY);
    }
 
    private static InventoryChangeTrigger.TriggerInstance has(MinMaxBounds.Ints var0, ItemLike var1) {
@@ -613,9 +589,7 @@ public abstract class RecipeProvider implements DataProvider {
    }
 
    private static InventoryChangeTrigger.TriggerInstance inventoryTrigger(ItemPredicate... var0) {
-      return new InventoryChangeTrigger.TriggerInstance(
-         EntityPredicate.Composite.ANY, MinMaxBounds.Ints.ANY, MinMaxBounds.Ints.ANY, MinMaxBounds.Ints.ANY, var0
-      );
+      return new InventoryChangeTrigger.TriggerInstance(ContextAwarePredicate.ANY, MinMaxBounds.Ints.ANY, MinMaxBounds.Ints.ANY, MinMaxBounds.Ints.ANY, var0);
    }
 
    protected static String getHasName(ItemLike var0) {

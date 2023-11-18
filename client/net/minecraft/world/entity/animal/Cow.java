@@ -84,7 +84,7 @@ public class Cow extends Animal {
          var1.playSound(SoundEvents.COW_MILK, 1.0F, 1.0F);
          ItemStack var4 = ItemUtils.createFilledResult(var3, var1, Items.MILK_BUCKET.getDefaultInstance());
          var1.setItemInHand(var2, var4);
-         return InteractionResult.sidedSuccess(this.level.isClientSide);
+         return InteractionResult.sidedSuccess(this.level().isClientSide);
       } else {
          return super.mobInteract(var1, var2);
       }

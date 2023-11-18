@@ -18,7 +18,7 @@ public class ShotCrossbowTrigger extends SimpleCriterionTrigger<ShotCrossbowTrig
       return ID;
    }
 
-   public ShotCrossbowTrigger.TriggerInstance createInstance(JsonObject var1, EntityPredicate.Composite var2, DeserializationContext var3) {
+   public ShotCrossbowTrigger.TriggerInstance createInstance(JsonObject var1, ContextAwarePredicate var2, DeserializationContext var3) {
       ItemPredicate var4 = ItemPredicate.fromJson(var1.get("item"));
       return new ShotCrossbowTrigger.TriggerInstance(var2, var4);
    }
@@ -30,17 +30,17 @@ public class ShotCrossbowTrigger extends SimpleCriterionTrigger<ShotCrossbowTrig
    public static class TriggerInstance extends AbstractCriterionTriggerInstance {
       private final ItemPredicate item;
 
-      public TriggerInstance(EntityPredicate.Composite var1, ItemPredicate var2) {
+      public TriggerInstance(ContextAwarePredicate var1, ItemPredicate var2) {
          super(ShotCrossbowTrigger.ID, var1);
          this.item = var2;
       }
 
       public static ShotCrossbowTrigger.TriggerInstance shotCrossbow(ItemPredicate var0) {
-         return new ShotCrossbowTrigger.TriggerInstance(EntityPredicate.Composite.ANY, var0);
+         return new ShotCrossbowTrigger.TriggerInstance(ContextAwarePredicate.ANY, var0);
       }
 
       public static ShotCrossbowTrigger.TriggerInstance shotCrossbow(ItemLike var0) {
-         return new ShotCrossbowTrigger.TriggerInstance(EntityPredicate.Composite.ANY, ItemPredicate.Builder.item().of(var0).build());
+         return new ShotCrossbowTrigger.TriggerInstance(ContextAwarePredicate.ANY, ItemPredicate.Builder.item().of(var0).build());
       }
 
       public boolean matches(ItemStack var1) {

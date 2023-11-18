@@ -13,7 +13,7 @@ public interface HoglinBase {
       float var3 = (float)var0.getAttributeValue(Attributes.ATTACK_DAMAGE);
       float var2;
       if (!var0.isBaby() && (int)var3 > 0) {
-         var2 = var3 / 2.0F + (float)var0.level.random.nextInt((int)var3);
+         var2 = var3 / 2.0F + (float)var0.level().random.nextInt((int)var3);
       } else {
          var2 = var3;
       }
@@ -36,10 +36,10 @@ public interface HoglinBase {
       if (!(var6 <= 0.0)) {
          double var8 = var1.getX() - var0.getX();
          double var10 = var1.getZ() - var0.getZ();
-         float var12 = (float)(var0.level.random.nextInt(21) - 10);
-         double var13 = var6 * (double)(var0.level.random.nextFloat() * 0.5F + 0.2F);
+         float var12 = (float)(var0.level().random.nextInt(21) - 10);
+         double var13 = var6 * (double)(var0.level().random.nextFloat() * 0.5F + 0.2F);
          Vec3 var15 = new Vec3(var8, 0.0, var10).normalize().scale(var13).yRot(var12);
-         double var16 = var6 * (double)var0.level.random.nextFloat() * 0.5;
+         double var16 = var6 * (double)var0.level().random.nextFloat() * 0.5;
          var1.push(var15.x, var16, var15.z);
          var1.hurtMarked = true;
       }

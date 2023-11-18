@@ -6,6 +6,7 @@ import java.util.Locale;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.IntPredicate;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.LongStream;
@@ -13,7 +14,10 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -68,9 +72,13 @@ public class GameTestHelper {
    }
 
    public void killAllEntities() {
-      AABB var1 = this.getBounds();
-      List var2 = this.getLevel().getEntitiesOfClass(Entity.class, var1.inflate(1.0), var0 -> !(var0 instanceof Player));
-      var2.forEach(Entity::kill);
+      this.killAllEntitiesOfClass(Entity.class);
+   }
+
+   public void killAllEntitiesOfClass(Class var1) {
+      AABB var2 = this.getBounds();
+      List var3 = this.getLevel().getEntitiesOfClass(var1, var2.inflate(1.0), var0 -> !(var0 instanceof Player));
+      var3.forEach(Entity::kill);
    }
 
    public ItemEntity spawnItem(Item var1, float var2, float var3, float var4) {
@@ -175,21 +183,6 @@ public class GameTestHelper {
       }
    }
 
-   public void continuouslyUse(BlockPos var1, Player var2, BlockHitResult var3) {
-      BlockPos var4 = this.absolutePos(var1);
-      BlockState var5 = this.getLevel().getBlockState(var4);
-      InteractionResult var6 = var5.use(this.getLevel(), var2, InteractionHand.MAIN_HAND, var3);
-      if (!var6.consumesAction()) {
-         UseOnContext var7 = new UseOnContext(var2, InteractionHand.MAIN_HAND, var3);
-         ItemStack var8 = var2.getItemInHand(InteractionHand.MAIN_HAND);
-         if (var2.isUsingItem()) {
-            var8.onUseTick(this.getLevel(), var2, var2.getUseItemRemainingTicks());
-         } else {
-            var8.useOn(var7);
-         }
-      }
-   }
-
    public LivingEntity makeAboutToDrown(LivingEntity var1) {
       var1.setAirSupply(0);
       var1.setHealth(0.25F);
@@ -210,6 +203,11 @@ public class GameTestHelper {
       };
    }
 
+   public LivingEntity withLowHealth(LivingEntity var1) {
+      var1.setHealth(0.25F);
+      return var1;
+   }
+
    public Player makeMockPlayer() {
       return new Player(this.getLevel(), BlockPos.ZERO, 0.0F, new GameProfile(UUID.randomUUID(), "test-mock-player")) {
          @Override
@@ -227,6 +225,22 @@ public class GameTestHelper {
             return true;
          }
       };
+   }
+
+   public ServerPlayer makeMockServerPlayerInLevel() {
+      ServerPlayer var1 = new ServerPlayer(this.getLevel().getServer(), this.getLevel(), new GameProfile(UUID.randomUUID(), "test-mock-player")) {
+         @Override
+         public boolean isSpectator() {
+            return false;
+         }
+
+         @Override
+         public boolean isCreative() {
+            return true;
+         }
+      };
+      this.getLevel().getServer().getPlayerList().placeNewPlayer(new Connection(PacketFlow.SERVERBOUND), var1);
+      return var1;
    }
 
    public void pullLever(int var1, int var2, int var3) {
@@ -318,13 +332,30 @@ public class GameTestHelper {
    }
 
    public <T extends Comparable<T>> void assertBlockProperty(BlockPos var1, Property<T> var2, Predicate<T> var3, String var4) {
-      this.assertBlockState(var1, var2x -> var3.test(var2x.getValue(var2)), () -> var4);
+      this.assertBlockState(var1, var2x -> {
+         if (!var2x.hasProperty(var2)) {
+            return false;
+         } else {
+            Comparable var3x = var2x.getValue(var2);
+            return var3.test(var3x);
+         }
+      }, () -> var4);
    }
 
    public void assertBlockState(BlockPos var1, Predicate<BlockState> var2, Supplier<String> var3) {
       BlockState var4 = this.getBlockState(var1);
       if (!var2.test(var4)) {
          throw new GameTestAssertPosException((String)var3.get(), this.absolutePos(var1), var1, this.testInfo.getTick());
+      }
+   }
+
+   public void assertRedstoneSignal(BlockPos var1, Direction var2, IntPredicate var3, Supplier<String> var4) {
+      BlockPos var5 = this.absolutePos(var1);
+      ServerLevel var6 = this.getLevel();
+      BlockState var7 = var6.getBlockState(var5);
+      int var8 = var7.getSignal(var6, var5, var2);
+      if (!var3.test(var8)) {
+         throw new GameTestAssertPosException((String)var4.get(), var5, var1, this.testInfo.getTick());
       }
    }
 
@@ -400,10 +431,10 @@ public class GameTestHelper {
       List var7 = this.getLevel().getEntities(EntityType.ITEM, new AABB(var6).inflate(var3), Entity::isAlive);
       int var8 = 0;
 
-      for(Entity var10 : var7) {
-         ItemEntity var11 = (ItemEntity)var10;
-         if (var11.getItem().getItem().equals(var1)) {
-            var8 += var11.getItem().getCount();
+      for(ItemEntity var10 : var7) {
+         ItemStack var11 = var10.getItem();
+         if (var11.is(var1)) {
+            var8 += var11.getCount();
          }
       }
 
@@ -697,6 +728,12 @@ public class GameTestHelper {
 
    public void assertTrue(boolean var1, String var2) {
       if (!var1) {
+         throw new GameTestAssertException(var2);
+      }
+   }
+
+   public void assertFalse(boolean var1, String var2) {
+      if (var1) {
          throw new GameTestAssertException(var2);
       }
    }

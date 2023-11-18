@@ -33,9 +33,6 @@ public class TrimMaterials {
    }
 
    public static void bootstrap(BootstapContext<TrimMaterial> var0) {
-   }
-
-   public static void nextUpdate(BootstapContext<TrimMaterial> var0) {
       register(var0, QUARTZ, Items.QUARTZ, Style.EMPTY.withColor(14931140), 0.1F);
       register(var0, IRON, Items.IRON_INGOT, Style.EMPTY.withColor(15527148), 0.2F, Map.of(ArmorMaterials.IRON, "iron_darker"));
       register(var0, NETHERITE, Items.NETHERITE_INGOT, Style.EMPTY.withColor(6445145), 0.3F, Map.of(ArmorMaterials.NETHERITE, "netherite_darker"));

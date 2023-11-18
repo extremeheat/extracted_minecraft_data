@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.screens.telemetry;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.function.DoubleConsumer;
@@ -8,6 +7,7 @@ import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractScrollWidget;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
 import net.minecraft.client.gui.layouts.GridLayout;
@@ -78,23 +78,18 @@ public class TelemetryEventWidget extends AbstractScrollWidget {
    }
 
    @Override
-   protected boolean scrollbarVisible() {
-      return this.getInnerHeight() > this.height;
-   }
-
-   @Override
    protected double scrollRate() {
       return 9.0;
    }
 
    @Override
-   protected void renderContents(PoseStack var1, int var2, int var3, float var4) {
+   protected void renderContents(GuiGraphics var1, int var2, int var3, float var4) {
       int var5 = this.getY() + this.innerPadding();
       int var6 = this.getX() + this.innerPadding();
-      var1.pushPose();
-      var1.translate((double)var6, (double)var5, 0.0);
+      var1.pose().pushPose();
+      var1.pose().translate((double)var6, (double)var5, 0.0);
       this.content.container().visitWidgets(var4x -> var4x.render(var1, var2, var3, var4));
-      var1.popPose();
+      var1.pose().popPose();
    }
 
    @Override

@@ -47,7 +47,7 @@ public class OpCommand {
          if (!var2.isOp(var5)) {
             var2.op(var5);
             ++var3;
-            var0.sendSuccess(Component.translatable("commands.op.success", ((GameProfile)var1.iterator().next()).getName()), true);
+            var0.sendSuccess(() -> Component.translatable("commands.op.success", ((GameProfile)var1.iterator().next()).getName()), true);
          }
       }
 

@@ -105,19 +105,19 @@ public class MushroomCow extends Cow implements Shearable, VariantHolder<Mushroo
          }
 
          this.playSound(var7, 1.0F, 1.0F);
-         return InteractionResult.sidedSuccess(this.level.isClientSide);
+         return InteractionResult.sidedSuccess(this.level().isClientSide);
       } else if (var3.is(Items.SHEARS) && this.readyForShearing()) {
          this.shear(SoundSource.PLAYERS);
          this.gameEvent(GameEvent.SHEAR, var1);
-         if (!this.level.isClientSide) {
+         if (!this.level().isClientSide) {
             var3.hurtAndBreak(1, var1, var1x -> var1x.broadcastBreakEvent(var2));
          }
 
-         return InteractionResult.sidedSuccess(this.level.isClientSide);
+         return InteractionResult.sidedSuccess(this.level().isClientSide);
       } else if (this.getVariant() == MushroomCow.MushroomType.BROWN && var3.is(ItemTags.SMALL_FLOWERS)) {
          if (this.effect != null) {
             for(int var4 = 0; var4 < 2; ++var4) {
-               this.level
+               this.level()
                   .addParticle(
                      ParticleTypes.SMOKE,
                      this.getX() + this.random.nextDouble() / 2.0,
@@ -140,7 +140,7 @@ public class MushroomCow extends Cow implements Shearable, VariantHolder<Mushroo
             }
 
             for(int var6 = 0; var6 < 4; ++var6) {
-               this.level
+               this.level()
                   .addParticle(
                      ParticleTypes.EFFECT,
                      this.getX() + this.random.nextDouble() / 2.0,
@@ -157,7 +157,7 @@ public class MushroomCow extends Cow implements Shearable, VariantHolder<Mushroo
             this.playSound(SoundEvents.MOOSHROOM_EAT, 2.0F, 1.0F);
          }
 
-         return InteractionResult.sidedSuccess(this.level.isClientSide);
+         return InteractionResult.sidedSuccess(this.level().isClientSide);
       } else {
          return super.mobInteract(var1, var2);
       }
@@ -165,11 +165,11 @@ public class MushroomCow extends Cow implements Shearable, VariantHolder<Mushroo
 
    @Override
    public void shear(SoundSource var1) {
-      this.level.playSound(null, this, SoundEvents.MOOSHROOM_SHEAR, var1, 1.0F, 1.0F);
-      if (!this.level.isClientSide()) {
-         Cow var2 = EntityType.COW.create(this.level);
+      this.level().playSound(null, this, SoundEvents.MOOSHROOM_SHEAR, var1, 1.0F, 1.0F);
+      if (!this.level().isClientSide()) {
+         Cow var2 = EntityType.COW.create(this.level());
          if (var2 != null) {
-            ((ServerLevel)this.level).sendParticles(ParticleTypes.EXPLOSION, this.getX(), this.getY(0.5), this.getZ(), 1, 0.0, 0.0, 0.0, 0.0);
+            ((ServerLevel)this.level()).sendParticles(ParticleTypes.EXPLOSION, this.getX(), this.getY(0.5), this.getZ(), 1, 0.0, 0.0, 0.0, 0.0);
             this.discard();
             var2.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), this.getXRot());
             var2.setHealth(this.getHealth());
@@ -184,11 +184,13 @@ public class MushroomCow extends Cow implements Shearable, VariantHolder<Mushroo
             }
 
             var2.setInvulnerable(this.isInvulnerable());
-            this.level.addFreshEntity(var2);
+            this.level().addFreshEntity(var2);
 
             for(int var3 = 0; var3 < 5; ++var3) {
-               this.level
-                  .addFreshEntity(new ItemEntity(this.level, this.getX(), this.getY(1.0), this.getZ(), new ItemStack(this.getVariant().blockState.getBlock())));
+               this.level()
+                  .addFreshEntity(
+                     new ItemEntity(this.level(), this.getX(), this.getY(1.0), this.getZ(), new ItemStack(this.getVariant().blockState.getBlock()))
+                  );
             }
          }
       }
@@ -213,11 +215,11 @@ public class MushroomCow extends Cow implements Shearable, VariantHolder<Mushroo
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       this.setVariant(MushroomCow.MushroomType.byType(var1.getString("Type")));
-      if (var1.contains("EffectId", 1)) {
+      if (var1.contains("EffectId", 99)) {
          this.effect = MobEffect.byId(var1.getInt("EffectId"));
       }
 
-      if (var1.contains("EffectDuration", 3)) {
+      if (var1.contains("EffectDuration", 99)) {
          this.effectDuration = var1.getInt("EffectDuration");
       }
    }

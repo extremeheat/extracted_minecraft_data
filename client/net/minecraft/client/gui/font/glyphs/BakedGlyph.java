@@ -2,13 +2,12 @@ package net.minecraft.client.gui.font.glyphs;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.font.GlyphRenderTypes;
 import net.minecraft.client.renderer.RenderType;
 import org.joml.Matrix4f;
 
 public class BakedGlyph {
-   private final RenderType normalType;
-   private final RenderType seeThroughType;
-   private final RenderType polygonOffsetType;
+   private final GlyphRenderTypes renderTypes;
    private final float u0;
    private final float u1;
    private final float v0;
@@ -18,21 +17,17 @@ public class BakedGlyph {
    private final float up;
    private final float down;
 
-   public BakedGlyph(
-      RenderType var1, RenderType var2, RenderType var3, float var4, float var5, float var6, float var7, float var8, float var9, float var10, float var11
-   ) {
+   public BakedGlyph(GlyphRenderTypes var1, float var2, float var3, float var4, float var5, float var6, float var7, float var8, float var9) {
       super();
-      this.normalType = var1;
-      this.seeThroughType = var2;
-      this.polygonOffsetType = var3;
-      this.u0 = var4;
-      this.u1 = var5;
-      this.v0 = var6;
-      this.v1 = var7;
-      this.left = var8;
-      this.right = var9;
-      this.up = var10;
-      this.down = var11;
+      this.renderTypes = var1;
+      this.u0 = var2;
+      this.u1 = var3;
+      this.v0 = var4;
+      this.v1 = var5;
+      this.left = var6;
+      this.right = var7;
+      this.up = var8;
+      this.down = var9;
    }
 
    public void render(boolean var1, float var2, float var3, Matrix4f var4, VertexConsumer var5, float var6, float var7, float var8, float var9, int var10) {
@@ -59,11 +54,7 @@ public class BakedGlyph {
    }
 
    public RenderType renderType(Font.DisplayMode var1) {
-      return switch(var1) {
-         case NORMAL -> this.normalType;
-         case SEE_THROUGH -> this.seeThroughType;
-         case POLYGON_OFFSET -> this.polygonOffsetType;
-      };
+      return this.renderTypes.select(var1);
    }
 
    public static class Effect {

@@ -2,8 +2,6 @@ package net.minecraft.client.gui.screens.inventory;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
@@ -12,6 +10,7 @@ import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.nbt.CompoundTag;
@@ -157,12 +156,11 @@ public class BookViewScreen extends Screen {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderBackground(var1);
-      RenderSystem.setShaderTexture(0, BOOK_LOCATION);
       int var5 = (this.width - 192) / 2;
       boolean var6 = true;
-      blit(var1, var5, 2, 0, 0, 192, 192);
+      var1.blit(BOOK_LOCATION, var5, 2, 0, 0, 192, 192);
       if (this.cachedPage != this.currentPage) {
          FormattedText var7 = this.bookAccess.getPage(this.currentPage);
          this.cachedPageComponents = this.font.split(var7, 114);
@@ -171,17 +169,17 @@ public class BookViewScreen extends Screen {
 
       this.cachedPage = this.currentPage;
       int var11 = this.font.width(this.pageMsg);
-      this.font.draw(var1, this.pageMsg, (float)(var5 - var11 + 192 - 44), 18.0F, 0);
+      var1.drawString(this.font, this.pageMsg, var5 - var11 + 192 - 44, 18, 0, false);
       int var8 = Math.min(128 / 9, this.cachedPageComponents.size());
 
       for(int var9 = 0; var9 < var8; ++var9) {
          FormattedCharSequence var10 = this.cachedPageComponents.get(var9);
-         this.font.draw(var1, var10, (float)(var5 + 36), (float)(32 + var9 * 9), 0);
+         var1.drawString(this.font, var10, var5 + 36, 32 + var9 * 9, 0, false);
       }
 
       Style var12 = this.getClickedComponentStyleAt((double)var2, (double)var3);
       if (var12 != null) {
-         this.renderComponentHoverEffect(var1, var12, var2, var3);
+         var1.renderComponentHoverEffect(this.font, var12, var2, var3);
       }
 
       super.render(var1, var2, var3, var4);

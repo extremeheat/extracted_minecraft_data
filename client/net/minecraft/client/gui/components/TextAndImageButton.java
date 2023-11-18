@@ -1,7 +1,7 @@
 package net.minecraft.client.gui.components;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 
@@ -34,7 +34,7 @@ public class TextAndImageButton extends Button {
    }
 
    @Override
-   public void renderWidget(PoseStack var1, int var2, int var3, float var4) {
+   public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       super.renderWidget(var1, var2, var3, var4);
       this.renderTexture(
          var1,
@@ -52,7 +52,7 @@ public class TextAndImageButton extends Button {
    }
 
    @Override
-   public void renderString(PoseStack var1, Font var2, int var3) {
+   public void renderString(GuiGraphics var1, Font var2, int var3) {
       int var4 = this.getX() + 2;
       int var5 = this.getX() + this.getWidth() - this.usedTextureWidth - 6;
       renderScrollingString(var1, var2, this.getMessage(), var4, this.getY(), var5, this.getY() + this.getHeight(), var3);

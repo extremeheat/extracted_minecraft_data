@@ -17,7 +17,7 @@ public class SmithingTrimRecipeBuilder {
    private final Ingredient template;
    private final Ingredient base;
    private final Ingredient addition;
-   private final Advancement.Builder advancement = Advancement.Builder.advancement();
+   private final Advancement.Builder advancement = Advancement.Builder.recipeAdvancement();
    private final RecipeSerializer<?> type;
 
    public SmithingTrimRecipeBuilder(RecipeSerializer<?> var1, RecipeCategory var2, Ingredient var3, Ingredient var4, Ingredient var5) {
@@ -36,10 +36,6 @@ public class SmithingTrimRecipeBuilder {
    public SmithingTrimRecipeBuilder unlocks(String var1, CriterionTriggerInstance var2) {
       this.advancement.addCriterion(var1, var2);
       return this;
-   }
-
-   public void save(Consumer<FinishedRecipe> var1, String var2) {
-      this.save(var1, new ResourceLocation(var2));
    }
 
    public void save(Consumer<FinishedRecipe> var1, ResourceLocation var2) {

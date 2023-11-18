@@ -1,11 +1,11 @@
 package net.minecraft.client.gui.screens.inventory;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
@@ -411,45 +411,45 @@ public class StructureBlockEditScreen extends Screen {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderBackground(var1);
       StructureMode var5 = this.structure.getMode();
-      drawCenteredString(var1, this.font, this.title, this.width / 2, 10, 16777215);
+      var1.drawCenteredString(this.font, this.title, this.width / 2, 10, 16777215);
       if (var5 != StructureMode.DATA) {
-         drawString(var1, this.font, NAME_LABEL, this.width / 2 - 153, 30, 10526880);
+         var1.drawString(this.font, NAME_LABEL, this.width / 2 - 153, 30, 10526880);
          this.nameEdit.render(var1, var2, var3, var4);
       }
 
       if (var5 == StructureMode.LOAD || var5 == StructureMode.SAVE) {
-         drawString(var1, this.font, POSITION_LABEL, this.width / 2 - 153, 70, 10526880);
+         var1.drawString(this.font, POSITION_LABEL, this.width / 2 - 153, 70, 10526880);
          this.posXEdit.render(var1, var2, var3, var4);
          this.posYEdit.render(var1, var2, var3, var4);
          this.posZEdit.render(var1, var2, var3, var4);
-         drawString(var1, this.font, INCLUDE_ENTITIES_LABEL, this.width / 2 + 154 - this.font.width(INCLUDE_ENTITIES_LABEL), 150, 10526880);
+         var1.drawString(this.font, INCLUDE_ENTITIES_LABEL, this.width / 2 + 154 - this.font.width(INCLUDE_ENTITIES_LABEL), 150, 10526880);
       }
 
       if (var5 == StructureMode.SAVE) {
-         drawString(var1, this.font, SIZE_LABEL, this.width / 2 - 153, 110, 10526880);
+         var1.drawString(this.font, SIZE_LABEL, this.width / 2 - 153, 110, 10526880);
          this.sizeXEdit.render(var1, var2, var3, var4);
          this.sizeYEdit.render(var1, var2, var3, var4);
          this.sizeZEdit.render(var1, var2, var3, var4);
-         drawString(var1, this.font, DETECT_SIZE_LABEL, this.width / 2 + 154 - this.font.width(DETECT_SIZE_LABEL), 110, 10526880);
-         drawString(var1, this.font, SHOW_AIR_LABEL, this.width / 2 + 154 - this.font.width(SHOW_AIR_LABEL), 70, 10526880);
+         var1.drawString(this.font, DETECT_SIZE_LABEL, this.width / 2 + 154 - this.font.width(DETECT_SIZE_LABEL), 110, 10526880);
+         var1.drawString(this.font, SHOW_AIR_LABEL, this.width / 2 + 154 - this.font.width(SHOW_AIR_LABEL), 70, 10526880);
       }
 
       if (var5 == StructureMode.LOAD) {
-         drawString(var1, this.font, INTEGRITY_LABEL, this.width / 2 - 153, 110, 10526880);
+         var1.drawString(this.font, INTEGRITY_LABEL, this.width / 2 - 153, 110, 10526880);
          this.integrityEdit.render(var1, var2, var3, var4);
          this.seedEdit.render(var1, var2, var3, var4);
-         drawString(var1, this.font, SHOW_BOUNDING_BOX_LABEL, this.width / 2 + 154 - this.font.width(SHOW_BOUNDING_BOX_LABEL), 70, 10526880);
+         var1.drawString(this.font, SHOW_BOUNDING_BOX_LABEL, this.width / 2 + 154 - this.font.width(SHOW_BOUNDING_BOX_LABEL), 70, 10526880);
       }
 
       if (var5 == StructureMode.DATA) {
-         drawString(var1, this.font, CUSTOM_DATA_LABEL, this.width / 2 - 153, 110, 10526880);
+         var1.drawString(this.font, CUSTOM_DATA_LABEL, this.width / 2 - 153, 110, 10526880);
          this.dataEdit.render(var1, var2, var3, var4);
       }
 
-      drawString(var1, this.font, var5.getDisplayName(), this.width / 2 - 153, 174, 10526880);
+      var1.drawString(this.font, var5.getDisplayName(), this.width / 2 - 153, 174, 10526880);
       super.render(var1, var2, var3, var4);
    }
 

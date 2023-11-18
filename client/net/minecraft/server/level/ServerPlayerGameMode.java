@@ -45,7 +45,7 @@ public class ServerPlayerGameMode {
    public ServerPlayerGameMode(ServerPlayer var1) {
       super();
       this.player = var1;
-      this.level = var1.getLevel();
+      this.level = var1.serverLevel();
    }
 
    public boolean changeGameModeForPlayer(GameType var1) {
@@ -113,7 +113,7 @@ public class ServerPlayerGameMode {
 
    private float incrementDestroyProgress(BlockState var1, BlockPos var2, int var3) {
       int var4 = this.gameTicks - var3;
-      float var5 = var1.getDestroyProgress(this.player, this.player.level, var2) * (float)(var4 + 1);
+      float var5 = var1.getDestroyProgress(this.player, this.player.level(), var2) * (float)(var4 + 1);
       int var6 = (int)(var5 * 10.0F);
       if (var6 != this.lastSentState) {
          this.level.destroyBlockProgress(this.player.getId(), var2, var6);
@@ -156,7 +156,7 @@ public class ServerPlayerGameMode {
             BlockState var7 = this.level.getBlockState(var1);
             if (!var7.isAir()) {
                var7.attack(this.level, var1, this.player);
-               var6 = var7.getDestroyProgress(this.player, this.player.level, var1);
+               var6 = var7.getDestroyProgress(this.player, this.player.level(), var1);
             }
 
             if (!var7.isAir() && var6 >= 1.0F) {
@@ -179,7 +179,7 @@ public class ServerPlayerGameMode {
                int var9 = this.gameTicks - this.destroyProgressStart;
                BlockState var10 = this.level.getBlockState(var1);
                if (!var10.isAir()) {
-                  float var11 = var10.getDestroyProgress(this.player, this.player.level, var1) * (float)(var9 + 1);
+                  float var11 = var10.getDestroyProgress(this.player, this.player.level(), var1) * (float)(var9 + 1);
                   if (var11 >= 0.7F) {
                      this.isDestroyingBlock = false;
                      this.level.destroyBlockProgress(this.player.getId(), var1, -1);
@@ -275,7 +275,7 @@ public class ServerPlayerGameMode {
                var1.setItemInHand(var4, var8);
             }
 
-            if (this.isCreative()) {
+            if (this.isCreative() && var8 != ItemStack.EMPTY) {
                var8.setCount(var5);
                if (var8.isDamageableItem() && var8.getDamageValue() != var6) {
                   var8.setDamageValue(var6);

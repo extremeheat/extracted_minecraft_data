@@ -110,14 +110,13 @@ public class VertexFormat {
    public VertexBuffer getImmediateDrawVertexBuffer() {
       VertexBuffer var1 = this.immediateDrawVertexBuffer;
       if (var1 == null) {
-         this.immediateDrawVertexBuffer = var1 = new VertexBuffer();
+         this.immediateDrawVertexBuffer = var1 = new VertexBuffer(VertexBuffer.Usage.DYNAMIC);
       }
 
       return var1;
    }
 
    public static enum IndexType {
-      BYTE(5121, 1),
       SHORT(5123, 2),
       INT(5125, 4);
 
@@ -130,11 +129,7 @@ public class VertexFormat {
       }
 
       public static VertexFormat.IndexType least(int var0) {
-         if ((var0 & -65536) != 0) {
-            return INT;
-         } else {
-            return (var0 & 0xFF00) != 0 ? SHORT : BYTE;
-         }
+         return (var0 & -65536) != 0 ? INT : SHORT;
       }
    }
 

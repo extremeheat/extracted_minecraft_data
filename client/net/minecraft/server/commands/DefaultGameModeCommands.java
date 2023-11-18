@@ -38,7 +38,7 @@ public class DefaultGameModeCommands {
          }
       }
 
-      var0.sendSuccess(Component.translatable("commands.defaultgamemode.success", var1.getLongDisplayName()), true);
+      var0.sendSuccess(() -> Component.translatable("commands.defaultgamemode.success", var1.getLongDisplayName()), true);
       return var2;
    }
 }

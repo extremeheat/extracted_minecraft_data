@@ -90,12 +90,12 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
    @Override
    public void aiStep() {
       super.aiStep();
-      if (!this.level.isClientSide) {
-         if (this.level.getBiome(this.blockPosition()).is(BiomeTags.SNOW_GOLEM_MELTS)) {
+      if (!this.level().isClientSide) {
+         if (this.level().getBiome(this.blockPosition()).is(BiomeTags.SNOW_GOLEM_MELTS)) {
             this.hurt(this.damageSources().onFire(), 1.0F);
          }
 
-         if (!this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
+         if (!this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
             return;
          }
 
@@ -106,9 +106,9 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
             int var4 = Mth.floor(this.getY());
             int var5 = Mth.floor(this.getZ() + (double)((float)(var2 / 2 % 2 * 2 - 1) * 0.25F));
             BlockPos var6 = new BlockPos(var3, var4, var5);
-            if (this.level.getBlockState(var6).isAir() && var1.canSurvive(this.level, var6)) {
-               this.level.setBlockAndUpdate(var6, var1);
-               this.level.gameEvent(GameEvent.BLOCK_PLACE, var6, GameEvent.Context.of(this, var1));
+            if (this.level().getBlockState(var6).isAir() && var1.canSurvive(this.level(), var6)) {
+               this.level().setBlockAndUpdate(var6, var1);
+               this.level().gameEvent(GameEvent.BLOCK_PLACE, var6, GameEvent.Context.of(this, var1));
             }
          }
       }
@@ -116,7 +116,7 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
 
    @Override
    public void performRangedAttack(LivingEntity var1, float var2) {
-      Snowball var3 = new Snowball(this.level, this);
+      Snowball var3 = new Snowball(this.level(), this);
       double var4 = var1.getEyeY() - 1.100000023841858;
       double var6 = var1.getX() - this.getX();
       double var8 = var4 - var3.getY();
@@ -124,7 +124,7 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
       double var12 = Math.sqrt(var6 * var6 + var10 * var10) * 0.20000000298023224;
       var3.shoot(var6, var8 + var12, var10, 1.6F, 12.0F);
       this.playSound(SoundEvents.SNOW_GOLEM_SHOOT, 1.0F, 0.4F / (this.getRandom().nextFloat() * 0.4F + 0.8F));
-      this.level.addFreshEntity(var3);
+      this.level().addFreshEntity(var3);
    }
 
    @Override
@@ -138,11 +138,11 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
       if (var3.is(Items.SHEARS) && this.readyForShearing()) {
          this.shear(SoundSource.PLAYERS);
          this.gameEvent(GameEvent.SHEAR, var1);
-         if (!this.level.isClientSide) {
+         if (!this.level().isClientSide) {
             var3.hurtAndBreak(1, var1, var1x -> var1x.broadcastBreakEvent(var2));
          }
 
-         return InteractionResult.sidedSuccess(this.level.isClientSide);
+         return InteractionResult.sidedSuccess(this.level().isClientSide);
       } else {
          return InteractionResult.PASS;
       }
@@ -150,8 +150,8 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
 
    @Override
    public void shear(SoundSource var1) {
-      this.level.playSound(null, this, SoundEvents.SNOW_GOLEM_SHEAR, var1, 1.0F, 1.0F);
-      if (!this.level.isClientSide()) {
+      this.level().playSound(null, this, SoundEvents.SNOW_GOLEM_SHEAR, var1, 1.0F, 1.0F);
+      if (!this.level().isClientSide()) {
          this.setPumpkin(false);
          this.spawnAtLocation(new ItemStack(Items.CARVED_PUMPKIN), 1.7F);
       }

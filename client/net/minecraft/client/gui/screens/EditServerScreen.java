@@ -1,8 +1,8 @@
 package net.minecraft.client.gui.screens;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
@@ -97,11 +97,11 @@ public class EditServerScreen extends Screen {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderBackground(var1);
-      drawCenteredString(var1, this.font, this.title, this.width / 2, 17, 16777215);
-      drawString(var1, this.font, NAME_LABEL, this.width / 2 - 100, 53, 10526880);
-      drawString(var1, this.font, IP_LABEL, this.width / 2 - 100, 94, 10526880);
+      var1.drawCenteredString(this.font, this.title, this.width / 2, 17, 16777215);
+      var1.drawString(this.font, NAME_LABEL, this.width / 2 - 100, 53, 10526880);
+      var1.drawString(this.font, IP_LABEL, this.width / 2 - 100, 94, 10526880);
       this.nameEdit.render(var1, var2, var3, var4);
       this.ipEdit.render(var1, var2, var3, var4);
       super.render(var1, var2, var3, var4);

@@ -27,7 +27,6 @@ import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.util.thread.BlockableEventLoop;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
@@ -40,6 +39,7 @@ import net.minecraft.world.level.chunk.ChunkGeneratorStructureState;
 import net.minecraft.world.level.chunk.ChunkSource;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.LightChunk;
 import net.minecraft.world.level.chunk.storage.ChunkScanAccess;
 import net.minecraft.world.level.entity.ChunkStatusUpdateListener;
 import net.minecraft.world.level.levelgen.RandomState;
@@ -218,7 +218,7 @@ public class ServerChunkCache extends ChunkSource {
    private CompletableFuture<Either<ChunkAccess, ChunkHolder.ChunkLoadingFailure>> getChunkFutureMainThread(int var1, int var2, ChunkStatus var3, boolean var4) {
       ChunkPos var5 = new ChunkPos(var1, var2);
       long var6 = var5.toLong();
-      int var8 = 33 + ChunkStatus.getDistance(var3);
+      int var8 = ChunkLevel.byStatus(var3);
       ChunkHolder var9 = this.getVisibleChunkIfPresent(var6);
       if (var4) {
          this.distanceManager.addTicket(TicketType.UNKNOWN, var5, var8, var5);
@@ -244,12 +244,13 @@ public class ServerChunkCache extends ChunkSource {
    @Override
    public boolean hasChunk(int var1, int var2) {
       ChunkHolder var3 = this.getVisibleChunkIfPresent(new ChunkPos(var1, var2).toLong());
-      int var4 = 33 + ChunkStatus.getDistance(ChunkStatus.FULL);
+      int var4 = ChunkLevel.byStatus(ChunkStatus.FULL);
       return !this.chunkAbsent(var3, var4);
    }
 
+   @Nullable
    @Override
-   public BlockGetter getChunkForLighting(int var1, int var2) {
+   public LightChunk getChunkForLighting(int var1, int var2) {
       long var3 = ChunkPos.asLong(var1, var2);
       ChunkHolder var5 = this.getVisibleChunkIfPresent(var3);
       if (var5 == null) {
@@ -261,10 +262,10 @@ public class ServerChunkCache extends ChunkSource {
             ChunkStatus var7 = CHUNK_STATUSES.get(var6);
             Optional var8 = ((Either)var5.getFutureIfPresentUnchecked(var7).getNow(ChunkHolder.UNLOADED_CHUNK)).left();
             if (var8.isPresent()) {
-               return (BlockGetter)var8.get();
+               return (LightChunk)var8.get();
             }
 
-            if (var7 == ChunkStatus.LIGHT.getParent()) {
+            if (var7 == ChunkStatus.INITIALIZE_LIGHT.getParent()) {
                return null;
             }
 

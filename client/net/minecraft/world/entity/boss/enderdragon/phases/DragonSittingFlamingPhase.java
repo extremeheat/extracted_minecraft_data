@@ -40,7 +40,7 @@ public class DragonSittingFlamingPhase extends AbstractDragonSittingPhase {
 
             for(int var15 = 0; var15 < 6; ++var15) {
                this.dragon
-                  .level
+                  .level()
                   .addParticle(
                      ParticleTypes.DRAGON_BREATH,
                      var9,
@@ -75,7 +75,7 @@ public class DragonSittingFlamingPhase extends AbstractDragonSittingPhase {
          double var9 = var7;
          BlockPos.MutableBlockPos var11 = new BlockPos.MutableBlockPos(var3, var7, var5);
 
-         while(this.dragon.level.isEmptyBlock(var11)) {
+         while(this.dragon.level().isEmptyBlock(var11)) {
             if (--var9 < 0.0) {
                var9 = var7;
                break;
@@ -85,13 +85,13 @@ public class DragonSittingFlamingPhase extends AbstractDragonSittingPhase {
          }
 
          var9 = (double)(Mth.floor(var9) + 1);
-         this.flame = new AreaEffectCloud(this.dragon.level, var3, var9, var5);
+         this.flame = new AreaEffectCloud(this.dragon.level(), var3, var9, var5);
          this.flame.setOwner(this.dragon);
          this.flame.setRadius(5.0F);
          this.flame.setDuration(200);
          this.flame.setParticle(ParticleTypes.DRAGON_BREATH);
          this.flame.addEffect(new MobEffectInstance(MobEffects.HARM));
-         this.dragon.level.addFreshEntity(this.flame);
+         this.dragon.level().addFreshEntity(this.flame);
       }
    }
 

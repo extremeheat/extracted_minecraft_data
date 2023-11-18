@@ -1,7 +1,6 @@
 package com.mojang.realmsclient.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.realmsclient.dto.RealmsServer;
 import com.mojang.realmsclient.dto.RealmsWorldOptions;
@@ -10,6 +9,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -26,6 +26,7 @@ public class RealmsWorldSlotButton extends Button {
    private static final Component SLOT_ACTIVE_TOOLTIP = Component.translatable("mco.configure.world.slot.tooltip.active");
    private static final Component SWITCH_TO_MINIGAME_SLOT_TOOLTIP = Component.translatable("mco.configure.world.slot.tooltip.minigame");
    private static final Component SWITCH_TO_WORLD_SLOT_TOOLTIP = Component.translatable("mco.configure.world.slot.tooltip");
+   private static final Component MINIGAME = Component.translatable("mco.worldSlot.minigame");
    private final Supplier<RealmsServer> serverDataProvider;
    private final Consumer<Component> toolTipSetter;
    private final int slotIndex;
@@ -56,7 +57,7 @@ public class RealmsWorldSlotButton extends Button {
          boolean var8;
          if (var9) {
             var2 = var1.worldType == RealmsServer.WorldType.MINIGAME;
-            var3 = "Minigame";
+            var3 = MINIGAME.getString();
             var5 = (long)var1.minigameId;
             var7 = var1.minigameImage;
             var8 = var1.minigameId == -1;
@@ -121,7 +122,7 @@ public class RealmsWorldSlotButton extends Button {
    }
 
    @Override
-   public void renderWidget(PoseStack var1, int var2, int var3, float var4) {
+   public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
       if (this.state != null) {
          this.drawSlotFrame(
             var1,
@@ -143,7 +144,7 @@ public class RealmsWorldSlotButton extends Button {
    }
 
    private void drawSlotFrame(
-      PoseStack var1,
+      GuiGraphics var1,
       int var2,
       int var3,
       int var4,
@@ -164,48 +165,49 @@ public class RealmsWorldSlotButton extends Button {
       }
 
       Minecraft var17 = Minecraft.getInstance();
+      ResourceLocation var18;
       if (var13) {
-         RenderSystem.setShaderTexture(0, RealmsTextureManager.worldTemplate(String.valueOf(var9), var11));
+         var18 = RealmsTextureManager.worldTemplate(String.valueOf(var9), var11);
       } else if (var12) {
-         RenderSystem.setShaderTexture(0, EMPTY_SLOT_LOCATION);
+         var18 = EMPTY_SLOT_LOCATION;
       } else if (var11 != null && var9 != -1L) {
-         RenderSystem.setShaderTexture(0, RealmsTextureManager.worldTemplate(String.valueOf(var9), var11));
+         var18 = RealmsTextureManager.worldTemplate(String.valueOf(var9), var11);
       } else if (var8 == 1) {
-         RenderSystem.setShaderTexture(0, DEFAULT_WORLD_SLOT_1);
+         var18 = DEFAULT_WORLD_SLOT_1;
       } else if (var8 == 2) {
-         RenderSystem.setShaderTexture(0, DEFAULT_WORLD_SLOT_2);
+         var18 = DEFAULT_WORLD_SLOT_2;
       } else if (var8 == 3) {
-         RenderSystem.setShaderTexture(0, DEFAULT_WORLD_SLOT_3);
+         var18 = DEFAULT_WORLD_SLOT_3;
+      } else {
+         var18 = EMPTY_SLOT_LOCATION;
       }
 
       if (var6) {
-         RenderSystem.setShaderColor(0.56F, 0.56F, 0.56F, 1.0F);
+         var1.setColor(0.56F, 0.56F, 0.56F, 1.0F);
       }
 
-      blit(var1, var2 + 3, var3 + 3, 0.0F, 0.0F, 74, 74, 74, 74);
-      RenderSystem.setShaderTexture(0, SLOT_FRAME_LOCATION);
-      boolean var18 = var16 && var14 != RealmsWorldSlotButton.Action.NOTHING;
-      if (var18) {
-         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+      var1.blit(var18, var2 + 3, var3 + 3, 0.0F, 0.0F, 74, 74, 74, 74);
+      boolean var19 = var16 && var14 != RealmsWorldSlotButton.Action.NOTHING;
+      if (var19) {
+         var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
       } else if (var6) {
-         RenderSystem.setShaderColor(0.8F, 0.8F, 0.8F, 1.0F);
+         var1.setColor(0.8F, 0.8F, 0.8F, 1.0F);
       } else {
-         RenderSystem.setShaderColor(0.56F, 0.56F, 0.56F, 1.0F);
+         var1.setColor(0.56F, 0.56F, 0.56F, 1.0F);
       }
 
-      blit(var1, var2, var3, 0.0F, 0.0F, 80, 80, 80, 80);
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+      var1.blit(SLOT_FRAME_LOCATION, var2, var3, 0.0F, 0.0F, 80, 80, 80, 80);
+      var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
       if (var6) {
          this.renderCheckMark(var1, var2, var3);
       }
 
-      drawCenteredString(var1, var17.font, var7, var2 + 40, var3 + 66, 16777215);
+      var1.drawCenteredString(var17.font, var7, var2 + 40, var3 + 66, 16777215);
    }
 
-   private void renderCheckMark(PoseStack var1, int var2, int var3) {
-      RenderSystem.setShaderTexture(0, CHECK_MARK_LOCATION);
+   private void renderCheckMark(GuiGraphics var1, int var2, int var3) {
       RenderSystem.enableBlend();
-      blit(var1, var2 + 67, var3 + 4, 0.0F, 0.0F, 9, 8, 9, 8);
+      var1.blit(CHECK_MARK_LOCATION, var2 + 67, var3 + 4, 0.0F, 0.0F, 9, 8, 9, 8);
       RenderSystem.disableBlend();
    }
 

@@ -27,8 +27,8 @@ public class GolemRandomStrollInVillageGoal extends RandomStrollGoal {
    @Nullable
    @Override
    protected Vec3 getPosition() {
-      float var2 = this.mob.level.random.nextFloat();
-      if (this.mob.level.random.nextFloat() < 0.3F) {
+      float var2 = this.mob.level().random.nextFloat();
+      if (this.mob.level().random.nextFloat() < 0.3F) {
          return this.getPositionTowardsAnywhere();
       } else {
          Vec3 var1;
@@ -55,12 +55,12 @@ public class GolemRandomStrollInVillageGoal extends RandomStrollGoal {
 
    @Nullable
    private Vec3 getPositionTowardsVillagerWhoWantsGolem() {
-      ServerLevel var1 = (ServerLevel)this.mob.level;
+      ServerLevel var1 = (ServerLevel)this.mob.level();
       List var2 = var1.getEntities(EntityType.VILLAGER, this.mob.getBoundingBox().inflate(32.0), this::doesVillagerWantGolem);
       if (var2.isEmpty()) {
          return null;
       } else {
-         Villager var3 = (Villager)var2.get(this.mob.level.random.nextInt(var2.size()));
+         Villager var3 = (Villager)var2.get(this.mob.level().random.nextInt(var2.size()));
          Vec3 var4 = var3.position();
          return LandRandomPos.getPosTowards(this.mob, 10, 7, var4);
       }
@@ -79,20 +79,20 @@ public class GolemRandomStrollInVillageGoal extends RandomStrollGoal {
 
    @Nullable
    private SectionPos getRandomVillageSection() {
-      ServerLevel var1 = (ServerLevel)this.mob.level;
+      ServerLevel var1 = (ServerLevel)this.mob.level();
       List var2 = SectionPos.cube(SectionPos.of(this.mob), 2).filter(var1x -> var1.sectionsToVillage(var1x) == 0).collect(Collectors.toList());
       return var2.isEmpty() ? null : (SectionPos)var2.get(var1.random.nextInt(var2.size()));
    }
 
    @Nullable
    private BlockPos getRandomPoiWithinSection(SectionPos var1) {
-      ServerLevel var2 = (ServerLevel)this.mob.level;
+      ServerLevel var2 = (ServerLevel)this.mob.level();
       PoiManager var3 = var2.getPoiManager();
       List var4 = var3.getInRange(var0 -> true, var1.center(), 8, PoiManager.Occupancy.IS_OCCUPIED).map(PoiRecord::getPos).collect(Collectors.toList());
       return var4.isEmpty() ? null : (BlockPos)var4.get(var2.random.nextInt(var4.size()));
    }
 
    private boolean doesVillagerWantGolem(Villager var1) {
-      return var1.wantsToSpawnGolem(this.mob.level.getGameTime());
+      return var1.wantsToSpawnGolem(this.mob.level().getGameTime());
    }
 }

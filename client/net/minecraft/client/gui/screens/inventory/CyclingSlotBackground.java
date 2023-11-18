@@ -1,10 +1,8 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.List;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.resources.ResourceLocation;
@@ -36,7 +34,7 @@ public class CyclingSlotBackground {
       }
    }
 
-   public void render(AbstractContainerMenu var1, PoseStack var2, float var3, int var4, int var5) {
+   public void render(AbstractContainerMenu var1, GuiGraphics var2, float var3, int var4, int var5) {
       Slot var6 = var1.getSlot(this.slotIndex);
       if (!this.icons.isEmpty() && !var6.hasItem()) {
          boolean var7 = this.icons.size() > 1 && this.tick >= 30;
@@ -50,10 +48,9 @@ public class CyclingSlotBackground {
       }
    }
 
-   private void renderIcon(Slot var1, ResourceLocation var2, float var3, PoseStack var4, int var5, int var6) {
+   private void renderIcon(Slot var1, ResourceLocation var2, float var3, GuiGraphics var4, int var5, int var6) {
       TextureAtlasSprite var7 = Minecraft.getInstance().getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(var2);
-      RenderSystem.setShaderTexture(0, var7.atlasLocation());
-      GuiComponent.blit(var4, var5 + var1.x, var6 + var1.y, 0, 16, 16, var7, 1.0F, 1.0F, 1.0F, var3);
+      var4.blit(var5 + var1.x, var6 + var1.y, 0, 16, 16, var7, 1.0F, 1.0F, 1.0F, var3);
    }
 
    private float getIconTransitionTransparency(float var1) {

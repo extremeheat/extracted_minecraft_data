@@ -1,18 +1,12 @@
 package net.minecraft.world.level.storage.loot;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.common.collect.Sets.SetView;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonWriter;
 import java.io.IOException;
-import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -20,89 +14,55 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParamSet;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class LootContext {
+   private final LootParams params;
    private final RandomSource random;
-   private final float luck;
-   private final ServerLevel level;
-   private final Function<ResourceLocation, LootTable> lootTables;
-   private final Set<LootTable> visitedTables = Sets.newLinkedHashSet();
-   private final Function<ResourceLocation, LootItemCondition> conditions;
-   private final Set<LootItemCondition> visitedConditions = Sets.newLinkedHashSet();
-   private final Map<LootContextParam<?>, Object> params;
-   private final Map<ResourceLocation, LootContext.DynamicDrop> dynamicDrops;
+   private final LootDataResolver lootDataResolver;
+   private final Set<LootContext.VisitedEntry<?>> visitedElements = Sets.newLinkedHashSet();
 
-   LootContext(
-      RandomSource var1,
-      float var2,
-      ServerLevel var3,
-      Function<ResourceLocation, LootTable> var4,
-      Function<ResourceLocation, LootItemCondition> var5,
-      Map<LootContextParam<?>, Object> var6,
-      Map<ResourceLocation, LootContext.DynamicDrop> var7
-   ) {
+   LootContext(LootParams var1, RandomSource var2, LootDataResolver var3) {
       super();
-      this.random = var1;
-      this.luck = var2;
-      this.level = var3;
-      this.lootTables = var4;
-      this.conditions = var5;
-      this.params = ImmutableMap.copyOf(var6);
-      this.dynamicDrops = ImmutableMap.copyOf(var7);
+      this.params = var1;
+      this.random = var2;
+      this.lootDataResolver = var3;
    }
 
    public boolean hasParam(LootContextParam<?> var1) {
-      return this.params.containsKey(var1);
+      return this.params.hasParam(var1);
    }
 
    public <T> T getParam(LootContextParam<T> var1) {
-      Object var2 = this.params.get(var1);
-      if (var2 == null) {
-         throw new NoSuchElementException(var1.getName().toString());
-      } else {
-         return (T)var2;
-      }
+      return this.params.getParameter(var1);
    }
 
    public void addDynamicDrops(ResourceLocation var1, Consumer<ItemStack> var2) {
-      LootContext.DynamicDrop var3 = this.dynamicDrops.get(var1);
-      if (var3 != null) {
-         var3.add(this, var2);
-      }
+      this.params.addDynamicDrops(var1, var2);
    }
 
    @Nullable
    public <T> T getParamOrNull(LootContextParam<T> var1) {
-      return (T)this.params.get(var1);
+      return this.params.getParamOrNull(var1);
    }
 
-   public boolean addVisitedTable(LootTable var1) {
-      return this.visitedTables.add(var1);
+   public boolean hasVisitedElement(LootContext.VisitedEntry<?> var1) {
+      return this.visitedElements.contains(var1);
    }
 
-   public void removeVisitedTable(LootTable var1) {
-      this.visitedTables.remove(var1);
+   public boolean pushVisitedElement(LootContext.VisitedEntry<?> var1) {
+      return this.visitedElements.add(var1);
    }
 
-   public boolean addVisitedCondition(LootItemCondition var1) {
-      return this.visitedConditions.add(var1);
+   public void popVisitedElement(LootContext.VisitedEntry<?> var1) {
+      this.visitedElements.remove(var1);
    }
 
-   public void removeVisitedCondition(LootItemCondition var1) {
-      this.visitedConditions.remove(var1);
-   }
-
-   public LootTable getLootTable(ResourceLocation var1) {
-      return this.lootTables.apply(var1);
-   }
-
-   @Nullable
-   public LootItemCondition getCondition(ResourceLocation var1) {
-      return this.conditions.apply(var1);
+   public LootDataResolver getResolver() {
+      return this.lootDataResolver;
    }
 
    public RandomSource getRandom() {
@@ -110,28 +70,33 @@ public class LootContext {
    }
 
    public float getLuck() {
-      return this.luck;
+      return this.params.getLuck();
    }
 
    public ServerLevel getLevel() {
-      return this.level;
+      return this.params.getLevel();
+   }
+
+   public static LootContext.VisitedEntry<LootTable> createVisitedEntry(LootTable var0) {
+      return new LootContext.VisitedEntry<>(LootDataType.TABLE, var0);
+   }
+
+   public static LootContext.VisitedEntry<LootItemCondition> createVisitedEntry(LootItemCondition var0) {
+      return new LootContext.VisitedEntry<>(LootDataType.PREDICATE, var0);
+   }
+
+   public static LootContext.VisitedEntry<LootItemFunction> createVisitedEntry(LootItemFunction var0) {
+      return new LootContext.VisitedEntry<>(LootDataType.MODIFIER, var0);
    }
 
    public static class Builder {
-      private final ServerLevel level;
-      private final Map<LootContextParam<?>, Object> params = Maps.newIdentityHashMap();
-      private final Map<ResourceLocation, LootContext.DynamicDrop> dynamicDrops = Maps.newHashMap();
+      private final LootParams params;
+      @Nullable
       private RandomSource random;
-      private float luck;
 
-      public Builder(ServerLevel var1) {
+      public Builder(LootParams var1) {
          super();
-         this.level = var1;
-      }
-
-      public LootContext.Builder withRandom(RandomSource var1) {
-         this.random = var1;
-         return this;
+         this.params = var1;
       }
 
       public LootContext.Builder withOptionalRandomSeed(long var1) {
@@ -142,87 +107,24 @@ public class LootContext {
          return this;
       }
 
-      public LootContext.Builder withOptionalRandomSeed(long var1, RandomSource var3) {
-         if (var1 == 0L) {
-            this.random = var3;
-         } else {
-            this.random = RandomSource.create(var1);
-         }
-
-         return this;
-      }
-
-      public LootContext.Builder withLuck(float var1) {
-         this.luck = var1;
-         return this;
-      }
-
-      public <T> LootContext.Builder withParameter(LootContextParam<T> var1, T var2) {
-         this.params.put(var1, var2);
-         return this;
-      }
-
-      public <T> LootContext.Builder withOptionalParameter(LootContextParam<T> var1, @Nullable T var2) {
-         if (var2 == null) {
-            this.params.remove(var1);
-         } else {
-            this.params.put(var1, var2);
-         }
-
-         return this;
-      }
-
-      public LootContext.Builder withDynamicDrop(ResourceLocation var1, LootContext.DynamicDrop var2) {
-         LootContext.DynamicDrop var3 = this.dynamicDrops.put(var1, var2);
-         if (var3 != null) {
-            throw new IllegalStateException("Duplicated dynamic drop '" + this.dynamicDrops + "'");
-         } else {
-            return this;
-         }
-      }
-
       public ServerLevel getLevel() {
-         return this.level;
+         return this.params.getLevel();
       }
 
-      public <T> T getParameter(LootContextParam<T> var1) {
-         Object var2 = this.params.get(var1);
-         if (var2 == null) {
-            throw new IllegalArgumentException("No parameter " + var1);
+      public LootContext create(@Nullable ResourceLocation var1) {
+         ServerLevel var2 = this.getLevel();
+         MinecraftServer var3 = var2.getServer();
+         RandomSource var4;
+         if (this.random != null) {
+            var4 = this.random;
+         } else if (var1 != null) {
+            var4 = var2.getRandomSequence(var1);
          } else {
-            return (T)var2;
+            var4 = var2.getRandom();
          }
+
+         return new LootContext(this.params, var4, var3.getLootData());
       }
-
-      @Nullable
-      public <T> T getOptionalParameter(LootContextParam<T> var1) {
-         return (T)this.params.get(var1);
-      }
-
-      public LootContext create(LootContextParamSet var1) {
-         SetView var2 = Sets.difference(this.params.keySet(), var1.getAllowed());
-         if (!var2.isEmpty()) {
-            throw new IllegalArgumentException("Parameters not allowed in this parameter set: " + var2);
-         } else {
-            SetView var3 = Sets.difference(var1.getRequired(), this.params.keySet());
-            if (!var3.isEmpty()) {
-               throw new IllegalArgumentException("Missing required parameters: " + var3);
-            } else {
-               RandomSource var4 = this.random;
-               if (var4 == null) {
-                  var4 = RandomSource.create();
-               }
-
-               MinecraftServer var5 = this.level.getServer();
-               return new LootContext(var4, this.luck, this.level, var5.getLootTables()::get, var5.getPredicateManager()::get, this.params, this.dynamicDrops);
-            }
-         }
-      }
-   }
-
-   @FunctionalInterface
-   public interface DynamicDrop {
-      void add(LootContext var1, Consumer<ItemStack> var2);
    }
 
    public static enum EntityTarget {
@@ -265,6 +167,17 @@ public class LootContext {
          public LootContext.EntityTarget read(JsonReader var1) throws IOException {
             return LootContext.EntityTarget.getByName(var1.nextString());
          }
+      }
+   }
+
+   public static record VisitedEntry<T>(LootDataType<T> a, T b) {
+      private final LootDataType<T> type;
+      private final T value;
+
+      public VisitedEntry(LootDataType<T> var1, T var2) {
+         super();
+         this.type = var1;
+         this.value = (T)var2;
       }
    }
 }

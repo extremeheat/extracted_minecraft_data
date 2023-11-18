@@ -6,10 +6,8 @@ import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
-import net.minecraft.data.loot.packs.UpdateOneTwentyBuiltInLootTables;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.SortedArraySet;
-import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
@@ -22,6 +20,7 @@ import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.pieces.PiecesContainer;
+import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 
 public class DesertPyramidStructure extends SinglePieceStructure {
    public static final Codec<DesertPyramidStructure> CODEC = simpleCodec(DesertPyramidStructure::new);
@@ -36,31 +35,37 @@ public class DesertPyramidStructure extends SinglePieceStructure {
    public void afterPlace(
       WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, PiecesContainer var7
    ) {
-      if (var1.enabledFeatures().contains(FeatureFlags.UPDATE_1_20)) {
-         SortedArraySet var8 = SortedArraySet.create(Vec3i::compareTo);
+      SortedArraySet var8 = SortedArraySet.create(Vec3i::compareTo);
 
-         for(StructurePiece var10 : var7.pieces()) {
-            if (var10 instanceof DesertPyramidPiece var11) {
-               var8.addAll(var11.getPotentialSuspiciousSandWorldPositions());
-            }
+      for(StructurePiece var10 : var7.pieces()) {
+         if (var10 instanceof DesertPyramidPiece var11) {
+            var8.addAll(var11.getPotentialSuspiciousSandWorldPositions());
+            placeSuspiciousSand(var5, var1, var11.getRandomCollapsedRoofPos());
          }
+      }
 
-         ObjectArrayList var13 = new ObjectArrayList(var8.stream().toList());
-         Util.shuffle(var13, var4);
-         int var14 = Math.min(var8.size(), var4.nextInt(5, 8));
-         ObjectListIterator var15 = var13.iterator();
+      ObjectArrayList var14 = new ObjectArrayList(var8.stream().toList());
+      RandomSource var15 = RandomSource.create(var1.getSeed()).forkPositional().at(var7.calculateBoundingBox().getCenter());
+      Util.shuffle(var14, var15);
+      int var16 = Math.min(var8.size(), var15.nextInt(5, 8));
+      ObjectListIterator var12 = var14.iterator();
 
-         while(var15.hasNext()) {
-            BlockPos var12 = (BlockPos)var15.next();
-            if (var14 > 0) {
-               --var14;
-               var1.setBlock(var12, Blocks.SUSPICIOUS_SAND.defaultBlockState(), 2);
-               var1.getBlockEntity(var12, BlockEntityType.SUSPICIOUS_SAND)
-                  .ifPresent(var1x -> var1x.setLootTable(UpdateOneTwentyBuiltInLootTables.DESERT_PYRAMID_ARCHAEOLOGY, var12.asLong()));
-            } else {
-               var1.setBlock(var12, Blocks.SAND.defaultBlockState(), 2);
-            }
+      while(var12.hasNext()) {
+         BlockPos var13 = (BlockPos)var12.next();
+         if (var16 > 0) {
+            --var16;
+            placeSuspiciousSand(var5, var1, var13);
+         } else if (var5.isInside(var13)) {
+            var1.setBlock(var13, Blocks.SAND.defaultBlockState(), 2);
          }
+      }
+   }
+
+   private static void placeSuspiciousSand(BoundingBox var0, WorldGenLevel var1, BlockPos var2) {
+      if (var0.isInside(var2)) {
+         var1.setBlock(var2, Blocks.SUSPICIOUS_SAND.defaultBlockState(), 2);
+         var1.getBlockEntity(var2, BlockEntityType.BRUSHABLE_BLOCK)
+            .ifPresent(var1x -> var1x.setLootTable(BuiltInLootTables.DESERT_PYRAMID_ARCHAEOLOGY, var2.asLong()));
       }
    }
 

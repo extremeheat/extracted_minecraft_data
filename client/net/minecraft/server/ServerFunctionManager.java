@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.Deque;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.IntConsumer;
 import javax.annotation.Nullable;
 import net.minecraft.commands.CommandFunction;
 import net.minecraft.commands.CommandSourceStack;
@@ -124,6 +125,7 @@ public class ServerFunctionManager {
       private final ServerFunctionManager.TraceCallbacks tracer;
       private final Deque<ServerFunctionManager.QueuedCommand> commandQueue = Queues.newArrayDeque();
       private final List<ServerFunctionManager.QueuedCommand> nestedCalls = Lists.newArrayList();
+      boolean abortCurrentDepth = false;
 
       ExecutionContext(@Nullable ServerFunctionManager.TraceCallbacks var2) {
          super();
@@ -132,45 +134,78 @@ public class ServerFunctionManager {
 
       void delayFunctionCall(CommandFunction var1, CommandSourceStack var2) {
          int var3 = ServerFunctionManager.this.getCommandLimit();
+         CommandSourceStack var4 = this.wrapSender(var2);
          if (this.commandQueue.size() + this.nestedCalls.size() < var3) {
-            this.nestedCalls.add(new ServerFunctionManager.QueuedCommand(var2, this.depth, new CommandFunction.FunctionEntry(var1)));
+            this.nestedCalls.add(new ServerFunctionManager.QueuedCommand(var4, this.depth, new CommandFunction.FunctionEntry(var1)));
          }
+      }
+
+      private CommandSourceStack wrapSender(CommandSourceStack var1) {
+         IntConsumer var2 = var1.getReturnValueConsumer();
+         return var2 instanceof ServerFunctionManager.ExecutionContext.AbortingReturnValueConsumer
+            ? var1
+            : var1.withReturnValueConsumer(new ServerFunctionManager.ExecutionContext.AbortingReturnValueConsumer(var2));
       }
 
       int runTopCommand(CommandFunction var1, CommandSourceStack var2) {
          int var3 = ServerFunctionManager.this.getCommandLimit();
-         int var4 = 0;
-         CommandFunction.Entry[] var5 = var1.getEntries();
+         CommandSourceStack var4 = this.wrapSender(var2);
+         int var5 = 0;
+         CommandFunction.Entry[] var6 = var1.getEntries();
 
-         for(int var6 = var5.length - 1; var6 >= 0; --var6) {
-            this.commandQueue.push(new ServerFunctionManager.QueuedCommand(var2, 0, var5[var6]));
+         for(int var7 = var6.length - 1; var7 >= 0; --var7) {
+            this.commandQueue.push(new ServerFunctionManager.QueuedCommand(var4, 0, var6[var7]));
          }
 
          while(!this.commandQueue.isEmpty()) {
             try {
-               ServerFunctionManager.QueuedCommand var10 = this.commandQueue.removeFirst();
-               ServerFunctionManager.this.server.getProfiler().push(var10::toString);
-               this.depth = var10.depth;
-               var10.execute(ServerFunctionManager.this, this.commandQueue, var3, this.tracer);
-               if (!this.nestedCalls.isEmpty()) {
-                  Lists.reverse(this.nestedCalls).forEach(this.commandQueue::addFirst);
-                  this.nestedCalls.clear();
+               ServerFunctionManager.QueuedCommand var11 = this.commandQueue.removeFirst();
+               ServerFunctionManager.this.server.getProfiler().push(var11::toString);
+               this.depth = var11.depth;
+               var11.execute(ServerFunctionManager.this, this.commandQueue, var3, this.tracer);
+               if (!this.abortCurrentDepth) {
+                  if (!this.nestedCalls.isEmpty()) {
+                     Lists.reverse(this.nestedCalls).forEach(this.commandQueue::addFirst);
+                  }
+               } else {
+                  while(!this.commandQueue.isEmpty() && this.commandQueue.peek().depth >= this.depth) {
+                     this.commandQueue.removeFirst();
+                  }
+
+                  this.abortCurrentDepth = false;
                }
+
+               this.nestedCalls.clear();
             } finally {
                ServerFunctionManager.this.server.getProfiler().pop();
             }
 
-            if (++var4 >= var3) {
-               return var4;
+            if (++var5 >= var3) {
+               return var5;
             }
          }
 
-         return var4;
+         return var5;
       }
 
       public void reportError(String var1) {
          if (this.tracer != null) {
             this.tracer.onError(this.depth, var1);
+         }
+      }
+
+      class AbortingReturnValueConsumer implements IntConsumer {
+         private final IntConsumer wrapped;
+
+         AbortingReturnValueConsumer(IntConsumer var2) {
+            super();
+            this.wrapped = var2;
+         }
+
+         @Override
+         public void accept(int var1) {
+            this.wrapped.accept(var1);
+            ExecutionContext.this.abortCurrentDepth = true;
          }
       }
    }

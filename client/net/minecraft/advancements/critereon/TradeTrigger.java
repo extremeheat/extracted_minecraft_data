@@ -19,8 +19,8 @@ public class TradeTrigger extends SimpleCriterionTrigger<TradeTrigger.TriggerIns
       return ID;
    }
 
-   public TradeTrigger.TriggerInstance createInstance(JsonObject var1, EntityPredicate.Composite var2, DeserializationContext var3) {
-      EntityPredicate.Composite var4 = EntityPredicate.Composite.fromJson(var1, "villager", var3);
+   public TradeTrigger.TriggerInstance createInstance(JsonObject var1, ContextAwarePredicate var2, DeserializationContext var3) {
+      ContextAwarePredicate var4 = EntityPredicate.fromJson(var1, "villager", var3);
       ItemPredicate var5 = ItemPredicate.fromJson(var1.get("item"));
       return new TradeTrigger.TriggerInstance(var2, var4, var5);
    }
@@ -31,21 +31,21 @@ public class TradeTrigger extends SimpleCriterionTrigger<TradeTrigger.TriggerIns
    }
 
    public static class TriggerInstance extends AbstractCriterionTriggerInstance {
-      private final EntityPredicate.Composite villager;
+      private final ContextAwarePredicate villager;
       private final ItemPredicate item;
 
-      public TriggerInstance(EntityPredicate.Composite var1, EntityPredicate.Composite var2, ItemPredicate var3) {
+      public TriggerInstance(ContextAwarePredicate var1, ContextAwarePredicate var2, ItemPredicate var3) {
          super(TradeTrigger.ID, var1);
          this.villager = var2;
          this.item = var3;
       }
 
       public static TradeTrigger.TriggerInstance tradedWithVillager() {
-         return new TradeTrigger.TriggerInstance(EntityPredicate.Composite.ANY, EntityPredicate.Composite.ANY, ItemPredicate.ANY);
+         return new TradeTrigger.TriggerInstance(ContextAwarePredicate.ANY, ContextAwarePredicate.ANY, ItemPredicate.ANY);
       }
 
       public static TradeTrigger.TriggerInstance tradedWithVillager(EntityPredicate.Builder var0) {
-         return new TradeTrigger.TriggerInstance(EntityPredicate.Composite.wrap(var0.build()), EntityPredicate.Composite.ANY, ItemPredicate.ANY);
+         return new TradeTrigger.TriggerInstance(EntityPredicate.wrap(var0.build()), ContextAwarePredicate.ANY, ItemPredicate.ANY);
       }
 
       public boolean matches(LootContext var1, ItemStack var2) {

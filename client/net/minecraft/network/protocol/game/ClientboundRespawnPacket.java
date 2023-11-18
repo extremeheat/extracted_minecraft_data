@@ -25,6 +25,7 @@ public class ClientboundRespawnPacket implements Packet<ClientGamePacketListener
    private final boolean isFlat;
    private final byte dataToKeep;
    private final Optional<GlobalPos> lastDeathLocation;
+   private final int portalCooldown;
 
    public ClientboundRespawnPacket(
       ResourceKey<DimensionType> var1,
@@ -35,7 +36,8 @@ public class ClientboundRespawnPacket implements Packet<ClientGamePacketListener
       boolean var7,
       boolean var8,
       byte var9,
-      Optional<GlobalPos> var10
+      Optional<GlobalPos> var10,
+      int var11
    ) {
       super();
       this.dimensionType = var1;
@@ -47,6 +49,7 @@ public class ClientboundRespawnPacket implements Packet<ClientGamePacketListener
       this.isFlat = var8;
       this.dataToKeep = var9;
       this.lastDeathLocation = var10;
+      this.portalCooldown = var11;
    }
 
    public ClientboundRespawnPacket(FriendlyByteBuf var1) {
@@ -60,6 +63,7 @@ public class ClientboundRespawnPacket implements Packet<ClientGamePacketListener
       this.isFlat = var1.readBoolean();
       this.dataToKeep = var1.readByte();
       this.lastDeathLocation = var1.readOptional(FriendlyByteBuf::readGlobalPos);
+      this.portalCooldown = var1.readVarInt();
    }
 
    @Override
@@ -73,6 +77,7 @@ public class ClientboundRespawnPacket implements Packet<ClientGamePacketListener
       var1.writeBoolean(this.isFlat);
       var1.writeByte(this.dataToKeep);
       var1.writeOptional(this.lastDeathLocation, FriendlyByteBuf::writeGlobalPos);
+      var1.writeVarInt(this.portalCooldown);
    }
 
    public void handle(ClientGamePacketListener var1) {
@@ -114,5 +119,9 @@ public class ClientboundRespawnPacket implements Packet<ClientGamePacketListener
 
    public Optional<GlobalPos> getLastDeathLocation() {
       return this.lastDeathLocation;
+   }
+
+   public int getPortalCooldown() {
+      return this.portalCooldown;
    }
 }

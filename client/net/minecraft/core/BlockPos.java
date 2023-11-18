@@ -3,7 +3,11 @@ package net.minecraft.core;
 import com.google.common.collect.AbstractIterator;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
+import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
+import java.util.ArrayDeque;
 import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -17,6 +21,7 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.Validate;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 
 @Immutable
@@ -224,6 +229,11 @@ public class BlockPos extends Vec3i {
       );
    }
 
+   @Deprecated
+   public static Stream<BlockPos> squareOutSouthEast(BlockPos var0) {
+      return Stream.of(var0, var0.south(), var0.east(), var0.south().east());
+   }
+
    public static Iterable<BlockPos> randomBetweenClosed(RandomSource var0, int var1, int var2, int var3, int var4, int var5, int var6, int var7) {
       int var8 = var5 - var2 + 1;
       int var9 = var6 - var3 + 1;
@@ -403,6 +413,31 @@ public class BlockPos extends Vec3i {
                return this.cursor;
             }
          };
+   }
+
+   public static int breadthFirstTraversal(BlockPos var0, int var1, int var2, BiConsumer<BlockPos, Consumer<BlockPos>> var3, Predicate<BlockPos> var4) {
+      ArrayDeque var5 = new ArrayDeque();
+      LongOpenHashSet var6 = new LongOpenHashSet();
+      var5.add(Pair.of(var0, 0));
+      int var7 = 0;
+
+      while(!var5.isEmpty()) {
+         Pair var8 = (Pair)var5.poll();
+         BlockPos var9 = (BlockPos)var8.getLeft();
+         int var10 = var8.getRight();
+         long var11 = var9.asLong();
+         if (var6.add(var11) && var4.test(var9)) {
+            if (++var7 >= var2) {
+               return var7;
+            }
+
+            if (var10 < var1) {
+               var3.accept(var9, var2x -> var5.add(Pair.of(var2x, var10 + 1)));
+            }
+         }
+      }
+
+      return var7;
    }
 
    public static class MutableBlockPos extends BlockPos {

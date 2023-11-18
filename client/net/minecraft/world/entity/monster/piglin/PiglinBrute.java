@@ -114,9 +114,9 @@ public class PiglinBrute extends AbstractPiglin {
 
    @Override
    protected void customServerAiStep() {
-      this.level.getProfiler().push("piglinBruteBrain");
-      this.getBrain().tick((ServerLevel)this.level, this);
-      this.level.getProfiler().pop();
+      this.level().getProfiler().push("piglinBruteBrain");
+      this.getBrain().tick((ServerLevel)this.level(), this);
+      this.level().getProfiler().pop();
       PiglinBruteAi.updateActivity(this);
       PiglinBruteAi.maybePlayActivitySound(this);
       super.customServerAiStep();
@@ -130,7 +130,7 @@ public class PiglinBrute extends AbstractPiglin {
    @Override
    public boolean hurt(DamageSource var1, float var2) {
       boolean var3 = super.hurt(var1, var2);
-      if (this.level.isClientSide) {
+      if (this.level().isClientSide) {
          return false;
       } else {
          if (var3 && var1.getEntity() instanceof LivingEntity) {

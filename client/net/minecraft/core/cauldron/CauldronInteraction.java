@@ -78,8 +78,7 @@ public interface CauldronInteraction {
          return InteractionResult.PASS;
       } else {
          if (!var1.isClientSide) {
-            ItemStack var6 = var5.copy();
-            var6.setCount(1);
+            ItemStack var6 = var5.copyWithCount(1);
             BannerBlockEntity.removeLastPattern(var6);
             if (!var3.getAbilities().instabuild) {
                var5.shrink(1);

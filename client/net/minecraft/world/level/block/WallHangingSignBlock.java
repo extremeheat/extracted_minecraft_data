@@ -10,7 +10,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.HangingSignItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -18,6 +18,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.HangingSignBlockEntity;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -53,12 +55,22 @@ public class WallHangingSignBlock extends SignBlock {
       BlockEntity var8 = var2.getBlockEntity(var3);
       if (var8 instanceof SignBlockEntity var7) {
          ItemStack var9 = var4.getItemInHand(var5);
-         if (!var7.hasAnyClickCommands(var4) && var9.getItem() instanceof BlockItem) {
+         if (this.shouldTryToChainAnotherHangingSign(var1, var4, var6, (SignBlockEntity)var7, var9)) {
             return InteractionResult.PASS;
          }
       }
 
       return super.use(var1, var2, var3, var4, var5, var6);
+   }
+
+   private boolean shouldTryToChainAnotherHangingSign(BlockState var1, Player var2, BlockHitResult var3, SignBlockEntity var4, ItemStack var5) {
+      return !var4.canExecuteClickCommands(var4.isFacingFrontText(var2), var2)
+         && var5.getItem() instanceof HangingSignItem
+         && !this.isHittingEditableSide(var3, var1);
+   }
+
+   private boolean isHittingEditableSide(BlockHitResult var1, BlockState var2) {
+      return var1.getDirection().getAxis() == var2.getValue(FACING).getAxis();
    }
 
    @Override
@@ -129,6 +141,11 @@ public class WallHangingSignBlock extends SignBlock {
    }
 
    @Override
+   public float getYRotationDegrees(BlockState var1) {
+      return var1.getValue(FACING).toYRot();
+   }
+
+   @Override
    public BlockState rotate(BlockState var1, Rotation var2) {
       return var1.setValue(FACING, var2.rotate(var1.getValue(FACING)));
    }
@@ -151,5 +168,11 @@ public class WallHangingSignBlock extends SignBlock {
    @Override
    public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
       return false;
+   }
+
+   @Nullable
+   @Override
+   public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level var1, BlockState var2, BlockEntityType<T> var3) {
+      return createTickerHelper(var3, BlockEntityType.HANGING_SIGN, SignBlockEntity::tick);
    }
 }

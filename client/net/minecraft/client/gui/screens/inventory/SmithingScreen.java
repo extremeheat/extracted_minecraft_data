@@ -1,9 +1,9 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -87,13 +87,13 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       this.renderOnboardingTooltips(var1, var2, var3);
    }
 
    @Override
-   protected void renderBg(PoseStack var1, float var2, int var3, int var4) {
+   protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       super.renderBg(var1, var2, var3, var4);
       this.templateIcon.render(this.menu, var1, var2, this.leftPos, this.topPos);
       this.baseIcon.render(this.menu, var1, var2, this.leftPos, this.topPos);
@@ -129,15 +129,15 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
    }
 
    @Override
-   protected void renderErrorIcon(PoseStack var1, int var2, int var3) {
+   protected void renderErrorIcon(GuiGraphics var1, int var2, int var3) {
       if (this.hasRecipeError()) {
-         blit(var1, var2 + 65, var3 + 46, this.imageWidth, 0, 28, 21);
+         var1.blit(SMITHING_LOCATION, var2 + 65, var3 + 46, this.imageWidth, 0, 28, 21);
       }
    }
 
    // $QF: Could not properly define all variable types!
    // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   private void renderOnboardingTooltips(PoseStack var1, int var2, int var3) {
+   private void renderOnboardingTooltips(GuiGraphics var1, int var2, int var3) {
       Optional var4 = Optional.empty();
       if (this.hasRecipeError() && this.isHovering(65, 46, 28, 21, (double)var2, (double)var3)) {
          var4 = Optional.of(ERROR_TOOLTIP);
@@ -162,7 +162,7 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
          }
       }
 
-      var4.ifPresent(var4x -> this.renderTooltip(var1, this.font.split(var4x, 115), var2, var3));
+      var4.ifPresent(var4x -> var1.renderTooltip(this.font, this.font.split(var4x, 115), var2, var3));
    }
 
    private boolean hasRecipeError() {

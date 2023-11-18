@@ -24,12 +24,13 @@ import net.minecraft.world.level.lighting.LevelLightEngine;
 import org.slf4j.Logger;
 
 public class ThreadedLevelLightEngine extends LevelLightEngine implements AutoCloseable {
+   public static final int DEFAULT_BATCH_SIZE = 1000;
    private static final Logger LOGGER = LogUtils.getLogger();
    private final ProcessorMailbox<Runnable> taskMailbox;
    private final ObjectList<Pair<ThreadedLevelLightEngine.TaskType, Runnable>> lightTasks = new ObjectArrayList();
    private final ChunkMap chunkMap;
    private final ProcessorHandle<ChunkTaskPriorityQueueSorter.Message<Runnable>> sorterMailbox;
-   private volatile int taskPerBatch = 5;
+   private final int taskPerBatch = 1000;
    private final AtomicBoolean scheduled = new AtomicBoolean();
 
    public ThreadedLevelLightEngine(
@@ -50,12 +51,7 @@ public class ThreadedLevelLightEngine extends LevelLightEngine implements AutoCl
    }
 
    @Override
-   public int runUpdates(int var1, boolean var2, boolean var3) {
-      throw (UnsupportedOperationException)Util.pauseInIde(new UnsupportedOperationException("Ran automatically on a different thread!"));
-   }
-
-   @Override
-   public void onBlockEmissionIncrease(BlockPos var1, int var2) {
+   public int runLightUpdates() {
       throw (UnsupportedOperationException)Util.pauseInIde(new UnsupportedOperationException("Ran automatically on a different thread!"));
    }
 
@@ -65,7 +61,7 @@ public class ThreadedLevelLightEngine extends LevelLightEngine implements AutoCl
       this.addTask(
          SectionPos.blockToSectionCoord(var1.getX()),
          SectionPos.blockToSectionCoord(var1.getZ()),
-         ThreadedLevelLightEngine.TaskType.POST_UPDATE,
+         ThreadedLevelLightEngine.TaskType.PRE_UPDATE,
          Util.name(() -> super.checkBlock(var2), () -> "checkBlock " + var2)
       );
    }
@@ -73,11 +69,11 @@ public class ThreadedLevelLightEngine extends LevelLightEngine implements AutoCl
    protected void updateChunkStatus(ChunkPos var1) {
       this.addTask(var1.x, var1.z, () -> 0, ThreadedLevelLightEngine.TaskType.PRE_UPDATE, Util.name(() -> {
          super.retainData(var1, false);
-         super.enableLightSources(var1, false);
+         super.setLightEnabled(var1, false);
 
          for(int var2 = this.getMinLightSection(); var2 < this.getMaxLightSection(); ++var2) {
-            super.queueSectionData(LightLayer.BLOCK, SectionPos.of(var1, var2), null, true);
-            super.queueSectionData(LightLayer.SKY, SectionPos.of(var1, var2), null, true);
+            super.queueSectionData(LightLayer.BLOCK, SectionPos.of(var1, var2), null);
+            super.queueSectionData(LightLayer.SKY, SectionPos.of(var1, var2), null);
          }
 
          for(int var3 = this.levelHeightAccessor.getMinSection(); var3 < this.levelHeightAccessor.getMaxSection(); ++var3) {
@@ -98,23 +94,30 @@ public class ThreadedLevelLightEngine extends LevelLightEngine implements AutoCl
    }
 
    @Override
-   public void enableLightSources(ChunkPos var1, boolean var2) {
+   public void propagateLightSources(ChunkPos var1) {
       this.addTask(
-         var1.x,
-         var1.z,
-         ThreadedLevelLightEngine.TaskType.PRE_UPDATE,
-         Util.name(() -> super.enableLightSources(var1, var2), () -> "enableLight " + var1 + " " + var2)
+         var1.x, var1.z, ThreadedLevelLightEngine.TaskType.PRE_UPDATE, Util.name(() -> super.propagateLightSources(var1), () -> "propagateLight " + var1)
       );
    }
 
    @Override
-   public void queueSectionData(LightLayer var1, SectionPos var2, @Nullable DataLayer var3, boolean var4) {
+   public void setLightEnabled(ChunkPos var1, boolean var2) {
+      this.addTask(
+         var1.x,
+         var1.z,
+         ThreadedLevelLightEngine.TaskType.PRE_UPDATE,
+         Util.name(() -> super.setLightEnabled(var1, var2), () -> "enableLight " + var1 + " " + var2)
+      );
+   }
+
+   @Override
+   public void queueSectionData(LightLayer var1, SectionPos var2, @Nullable DataLayer var3) {
       this.addTask(
          var2.x(),
          var2.z(),
          () -> 0,
          ThreadedLevelLightEngine.TaskType.PRE_UPDATE,
-         Util.name(() -> super.queueSectionData(var1, var2, var3, var4), () -> "queueData " + var2)
+         Util.name(() -> super.queueSectionData(var1, var2, var3), () -> "queueData " + var2)
       );
    }
 
@@ -125,7 +128,7 @@ public class ThreadedLevelLightEngine extends LevelLightEngine implements AutoCl
    private void addTask(int var1, int var2, IntSupplier var3, ThreadedLevelLightEngine.TaskType var4, Runnable var5) {
       this.sorterMailbox.tell(ChunkTaskPriorityQueueSorter.message(() -> {
          this.lightTasks.add(Pair.of(var4, var5));
-         if (this.lightTasks.size() >= this.taskPerBatch) {
+         if (this.lightTasks.size() >= 1000) {
             this.runUpdate();
          }
       }, ChunkPos.asLong(var1, var2), var3));
@@ -138,36 +141,36 @@ public class ThreadedLevelLightEngine extends LevelLightEngine implements AutoCl
       );
    }
 
-   public CompletableFuture<ChunkAccess> retainData(ChunkAccess var1) {
-      ChunkPos var2 = var1.getPos();
-      return CompletableFuture.supplyAsync(Util.name(() -> {
-         super.retainData(var2, true);
+   public CompletableFuture<ChunkAccess> initializeLight(ChunkAccess var1, boolean var2) {
+      ChunkPos var3 = var1.getPos();
+      this.addTask(var3.x, var3.z, ThreadedLevelLightEngine.TaskType.PRE_UPDATE, Util.name(() -> {
+         LevelChunkSection[] var3x = var1.getSections();
+
+         for(int var4 = 0; var4 < var1.getSectionsCount(); ++var4) {
+            LevelChunkSection var5 = var3x[var4];
+            if (!var5.hasOnlyAir()) {
+               int var6 = this.levelHeightAccessor.getSectionYFromSectionIndex(var4);
+               super.updateSectionStatus(SectionPos.of(var3, var6), false);
+            }
+         }
+      }, () -> "initializeLight: " + var3));
+      return CompletableFuture.supplyAsync(() -> {
+         super.setLightEnabled(var3, var2);
+         super.retainData(var3, false);
          return var1;
-      }, () -> "retainData: " + var2), var2x -> this.addTask(var2.x, var2.z, ThreadedLevelLightEngine.TaskType.PRE_UPDATE, var2x));
+      }, var2x -> this.addTask(var3.x, var3.z, ThreadedLevelLightEngine.TaskType.POST_UPDATE, var2x));
    }
 
    public CompletableFuture<ChunkAccess> lightChunk(ChunkAccess var1, boolean var2) {
       ChunkPos var3 = var1.getPos();
       var1.setLightCorrect(false);
       this.addTask(var3.x, var3.z, ThreadedLevelLightEngine.TaskType.PRE_UPDATE, Util.name(() -> {
-         LevelChunkSection[] var4 = var1.getSections();
-
-         for(int var5 = 0; var5 < var1.getSectionsCount(); ++var5) {
-            LevelChunkSection var6 = var4[var5];
-            if (!var6.hasOnlyAir()) {
-               int var7 = this.levelHeightAccessor.getSectionYFromSectionIndex(var5);
-               super.updateSectionStatus(SectionPos.of(var3, var7), false);
-            }
-         }
-
-         super.enableLightSources(var3, true);
          if (!var2) {
-            var1.getLights().forEach(var2xx -> super.onBlockEmissionIncrease(var2xx, var1.getLightEmission(var2xx)));
+            super.propagateLightSources(var3);
          }
       }, () -> "lightChunk " + var3 + " " + var2));
       return CompletableFuture.supplyAsync(() -> {
          var1.setLightCorrect(true);
-         super.retainData(var3, false);
          this.chunkMap.releaseLightTicket(var3);
          return var1;
       }, var2x -> this.addTask(var3.x, var3.z, ThreadedLevelLightEngine.TaskType.POST_UPDATE, var2x));
@@ -183,7 +186,7 @@ public class ThreadedLevelLightEngine extends LevelLightEngine implements AutoCl
    }
 
    private void runUpdate() {
-      int var1 = Math.min(this.lightTasks.size(), this.taskPerBatch);
+      int var1 = Math.min(this.lightTasks.size(), 1000);
       ObjectListIterator var2 = this.lightTasks.iterator();
 
       int var3;
@@ -195,7 +198,7 @@ public class ThreadedLevelLightEngine extends LevelLightEngine implements AutoCl
       }
 
       var2.back(var3);
-      super.runUpdates(2147483647, true, true);
+      super.runLightUpdates();
 
       for(int var5 = 0; var2.hasNext() && var5 < var1; ++var5) {
          Pair var6 = (Pair)var2.next();
@@ -205,10 +208,6 @@ public class ThreadedLevelLightEngine extends LevelLightEngine implements AutoCl
 
          var2.remove();
       }
-   }
-
-   public void setTaskPerBatch(int var1) {
-      this.taskPerBatch = var1;
    }
 
    static enum TaskType {

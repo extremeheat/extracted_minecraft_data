@@ -42,18 +42,18 @@ public abstract class ThrowableProjectile extends Projectile {
    @Override
    public void tick() {
       super.tick();
-      HitResult var1 = ProjectileUtil.getHitResult(this, this::canHitEntity);
+      HitResult var1 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
       boolean var2 = false;
       if (var1.getType() == HitResult.Type.BLOCK) {
          BlockPos var3 = ((BlockHitResult)var1).getBlockPos();
-         BlockState var4 = this.level.getBlockState(var3);
+         BlockState var4 = this.level().getBlockState(var3);
          if (var4.is(Blocks.NETHER_PORTAL)) {
             this.handleInsidePortal(var3);
             var2 = true;
          } else if (var4.is(Blocks.END_GATEWAY)) {
-            BlockEntity var5 = this.level.getBlockEntity(var3);
+            BlockEntity var5 = this.level().getBlockEntity(var3);
             if (var5 instanceof TheEndGatewayBlockEntity && TheEndGatewayBlockEntity.canEntityTeleport(this)) {
-               TheEndGatewayBlockEntity.teleportEntity(this.level, var3, var4, this, (TheEndGatewayBlockEntity)var5);
+               TheEndGatewayBlockEntity.teleportEntity(this.level(), var3, var4, this, (TheEndGatewayBlockEntity)var5);
             }
 
             var2 = true;
@@ -74,7 +74,7 @@ public abstract class ThrowableProjectile extends Projectile {
       if (this.isInWater()) {
          for(int var11 = 0; var11 < 4; ++var11) {
             float var12 = 0.25F;
-            this.level.addParticle(ParticleTypes.BUBBLE, var14 - var13.x * 0.25, var6 - var13.y * 0.25, var8 - var13.z * 0.25, var13.x, var13.y, var13.z);
+            this.level().addParticle(ParticleTypes.BUBBLE, var14 - var13.x * 0.25, var6 - var13.y * 0.25, var8 - var13.z * 0.25, var13.x, var13.y, var13.z);
          }
 
          var10 = 0.8F;

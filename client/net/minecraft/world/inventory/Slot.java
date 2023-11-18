@@ -148,4 +148,8 @@ public class Slot {
    public int getContainerSlot() {
       return this.slot;
    }
+
+   public boolean isHighlightable() {
+      return true;
+   }
 }

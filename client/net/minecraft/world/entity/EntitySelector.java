@@ -32,7 +32,7 @@ public final class EntitySelector {
       return (Predicate<Entity>)(var2 == Team.CollisionRule.NEVER ? Predicates.alwaysFalse() : NO_SPECTATORS.and(var3 -> {
          if (!var3.isPushable()) {
             return false;
-         } else if (!var0.level.isClientSide || var3 instanceof Player && ((Player)var3).isLocalPlayer()) {
+         } else if (!var0.level().isClientSide || var3 instanceof Player && ((Player)var3).isLocalPlayer()) {
             Team var4 = var3.getTeam();
             Team.CollisionRule var5 = var4 == null ? Team.CollisionRule.ALWAYS : var4.getCollisionRule();
             if (var5 == Team.CollisionRule.NEVER) {

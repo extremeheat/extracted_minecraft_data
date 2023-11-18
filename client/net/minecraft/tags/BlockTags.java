@@ -9,6 +9,7 @@ public final class BlockTags {
    public static final TagKey<Block> PLANKS = create("planks");
    public static final TagKey<Block> STONE_BRICKS = create("stone_bricks");
    public static final TagKey<Block> WOODEN_BUTTONS = create("wooden_buttons");
+   public static final TagKey<Block> STONE_BUTTONS = create("stone_buttons");
    public static final TagKey<Block> BUTTONS = create("buttons");
    public static final TagKey<Block> WOOL_CARPETS = create("wool_carpets");
    public static final TagKey<Block> WOODEN_DOORS = create("wooden_doors");
@@ -120,6 +121,7 @@ public final class BlockTags {
    public static final TagKey<Block> CAULDRONS = create("cauldrons");
    public static final TagKey<Block> CRYSTAL_SOUND_BLOCKS = create("crystal_sound_blocks");
    public static final TagKey<Block> INSIDE_STEP_SOUND_BLOCKS = create("inside_step_sound_blocks");
+   public static final TagKey<Block> COMBINATION_STEP_SOUND_BLOCKS = create("combination_step_sound_blocks");
    public static final TagKey<Block> OCCLUDES_VIBRATION_SIGNALS = create("occludes_vibration_signals");
    public static final TagKey<Block> DAMPENS_VIBRATIONS = create("dampens_vibrations");
    public static final TagKey<Block> DRIPSTONE_REPLACEABLE = create("dripstone_replaceable_blocks");
@@ -134,6 +136,7 @@ public final class BlockTags {
    public static final TagKey<Block> MINEABLE_WITH_HOE = create("mineable/hoe");
    public static final TagKey<Block> MINEABLE_WITH_PICKAXE = create("mineable/pickaxe");
    public static final TagKey<Block> MINEABLE_WITH_SHOVEL = create("mineable/shovel");
+   public static final TagKey<Block> SWORD_EFFICIENT = create("sword_efficient");
    public static final TagKey<Block> NEEDS_DIAMOND_TOOL = create("needs_diamond_tool");
    public static final TagKey<Block> NEEDS_IRON_TOOL = create("needs_iron_tool");
    public static final TagKey<Block> NEEDS_STONE_TOOL = create("needs_stone_tool");
@@ -144,6 +147,7 @@ public final class BlockTags {
    public static final TagKey<Block> SCULK_REPLACEABLE = create("sculk_replaceable");
    public static final TagKey<Block> SCULK_REPLACEABLE_WORLD_GEN = create("sculk_replaceable_world_gen");
    public static final TagKey<Block> ANCIENT_CITY_REPLACEABLE = create("ancient_city_replaceable");
+   public static final TagKey<Block> VIBRATION_RESONATORS = create("vibration_resonators");
    public static final TagKey<Block> ANIMALS_SPAWNABLE_ON = create("animals_spawnable_on");
    public static final TagKey<Block> AXOLOTLS_SPAWNABLE_ON = create("axolotls_spawnable_on");
    public static final TagKey<Block> GOATS_SPAWNABLE_ON = create("goats_spawnable_on");
@@ -155,16 +159,22 @@ public final class BlockTags {
    public static final TagKey<Block> WOLVES_SPAWNABLE_ON = create("wolves_spawnable_on");
    public static final TagKey<Block> FROGS_SPAWNABLE_ON = create("frogs_spawnable_on");
    public static final TagKey<Block> AZALEA_GROWS_ON = create("azalea_grows_on");
-   public static final TagKey<Block> REPLACEABLE_PLANTS = create("replaceable_plants");
    public static final TagKey<Block> CONVERTABLE_TO_MUD = create("convertable_to_mud");
    public static final TagKey<Block> MANGROVE_LOGS_CAN_GROW_THROUGH = create("mangrove_logs_can_grow_through");
    public static final TagKey<Block> MANGROVE_ROOTS_CAN_GROW_THROUGH = create("mangrove_roots_can_grow_through");
    public static final TagKey<Block> DEAD_BUSH_MAY_PLACE_ON = create("dead_bush_may_place_on");
    public static final TagKey<Block> SNAPS_GOAT_HORN = create("snaps_goat_horn");
+   public static final TagKey<Block> REPLACEABLE_BY_TREES = create("replaceable_by_trees");
    public static final TagKey<Block> SNOW_LAYER_CANNOT_SURVIVE_ON = create("snow_layer_cannot_survive_on");
    public static final TagKey<Block> SNOW_LAYER_CAN_SURVIVE_ON = create("snow_layer_can_survive_on");
    public static final TagKey<Block> INVALID_SPAWN_INSIDE = create("invalid_spawn_inside");
    public static final TagKey<Block> SNIFFER_DIGGABLE_BLOCK = create("sniffer_diggable_block");
+   public static final TagKey<Block> SNIFFER_EGG_HATCH_BOOST = create("sniffer_egg_hatch_boost");
+   public static final TagKey<Block> TRAIL_RUINS_REPLACEABLE = create("trail_ruins_replaceable");
+   public static final TagKey<Block> REPLACEABLE = create("replaceable");
+   public static final TagKey<Block> ENCHANTMENT_POWER_PROVIDER = create("enchantment_power_provider");
+   public static final TagKey<Block> ENCHANTMENT_POWER_TRANSMITTER = create("enchantment_power_transmitter");
+   public static final TagKey<Block> MAINTAINS_FARMLAND = create("maintains_farmland");
 
    private BlockTags() {
       super();

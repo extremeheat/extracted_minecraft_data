@@ -30,7 +30,7 @@ public class ThrownEgg extends ThrowableItemProjectile {
          double var2 = 0.08;
 
          for(int var4 = 0; var4 < 8; ++var4) {
-            this.level
+            this.level()
                .addParticle(
                   new ItemParticleOption(ParticleTypes.ITEM, this.getItem()),
                   this.getX(),
@@ -53,7 +53,7 @@ public class ThrownEgg extends ThrowableItemProjectile {
    @Override
    protected void onHit(HitResult var1) {
       super.onHit(var1);
-      if (!this.level.isClientSide) {
+      if (!this.level().isClientSide) {
          if (this.random.nextInt(8) == 0) {
             byte var2 = 1;
             if (this.random.nextInt(32) == 0) {
@@ -61,16 +61,16 @@ public class ThrownEgg extends ThrowableItemProjectile {
             }
 
             for(int var3 = 0; var3 < var2; ++var3) {
-               Chicken var4 = EntityType.CHICKEN.create(this.level);
+               Chicken var4 = EntityType.CHICKEN.create(this.level());
                if (var4 != null) {
                   var4.setAge(-24000);
                   var4.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
-                  this.level.addFreshEntity(var4);
+                  this.level().addFreshEntity(var4);
                }
             }
          }
 
-         this.level.broadcastEntityEvent(this, (byte)3);
+         this.level().broadcastEntityEvent(this, (byte)3);
          this.discard();
       }
    }

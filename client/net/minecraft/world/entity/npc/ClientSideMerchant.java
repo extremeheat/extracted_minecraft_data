@@ -49,7 +49,7 @@ public class ClientSideMerchant implements Merchant {
 
    @Override
    public boolean isClientSide() {
-      return this.source.getLevel().isClientSide;
+      return this.source.level().isClientSide;
    }
 
    @Override

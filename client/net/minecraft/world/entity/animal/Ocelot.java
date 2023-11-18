@@ -170,18 +170,18 @@ public class Ocelot extends Animal {
       ItemStack var3 = var1.getItemInHand(var2);
       if ((this.temptGoal == null || this.temptGoal.isRunning()) && !this.isTrusting() && this.isFood(var3) && var1.distanceToSqr(this) < 9.0) {
          this.usePlayerItem(var1, var2, var3);
-         if (!this.level.isClientSide) {
+         if (!this.level().isClientSide) {
             if (this.random.nextInt(3) == 0) {
                this.setTrusting(true);
                this.spawnTrustingParticles(true);
-               this.level.broadcastEntityEvent(this, (byte)41);
+               this.level().broadcastEntityEvent(this, (byte)41);
             } else {
                this.spawnTrustingParticles(false);
-               this.level.broadcastEntityEvent(this, (byte)40);
+               this.level().broadcastEntityEvent(this, (byte)40);
             }
          }
 
-         return InteractionResult.sidedSuccess(this.level.isClientSide);
+         return InteractionResult.sidedSuccess(this.level().isClientSide);
       } else {
          return super.mobInteract(var1, var2);
       }
@@ -208,7 +208,7 @@ public class Ocelot extends Animal {
          double var4 = this.random.nextGaussian() * 0.02;
          double var6 = this.random.nextGaussian() * 0.02;
          double var8 = this.random.nextGaussian() * 0.02;
-         this.level.addParticle(var2, this.getRandomX(1.0), this.getRandomY() + 0.5, this.getRandomZ(1.0), var4, var6, var8);
+         this.level().addParticle(var2, this.getRandomX(1.0), this.getRandomY() + 0.5, this.getRandomZ(1.0), var4, var6, var8);
       }
    }
 

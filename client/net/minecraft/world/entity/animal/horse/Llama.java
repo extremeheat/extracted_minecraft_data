@@ -158,15 +158,16 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.V
    }
 
    @Override
-   public void positionRider(Entity var1) {
+   protected void positionRider(Entity var1, Entity.MoveFunction var2) {
       if (this.hasPassenger(var1)) {
-         float var2 = Mth.cos(this.yBodyRot * 0.017453292F);
-         float var3 = Mth.sin(this.yBodyRot * 0.017453292F);
-         float var4 = 0.3F;
-         var1.setPos(
-            this.getX() + (double)(0.3F * var3),
+         float var3 = Mth.cos(this.yBodyRot * 0.017453292F);
+         float var4 = Mth.sin(this.yBodyRot * 0.017453292F);
+         float var5 = 0.3F;
+         var2.accept(
+            var1,
+            this.getX() + (double)(0.3F * var4),
             this.getY() + this.getPassengersRidingOffset() + var1.getMyRidingOffset(),
-            this.getZ() - (double)(0.3F * var2)
+            this.getZ() - (double)(0.3F * var3)
          );
       }
    }
@@ -213,8 +214,8 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.V
       }
 
       if (this.isBaby() && var3 > 0) {
-         this.level.addParticle(ParticleTypes.HAPPY_VILLAGER, this.getRandomX(1.0), this.getRandomY() + 0.5, this.getRandomZ(1.0), 0.0, 0.0, 0.0);
-         if (!this.level.isClientSide) {
+         this.level().addParticle(ParticleTypes.HAPPY_VILLAGER, this.getRandomX(1.0), this.getRandomY() + 0.5, this.getRandomZ(1.0), 0.0, 0.0, 0.0);
+         if (!this.level().isClientSide) {
             this.ageUp(var3);
          }
 
@@ -223,7 +224,7 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.V
 
       if (var4 > 0 && (var6 || !this.isTamed()) && this.getTemper() < this.getMaxTemper()) {
          var6 = true;
-         if (!this.level.isClientSide) {
+         if (!this.level().isClientSide) {
             this.modifyTemper(var4);
          }
       }
@@ -231,7 +232,7 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.V
       if (var6 && !this.isSilent()) {
          SoundEvent var7 = this.getEatingSound();
          if (var7 != null) {
-            this.level
+            this.level()
                .playSound(
                   null,
                   this.getX(),
@@ -350,7 +351,7 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.V
 
    @Override
    protected void updateContainerEquipment() {
-      if (!this.level.isClientSide) {
+      if (!this.level().isClientSide) {
          super.updateContainerEquipment();
          this.setSwag(getDyeColor(this.inventory.getItem(1)));
       }
@@ -402,18 +403,18 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.V
 
    @Nullable
    protected Llama makeNewLlama() {
-      return EntityType.LLAMA.create(this.level);
+      return EntityType.LLAMA.create(this.level());
    }
 
    private void spit(LivingEntity var1) {
-      LlamaSpit var2 = new LlamaSpit(this.level, this);
+      LlamaSpit var2 = new LlamaSpit(this.level(), this);
       double var3 = var1.getX() - this.getX();
       double var5 = var1.getY(0.3333333333333333) - var2.getY();
       double var7 = var1.getZ() - this.getZ();
       double var9 = Math.sqrt(var3 * var3 + var7 * var7) * 0.20000000298023224;
       var2.shoot(var3, var5 + var9, var7, 1.5F, 10.0F);
       if (!this.isSilent()) {
-         this.level
+         this.level()
             .playSound(
                null,
                this.getX(),
@@ -426,7 +427,7 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.V
             );
       }
 
-      this.level.addFreshEntity(var2);
+      this.level().addFreshEntity(var2);
       this.didSpit = true;
    }
 

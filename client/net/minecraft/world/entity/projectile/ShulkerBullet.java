@@ -129,32 +129,32 @@ public class ShulkerBullet extends Projectile {
          BlockPos var12 = this.blockPosition();
          ArrayList var13 = Lists.newArrayList();
          if (var1 != Direction.Axis.X) {
-            if (var12.getX() < var2.getX() && this.level.isEmptyBlock(var12.east())) {
+            if (var12.getX() < var2.getX() && this.level().isEmptyBlock(var12.east())) {
                var13.add(Direction.EAST);
-            } else if (var12.getX() > var2.getX() && this.level.isEmptyBlock(var12.west())) {
+            } else if (var12.getX() > var2.getX() && this.level().isEmptyBlock(var12.west())) {
                var13.add(Direction.WEST);
             }
          }
 
          if (var1 != Direction.Axis.Y) {
-            if (var12.getY() < var2.getY() && this.level.isEmptyBlock(var12.above())) {
+            if (var12.getY() < var2.getY() && this.level().isEmptyBlock(var12.above())) {
                var13.add(Direction.UP);
-            } else if (var12.getY() > var2.getY() && this.level.isEmptyBlock(var12.below())) {
+            } else if (var12.getY() > var2.getY() && this.level().isEmptyBlock(var12.below())) {
                var13.add(Direction.DOWN);
             }
          }
 
          if (var1 != Direction.Axis.Z) {
-            if (var12.getZ() < var2.getZ() && this.level.isEmptyBlock(var12.south())) {
+            if (var12.getZ() < var2.getZ() && this.level().isEmptyBlock(var12.south())) {
                var13.add(Direction.SOUTH);
-            } else if (var12.getZ() > var2.getZ() && this.level.isEmptyBlock(var12.north())) {
+            } else if (var12.getZ() > var2.getZ() && this.level().isEmptyBlock(var12.north())) {
                var13.add(Direction.NORTH);
             }
          }
 
          var11 = Direction.getRandom(this.random);
          if (var13.isEmpty()) {
-            for(int var14 = 5; !this.level.isEmptyBlock(var12.relative(var11)) && var14 > 0; --var14) {
+            for(int var14 = 5; !this.level().isEmptyBlock(var12.relative(var11)) && var14 > 0; --var14) {
                var11 = Direction.getRandom(this.random);
             }
          } else {
@@ -187,7 +187,7 @@ public class ShulkerBullet extends Projectile {
 
    @Override
    public void checkDespawn() {
-      if (this.level.getDifficulty() == Difficulty.PEACEFUL) {
+      if (this.level().getDifficulty() == Difficulty.PEACEFUL) {
          this.discard();
       }
    }
@@ -195,9 +195,9 @@ public class ShulkerBullet extends Projectile {
    @Override
    public void tick() {
       super.tick();
-      if (!this.level.isClientSide) {
+      if (!this.level().isClientSide) {
          if (this.finalTarget == null && this.targetId != null) {
-            this.finalTarget = ((ServerLevel)this.level).getEntity(this.targetId);
+            this.finalTarget = ((ServerLevel)this.level()).getEntity(this.targetId);
             if (this.finalTarget == null) {
                this.targetId = null;
             }
@@ -215,7 +215,7 @@ public class ShulkerBullet extends Projectile {
             this.setDeltaMovement(var1.add((this.targetDeltaX - var1.x) * 0.2, (this.targetDeltaY - var1.y) * 0.2, (this.targetDeltaZ - var1.z) * 0.2));
          }
 
-         HitResult var5 = ProjectileUtil.getHitResult(this, this::canHitEntity);
+         HitResult var5 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
          if (var5.getType() != HitResult.Type.MISS) {
             this.onHit(var5);
          }
@@ -225,8 +225,8 @@ public class ShulkerBullet extends Projectile {
       Vec3 var6 = this.getDeltaMovement();
       this.setPos(this.getX() + var6.x, this.getY() + var6.y, this.getZ() + var6.z);
       ProjectileUtil.rotateTowardsMovement(this, 0.5F);
-      if (this.level.isClientSide) {
-         this.level.addParticle(ParticleTypes.END_ROD, this.getX() - var6.x, this.getY() - var6.y + 0.15, this.getZ() - var6.z, 0.0, 0.0, 0.0);
+      if (this.level().isClientSide) {
+         this.level().addParticle(ParticleTypes.END_ROD, this.getX() - var6.x, this.getY() - var6.y + 0.15, this.getZ() - var6.z, 0.0, 0.0, 0.0);
       } else if (this.finalTarget != null && !this.finalTarget.isRemoved()) {
          if (this.flightSteps > 0) {
             --this.flightSteps;
@@ -238,7 +238,7 @@ public class ShulkerBullet extends Projectile {
          if (this.currentMoveDirection != null) {
             BlockPos var2 = this.blockPosition();
             Direction.Axis var3 = this.currentMoveDirection.getAxis();
-            if (this.level.loadedAndEntityCanStandOn(var2.relative(this.currentMoveDirection), this)) {
+            if (this.level().loadedAndEntityCanStandOn(var2.relative(this.currentMoveDirection), this)) {
                this.selectNextMoveDirection(var3);
             } else {
                BlockPos var4 = this.finalTarget.blockPosition();
@@ -292,13 +292,13 @@ public class ShulkerBullet extends Projectile {
    @Override
    protected void onHitBlock(BlockHitResult var1) {
       super.onHitBlock(var1);
-      ((ServerLevel)this.level).sendParticles(ParticleTypes.EXPLOSION, this.getX(), this.getY(), this.getZ(), 2, 0.2, 0.2, 0.2, 0.0);
+      ((ServerLevel)this.level()).sendParticles(ParticleTypes.EXPLOSION, this.getX(), this.getY(), this.getZ(), 2, 0.2, 0.2, 0.2, 0.0);
       this.playSound(SoundEvents.SHULKER_BULLET_HIT, 1.0F, 1.0F);
    }
 
    private void destroy() {
       this.discard();
-      this.level.gameEvent(GameEvent.ENTITY_DAMAGE, this.position(), GameEvent.Context.of(this));
+      this.level().gameEvent(GameEvent.ENTITY_DAMAGE, this.position(), GameEvent.Context.of(this));
    }
 
    @Override
@@ -314,9 +314,9 @@ public class ShulkerBullet extends Projectile {
 
    @Override
    public boolean hurt(DamageSource var1, float var2) {
-      if (!this.level.isClientSide) {
+      if (!this.level().isClientSide) {
          this.playSound(SoundEvents.SHULKER_BULLET_HURT, 1.0F, 1.0F);
-         ((ServerLevel)this.level).sendParticles(ParticleTypes.CRIT, this.getX(), this.getY(), this.getZ(), 15, 0.2, 0.2, 0.2, 0.0);
+         ((ServerLevel)this.level()).sendParticles(ParticleTypes.CRIT, this.getX(), this.getY(), this.getZ(), 15, 0.2, 0.2, 0.2, 0.0);
          this.destroy();
       }
 

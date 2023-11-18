@@ -138,7 +138,7 @@ public class CamelAi {
       @Override
       protected void start(ServerLevel var1, PathfinderMob var2, long var3) {
          if (var2 instanceof Camel var5) {
-            var5.standUpPanic();
+            var5.standUpInstantly();
          }
 
          super.start(var1, var2, var3);
@@ -157,7 +157,7 @@ public class CamelAi {
          return !var2.isInWater()
             && var2.getPoseTime() >= (long)this.minimalPoseTicks
             && !var2.isLeashed()
-            && var2.isOnGround()
+            && var2.onGround()
             && !var2.hasControllingPassenger();
       }
 

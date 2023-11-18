@@ -8,6 +8,10 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LeavesBlock;
+import net.minecraft.world.level.block.StainedGlassBlock;
+import net.minecraft.world.level.block.StainedGlassPaneBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class SpawnUtil {
@@ -60,8 +64,28 @@ public class SpawnUtil {
    }
 
    public interface Strategy {
-      SpawnUtil.Strategy LEGACY_IRON_GOLEM = (var0, var1, var2, var3, var4) -> (var4.isAir() || var4.getMaterial().isLiquid())
-            && var2.getMaterial().isSolidBlocking();
+      @Deprecated
+      SpawnUtil.Strategy LEGACY_IRON_GOLEM = (var0, var1, var2, var3, var4) -> {
+         if (!var2.is(Blocks.COBWEB)
+            && !var2.is(Blocks.CACTUS)
+            && !var2.is(Blocks.GLASS_PANE)
+            && !(var2.getBlock() instanceof StainedGlassPaneBlock)
+            && !(var2.getBlock() instanceof StainedGlassBlock)
+            && !(var2.getBlock() instanceof LeavesBlock)
+            && !var2.is(Blocks.CONDUIT)
+            && !var2.is(Blocks.ICE)
+            && !var2.is(Blocks.TNT)
+            && !var2.is(Blocks.GLOWSTONE)
+            && !var2.is(Blocks.BEACON)
+            && !var2.is(Blocks.SEA_LANTERN)
+            && !var2.is(Blocks.FROSTED_ICE)
+            && !var2.is(Blocks.TINTED_GLASS)
+            && !var2.is(Blocks.GLASS)) {
+            return (var4.isAir() || var4.liquid()) && (var2.isSolid() || var2.is(Blocks.POWDER_SNOW));
+         } else {
+            return false;
+         }
+      };
       SpawnUtil.Strategy ON_TOP_OF_COLLIDER = (var0, var1, var2, var3, var4) -> var4.getCollisionShape(var0, var3).isEmpty()
             && Block.isFaceFull(var2.getCollisionShape(var0, var1), Direction.UP);
 

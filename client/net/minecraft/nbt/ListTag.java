@@ -235,7 +235,7 @@ public class ListTag extends CollectionTag<Tag> {
    public long[] getLongArray(int var1) {
       if (var1 >= 0 && var1 < this.list.size()) {
          Tag var2 = this.list.get(var1);
-         if (var2.getId() == 11) {
+         if (var2.getId() == 12) {
             return ((LongArrayTag)var2).getAsLongArray();
          }
       }

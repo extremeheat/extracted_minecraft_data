@@ -43,10 +43,8 @@ public record ServerStatus(Component b, Optional<ServerStatus.Players> c, Option
       this.enforcesSecureChat = var5;
    }
 
-   public static record Favicon(byte[] d) {
+   public static record Favicon(byte[] b) {
       private final byte[] iconBytes;
-      public static final int WIDTH = 64;
-      public static final int HEIGHT = 64;
       private static final String PREFIX = "data:image/png;base64,";
       public static final Codec<ServerStatus.Favicon> CODEC = Codec.STRING.comapFlatMap(var0 -> {
          if (!var0.startsWith("data:image/png;base64,")) {

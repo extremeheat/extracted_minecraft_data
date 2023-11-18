@@ -3,6 +3,7 @@ package net.minecraft.client.model;
 import java.util.Arrays;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.model.geom.PartPose;
+import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.client.model.geom.builders.CubeListBuilder;
 import net.minecraft.client.model.geom.builders.LayerDefinition;
 import net.minecraft.client.model.geom.builders.MeshDefinition;
@@ -26,21 +27,22 @@ public class SquidModel<T extends Entity> extends HierarchicalModel<T> {
    public static LayerDefinition createBodyLayer() {
       MeshDefinition var0 = new MeshDefinition();
       PartDefinition var1 = var0.getRoot();
-      boolean var2 = true;
-      var1.addOrReplaceChild(
-         "body", CubeListBuilder.create().texOffs(0, 0).addBox(-6.0F, -8.0F, -6.0F, 12.0F, 16.0F, 12.0F), PartPose.offset(0.0F, 8.0F, 0.0F)
-      );
+      CubeDeformation var2 = new CubeDeformation(0.02F);
       boolean var3 = true;
-      CubeListBuilder var4 = CubeListBuilder.create().texOffs(48, 0).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 18.0F, 2.0F);
+      var1.addOrReplaceChild(
+         "body", CubeListBuilder.create().texOffs(0, 0).addBox(-6.0F, -8.0F, -6.0F, 12.0F, 16.0F, 12.0F, var2), PartPose.offset(0.0F, 8.0F, 0.0F)
+      );
+      boolean var4 = true;
+      CubeListBuilder var5 = CubeListBuilder.create().texOffs(48, 0).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 18.0F, 2.0F);
 
-      for(int var5 = 0; var5 < 8; ++var5) {
-         double var6 = (double)var5 * 3.141592653589793 * 2.0 / 8.0;
-         float var8 = (float)Math.cos(var6) * 5.0F;
-         float var9 = 15.0F;
-         float var10 = (float)Math.sin(var6) * 5.0F;
-         var6 = (double)var5 * 3.141592653589793 * -2.0 / 8.0 + 1.5707963267948966;
-         float var11 = (float)var6;
-         var1.addOrReplaceChild(createTentacleName(var5), var4, PartPose.offsetAndRotation(var8, 15.0F, var10, 0.0F, var11, 0.0F));
+      for(int var6 = 0; var6 < 8; ++var6) {
+         double var7 = (double)var6 * 3.141592653589793 * 2.0 / 8.0;
+         float var9 = (float)Math.cos(var7) * 5.0F;
+         float var10 = 15.0F;
+         float var11 = (float)Math.sin(var7) * 5.0F;
+         var7 = (double)var6 * 3.141592653589793 * -2.0 / 8.0 + 1.5707963267948966;
+         float var12 = (float)var7;
+         var1.addOrReplaceChild(createTentacleName(var6), var5, PartPose.offsetAndRotation(var9, 15.0F, var11, 0.0F, var12, 0.0F));
       }
 
       return LayerDefinition.create(var0, 64, 32);

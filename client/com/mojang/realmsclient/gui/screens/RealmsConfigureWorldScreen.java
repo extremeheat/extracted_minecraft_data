@@ -1,8 +1,6 @@
 package com.mojang.realmsclient.gui.screens;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.RealmsMainScreen;
 import com.mojang.realmsclient.client.RealmsClient;
@@ -17,7 +15,7 @@ import com.mojang.realmsclient.util.task.SwitchMinigameTask;
 import com.mojang.realmsclient.util.task.SwitchSlotTask;
 import java.util.List;
 import javax.annotation.Nullable;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
@@ -35,7 +33,6 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
    private static final ResourceLocation EXPIRES_SOON_ICON_LOCATION = new ResourceLocation("realms", "textures/gui/realms/expires_soon_icon.png");
    private static final Component WORLD_LIST_TITLE = Component.translatable("mco.configure.worlds.title");
    private static final Component TITLE = Component.translatable("mco.configure.world.title");
-   private static final Component MINIGAME_PREFIX = Component.translatable("mco.configure.current.minigame").append(": ");
    private static final Component SERVER_EXPIRED_TOOLTIP = Component.translatable("mco.selectServer.expired");
    private static final Component SERVER_EXPIRING_SOON_TOOLTIP = Component.translatable("mco.selectServer.expires.soon");
    private static final Component SERVER_EXPIRING_IN_DAY_TOOLTIP = Component.translatable("mco.selectServer.expires.day");
@@ -226,25 +223,31 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.toolTip = null;
       this.renderBackground(var1);
-      drawCenteredString(var1, this.font, WORLD_LIST_TITLE, this.width / 2, row(4), 16777215);
+      var1.drawCenteredString(this.font, WORLD_LIST_TITLE, this.width / 2, row(4), 16777215);
       super.render(var1, var2, var3, var4);
       if (this.serverData == null) {
-         drawCenteredString(var1, this.font, this.title, this.width / 2, 17, 16777215);
+         var1.drawCenteredString(this.font, this.title, this.width / 2, 17, 16777215);
       } else {
          String var5 = this.serverData.getName();
          int var6 = this.font.width(var5);
          int var7 = this.serverData.state == RealmsServer.State.CLOSED ? 10526880 : 8388479;
          int var8 = this.font.width(this.title);
-         drawCenteredString(var1, this.font, this.title, this.width / 2, 12, 16777215);
-         drawCenteredString(var1, this.font, var5, this.width / 2, 24, var7);
+         var1.drawCenteredString(this.font, this.title, this.width / 2, 12, 16777215);
+         var1.drawCenteredString(this.font, var5, this.width / 2, 24, var7);
          int var9 = Math.min(this.centerButton(2, 3) + 80 - 11, this.width / 2 + var6 / 2 + var8 / 2 + 10);
          this.drawServerStatus(var1, var9, 7, var2, var3);
          if (this.isMinigame()) {
-            this.font
-               .draw(var1, MINIGAME_PREFIX.copy().append(this.serverData.getMinigameName()), (float)(this.leftX + 80 + 20 + 10), (float)row(13), 16777215);
+            var1.drawString(
+               this.font,
+               Component.translatable("mco.configure.world.minigame", this.serverData.getMinigameName()),
+               this.leftX + 80 + 20 + 10,
+               row(13),
+               16777215,
+               false
+            );
          }
 
          if (this.toolTip != null) {
@@ -343,7 +346,7 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
                      this.minecraft.setScreen(this);
                   }
                },
-               RealmsLongConfirmationScreen.Type.Info,
+               RealmsLongConfirmationScreen.Type.INFO,
                var3,
                var4,
                true
@@ -376,7 +379,7 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
                      this.minecraft.setScreen(this);
                   }
                },
-               RealmsLongConfirmationScreen.Type.Info,
+               RealmsLongConfirmationScreen.Type.INFO,
                var3,
                var4,
                true
@@ -384,7 +387,7 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
          );
    }
 
-   protected void renderMousehoverTooltip(PoseStack var1, @Nullable Component var2, int var3, int var4) {
+   protected void renderMousehoverTooltip(GuiGraphics var1, @Nullable Component var2, int var3, int var4) {
       int var5 = var3 + 12;
       int var6 = var4 - 12;
       int var7 = this.font.width(var2);
@@ -392,11 +395,11 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
          var5 = var5 - var7 - 20;
       }
 
-      fillGradient(var1, var5 - 3, var6 - 3, var5 + var7 + 3, var6 + 8 + 3, -1073741824, -1073741824);
-      this.font.drawShadow(var1, var2, (float)var5, (float)var6, 16777215);
+      var1.fillGradient(var5 - 3, var6 - 3, var5 + var7 + 3, var6 + 8 + 3, -1073741824, -1073741824);
+      var1.drawString(this.font, var2, var5, var6, 16777215);
    }
 
-   private void drawServerStatus(PoseStack var1, int var2, int var3, int var4, int var5) {
+   private void drawServerStatus(GuiGraphics var1, int var2, int var3, int var4, int var5) {
       if (this.serverData.expired) {
          this.drawExpired(var1, var2, var3, var4, var5);
       } else if (this.serverData.state == RealmsServer.State.CLOSED) {
@@ -410,20 +413,18 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
       }
    }
 
-   private void drawExpired(PoseStack var1, int var2, int var3, int var4, int var5) {
-      RenderSystem.setShaderTexture(0, EXPIRED_ICON_LOCATION);
-      GuiComponent.blit(var1, var2, var3, 0.0F, 0.0F, 10, 28, 10, 28);
+   private void drawExpired(GuiGraphics var1, int var2, int var3, int var4, int var5) {
+      var1.blit(EXPIRED_ICON_LOCATION, var2, var3, 0.0F, 0.0F, 10, 28, 10, 28);
       if (var4 >= var2 && var4 <= var2 + 9 && var5 >= var3 && var5 <= var3 + 27) {
          this.toolTip = SERVER_EXPIRED_TOOLTIP;
       }
    }
 
-   private void drawExpiring(PoseStack var1, int var2, int var3, int var4, int var5, int var6) {
-      RenderSystem.setShaderTexture(0, EXPIRES_SOON_ICON_LOCATION);
+   private void drawExpiring(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6) {
       if (this.animTick % 20 < 10) {
-         GuiComponent.blit(var1, var2, var3, 0.0F, 0.0F, 10, 28, 20, 28);
+         var1.blit(EXPIRES_SOON_ICON_LOCATION, var2, var3, 0.0F, 0.0F, 10, 28, 20, 28);
       } else {
-         GuiComponent.blit(var1, var2, var3, 10.0F, 0.0F, 10, 28, 20, 28);
+         var1.blit(EXPIRES_SOON_ICON_LOCATION, var2, var3, 10.0F, 0.0F, 10, 28, 20, 28);
       }
 
       if (var4 >= var2 && var4 <= var2 + 9 && var5 >= var3 && var5 <= var3 + 27) {
@@ -437,17 +438,15 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
       }
    }
 
-   private void drawOpen(PoseStack var1, int var2, int var3, int var4, int var5) {
-      RenderSystem.setShaderTexture(0, ON_ICON_LOCATION);
-      GuiComponent.blit(var1, var2, var3, 0.0F, 0.0F, 10, 28, 10, 28);
+   private void drawOpen(GuiGraphics var1, int var2, int var3, int var4, int var5) {
+      var1.blit(ON_ICON_LOCATION, var2, var3, 0.0F, 0.0F, 10, 28, 10, 28);
       if (var4 >= var2 && var4 <= var2 + 9 && var5 >= var3 && var5 <= var3 + 27) {
          this.toolTip = SERVER_OPEN_TOOLTIP;
       }
    }
 
-   private void drawClose(PoseStack var1, int var2, int var3, int var4, int var5) {
-      RenderSystem.setShaderTexture(0, OFF_ICON_LOCATION);
-      GuiComponent.blit(var1, var2, var3, 0.0F, 0.0F, 10, 28, 10, 28);
+   private void drawClose(GuiGraphics var1, int var2, int var3, int var4, int var5) {
+      var1.blit(OFF_ICON_LOCATION, var2, var3, 0.0F, 0.0F, 10, 28, 10, 28);
       if (var4 >= var2 && var4 <= var2 + 9 && var5 >= var3 && var5 <= var3 + 27) {
          this.toolTip = SERVER_CLOSED_TOOLTIP;
       }

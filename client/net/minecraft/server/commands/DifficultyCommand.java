@@ -28,7 +28,7 @@ public class DifficultyCommand {
 
       var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)var1.requires(var0x -> var0x.hasPermission(2))).executes(var0x -> {
          Difficulty var1x = ((CommandSourceStack)var0x.getSource()).getLevel().getDifficulty();
-         ((CommandSourceStack)var0x.getSource()).sendSuccess(Component.translatable("commands.difficulty.query", var1x.getDisplayName()), false);
+         ((CommandSourceStack)var0x.getSource()).sendSuccess(() -> Component.translatable("commands.difficulty.query", var1x.getDisplayName()), false);
          return var1x.getId();
       }));
    }
@@ -39,7 +39,7 @@ public class DifficultyCommand {
          throw ERROR_ALREADY_DIFFICULT.create(var1.getKey());
       } else {
          var2.setDifficulty(var1, true);
-         var0.sendSuccess(Component.translatable("commands.difficulty.success", var1.getDisplayName()), true);
+         var0.sendSuccess(() -> Component.translatable("commands.difficulty.success", var1.getDisplayName()), true);
          return 0;
       }
    }

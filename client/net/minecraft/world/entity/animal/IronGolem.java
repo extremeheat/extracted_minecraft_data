@@ -7,8 +7,6 @@ import java.util.UUID;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.BlockParticleOption;
-import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -16,7 +14,6 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.util.Mth;
 import net.minecraft.util.TimeUtil;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.InteractionHand;
@@ -123,28 +120,14 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
          --this.offerFlowerTick;
       }
 
-      if (this.getDeltaMovement().horizontalDistanceSqr() > 2.500000277905201E-7 && this.random.nextInt(5) == 0) {
-         int var1 = Mth.floor(this.getX());
-         int var2 = Mth.floor(this.getY() - 0.20000000298023224);
-         int var3 = Mth.floor(this.getZ());
-         BlockState var4 = this.level.getBlockState(new BlockPos(var1, var2, var3));
-         if (!var4.isAir()) {
-            this.level
-               .addParticle(
-                  new BlockParticleOption(ParticleTypes.BLOCK, var4),
-                  this.getX() + ((double)this.random.nextFloat() - 0.5) * (double)this.getBbWidth(),
-                  this.getY() + 0.1,
-                  this.getZ() + ((double)this.random.nextFloat() - 0.5) * (double)this.getBbWidth(),
-                  4.0 * ((double)this.random.nextFloat() - 0.5),
-                  0.5,
-                  ((double)this.random.nextFloat() - 0.5) * 4.0
-               );
-         }
+      if (!this.level().isClientSide) {
+         this.updatePersistentAnger((ServerLevel)this.level(), true);
       }
+   }
 
-      if (!this.level.isClientSide) {
-         this.updatePersistentAnger((ServerLevel)this.level, true);
-      }
+   @Override
+   public boolean canSpawnSprintParticle() {
+      return this.getDeltaMovement().horizontalDistanceSqr() > 2.500000277905201E-7 && this.random.nextInt(5) == 0;
    }
 
    @Override
@@ -167,7 +150,7 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       this.setPlayerCreated(var1.getBoolean("PlayerCreated"));
-      this.readPersistentAngerSaveData(this.level, var1);
+      this.readPersistentAngerSaveData(this.level(), var1);
    }
 
    @Override
@@ -203,7 +186,7 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
    @Override
    public boolean doHurtTarget(Entity var1) {
       this.attackAnimationTick = 10;
-      this.level.broadcastEntityEvent(this, (byte)4);
+      this.level().broadcastEntityEvent(this, (byte)4);
       float var2 = this.getAttackDamage();
       float var3 = (int)var2 > 0 ? var2 / 2.0F + (float)this.random.nextInt((int)var2) : var2;
       boolean var4 = var1.hurt(this.damageSources().mobAttack(this), var3);
@@ -254,10 +237,10 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
    public void offerFlower(boolean var1) {
       if (var1) {
          this.offerFlowerTick = 400;
-         this.level.broadcastEntityEvent(this, (byte)11);
+         this.level().broadcastEntityEvent(this, (byte)11);
       } else {
          this.offerFlowerTick = 0;
-         this.level.broadcastEntityEvent(this, (byte)34);
+         this.level().broadcastEntityEvent(this, (byte)34);
       }
    }
 
@@ -288,7 +271,7 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
                var3.shrink(1);
             }
 
-            return InteractionResult.sidedSuccess(this.level.isClientSide);
+            return InteractionResult.sidedSuccess(this.level().isClientSide);
          }
       }
    }

@@ -9,7 +9,6 @@ import net.minecraft.client.model.HumanoidModel;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
-import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
@@ -18,7 +17,6 @@ import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.DyeableArmorItem;
@@ -46,6 +44,8 @@ public class HumanoidArmorLayer<T extends LivingEntity, M extends HumanoidModel<
       this.renderArmorPiece(var1, var2, (T)var4, EquipmentSlot.HEAD, var3, this.getArmorModel(EquipmentSlot.HEAD));
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private void renderArmorPiece(PoseStack var1, MultiBufferSource var2, T var3, EquipmentSlot var4, int var5, A var6) {
       ItemStack var7 = var3.getItemBySlot(var4);
       Item var9 = var7.getItem();
@@ -54,21 +54,21 @@ public class HumanoidArmorLayer<T extends LivingEntity, M extends HumanoidModel<
             this.getParentModel().copyPropertiesTo(var6);
             this.setPartVisibility((A)var6, var4);
             boolean var15 = this.usesInnerModel(var4);
-            boolean var10 = var7.hasFoil();
-            if (var8 instanceof DyeableArmorItem) {
-               int var11 = ((DyeableArmorItem)var8).getColor(var7);
+            if (var8 instanceof DyeableArmorItem var10) {
+               int var11 = var10.getColor(var7);
                float var12 = (float)(var11 >> 16 & 0xFF) / 255.0F;
                float var13 = (float)(var11 >> 8 & 0xFF) / 255.0F;
                float var14 = (float)(var11 & 0xFF) / 255.0F;
-               this.renderModel(var1, var2, var5, (ArmorItem)var8, var10, (A)var6, var15, var12, var13, var14, null);
-               this.renderModel(var1, var2, var5, (ArmorItem)var8, var10, (A)var6, var15, 1.0F, 1.0F, 1.0F, "overlay");
+               this.renderModel(var1, var2, var5, (ArmorItem)var8, (A)var6, var15, var12, var13, var14, null);
+               this.renderModel(var1, var2, var5, (ArmorItem)var8, (A)var6, var15, 1.0F, 1.0F, 1.0F, "overlay");
             } else {
-               this.renderModel(var1, var2, var5, (ArmorItem)var8, var10, (A)var6, var15, 1.0F, 1.0F, 1.0F, null);
+               this.renderModel(var1, var2, var5, (ArmorItem)var8, (A)var6, var15, 1.0F, 1.0F, 1.0F, null);
             }
 
-            if (var3.level.enabledFeatures().contains(FeatureFlags.UPDATE_1_20)) {
-               ArmorTrim.getTrim(var3.level.registryAccess(), var7)
-                  .ifPresent(var8x -> this.renderTrim(var8.getMaterial(), var1, var2, var5, var8x, var10, (A)var6, var15, 1.0F, 1.0F, 1.0F));
+            ArmorTrim.getTrim(var3.level().registryAccess(), var7)
+               .ifPresent(var7x -> this.renderTrim(var8.getMaterial(), var1, var2, var5, var7x, (A)var6, var15));
+            if (var7.hasFoil()) {
+               this.renderGlint(var1, var2, var5, (A)var6);
             }
          }
       }
@@ -98,38 +98,20 @@ public class HumanoidArmorLayer<T extends LivingEntity, M extends HumanoidModel<
    }
 
    private void renderModel(
-      PoseStack var1,
-      MultiBufferSource var2,
-      int var3,
-      ArmorItem var4,
-      boolean var5,
-      A var6,
-      boolean var7,
-      float var8,
-      float var9,
-      float var10,
-      @Nullable String var11
+      PoseStack var1, MultiBufferSource var2, int var3, ArmorItem var4, A var5, boolean var6, float var7, float var8, float var9, @Nullable String var10
    ) {
-      VertexConsumer var12 = ItemRenderer.getArmorFoilBuffer(var2, RenderType.armorCutoutNoCull(this.getArmorLocation(var4, var7, var11)), false, var5);
-      var6.renderToBuffer(var1, var12, var3, OverlayTexture.NO_OVERLAY, var8, var9, var10, 1.0F);
+      VertexConsumer var11 = var2.getBuffer(RenderType.armorCutoutNoCull(this.getArmorLocation(var4, var6, var10)));
+      var5.renderToBuffer(var1, var11, var3, OverlayTexture.NO_OVERLAY, var7, var8, var9, 1.0F);
    }
 
-   private void renderTrim(
-      ArmorMaterial var1,
-      PoseStack var2,
-      MultiBufferSource var3,
-      int var4,
-      ArmorTrim var5,
-      boolean var6,
-      A var7,
-      boolean var8,
-      float var9,
-      float var10,
-      float var11
-   ) {
-      TextureAtlasSprite var12 = this.armorTrimAtlas.getSprite(var8 ? var5.innerTexture(var1) : var5.outerTexture(var1));
-      VertexConsumer var13 = var12.wrap(ItemRenderer.getFoilBufferDirect(var3, Sheets.armorTrimsSheet(), true, var6));
-      var7.renderToBuffer(var2, var13, var4, OverlayTexture.NO_OVERLAY, var9, var10, var11, 1.0F);
+   private void renderTrim(ArmorMaterial var1, PoseStack var2, MultiBufferSource var3, int var4, ArmorTrim var5, A var6, boolean var7) {
+      TextureAtlasSprite var8 = this.armorTrimAtlas.getSprite(var7 ? var5.innerTexture(var1) : var5.outerTexture(var1));
+      VertexConsumer var9 = var8.wrap(var3.getBuffer(Sheets.armorTrimsSheet()));
+      var6.renderToBuffer(var2, var9, var4, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
+   }
+
+   private void renderGlint(PoseStack var1, MultiBufferSource var2, int var3, A var4) {
+      var4.renderToBuffer(var1, var2.getBuffer(RenderType.armorEntityGlint()), var3, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
    }
 
    private A getArmorModel(EquipmentSlot var1) {

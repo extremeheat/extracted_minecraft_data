@@ -22,7 +22,6 @@ import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraft.world.level.material.Material;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -91,7 +90,7 @@ public class TrapDoorBlock extends HorizontalDirectionalBlock implements SimpleW
 
    @Override
    public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
-      if (this.material == Material.METAL) {
+      if (!this.type.canOpenByHand()) {
          return InteractionResult.PASS;
       } else {
          var1 = var1.cycle(OPEN);

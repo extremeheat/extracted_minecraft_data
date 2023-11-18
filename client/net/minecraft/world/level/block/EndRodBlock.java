@@ -9,7 +9,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.material.PushReaction;
 
 public class EndRodBlock extends RodBlock {
    protected EndRodBlock(BlockBehaviour.Properties var1) {
@@ -49,10 +48,5 @@ public class EndRodBlock extends RodBlock {
    @Override
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(FACING);
-   }
-
-   @Override
-   public PushReaction getPistonPushReaction(BlockState var1) {
-      return PushReaction.NORMAL;
    }
 }

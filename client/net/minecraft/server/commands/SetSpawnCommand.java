@@ -77,19 +77,21 @@ public class SetSpawnCommand {
       String var7 = var4.location().toString();
       if (var1.size() == 1) {
          var0.sendSuccess(
-            Component.translatable(
-               "commands.spawnpoint.success.single",
-               var2.getX(),
-               var2.getY(),
-               var2.getZ(),
-               var3,
-               var7,
-               ((ServerPlayer)var1.iterator().next()).getDisplayName()
-            ),
+            () -> Component.translatable(
+                  "commands.spawnpoint.success.single",
+                  var2.getX(),
+                  var2.getY(),
+                  var2.getZ(),
+                  var3,
+                  var7,
+                  ((ServerPlayer)var1.iterator().next()).getDisplayName()
+               ),
             true
          );
       } else {
-         var0.sendSuccess(Component.translatable("commands.spawnpoint.success.multiple", var2.getX(), var2.getY(), var2.getZ(), var3, var7, var1.size()), true);
+         var0.sendSuccess(
+            () -> Component.translatable("commands.spawnpoint.success.multiple", var2.getX(), var2.getY(), var2.getZ(), var3, var7, var1.size()), true
+         );
       }
 
       return var1.size();

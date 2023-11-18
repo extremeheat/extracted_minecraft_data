@@ -3,15 +3,12 @@ package net.minecraft.core;
 import com.google.common.collect.Iterators;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -50,10 +47,6 @@ public enum Direction implements StringRepresentable {
       .filter(var0 -> var0.getAxis().isHorizontal())
       .sorted(Comparator.comparingInt(var0 -> var0.data2d))
       .toArray(var0 -> new Direction[var0]);
-   private static final Long2ObjectMap<Direction> BY_NORMAL = Arrays.stream(VALUES)
-      .collect(Collectors.toMap(var0 -> new BlockPos(var0.getNormal()).asLong(), var0 -> var0, (var0, var1) -> {
-         throw new IllegalArgumentException("Duplicate keys");
-      }, Long2ObjectOpenHashMap::new));
 
    private Direction(int var3, int var4, int var5, String var6, Direction.AxisDirection var7, Direction.Axis var8, Vec3i var9) {
       this.data3d = var3;
@@ -263,13 +256,32 @@ public enum Direction implements StringRepresentable {
    }
 
    @Nullable
-   public static Direction fromNormal(BlockPos var0) {
-      return (Direction)BY_NORMAL.get(var0.asLong());
-   }
+   public static Direction fromDelta(int var0, int var1, int var2) {
+      if (var0 == 0) {
+         if (var1 == 0) {
+            if (var2 > 0) {
+               return SOUTH;
+            }
 
-   @Nullable
-   public static Direction fromNormal(int var0, int var1, int var2) {
-      return (Direction)BY_NORMAL.get(BlockPos.asLong(var0, var1, var2));
+            if (var2 < 0) {
+               return NORTH;
+            }
+         } else if (var2 == 0) {
+            if (var1 > 0) {
+               return UP;
+            }
+
+            return DOWN;
+         }
+      } else if (var1 == 0 && var2 == 0) {
+         if (var0 > 0) {
+            return EAST;
+         }
+
+         return WEST;
+      }
+
+      return null;
    }
 
    public static Direction fromYRot(double var0) {

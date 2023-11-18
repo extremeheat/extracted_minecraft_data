@@ -57,7 +57,17 @@ public class GameEventListenerRenderer implements DebugRenderer.SimpleDebugRende
                      double var18x = var9x.y() + (double)var13.getListenerRadius();
                      double var20x = var9x.z() + (double)var13.getListenerRadius();
                      LevelRenderer.renderVoxelShape(
-                        var1, var11, Shapes.create(new AABB(var10x, var12, var14x, var16x, var18x, var20x)), -var3, -var5, -var7, 1.0F, 1.0F, 0.0F, 0.35F
+                        var1,
+                        var11,
+                        Shapes.create(new AABB(var10x, var12, var14x, var16x, var18x, var20x)),
+                        -var3,
+                        -var5,
+                        -var7,
+                        1.0F,
+                        1.0F,
+                        0.0F,
+                        0.35F,
+                        true
                      );
                   }
                );

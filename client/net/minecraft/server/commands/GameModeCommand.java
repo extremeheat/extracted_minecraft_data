@@ -46,13 +46,13 @@ public class GameModeCommand {
    private static void logGamemodeChange(CommandSourceStack var0, ServerPlayer var1, GameType var2) {
       MutableComponent var3 = Component.translatable("gameMode." + var2.getName());
       if (var0.getEntity() == var1) {
-         var0.sendSuccess(Component.translatable("commands.gamemode.success.self", var3), true);
+         var0.sendSuccess(() -> Component.translatable("commands.gamemode.success.self", var3), true);
       } else {
          if (var0.getLevel().getGameRules().getBoolean(GameRules.RULE_SENDCOMMANDFEEDBACK)) {
             var1.sendSystemMessage(Component.translatable("gameMode.changed", var3));
          }
 
-         var0.sendSuccess(Component.translatable("commands.gamemode.success.other", var1.getDisplayName(), var3), true);
+         var0.sendSuccess(() -> Component.translatable("commands.gamemode.success.other", var1.getDisplayName(), var3), true);
       }
    }
 

@@ -185,16 +185,15 @@ public class PoiManager extends SectionStorage<PoiSection> {
       this.distanceTracker.update(var1, this.distanceTracker.getLevelFromSource(var1), false);
    }
 
-   public void checkConsistencyWithBlocks(ChunkPos var1, LevelChunkSection var2) {
-      SectionPos var3 = SectionPos.of(var1, SectionPos.blockToSectionCoord(var2.bottomBlockY()));
-      Util.ifElse(this.getOrLoad(var3.asLong()), var3x -> var3x.refresh(var3xx -> {
+   public void checkConsistencyWithBlocks(SectionPos var1, LevelChunkSection var2) {
+      Util.ifElse(this.getOrLoad(var1.asLong()), var3 -> var3.refresh(var3x -> {
             if (mayHavePoi(var2)) {
-               this.updateFromSection(var2, var3, var3xx);
+               this.updateFromSection(var2, var1, var3x);
             }
          }), () -> {
          if (mayHavePoi(var2)) {
-            PoiSection var3x = this.getOrCreate(var3.asLong());
-            this.updateFromSection(var2, var3, var3x::add);
+            PoiSection var3 = this.getOrCreate(var1.asLong());
+            this.updateFromSection(var2, var1, var3::add);
          }
       });
    }

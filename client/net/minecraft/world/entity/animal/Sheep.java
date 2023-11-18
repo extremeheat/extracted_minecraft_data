@@ -45,6 +45,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.world.inventory.TransientCraftingContainer;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
@@ -126,7 +127,7 @@ public class Sheep extends Animal implements Shearable {
 
    @Override
    public void aiStep() {
-      if (this.level.isClientSide) {
+      if (this.level().isClientSide) {
          this.eatAnimationTick = Math.max(0, this.eatAnimationTick - 1);
       }
 
@@ -201,7 +202,7 @@ public class Sheep extends Animal implements Shearable {
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
       if (var3.is(Items.SHEARS)) {
-         if (!this.level.isClientSide && this.readyForShearing()) {
+         if (!this.level().isClientSide && this.readyForShearing()) {
             this.shear(SoundSource.PLAYERS);
             this.gameEvent(GameEvent.SHEAR, var1);
             var3.hurtAndBreak(1, var1, var1x -> var1x.broadcastBreakEvent(var2));
@@ -216,7 +217,7 @@ public class Sheep extends Animal implements Shearable {
 
    @Override
    public void shear(SoundSource var1) {
-      this.level.playSound(null, this, SoundEvents.SHEEP_SHEAR, var1, 1.0F, 1.0F);
+      this.level().playSound(null, this, SoundEvents.SHEEP_SHEAR, var1, 1.0F, 1.0F);
       this.setSheared(true);
       int var2 = 1 + this.random.nextInt(3);
 
@@ -343,19 +344,19 @@ public class Sheep extends Animal implements Shearable {
       DyeColor var3 = ((Sheep)var1).getColor();
       DyeColor var4 = ((Sheep)var2).getColor();
       CraftingContainer var5 = makeContainer(var3, var4);
-      return this.level
+      return this.level()
          .getRecipeManager()
-         .getRecipeFor(RecipeType.CRAFTING, var5, this.level)
-         .map(var2x -> var2x.assemble(var5, this.level.registryAccess()))
+         .getRecipeFor(RecipeType.CRAFTING, var5, this.level())
+         .map(var2x -> var2x.assemble(var5, this.level().registryAccess()))
          .map(ItemStack::getItem)
          .filter(DyeItem.class::isInstance)
          .map(DyeItem.class::cast)
          .map(DyeItem::getDyeColor)
-         .orElseGet(() -> this.level.random.nextBoolean() ? var3 : var4);
+         .orElseGet(() -> this.level().random.nextBoolean() ? var3 : var4);
    }
 
    private static CraftingContainer makeContainer(DyeColor var0, DyeColor var1) {
-      CraftingContainer var2 = new CraftingContainer(new AbstractContainerMenu(null, -1) {
+      TransientCraftingContainer var2 = new TransientCraftingContainer(new AbstractContainerMenu(null, -1) {
          @Override
          public ItemStack quickMoveStack(Player var1, int var2) {
             return ItemStack.EMPTY;

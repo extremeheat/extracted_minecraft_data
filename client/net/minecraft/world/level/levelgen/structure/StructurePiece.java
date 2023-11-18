@@ -360,7 +360,7 @@ public abstract class StructurePiece {
    }
 
    protected boolean isReplaceableByStructures(BlockState var1) {
-      return var1.isAir() || var1.getMaterial().isLiquid() || var1.is(Blocks.GLOW_LICHEN) || var1.is(Blocks.SEAGRASS) || var1.is(Blocks.TALL_SEAGRASS);
+      return var1.isAir() || var1.liquid() || var1.is(Blocks.GLOW_LICHEN) || var1.is(Blocks.SEAGRASS) || var1.is(Blocks.TALL_SEAGRASS);
    }
 
    protected boolean createChest(WorldGenLevel var1, BoundingBox var2, RandomSource var3, int var4, int var5, int var6, ResourceLocation var7) {

@@ -107,7 +107,7 @@ public class Witch extends Raider implements RangedAttackMob {
 
    @Override
    public void aiStep() {
-      if (!this.level.isClientSide && this.isAlive()) {
+      if (!this.level().isClientSide && this.isAlive()) {
          this.healRaidersGoal.decrementCooldown();
          if (this.healRaidersGoal.getCooldown() <= 0) {
             this.attackPlayersGoal.setCanAttack(true);
@@ -153,7 +153,7 @@ public class Witch extends Raider implements RangedAttackMob {
                this.usingTime = this.getMainHandItem().getUseDuration();
                this.setUsingItem(true);
                if (!this.isSilent()) {
-                  this.level
+                  this.level()
                      .playSound(
                         null,
                         this.getX(),
@@ -173,7 +173,7 @@ public class Witch extends Raider implements RangedAttackMob {
          }
 
          if (this.random.nextFloat() < 7.5E-4F) {
-            this.level.broadcastEntityEvent(this, (byte)15);
+            this.level().broadcastEntityEvent(this, (byte)15);
          }
       }
 
@@ -189,7 +189,7 @@ public class Witch extends Raider implements RangedAttackMob {
    public void handleEntityEvent(byte var1) {
       if (var1 == 15) {
          for(int var2 = 0; var2 < this.random.nextInt(35) + 10; ++var2) {
-            this.level
+            this.level()
                .addParticle(
                   ParticleTypes.WITCH,
                   this.getX() + this.random.nextGaussian() * 0.12999999523162842,
@@ -244,18 +244,18 @@ public class Witch extends Raider implements RangedAttackMob {
             var12 = Potions.WEAKNESS;
          }
 
-         ThrownPotion var13 = new ThrownPotion(this.level, this);
+         ThrownPotion var13 = new ThrownPotion(this.level(), this);
          var13.setItem(PotionUtils.setPotion(new ItemStack(Items.SPLASH_POTION), var12));
          var13.setXRot(var13.getXRot() - -20.0F);
          var13.shoot(var4, var6 + var10 * 0.2, var8, 0.75F, 8.0F);
          if (!this.isSilent()) {
-            this.level
+            this.level()
                .playSound(
                   null, this.getX(), this.getY(), this.getZ(), SoundEvents.WITCH_THROW, this.getSoundSource(), 1.0F, 0.8F + this.random.nextFloat() * 0.4F
                );
          }
 
-         this.level.addFreshEntity(var13);
+         this.level().addFreshEntity(var13);
       }
    }
 

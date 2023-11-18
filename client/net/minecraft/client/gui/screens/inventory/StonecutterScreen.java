@@ -1,9 +1,8 @@
 package net.minecraft.client.gui.screens.inventory;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.List;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -36,20 +35,19 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       this.renderTooltip(var1, var2, var3);
    }
 
    @Override
-   protected void renderBg(PoseStack var1, float var2, int var3, int var4) {
+   protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       this.renderBackground(var1);
-      RenderSystem.setShaderTexture(0, BG_LOCATION);
       int var5 = this.leftPos;
       int var6 = this.topPos;
-      blit(var1, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
+      var1.blit(BG_LOCATION, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
       int var7 = (int)(41.0F * this.scrollOffs);
-      blit(var1, var5 + 119, var6 + 15 + var7, 176 + (this.isScrollBarActive() ? 0 : 12), 0, 12, 15);
+      var1.blit(BG_LOCATION, var5 + 119, var6 + 15 + var7, 176 + (this.isScrollBarActive() ? 0 : 12), 0, 12, 15);
       int var8 = this.leftPos + 52;
       int var9 = this.topPos + 14;
       int var10 = this.startIndex + 12;
@@ -58,7 +56,7 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
    }
 
    @Override
-   protected void renderTooltip(PoseStack var1, int var2, int var3) {
+   protected void renderTooltip(GuiGraphics var1, int var2, int var3) {
       super.renderTooltip(var1, var2, var3);
       if (this.displayRecipes) {
          int var4 = this.leftPos + 52;
@@ -71,13 +69,13 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
             int var10 = var4 + var9 % 4 * 16;
             int var11 = var5 + var9 / 4 * 18 + 2;
             if (var2 >= var10 && var2 < var10 + 16 && var3 >= var11 && var3 < var11 + 18) {
-               this.renderTooltip(var1, ((StonecutterRecipe)var7.get(var8)).getResultItem(this.minecraft.level.registryAccess()), var2, var3);
+               var1.renderTooltip(this.font, ((StonecutterRecipe)var7.get(var8)).getResultItem(this.minecraft.level.registryAccess()), var2, var3);
             }
          }
       }
    }
 
-   private void renderButtons(PoseStack var1, int var2, int var3, int var4, int var5, int var6) {
+   private void renderButtons(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6) {
       for(int var7 = this.startIndex; var7 < var6 && var7 < this.menu.getNumRecipes(); ++var7) {
          int var8 = var7 - this.startIndex;
          int var9 = var4 + var8 % 4 * 16;
@@ -90,11 +88,11 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
             var12 += 36;
          }
 
-         blit(var1, var9, var11 - 1, 0, var12, 16, 18);
+         var1.blit(BG_LOCATION, var9, var11 - 1, 0, var12, 16, 18);
       }
    }
 
-   private void renderRecipes(PoseStack var1, int var2, int var3, int var4) {
+   private void renderRecipes(GuiGraphics var1, int var2, int var3, int var4) {
       List var5 = this.menu.getRecipes();
 
       for(int var6 = this.startIndex; var6 < var4 && var6 < this.menu.getNumRecipes(); ++var6) {
@@ -102,9 +100,7 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
          int var8 = var2 + var7 % 4 * 16;
          int var9 = var7 / 4;
          int var10 = var3 + var9 * 18 + 2;
-         this.minecraft
-            .getItemRenderer()
-            .renderAndDecorateItem(var1, ((StonecutterRecipe)var5.get(var6)).getResultItem(this.minecraft.level.registryAccess()), var8, var10);
+         var1.renderItem(((StonecutterRecipe)var5.get(var6)).getResultItem(this.minecraft.level.registryAccess()), var8, var10);
       }
    }
 

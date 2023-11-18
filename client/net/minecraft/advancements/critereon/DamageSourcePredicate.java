@@ -30,7 +30,7 @@ public class DamageSourcePredicate {
    }
 
    public boolean matches(ServerPlayer var1, DamageSource var2) {
-      return this.matches(var1.getLevel(), var1.position(), var2);
+      return this.matches(var1.serverLevel(), var1.position(), var2);
    }
 
    public boolean matches(ServerLevel var1, Vec3 var2, DamageSource var3) {

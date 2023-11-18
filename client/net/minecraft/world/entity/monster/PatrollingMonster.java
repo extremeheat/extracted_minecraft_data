@@ -162,7 +162,7 @@ public abstract class PatrollingMonster extends Monster {
 
       @Override
       public boolean canUse() {
-         boolean var1 = this.mob.level.getGameTime() < this.cooldownUntil;
+         boolean var1 = this.mob.level().getGameTime() < this.cooldownUntil;
          return this.mob.isPatrolling() && this.mob.getTarget() == null && !this.mob.isVehicle() && this.mob.hasPatrolTarget() && !var1;
       }
 
@@ -191,10 +191,10 @@ public abstract class PatrollingMonster extends Monster {
                var4 = var6.yRot(90.0F).scale(0.4).add(var4);
                Vec3 var7 = var4.subtract(var5).normalize().scale(10.0).add(var5);
                BlockPos var8 = BlockPos.containing(var7);
-               var8 = this.mob.level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, var8);
+               var8 = this.mob.level().getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, var8);
                if (!var2.moveTo((double)var8.getX(), (double)var8.getY(), (double)var8.getZ(), var1 ? this.leaderSpeedModifier : this.speedModifier)) {
                   this.moveRandomly();
-                  this.cooldownUntil = this.mob.level.getGameTime() + 200L;
+                  this.cooldownUntil = this.mob.level().getGameTime() + 200L;
                } else if (var1) {
                   for(PatrollingMonster var10 : var3) {
                      var10.setPatrolTarget(var8);
@@ -206,14 +206,14 @@ public abstract class PatrollingMonster extends Monster {
 
       private List<PatrollingMonster> findPatrolCompanions() {
          return this.mob
-            .level
+            .level()
             .getEntitiesOfClass(PatrollingMonster.class, this.mob.getBoundingBox().inflate(16.0), var1 -> var1.canJoinPatrol() && !var1.is(this.mob));
       }
 
       private boolean moveRandomly() {
          RandomSource var1 = this.mob.getRandom();
          BlockPos var2 = this.mob
-            .level
+            .level()
             .getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, this.mob.blockPosition().offset(-8 + var1.nextInt(16), 0, -8 + var1.nextInt(16)));
          return this.mob.getNavigation().moveTo((double)var2.getX(), (double)var2.getY(), (double)var2.getZ(), this.speedModifier);
       }

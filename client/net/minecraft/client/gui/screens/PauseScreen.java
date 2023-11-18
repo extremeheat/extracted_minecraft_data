@@ -1,12 +1,11 @@
 package net.minecraft.client.gui.screens;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.realmsclient.RealmsMainScreen;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.StringWidget;
@@ -117,15 +116,22 @@ public class PauseScreen extends Screen {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       if (this.showPauseMenu) {
          this.renderBackground(var1);
       }
 
       super.render(var1, var2, var3, var4);
       if (this.showPauseMenu && this.minecraft != null && this.minecraft.getReportingContext().hasDraftReport() && this.disconnectButton != null) {
-         RenderSystem.setShaderTexture(0, AbstractWidget.WIDGETS_LOCATION);
-         blit(var1, this.disconnectButton.getX() + this.disconnectButton.getWidth() - 17, this.disconnectButton.getY() + 3, 182, 24, 15, 15);
+         var1.blit(
+            AbstractWidget.WIDGETS_LOCATION,
+            this.disconnectButton.getX() + this.disconnectButton.getWidth() - 17,
+            this.disconnectButton.getY() + 3,
+            182,
+            24,
+            15,
+            15
+         );
       }
    }
 

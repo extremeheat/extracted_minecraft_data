@@ -8,17 +8,18 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.npc.VillagerProfession;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CropBlock;
 import net.minecraft.world.level.block.FarmBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -99,6 +100,8 @@ public class HarvestFarmland extends Behavior<Villager> {
       this.nextOkStartTime = var3 + 40L;
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    protected void tick(ServerLevel var1, Villager var2, long var3) {
       if (this.aboveFarmlandPos == null || this.aboveFarmlandPos.closerToCenterThan(var2.position(), 1.0)) {
          if (this.aboveFarmlandPos != null && var3 > this.nextOkStartTime) {
@@ -115,26 +118,12 @@ public class HarvestFarmland extends Behavior<Villager> {
                for(int var9 = 0; var9 < var8.getContainerSize(); ++var9) {
                   ItemStack var10 = var8.getItem(var9);
                   boolean var11 = false;
-                  if (!var10.isEmpty()) {
-                     if (var10.is(Items.WHEAT_SEEDS)) {
-                        BlockState var12 = Blocks.WHEAT.defaultBlockState();
-                        var1.setBlockAndUpdate(this.aboveFarmlandPos, var12);
-                        var1.gameEvent(GameEvent.BLOCK_PLACE, this.aboveFarmlandPos, GameEvent.Context.of(var2, var12));
-                        var11 = true;
-                     } else if (var10.is(Items.POTATO)) {
-                        BlockState var13 = Blocks.POTATOES.defaultBlockState();
-                        var1.setBlockAndUpdate(this.aboveFarmlandPos, var13);
-                        var1.gameEvent(GameEvent.BLOCK_PLACE, this.aboveFarmlandPos, GameEvent.Context.of(var2, var13));
-                        var11 = true;
-                     } else if (var10.is(Items.CARROT)) {
-                        BlockState var14 = Blocks.CARROTS.defaultBlockState();
+                  if (!var10.isEmpty() && var10.is(ItemTags.VILLAGER_PLANTABLE_SEEDS)) {
+                     Item var13 = var10.getItem();
+                     if (var13 instanceof BlockItem var12) {
+                        BlockState var14 = var12.getBlock().defaultBlockState();
                         var1.setBlockAndUpdate(this.aboveFarmlandPos, var14);
                         var1.gameEvent(GameEvent.BLOCK_PLACE, this.aboveFarmlandPos, GameEvent.Context.of(var2, var14));
-                        var11 = true;
-                     } else if (var10.is(Items.BEETROOT_SEEDS)) {
-                        BlockState var15 = Blocks.BEETROOTS.defaultBlockState();
-                        var1.setBlockAndUpdate(this.aboveFarmlandPos, var15);
-                        var1.gameEvent(GameEvent.BLOCK_PLACE, this.aboveFarmlandPos, GameEvent.Context.of(var2, var15));
                         var11 = true;
                      }
                   }

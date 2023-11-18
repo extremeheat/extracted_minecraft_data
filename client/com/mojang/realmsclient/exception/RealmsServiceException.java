@@ -26,7 +26,7 @@ public class RealmsServiceException extends Exception {
    }
 
    @Override
-   public String toString() {
+   public String getMessage() {
       if (this.realmsError != null) {
          String var1 = "mco.errorMessage." + this.realmsError.getErrorCode();
          String var2 = I18n.exists(var1) ? I18n.get(var1) : this.realmsError.getErrorMessage();

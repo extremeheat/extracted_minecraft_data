@@ -34,11 +34,11 @@ public abstract class EntityRenderer<T extends Entity> {
    }
 
    protected int getSkyLightLevel(T var1, BlockPos var2) {
-      return var1.level.getBrightness(LightLayer.SKY, var2);
+      return var1.level().getBrightness(LightLayer.SKY, var2);
    }
 
    protected int getBlockLightLevel(T var1, BlockPos var2) {
-      return var1.isOnFire() ? 15 : var1.level.getBrightness(LightLayer.BLOCK, var2);
+      return var1.isOnFire() ? 15 : var1.level().getBrightness(LightLayer.BLOCK, var2);
    }
 
    public boolean shouldRender(T var1, Frustum var2, double var3, double var5, double var7) {
@@ -80,7 +80,7 @@ public abstract class EntityRenderer<T extends Entity> {
       double var6 = this.entityRenderDispatcher.distanceToSqr(var1);
       if (!(var6 > 4096.0)) {
          boolean var8 = !var1.isDiscrete();
-         float var9 = var1.getBbHeight() + 0.5F;
+         float var9 = var1.getNameTagOffsetY();
          int var10 = "deadmau5".equals(var2.getString()) ? -10 : 0;
          var3.pushPose();
          var3.translate(0.0F, var9, 0.0F);

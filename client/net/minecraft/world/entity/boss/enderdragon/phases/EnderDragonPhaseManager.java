@@ -25,11 +25,11 @@ public class EnderDragonPhaseManager {
          }
 
          this.currentPhase = this.getPhase(var1);
-         if (!this.dragon.level.isClientSide) {
+         if (!this.dragon.level().isClientSide) {
             this.dragon.getEntityData().set(EnderDragon.DATA_PHASE, var1.getId());
          }
 
-         LOGGER.debug("Dragon is now in phase {} on the {}", var1, this.dragon.level.isClientSide ? "client" : "server");
+         LOGGER.debug("Dragon is now in phase {} on the {}", var1, this.dragon.level().isClientSide ? "client" : "server");
          this.currentPhase.begin();
       }
    }

@@ -19,9 +19,9 @@ public class CuredZombieVillagerTrigger extends SimpleCriterionTrigger<CuredZomb
       return ID;
    }
 
-   public CuredZombieVillagerTrigger.TriggerInstance createInstance(JsonObject var1, EntityPredicate.Composite var2, DeserializationContext var3) {
-      EntityPredicate.Composite var4 = EntityPredicate.Composite.fromJson(var1, "zombie", var3);
-      EntityPredicate.Composite var5 = EntityPredicate.Composite.fromJson(var1, "villager", var3);
+   public CuredZombieVillagerTrigger.TriggerInstance createInstance(JsonObject var1, ContextAwarePredicate var2, DeserializationContext var3) {
+      ContextAwarePredicate var4 = EntityPredicate.fromJson(var1, "zombie", var3);
+      ContextAwarePredicate var5 = EntityPredicate.fromJson(var1, "villager", var3);
       return new CuredZombieVillagerTrigger.TriggerInstance(var2, var4, var5);
    }
 
@@ -32,17 +32,17 @@ public class CuredZombieVillagerTrigger extends SimpleCriterionTrigger<CuredZomb
    }
 
    public static class TriggerInstance extends AbstractCriterionTriggerInstance {
-      private final EntityPredicate.Composite zombie;
-      private final EntityPredicate.Composite villager;
+      private final ContextAwarePredicate zombie;
+      private final ContextAwarePredicate villager;
 
-      public TriggerInstance(EntityPredicate.Composite var1, EntityPredicate.Composite var2, EntityPredicate.Composite var3) {
+      public TriggerInstance(ContextAwarePredicate var1, ContextAwarePredicate var2, ContextAwarePredicate var3) {
          super(CuredZombieVillagerTrigger.ID, var1);
          this.zombie = var2;
          this.villager = var3;
       }
 
       public static CuredZombieVillagerTrigger.TriggerInstance curedZombieVillager() {
-         return new CuredZombieVillagerTrigger.TriggerInstance(EntityPredicate.Composite.ANY, EntityPredicate.Composite.ANY, EntityPredicate.Composite.ANY);
+         return new CuredZombieVillagerTrigger.TriggerInstance(ContextAwarePredicate.ANY, ContextAwarePredicate.ANY, ContextAwarePredicate.ANY);
       }
 
       public boolean matches(LootContext var1, LootContext var2) {

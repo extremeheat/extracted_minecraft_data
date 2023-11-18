@@ -42,6 +42,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stat;
 import net.minecraft.stats.Stats;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
@@ -224,7 +225,7 @@ public abstract class Player extends LivingEntity {
    public void tick() {
       this.noPhysics = this.isSpectator();
       if (this.isSpectator()) {
-         this.onGround = false;
+         this.setOnGround(false);
       }
 
       if (this.takeXpDelay > 0) {
@@ -237,7 +238,7 @@ public abstract class Player extends LivingEntity {
             this.sleepCounter = 100;
          }
 
-         if (!this.level.isClientSide && this.level.isDay()) {
+         if (!this.level().isClientSide && this.level().isDay()) {
             this.stopSleepInBed(false, true);
          }
       } else if (this.sleepCounter > 0) {
@@ -249,13 +250,13 @@ public abstract class Player extends LivingEntity {
 
       this.updateIsUnderwater();
       super.tick();
-      if (!this.level.isClientSide && this.containerMenu != null && !this.containerMenu.stillValid(this)) {
+      if (!this.level().isClientSide && this.containerMenu != null && !this.containerMenu.stillValid(this)) {
          this.closeContainer();
          this.containerMenu = this.inventoryMenu;
       }
 
       this.moveCloak();
-      if (!this.level.isClientSide) {
+      if (!this.level().isClientSide) {
          this.foodData.tick(this);
          this.awardStat(Stats.PLAY_TIME);
          this.awardStat(Stats.TOTAL_WORLD_TIME);
@@ -282,7 +283,7 @@ public abstract class Player extends LivingEntity {
       ++this.attackStrengthTicker;
       ItemStack var6 = this.getMainHandItem();
       if (!ItemStack.matches(this.lastItemInMainHand, var6)) {
-         if (!ItemStack.isSame(this.lastItemInMainHand, var6)) {
+         if (!ItemStack.isSameItem(this.lastItemInMainHand, var6)) {
             this.resetAttackStrengthTicker();
          }
 
@@ -422,7 +423,7 @@ public abstract class Player extends LivingEntity {
 
    @Override
    public void playSound(SoundEvent var1, float var2, float var3) {
-      this.level.playSound(this, this.getX(), this.getY(), this.getZ(), var1, this.getSoundSource(), var2, var3);
+      this.level().playSound(this, this.getX(), this.getY(), this.getZ(), var1, this.getSoundSource(), var2, var3);
    }
 
    public void playNotifySound(SoundEvent var1, SoundSource var2, float var3, float var4) {
@@ -458,7 +459,7 @@ public abstract class Player extends LivingEntity {
          double var3 = this.random.nextGaussian() * 0.02;
          double var5 = this.random.nextGaussian() * 0.02;
          double var7 = this.random.nextGaussian() * 0.02;
-         this.level.addParticle(var1, this.getRandomX(1.0), this.getRandomY() + 1.0, this.getRandomZ(1.0), var3, var5, var7);
+         this.level().addParticle(var1, this.getRandomX(1.0), this.getRandomY() + 1.0, this.getRandomZ(1.0), var3, var5, var7);
       }
    }
 
@@ -471,7 +472,7 @@ public abstract class Player extends LivingEntity {
 
    @Override
    public void rideTick() {
-      if (!this.level.isClientSide && this.wantsToStopRiding() && this.isPassenger()) {
+      if (!this.level().isClientSide && this.wantsToStopRiding() && this.isPassenger()) {
          this.stopRiding();
          this.setShiftKeyDown(false);
       } else {
@@ -498,7 +499,7 @@ public abstract class Player extends LivingEntity {
          --this.jumpTriggerTime;
       }
 
-      if (this.level.getDifficulty() == Difficulty.PEACEFUL && this.level.getGameRules().getBoolean(GameRules.RULE_NATURAL_REGENERATION)) {
+      if (this.level().getDifficulty() == Difficulty.PEACEFUL && this.level().getGameRules().getBoolean(GameRules.RULE_NATURAL_REGENERATION)) {
          if (this.getHealth() < this.getMaxHealth() && this.tickCount % 20 == 0) {
             this.heal(1.0F);
          }
@@ -513,7 +514,7 @@ public abstract class Player extends LivingEntity {
       super.aiStep();
       this.setSpeed((float)this.getAttributeValue(Attributes.MOVEMENT_SPEED));
       float var1;
-      if (this.onGround && !this.isDeadOrDying() && !this.isSwimming()) {
+      if (this.onGround() && !this.isDeadOrDying() && !this.isSwimming()) {
          var1 = Math.min(0.1F, (float)this.getDeltaMovement().horizontalDistance());
       } else {
          var1 = 0.0F;
@@ -528,7 +529,7 @@ public abstract class Player extends LivingEntity {
             var2 = this.getBoundingBox().inflate(1.0, 0.5, 1.0);
          }
 
-         List var3 = this.level.getEntities(this, var2);
+         List var3 = this.level().getEntities(this, var2);
          ArrayList var4 = Lists.newArrayList();
 
          for(int var5 = 0; var5 < var3.size(); ++var5) {
@@ -547,29 +548,29 @@ public abstract class Player extends LivingEntity {
 
       this.playShoulderEntityAmbientSound(this.getShoulderEntityLeft());
       this.playShoulderEntityAmbientSound(this.getShoulderEntityRight());
-      if (!this.level.isClientSide && (this.fallDistance > 0.5F || this.isInWater()) || this.abilities.flying || this.isSleeping() || this.isInPowderSnow) {
+      if (!this.level().isClientSide && (this.fallDistance > 0.5F || this.isInWater()) || this.abilities.flying || this.isSleeping() || this.isInPowderSnow) {
          this.removeEntitiesOnShoulder();
       }
    }
 
    private void playShoulderEntityAmbientSound(@Nullable CompoundTag var1) {
-      if (var1 != null && (!var1.contains("Silent") || !var1.getBoolean("Silent")) && this.level.random.nextInt(200) == 0) {
+      if (var1 != null && (!var1.contains("Silent") || !var1.getBoolean("Silent")) && this.level().random.nextInt(200) == 0) {
          String var2 = var1.getString("id");
          EntityType.byString(var2)
             .filter(var0 -> var0 == EntityType.PARROT)
             .ifPresent(
                var1x -> {
-                  if (!Parrot.imitateNearbyMobs(this.level, this)) {
-                     this.level
+                  if (!Parrot.imitateNearbyMobs(this.level(), this)) {
+                     this.level()
                         .playSound(
                            null,
                            this.getX(),
                            this.getY(),
                            this.getZ(),
-                           Parrot.getAmbient(this.level, this.level.random),
+                           Parrot.getAmbient(this.level(), this.level().random),
                            this.getSoundSource(),
                            1.0F,
-                           Parrot.getPitch(this.level.random)
+                           Parrot.getPitch(this.level().random)
                         );
                   }
                }
@@ -596,7 +597,7 @@ public abstract class Player extends LivingEntity {
 
    public void startAutoSpinAttack(int var1) {
       this.autoSpinAttackTicks = var1;
-      if (!this.level.isClientSide) {
+      if (!this.level().isClientSide) {
          this.removeEntitiesOnShoulder();
          this.setLivingEntityFlag(4, true);
       }
@@ -625,13 +626,13 @@ public abstract class Player extends LivingEntity {
       this.resetStat(Stats.CUSTOM.get(Stats.TIME_SINCE_REST));
       this.clearFire();
       this.setSharedFlagOnFire(false);
-      this.setLastDeathLocation(Optional.of(GlobalPos.of(this.level.dimension(), this.blockPosition())));
+      this.setLastDeathLocation(Optional.of(GlobalPos.of(this.level().dimension(), this.blockPosition())));
    }
 
    @Override
    protected void dropEquipment() {
       super.dropEquipment();
-      if (!this.level.getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY)) {
+      if (!this.level().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY)) {
          this.destroyVanishingCursedItems();
          this.inventory.dropAll();
       }
@@ -666,12 +667,12 @@ public abstract class Player extends LivingEntity {
       if (var1.isEmpty()) {
          return null;
       } else {
-         if (this.level.isClientSide) {
+         if (this.level().isClientSide) {
             this.swing(InteractionHand.MAIN_HAND);
          }
 
          double var4 = this.getEyeY() - 0.30000001192092896;
-         ItemEntity var6 = new ItemEntity(this.level, this.getX(), var4, this.getZ(), var1);
+         ItemEntity var6 = new ItemEntity(this.level(), this.getX(), var4, this.getZ(), var1);
          var6.setPickUpDelay(40);
          if (var3) {
             var6.setThrower(this.getUUID());
@@ -727,7 +728,7 @@ public abstract class Player extends LivingEntity {
          var2 /= 5.0F;
       }
 
-      if (!this.onGround) {
+      if (!this.onGround()) {
          var2 /= 5.0F;
       }
 
@@ -808,13 +809,13 @@ public abstract class Player extends LivingEntity {
       if (super.isInvulnerableTo(var1)) {
          return true;
       } else if (var1.is(DamageTypeTags.IS_DROWNING)) {
-         return !this.level.getGameRules().getBoolean(GameRules.RULE_DROWNING_DAMAGE);
+         return !this.level().getGameRules().getBoolean(GameRules.RULE_DROWNING_DAMAGE);
       } else if (var1.is(DamageTypeTags.IS_FALL)) {
-         return !this.level.getGameRules().getBoolean(GameRules.RULE_FALL_DAMAGE);
+         return !this.level().getGameRules().getBoolean(GameRules.RULE_FALL_DAMAGE);
       } else if (var1.is(DamageTypeTags.IS_FIRE)) {
-         return !this.level.getGameRules().getBoolean(GameRules.RULE_FIRE_DAMAGE);
+         return !this.level().getGameRules().getBoolean(GameRules.RULE_FIRE_DAMAGE);
       } else if (var1.is(DamageTypeTags.IS_FREEZING)) {
-         return !this.level.getGameRules().getBoolean(GameRules.RULE_FREEZE_DAMAGE);
+         return !this.level().getGameRules().getBoolean(GameRules.RULE_FREEZE_DAMAGE);
       } else {
          return false;
       }
@@ -831,20 +832,20 @@ public abstract class Player extends LivingEntity {
          if (this.isDeadOrDying()) {
             return false;
          } else {
-            if (!this.level.isClientSide) {
+            if (!this.level().isClientSide) {
                this.removeEntitiesOnShoulder();
             }
 
             if (var1.scalesWithDifficulty()) {
-               if (this.level.getDifficulty() == Difficulty.PEACEFUL) {
+               if (this.level().getDifficulty() == Difficulty.PEACEFUL) {
                   var2 = 0.0F;
                }
 
-               if (this.level.getDifficulty() == Difficulty.EASY) {
+               if (this.level().getDifficulty() == Difficulty.EASY) {
                   var2 = Math.min(var2 / 2.0F + 1.0F, var2);
                }
 
-               if (this.level.getDifficulty() == Difficulty.HARD) {
+               if (this.level().getDifficulty() == Difficulty.HARD) {
                   var2 = var2 * 3.0F / 2.0F;
                }
             }
@@ -890,7 +891,7 @@ public abstract class Player extends LivingEntity {
    @Override
    protected void hurtCurrentlyUsedShield(float var1) {
       if (this.useItem.is(Items.SHIELD)) {
-         if (!this.level.isClientSide) {
+         if (!this.level().isClientSide) {
             this.awardStat(Stats.ITEM_USED.get(this.useItem.getItem()));
          }
 
@@ -906,7 +907,7 @@ public abstract class Player extends LivingEntity {
                }
 
                this.useItem = ItemStack.EMPTY;
-               this.playSound(SoundEvents.SHIELD_BREAK, 0.8F, 0.8F + this.level.random.nextFloat() * 0.4F);
+               this.playSound(SoundEvents.SHIELD_BREAK, 0.8F, 0.8F + this.level().random.nextFloat() * 0.4F);
             }
          }
       }
@@ -917,21 +918,22 @@ public abstract class Player extends LivingEntity {
       if (!this.isInvulnerableTo(var1)) {
          var2 = this.getDamageAfterArmorAbsorb(var1, var2);
          var2 = this.getDamageAfterMagicAbsorb(var1, var2);
-         float var8 = Math.max(var2 - this.getAbsorptionAmount(), 0.0F);
-         this.setAbsorptionAmount(this.getAbsorptionAmount() - (var2 - var8));
-         float var4 = var2 - var8;
+         float var7 = Math.max(var2 - this.getAbsorptionAmount(), 0.0F);
+         this.setAbsorptionAmount(this.getAbsorptionAmount() - (var2 - var7));
+         float var4 = var2 - var7;
          if (var4 > 0.0F && var4 < 3.4028235E37F) {
             this.awardStat(Stats.DAMAGE_ABSORBED, Math.round(var4 * 10.0F));
          }
 
-         if (var8 != 0.0F) {
+         if (var7 != 0.0F) {
             this.causeFoodExhaustion(var1.getFoodExhaustion());
-            float var5 = this.getHealth();
-            this.getCombatTracker().recordDamage(var1, var5, var8);
-            this.setHealth(this.getHealth() - var8);
-            if (var8 < 3.4028235E37F) {
-               this.awardStat(Stats.DAMAGE_TAKEN, Math.round(var8 * 10.0F));
+            this.getCombatTracker().recordDamage(var1, var7);
+            this.setHealth(this.getHealth() - var7);
+            if (var7 < 3.4028235E37F) {
+               this.awardStat(Stats.DAMAGE_TAKEN, Math.round(var7 * 10.0F));
             }
+
+            this.gameEvent(GameEvent.ENTITY_DAMAGE);
          }
       }
    }
@@ -945,7 +947,7 @@ public abstract class Player extends LivingEntity {
       return false;
    }
 
-   public void openTextEdit(SignBlockEntity var1) {
+   public void openTextEdit(SignBlockEntity var1, boolean var2) {
    }
 
    public void openMinecartCommandBlock(BaseCommandBlock var1) {
@@ -998,7 +1000,7 @@ public abstract class Player extends LivingEntity {
 
                InteractionResult var6 = var3.interactLivingEntity(this, (LivingEntity)var1, var2);
                if (var6.consumesAction()) {
-                  this.level.gameEvent(GameEvent.ENTITY_INTERACT, var1.position(), GameEvent.Context.of(this));
+                  this.level().gameEvent(GameEvent.ENTITY_INTERACT, var1.position(), GameEvent.Context.of(this));
                   if (var3.isEmpty() && !this.abilities.instabuild) {
                      this.setItemInHand(var2, ItemStack.EMPTY);
                   }
@@ -1044,7 +1046,7 @@ public abstract class Player extends LivingEntity {
          double var5 = var1.z;
          double var7 = 0.05;
 
-         while(var3 != 0.0 && this.level.noCollision(this, this.getBoundingBox().move(var3, (double)(-this.maxUpStep()), 0.0))) {
+         while(var3 != 0.0 && this.level().noCollision(this, this.getBoundingBox().move(var3, (double)(-this.maxUpStep()), 0.0))) {
             if (var3 < 0.05 && var3 >= -0.05) {
                var3 = 0.0;
             } else if (var3 > 0.0) {
@@ -1054,7 +1056,7 @@ public abstract class Player extends LivingEntity {
             }
          }
 
-         while(var5 != 0.0 && this.level.noCollision(this, this.getBoundingBox().move(0.0, (double)(-this.maxUpStep()), var5))) {
+         while(var5 != 0.0 && this.level().noCollision(this, this.getBoundingBox().move(0.0, (double)(-this.maxUpStep()), var5))) {
             if (var5 < 0.05 && var5 >= -0.05) {
                var5 = 0.0;
             } else if (var5 > 0.0) {
@@ -1064,7 +1066,7 @@ public abstract class Player extends LivingEntity {
             }
          }
 
-         while(var3 != 0.0 && var5 != 0.0 && this.level.noCollision(this, this.getBoundingBox().move(var3, (double)(-this.maxUpStep()), var5))) {
+         while(var3 != 0.0 && var5 != 0.0 && this.level().noCollision(this, this.getBoundingBox().move(var3, (double)(-this.maxUpStep()), var5))) {
             if (var3 < 0.05 && var3 >= -0.05) {
                var3 = 0.0;
             } else if (var3 > 0.0) {
@@ -1089,9 +1091,9 @@ public abstract class Player extends LivingEntity {
    }
 
    private boolean isAboveGround() {
-      return this.onGround
+      return this.onGround()
          || this.fallDistance < this.maxUpStep()
-            && !this.level.noCollision(this, this.getBoundingBox().move(0.0, (double)(this.fallDistance - this.maxUpStep()), 0.0));
+            && !this.level().noCollision(this, this.getBoundingBox().move(0.0, (double)(this.fallDistance - this.maxUpStep()), 0.0));
    }
 
    public void attack(Entity var1) {
@@ -1115,14 +1117,14 @@ public abstract class Player extends LivingEntity {
                int var7 = 0;
                var7 += EnchantmentHelper.getKnockbackBonus(this);
                if (this.isSprinting() && var5) {
-                  this.level.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_KNOCKBACK, this.getSoundSource(), 1.0F, 1.0F);
+                  this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_KNOCKBACK, this.getSoundSource(), 1.0F, 1.0F);
                   ++var7;
                   var6 = true;
                }
 
                boolean var8 = var5
                   && this.fallDistance > 0.0F
-                  && !this.onGround
+                  && !this.onGround()
                   && !this.onClimbable()
                   && !this.isInWater()
                   && !this.hasEffect(MobEffects.BLINDNESS)
@@ -1136,7 +1138,7 @@ public abstract class Player extends LivingEntity {
                var2 += var3;
                boolean var9 = false;
                double var10 = (double)(this.walkDist - this.walkDistO);
-               if (var5 && !var8 && !var6 && this.onGround && var10 < (double)this.getSpeed()) {
+               if (var5 && !var8 && !var6 && this.onGround() && var10 < (double)this.getSpeed()) {
                   ItemStack var12 = this.getItemInHand(InteractionHand.MAIN_HAND);
                   if (var12.getItem() instanceof SwordItem) {
                      var9 = true;
@@ -1178,7 +1180,7 @@ public abstract class Player extends LivingEntity {
                   if (var9) {
                      float var17 = 1.0F + EnchantmentHelper.getSweepingDamageRatio(this) * var2;
 
-                     for(LivingEntity var20 : this.level.getEntitiesOfClass(LivingEntity.class, var1.getBoundingBox().inflate(1.0, 0.25, 1.0))) {
+                     for(LivingEntity var20 : this.level().getEntitiesOfClass(LivingEntity.class, var1.getBoundingBox().inflate(1.0, 0.25, 1.0))) {
                         if (var20 != this
                            && var20 != var1
                            && !this.isAlliedTo(var20)
@@ -1191,7 +1193,7 @@ public abstract class Player extends LivingEntity {
                         }
                      }
 
-                     this.level.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_SWEEP, this.getSoundSource(), 1.0F, 1.0F);
+                     this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_SWEEP, this.getSoundSource(), 1.0F, 1.0F);
                      this.sweepAttack();
                   }
 
@@ -1202,15 +1204,16 @@ public abstract class Player extends LivingEntity {
                   }
 
                   if (var8) {
-                     this.level.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_CRIT, this.getSoundSource(), 1.0F, 1.0F);
+                     this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_CRIT, this.getSoundSource(), 1.0F, 1.0F);
                      this.crit(var1);
                   }
 
                   if (!var8 && !var9) {
                      if (var5) {
-                        this.level.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_STRONG, this.getSoundSource(), 1.0F, 1.0F);
+                        this.level()
+                           .playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_STRONG, this.getSoundSource(), 1.0F, 1.0F);
                      } else {
-                        this.level.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_WEAK, this.getSoundSource(), 1.0F, 1.0F);
+                        this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_WEAK, this.getSoundSource(), 1.0F, 1.0F);
                      }
                   }
 
@@ -1230,7 +1233,7 @@ public abstract class Player extends LivingEntity {
                      var28 = ((EnderDragonPart)var1).parentMob;
                   }
 
-                  if (!this.level.isClientSide && !var27.isEmpty() && var28 instanceof LivingEntity) {
+                  if (!this.level().isClientSide && !var27.isEmpty() && var28 instanceof LivingEntity) {
                      var27.hurtEnemy((LivingEntity)var28, this);
                      if (var27.isEmpty()) {
                         this.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
@@ -1244,16 +1247,16 @@ public abstract class Player extends LivingEntity {
                         var1.setSecondsOnFire(var14 * 4);
                      }
 
-                     if (this.level instanceof ServerLevel && var29 > 2.0F) {
+                     if (this.level() instanceof ServerLevel && var29 > 2.0F) {
                         int var30 = (int)((double)var29 * 0.5);
-                        ((ServerLevel)this.level)
+                        ((ServerLevel)this.level())
                            .sendParticles(ParticleTypes.DAMAGE_INDICATOR, var1.getX(), var1.getY(0.5), var1.getZ(), var30, 0.1, 0.0, 0.1, 0.2);
                      }
                   }
 
                   this.causeFoodExhaustion(0.1F);
                } else {
-                  this.level.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, this.getSoundSource(), 1.0F, 1.0F);
+                  this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_ATTACK_NODAMAGE, this.getSoundSource(), 1.0F, 1.0F);
                   if (var13) {
                      var1.clearFire();
                   }
@@ -1277,7 +1280,7 @@ public abstract class Player extends LivingEntity {
       if (this.random.nextFloat() < var2) {
          this.getCooldowns().addCooldown(Items.SHIELD, 100);
          this.stopUsingItem();
-         this.level.broadcastEntityEvent(this, (byte)30);
+         this.level().broadcastEntityEvent(this, (byte)30);
       }
    }
 
@@ -1290,8 +1293,9 @@ public abstract class Player extends LivingEntity {
    public void sweepAttack() {
       double var1 = (double)(-Mth.sin(this.getYRot() * 0.017453292F));
       double var3 = (double)Mth.cos(this.getYRot() * 0.017453292F);
-      if (this.level instanceof ServerLevel) {
-         ((ServerLevel)this.level).sendParticles(ParticleTypes.SWEEP_ATTACK, this.getX() + var1, this.getY(0.5), this.getZ() + var3, 0, var1, 0.0, var3, 0.0);
+      if (this.level() instanceof ServerLevel) {
+         ((ServerLevel)this.level())
+            .sendParticles(ParticleTypes.SWEEP_ATTACK, this.getX() + var1, this.getY(0.5), this.getZ() + var3, 0, var1, 0.0, var3, 0.0);
       }
    }
 
@@ -1338,8 +1342,8 @@ public abstract class Player extends LivingEntity {
 
    public void stopSleepInBed(boolean var1, boolean var2) {
       super.stopSleeping();
-      if (this.level instanceof ServerLevel && var2) {
-         ((ServerLevel)this.level).updateSleepingPlayerList();
+      if (this.level() instanceof ServerLevel && var2) {
+         ((ServerLevel)this.level()).updateSleepingPlayerList();
       }
 
       this.sleepCounter = var1 ? 0 : 100;
@@ -1354,20 +1358,21 @@ public abstract class Player extends LivingEntity {
       BlockState var5 = var0.getBlockState(var1);
       Block var6 = var5.getBlock();
       if (var6 instanceof RespawnAnchorBlock && (var3 || var5.getValue(RespawnAnchorBlock.CHARGE) > 0) && RespawnAnchorBlock.canSetSpawn(var0)) {
-         Optional var9 = RespawnAnchorBlock.findStandUpPosition(EntityType.PLAYER, var0, var1);
-         if (!var3 && !var4 && var9.isPresent()) {
+         Optional var10 = RespawnAnchorBlock.findStandUpPosition(EntityType.PLAYER, var0, var1);
+         if (!var3 && !var4 && var10.isPresent()) {
             var0.setBlock(var1, var5.setValue(RespawnAnchorBlock.CHARGE, Integer.valueOf(var5.getValue(RespawnAnchorBlock.CHARGE) - 1)), 3);
          }
 
-         return var9;
+         return var10;
       } else if (var6 instanceof BedBlock && BedBlock.canSetSpawn(var0)) {
          return BedBlock.findStandUpPosition(EntityType.PLAYER, var0, var1, var5.getValue(BedBlock.FACING), var2);
       } else if (!var3) {
          return Optional.empty();
       } else {
-         boolean var7 = var6.isPossibleToRespawnInThis();
-         boolean var8 = var0.getBlockState(var1.above()).getBlock().isPossibleToRespawnInThis();
-         return var7 && var8 ? Optional.of(new Vec3((double)var1.getX() + 0.5, (double)var1.getY() + 0.1, (double)var1.getZ() + 0.5)) : Optional.empty();
+         boolean var7 = var6.isPossibleToRespawnInThis(var5);
+         BlockState var8 = var0.getBlockState(var1.above());
+         boolean var9 = var8.getBlock().isPossibleToRespawnInThis(var8);
+         return var7 && var9 ? Optional.of(new Vec3((double)var1.getX() + 0.5, (double)var1.getY() + 0.1, (double)var1.getZ() + 0.5)) : Optional.empty();
       }
    }
 
@@ -1404,6 +1409,9 @@ public abstract class Player extends LivingEntity {
       return 0;
    }
 
+   public void triggerRecipeCrafted(Recipe<?> var1, List<ItemStack> var2) {
+   }
+
    public void awardRecipesByKey(ResourceLocation[] var1) {
    }
 
@@ -1432,7 +1440,7 @@ public abstract class Player extends LivingEntity {
          double var10 = var8 < -0.2 ? 0.085 : 0.06;
          if (var8 <= 0.0
             || this.jumping
-            || !this.level.getBlockState(BlockPos.containing(this.getX(), this.getY() + 1.0 - 0.1, this.getZ())).getFluidState().isEmpty()) {
+            || !this.level().getBlockState(BlockPos.containing(this.getX(), this.getY() + 1.0 - 0.1, this.getZ())).getFluidState().isEmpty()) {
             Vec3 var12 = this.getDeltaMovement();
             this.setDeltaMovement(var12.add(0.0, (var8 - var12.y) * var10, 0.0));
          }
@@ -1462,7 +1470,7 @@ public abstract class Player extends LivingEntity {
    }
 
    protected boolean freeAt(BlockPos var1) {
-      return !this.level.getBlockState(var1).isSuffocating(this.level, var1);
+      return !this.level().getBlockState(var1).isSuffocating(this.level(), var1);
    }
 
    @Override
@@ -1494,7 +1502,7 @@ public abstract class Player extends LivingEntity {
             if (var3 > 0.0) {
                this.awardStat(Stats.CLIMB_ONE_CM, (int)Math.round(var3 * 100.0));
             }
-         } else if (this.onGround) {
+         } else if (this.onGround()) {
             int var10 = Math.round((float)Math.sqrt(var1 * var1 + var5 * var5) * 100.0F);
             if (var10 > 0) {
                if (this.isSprinting()) {
@@ -1554,7 +1562,7 @@ public abstract class Player extends LivingEntity {
    }
 
    public boolean tryToStartFallFlying() {
-      if (!this.onGround && !this.isFallFlying() && !this.isInWater() && !this.hasEffect(MobEffects.LEVITATION)) {
+      if (!this.onGround() && !this.isFallFlying() && !this.isInWater() && !this.hasEffect(MobEffects.LEVITATION)) {
          ItemStack var1 = this.getItemBySlot(EquipmentSlot.CHEST);
          if (var1.is(Items.ELYTRA) && ElytraItem.isFlyEnabled(var1)) {
             this.startFallFlying();
@@ -1582,12 +1590,32 @@ public abstract class Player extends LivingEntity {
    }
 
    @Override
+   protected void playStepSound(BlockPos var1, BlockState var2) {
+      if (this.isInWater()) {
+         this.waterSwimSound();
+         this.playMuffledStepSound(var2);
+      } else {
+         BlockPos var3 = this.getPrimaryStepSoundBlockPos(var1);
+         if (!var1.equals(var3)) {
+            BlockState var4 = this.level().getBlockState(var3);
+            if (var4.is(BlockTags.COMBINATION_STEP_SOUND_BLOCKS)) {
+               this.playCombinationStepSounds(var4, var2);
+            } else {
+               super.playStepSound(var3, var4);
+            }
+         } else {
+            super.playStepSound(var1, var2);
+         }
+      }
+   }
+
+   @Override
    public LivingEntity.Fallsounds getFallSounds() {
       return new LivingEntity.Fallsounds(SoundEvents.PLAYER_SMALL_FALL, SoundEvents.PLAYER_BIG_FALL);
    }
 
    @Override
-   public boolean wasKilled(ServerLevel var1, LivingEntity var2) {
+   public boolean killedEntity(ServerLevel var1, LivingEntity var2) {
       this.awardStat(Stats.ENTITY_KILLED.get(var2.getType()));
       return true;
    }
@@ -1647,7 +1675,7 @@ public abstract class Player extends LivingEntity {
 
       if (var1 > 0 && this.experienceLevel % 5 == 0 && (float)this.lastLevelUpTime < (float)this.tickCount - 100.0F) {
          float var2 = this.experienceLevel > 30 ? 1.0F : (float)this.experienceLevel / 30.0F;
-         this.level.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_LEVELUP, this.getSoundSource(), var2 * 0.75F, 1.0F);
+         this.level().playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.PLAYER_LEVELUP, this.getSoundSource(), var2 * 0.75F, 1.0F);
          this.lastLevelUpTime = this.tickCount;
       }
    }
@@ -1662,7 +1690,7 @@ public abstract class Player extends LivingEntity {
 
    public void causeFoodExhaustion(float var1) {
       if (!this.abilities.invulnerable) {
-         if (!this.level.isClientSide) {
+         if (!this.level().isClientSide) {
             this.foodData.addExhaustion(var1);
          }
       }
@@ -1693,14 +1721,14 @@ public abstract class Player extends LivingEntity {
          return true;
       } else {
          BlockPos var4 = var1.relative(var2.getOpposite());
-         BlockInWorld var5 = new BlockInWorld(this.level, var4, false);
-         return var3.hasAdventureModePlaceTagForBlock(this.level.registryAccess().registryOrThrow(Registries.BLOCK), var5);
+         BlockInWorld var5 = new BlockInWorld(this.level(), var4, false);
+         return var3.hasAdventureModePlaceTagForBlock(this.level().registryAccess().registryOrThrow(Registries.BLOCK), var5);
       }
    }
 
    @Override
    public int getExperienceReward() {
-      if (!this.level.getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY) && !this.isSpectator()) {
+      if (!this.level().getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY) && !this.isSpectator()) {
          int var1 = this.experienceLevel * 7;
          return var1 > 100 ? 100 : var1;
       } else {
@@ -1720,7 +1748,7 @@ public abstract class Player extends LivingEntity {
 
    @Override
    protected Entity.MovementEmission getMovementEmission() {
-      return this.abilities.flying || this.onGround && this.isDiscrete() ? Entity.MovementEmission.NONE : Entity.MovementEmission.ALL;
+      return this.abilities.flying || this.onGround() && this.isDiscrete() ? Entity.MovementEmission.NONE : Entity.MovementEmission.ALL;
    }
 
    public void onUpdateAbilities() {
@@ -1778,15 +1806,15 @@ public abstract class Player extends LivingEntity {
    }
 
    public boolean setEntityOnShoulder(CompoundTag var1) {
-      if (this.isPassenger() || !this.onGround || this.isInWater() || this.isInPowderSnow) {
+      if (this.isPassenger() || !this.onGround() || this.isInWater() || this.isInPowderSnow) {
          return false;
       } else if (this.getShoulderEntityLeft().isEmpty()) {
          this.setShoulderEntityLeft(var1);
-         this.timeEntitySatOnShoulder = this.level.getGameTime();
+         this.timeEntitySatOnShoulder = this.level().getGameTime();
          return true;
       } else if (this.getShoulderEntityRight().isEmpty()) {
          this.setShoulderEntityRight(var1);
-         this.timeEntitySatOnShoulder = this.level.getGameTime();
+         this.timeEntitySatOnShoulder = this.level().getGameTime();
          return true;
       } else {
          return false;
@@ -1794,7 +1822,7 @@ public abstract class Player extends LivingEntity {
    }
 
    protected void removeEntitiesOnShoulder() {
-      if (this.timeEntitySatOnShoulder + 20L < this.level.getGameTime()) {
+      if (this.timeEntitySatOnShoulder + 20L < this.level().getGameTime()) {
          this.respawnEntityOnShoulder(this.getShoulderEntityLeft());
          this.setShoulderEntityLeft(new CompoundTag());
          this.respawnEntityOnShoulder(this.getShoulderEntityRight());
@@ -1803,14 +1831,14 @@ public abstract class Player extends LivingEntity {
    }
 
    private void respawnEntityOnShoulder(CompoundTag var1) {
-      if (!this.level.isClientSide && !var1.isEmpty()) {
-         EntityType.create(var1, this.level).ifPresent(var1x -> {
+      if (!this.level().isClientSide && !var1.isEmpty()) {
+         EntityType.create(var1, this.level()).ifPresent(var1x -> {
             if (var1x instanceof TamableAnimal) {
                ((TamableAnimal)var1x).setOwnerUUID(this.uuid);
             }
 
             var1x.setPos(this.getX(), this.getY() + 0.699999988079071, this.getZ());
-            ((ServerLevel)this.level).addWithUUID(var1x);
+            ((ServerLevel)this.level()).addWithUUID(var1x);
          });
       }
    }
@@ -1836,7 +1864,7 @@ public abstract class Player extends LivingEntity {
    }
 
    public Scoreboard getScoreboard() {
-      return this.level.getScoreboard();
+      return this.level().getScoreboard();
    }
 
    @Override

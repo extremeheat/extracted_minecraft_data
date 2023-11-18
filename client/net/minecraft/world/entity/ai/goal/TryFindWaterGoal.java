@@ -15,7 +15,7 @@ public class TryFindWaterGoal extends Goal {
 
    @Override
    public boolean canUse() {
-      return this.mob.isOnGround() && !this.mob.level.getFluidState(this.mob.blockPosition()).is(FluidTags.WATER);
+      return this.mob.onGround() && !this.mob.level().getFluidState(this.mob.blockPosition()).is(FluidTags.WATER);
    }
 
    @Override
@@ -30,7 +30,7 @@ public class TryFindWaterGoal extends Goal {
          this.mob.getBlockY(),
          Mth.floor(this.mob.getZ() + 2.0)
       )) {
-         if (this.mob.level.getFluidState(var4).is(FluidTags.WATER)) {
+         if (this.mob.level().getFluidState(var4).is(FluidTags.WATER)) {
             var1 = var4;
             break;
          }

@@ -14,10 +14,12 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.SignBlockEntity;
+import net.minecraft.world.level.block.entity.SignText;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 
-public class HoneycombItem extends Item {
+public class HoneycombItem extends Item implements SignApplicator {
    public static final Supplier<BiMap<Block, Block>> WAXABLES = Suppliers.memoize(
       () -> ImmutableBiMap.builder()
             .put(Blocks.COPPER_BLOCK, Blocks.WAXED_COPPER_BLOCK)
@@ -66,5 +68,20 @@ public class HoneycombItem extends Item {
 
    public static Optional<BlockState> getWaxed(BlockState var0) {
       return Optional.ofNullable((Block)((BiMap)WAXABLES.get()).get(var0.getBlock())).map(var1 -> ((Block)var1).withPropertiesOf(var0));
+   }
+
+   @Override
+   public boolean tryApplyToSign(Level var1, SignBlockEntity var2, boolean var3, Player var4) {
+      if (var2.setWaxed(true)) {
+         var1.levelEvent(null, 3003, var2.getBlockPos(), 0);
+         return true;
+      } else {
+         return false;
+      }
+   }
+
+   @Override
+   public boolean canApplyToSign(SignText var1, Player var2) {
+      return true;
    }
 }

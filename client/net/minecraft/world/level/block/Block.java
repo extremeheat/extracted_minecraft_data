@@ -53,7 +53,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BooleanOp;
@@ -80,7 +80,6 @@ public class Block extends BlockBehaviour implements ItemLike {
    public static final int UPDATE_KNOWN_SHAPE = 16;
    public static final int UPDATE_SUPPRESS_DROPS = 32;
    public static final int UPDATE_MOVE_BY_PISTON = 64;
-   public static final int UPDATE_SUPPRESS_LIGHT = 128;
    public static final int UPDATE_NONE = 4;
    public static final int UPDATE_ALL = 3;
    public static final int UPDATE_ALL_IMMEDIATE = 11;
@@ -255,8 +254,7 @@ public class Block extends BlockBehaviour implements ItemLike {
    }
 
    public static List<ItemStack> getDrops(BlockState var0, ServerLevel var1, BlockPos var2, @Nullable BlockEntity var3) {
-      LootContext.Builder var4 = new LootContext.Builder(var1)
-         .withRandom(var1.random)
+      LootParams.Builder var4 = new LootParams.Builder(var1)
          .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(var2))
          .withParameter(LootContextParams.TOOL, ItemStack.EMPTY)
          .withOptionalParameter(LootContextParams.BLOCK_ENTITY, var3);
@@ -264,20 +262,12 @@ public class Block extends BlockBehaviour implements ItemLike {
    }
 
    public static List<ItemStack> getDrops(BlockState var0, ServerLevel var1, BlockPos var2, @Nullable BlockEntity var3, @Nullable Entity var4, ItemStack var5) {
-      LootContext.Builder var6 = new LootContext.Builder(var1)
-         .withRandom(var1.random)
+      LootParams.Builder var6 = new LootParams.Builder(var1)
          .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(var2))
          .withParameter(LootContextParams.TOOL, var5)
          .withOptionalParameter(LootContextParams.THIS_ENTITY, var4)
          .withOptionalParameter(LootContextParams.BLOCK_ENTITY, var3);
       return var0.getDrops(var6);
-   }
-
-   public static void dropResources(BlockState var0, LootContext.Builder var1) {
-      ServerLevel var2 = var1.getLevel();
-      BlockPos var3 = BlockPos.containing(var1.getParameter(LootContextParams.ORIGIN));
-      var0.getDrops(var1).forEach(var2x -> popResource(var2, var3, var2x));
-      var0.spawnAfterBreak(var2, var3, ItemStack.EMPTY, true);
    }
 
    public static void dropResources(BlockState var0, Level var1, BlockPos var2) {
@@ -294,7 +284,7 @@ public class Block extends BlockBehaviour implements ItemLike {
       }
    }
 
-   public static void dropResources(BlockState var0, Level var1, BlockPos var2, @Nullable BlockEntity var3, Entity var4, ItemStack var5) {
+   public static void dropResources(BlockState var0, Level var1, BlockPos var2, @Nullable BlockEntity var3, @Nullable Entity var4, ItemStack var5) {
       if (var1 instanceof ServerLevel) {
          getDrops(var0, (ServerLevel)var1, var2, var3, var4, var5).forEach(var2x -> popResource(var1, var2, var2x));
          var0.spawnAfterBreak((ServerLevel)var1, var2, var5, true);
@@ -362,8 +352,8 @@ public class Block extends BlockBehaviour implements ItemLike {
    public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, @Nullable LivingEntity var4, ItemStack var5) {
    }
 
-   public boolean isPossibleToRespawnInThis() {
-      return !this.material.isSolid() && !this.material.isLiquid();
+   public boolean isPossibleToRespawnInThis(BlockState var1) {
+      return !var1.isSolid() && !var1.liquid();
    }
 
    public MutableComponent getName() {

@@ -11,8 +11,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -23,7 +21,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.game.ClientboundLevelChunkPacketData;
-import net.minecraft.server.level.ChunkHolder;
+import net.minecraft.server.level.FullChunkStatus;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.Entity;
@@ -44,6 +42,7 @@ import net.minecraft.world.level.gameevent.GameEventListenerRegistry;
 import net.minecraft.world.level.levelgen.DebugLevelSource;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.blending.BlendingData;
+import net.minecraft.world.level.lighting.LightEngine;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
@@ -75,10 +74,9 @@ public class LevelChunk extends ChunkAccess {
    };
    private final Map<BlockPos, LevelChunk.RebindableTickingBlockEntityWrapper> tickersInLevel = Maps.newHashMap();
    private boolean loaded;
-   private boolean clientLightReady = false;
    final Level level;
    @Nullable
-   private Supplier<ChunkHolder.FullChunkStatus> fullStatus;
+   private Supplier<FullChunkStatus> fullStatus;
    @Nullable
    private LevelChunk.PostLoadProcessor postLoad;
    private final Int2ObjectMap<GameEventListenerRegistry> gameEventListenerRegistrySections;
@@ -147,6 +145,7 @@ public class LevelChunk extends ChunkAccess {
          }
       }
 
+      this.skyLightSources = var2.skyLightSources;
       this.setLightCorrect(var2.isLightCorrect());
       this.unsaved = true;
    }
@@ -170,7 +169,8 @@ public class LevelChunk extends ChunkAccess {
    public GameEventListenerRegistry getListenerRegistry(int var1) {
       Level var3 = this.level;
       return var3 instanceof ServerLevel var2
-         ? (GameEventListenerRegistry)this.gameEventListenerRegistrySections.computeIfAbsent(var1, var1x -> new EuclideanGameEventListenerRegistry(var2))
+         ? (GameEventListenerRegistry)this.gameEventListenerRegistrySections
+            .computeIfAbsent(var1, var3x -> new EuclideanGameEventListenerRegistry(var2, var1, this::removeGameEventListenerRegistry))
          : super.getListenerRegistry(var1);
    }
 
@@ -260,10 +260,19 @@ public class LevelChunk extends ChunkAccess {
                this.level.getChunkSource().getLightEngine().updateSectionStatus(var1, var12);
             }
 
-            boolean var13 = var10.hasBlockEntity();
+            if (LightEngine.hasDifferentLightProperties(this, var1, var10, var2)) {
+               ProfilerFiller var13 = this.level.getProfiler();
+               var13.push("updateSkyLightSources");
+               this.skyLightSources.update(this, var7, var4, var9);
+               var13.popPush("queueCheckLight");
+               this.level.getChunkSource().getLightEngine().checkBlock(var1);
+               var13.pop();
+            }
+
+            boolean var15 = var10.hasBlockEntity();
             if (!this.level.isClientSide) {
                var10.onRemove(this.level, var1, var2, var3);
-            } else if (!var10.is(var11) && var13) {
+            } else if (!var10.is(var11) && var15) {
                this.removeBlockEntity(var1);
             }
 
@@ -364,7 +373,7 @@ public class LevelChunk extends ChunkAccess {
             return true;
          } else {
             ServerLevel var2 = (ServerLevel)var3;
-            return this.getFullStatus().isOrAfter(ChunkHolder.FullChunkStatus.TICKING) && var2.areEntitiesLoaded(ChunkPos.asLong(var1));
+            return this.getFullStatus().isOrAfter(FullChunkStatus.BLOCK_TICKING) && var2.areEntitiesLoaded(ChunkPos.asLong(var1));
          }
       }
    }
@@ -426,11 +435,12 @@ public class LevelChunk extends ChunkAccess {
             int var5 = SectionPos.blockToSectionCoord(var1.getBlockPos().getY());
             GameEventListenerRegistry var6 = this.getListenerRegistry(var5);
             var6.unregister(var4);
-            if (var6.isEmpty()) {
-               this.gameEventListenerRegistrySections.remove(var5);
-            }
          }
       }
+   }
+
+   private void removeGameEventListenerRegistry(int var1) {
+      this.gameEventListenerRegistrySections.remove(var1);
    }
 
    private void removeBlockEntityTicker(BlockPos var1) {
@@ -465,6 +475,7 @@ public class LevelChunk extends ChunkAccess {
          }
       }
 
+      this.initializeLightSources();
       var3.accept((var1x, var2x, var3x) -> {
          BlockEntity var4 = this.getBlockEntity(var1x, LevelChunk.EntityCreationType.IMMEDIATE);
          if (var4 != null && var3x != null && var4.getType() == var2x) {
@@ -489,23 +500,6 @@ public class LevelChunk extends ChunkAccess {
 
    public Map<BlockPos, BlockEntity> getBlockEntities() {
       return this.blockEntities;
-   }
-
-   @Override
-   public Stream<BlockPos> getLights() {
-      return StreamSupport.stream(
-            BlockPos.betweenClosed(
-                  this.chunkPos.getMinBlockX(),
-                  this.getMinBuildHeight(),
-                  this.chunkPos.getMinBlockZ(),
-                  this.chunkPos.getMaxBlockX(),
-                  this.getMaxBuildHeight() - 1,
-                  this.chunkPos.getMaxBlockZ()
-               )
-               .spliterator(),
-            false
-         )
-         .filter(var1 -> this.getBlockState(var1).getLightEmission() != 0);
    }
 
    public void postProcessGeneration() {
@@ -590,11 +584,11 @@ public class LevelChunk extends ChunkAccess {
       return ChunkStatus.FULL;
    }
 
-   public ChunkHolder.FullChunkStatus getFullStatus() {
-      return this.fullStatus == null ? ChunkHolder.FullChunkStatus.BORDER : this.fullStatus.get();
+   public FullChunkStatus getFullStatus() {
+      return this.fullStatus == null ? FullChunkStatus.FULL : this.fullStatus.get();
    }
 
-   public void setFullStatus(Supplier<ChunkHolder.FullChunkStatus> var1) {
+   public void setFullStatus(Supplier<FullChunkStatus> var1) {
       this.fullStatus = var1;
    }
 
@@ -650,14 +644,6 @@ public class LevelChunk extends ChunkAccess {
 
    private <T extends BlockEntity> TickingBlockEntity createTicker(T var1, BlockEntityTicker<T> var2) {
       return new LevelChunk.BoundTickingBlockEntity<>(var1, var2);
-   }
-
-   public boolean isClientLightReady() {
-      return this.clientLightReady;
-   }
-
-   public void setClientLightReady(boolean var1) {
-      this.clientLightReady = var1;
    }
 
    class BoundTickingBlockEntity<T extends BlockEntity> implements TickingBlockEntity {

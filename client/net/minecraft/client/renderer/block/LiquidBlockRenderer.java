@@ -330,7 +330,7 @@ public class LiquidBlockRenderer {
          BlockState var6 = var1.getBlockState(var3.above());
          return var2.isSame(var6.getFluidState().getType()) ? 1.0F : var5.getOwnHeight();
       } else {
-         return !var4.getMaterial().isSolid() ? 0.0F : -1.0F;
+         return !var4.isSolid() ? 0.0F : -1.0F;
       }
    }
 

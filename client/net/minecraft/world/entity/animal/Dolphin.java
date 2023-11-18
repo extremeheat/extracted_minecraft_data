@@ -254,25 +254,25 @@ public class Dolphin extends WaterAnimal {
                this.hurt(this.damageSources().dryOut(), 1.0F);
             }
 
-            if (this.onGround) {
+            if (this.onGround()) {
                this.setDeltaMovement(
                   this.getDeltaMovement()
                      .add((double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.2F), 0.5, (double)((this.random.nextFloat() * 2.0F - 1.0F) * 0.2F))
                );
                this.setYRot(this.random.nextFloat() * 360.0F);
-               this.onGround = false;
+               this.setOnGround(false);
                this.hasImpulse = true;
             }
          }
 
-         if (this.level.isClientSide && this.isInWater() && this.getDeltaMovement().lengthSqr() > 0.03) {
+         if (this.level().isClientSide && this.isInWater() && this.getDeltaMovement().lengthSqr() > 0.03) {
             Vec3 var1 = this.getViewVector(0.0F);
             float var2 = Mth.cos(this.getYRot() * 0.017453292F) * 0.3F;
             float var3 = Mth.sin(this.getYRot() * 0.017453292F) * 0.3F;
             float var4 = 1.2F - this.random.nextFloat() * 0.7F;
 
             for(int var5 = 0; var5 < 2; ++var5) {
-               this.level
+               this.level()
                   .addParticle(
                      ParticleTypes.DOLPHIN,
                      this.getX() - var1.x * (double)var4 + (double)var2,
@@ -282,7 +282,7 @@ public class Dolphin extends WaterAnimal {
                      0.0,
                      0.0
                   );
-               this.level
+               this.level()
                   .addParticle(
                      ParticleTypes.DOLPHIN,
                      this.getX() - var1.x * (double)var4 - (double)var2,
@@ -311,7 +311,7 @@ public class Dolphin extends WaterAnimal {
          double var3 = this.random.nextGaussian() * 0.01;
          double var5 = this.random.nextGaussian() * 0.01;
          double var7 = this.random.nextGaussian() * 0.01;
-         this.level.addParticle(var1, this.getRandomX(1.0), this.getRandomY() + 0.2, this.getRandomZ(1.0), var3, var5, var7);
+         this.level().addParticle(var1, this.getRandomX(1.0), this.getRandomY() + 0.2, this.getRandomZ(1.0), var3, var5, var7);
       }
    }
 
@@ -319,7 +319,7 @@ public class Dolphin extends WaterAnimal {
    protected InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
       if (!var3.isEmpty() && var3.is(ItemTags.FISHES)) {
-         if (!this.level.isClientSide) {
+         if (!this.level().isClientSide) {
             this.playSound(SoundEvents.DOLPHIN_EAT, 1.0F, 1.0F);
          }
 
@@ -328,7 +328,7 @@ public class Dolphin extends WaterAnimal {
             var3.shrink(1);
          }
 
-         return InteractionResult.sidedSuccess(this.level.isClientSide);
+         return InteractionResult.sidedSuccess(this.level().isClientSide);
       } else {
          return super.mobInteract(var1, var2);
       }
@@ -415,8 +415,8 @@ public class Dolphin extends WaterAnimal {
 
       @Override
       public void start() {
-         if (this.dolphin.level instanceof ServerLevel) {
-            ServerLevel var1 = (ServerLevel)this.dolphin.level;
+         if (this.dolphin.level() instanceof ServerLevel) {
+            ServerLevel var1 = (ServerLevel)this.dolphin.level();
             this.stuck = false;
             this.dolphin.getNavigation().stop();
             BlockPos var2 = this.dolphin.blockPosition();
@@ -442,7 +442,7 @@ public class Dolphin extends WaterAnimal {
 
       @Override
       public void tick() {
-         Level var1 = this.dolphin.level;
+         Level var1 = this.dolphin.level();
          if (this.dolphin.closeToNextPos() || this.dolphin.getNavigation().isDone()) {
             Vec3 var2 = Vec3.atCenterOf(this.dolphin.getTreasurePos());
             Vec3 var3 = DefaultRandomPos.getPosTowards(this.dolphin, 16, 1, var2, 0.39269909262657166);
@@ -486,7 +486,7 @@ public class Dolphin extends WaterAnimal {
 
       @Override
       public boolean canUse() {
-         this.player = this.dolphin.level.getNearestPlayer(Dolphin.SWIM_WITH_PLAYER_TARGETING, this.dolphin);
+         this.player = this.dolphin.level().getNearestPlayer(Dolphin.SWIM_WITH_PLAYER_TARGETING, this.dolphin);
          if (this.player == null) {
             return false;
          } else {
@@ -519,7 +519,7 @@ public class Dolphin extends WaterAnimal {
             this.dolphin.getNavigation().moveTo(this.player, this.speedModifier);
          }
 
-         if (this.player.isSwimming() && this.player.level.random.nextInt(6) == 0) {
+         if (this.player.isSwimming() && this.player.level().random.nextInt(6) == 0) {
             this.player.addEffect(new MobEffectInstance(MobEffects.DOLPHINS_GRACE, 100), this.dolphin);
          }
       }
@@ -537,14 +537,14 @@ public class Dolphin extends WaterAnimal {
          if (this.cooldown > Dolphin.this.tickCount) {
             return false;
          } else {
-            List var1 = Dolphin.this.level.getEntitiesOfClass(ItemEntity.class, Dolphin.this.getBoundingBox().inflate(8.0, 8.0, 8.0), Dolphin.ALLOWED_ITEMS);
+            List var1 = Dolphin.this.level().getEntitiesOfClass(ItemEntity.class, Dolphin.this.getBoundingBox().inflate(8.0, 8.0, 8.0), Dolphin.ALLOWED_ITEMS);
             return !var1.isEmpty() || !Dolphin.this.getItemBySlot(EquipmentSlot.MAINHAND).isEmpty();
          }
       }
 
       @Override
       public void start() {
-         List var1 = Dolphin.this.level.getEntitiesOfClass(ItemEntity.class, Dolphin.this.getBoundingBox().inflate(8.0, 8.0, 8.0), Dolphin.ALLOWED_ITEMS);
+         List var1 = Dolphin.this.level().getEntitiesOfClass(ItemEntity.class, Dolphin.this.getBoundingBox().inflate(8.0, 8.0, 8.0), Dolphin.ALLOWED_ITEMS);
          if (!var1.isEmpty()) {
             Dolphin.this.getNavigation().moveTo((Entity)var1.get(0), 1.2000000476837158);
             Dolphin.this.playSound(SoundEvents.DOLPHIN_PLAY, 1.0F, 1.0F);
@@ -565,7 +565,7 @@ public class Dolphin extends WaterAnimal {
 
       @Override
       public void tick() {
-         List var1 = Dolphin.this.level.getEntitiesOfClass(ItemEntity.class, Dolphin.this.getBoundingBox().inflate(8.0, 8.0, 8.0), Dolphin.ALLOWED_ITEMS);
+         List var1 = Dolphin.this.level().getEntitiesOfClass(ItemEntity.class, Dolphin.this.getBoundingBox().inflate(8.0, 8.0, 8.0), Dolphin.ALLOWED_ITEMS);
          ItemStack var2 = Dolphin.this.getItemBySlot(EquipmentSlot.MAINHAND);
          if (!var2.isEmpty()) {
             this.drop(var2);
@@ -578,7 +578,7 @@ public class Dolphin extends WaterAnimal {
       private void drop(ItemStack var1) {
          if (!var1.isEmpty()) {
             double var2 = Dolphin.this.getEyeY() - 0.30000001192092896;
-            ItemEntity var4 = new ItemEntity(Dolphin.this.level, Dolphin.this.getX(), var2, Dolphin.this.getZ(), var1);
+            ItemEntity var4 = new ItemEntity(Dolphin.this.level(), Dolphin.this.getX(), var2, Dolphin.this.getZ(), var1);
             var4.setPickUpDelay(40);
             var4.setThrower(Dolphin.this.getUUID());
             float var5 = 0.3F;
@@ -589,7 +589,7 @@ public class Dolphin extends WaterAnimal {
                (double)(0.3F * Mth.sin(Dolphin.this.getXRot() * 0.017453292F) * 1.5F),
                (double)(0.3F * Mth.cos(Dolphin.this.getYRot() * 0.017453292F) * Mth.cos(Dolphin.this.getXRot() * 0.017453292F) + Mth.sin(var6) * var7)
             );
-            Dolphin.this.level.addFreshEntity(var4);
+            Dolphin.this.level().addFreshEntity(var4);
          }
       }
    }

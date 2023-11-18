@@ -110,31 +110,6 @@ public class DripParticle extends TextureSheetParticle {
       return var14;
    }
 
-   private static DripParticle setCherryColor(DripParticle var0) {
-      var0.setColor(0.937F, 0.655F, 0.804F);
-      return var0;
-   }
-
-   public static TextureSheetParticle createCherryLeavesHangParticle(
-      SimpleParticleType var0, ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12
-   ) {
-      return setCherryColor(new DripParticle.DripHangParticle(var1, var2, var4, var6, Fluids.EMPTY, ParticleTypes.FALLING_CHERRY_LEAVES));
-   }
-
-   public static TextureSheetParticle createCherryLeavesFallParticle(
-      SimpleParticleType var0, ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12
-   ) {
-      DripParticle.FallAndLandParticle var14 = new DripParticle.FallAndLandParticle(var1, var2, var4, var6, Fluids.EMPTY, ParticleTypes.LANDING_CHERRY_LEAVES);
-      var14.gravity = 0.005F;
-      return setCherryColor(var14);
-   }
-
-   public static TextureSheetParticle createCherryLeavesLandParticle(
-      SimpleParticleType var0, ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12
-   ) {
-      return setCherryColor(new DripParticle.DripLandParticle(var1, var2, var4, var6, Fluids.EMPTY));
-   }
-
    public static TextureSheetParticle createHoneyHangParticle(
       SimpleParticleType var0, ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12
    ) {

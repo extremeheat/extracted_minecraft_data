@@ -419,7 +419,7 @@ public class Brain<E extends LivingEntity> {
    }
 
    public void stopAll(ServerLevel var1, E var2) {
-      long var3 = var2.level.getGameTime();
+      long var3 = var2.level().getGameTime();
 
       for(BehaviorControl var6 : this.getRunningBehaviors()) {
          var6.doStop(var1, var2, var3);

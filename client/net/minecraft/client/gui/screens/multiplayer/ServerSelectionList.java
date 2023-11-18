@@ -1,12 +1,9 @@
 package net.minecraft.client.gui.screens.multiplayer;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
-import com.google.common.hash.Hashing;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.logging.LogUtils;
 import java.net.UnknownHostException;
 import java.util.Arrays;
@@ -20,15 +17,13 @@ import net.minecraft.DefaultUncaughtExceptionHandler;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ObjectSelectionList;
+import net.minecraft.client.gui.screens.FaviconTexture;
 import net.minecraft.client.gui.screens.LoadingDotsText;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ServerData;
 import net.minecraft.client.multiplayer.ServerList;
-import net.minecraft.client.renderer.texture.AbstractTexture;
-import net.minecraft.client.renderer.texture.DynamicTexture;
-import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.server.LanServer;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -49,8 +44,9 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
          .setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER))
          .build()
    );
-   static final ResourceLocation ICON_MISSING = new ResourceLocation("textures/misc/unknown_server.png");
+   private static final ResourceLocation ICON_MISSING = new ResourceLocation("textures/misc/unknown_server.png");
    static final ResourceLocation ICON_OVERLAY_LOCATION = new ResourceLocation("textures/gui/server_selection.png");
+   static final ResourceLocation GUI_ICONS_LOCATION = new ResourceLocation("textures/gui/icons.png");
    static final Component SCANNING_LABEL = Component.translatable("lanServer.scanning");
    static final Component CANT_RESOLVE_TEXT = Component.translatable("multiplayer.status.cannot_resolve").withStyle(var0 -> var0.withColor(-65536));
    static final Component CANT_CONNECT_TEXT = Component.translatable("multiplayer.status.cannot_connect").withStyle(var0 -> var0.withColor(-65536));
@@ -127,9 +123,16 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
       return super.getRowWidth() + 85;
    }
 
-   public abstract static class Entry extends ObjectSelectionList.Entry<ServerSelectionList.Entry> {
+   public void removed() {
+   }
+
+   public abstract static class Entry extends ObjectSelectionList.Entry<ServerSelectionList.Entry> implements AutoCloseable {
       public Entry() {
          super();
+      }
+
+      @Override
+      public void close() {
       }
    }
 
@@ -141,19 +144,18 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
       }
 
       @Override
-      public void render(PoseStack var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
+      public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
          int var11 = var3 + var6 / 2 - 9 / 2;
-         this.minecraft
-            .font
-            .draw(
-               var1,
-               ServerSelectionList.SCANNING_LABEL,
-               (float)(this.minecraft.screen.width / 2 - this.minecraft.font.width(ServerSelectionList.SCANNING_LABEL) / 2),
-               (float)var11,
-               16777215
-            );
+         var1.drawString(
+            this.minecraft.font,
+            ServerSelectionList.SCANNING_LABEL,
+            this.minecraft.screen.width / 2 - this.minecraft.font.width(ServerSelectionList.SCANNING_LABEL) / 2,
+            var11,
+            16777215,
+            false
+         );
          String var12 = LoadingDotsText.get(Util.getMillis());
-         this.minecraft.font.draw(var1, var12, (float)(this.minecraft.screen.width / 2 - this.minecraft.font.width(var12) / 2), (float)(var11 + 9), 8421504);
+         var1.drawString(this.minecraft.font, var12, this.minecraft.screen.width / 2 - this.minecraft.font.width(var12) / 2, var11 + 9, 8421504, false);
       }
 
       @Override
@@ -179,13 +181,13 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
       }
 
       @Override
-      public void render(PoseStack var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         this.minecraft.font.draw(var1, LAN_SERVER_HEADER, (float)(var4 + 32 + 3), (float)(var3 + 1), 16777215);
-         this.minecraft.font.draw(var1, this.serverData.getMotd(), (float)(var4 + 32 + 3), (float)(var3 + 12), 8421504);
+      public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
+         var1.drawString(this.minecraft.font, LAN_SERVER_HEADER, var4 + 32 + 3, var3 + 1, 16777215, false);
+         var1.drawString(this.minecraft.font, this.serverData.getMotd(), var4 + 32 + 3, var3 + 12, 8421504, false);
          if (this.minecraft.options.hideServerAddress) {
-            this.minecraft.font.draw(var1, HIDDEN_ADDRESS_TEXT, (float)(var4 + 32 + 3), (float)(var3 + 12 + 11), 3158064);
+            var1.drawString(this.minecraft.font, HIDDEN_ADDRESS_TEXT, var4 + 32 + 3, var3 + 12 + 11, 3158064, false);
          } else {
-            this.minecraft.font.draw(var1, this.serverData.getAddress(), (float)(var4 + 32 + 3), (float)(var3 + 12 + 11), 3158064);
+            var1.drawString(this.minecraft.font, this.serverData.getAddress(), var4 + 32 + 3, var3 + 12 + 11, 3158064, false);
          }
       }
 
@@ -226,11 +228,9 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
       private final JoinMultiplayerScreen screen;
       private final Minecraft minecraft;
       private final ServerData serverData;
-      private final ResourceLocation iconLocation;
+      private final FaviconTexture icon;
       @Nullable
       private byte[] lastIconBytes;
-      @Nullable
-      private DynamicTexture icon;
       private long lastClickTime;
 
       protected OnlineServerEntry(JoinMultiplayerScreen var2, ServerData var3) {
@@ -238,15 +238,11 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
          this.screen = var2;
          this.serverData = var3;
          this.minecraft = Minecraft.getInstance();
-         this.iconLocation = new ResourceLocation("servers/" + Hashing.sha1().hashUnencodedChars(var3.ip) + "/icon");
-         AbstractTexture var4 = this.minecraft.getTextureManager().getTexture(this.iconLocation, MissingTextureAtlasSprite.getTexture());
-         if (var4 != MissingTextureAtlasSprite.getTexture() && var4 instanceof DynamicTexture) {
-            this.icon = (DynamicTexture)var4;
-         }
+         this.icon = FaviconTexture.forServer(this.minecraft.getTextureManager(), var3.ip);
       }
 
       @Override
-      public void render(PoseStack var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
+      public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
          if (!this.serverData.pinged) {
             this.serverData.pinged = true;
             this.serverData.ping = -2L;
@@ -266,16 +262,16 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
          }
 
          boolean var11 = !this.isCompatible();
-         this.minecraft.font.draw(var1, this.serverData.name, (float)(var4 + 32 + 3), (float)(var3 + 1), 16777215);
+         var1.drawString(this.minecraft.font, this.serverData.name, var4 + 32 + 3, var3 + 1, 16777215, false);
          List var12 = this.minecraft.font.split(this.serverData.motd, var5 - 32 - 2);
 
          for(int var13 = 0; var13 < Math.min(var12.size(), 2); ++var13) {
-            this.minecraft.font.draw(var1, (FormattedCharSequence)var12.get(var13), (float)(var4 + 32 + 3), (float)(var3 + 12 + 9 * var13), 8421504);
+            var1.drawString(this.minecraft.font, (FormattedCharSequence)var12.get(var13), var4 + 32 + 3, var3 + 12 + 9 * var13, 8421504, false);
          }
 
          Object var24 = var11 ? this.serverData.version.copy().withStyle(ChatFormatting.RED) : this.serverData.status;
          int var14 = this.minecraft.font.width((FormattedText)var24);
-         this.minecraft.font.draw(var1, (Component)var24, (float)(var4 + var5 - var14 - 15 - 2), (float)(var3 + 1), 8421504);
+         var1.drawString(this.minecraft.font, (Component)var24, var4 + var5 - var14 - 15 - 2, var3 + 1, 8421504, false);
          byte var15 = 0;
          int var16;
          List var17;
@@ -317,8 +313,7 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
             var17 = Collections.emptyList();
          }
 
-         RenderSystem.setShaderTexture(0, GuiComponent.GUI_ICONS_LOCATION);
-         GuiComponent.blit(var1, var4 + var5 - 15, var3, (float)(var15 * 10), (float)(176 + var16 * 8), 10, 8, 256, 256);
+         var1.blit(ServerSelectionList.GUI_ICONS_LOCATION, var4 + var5 - 15, var3, (float)(var15 * 10), (float)(176 + var16 * 8), 10, 8, 256, 256);
          byte[] var19 = this.serverData.getIconBytes();
          if (!Arrays.equals(var19, this.lastIconBytes)) {
             if (this.uploadServerIcon(var19)) {
@@ -329,12 +324,7 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
             }
          }
 
-         if (this.icon == null) {
-            this.drawIcon(var1, var4, var3, ServerSelectionList.ICON_MISSING);
-         } else {
-            this.drawIcon(var1, var4, var3, this.iconLocation);
-         }
-
+         this.drawIcon(var1, var4, var3, this.icon.textureLocation());
          int var20 = var7 - var4;
          int var21 = var8 - var3;
          if (var20 >= var5 - 15 && var20 <= var5 - 5 && var21 >= 0 && var21 <= 8) {
@@ -344,31 +334,30 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
          }
 
          if (this.minecraft.options.touchscreen().get() || var9) {
-            RenderSystem.setShaderTexture(0, ServerSelectionList.ICON_OVERLAY_LOCATION);
-            GuiComponent.fill(var1, var4, var3, var4 + 32, var3 + 32, -1601138544);
+            var1.fill(var4, var3, var4 + 32, var3 + 32, -1601138544);
             int var22 = var7 - var4;
             int var23 = var8 - var3;
             if (this.canJoin()) {
                if (var22 < 32 && var22 > 16) {
-                  GuiComponent.blit(var1, var4, var3, 0.0F, 32.0F, 32, 32, 256, 256);
+                  var1.blit(ServerSelectionList.ICON_OVERLAY_LOCATION, var4, var3, 0.0F, 32.0F, 32, 32, 256, 256);
                } else {
-                  GuiComponent.blit(var1, var4, var3, 0.0F, 0.0F, 32, 32, 256, 256);
+                  var1.blit(ServerSelectionList.ICON_OVERLAY_LOCATION, var4, var3, 0.0F, 0.0F, 32, 32, 256, 256);
                }
             }
 
             if (var2 > 0) {
                if (var22 < 16 && var23 < 16) {
-                  GuiComponent.blit(var1, var4, var3, 96.0F, 32.0F, 32, 32, 256, 256);
+                  var1.blit(ServerSelectionList.ICON_OVERLAY_LOCATION, var4, var3, 96.0F, 32.0F, 32, 32, 256, 256);
                } else {
-                  GuiComponent.blit(var1, var4, var3, 96.0F, 0.0F, 32, 32, 256, 256);
+                  var1.blit(ServerSelectionList.ICON_OVERLAY_LOCATION, var4, var3, 96.0F, 0.0F, 32, 32, 256, 256);
                }
             }
 
             if (var2 < this.screen.getServers().size() - 1) {
                if (var22 < 16 && var23 > 16) {
-                  GuiComponent.blit(var1, var4, var3, 64.0F, 32.0F, 32, 32, 256, 256);
+                  var1.blit(ServerSelectionList.ICON_OVERLAY_LOCATION, var4, var3, 64.0F, 32.0F, 32, 32, 256, 256);
                } else {
-                  GuiComponent.blit(var1, var4, var3, 64.0F, 0.0F, 32, 32, 256, 256);
+                  var1.blit(ServerSelectionList.ICON_OVERLAY_LOCATION, var4, var3, 64.0F, 0.0F, 32, 32, 256, 256);
                }
             }
          }
@@ -386,10 +375,9 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
          this.screen.getServers().save();
       }
 
-      protected void drawIcon(PoseStack var1, int var2, int var3, ResourceLocation var4) {
-         RenderSystem.setShaderTexture(0, var4);
+      protected void drawIcon(GuiGraphics var1, int var2, int var3, ResourceLocation var4) {
          RenderSystem.enableBlend();
-         GuiComponent.blit(var1, var2, var3, 0.0F, 0.0F, 32, 32, 32, 32);
+         var1.blit(var4, var2, var3, 0.0F, 0.0F, 32, 32, 32, 32);
          RenderSystem.disableBlend();
       }
 
@@ -399,25 +387,10 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
 
       private boolean uploadServerIcon(@Nullable byte[] var1) {
          if (var1 == null) {
-            this.minecraft.getTextureManager().release(this.iconLocation);
-            if (this.icon != null && this.icon.getPixels() != null) {
-               this.icon.getPixels().close();
-            }
-
-            this.icon = null;
+            this.icon.clear();
          } else {
             try {
-               NativeImage var2 = NativeImage.read(var1);
-               Preconditions.checkState(var2.getWidth() == 64, "Must be 64 pixels wide");
-               Preconditions.checkState(var2.getHeight() == 64, "Must be 64 pixels high");
-               if (this.icon == null) {
-                  this.icon = new DynamicTexture(var2);
-               } else {
-                  this.icon.setPixels(var2);
-                  this.icon.upload();
-               }
-
-               this.minecraft.getTextureManager().register(this.iconLocation, this.icon);
+               this.icon.upload(NativeImage.read(var1));
             } catch (Throwable var3) {
                ServerSelectionList.LOGGER.error("Invalid icon for server {} ({})", new Object[]{this.serverData.name, this.serverData.ip, var3});
                return false;
@@ -521,6 +494,11 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
          }
 
          return var1;
+      }
+
+      @Override
+      public void close() {
+         this.icon.close();
       }
    }
 }

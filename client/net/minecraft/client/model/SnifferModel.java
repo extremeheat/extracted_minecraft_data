@@ -11,9 +11,8 @@ import net.minecraft.client.model.geom.builders.PartDefinition;
 import net.minecraft.world.entity.animal.sniffer.Sniffer;
 
 public class SnifferModel<T extends Sniffer> extends AgeableHierarchicalModel<T> {
-   private static final float WALK_ANIMATION_SPEED_FACTOR = 9000.0F;
-   private static final float MAX_WALK_ANIMATION_SPEED = 1.0F;
-   private static final float PANIC_ANIMATION_FACTOR = 2.0F;
+   private static final float WALK_ANIMATION_SPEED_MAX = 9.0F;
+   private static final float WALK_ANIMATION_SCALE_FACTOR = 100.0F;
    private final ModelPart root;
    private final ModelPart head;
 
@@ -75,17 +74,17 @@ public class SnifferModel<T extends Sniffer> extends AgeableHierarchicalModel<T>
             .addBox(-6.5F, -7.5F, -11.5F, 13.0F, 18.0F, 11.0F, new CubeDeformation(0.0F))
             .texOffs(8, 4)
             .addBox(-6.5F, 7.5F, -11.5F, 13.0F, 0.0F, 11.0F, new CubeDeformation(0.0F)),
-         PartPose.offset(0.0F, 6.5F, -19.5F)
+         PartPose.offset(0.0F, 6.5F, -19.48F)
       );
       var4.addOrReplaceChild(
          "left_ear",
          CubeListBuilder.create().texOffs(2, 0).addBox(0.0F, 0.0F, -3.0F, 1.0F, 19.0F, 7.0F, new CubeDeformation(0.0F)),
-         PartPose.offset(6.5F, -7.5F, -4.5F)
+         PartPose.offset(6.51F, -7.5F, -4.51F)
       );
       var4.addOrReplaceChild(
          "right_ear",
          CubeListBuilder.create().texOffs(48, 0).addBox(-1.0F, 0.0F, -3.0F, 1.0F, 19.0F, 7.0F, new CubeDeformation(0.0F)),
-         PartPose.offset(-6.5F, -7.5F, -4.5F)
+         PartPose.offset(-6.51F, -7.5F, -4.51F)
       );
       var4.addOrReplaceChild(
          "nose",
@@ -104,16 +103,20 @@ public class SnifferModel<T extends Sniffer> extends AgeableHierarchicalModel<T>
       this.root().getAllParts().forEach(ModelPart::resetPose);
       this.head.xRot = var6 * 0.017453292F;
       this.head.yRot = var5 * 0.017453292F;
-      float var7 = Math.min((float)var1.getDeltaMovement().horizontalDistanceSqr() * 9000.0F, 1.0F);
-      float var8 = var7 * 2.0F;
-      this.animate(var1.walkingAnimationState, SnifferAnimation.SNIFFER_WALK, var4, var7);
-      this.animate(var1.panicAnimationState, SnifferAnimation.SNIFFER_WALK, var4, var8);
+      if (var1.isSearching()) {
+         this.animateWalk(SnifferAnimation.SNIFFER_SNIFF_SEARCH, var2, var3, 9.0F, 100.0F);
+      } else {
+         this.animateWalk(SnifferAnimation.SNIFFER_WALK, var2, var3, 9.0F, 100.0F);
+      }
+
       this.animate(var1.diggingAnimationState, SnifferAnimation.SNIFFER_DIG, var4);
-      this.animate(var1.searchingAnimationState, SnifferAnimation.SNIFFER_SNIFF_SEARCH, var4, var7);
       this.animate(var1.sniffingAnimationState, SnifferAnimation.SNIFFER_LONGSNIFF, var4);
       this.animate(var1.risingAnimationState, SnifferAnimation.SNIFFER_STAND_UP, var4);
       this.animate(var1.feelingHappyAnimationState, SnifferAnimation.SNIFFER_HAPPY, var4);
       this.animate(var1.scentingAnimationState, SnifferAnimation.SNIFFER_SNIFFSNIFF, var4);
+      if (this.young) {
+         this.applyStatic(SnifferAnimation.BABY_TRANSFORM);
+      }
    }
 
    @Override

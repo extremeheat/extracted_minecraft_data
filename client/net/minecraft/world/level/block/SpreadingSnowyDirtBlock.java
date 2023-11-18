@@ -8,7 +8,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.lighting.LayerLightEngine;
+import net.minecraft.world.level.lighting.LightEngine;
 
 public abstract class SpreadingSnowyDirtBlock extends SnowyDirtBlock {
    protected SpreadingSnowyDirtBlock(BlockBehaviour.Properties var1) {
@@ -23,7 +23,7 @@ public abstract class SpreadingSnowyDirtBlock extends SnowyDirtBlock {
       } else if (var4.getFluidState().getAmount() == 8) {
          return false;
       } else {
-         int var5 = LayerLightEngine.getLightBlockInto(var1, var0, var2, var4, var3, Direction.UP, var4.getLightBlock(var1, var3));
+         int var5 = LightEngine.getLightBlockInto(var1, var0, var2, var4, var3, Direction.UP, var4.getLightBlock(var1, var3));
          return var5 < var1.getMaxLightLevel();
       }
    }

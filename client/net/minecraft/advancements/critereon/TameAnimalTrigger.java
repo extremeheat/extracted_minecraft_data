@@ -18,8 +18,8 @@ public class TameAnimalTrigger extends SimpleCriterionTrigger<TameAnimalTrigger.
       return ID;
    }
 
-   public TameAnimalTrigger.TriggerInstance createInstance(JsonObject var1, EntityPredicate.Composite var2, DeserializationContext var3) {
-      EntityPredicate.Composite var4 = EntityPredicate.Composite.fromJson(var1, "entity", var3);
+   public TameAnimalTrigger.TriggerInstance createInstance(JsonObject var1, ContextAwarePredicate var2, DeserializationContext var3) {
+      ContextAwarePredicate var4 = EntityPredicate.fromJson(var1, "entity", var3);
       return new TameAnimalTrigger.TriggerInstance(var2, var4);
    }
 
@@ -29,19 +29,19 @@ public class TameAnimalTrigger extends SimpleCriterionTrigger<TameAnimalTrigger.
    }
 
    public static class TriggerInstance extends AbstractCriterionTriggerInstance {
-      private final EntityPredicate.Composite entity;
+      private final ContextAwarePredicate entity;
 
-      public TriggerInstance(EntityPredicate.Composite var1, EntityPredicate.Composite var2) {
+      public TriggerInstance(ContextAwarePredicate var1, ContextAwarePredicate var2) {
          super(TameAnimalTrigger.ID, var1);
          this.entity = var2;
       }
 
       public static TameAnimalTrigger.TriggerInstance tamedAnimal() {
-         return new TameAnimalTrigger.TriggerInstance(EntityPredicate.Composite.ANY, EntityPredicate.Composite.ANY);
+         return new TameAnimalTrigger.TriggerInstance(ContextAwarePredicate.ANY, ContextAwarePredicate.ANY);
       }
 
       public static TameAnimalTrigger.TriggerInstance tamedAnimal(EntityPredicate var0) {
-         return new TameAnimalTrigger.TriggerInstance(EntityPredicate.Composite.ANY, EntityPredicate.Composite.wrap(var0));
+         return new TameAnimalTrigger.TriggerInstance(ContextAwarePredicate.ANY, EntityPredicate.wrap(var0));
       }
 
       public boolean matches(LootContext var1) {

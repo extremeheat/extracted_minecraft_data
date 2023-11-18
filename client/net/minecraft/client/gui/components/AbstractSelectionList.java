@@ -2,7 +2,6 @@ package net.minecraft.client.gui.components;
 
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.AbstractList;
 import java.util.Collection;
 import java.util.List;
@@ -10,7 +9,7 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.AbstractContainerEventHandler;
 import net.minecraft.client.gui.components.events.ContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -19,6 +18,8 @@ import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.navigation.ScreenDirection;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
@@ -107,7 +108,7 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       return this.children;
    }
 
-   protected final void clearEntries() {
+   protected void clearEntries() {
       this.children.clear();
       this.selected = null;
    }
@@ -186,48 +187,56 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
    protected void clickedHeader(int var1, int var2) {
    }
 
-   protected void renderHeader(PoseStack var1, int var2, int var3) {
+   protected void renderHeader(GuiGraphics var1, int var2, int var3) {
    }
 
-   protected void renderBackground(PoseStack var1) {
+   protected void renderBackground(GuiGraphics var1) {
    }
 
-   protected void renderDecorations(PoseStack var1, int var2, int var3) {
+   protected void renderDecorations(GuiGraphics var1, int var2, int var3) {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderBackground(var1);
       int var5 = this.getScrollbarPosition();
       int var6 = var5 + 6;
       this.hovered = this.isMouseOver((double)var2, (double)var3) ? this.getEntryAtPosition((double)var2, (double)var3) : null;
       if (this.renderBackground) {
-         RenderSystem.setShaderTexture(0, GuiComponent.BACKGROUND_LOCATION);
-         RenderSystem.setShaderColor(0.125F, 0.125F, 0.125F, 1.0F);
+         var1.setColor(0.125F, 0.125F, 0.125F, 1.0F);
          boolean var7 = true;
-         blit(var1, this.x0, this.y0, (float)this.x1, (float)(this.y1 + (int)this.getScrollAmount()), this.x1 - this.x0, this.y1 - this.y0, 32, 32);
-         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+         var1.blit(
+            Screen.BACKGROUND_LOCATION,
+            this.x0,
+            this.y0,
+            (float)this.x1,
+            (float)(this.y1 + (int)this.getScrollAmount()),
+            this.x1 - this.x0,
+            this.y1 - this.y0,
+            32,
+            32
+         );
+         var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
       }
 
       int var12 = this.getRowLeft();
       int var8 = this.y0 + 4 - (int)this.getScrollAmount();
-      this.enableScissor();
+      this.enableScissor(var1);
       if (this.renderHeader) {
          this.renderHeader(var1, var12, var8);
       }
 
       this.renderList(var1, var2, var3, var4);
-      disableScissor();
+      var1.disableScissor();
       if (this.renderTopAndBottom) {
-         RenderSystem.setShaderTexture(0, GuiComponent.BACKGROUND_LOCATION);
          boolean var9 = true;
-         RenderSystem.setShaderColor(0.25F, 0.25F, 0.25F, 1.0F);
-         blit(var1, this.x0, 0, 0.0F, 0.0F, this.width, this.y0, 32, 32);
-         blit(var1, this.x0, this.y1, 0.0F, (float)this.y1, this.width, this.height - this.y1, 32, 32);
-         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+         var1.setColor(0.25F, 0.25F, 0.25F, 1.0F);
+         var1.blit(Screen.BACKGROUND_LOCATION, this.x0, 0, 0.0F, 0.0F, this.width, this.y0, 32, 32);
+         var1.blit(Screen.BACKGROUND_LOCATION, this.x0, this.y1, 0.0F, (float)this.y1, this.width, this.height - this.y1, 32, 32);
+         var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
          boolean var10 = true;
-         fillGradient(var1, this.x0, this.y0, this.x1, this.y0 + 4, -16777216, 0);
-         fillGradient(var1, this.x0, this.y1 - 4, this.x1, this.y1, 0, -16777216);
+         var1.fillGradient(RenderType.guiOverlay(), this.x0, this.y0, this.x1, this.y0 + 4, -16777216, 0, 0);
+         var1.fillGradient(RenderType.guiOverlay(), this.x0, this.y1 - 4, this.x1, this.y1, 0, -16777216, 0);
       }
 
       int var13 = this.getMaxScroll();
@@ -239,17 +248,17 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
             var11 = this.y0;
          }
 
-         fill(var1, var5, this.y0, var6, this.y1, -16777216);
-         fill(var1, var5, var11, var6, var11 + var14, -8355712);
-         fill(var1, var5, var11, var6 - 1, var11 + var14 - 1, -4144960);
+         var1.fill(var5, this.y0, var6, this.y1, -16777216);
+         var1.fill(var5, var11, var6, var11 + var14, -8355712);
+         var1.fill(var5, var11, var6 - 1, var11 + var14 - 1, -4144960);
       }
 
       this.renderDecorations(var1, var2, var3);
       RenderSystem.disableBlend();
    }
 
-   protected void enableScissor() {
-      enableScissor(this.x0, this.y0, this.x1, this.y1);
+   protected void enableScissor(GuiGraphics var1) {
+      var1.enableScissor(this.x0, this.y0, this.x1, this.y1);
    }
 
    protected void centerScrollOn(E var1) {
@@ -420,7 +429,7 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       return var3 >= (double)this.y0 && var3 <= (double)this.y1 && var1 >= (double)this.x0 && var1 <= (double)this.x1;
    }
 
-   protected void renderList(PoseStack var1, int var2, int var3, float var4) {
+   protected void renderList(GuiGraphics var1, int var2, int var3, float var4) {
       int var5 = this.getRowLeft();
       int var6 = this.getRowWidth();
       int var7 = this.itemHeight - 4;
@@ -435,7 +444,7 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       }
    }
 
-   protected void renderItem(PoseStack var1, int var2, int var3, float var4, int var5, int var6, int var7, int var8, int var9) {
+   protected void renderItem(GuiGraphics var1, int var2, int var3, float var4, int var5, int var6, int var7, int var8, int var9) {
       AbstractSelectionList.Entry var10 = this.getEntry(var5);
       var10.renderBack(var1, var5, var7, var6, var8, var9, var2, var3, Objects.equals(this.hovered, var10), var4);
       if (this.renderSelection && this.isSelectedItem(var5)) {
@@ -446,11 +455,11 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       var10.render(var1, var5, var7, var6, var8, var9, var2, var3, Objects.equals(this.hovered, var10), var4);
    }
 
-   protected void renderSelection(PoseStack var1, int var2, int var3, int var4, int var5, int var6) {
+   protected void renderSelection(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6) {
       int var7 = this.x0 + (this.width - var3) / 2;
       int var8 = this.x0 + (this.width + var3) / 2;
-      fill(var1, var7, var2 - 2, var8, var2 + var4 + 2, var5);
-      fill(var1, var7 + 1, var2 - 1, var8 - 1, var2 + var4 + 1, var6);
+      var1.fill(var7, var2 - 2, var8, var2 + var4 + 2, var5);
+      var1.fill(var7 + 1, var2 - 1, var8 - 1, var2 + var4 + 1, var6);
    }
 
    public int getRowLeft() {
@@ -534,9 +543,9 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
          return this.list.getFocused() == this;
       }
 
-      public abstract void render(PoseStack var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10);
+      public abstract void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10);
 
-      public void renderBack(PoseStack var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
+      public void renderBack(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
       }
 
       @Override

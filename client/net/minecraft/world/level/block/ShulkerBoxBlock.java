@@ -41,8 +41,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
-import net.minecraft.world.level.material.PushReaction;
-import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -159,12 +158,12 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
    }
 
    @Override
-   public List<ItemStack> getDrops(BlockState var1, LootContext.Builder var2) {
+   public List<ItemStack> getDrops(BlockState var1, LootParams.Builder var2) {
       BlockEntity var3 = var2.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
       if (var3 instanceof ShulkerBoxBlockEntity var4) {
-         var2 = var2.withDynamicDrop(CONTENTS, (var1x, var2x) -> {
-            for(int var3x = 0; var3x < var4.getContainerSize(); ++var3x) {
-               var2x.accept(var4.getItem(var3x));
+         var2 = var2.withDynamicDrop(CONTENTS, var1x -> {
+            for(int var2x = 0; var2x < var4.getContainerSize(); ++var2x) {
+               var1x.accept(var4.getItem(var2x));
             }
          });
       }
@@ -226,11 +225,6 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
             }
          }
       }
-   }
-
-   @Override
-   public PushReaction getPistonPushReaction(BlockState var1) {
-      return PushReaction.DESTROY;
    }
 
    @Override

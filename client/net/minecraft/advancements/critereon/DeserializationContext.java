@@ -5,7 +5,7 @@ import com.google.gson.JsonArray;
 import com.mojang.logging.LogUtils;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.storage.loot.Deserializers;
-import net.minecraft.world.level.storage.loot.PredicateManager;
+import net.minecraft.world.level.storage.loot.LootDataManager;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSet;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
@@ -14,18 +14,18 @@ import org.slf4j.Logger;
 public class DeserializationContext {
    private static final Logger LOGGER = LogUtils.getLogger();
    private final ResourceLocation id;
-   private final PredicateManager predicateManager;
+   private final LootDataManager lootData;
    private final Gson predicateGson = Deserializers.createConditionSerializer().create();
 
-   public DeserializationContext(ResourceLocation var1, PredicateManager var2) {
+   public DeserializationContext(ResourceLocation var1, LootDataManager var2) {
       super();
       this.id = var1;
-      this.predicateManager = var2;
+      this.lootData = var2;
    }
 
    public final LootItemCondition[] deserializeConditions(JsonArray var1, String var2, LootContextParamSet var3) {
       LootItemCondition[] var4 = (LootItemCondition[])this.predicateGson.fromJson(var1, LootItemCondition[].class);
-      ValidationContext var5 = new ValidationContext(var3, this.predicateManager::get, var0 -> null);
+      ValidationContext var5 = new ValidationContext(var3, this.lootData);
 
       for(LootItemCondition var9 : var4) {
          var9.validate(var5);

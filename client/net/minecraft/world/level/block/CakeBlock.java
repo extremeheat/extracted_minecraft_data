@@ -110,7 +110,7 @@ public class CakeBlock extends Block {
 
    @Override
    public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      return var2.getBlockState(var3.below()).getMaterial().isSolid();
+      return var2.getBlockState(var3.below()).isSolid();
    }
 
    @Override

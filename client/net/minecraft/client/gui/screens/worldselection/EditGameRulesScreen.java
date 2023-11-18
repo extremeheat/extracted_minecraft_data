@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.collect.ImmutableList.Builder;
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -15,7 +14,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
@@ -68,10 +67,10 @@ public class EditGameRulesScreen extends Screen {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.tooltip = null;
       this.rules.render(var1, var2, var3, var4);
-      drawCenteredString(var1, this.font, this.title, this.width / 2, 20, 16777215);
+      var1.drawCenteredString(this.font, this.title, this.width / 2, 20, 16777215);
       super.render(var1, var2, var3, var4);
    }
 
@@ -102,7 +101,7 @@ public class EditGameRulesScreen extends Screen {
       }
 
       @Override
-      public void render(PoseStack var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
+      public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
          this.renderLabel(var1, var3, var4);
          this.checkbox.setX(var4 + var5 - 45);
          this.checkbox.setY(var3);
@@ -119,8 +118,8 @@ public class EditGameRulesScreen extends Screen {
       }
 
       @Override
-      public void render(PoseStack var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         GuiComponent.drawCenteredString(var1, EditGameRulesScreen.this.minecraft.font, this.label, var4 + var5 / 2, var3 + 5, 16777215);
+      public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
+         var1.drawCenteredString(EditGameRulesScreen.this.minecraft.font, this.label, var4 + var5 / 2, var3 + 5, 16777215);
       }
 
       @Override
@@ -168,12 +167,12 @@ public class EditGameRulesScreen extends Screen {
          return this.children;
       }
 
-      protected void renderLabel(PoseStack var1, int var2, int var3) {
+      protected void renderLabel(GuiGraphics var1, int var2, int var3) {
          if (this.label.size() == 1) {
-            EditGameRulesScreen.this.minecraft.font.draw(var1, this.label.get(0), (float)var3, (float)(var2 + 5), 16777215);
+            var1.drawString(EditGameRulesScreen.this.minecraft.font, this.label.get(0), var3, var2 + 5, 16777215, false);
          } else if (this.label.size() >= 2) {
-            EditGameRulesScreen.this.minecraft.font.draw(var1, this.label.get(0), (float)var3, (float)var2, 16777215);
-            EditGameRulesScreen.this.minecraft.font.draw(var1, this.label.get(1), (float)var3, (float)(var2 + 10), 16777215);
+            var1.drawString(EditGameRulesScreen.this.minecraft.font, this.label.get(0), var3, var2, 16777215, false);
+            var1.drawString(EditGameRulesScreen.this.minecraft.font, this.label.get(1), var3, var2 + 10, 16777215, false);
          }
       }
    }
@@ -198,7 +197,7 @@ public class EditGameRulesScreen extends Screen {
       }
 
       @Override
-      public void render(PoseStack var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
+      public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
          this.renderLabel(var1, var3, var4);
          this.input.setX(var4 + var5 - 44);
          this.input.setY(var3);
@@ -276,7 +275,7 @@ public class EditGameRulesScreen extends Screen {
       }
 
       @Override
-      public void render(PoseStack var1, int var2, int var3, float var4) {
+      public void render(GuiGraphics var1, int var2, int var3, float var4) {
          super.render(var1, var2, var3, var4);
          EditGameRulesScreen.RuleEntry var5 = this.getHovered();
          if (var5 != null && var5.tooltip != null) {

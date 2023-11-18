@@ -177,12 +177,12 @@ public class Goat extends Animal {
 
    @Override
    protected void customServerAiStep() {
-      this.level.getProfiler().push("goatBrain");
-      this.getBrain().tick((ServerLevel)this.level, this);
-      this.level.getProfiler().pop();
-      this.level.getProfiler().push("goatActivityUpdate");
+      this.level().getProfiler().push("goatBrain");
+      this.getBrain().tick((ServerLevel)this.level(), this);
+      this.level().getProfiler().pop();
+      this.level().getProfiler().push("goatActivityUpdate");
       GoatAi.updateActivity(this);
-      this.level.getProfiler().pop();
+      this.level().getProfiler().pop();
       super.customServerAiStep();
    }
 
@@ -211,11 +211,11 @@ public class Goat extends Animal {
          var1.playSound(this.getMilkingSound(), 1.0F, 1.0F);
          ItemStack var5 = ItemUtils.createFilledResult(var3, var1, Items.MILK_BUCKET.getDefaultInstance());
          var1.setItemInHand(var2, var5);
-         return InteractionResult.sidedSuccess(this.level.isClientSide);
+         return InteractionResult.sidedSuccess(this.level().isClientSide);
       } else {
          InteractionResult var4 = super.mobInteract(var1, var2);
          if (var4.consumesAction() && this.isFood(var3)) {
-            this.level.playSound(null, this, this.getEatingSound(var3), SoundSource.NEUTRAL, 1.0F, Mth.randomBetween(this.level.random, 0.8F, 1.2F));
+            this.level().playSound(null, this, this.getEatingSound(var3), SoundSource.NEUTRAL, 1.0F, Mth.randomBetween(this.level().random, 0.8F, 1.2F));
          }
 
          return var4;
@@ -325,8 +325,8 @@ public class Goat extends Animal {
          double var6 = (double)Mth.randomBetween(this.random, -0.2F, 0.2F);
          double var8 = (double)Mth.randomBetween(this.random, 0.3F, 0.7F);
          double var10 = (double)Mth.randomBetween(this.random, -0.2F, 0.2F);
-         ItemEntity var12 = new ItemEntity(this.level, var4.x(), var4.y(), var4.z(), var5, var6, var8, var10);
-         this.level.addFreshEntity(var12);
+         ItemEntity var12 = new ItemEntity(this.level(), var4.x(), var4.y(), var4.z(), var5, var6, var8, var10);
+         this.level().addFreshEntity(var12);
          return true;
       }
    }

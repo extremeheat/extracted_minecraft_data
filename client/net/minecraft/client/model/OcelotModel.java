@@ -57,6 +57,7 @@ public class OcelotModel<T extends Entity> extends AgeableListModel<T> {
    public static MeshDefinition createBodyMesh(CubeDeformation var0) {
       MeshDefinition var1 = new MeshDefinition();
       PartDefinition var2 = var1.getRoot();
+      CubeDeformation var3 = new CubeDeformation(-0.02F);
       var2.addOrReplaceChild(
          "head",
          CubeListBuilder.create()
@@ -77,14 +78,14 @@ public class OcelotModel<T extends Entity> extends AgeableListModel<T> {
          PartPose.offsetAndRotation(0.0F, 15.0F, 8.0F, 0.9F, 0.0F, 0.0F)
       );
       var2.addOrReplaceChild(
-         "tail2", CubeListBuilder.create().texOffs(4, 15).addBox(-0.5F, 0.0F, 0.0F, 1.0F, 8.0F, 1.0F, var0), PartPose.offset(0.0F, 20.0F, 14.0F)
+         "tail2", CubeListBuilder.create().texOffs(4, 15).addBox(-0.5F, 0.0F, 0.0F, 1.0F, 8.0F, 1.0F, var3), PartPose.offset(0.0F, 20.0F, 14.0F)
       );
-      CubeListBuilder var3 = CubeListBuilder.create().texOffs(8, 13).addBox(-1.0F, 0.0F, 1.0F, 2.0F, 6.0F, 2.0F, var0);
-      var2.addOrReplaceChild("left_hind_leg", var3, PartPose.offset(1.1F, 18.0F, 5.0F));
-      var2.addOrReplaceChild("right_hind_leg", var3, PartPose.offset(-1.1F, 18.0F, 5.0F));
-      CubeListBuilder var4 = CubeListBuilder.create().texOffs(40, 0).addBox(-1.0F, 0.0F, 0.0F, 2.0F, 10.0F, 2.0F, var0);
-      var2.addOrReplaceChild("left_front_leg", var4, PartPose.offset(1.2F, 14.1F, -5.0F));
-      var2.addOrReplaceChild("right_front_leg", var4, PartPose.offset(-1.2F, 14.1F, -5.0F));
+      CubeListBuilder var4 = CubeListBuilder.create().texOffs(8, 13).addBox(-1.0F, 0.0F, 1.0F, 2.0F, 6.0F, 2.0F, var0);
+      var2.addOrReplaceChild("left_hind_leg", var4, PartPose.offset(1.1F, 18.0F, 5.0F));
+      var2.addOrReplaceChild("right_hind_leg", var4, PartPose.offset(-1.1F, 18.0F, 5.0F));
+      CubeListBuilder var5 = CubeListBuilder.create().texOffs(40, 0).addBox(-1.0F, 0.0F, 0.0F, 2.0F, 10.0F, 2.0F, var0);
+      var2.addOrReplaceChild("left_front_leg", var5, PartPose.offset(1.2F, 14.1F, -5.0F));
+      var2.addOrReplaceChild("right_front_leg", var5, PartPose.offset(-1.2F, 14.1F, -5.0F));
       return var1;
    }
 

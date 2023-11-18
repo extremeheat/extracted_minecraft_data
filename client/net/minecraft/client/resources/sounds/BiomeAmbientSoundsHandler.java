@@ -33,7 +33,7 @@ public class BiomeAmbientSoundsHandler implements AmbientSoundHandler {
 
    public BiomeAmbientSoundsHandler(LocalPlayer var1, SoundManager var2, BiomeManager var3) {
       super();
-      this.random = var1.level.getRandom();
+      this.random = var1.level().getRandom();
       this.player = var1;
       this.soundManager = var2;
       this.biomeManager = var3;
@@ -71,7 +71,7 @@ public class BiomeAmbientSoundsHandler implements AmbientSoundHandler {
       this.moodSettings
          .ifPresent(
             var1x -> {
-               Level var2 = this.player.level;
+               Level var2 = this.player.level();
                int var3 = var1x.getBlockSearchExtent() * 2 + 1;
                BlockPos var4 = BlockPos.containing(
                   this.player.getX() + (double)this.random.nextInt(var3) - (double)var1x.getBlockSearchExtent(),

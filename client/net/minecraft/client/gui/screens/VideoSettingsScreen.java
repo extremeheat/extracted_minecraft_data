@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.platform.Monitor;
 import com.mojang.blaze3d.platform.Window;
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.ArrayList;
 import java.util.Optional;
 import net.minecraft.ChatFormatting;
@@ -12,6 +11,7 @@ import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.OptionsList;
 import net.minecraft.client.renderer.GpuWarnlistManager;
@@ -167,7 +167,26 @@ public class VideoSettingsScreen extends OptionsSubScreen {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public boolean mouseScrolled(double var1, double var3, double var5) {
+      if (Screen.hasControlDown()) {
+         OptionInstance var7 = this.options.guiScale();
+         int var8 = var7.get() + (int)Math.signum(var5);
+         if (var8 != 0) {
+            var7.set(var8);
+            if (var7.get() == var8) {
+               this.minecraft.resizeDisplay();
+               return true;
+            }
+         }
+
+         return false;
+      } else {
+         return super.mouseScrolled(var1, var3, var5);
+      }
+   }
+
+   @Override
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.basicListRender(var1, this.list, var2, var3, var4);
    }
 }

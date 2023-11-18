@@ -170,7 +170,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
    @Override
    public void tick() {
       super.tick();
-      if (!this.level.isClientSide && !this.isPassenger() && !this.canStayAt(this.blockPosition(), this.getAttachFace())) {
+      if (!this.level().isClientSide && !this.isPassenger() && !this.canStayAt(this.blockPosition(), this.getAttachFace())) {
          this.findNewAttachment();
       }
 
@@ -178,7 +178,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
          this.onPeekAmountChange();
       }
 
-      if (this.level.isClientSide) {
+      if (this.level().isClientSide) {
          if (this.clientSideTeleportInterpolation > 0) {
             --this.clientSideTeleportInterpolation;
          } else {
@@ -231,7 +231,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
       Direction var3 = this.getAttachFace().getOpposite();
       float var4 = var1 - var2;
       if (!(var4 <= 0.0F)) {
-         for(Entity var7 : this.level
+         for(Entity var7 : this.level()
             .getEntities(
                this,
                getProgressDeltaAabb(var3, var2, var1).move(this.getX() - 0.5, this.getY(), this.getZ() - 0.5),
@@ -269,7 +269,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
 
    @Override
    public boolean startRiding(Entity var1, boolean var2) {
-      if (this.level.isClientSide()) {
+      if (this.level().isClientSide()) {
          this.clientOldAttachPosition = null;
          this.clientSideTeleportInterpolation = 0;
       }
@@ -281,7 +281,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
    @Override
    public void stopRiding() {
       super.stopRiding();
-      if (this.level.isClientSide) {
+      if (this.level().isClientSide) {
          this.clientOldAttachPosition = this.blockPosition();
       }
 
@@ -332,7 +332,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
          if (!var8.equals(var7)) {
             this.entityData.set(DATA_PEEK_ID, (byte)0);
             this.hasImpulse = true;
-            if (this.level.isClientSide && !this.isPassenger() && !var8.equals(this.clientOldAttachPosition)) {
+            if (this.level().isClientSide && !this.isPassenger() && !var8.equals(this.clientOldAttachPosition)) {
                this.clientOldAttachPosition = var7;
                this.clientSideTeleportInterpolation = 6;
                this.xOld = this.getX();
@@ -359,17 +359,17 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
          return false;
       } else {
          Direction var3 = var2.getOpposite();
-         if (!this.level.loadedAndEntityCanStandOnFace(var1.relative(var2), this, var3)) {
+         if (!this.level().loadedAndEntityCanStandOnFace(var1.relative(var2), this, var3)) {
             return false;
          } else {
             AABB var4 = getProgressAabb(var3, 1.0F).move(var1).deflate(1.0E-6);
-            return this.level.noCollision(this, var4);
+            return this.level().noCollision(this, var4);
          }
       }
    }
 
    private boolean isPositionBlocked(BlockPos var1) {
-      BlockState var2 = this.level.getBlockState(var1);
+      BlockState var2 = this.level().getBlockState(var1);
       if (var2.isAir()) {
          return false;
       } else {
@@ -386,17 +386,17 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
             BlockPos var3 = var1.offset(
                Mth.randomBetweenInclusive(this.random, -8, 8), Mth.randomBetweenInclusive(this.random, -8, 8), Mth.randomBetweenInclusive(this.random, -8, 8)
             );
-            if (var3.getY() > this.level.getMinBuildHeight()
-               && this.level.isEmptyBlock(var3)
-               && this.level.getWorldBorder().isWithinBounds(var3)
-               && this.level.noCollision(this, new AABB(var3).deflate(1.0E-6))) {
+            if (var3.getY() > this.level().getMinBuildHeight()
+               && this.level().isEmptyBlock(var3)
+               && this.level().getWorldBorder().isWithinBounds(var3)
+               && this.level().noCollision(this, new AABB(var3).deflate(1.0E-6))) {
                Direction var4 = this.findAttachableSurface(var3);
                if (var4 != null) {
                   this.unRide();
                   this.setAttachFace(var4);
                   this.playSound(SoundEvents.SHULKER_TELEPORT, 1.0F, 1.0F);
                   this.setPos((double)var3.getX() + 0.5, (double)var3.getY(), (double)var3.getZ() + 0.5);
-                  this.level.gameEvent(GameEvent.TELEPORT, var1, GameEvent.Context.of(this));
+                  this.level().gameEvent(GameEvent.TELEPORT, var1, GameEvent.Context.of(this));
                   this.entityData.set(DATA_PEEK_ID, (byte)0);
                   this.setTarget(null);
                   return true;
@@ -450,14 +450,14 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
       Vec3 var1 = this.position();
       AABB var2 = this.getBoundingBox();
       if (!this.isClosed() && this.teleportSomewhere()) {
-         int var3 = this.level.getEntities(EntityType.SHULKER, var2.inflate(8.0), Entity::isAlive).size();
+         int var3 = this.level().getEntities(EntityType.SHULKER, var2.inflate(8.0), Entity::isAlive).size();
          float var4 = (float)(var3 - 1) / 5.0F;
-         if (!(this.level.random.nextFloat() < var4)) {
-            Shulker var5 = EntityType.SHULKER.create(this.level);
+         if (!(this.level().random.nextFloat() < var4)) {
+            Shulker var5 = EntityType.SHULKER.create(this.level());
             if (var5 != null) {
                var5.setVariant(this.getVariant());
                var5.moveTo(var1);
-               this.level.addFreshEntity(var5);
+               this.level().addFreshEntity(var5);
             }
          }
       }
@@ -490,7 +490,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
    }
 
    void setRawPeekAmount(int var1) {
-      if (!this.level.isClientSide) {
+      if (!this.level().isClientSide) {
          this.getAttribute(Attributes.ARMOR).removeModifier(COVERED_ARMOR_MODIFIER);
          if (var1 == 0) {
             this.getAttribute(Attributes.ARMOR).addPermanentModifier(COVERED_ARMOR_MODIFIER);
@@ -580,7 +580,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
       public boolean canUse() {
          LivingEntity var1 = Shulker.this.getTarget();
          if (var1 != null && var1.isAlive()) {
-            return Shulker.this.level.getDifficulty() != Difficulty.PEACEFUL;
+            return Shulker.this.level().getDifficulty() != Difficulty.PEACEFUL;
          } else {
             return false;
          }
@@ -604,7 +604,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
 
       @Override
       public void tick() {
-         if (Shulker.this.level.getDifficulty() != Difficulty.PEACEFUL) {
+         if (Shulker.this.level().getDifficulty() != Difficulty.PEACEFUL) {
             --this.attackTime;
             LivingEntity var1 = Shulker.this.getTarget();
             if (var1 != null) {
@@ -613,7 +613,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
                if (var2 < 400.0) {
                   if (this.attackTime <= 0) {
                      this.attackTime = 20 + Shulker.this.random.nextInt(10) * 20 / 2;
-                     Shulker.this.level.addFreshEntity(new ShulkerBullet(Shulker.this.level, Shulker.this, var1, Shulker.this.getAttachFace().getAxis()));
+                     Shulker.this.level().addFreshEntity(new ShulkerBullet(Shulker.this.level(), Shulker.this, var1, Shulker.this.getAttachFace().getAxis()));
                      Shulker.this.playSound(SoundEvents.SHULKER_SHOOT, 2.0F, (Shulker.this.random.nextFloat() - Shulker.this.random.nextFloat()) * 0.2F + 1.0F);
                   }
                } else {
@@ -699,7 +699,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
 
       @Override
       public boolean canUse() {
-         return Shulker.this.level.getDifficulty() == Difficulty.PEACEFUL ? false : super.canUse();
+         return Shulker.this.level().getDifficulty() == Difficulty.PEACEFUL ? false : super.canUse();
       }
 
       @Override

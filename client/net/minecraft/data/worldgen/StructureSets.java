@@ -150,5 +150,9 @@ public interface StructureSets {
             var1.getOrThrow(BuiltinStructures.STRONGHOLD), new ConcentricRingsStructurePlacement(32, 3, 128, var2.getOrThrow(BiomeTags.STRONGHOLD_BIASED_TO))
          )
       );
+      var0.register(
+         BuiltinStructureSets.TRAIL_RUINS,
+         new StructureSet(var1.getOrThrow(BuiltinStructures.TRAIL_RUINS), new RandomSpreadStructurePlacement(34, 8, RandomSpreadType.LINEAR, 83469867))
+      );
    }
 }

@@ -39,25 +39,17 @@ public class MapExtendingRecipe extends ShapedRecipe {
       if (!super.matches(var1, var2)) {
          return false;
       } else {
-         ItemStack var3 = ItemStack.EMPTY;
-
-         for(int var4 = 0; var4 < var1.getContainerSize() && var3.isEmpty(); ++var4) {
-            ItemStack var5 = var1.getItem(var4);
-            if (var5.is(Items.FILLED_MAP)) {
-               var3 = var5;
-            }
-         }
-
+         ItemStack var3 = findFilledMap(var1);
          if (var3.isEmpty()) {
             return false;
          } else {
-            MapItemSavedData var6 = MapItem.getSavedData(var3, var2);
-            if (var6 == null) {
+            MapItemSavedData var4 = MapItem.getSavedData(var3, var2);
+            if (var4 == null) {
                return false;
-            } else if (var6.isExplorationMap()) {
+            } else if (var4.isExplorationMap()) {
                return false;
             } else {
-               return var6.scale < 4;
+               return var4.scale < 4;
             }
          }
       }
@@ -65,19 +57,20 @@ public class MapExtendingRecipe extends ShapedRecipe {
 
    @Override
    public ItemStack assemble(CraftingContainer var1, RegistryAccess var2) {
-      ItemStack var3 = ItemStack.EMPTY;
+      ItemStack var3 = findFilledMap(var1).copyWithCount(1);
+      var3.getOrCreateTag().putInt("map_scale_direction", 1);
+      return var3;
+   }
 
-      for(int var4 = 0; var4 < var1.getContainerSize() && var3.isEmpty(); ++var4) {
-         ItemStack var5 = var1.getItem(var4);
-         if (var5.is(Items.FILLED_MAP)) {
-            var3 = var5;
+   private static ItemStack findFilledMap(CraftingContainer var0) {
+      for(int var1 = 0; var1 < var0.getContainerSize(); ++var1) {
+         ItemStack var2 = var0.getItem(var1);
+         if (var2.is(Items.FILLED_MAP)) {
+            return var2;
          }
       }
 
-      var3 = var3.copy();
-      var3.setCount(1);
-      var3.getOrCreateTag().putInt("map_scale_direction", 1);
-      return var3;
+      return ItemStack.EMPTY;
    }
 
    @Override

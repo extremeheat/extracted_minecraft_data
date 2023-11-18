@@ -283,38 +283,39 @@ public class CloneCommands {
             List var35 = Lists.reverse(var32);
 
             for(CloneCommands.CloneBlockInfo var39 : var35) {
-               BlockEntity var43 = var13.getBlockEntity(var39.pos);
-               Clearable.tryClear(var43);
+               BlockEntity var44 = var13.getBlockEntity(var39.pos);
+               Clearable.tryClear(var44);
                var13.setBlock(var39.pos, Blocks.BARRIER.defaultBlockState(), 2);
             }
 
             int var38 = 0;
 
-            for(CloneCommands.CloneBlockInfo var44 : var32) {
-               if (var13.setBlock(var44.pos, var44.state, 2)) {
+            for(CloneCommands.CloneBlockInfo var45 : var32) {
+               if (var13.setBlock(var45.pos, var45.state, 2)) {
                   ++var38;
                }
             }
 
-            for(CloneCommands.CloneBlockInfo var45 : var17) {
-               BlockEntity var47 = var13.getBlockEntity(var45.pos);
-               if (var45.tag != null && var47 != null) {
-                  var47.load(var45.tag);
-                  var47.setChanged();
+            for(CloneCommands.CloneBlockInfo var46 : var17) {
+               BlockEntity var48 = var13.getBlockEntity(var46.pos);
+               if (var46.tag != null && var48 != null) {
+                  var48.load(var46.tag);
+                  var48.setChanged();
                }
 
-               var13.setBlock(var45.pos, var45.state, 2);
+               var13.setBlock(var46.pos, var46.state, 2);
             }
 
-            for(CloneCommands.CloneBlockInfo var46 : var35) {
-               var13.blockUpdated(var46.pos, var46.state.getBlock());
+            for(CloneCommands.CloneBlockInfo var47 : var35) {
+               var13.blockUpdated(var47.pos, var47.state.getBlock());
             }
 
             var13.getBlockTicks().copyAreaFrom(var12.getBlockTicks(), var8, var20);
             if (var38 == 0) {
                throw ERROR_FAILED.create();
             } else {
-               var0.sendSuccess(Component.translatable("commands.clone.success", var38), true);
+               int var43 = var38;
+               var0.sendSuccess(() -> Component.translatable("commands.clone.success", var43), true);
                return var38;
             }
          } else {

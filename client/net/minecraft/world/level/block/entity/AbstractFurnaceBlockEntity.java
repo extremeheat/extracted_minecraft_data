@@ -310,7 +310,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
             ItemStack var5 = (ItemStack)var2.get(2);
             if (var5.isEmpty()) {
                return true;
-            } else if (!var5.sameItem(var4)) {
+            } else if (!ItemStack.isSameItem(var5, var4)) {
                return false;
             } else if (var5.getCount() < var3 && var5.getCount() < var5.getMaxStackSize()) {
                return true;
@@ -419,7 +419,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
    @Override
    public void setItem(int var1, ItemStack var2) {
       ItemStack var3 = this.items.get(var1);
-      boolean var4 = !var2.isEmpty() && var2.sameItem(var3) && ItemStack.tagMatches(var2, var3);
+      boolean var4 = !var2.isEmpty() && ItemStack.isSameItemSameTags(var3, var2);
       this.items.set(var1, var2);
       if (var2.getCount() > this.getMaxStackSize()) {
          var2.setCount(this.getMaxStackSize());
@@ -469,12 +469,19 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
    }
 
    @Override
-   public void awardUsedRecipes(Player var1) {
+   public void awardUsedRecipes(Player var1, List<ItemStack> var2) {
    }
 
    public void awardUsedRecipesAndPopExperience(ServerPlayer var1) {
-      List var2 = this.getRecipesToAwardAndPopExperience(var1.getLevel(), var1.position());
+      List var2 = this.getRecipesToAwardAndPopExperience(var1.serverLevel(), var1.position());
       var1.awardRecipes(var2);
+
+      for(Recipe var4 : var2) {
+         if (var4 != null) {
+            var1.triggerRecipeCrafted(var4, this.items);
+         }
+      }
+
       this.recipesUsed.clear();
    }
 

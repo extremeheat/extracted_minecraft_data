@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.animal;
 
+import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
@@ -63,7 +64,7 @@ public abstract class Animal extends AgeableMob {
             double var1 = this.random.nextGaussian() * 0.02;
             double var3 = this.random.nextGaussian() * 0.02;
             double var5 = this.random.nextGaussian() * 0.02;
-            this.level.addParticle(ParticleTypes.HEART, this.getRandomX(1.0), this.getRandomY() + 0.5, this.getRandomZ(1.0), var1, var3, var5);
+            this.level().addParticle(ParticleTypes.HEART, this.getRandomX(1.0), this.getRandomY() + 0.5, this.getRandomZ(1.0), var1, var3, var5);
          }
       }
    }
@@ -124,7 +125,7 @@ public abstract class Animal extends AgeableMob {
 
    @Override
    public int getExperienceReward() {
-      return 1 + this.level.random.nextInt(3);
+      return 1 + this.level().random.nextInt(3);
    }
 
    public boolean isFood(ItemStack var1) {
@@ -136,7 +137,7 @@ public abstract class Animal extends AgeableMob {
       ItemStack var3 = var1.getItemInHand(var2);
       if (this.isFood(var3)) {
          int var4 = this.getAge();
-         if (!this.level.isClientSide && var4 == 0 && this.canFallInLove()) {
+         if (!this.level().isClientSide && var4 == 0 && this.canFallInLove()) {
             this.usePlayerItem(var1, var2, var3);
             this.setInLove(var1);
             return InteractionResult.SUCCESS;
@@ -145,10 +146,10 @@ public abstract class Animal extends AgeableMob {
          if (this.isBaby()) {
             this.usePlayerItem(var1, var2, var3);
             this.ageUp(getSpeedUpSecondsWhenFeeding(-var4), true);
-            return InteractionResult.sidedSuccess(this.level.isClientSide);
+            return InteractionResult.sidedSuccess(this.level().isClientSide);
          }
 
-         if (this.level.isClientSide) {
+         if (this.level().isClientSide) {
             return InteractionResult.CONSUME;
          }
       }
@@ -172,7 +173,7 @@ public abstract class Animal extends AgeableMob {
          this.loveCause = var1.getUUID();
       }
 
-      this.level.broadcastEntityEvent(this, (byte)18);
+      this.level().broadcastEntityEvent(this, (byte)18);
    }
 
    public void setInLoveTime(int var1) {
@@ -188,7 +189,7 @@ public abstract class Animal extends AgeableMob {
       if (this.loveCause == null) {
          return null;
       } else {
-         Player var1 = this.level.getPlayerByUUID(this.loveCause);
+         Player var1 = this.level().getPlayerByUUID(this.loveCause);
          return var1 instanceof ServerPlayer ? (ServerPlayer)var1 : null;
       }
    }
@@ -214,27 +215,25 @@ public abstract class Animal extends AgeableMob {
    public void spawnChildFromBreeding(ServerLevel var1, Animal var2) {
       AgeableMob var3 = this.getBreedOffspring(var1, var2);
       if (var3 != null) {
-         ServerPlayer var4 = this.getLoveCause();
-         if (var4 == null && var2.getLoveCause() != null) {
-            var4 = var2.getLoveCause();
-         }
-
-         if (var4 != null) {
-            var4.awardStat(Stats.ANIMALS_BRED);
-            CriteriaTriggers.BRED_ANIMALS.trigger(var4, this, var2, var3);
-         }
-
-         this.setAge(6000);
-         var2.setAge(6000);
-         this.resetLove();
-         var2.resetLove();
          var3.setBaby(true);
          var3.moveTo(this.getX(), this.getY(), this.getZ(), 0.0F, 0.0F);
+         this.finalizeSpawnChildFromBreeding(var1, var2, var3);
          var1.addFreshEntityWithPassengers(var3);
-         var1.broadcastEntityEvent(this, (byte)18);
-         if (var1.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
-            var1.addFreshEntity(new ExperienceOrb(var1, this.getX(), this.getY(), this.getZ(), this.getRandom().nextInt(7) + 1));
-         }
+      }
+   }
+
+   public void finalizeSpawnChildFromBreeding(ServerLevel var1, Animal var2, @Nullable AgeableMob var3) {
+      Optional.ofNullable(this.getLoveCause()).or(() -> Optional.ofNullable(var2.getLoveCause())).ifPresent(var3x -> {
+         var3x.awardStat(Stats.ANIMALS_BRED);
+         CriteriaTriggers.BRED_ANIMALS.trigger(var3x, this, var2, var3);
+      });
+      this.setAge(6000);
+      var2.setAge(6000);
+      this.resetLove();
+      var2.resetLove();
+      var1.broadcastEntityEvent(this, (byte)18);
+      if (var1.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
+         var1.addFreshEntity(new ExperienceOrb(var1, this.getX(), this.getY(), this.getZ(), this.getRandom().nextInt(7) + 1));
       }
    }
 
@@ -245,7 +244,7 @@ public abstract class Animal extends AgeableMob {
             double var3 = this.random.nextGaussian() * 0.02;
             double var5 = this.random.nextGaussian() * 0.02;
             double var7 = this.random.nextGaussian() * 0.02;
-            this.level.addParticle(ParticleTypes.HEART, this.getRandomX(1.0), this.getRandomY() + 0.5, this.getRandomZ(1.0), var3, var5, var7);
+            this.level().addParticle(ParticleTypes.HEART, this.getRandomX(1.0), this.getRandomY() + 0.5, this.getRandomZ(1.0), var3, var5, var7);
          }
       } else {
          super.handleEntityEvent(var1);

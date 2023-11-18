@@ -42,7 +42,7 @@ public class SuspiciousStewItem extends Item {
          for(int var4 = 0; var4 < var3.size(); ++var4) {
             CompoundTag var5 = var3.getCompound(var4);
             int var6;
-            if (var5.contains("EffectDuration", 3)) {
+            if (var5.contains("EffectDuration", 99)) {
                var6 = var5.getInt("EffectDuration");
             } else {
                var6 = 160;

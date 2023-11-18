@@ -2,7 +2,6 @@ package net.minecraft.client.renderer.texture;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.mojang.blaze3d.platform.TextureUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.RealmsMainScreen;
@@ -64,7 +63,6 @@ public class TextureManager implements PreparableReloadListener, Tickable, AutoC
       AbstractTexture var3 = this.byPath.put(var1, var2);
       if (var3 != var2) {
          if (var3 != null && var3 != MissingTextureAtlasSprite.getTexture()) {
-            this.tickableTextures.remove(var3);
             this.safeClose(var1, var3);
          }
 
@@ -76,6 +74,8 @@ public class TextureManager implements PreparableReloadListener, Tickable, AutoC
 
    private void safeClose(ResourceLocation var1, AbstractTexture var2) {
       if (var2 != MissingTextureAtlasSprite.getTexture()) {
+         this.tickableTextures.remove(var2);
+
          try {
             var2.close();
          } catch (Exception var4) {
@@ -155,9 +155,9 @@ public class TextureManager implements PreparableReloadListener, Tickable, AutoC
    }
 
    public void release(ResourceLocation var1) {
-      AbstractTexture var2 = this.getTexture(var1, MissingTextureAtlasSprite.getTexture());
-      if (var2 != MissingTextureAtlasSprite.getTexture()) {
-         TextureUtil.releaseTextureId(var2.getId());
+      AbstractTexture var2 = this.byPath.remove(var1);
+      if (var2 != null) {
+         this.safeClose(var1, var2);
       }
    }
 

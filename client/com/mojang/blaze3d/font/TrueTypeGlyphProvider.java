@@ -17,8 +17,10 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
 public class TrueTypeGlyphProvider implements GlyphProvider {
-   private final ByteBuffer fontMemory;
-   final STBTTFontinfo font;
+   @Nullable
+   private ByteBuffer fontMemory;
+   @Nullable
+   private STBTTFontinfo font;
    final float oversample;
    private final IntSet skip = new IntArraySet();
    final float shiftX;
@@ -63,81 +65,93 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
    @Nullable
    @Override
    public GlyphInfo getGlyph(int var1) {
+      STBTTFontinfo var2 = this.validateFontOpen();
       if (this.skip.contains(var1)) {
          return null;
       } else {
-         MemoryStack var2 = MemoryStack.stackPush();
+         MemoryStack var3 = MemoryStack.stackPush();
 
-         Object var16;
+         Object var17;
          label61: {
-            GlyphInfo var17;
+            GlyphInfo var18;
             label62: {
                try {
-                  int var3 = STBTruetype.stbtt_FindGlyphIndex(this.font, var1);
-                  if (var3 == 0) {
-                     var16 = null;
+                  int var4 = STBTruetype.stbtt_FindGlyphIndex(var2, var1);
+                  if (var4 == 0) {
+                     var17 = null;
                      break label61;
                   }
 
-                  IntBuffer var4 = var2.mallocInt(1);
-                  IntBuffer var5 = var2.mallocInt(1);
-                  IntBuffer var6 = var2.mallocInt(1);
-                  IntBuffer var7 = var2.mallocInt(1);
-                  IntBuffer var8 = var2.mallocInt(1);
-                  IntBuffer var9 = var2.mallocInt(1);
-                  STBTruetype.stbtt_GetGlyphHMetrics(this.font, var3, var8, var9);
-                  STBTruetype.stbtt_GetGlyphBitmapBoxSubpixel(
-                     this.font, var3, this.pointScale, this.pointScale, this.shiftX, this.shiftY, var4, var5, var6, var7
-                  );
-                  float var10 = (float)var8.get(0) * this.pointScale;
-                  int var11 = var6.get(0) - var4.get(0);
+                  IntBuffer var5 = var3.mallocInt(1);
+                  IntBuffer var6 = var3.mallocInt(1);
+                  IntBuffer var7 = var3.mallocInt(1);
+                  IntBuffer var8 = var3.mallocInt(1);
+                  IntBuffer var9 = var3.mallocInt(1);
+                  IntBuffer var10 = var3.mallocInt(1);
+                  STBTruetype.stbtt_GetGlyphHMetrics(var2, var4, var9, var10);
+                  STBTruetype.stbtt_GetGlyphBitmapBoxSubpixel(var2, var4, this.pointScale, this.pointScale, this.shiftX, this.shiftY, var5, var6, var7, var8);
+                  float var11 = (float)var9.get(0) * this.pointScale;
                   int var12 = var7.get(0) - var5.get(0);
-                  if (var11 > 0 && var12 > 0) {
-                     var17 = new TrueTypeGlyphProvider.Glyph(
-                        var4.get(0), var6.get(0), -var5.get(0), -var7.get(0), var10, (float)var9.get(0) * this.pointScale, var3
+                  int var13 = var8.get(0) - var6.get(0);
+                  if (var12 > 0 && var13 > 0) {
+                     var18 = new TrueTypeGlyphProvider.Glyph(
+                        var5.get(0), var7.get(0), -var6.get(0), -var8.get(0), var11, (float)var10.get(0) * this.pointScale, var4
                      );
                      break label62;
                   }
 
-                  var17 = () -> var10 / this.oversample;
-               } catch (Throwable var15) {
-                  if (var2 != null) {
+                  var18 = () -> var11 / this.oversample;
+               } catch (Throwable var16) {
+                  if (var3 != null) {
                      try {
-                        var2.close();
-                     } catch (Throwable var14) {
-                        var15.addSuppressed(var14);
+                        var3.close();
+                     } catch (Throwable var15) {
+                        var16.addSuppressed(var15);
                      }
                   }
 
-                  throw var15;
+                  throw var16;
                }
 
-               if (var2 != null) {
-                  var2.close();
+               if (var3 != null) {
+                  var3.close();
                }
 
-               return var17;
+               return var18;
             }
 
-            if (var2 != null) {
-               var2.close();
+            if (var3 != null) {
+               var3.close();
             }
 
-            return var17;
+            return var18;
          }
 
-         if (var2 != null) {
-            var2.close();
+         if (var3 != null) {
+            var3.close();
          }
 
-         return (GlyphInfo)var16;
+         return (GlyphInfo)var17;
+      }
+   }
+
+   STBTTFontinfo validateFontOpen() {
+      if (this.fontMemory != null && this.font != null) {
+         return this.font;
+      } else {
+         throw new IllegalArgumentException("Provider already closed");
       }
    }
 
    @Override
    public void close() {
-      this.font.free();
+      if (this.font != null) {
+         this.font.free();
+         this.font = null;
+      }
+
       MemoryUtil.memFree(this.fontMemory);
+      this.fontMemory = null;
    }
 
    @Override
@@ -199,9 +213,10 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
    
                @Override
                public void upload(int var1, int var2) {
-                  NativeImage var3 = new NativeImage(NativeImage.Format.LUMINANCE, Glyph.this.width, Glyph.this.height, false);
-                  var3.copyFromFont(
-                     TrueTypeGlyphProvider.this.font,
+                  STBTTFontinfo var3 = TrueTypeGlyphProvider.this.validateFontOpen();
+                  NativeImage var4 = new NativeImage(NativeImage.Format.LUMINANCE, Glyph.this.width, Glyph.this.height, false);
+                  var4.copyFromFont(
+                     var3,
                      Glyph.this.index,
                      Glyph.this.width,
                      Glyph.this.height,
@@ -212,7 +227,7 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
                      0,
                      0
                   );
-                  var3.upload(0, var1, var2, 0, 0, Glyph.this.width, Glyph.this.height, false, true);
+                  var4.upload(0, var1, var2, 0, 0, Glyph.this.width, Glyph.this.height, false, true);
                }
    
                @Override

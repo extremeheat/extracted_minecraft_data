@@ -1,10 +1,10 @@
 package net.minecraft.client.gui.screens;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import net.minecraft.Util;
 import net.minecraft.client.GameNarrator;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
@@ -25,12 +25,11 @@ public class LevelLoadingScreen extends Screen {
       var0.put(ChunkStatus.BIOMES, 8434258);
       var0.put(ChunkStatus.NOISE, 13750737);
       var0.put(ChunkStatus.SURFACE, 7497737);
-      var0.put(ChunkStatus.CARVERS, 7169628);
-      var0.put(ChunkStatus.LIQUID_CARVERS, 3159410);
+      var0.put(ChunkStatus.CARVERS, 3159410);
       var0.put(ChunkStatus.FEATURES, 2213376);
-      var0.put(ChunkStatus.LIGHT, 13421772);
+      var0.put(ChunkStatus.INITIALIZE_LIGHT, 13421772);
+      var0.put(ChunkStatus.LIGHT, 16769184);
       var0.put(ChunkStatus.SPAWN, 15884384);
-      var0.put(ChunkStatus.HEIGHTMAPS, 15658734);
       var0.put(ChunkStatus.FULL, 16777215);
    });
 
@@ -70,7 +69,7 @@ public class LevelLoadingScreen extends Screen {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderBackground(var1);
       long var5 = Util.getMillis();
       if (var5 - this.lastNarration > 2000L) {
@@ -82,10 +81,10 @@ public class LevelLoadingScreen extends Screen {
       int var8 = this.height / 2;
       boolean var9 = true;
       renderChunks(var1, this.progressListener, var7, var8 + 30, 2, 0);
-      drawCenteredString(var1, this.font, this.getFormattedProgress(), var7, var8 - 9 / 2 - 30, 16777215);
+      var1.drawCenteredString(this.font, this.getFormattedProgress(), var7, var8 - 9 / 2 - 30, 16777215);
    }
 
-   public static void renderChunks(PoseStack var0, StoringChunkProgressListener var1, int var2, int var3, int var4, int var5) {
+   public static void renderChunks(GuiGraphics var0, StoringChunkProgressListener var1, int var2, int var3, int var4, int var5) {
       int var6 = var4 + var5;
       int var7 = var1.getFullDiameter();
       int var8 = var7 * var6 - var5;
@@ -95,20 +94,22 @@ public class LevelLoadingScreen extends Screen {
       int var12 = var3 - var10 / 2;
       int var13 = var8 / 2 + 1;
       int var14 = -16772609;
-      if (var5 != 0) {
-         fill(var0, var2 - var13, var3 - var13, var2 - var13 + 1, var3 + var13, -16772609);
-         fill(var0, var2 + var13 - 1, var3 - var13, var2 + var13, var3 + var13, -16772609);
-         fill(var0, var2 - var13, var3 - var13, var2 + var13, var3 - var13 + 1, -16772609);
-         fill(var0, var2 - var13, var3 + var13 - 1, var2 + var13, var3 + var13, -16772609);
-      }
-
-      for(int var15 = 0; var15 < var9; ++var15) {
-         for(int var16 = 0; var16 < var9; ++var16) {
-            ChunkStatus var17 = var1.getStatus(var15, var16);
-            int var18 = var11 + var15 * var6;
-            int var19 = var12 + var16 * var6;
-            fill(var0, var18, var19, var18 + var4, var19 + var4, COLORS.getInt(var17) | 0xFF000000);
+      var0.drawManaged(() -> {
+         if (var5 != 0) {
+            var0.fill(var2 - var13, var3 - var13, var2 - var13 + 1, var3 + var13, -16772609);
+            var0.fill(var2 + var13 - 1, var3 - var13, var2 + var13, var3 + var13, -16772609);
+            var0.fill(var2 - var13, var3 - var13, var2 + var13, var3 - var13 + 1, -16772609);
+            var0.fill(var2 - var13, var3 + var13 - 1, var2 + var13, var3 + var13, -16772609);
          }
-      }
+
+         for(int var11x = 0; var11x < var9; ++var11x) {
+            for(int var12x = 0; var12x < var9; ++var12x) {
+               ChunkStatus var13x = var1.getStatus(var11x, var12x);
+               int var14x = var11 + var11x * var6;
+               int var15 = var12 + var12x * var6;
+               var0.fill(var14x, var15, var14x + var4, var15 + var4, COLORS.getInt(var13x) | 0xFF000000);
+            }
+         }
+      });
    }
 }

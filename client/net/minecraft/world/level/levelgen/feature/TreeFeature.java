@@ -6,6 +6,7 @@ import com.google.common.collect.Sets;
 import com.mojang.serialization.Codec;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.OptionalInt;
 import java.util.Set;
@@ -19,6 +20,7 @@ import net.minecraft.world.level.LevelSimulatedReader;
 import net.minecraft.world.level.LevelWriter;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
@@ -26,7 +28,6 @@ import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
 import net.minecraft.world.level.levelgen.feature.treedecorators.TreeDecorator;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
-import net.minecraft.world.level.material.Material;
 import net.minecraft.world.phys.shapes.BitSetDiscreteVoxelShape;
 import net.minecraft.world.phys.shapes.DiscreteVoxelShape;
 
@@ -41,19 +42,8 @@ public class TreeFeature extends Feature<TreeConfiguration> {
       return var0.isStateAtPosition(var1, var0x -> var0x.is(Blocks.VINE));
    }
 
-   public static boolean isBlockWater(LevelSimulatedReader var0, BlockPos var1) {
-      return var0.isStateAtPosition(var1, var0x -> var0x.is(Blocks.WATER));
-   }
-
    public static boolean isAirOrLeaves(LevelSimulatedReader var0, BlockPos var1) {
       return var0.isStateAtPosition(var1, var0x -> var0x.isAir() || var0x.is(BlockTags.LEAVES));
-   }
-
-   private static boolean isReplaceablePlant(LevelSimulatedReader var0, BlockPos var1) {
-      return var0.isStateAtPosition(var1, var0x -> {
-         Material var1x = var0x.getMaterial();
-         return var1x == Material.REPLACEABLE_PLANT || var1x == Material.REPLACEABLE_WATER_PLANT || var1x == Material.REPLACEABLE_FIREPROOF_PLANT;
-      });
    }
 
    private static void setBlockKnownShape(LevelWriter var0, BlockPos var1, BlockState var2) {
@@ -61,7 +51,7 @@ public class TreeFeature extends Feature<TreeConfiguration> {
    }
 
    public static boolean validTreePos(LevelSimulatedReader var0, BlockPos var1) {
-      return isAirOrLeaves(var0, var1) || isReplaceablePlant(var0, var1) || isBlockWater(var0, var1);
+      return var0.isStateAtPosition(var1, var0x -> var0x.isAir() || var0x.is(BlockTags.REPLACEABLE_BY_TREES));
    }
 
    private boolean doPlace(
@@ -175,72 +165,64 @@ public class TreeFeature extends Feature<TreeConfiguration> {
    }
 
    private static DiscreteVoxelShape updateLeaves(LevelAccessor var0, BoundingBox var1, Set<BlockPos> var2, Set<BlockPos> var3, Set<BlockPos> var4) {
-      ArrayList var5 = Lists.newArrayList();
-      BitSetDiscreteVoxelShape var6 = new BitSetDiscreteVoxelShape(var1.getXSpan(), var1.getYSpan(), var1.getZSpan());
-      boolean var7 = true;
+      BitSetDiscreteVoxelShape var5 = new BitSetDiscreteVoxelShape(var1.getXSpan(), var1.getYSpan(), var1.getZSpan());
+      boolean var6 = true;
+      ArrayList var7 = Lists.newArrayList();
 
-      for(int var8 = 0; var8 < 6; ++var8) {
-         var5.add(Sets.newHashSet());
+      for(int var8 = 0; var8 < 7; ++var8) {
+         var7.add(Sets.newHashSet());
       }
 
-      BlockPos.MutableBlockPos var21 = new BlockPos.MutableBlockPos();
-
-      for(BlockPos var10 : Lists.newArrayList(Sets.union(var3, var4))) {
-         if (var1.isInside(var10)) {
-            var6.fill(var10.getX() - var1.minX(), var10.getY() - var1.minY(), var10.getZ() - var1.minZ());
+      for(BlockPos var9 : Lists.newArrayList(Sets.union(var3, var4))) {
+         if (var1.isInside(var9)) {
+            var5.fill(var9.getX() - var1.minX(), var9.getY() - var1.minY(), var9.getZ() - var1.minZ());
          }
       }
 
-      for(BlockPos var24 : Lists.newArrayList(var2)) {
-         if (var1.isInside(var24)) {
-            var6.fill(var24.getX() - var1.minX(), var24.getY() - var1.minY(), var24.getZ() - var1.minZ());
-         }
+      BlockPos.MutableBlockPos var23 = new BlockPos.MutableBlockPos();
+      int var24 = 0;
+      ((Set)var7.get(0)).addAll(var2);
 
-         for(Direction var14 : Direction.values()) {
-            var21.setWithOffset(var24, var14);
-            if (!var2.contains(var21)) {
-               BlockState var15 = var0.getBlockState(var21);
-               if (var15.hasProperty(BlockStateProperties.DISTANCE)) {
-                  ((Set)var5.get(0)).add(var21.immutable());
-                  setBlockKnownShape(var0, var21, var15.setValue(BlockStateProperties.DISTANCE, Integer.valueOf(1)));
-                  if (var1.isInside(var21)) {
-                     var6.fill(var21.getX() - var1.minX(), var21.getY() - var1.minY(), var21.getZ() - var1.minZ());
-                  }
+      while(true) {
+         while(var24 >= 7 || !((Set)var7.get(var24)).isEmpty()) {
+            if (var24 >= 7) {
+               return var5;
+            }
+
+            Iterator var10 = ((Set)var7.get(var24)).iterator();
+            BlockPos var11 = (BlockPos)var10.next();
+            var10.remove();
+            if (var1.isInside(var11)) {
+               if (var24 != 0) {
+                  BlockState var12 = var0.getBlockState(var11);
+                  setBlockKnownShape(var0, var11, var12.setValue(BlockStateProperties.DISTANCE, Integer.valueOf(var24)));
                }
-            }
-         }
-      }
 
-      for(int var23 = 1; var23 < 6; ++var23) {
-         Set var25 = (Set)var5.get(var23 - 1);
-         Set var26 = (Set)var5.get(var23);
+               var5.fill(var11.getX() - var1.minX(), var11.getY() - var1.minY(), var11.getZ() - var1.minZ());
 
-         for(BlockPos var28 : var25) {
-            if (var1.isInside(var28)) {
-               var6.fill(var28.getX() - var1.minX(), var28.getY() - var1.minY(), var28.getZ() - var1.minZ());
-            }
-
-            for(Direction var17 : Direction.values()) {
-               var21.setWithOffset(var28, var17);
-               if (!var25.contains(var21) && !var26.contains(var21)) {
-                  BlockState var18 = var0.getBlockState(var21);
-                  if (var18.hasProperty(BlockStateProperties.DISTANCE)) {
-                     int var19 = var18.getValue(BlockStateProperties.DISTANCE);
-                     if (var19 > var23 + 1) {
-                        BlockState var20 = var18.setValue(BlockStateProperties.DISTANCE, Integer.valueOf(var23 + 1));
-                        setBlockKnownShape(var0, var21, var20);
-                        if (var1.isInside(var21)) {
-                           var6.fill(var21.getX() - var1.minX(), var21.getY() - var1.minY(), var21.getZ() - var1.minZ());
+               for(Direction var15 : Direction.values()) {
+                  var23.setWithOffset(var11, var15);
+                  if (var1.isInside(var23)) {
+                     int var16 = var23.getX() - var1.minX();
+                     int var17 = var23.getY() - var1.minY();
+                     int var18 = var23.getZ() - var1.minZ();
+                     if (!var5.isFull(var16, var17, var18)) {
+                        BlockState var19 = var0.getBlockState(var23);
+                        OptionalInt var20 = LeavesBlock.getOptionalDistanceAt(var19);
+                        if (!var20.isEmpty()) {
+                           int var21 = Math.min(var20.getAsInt(), var24 + 1);
+                           if (var21 < 7) {
+                              ((Set)var7.get(var21)).add(var23.immutable());
+                              var24 = Math.min(var24, var21);
+                           }
                         }
-
-                        var26.add(var21.immutable());
                      }
                   }
                }
             }
          }
-      }
 
-      return var6;
+         ++var24;
+      }
    }
 }

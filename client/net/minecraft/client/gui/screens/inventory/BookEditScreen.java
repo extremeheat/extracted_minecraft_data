@@ -1,9 +1,6 @@
 package net.minecraft.client.gui.screens.inventory;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,11 +14,12 @@ import net.minecraft.Util;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.font.TextFieldHelper;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.Rect2i;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -379,32 +377,31 @@ public class BookEditScreen extends Screen {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderBackground(var1);
       this.setFocused(null);
-      RenderSystem.setShaderTexture(0, BookViewScreen.BOOK_LOCATION);
       int var5 = (this.width - 192) / 2;
       boolean var6 = true;
-      blit(var1, var5, 2, 0, 0, 192, 192);
+      var1.blit(BookViewScreen.BOOK_LOCATION, var5, 2, 0, 0, 192, 192);
       if (this.isSigning) {
          boolean var7 = this.frameTick / 6 % 2 == 0;
          FormattedCharSequence var8 = FormattedCharSequence.composite(
             FormattedCharSequence.forward(this.title, Style.EMPTY), var7 ? BLACK_CURSOR : GRAY_CURSOR
          );
          int var9 = this.font.width(EDIT_TITLE_LABEL);
-         this.font.draw(var1, EDIT_TITLE_LABEL, (float)(var5 + 36 + (114 - var9) / 2), 34.0F, 0);
+         var1.drawString(this.font, EDIT_TITLE_LABEL, var5 + 36 + (114 - var9) / 2, 34, 0, false);
          int var10 = this.font.width(var8);
-         this.font.draw(var1, var8, (float)(var5 + 36 + (114 - var10) / 2), 50.0F, 0);
+         var1.drawString(this.font, var8, var5 + 36 + (114 - var10) / 2, 50, 0, false);
          int var11 = this.font.width(this.ownerText);
-         this.font.draw(var1, this.ownerText, (float)(var5 + 36 + (114 - var11) / 2), 60.0F, 0);
-         this.font.drawWordWrap(var1, FINALIZE_WARNING_LABEL, var5 + 36, 82, 114, 0);
+         var1.drawString(this.font, this.ownerText, var5 + 36 + (114 - var11) / 2, 60, 0, false);
+         var1.drawWordWrap(this.font, FINALIZE_WARNING_LABEL, var5 + 36, 82, 114, 0);
       } else {
          int var13 = this.font.width(this.pageMsg);
-         this.font.draw(var1, this.pageMsg, (float)(var5 - var13 + 192 - 44), 18.0F, 0);
+         var1.drawString(this.font, this.pageMsg, var5 - var13 + 192 - 44, 18, 0, false);
          BookEditScreen.DisplayCache var14 = this.getDisplayCache();
 
          for(BookEditScreen.LineInfo var12 : var14.lines) {
-            this.font.draw(var1, var12.asComponent, (float)var12.x, (float)var12.y, -16777216);
+            var1.drawString(this.font, var12.asComponent, var12.x, var12.y, -16777216, false);
          }
 
          this.renderHighlight(var1, var14.selection);
@@ -414,30 +411,25 @@ public class BookEditScreen extends Screen {
       super.render(var1, var2, var3, var4);
    }
 
-   private void renderCursor(PoseStack var1, BookEditScreen.Pos2i var2, boolean var3) {
+   private void renderCursor(GuiGraphics var1, BookEditScreen.Pos2i var2, boolean var3) {
       if (this.frameTick / 6 % 2 == 0) {
          var2 = this.convertLocalToScreen(var2);
          if (!var3) {
-            GuiComponent.fill(var1, var2.x, var2.y - 1, var2.x + 1, var2.y + 9, -16777216);
+            var1.fill(var2.x, var2.y - 1, var2.x + 1, var2.y + 9, -16777216);
          } else {
-            this.font.draw(var1, "_", (float)var2.x, (float)var2.y, 0);
+            var1.drawString(this.font, "_", var2.x, var2.y, 0, false);
          }
       }
    }
 
-   private void renderHighlight(PoseStack var1, Rect2i[] var2) {
-      RenderSystem.enableColorLogicOp();
-      RenderSystem.logicOp(GlStateManager.LogicOp.OR_REVERSE);
-
+   private void renderHighlight(GuiGraphics var1, Rect2i[] var2) {
       for(Rect2i var6 : var2) {
          int var7 = var6.getX();
          int var8 = var6.getY();
          int var9 = var7 + var6.getWidth();
          int var10 = var8 + var6.getHeight();
-         fill(var1, var7, var8, var9, var10, -16776961);
+         var1.fill(RenderType.guiTextHighlight(), var7, var8, var9, var10, -16776961);
       }
-
-      RenderSystem.disableColorLogicOp();
    }
 
    private BookEditScreen.Pos2i convertScreenToLocal(BookEditScreen.Pos2i var1) {

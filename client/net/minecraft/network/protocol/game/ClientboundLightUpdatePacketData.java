@@ -18,11 +18,9 @@ public class ClientboundLightUpdatePacketData {
    private final BitSet emptyBlockYMask;
    private final List<byte[]> skyUpdates;
    private final List<byte[]> blockUpdates;
-   private final boolean trustEdges;
 
-   public ClientboundLightUpdatePacketData(ChunkPos var1, LevelLightEngine var2, @Nullable BitSet var3, @Nullable BitSet var4, boolean var5) {
+   public ClientboundLightUpdatePacketData(ChunkPos var1, LevelLightEngine var2, @Nullable BitSet var3, @Nullable BitSet var4) {
       super();
-      this.trustEdges = var5;
       this.skyYMask = new BitSet();
       this.blockYMask = new BitSet();
       this.emptySkyYMask = new BitSet();
@@ -30,20 +28,19 @@ public class ClientboundLightUpdatePacketData {
       this.skyUpdates = Lists.newArrayList();
       this.blockUpdates = Lists.newArrayList();
 
-      for(int var6 = 0; var6 < var2.getLightSectionCount(); ++var6) {
-         if (var3 == null || var3.get(var6)) {
-            this.prepareSectionData(var1, var2, LightLayer.SKY, var6, this.skyYMask, this.emptySkyYMask, this.skyUpdates);
+      for(int var5 = 0; var5 < var2.getLightSectionCount(); ++var5) {
+         if (var3 == null || var3.get(var5)) {
+            this.prepareSectionData(var1, var2, LightLayer.SKY, var5, this.skyYMask, this.emptySkyYMask, this.skyUpdates);
          }
 
-         if (var4 == null || var4.get(var6)) {
-            this.prepareSectionData(var1, var2, LightLayer.BLOCK, var6, this.blockYMask, this.emptyBlockYMask, this.blockUpdates);
+         if (var4 == null || var4.get(var5)) {
+            this.prepareSectionData(var1, var2, LightLayer.BLOCK, var5, this.blockYMask, this.emptyBlockYMask, this.blockUpdates);
          }
       }
    }
 
    public ClientboundLightUpdatePacketData(FriendlyByteBuf var1, int var2, int var3) {
       super();
-      this.trustEdges = var1.readBoolean();
       this.skyYMask = var1.readBitSet();
       this.blockYMask = var1.readBitSet();
       this.emptySkyYMask = var1.readBitSet();
@@ -53,7 +50,6 @@ public class ClientboundLightUpdatePacketData {
    }
 
    public void write(FriendlyByteBuf var1) {
-      var1.writeBoolean(this.trustEdges);
       var1.writeBitSet(this.skyYMask);
       var1.writeBitSet(this.blockYMask);
       var1.writeBitSet(this.emptySkyYMask);
@@ -69,7 +65,7 @@ public class ClientboundLightUpdatePacketData {
             var6.set(var4);
          } else {
             var5.set(var4);
-            var7.add((byte[])var8.getData().clone());
+            var7.add(var8.copy().getData());
          }
       }
    }
@@ -96,9 +92,5 @@ public class ClientboundLightUpdatePacketData {
 
    public List<byte[]> getBlockUpdates() {
       return this.blockUpdates;
-   }
-
-   public boolean getTrustEdges() {
-      return this.trustEdges;
    }
 }

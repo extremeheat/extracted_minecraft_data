@@ -69,12 +69,12 @@ public class DragonStrafePlayerPhase extends AbstractDragonPhaseInstance {
                   double var20 = this.attackTarget.getY(0.5) - var14;
                   double var22 = this.attackTarget.getZ() - var16;
                   if (!this.dragon.isSilent()) {
-                     this.dragon.level.levelEvent(null, 1017, this.dragon.blockPosition(), 0);
+                     this.dragon.level().levelEvent(null, 1017, this.dragon.blockPosition(), 0);
                   }
 
-                  DragonFireball var24 = new DragonFireball(this.dragon.level, this.dragon, var18, var20, var22);
+                  DragonFireball var24 = new DragonFireball(this.dragon.level(), this.dragon, var18, var20, var22);
                   var24.moveTo(var12, var14, var16, 0.0F, 0.0F);
-                  this.dragon.level.addFreshEntity(var24);
+                  this.dragon.level().addFreshEntity(var24);
                   this.fireballCharge = 0;
                   if (this.currentPath != null) {
                      while(!this.currentPath.isDone()) {

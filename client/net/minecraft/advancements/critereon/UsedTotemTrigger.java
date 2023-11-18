@@ -18,7 +18,7 @@ public class UsedTotemTrigger extends SimpleCriterionTrigger<UsedTotemTrigger.Tr
       return ID;
    }
 
-   public UsedTotemTrigger.TriggerInstance createInstance(JsonObject var1, EntityPredicate.Composite var2, DeserializationContext var3) {
+   public UsedTotemTrigger.TriggerInstance createInstance(JsonObject var1, ContextAwarePredicate var2, DeserializationContext var3) {
       ItemPredicate var4 = ItemPredicate.fromJson(var1.get("item"));
       return new UsedTotemTrigger.TriggerInstance(var2, var4);
    }
@@ -30,17 +30,17 @@ public class UsedTotemTrigger extends SimpleCriterionTrigger<UsedTotemTrigger.Tr
    public static class TriggerInstance extends AbstractCriterionTriggerInstance {
       private final ItemPredicate item;
 
-      public TriggerInstance(EntityPredicate.Composite var1, ItemPredicate var2) {
+      public TriggerInstance(ContextAwarePredicate var1, ItemPredicate var2) {
          super(UsedTotemTrigger.ID, var1);
          this.item = var2;
       }
 
       public static UsedTotemTrigger.TriggerInstance usedTotem(ItemPredicate var0) {
-         return new UsedTotemTrigger.TriggerInstance(EntityPredicate.Composite.ANY, var0);
+         return new UsedTotemTrigger.TriggerInstance(ContextAwarePredicate.ANY, var0);
       }
 
       public static UsedTotemTrigger.TriggerInstance usedTotem(ItemLike var0) {
-         return new UsedTotemTrigger.TriggerInstance(EntityPredicate.Composite.ANY, ItemPredicate.Builder.item().of(var0).build());
+         return new UsedTotemTrigger.TriggerInstance(ContextAwarePredicate.ANY, ItemPredicate.Builder.item().of(var0).build());
       }
 
       public boolean matches(ItemStack var1) {

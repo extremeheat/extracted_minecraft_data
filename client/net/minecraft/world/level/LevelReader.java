@@ -3,7 +3,6 @@ package net.minecraft.world.level;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.QuartPos;
@@ -23,7 +22,7 @@ import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
 
-public interface LevelReader extends BlockAndTintGetter, CollisionGetter, BiomeManager.NoiseBiomeSource {
+public interface LevelReader extends BlockAndTintGetter, CollisionGetter, SignalGetter, BiomeManager.NoiseBiomeSource {
    @Nullable
    ChunkAccess getChunk(int var1, int var2, ChunkStatus var3, boolean var4);
 
@@ -98,7 +97,7 @@ public interface LevelReader extends BlockAndTintGetter, CollisionGetter, BiomeM
          } else {
             for(BlockPos var4 = var2.below(); var4.getY() > var1.getY(); var4 = var4.below()) {
                BlockState var3 = this.getBlockState(var4);
-               if (var3.getLightBlock(this, var4) > 0 && !var3.getMaterial().isLiquid()) {
+               if (var3.getLightBlock(this, var4) > 0 && !var3.liquid()) {
                   return false;
                }
             }
@@ -117,10 +116,6 @@ public interface LevelReader extends BlockAndTintGetter, CollisionGetter, BiomeM
       float var2 = (float)this.getMaxLocalRawBrightness(var1) / 15.0F;
       float var3 = var2 / (4.0F - 3.0F * var2);
       return Mth.lerp(this.dimensionType().ambientLight(), var3, 1.0F);
-   }
-
-   default int getDirectSignal(BlockPos var1, Direction var2) {
-      return this.getBlockState(var1).getDirectSignal(this, var1, var2);
    }
 
    default ChunkAccess getChunk(BlockPos var1) {

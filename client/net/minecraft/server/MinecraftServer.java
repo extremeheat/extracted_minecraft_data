@@ -118,6 +118,7 @@ import net.minecraft.util.profiling.metrics.profiling.ServerMetricsSamplersProvi
 import net.minecraft.util.profiling.metrics.storage.MetricsPersister;
 import net.minecraft.util.thread.ReentrantBlockableEventLoop;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.RandomSequences;
 import net.minecraft.world.entity.ai.village.VillageSiege;
 import net.minecraft.world.entity.npc.CatSpawner;
 import net.minecraft.world.entity.npc.WanderingTraderSpawner;
@@ -151,9 +152,7 @@ import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.PlayerDataStorage;
 import net.minecraft.world.level.storage.ServerLevelData;
 import net.minecraft.world.level.storage.WorldData;
-import net.minecraft.world.level.storage.loot.ItemModifierManager;
-import net.minecraft.world.level.storage.loot.LootTables;
-import net.minecraft.world.level.storage.loot.PredicateManager;
+import net.minecraft.world.level.storage.loot.LootDataManager;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
@@ -338,7 +337,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       long var8 = BiomeManager.obfuscateSeed(var6);
       ImmutableList var10 = ImmutableList.of(new PhantomSpawner(), new PatrolSpawner(), new CatSpawner(), new VillageSiege(), new WanderingTraderSpawner(var2));
       LevelStem var11 = var4.get(LevelStem.OVERWORLD);
-      ServerLevel var12 = new ServerLevel(this, this.executor, this.storageSource, var2, Level.OVERWORLD, var11, var1, var3, var8, var10, true);
+      ServerLevel var12 = new ServerLevel(this, this.executor, this.storageSource, var2, Level.OVERWORLD, var11, var1, var3, var8, var10, true, null);
       this.levels.put(Level.OVERWORLD, var12);
       DimensionDataStorage var13 = var12.getDataStorage();
       this.readScoreboard(var13);
@@ -351,12 +350,12 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
             if (var3) {
                this.setupDebugLevel(this.worldData);
             }
-         } catch (Throwable var22) {
-            CrashReport var16 = CrashReport.forThrowable(var22, "Exception initializing level");
+         } catch (Throwable var23) {
+            CrashReport var16 = CrashReport.forThrowable(var23, "Exception initializing level");
 
             try {
                var12.fillReportDetails(var16);
-            } catch (Throwable var21) {
+            } catch (Throwable var22) {
             }
 
             throw new ReportedException(var16);
@@ -370,16 +369,18 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          this.getCustomBossEvents().load(this.worldData.getCustomBossEvents());
       }
 
-      for(Entry var23 : var4.entrySet()) {
-         ResourceKey var17 = (ResourceKey)var23.getKey();
-         if (var17 != LevelStem.OVERWORLD) {
-            ResourceKey var18 = ResourceKey.create(Registries.DIMENSION, var17.location());
-            DerivedLevelData var19 = new DerivedLevelData(this.worldData, var2);
-            ServerLevel var20 = new ServerLevel(
-               this, this.executor, this.storageSource, var19, var18, (LevelStem)var23.getValue(), var1, var3, var8, ImmutableList.of(), false
+      RandomSequences var15 = var12.getRandomSequences();
+
+      for(Entry var17 : var4.entrySet()) {
+         ResourceKey var18 = (ResourceKey)var17.getKey();
+         if (var18 != LevelStem.OVERWORLD) {
+            ResourceKey var19 = ResourceKey.create(Registries.DIMENSION, var18.location());
+            DerivedLevelData var20 = new DerivedLevelData(this.worldData, var2);
+            ServerLevel var21 = new ServerLevel(
+               this, this.executor, this.storageSource, var20, var19, (LevelStem)var17.getValue(), var1, var3, var8, ImmutableList.of(), false, var15
             );
-            var14.addListener(new BorderChangeListener.DelegateBorderChangeListener(var20.getWorldBorder()));
-            this.levels.put(var18, var20);
+            var14.addListener(new BorderChangeListener.DelegateBorderChangeListener(var21.getWorldBorder()));
+            this.levels.put(var19, var21);
          }
       }
 
@@ -452,7 +453,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       BlockPos var3 = var2.getSharedSpawnPos();
       var1.updateSpawnPos(new ChunkPos(var3));
       ServerChunkCache var4 = var2.getChunkSource();
-      var4.getLightEngine().setTaskPerBatch(500);
       this.nextTickTime = Util.getMillis();
       var4.addRegionTicket(TicketType.START, new ChunkPos(var3), 11, Unit.INSTANCE);
 
@@ -480,7 +480,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       this.nextTickTime = Util.getMillis() + 10L;
       this.waitUntilNextTick();
       var1.stop();
-      var4.getLightEngine().setTaskPerBatch(5);
       this.updateMobSpawningFlags();
    }
 
@@ -1061,7 +1060,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    }
 
    private void sendDifficultyUpdate(ServerPlayer var1) {
-      LevelData var2 = var1.getLevel().getLevelData();
+      LevelData var2 = var1.level().getLevelData();
       var1.connection.send(new ClientboundChangeDifficultyPacket(var2.getDifficulty(), var2.isDifficultyLocked()));
    }
 
@@ -1212,14 +1211,16 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       return this.services.sessionService();
    }
 
-   public SignatureValidator getServiceSignatureValidator() {
-      return this.services.serviceSignatureValidator();
+   @Nullable
+   public SignatureValidator getProfileKeySignatureValidator() {
+      return this.services.profileKeySignatureValidator();
    }
 
    public GameProfileRepository getProfileRepository() {
       return this.services.profileRepository();
    }
 
+   @Nullable
    public GameProfileCache getProfileCache() {
       return this.services.profileCache();
    }
@@ -1451,16 +1452,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       }
    }
 
-   public LootTables getLootTables() {
-      return this.resources.managers.getLootTables();
-   }
-
-   public PredicateManager getPredicateManager() {
-      return this.resources.managers.getPredicateManager();
-   }
-
-   public ItemModifierManager getItemModifierManager() {
-      return this.resources.managers.getItemModifierManager();
+   public LootDataManager getLootData() {
+      return this.resources.managers.getLootData();
    }
 
    public GameRules getGameRules() {

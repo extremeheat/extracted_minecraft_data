@@ -11,7 +11,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
-import net.minecraft.world.level.material.Material;
 
 @Deprecated
 public class LakeFeature extends Feature<LakeFeature.Configuration> {
@@ -72,8 +71,8 @@ public class LakeFeature extends Feature<LakeFeature.Configuration> {
                            || var40 > 0 && var6[(var34 * 16 + var10) * 8 + (var40 - 1)]
                      );
                   if (var12) {
-                     Material var47 = var3.getBlockState(var2.offset(var34, var40, var10)).getMaterial();
-                     if (var40 >= 4 && var47.isLiquid()) {
+                     BlockState var47 = var3.getBlockState(var2.offset(var34, var40, var10));
+                     if (var40 >= 4 && var47.liquid()) {
                         return false;
                      }
 
@@ -119,7 +118,7 @@ public class LakeFeature extends Feature<LakeFeature.Configuration> {
                         );
                      if (var49 && (var45 < 4 || var4.nextInt(2) != 0)) {
                         BlockState var14 = var3.getBlockState(var2.offset(var38, var45, var42));
-                        if (var14.getMaterial().isSolid() && !var14.is(BlockTags.LAVA_POOL_STONE_CANNOT_REPLACE)) {
+                        if (var14.isSolid() && !var14.is(BlockTags.LAVA_POOL_STONE_CANNOT_REPLACE)) {
                            BlockPos var51 = var2.offset(var38, var45, var42);
                            var3.setBlock(var51, var36, 2);
                            this.markAboveForPostProcessing(var3, var51);

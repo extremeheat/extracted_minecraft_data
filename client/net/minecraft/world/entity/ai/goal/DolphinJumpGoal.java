@@ -43,12 +43,12 @@ public class DolphinJumpGoal extends JumpGoal {
 
    private boolean waterIsClear(BlockPos var1, int var2, int var3, int var4) {
       BlockPos var5 = var1.offset(var2 * var4, 0, var3 * var4);
-      return this.dolphin.level.getFluidState(var5).is(FluidTags.WATER) && !this.dolphin.level.getBlockState(var5).getMaterial().blocksMotion();
+      return this.dolphin.level().getFluidState(var5).is(FluidTags.WATER) && !this.dolphin.level().getBlockState(var5).blocksMotion();
    }
 
    private boolean surfaceIsClear(BlockPos var1, int var2, int var3, int var4) {
-      return this.dolphin.level.getBlockState(var1.offset(var2 * var4, 1, var3 * var4)).isAir()
-         && this.dolphin.level.getBlockState(var1.offset(var2 * var4, 2, var3 * var4)).isAir();
+      return this.dolphin.level().getBlockState(var1.offset(var2 * var4, 1, var3 * var4)).isAir()
+         && this.dolphin.level().getBlockState(var1.offset(var2 * var4, 2, var3 * var4)).isAir();
    }
 
    @Override
@@ -60,7 +60,7 @@ public class DolphinJumpGoal extends JumpGoal {
                || !(Math.abs(this.dolphin.getXRot()) < 10.0F)
                || !this.dolphin.isInWater()
          )
-         && !this.dolphin.isOnGround();
+         && !this.dolphin.onGround();
    }
 
    @Override
@@ -84,7 +84,7 @@ public class DolphinJumpGoal extends JumpGoal {
    public void tick() {
       boolean var1 = this.breached;
       if (!var1) {
-         FluidState var2 = this.dolphin.level.getFluidState(this.dolphin.blockPosition());
+         FluidState var2 = this.dolphin.level().getFluidState(this.dolphin.blockPosition());
          this.breached = var2.is(FluidTags.WATER);
       }
 

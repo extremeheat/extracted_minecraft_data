@@ -25,7 +25,7 @@ public class StandingSignBlock extends SignBlock {
 
    @Override
    public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      return var2.getBlockState(var3.below()).getMaterial().isSolid();
+      return var2.getBlockState(var3.below()).isSolid();
    }
 
    @Override
@@ -41,6 +41,11 @@ public class StandingSignBlock extends SignBlock {
       return var2 == Direction.DOWN && !this.canSurvive(var1, var4, var5)
          ? Blocks.AIR.defaultBlockState()
          : super.updateShape(var1, var2, var3, var4, var5, var6);
+   }
+
+   @Override
+   public float getYRotationDegrees(BlockState var1) {
+      return RotationSegment.convertToDegrees(var1.getValue(ROTATION));
    }
 
    @Override

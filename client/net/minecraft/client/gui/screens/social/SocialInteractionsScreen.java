@@ -1,7 +1,5 @@
 package net.minecraft.client.gui.screens.social;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Set;
@@ -12,6 +10,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
@@ -180,44 +179,34 @@ public class SocialInteractionsScreen extends Screen {
    }
 
    @Override
-   public void renderBackground(PoseStack var1) {
+   public void renderBackground(GuiGraphics var1) {
       int var2 = this.marginX() + 3;
       super.renderBackground(var1);
-      RenderSystem.setShaderTexture(0, SOCIAL_INTERACTIONS_LOCATION);
-      blitNineSliced(var1, var2, 64, 236, this.windowHeight() + 16, 8, 236, 34, 1, 1);
-      blit(var1, var2 + 10, 76, 243, 1, 12, 12);
+      var1.blitNineSliced(SOCIAL_INTERACTIONS_LOCATION, var2, 64, 236, this.windowHeight() + 16, 8, 236, 34, 1, 1);
+      var1.blit(SOCIAL_INTERACTIONS_LOCATION, var2 + 10, 76, 243, 1, 12, 12);
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.updateServerLabel(this.minecraft);
       this.renderBackground(var1);
       if (this.serverLabel != null) {
-         drawString(var1, this.minecraft.font, this.serverLabel, this.marginX() + 8, 35, -1);
+         var1.drawString(this.minecraft.font, this.serverLabel, this.marginX() + 8, 35, -1);
       }
 
       if (!this.socialInteractionsPlayerList.isEmpty()) {
          this.socialInteractionsPlayerList.render(var1, var2, var3, var4);
       } else if (!this.searchBox.getValue().isEmpty()) {
-         drawCenteredString(var1, this.minecraft.font, EMPTY_SEARCH, this.width / 2, (72 + this.listEnd()) / 2, -1);
+         var1.drawCenteredString(this.minecraft.font, EMPTY_SEARCH, this.width / 2, (72 + this.listEnd()) / 2, -1);
       } else if (this.page == SocialInteractionsScreen.Page.HIDDEN) {
-         drawCenteredString(var1, this.minecraft.font, EMPTY_HIDDEN, this.width / 2, (72 + this.listEnd()) / 2, -1);
+         var1.drawCenteredString(this.minecraft.font, EMPTY_HIDDEN, this.width / 2, (72 + this.listEnd()) / 2, -1);
       } else if (this.page == SocialInteractionsScreen.Page.BLOCKED) {
-         drawCenteredString(var1, this.minecraft.font, EMPTY_BLOCKED, this.width / 2, (72 + this.listEnd()) / 2, -1);
+         var1.drawCenteredString(this.minecraft.font, EMPTY_BLOCKED, this.width / 2, (72 + this.listEnd()) / 2, -1);
       }
 
       this.searchBox.render(var1, var2, var3, var4);
       this.blockingHintButton.visible = this.page == SocialInteractionsScreen.Page.BLOCKED;
       super.render(var1, var2, var3, var4);
-   }
-
-   @Override
-   public boolean mouseClicked(double var1, double var3, int var5) {
-      if (this.searchBox.isFocused()) {
-         this.searchBox.mouseClicked(var1, var3, var5);
-      }
-
-      return super.mouseClicked(var1, var3, var5) || this.socialInteractionsPlayerList.mouseClicked(var1, var3, var5);
    }
 
    @Override

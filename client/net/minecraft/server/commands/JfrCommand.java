@@ -41,7 +41,7 @@ public class JfrCommand {
       if (!JvmProfiler.INSTANCE.start(var1)) {
          throw START_FAILED.create();
       } else {
-         var0.sendSuccess(Component.translatable("commands.jfr.started"), false);
+         var0.sendSuccess(() -> Component.translatable("commands.jfr.started"), false);
          return 1;
       }
    }
@@ -56,7 +56,7 @@ public class JfrCommand {
                var1x -> var1x.withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, var2.toString()))
                      .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.translatable("chat.copy.click")))
             );
-         var0.sendSuccess(Component.translatable("commands.jfr.stopped", var3), false);
+         var0.sendSuccess(() -> Component.translatable("commands.jfr.stopped", var3), false);
          return 1;
       } catch (Throwable var4) {
          throw DUMP_FAILED.create(var4.getMessage());

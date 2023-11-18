@@ -1,13 +1,11 @@
 package net.minecraft.client.gui.components.toasts;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 
@@ -61,16 +59,15 @@ public class SystemToast implements Toast {
    }
 
    @Override
-   public Toast.Visibility render(PoseStack var1, ToastComponent var2, long var3) {
+   public Toast.Visibility render(GuiGraphics var1, ToastComponent var2, long var3) {
       if (this.changed) {
          this.lastChanged = var3;
          this.changed = false;
       }
 
-      RenderSystem.setShaderTexture(0, TEXTURE);
       int var5 = this.width();
       if (var5 == 160 && this.messageLines.size() <= 1) {
-         GuiComponent.blit(var1, 0, 0, 0, 64, var5, this.height());
+         var1.blit(TEXTURE, 0, 0, 0, 64, var5, this.height());
       } else {
          int var6 = this.height();
          boolean var7 = true;
@@ -85,12 +82,12 @@ public class SystemToast implements Toast {
       }
 
       if (this.messageLines == null) {
-         var2.getMinecraft().font.draw(var1, this.title, 18.0F, 12.0F, -256);
+         var1.drawString(var2.getMinecraft().font, this.title, 18, 12, -256, false);
       } else {
-         var2.getMinecraft().font.draw(var1, this.title, 18.0F, 7.0F, -256);
+         var1.drawString(var2.getMinecraft().font, this.title, 18, 7, -256, false);
 
          for(int var10 = 0; var10 < this.messageLines.size(); ++var10) {
-            var2.getMinecraft().font.draw(var1, this.messageLines.get(var10), 18.0F, (float)(18 + var10 * 12), -1);
+            var1.drawString(var2.getMinecraft().font, this.messageLines.get(var10), 18, 18 + var10 * 12, -1, false);
          }
       }
 
@@ -99,16 +96,16 @@ public class SystemToast implements Toast {
          : Toast.Visibility.HIDE;
    }
 
-   private void renderBackgroundRow(PoseStack var1, ToastComponent var2, int var3, int var4, int var5, int var6) {
+   private void renderBackgroundRow(GuiGraphics var1, ToastComponent var2, int var3, int var4, int var5, int var6) {
       int var7 = var4 == 0 ? 20 : 5;
       int var8 = Math.min(60, var3 - var7);
-      GuiComponent.blit(var1, 0, var5, 0, 64 + var4, var7, var6);
+      var1.blit(TEXTURE, 0, var5, 0, 64 + var4, var7, var6);
 
       for(int var9 = var7; var9 < var3 - var8; var9 += 64) {
-         GuiComponent.blit(var1, var9, var5, 32, 64 + var4, Math.min(64, var3 - var9 - var8), var6);
+         var1.blit(TEXTURE, var9, var5, 32, 64 + var4, Math.min(64, var3 - var9 - var8), var6);
       }
 
-      GuiComponent.blit(var1, var3 - var8, var5, 160 - var8, 64 + var4, var8, var6);
+      var1.blit(TEXTURE, var3 - var8, var5, 160 - var8, 64 + var4, var8, var6);
    }
 
    public void reset(Component var1, @Nullable Component var2) {

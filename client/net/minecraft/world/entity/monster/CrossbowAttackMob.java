@@ -26,7 +26,7 @@ public interface CrossbowAttackMob extends RangedAttackMob {
       InteractionHand var3 = ProjectileUtil.getWeaponHoldingHand(var1, Items.CROSSBOW);
       ItemStack var4 = var1.getItemInHand(var3);
       if (var1.isHolding(Items.CROSSBOW)) {
-         CrossbowItem.performShooting(var1.level, var1, var3, var4, var2, (float)(14 - var1.level.getDifficulty().getId() * 4));
+         CrossbowItem.performShooting(var1.level(), var1, var3, var4, var2, (float)(14 - var1.level().getDifficulty().getId() * 4));
       }
 
       this.onCrossbowAttackPerformed();
@@ -38,7 +38,7 @@ public interface CrossbowAttackMob extends RangedAttackMob {
       double var10 = Math.sqrt(var6 * var6 + var8 * var8);
       double var12 = var2.getY(0.3333333333333333) - var3.getY() + var10 * 0.20000000298023224;
       Vector3f var14 = this.getProjectileShotVector(var1, new Vec3(var6, var12, var8), var4);
-      var3.shoot((double)var14.x(), (double)var14.y(), (double)var14.z(), var5, (float)(14 - var1.level.getDifficulty().getId() * 4));
+      var3.shoot((double)var14.x(), (double)var14.y(), (double)var14.z(), var5, (float)(14 - var1.level().getDifficulty().getId() * 4));
       var1.playSound(SoundEvents.CROSSBOW_SHOOT, 1.0F, 1.0F / (var1.getRandom().nextFloat() * 0.4F + 0.8F));
    }
 

@@ -53,7 +53,7 @@ public abstract class SpellcasterIllager extends AbstractIllager {
    }
 
    public boolean isCastingSpell() {
-      if (this.level.isClientSide) {
+      if (this.level().isClientSide) {
          return this.entityData.get(DATA_SPELL_CASTING_ID) > 0;
       } else {
          return this.spellCastingTickCount > 0;
@@ -66,7 +66,7 @@ public abstract class SpellcasterIllager extends AbstractIllager {
    }
 
    protected SpellcasterIllager.IllagerSpell getCurrentSpell() {
-      return !this.level.isClientSide ? this.currentSpell : SpellcasterIllager.IllagerSpell.byId(this.entityData.get(DATA_SPELL_CASTING_ID));
+      return !this.level().isClientSide ? this.currentSpell : SpellcasterIllager.IllagerSpell.byId(this.entityData.get(DATA_SPELL_CASTING_ID));
    }
 
    @Override
@@ -80,7 +80,7 @@ public abstract class SpellcasterIllager extends AbstractIllager {
    @Override
    public void tick() {
       super.tick();
-      if (this.level.isClientSide && this.isCastingSpell()) {
+      if (this.level().isClientSide && this.isCastingSpell()) {
          SpellcasterIllager.IllagerSpell var1 = this.getCurrentSpell();
          double var2 = var1.spellColor[0];
          double var4 = var1.spellColor[1];
@@ -88,9 +88,9 @@ public abstract class SpellcasterIllager extends AbstractIllager {
          float var8 = this.yBodyRot * 0.017453292F + Mth.cos((float)this.tickCount * 0.6662F) * 0.25F;
          float var9 = Mth.cos(var8);
          float var10 = Mth.sin(var8);
-         this.level
+         this.level()
             .addParticle(ParticleTypes.ENTITY_EFFECT, this.getX() + (double)var9 * 0.6, this.getY() + 1.8, this.getZ() + (double)var10 * 0.6, var2, var4, var6);
-         this.level
+         this.level()
             .addParticle(ParticleTypes.ENTITY_EFFECT, this.getX() - (double)var9 * 0.6, this.getY() + 1.8, this.getZ() - (double)var10 * 0.6, var2, var4, var6);
       }
    }

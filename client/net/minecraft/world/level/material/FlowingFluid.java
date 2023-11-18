@@ -20,6 +20,7 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.IceBlock;
 import net.minecraft.world.level.block.LiquidBlockContainer;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -66,7 +67,7 @@ public abstract class FlowingFluid extends Fluid {
             float var12 = var11.getOwnHeight();
             float var13 = 0.0F;
             if (var12 == 0.0F) {
-               if (!var1.getBlockState(var8).getMaterial().blocksMotion()) {
+               if (!var1.getBlockState(var8).blocksMotion()) {
                   BlockPos var14 = var8.below();
                   FluidState var15 = var1.getFluidState(var14);
                   if (this.affectsFlow(var15)) {
@@ -113,7 +114,7 @@ public abstract class FlowingFluid extends Fluid {
       } else if (var3 == Direction.UP) {
          return true;
       } else {
-         return var4.getMaterial() == Material.ICE ? false : var4.isFaceSturdy(var1, var2, var3);
+         return var4.getBlock() instanceof IceBlock ? false : var4.isFaceSturdy(var1, var2, var3);
       }
    }
 
@@ -175,7 +176,7 @@ public abstract class FlowingFluid extends Fluid {
       if (this.canConvertToSource(var1) && var5 >= 2) {
          BlockState var11 = var1.getBlockState(var2.below());
          FluidState var13 = var11.getFluidState();
-         if (var11.getMaterial().isSolid() || this.isSourceBlockOfThisType(var13)) {
+         if (var11.isSolid() || this.isSourceBlockOfThisType(var13)) {
             return this.getSource(false);
          }
       }
@@ -384,17 +385,14 @@ public abstract class FlowingFluid extends Fluid {
       Block var5 = var3.getBlock();
       if (var5 instanceof LiquidBlockContainer) {
          return ((LiquidBlockContainer)var5).canPlaceLiquid(var1, var2, var3, var4);
-      } else if (!(var5 instanceof DoorBlock)
-         && !var3.is(BlockTags.SIGNS)
-         && !var3.is(Blocks.LADDER)
-         && !var3.is(Blocks.SUGAR_CANE)
-         && !var3.is(Blocks.BUBBLE_COLUMN)) {
-         Material var6 = var3.getMaterial();
-         if (var6 != Material.PORTAL && var6 != Material.STRUCTURAL_AIR && var6 != Material.WATER_PLANT && var6 != Material.REPLACEABLE_WATER_PLANT) {
-            return !var6.blocksMotion();
-         } else {
-            return false;
-         }
+      } else if (var5 instanceof DoorBlock
+         || var3.is(BlockTags.SIGNS)
+         || var3.is(Blocks.LADDER)
+         || var3.is(Blocks.SUGAR_CANE)
+         || var3.is(Blocks.BUBBLE_COLUMN)) {
+         return false;
+      } else if (!var3.is(Blocks.NETHER_PORTAL) && !var3.is(Blocks.END_PORTAL) && !var3.is(Blocks.END_GATEWAY) && !var3.is(Blocks.STRUCTURE_VOID)) {
+         return !var3.blocksMotion();
       } else {
          return false;
       }

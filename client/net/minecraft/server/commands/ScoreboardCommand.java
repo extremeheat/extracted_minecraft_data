@@ -358,7 +358,9 @@ public class ScoreboardCommand {
          throw ERROR_NO_VALUE.create(var2.getName(), var1);
       } else {
          Score var4 = var3.getOrCreatePlayerScore(var1, var2);
-         var0.sendSuccess(Component.translatable("commands.scoreboard.players.get.success", var1, var4.getScore(), var2.getFormattedDisplayName()), false);
+         var0.sendSuccess(
+            () -> Component.translatable("commands.scoreboard.players.get.success", var1, var4.getScore(), var2.getFormattedDisplayName()), false
+         );
          return var4.getScore();
       }
    }
@@ -381,11 +383,15 @@ public class ScoreboardCommand {
       }
 
       if (var1.size() == 1) {
+         int var14 = var7;
          var0.sendSuccess(
-            Component.translatable("commands.scoreboard.players.operation.success.single", var2.getFormattedDisplayName(), var1.iterator().next(), var7), true
+            () -> Component.translatable("commands.scoreboard.players.operation.success.single", var2.getFormattedDisplayName(), var1.iterator().next(), var14),
+            true
          );
       } else {
-         var0.sendSuccess(Component.translatable("commands.scoreboard.players.operation.success.multiple", var2.getFormattedDisplayName(), var1.size()), true);
+         var0.sendSuccess(
+            () -> Component.translatable("commands.scoreboard.players.operation.success.multiple", var2.getFormattedDisplayName(), var1.size()), true
+         );
       }
 
       return var7;
@@ -411,11 +417,12 @@ public class ScoreboardCommand {
          } else {
             if (var1.size() == 1) {
                var0.sendSuccess(
-                  Component.translatable("commands.scoreboard.players.enable.success.single", var2.getFormattedDisplayName(), var1.iterator().next()), true
+                  () -> Component.translatable("commands.scoreboard.players.enable.success.single", var2.getFormattedDisplayName(), var1.iterator().next()),
+                  true
                );
             } else {
                var0.sendSuccess(
-                  Component.translatable("commands.scoreboard.players.enable.success.multiple", var2.getFormattedDisplayName(), var1.size()), true
+                  () -> Component.translatable("commands.scoreboard.players.enable.success.multiple", var2.getFormattedDisplayName(), var1.size()), true
                );
             }
 
@@ -432,9 +439,9 @@ public class ScoreboardCommand {
       }
 
       if (var1.size() == 1) {
-         var0.sendSuccess(Component.translatable("commands.scoreboard.players.reset.all.single", var1.iterator().next()), true);
+         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.players.reset.all.single", var1.iterator().next()), true);
       } else {
-         var0.sendSuccess(Component.translatable("commands.scoreboard.players.reset.all.multiple", var1.size()), true);
+         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.players.reset.all.multiple", var1.size()), true);
       }
 
       return var1.size();
@@ -449,10 +456,12 @@ public class ScoreboardCommand {
 
       if (var1.size() == 1) {
          var0.sendSuccess(
-            Component.translatable("commands.scoreboard.players.reset.specific.single", var2.getFormattedDisplayName(), var1.iterator().next()), true
+            () -> Component.translatable("commands.scoreboard.players.reset.specific.single", var2.getFormattedDisplayName(), var1.iterator().next()), true
          );
       } else {
-         var0.sendSuccess(Component.translatable("commands.scoreboard.players.reset.specific.multiple", var2.getFormattedDisplayName(), var1.size()), true);
+         var0.sendSuccess(
+            () -> Component.translatable("commands.scoreboard.players.reset.specific.multiple", var2.getFormattedDisplayName(), var1.size()), true
+         );
       }
 
       return var1.size();
@@ -468,10 +477,12 @@ public class ScoreboardCommand {
 
       if (var1.size() == 1) {
          var0.sendSuccess(
-            Component.translatable("commands.scoreboard.players.set.success.single", var2.getFormattedDisplayName(), var1.iterator().next(), var3), true
+            () -> Component.translatable("commands.scoreboard.players.set.success.single", var2.getFormattedDisplayName(), var1.iterator().next(), var3), true
          );
       } else {
-         var0.sendSuccess(Component.translatable("commands.scoreboard.players.set.success.multiple", var2.getFormattedDisplayName(), var1.size(), var3), true);
+         var0.sendSuccess(
+            () -> Component.translatable("commands.scoreboard.players.set.success.multiple", var2.getFormattedDisplayName(), var1.size(), var3), true
+         );
       }
 
       return var3 * var1.size();
@@ -488,11 +499,15 @@ public class ScoreboardCommand {
       }
 
       if (var1.size() == 1) {
+         int var9 = var5;
          var0.sendSuccess(
-            Component.translatable("commands.scoreboard.players.add.success.single", var3, var2.getFormattedDisplayName(), var1.iterator().next(), var5), true
+            () -> Component.translatable("commands.scoreboard.players.add.success.single", var3, var2.getFormattedDisplayName(), var1.iterator().next(), var9),
+            true
          );
       } else {
-         var0.sendSuccess(Component.translatable("commands.scoreboard.players.add.success.multiple", var3, var2.getFormattedDisplayName(), var1.size()), true);
+         var0.sendSuccess(
+            () -> Component.translatable("commands.scoreboard.players.add.success.multiple", var3, var2.getFormattedDisplayName(), var1.size()), true
+         );
       }
 
       return var5;
@@ -509,13 +524,16 @@ public class ScoreboardCommand {
       }
 
       if (var1.size() == 1) {
+         int var9 = var5;
          var0.sendSuccess(
-            Component.translatable("commands.scoreboard.players.remove.success.single", var3, var2.getFormattedDisplayName(), var1.iterator().next(), var5),
+            () -> Component.translatable(
+                  "commands.scoreboard.players.remove.success.single", var3, var2.getFormattedDisplayName(), var1.iterator().next(), var9
+               ),
             true
          );
       } else {
          var0.sendSuccess(
-            Component.translatable("commands.scoreboard.players.remove.success.multiple", var3, var2.getFormattedDisplayName(), var1.size()), true
+            () -> Component.translatable("commands.scoreboard.players.remove.success.multiple", var3, var2.getFormattedDisplayName(), var1.size()), true
          );
       }
 
@@ -525,9 +543,9 @@ public class ScoreboardCommand {
    private static int listTrackedPlayers(CommandSourceStack var0) {
       Collection var1 = var0.getServer().getScoreboard().getTrackedPlayers();
       if (var1.isEmpty()) {
-         var0.sendSuccess(Component.translatable("commands.scoreboard.players.list.empty"), false);
+         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.players.list.empty"), false);
       } else {
-         var0.sendSuccess(Component.translatable("commands.scoreboard.players.list.success", var1.size(), ComponentUtils.formatList(var1)), false);
+         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.players.list.success", var1.size(), ComponentUtils.formatList(var1)), false);
       }
 
       return var1.size();
@@ -536,15 +554,17 @@ public class ScoreboardCommand {
    private static int listTrackedPlayerScores(CommandSourceStack var0, String var1) {
       Map var2 = var0.getServer().getScoreboard().getPlayerScores(var1);
       if (var2.isEmpty()) {
-         var0.sendSuccess(Component.translatable("commands.scoreboard.players.list.entity.empty", var1), false);
+         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.players.list.entity.empty", var1), false);
       } else {
-         var0.sendSuccess(Component.translatable("commands.scoreboard.players.list.entity.success", var1, var2.size()), false);
+         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.players.list.entity.success", var1, var2.size()), false);
 
          for(Entry var4 : var2.entrySet()) {
             var0.sendSuccess(
-               Component.translatable(
-                  "commands.scoreboard.players.list.entity.entry", ((Objective)var4.getKey()).getFormattedDisplayName(), ((Score)var4.getValue()).getScore()
-               ),
+               () -> Component.translatable(
+                     "commands.scoreboard.players.list.entity.entry",
+                     ((Objective)var4.getKey()).getFormattedDisplayName(),
+                     ((Score)var4.getValue()).getScore()
+                  ),
                false
             );
          }
@@ -559,7 +579,7 @@ public class ScoreboardCommand {
          throw ERROR_DISPLAY_SLOT_ALREADY_EMPTY.create();
       } else {
          var2.setDisplayObjective(var1, null);
-         var0.sendSuccess(Component.translatable("commands.scoreboard.objectives.display.cleared", Scoreboard.getDisplaySlotNames()[var1]), true);
+         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.objectives.display.cleared", Scoreboard.getDisplaySlotNames()[var1]), true);
          return 0;
       }
    }
@@ -571,7 +591,7 @@ public class ScoreboardCommand {
       } else {
          var3.setDisplayObjective(var1, var2);
          var0.sendSuccess(
-            Component.translatable("commands.scoreboard.objectives.display.set", Scoreboard.getDisplaySlotNames()[var1], var2.getDisplayName()), true
+            () -> Component.translatable("commands.scoreboard.objectives.display.set", Scoreboard.getDisplaySlotNames()[var1], var2.getDisplayName()), true
          );
          return 0;
       }
@@ -580,7 +600,9 @@ public class ScoreboardCommand {
    private static int setDisplayName(CommandSourceStack var0, Objective var1, Component var2) {
       if (!var1.getDisplayName().equals(var2)) {
          var1.setDisplayName(var2);
-         var0.sendSuccess(Component.translatable("commands.scoreboard.objectives.modify.displayname", var1.getName(), var1.getFormattedDisplayName()), true);
+         var0.sendSuccess(
+            () -> Component.translatable("commands.scoreboard.objectives.modify.displayname", var1.getName(), var1.getFormattedDisplayName()), true
+         );
       }
 
       return 0;
@@ -589,7 +611,7 @@ public class ScoreboardCommand {
    private static int setRenderType(CommandSourceStack var0, Objective var1, ObjectiveCriteria.RenderType var2) {
       if (var1.getRenderType() != var2) {
          var1.setRenderType(var2);
-         var0.sendSuccess(Component.translatable("commands.scoreboard.objectives.modify.rendertype", var1.getFormattedDisplayName()), true);
+         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.objectives.modify.rendertype", var1.getFormattedDisplayName()), true);
       }
 
       return 0;
@@ -598,7 +620,7 @@ public class ScoreboardCommand {
    private static int removeObjective(CommandSourceStack var0, Objective var1) {
       ServerScoreboard var2 = var0.getServer().getScoreboard();
       var2.removeObjective(var1);
-      var0.sendSuccess(Component.translatable("commands.scoreboard.objectives.remove.success", var1.getFormattedDisplayName()), true);
+      var0.sendSuccess(() -> Component.translatable("commands.scoreboard.objectives.remove.success", var1.getFormattedDisplayName()), true);
       return var2.getObjectives().size();
    }
 
@@ -609,7 +631,7 @@ public class ScoreboardCommand {
       } else {
          var4.addObjective(var1, var2, var3, var2.getDefaultRenderType());
          Objective var5 = var4.getObjective(var1);
-         var0.sendSuccess(Component.translatable("commands.scoreboard.objectives.add.success", var5.getFormattedDisplayName()), true);
+         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.objectives.add.success", var5.getFormattedDisplayName()), true);
          return var4.getObjectives().size();
       }
    }
@@ -617,12 +639,12 @@ public class ScoreboardCommand {
    private static int listObjectives(CommandSourceStack var0) {
       Collection var1 = var0.getServer().getScoreboard().getObjectives();
       if (var1.isEmpty()) {
-         var0.sendSuccess(Component.translatable("commands.scoreboard.objectives.list.empty"), false);
+         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.objectives.list.empty"), false);
       } else {
          var0.sendSuccess(
-            Component.translatable(
-               "commands.scoreboard.objectives.list.success", var1.size(), ComponentUtils.formatList(var1, Objective::getFormattedDisplayName)
-            ),
+            () -> Component.translatable(
+                  "commands.scoreboard.objectives.list.success", var1.size(), ComponentUtils.formatList(var1, Objective::getFormattedDisplayName)
+               ),
             false
          );
       }

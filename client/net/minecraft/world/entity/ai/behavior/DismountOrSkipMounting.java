@@ -31,6 +31,6 @@ public class DismountOrSkipMounting {
    }
 
    private static boolean isVehicleValid(LivingEntity var0, Entity var1, int var2) {
-      return var1.isAlive() && var1.closerThan(var0, (double)var2) && var1.level == var0.level;
+      return var1.isAlive() && var1.closerThan(var0, (double)var2) && var1.level() == var0.level();
    }
 }

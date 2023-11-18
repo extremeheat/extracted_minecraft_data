@@ -56,7 +56,7 @@ public class WoodlandMansionStructure extends Structure {
             if (!var1.isEmptyBlock(var8) && var10.isInside(var8) && var7.isInsidePiece(var8)) {
                for(int var14 = var11 - 1; var14 > var9; --var14) {
                   var8.setY(var14);
-                  if (!var1.isEmptyBlock(var8) && !var1.getBlockState(var8).getMaterial().isLiquid()) {
+                  if (!var1.isEmptyBlock(var8) && !var1.getBlockState(var8).liquid()) {
                      break;
                   }
 

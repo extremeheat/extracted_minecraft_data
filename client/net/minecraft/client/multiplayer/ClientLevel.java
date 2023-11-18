@@ -129,7 +129,7 @@ public class ClientLevel extends Level {
       if (var4 != var2) {
          this.setBlock(var1, var2, 19);
          LocalPlayer var5 = this.minecraft.player;
-         if (this == var5.level && var5.isColliding(var1, var2)) {
+         if (this == var5.level() && var5.isColliding(var1, var2)) {
             var5.absMoveTo(var3.x, var3.y, var3.z);
          }
       }
@@ -207,6 +207,10 @@ public class ClientLevel extends Level {
    public void tick(BooleanSupplier var1) {
       this.getWorldBorder().tick();
       this.tickTime();
+      if (this.skyFlashTime > 0) {
+         this.setSkyFlashTime(this.skyFlashTime - 1);
+      }
+
       this.getProfiler().push("blocks");
       this.chunkSource.tick(var1, true);
       this.getProfiler().pop();
@@ -283,7 +287,7 @@ public class ClientLevel extends Level {
 
    public void unload(LevelChunk var1) {
       var1.clearAllBlockEntities();
-      this.chunkSource.getLightEngine().enableLightSources(var1.getPos(), false);
+      this.chunkSource.getLightEngine().setLightEnabled(var1.getPos(), false);
       this.entityStorage.stopTicking(var1.getPos());
    }
 
@@ -565,13 +569,6 @@ public class ClientLevel extends Level {
       this.levelRenderer.setSectionDirtyWithNeighbors(var1, var2, var3);
    }
 
-   public void setLightReady(int var1, int var2) {
-      LevelChunk var3 = this.chunkSource.getChunk(var1, var2, false);
-      if (var3 != null) {
-         var3.setClientLightReady(true);
-      }
-   }
-
    @Override
    public void destroyBlockProgress(int var1, BlockPos var2, int var3) {
       this.levelRenderer.destroyBlockProgress(var1, var2, var3);
@@ -667,16 +664,17 @@ public class ClientLevel extends Level {
          var10 = var10 * var14 + var17 * (1.0F - var14);
       }
 
-      if (!this.minecraft.options.hideLightningFlash().get() && this.skyFlashTime > 0) {
-         float var18 = (float)this.skyFlashTime - var2;
-         if (var18 > 1.0F) {
-            var18 = 1.0F;
+      int var18 = this.getSkyFlashTime();
+      if (var18 > 0) {
+         float var19 = (float)var18 - var2;
+         if (var19 > 1.0F) {
+            var19 = 1.0F;
          }
 
-         var18 *= 0.45F;
-         var8 = var8 * (1.0F - var18) + 0.8F * var18;
-         var9 = var9 * (1.0F - var18) + 0.8F * var18;
-         var10 = var10 * (1.0F - var18) + 1.0F * var18;
+         var19 *= 0.45F;
+         var8 = var8 * (1.0F - var19) + 0.8F * var19;
+         var9 = var9 * (1.0F - var19) + 0.8F * var19;
+         var10 = var10 * (1.0F - var19) + 1.0F * var19;
       }
 
       return new Vec3((double)var8, (double)var9, (double)var10);
@@ -721,7 +719,7 @@ public class ClientLevel extends Level {
    }
 
    public int getSkyFlashTime() {
-      return this.skyFlashTime;
+      return this.minecraft.options.hideLightningFlash().get() ? 0 : this.skyFlashTime;
    }
 
    @Override

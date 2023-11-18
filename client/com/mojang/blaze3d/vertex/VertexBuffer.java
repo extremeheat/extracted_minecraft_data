@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.ShaderInstance;
 import org.joml.Matrix4f;
 
 public class VertexBuffer implements AutoCloseable {
+   private final VertexBuffer.Usage usage;
    private int vertexBufferId;
    private int indexBufferId;
    private int arrayObjectId;
@@ -21,8 +22,9 @@ public class VertexBuffer implements AutoCloseable {
    private int indexCount;
    private VertexFormat.Mode mode;
 
-   public VertexBuffer() {
+   public VertexBuffer(VertexBuffer.Usage var1) {
       super();
+      this.usage = var1;
       RenderSystem.assertOnRenderThread();
       this.vertexBufferId = GlStateManager._glGenBuffers();
       this.indexBufferId = GlStateManager._glGenBuffers();
@@ -63,7 +65,7 @@ public class VertexBuffer implements AutoCloseable {
             GlStateManager._glBindBuffer(34962, this.vertexBufferId);
          }
 
-         RenderSystem.glBufferData(34962, var2, 35044);
+         RenderSystem.glBufferData(34962, var2, this.usage.id);
       }
 
       return var1.format();
@@ -73,7 +75,7 @@ public class VertexBuffer implements AutoCloseable {
    private RenderSystem.AutoStorageIndexBuffer uploadIndexBuffer(BufferBuilder.DrawState var1, ByteBuffer var2) {
       if (!var1.sequentialIndex()) {
          GlStateManager._glBindBuffer(34963, this.indexBufferId);
-         RenderSystem.glBufferData(34963, var2, 35044);
+         RenderSystem.glBufferData(34963, var2, this.usage.id);
          return null;
       } else {
          RenderSystem.AutoStorageIndexBuffer var3 = RenderSystem.getSequentialBuffer(var1.mode());
@@ -201,5 +203,16 @@ public class VertexBuffer implements AutoCloseable {
 
    public boolean isInvalid() {
       return this.arrayObjectId == -1;
+   }
+
+   public static enum Usage {
+      STATIC(35044),
+      DYNAMIC(35048);
+
+      final int id;
+
+      private Usage(int var3) {
+         this.id = var3;
+      }
    }
 }

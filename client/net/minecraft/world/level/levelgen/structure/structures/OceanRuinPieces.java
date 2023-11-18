@@ -11,6 +11,7 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.monster.Drowned;
@@ -19,6 +20,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.Mirror;
@@ -33,15 +35,29 @@ import net.minecraft.world.level.levelgen.structure.StructurePieceAccessor;
 import net.minecraft.world.level.levelgen.structure.TemplateStructurePiece;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
+import net.minecraft.world.level.levelgen.structure.templatesystem.AlwaysTrueTest;
 import net.minecraft.world.level.levelgen.structure.templatesystem.BlockIgnoreProcessor;
+import net.minecraft.world.level.levelgen.structure.templatesystem.BlockMatchTest;
 import net.minecraft.world.level.levelgen.structure.templatesystem.BlockRotProcessor;
+import net.minecraft.world.level.levelgen.structure.templatesystem.CappedProcessor;
+import net.minecraft.world.level.levelgen.structure.templatesystem.PosAlwaysTrueTest;
+import net.minecraft.world.level.levelgen.structure.templatesystem.ProcessorRule;
+import net.minecraft.world.level.levelgen.structure.templatesystem.RuleProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
+import net.minecraft.world.level.levelgen.structure.templatesystem.rule.blockentity.AppendLoot;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 
 public class OceanRuinPieces {
+   static final StructureProcessor WARM_SUSPICIOUS_BLOCK_PROCESSOR = archyRuleProcessor(
+      Blocks.SAND, Blocks.SUSPICIOUS_SAND, BuiltInLootTables.OCEAN_RUIN_WARM_ARCHAEOLOGY
+   );
+   static final StructureProcessor COLD_SUSPICIOUS_BLOCK_PROCESSOR = archyRuleProcessor(
+      Blocks.GRAVEL, Blocks.SUSPICIOUS_GRAVEL, BuiltInLootTables.OCEAN_RUIN_COLD_ARCHAEOLOGY
+   );
    private static final ResourceLocation[] WARM_RUINS = new ResourceLocation[]{
       new ResourceLocation("underwater_ruin/warm_1"),
       new ResourceLocation("underwater_ruin/warm_2"),
@@ -109,6 +125,17 @@ public class OceanRuinPieces {
 
    public OceanRuinPieces() {
       super();
+   }
+
+   private static StructureProcessor archyRuleProcessor(Block var0, Block var1, ResourceLocation var2) {
+      return new CappedProcessor(
+         new RuleProcessor(
+            List.of(
+               new ProcessorRule(new BlockMatchTest(var0), AlwaysTrueTest.INSTANCE, PosAlwaysTrueTest.INSTANCE, var1.defaultBlockState(), new AppendLoot(var2))
+            )
+         ),
+         ConstantInt.of(5)
+      );
    }
 
    private static ResourceLocation getSmallWarmRuin(RandomSource var0) {
@@ -202,21 +229,37 @@ public class OceanRuinPieces {
       public OceanRuinPiece(
          StructureTemplateManager var1, ResourceLocation var2, BlockPos var3, Rotation var4, float var5, OceanRuinStructure.Type var6, boolean var7
       ) {
-         super(StructurePieceType.OCEAN_RUIN, 0, var1, var2, var2.toString(), makeSettings(var4), var3);
+         super(StructurePieceType.OCEAN_RUIN, 0, var1, var2, var2.toString(), makeSettings(var4, var5, var6), var3);
          this.integrity = var5;
          this.biomeType = var6;
          this.isLarge = var7;
       }
 
-      public OceanRuinPiece(StructureTemplateManager var1, CompoundTag var2) {
-         super(StructurePieceType.OCEAN_RUIN, var2, var1, var1x -> makeSettings(Rotation.valueOf(var2.getString("Rot"))));
-         this.integrity = var2.getFloat("Integrity");
-         this.biomeType = OceanRuinStructure.Type.valueOf(var2.getString("BiomeType"));
-         this.isLarge = var2.getBoolean("IsLarge");
+      private OceanRuinPiece(StructureTemplateManager var1, CompoundTag var2, Rotation var3, float var4, OceanRuinStructure.Type var5, boolean var6) {
+         super(StructurePieceType.OCEAN_RUIN, var2, var1, var3x -> makeSettings(var3, var4, var5));
+         this.integrity = var4;
+         this.biomeType = var5;
+         this.isLarge = var6;
       }
 
-      private static StructurePlaceSettings makeSettings(Rotation var0) {
-         return new StructurePlaceSettings().setRotation(var0).setMirror(Mirror.NONE).addProcessor(BlockIgnoreProcessor.STRUCTURE_AND_AIR);
+      private static StructurePlaceSettings makeSettings(Rotation var0, float var1, OceanRuinStructure.Type var2) {
+         StructureProcessor var3 = var2 == OceanRuinStructure.Type.COLD
+            ? OceanRuinPieces.COLD_SUSPICIOUS_BLOCK_PROCESSOR
+            : OceanRuinPieces.WARM_SUSPICIOUS_BLOCK_PROCESSOR;
+         return new StructurePlaceSettings()
+            .setRotation(var0)
+            .setMirror(Mirror.NONE)
+            .addProcessor(new BlockRotProcessor(var1))
+            .addProcessor(BlockIgnoreProcessor.STRUCTURE_AND_AIR)
+            .addProcessor(var3);
+      }
+
+      public static OceanRuinPieces.OceanRuinPiece create(StructureTemplateManager var0, CompoundTag var1) {
+         Rotation var2 = Rotation.valueOf(var1.getString("Rot"));
+         float var3 = var1.getFloat("Integrity");
+         OceanRuinStructure.Type var4 = OceanRuinStructure.Type.valueOf(var1.getString("BiomeType"));
+         boolean var5 = var1.getBoolean("IsLarge");
+         return new OceanRuinPieces.OceanRuinPiece(var0, var1, var2, var3, var4, var5);
       }
 
       @Override
@@ -259,7 +302,6 @@ public class OceanRuinPieces {
       public void postProcess(
          WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
       ) {
-         this.placeSettings.clearProcessors().addProcessor(new BlockRotProcessor(this.integrity)).addProcessor(BlockIgnoreProcessor.STRUCTURE_AND_AIR);
          int var8 = var1.getHeight(Heightmap.Types.OCEAN_FLOOR_WG, this.templatePosition.getX(), this.templatePosition.getZ());
          this.templatePosition = new BlockPos(this.templatePosition.getX(), var8, this.templatePosition.getZ());
          BlockPos var9 = StructureTemplate.transform(

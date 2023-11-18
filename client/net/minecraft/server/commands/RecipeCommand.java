@@ -96,10 +96,10 @@ public class RecipeCommand {
       } else {
          if (var1.size() == 1) {
             var0.sendSuccess(
-               Component.translatable("commands.recipe.give.success.single", var2.size(), ((ServerPlayer)var1.iterator().next()).getDisplayName()), true
+               () -> Component.translatable("commands.recipe.give.success.single", var2.size(), ((ServerPlayer)var1.iterator().next()).getDisplayName()), true
             );
          } else {
-            var0.sendSuccess(Component.translatable("commands.recipe.give.success.multiple", var2.size(), var1.size()), true);
+            var0.sendSuccess(() -> Component.translatable("commands.recipe.give.success.multiple", var2.size(), var1.size()), true);
          }
 
          return var3;
@@ -118,10 +118,10 @@ public class RecipeCommand {
       } else {
          if (var1.size() == 1) {
             var0.sendSuccess(
-               Component.translatable("commands.recipe.take.success.single", var2.size(), ((ServerPlayer)var1.iterator().next()).getDisplayName()), true
+               () -> Component.translatable("commands.recipe.take.success.single", var2.size(), ((ServerPlayer)var1.iterator().next()).getDisplayName()), true
             );
          } else {
-            var0.sendSuccess(Component.translatable("commands.recipe.take.success.multiple", var2.size(), var1.size()), true);
+            var0.sendSuccess(() -> Component.translatable("commands.recipe.take.success.multiple", var2.size(), var1.size()), true);
          }
 
          return var3;

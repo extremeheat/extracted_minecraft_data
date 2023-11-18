@@ -42,6 +42,8 @@ import net.minecraft.world.entity.npc.VillagerType;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.entity.schedule.Schedule;
 import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Instrument;
 import net.minecraft.world.item.Instruments;
 import net.minecraft.world.item.Item;
@@ -86,6 +88,7 @@ import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElementTy
 import net.minecraft.world.level.levelgen.structure.templatesystem.PosRuleTestType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTestType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
+import net.minecraft.world.level.levelgen.structure.templatesystem.rule.blockentity.RuleBlockEntityModifierType;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntries;
@@ -129,6 +132,9 @@ public class BuiltInRegistries {
    public static final Registry<ResourceLocation> CUSTOM_STAT = registerSimple(Registries.CUSTOM_STAT, var0 -> Stats.JUMP);
    public static final DefaultedRegistry<ChunkStatus> CHUNK_STATUS = registerDefaulted(Registries.CHUNK_STATUS, "empty", var0 -> ChunkStatus.EMPTY);
    public static final Registry<RuleTestType<?>> RULE_TEST = registerSimple(Registries.RULE_TEST, var0 -> RuleTestType.ALWAYS_TRUE_TEST);
+   public static final Registry<RuleBlockEntityModifierType<?>> RULE_BLOCK_ENTITY_MODIFIER = registerSimple(
+      Registries.RULE_BLOCK_ENTITY_MODIFIER, var0 -> RuleBlockEntityModifierType.PASSTHROUGH
+   );
    public static final Registry<PosRuleTestType<?>> POS_RULE_TEST = registerSimple(Registries.POS_RULE_TEST, var0 -> PosRuleTestType.ALWAYS_TRUE_TEST);
    public static final Registry<MenuType<?>> MENU = registerSimple(Registries.MENU, var0 -> MenuType.ANVIL);
    public static final Registry<RecipeType<?>> RECIPE_TYPE = registerSimple(Registries.RECIPE_TYPE, var0 -> RecipeType.CRAFTING);
@@ -220,6 +226,7 @@ public class BuiltInRegistries {
    public static final Registry<BannerPattern> BANNER_PATTERN = registerSimple(Registries.BANNER_PATTERN, BannerPatterns::bootstrap);
    public static final Registry<Instrument> INSTRUMENT = registerSimple(Registries.INSTRUMENT, Instruments::bootstrap);
    public static final Registry<String> DECORATED_POT_PATTERNS = registerSimple(Registries.DECORATED_POT_PATTERNS, DecoratedPotPatterns::bootstrap);
+   public static final Registry<CreativeModeTab> CREATIVE_MODE_TAB = registerSimple(Registries.CREATIVE_MODE_TAB, CreativeModeTabs::bootstrap);
    public static final Registry<? extends Registry<?>> REGISTRY = WRITABLE_REGISTRY;
 
    public BuiltInRegistries() {

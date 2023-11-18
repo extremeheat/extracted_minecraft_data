@@ -1,16 +1,19 @@
 package net.minecraft.world.level.dimension.end;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ContiguousSet;
 import com.google.common.collect.DiscreteDomain;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
@@ -18,14 +21,11 @@ import net.minecraft.Util;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.features.EndFeatures;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.IntTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ChunkHolder;
+import net.minecraft.server.level.FullChunkStatus;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -63,27 +63,29 @@ public class EndDragonFight {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int MAX_TICKS_BEFORE_DRAGON_RESPAWN = 1200;
    private static final int TIME_BETWEEN_CRYSTAL_SCANS = 100;
-   private static final int TIME_BETWEEN_PLAYER_SCANS = 20;
+   public static final int TIME_BETWEEN_PLAYER_SCANS = 20;
    private static final int ARENA_SIZE_CHUNKS = 8;
    public static final int ARENA_TICKET_LEVEL = 9;
    private static final int GATEWAY_COUNT = 20;
    private static final int GATEWAY_DISTANCE = 96;
    public static final int DRAGON_SPAWN_Y = 128;
-   private static final Predicate<Entity> VALID_PLAYER = EntitySelector.ENTITY_STILL_ALIVE.and(EntitySelector.withinDistance(0.0, 128.0, 0.0, 192.0));
+   private final Predicate<Entity> validPlayer;
    private final ServerBossEvent dragonEvent = (ServerBossEvent)new ServerBossEvent(
          Component.translatable("entity.minecraft.ender_dragon"), BossEvent.BossBarColor.PINK, BossEvent.BossBarOverlay.PROGRESS
       )
       .setPlayBossMusic(true)
       .setCreateWorldFog(true);
    private final ServerLevel level;
+   private final BlockPos origin;
    private final ObjectArrayList<Integer> gateways = new ObjectArrayList();
    private final BlockPattern exitPortalPattern;
    private int ticksSinceDragonSeen;
    private int crystalsAlive;
    private int ticksSinceCrystalsScanned;
-   private int ticksSinceLastPlayerScan;
+   private int ticksSinceLastPlayerScan = 21;
    private boolean dragonKilled;
    private boolean previouslyKilled;
+   private boolean skipArenaLoadedCheck = false;
    @Nullable
    private UUID dragonUUID;
    private boolean needsStateScanning = true;
@@ -95,43 +97,30 @@ public class EndDragonFight {
    @Nullable
    private List<EndCrystal> respawnCrystals;
 
-   public EndDragonFight(ServerLevel var1, long var2, CompoundTag var4) {
+   public EndDragonFight(ServerLevel var1, long var2, EndDragonFight.Data var4) {
+      this(var1, var2, var4, BlockPos.ZERO);
+   }
+
+   public EndDragonFight(ServerLevel var1, long var2, EndDragonFight.Data var4, BlockPos var5) {
       super();
       this.level = var1;
-      if (var4.contains("NeedsStateScanning")) {
-         this.needsStateScanning = var4.getBoolean("NeedsStateScanning");
+      this.origin = var5;
+      this.validPlayer = EntitySelector.ENTITY_STILL_ALIVE
+         .and(EntitySelector.withinDistance((double)var5.getX(), (double)(128 + var5.getY()), (double)var5.getZ(), 192.0));
+      this.needsStateScanning = var4.needsStateScanning;
+      this.dragonUUID = var4.dragonUUID.orElse(null);
+      this.dragonKilled = var4.dragonKilled;
+      this.previouslyKilled = var4.previouslyKilled;
+      if (var4.isRespawning) {
+         this.respawnStage = DragonRespawnAnimation.START;
       }
 
-      if (var4.contains("DragonKilled", 99)) {
-         if (var4.hasUUID("Dragon")) {
-            this.dragonUUID = var4.getUUID("Dragon");
-         }
-
-         this.dragonKilled = var4.getBoolean("DragonKilled");
-         this.previouslyKilled = var4.getBoolean("PreviouslyKilled");
-         if (var4.getBoolean("IsRespawning")) {
-            this.respawnStage = DragonRespawnAnimation.START;
-         }
-
-         if (var4.contains("ExitPortalLocation", 10)) {
-            this.portalLocation = NbtUtils.readBlockPos(var4.getCompound("ExitPortalLocation"));
-         }
-      } else {
-         this.dragonKilled = true;
-         this.previouslyKilled = true;
-      }
-
-      if (var4.contains("Gateways", 9)) {
-         ListTag var5 = var4.getList("Gateways", 3);
-
-         for(int var6 = 0; var6 < var5.size(); ++var6) {
-            this.gateways.add(var5.getInt(var6));
-         }
-      } else {
-         this.gateways.addAll(ContiguousSet.create(Range.closedOpen(0, 20), DiscreteDomain.integers()));
-         Util.shuffle(this.gateways, RandomSource.create(var2));
-      }
-
+      this.portalLocation = var4.exitPortalLocation.orElse(null);
+      this.gateways.addAll(var4.gateways.orElseGet(() -> {
+         ObjectArrayList var2x = new ObjectArrayList(ContiguousSet.create(Range.closedOpen(0, 20), DiscreteDomain.integers()));
+         Util.shuffle(var2x, RandomSource.create(var2));
+         return var2x;
+      }));
       this.exitPortalPattern = BlockPatternBuilder.start()
          .aisle("       ", "       ", "       ", "   #   ", "       ", "       ", "       ")
          .aisle("       ", "       ", "       ", "   #   ", "       ", "       ", "       ")
@@ -142,29 +131,22 @@ public class EndDragonFight {
          .build();
    }
 
-   public CompoundTag saveData() {
-      CompoundTag var1 = new CompoundTag();
-      var1.putBoolean("NeedsStateScanning", this.needsStateScanning);
-      if (this.dragonUUID != null) {
-         var1.putUUID("Dragon", this.dragonUUID);
-      }
+   @Deprecated
+   @VisibleForTesting
+   public void skipArenaLoadedCheck() {
+      this.skipArenaLoadedCheck = true;
+   }
 
-      var1.putBoolean("DragonKilled", this.dragonKilled);
-      var1.putBoolean("PreviouslyKilled", this.previouslyKilled);
-      if (this.portalLocation != null) {
-         var1.put("ExitPortalLocation", NbtUtils.writeBlockPos(this.portalLocation));
-      }
-
-      ListTag var2 = new ListTag();
-      ObjectListIterator var3 = this.gateways.iterator();
-
-      while(var3.hasNext()) {
-         int var4 = var3.next();
-         var2.add(IntTag.valueOf(var4));
-      }
-
-      var1.put("Gateways", var2);
-      return var1;
+   public EndDragonFight.Data saveData() {
+      return new EndDragonFight.Data(
+         this.needsStateScanning,
+         this.dragonKilled,
+         this.previouslyKilled,
+         false,
+         Optional.ofNullable(this.dragonUUID),
+         Optional.ofNullable(this.portalLocation),
+         Optional.of(this.gateways)
+      );
    }
 
    public void tick() {
@@ -290,37 +272,39 @@ public class EndDragonFight {
 
    @Nullable
    private BlockPattern.BlockPatternMatch findExitPortal() {
-      for(int var1 = -8; var1 <= 8; ++var1) {
-         for(int var2 = -8; var2 <= 8; ++var2) {
-            LevelChunk var3 = this.level.getChunk(var1, var2);
+      ChunkPos var1 = new ChunkPos(this.origin);
 
-            for(BlockEntity var5 : var3.getBlockEntities().values()) {
-               if (var5 instanceof TheEndPortalBlockEntity) {
-                  BlockPattern.BlockPatternMatch var6 = this.exitPortalPattern.find(this.level, var5.getBlockPos());
-                  if (var6 != null) {
-                     BlockPos var7 = var6.getBlock(3, 3, 3).getPos();
+      for(int var2 = -8 + var1.x; var2 <= 8 + var1.x; ++var2) {
+         for(int var3 = -8 + var1.z; var3 <= 8 + var1.z; ++var3) {
+            LevelChunk var4 = this.level.getChunk(var2, var3);
+
+            for(BlockEntity var6 : var4.getBlockEntities().values()) {
+               if (var6 instanceof TheEndPortalBlockEntity) {
+                  BlockPattern.BlockPatternMatch var7 = this.exitPortalPattern.find(this.level, var6.getBlockPos());
+                  if (var7 != null) {
+                     BlockPos var8 = var7.getBlock(3, 3, 3).getPos();
                      if (this.portalLocation == null) {
-                        this.portalLocation = var7;
+                        this.portalLocation = var8;
                      }
 
-                     return var6;
+                     return var7;
                   }
                }
             }
          }
       }
 
-      int var8 = this.level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, EndPodiumFeature.END_PODIUM_LOCATION).getY();
+      BlockPos var9 = EndPodiumFeature.getLocation(this.origin);
+      int var10 = this.level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, var9).getY();
 
-      for(int var9 = var8; var9 >= this.level.getMinBuildHeight(); --var9) {
-         BlockPattern.BlockPatternMatch var10 = this.exitPortalPattern
-            .find(this.level, new BlockPos(EndPodiumFeature.END_PODIUM_LOCATION.getX(), var9, EndPodiumFeature.END_PODIUM_LOCATION.getZ()));
-         if (var10 != null) {
+      for(int var11 = var10; var11 >= this.level.getMinBuildHeight(); --var11) {
+         BlockPattern.BlockPatternMatch var12 = this.exitPortalPattern.find(this.level, new BlockPos(var9.getX(), var11, var9.getZ()));
+         if (var12 != null) {
             if (this.portalLocation == null) {
-               this.portalLocation = var10.getBlock(3, 3, 3).getPos();
+               this.portalLocation = var12.getBlock(3, 3, 3).getPos();
             }
 
-            return var10;
+            return var12;
          }
       }
 
@@ -328,27 +312,33 @@ public class EndDragonFight {
    }
 
    private boolean isArenaLoaded() {
-      for(int var1 = -8; var1 <= 8; ++var1) {
-         for(int var2 = 8; var2 <= 8; ++var2) {
-            ChunkAccess var3 = this.level.getChunk(var1, var2, ChunkStatus.FULL, false);
-            if (!(var3 instanceof LevelChunk)) {
-               return false;
-            }
+      if (this.skipArenaLoadedCheck) {
+         return true;
+      } else {
+         ChunkPos var1 = new ChunkPos(this.origin);
 
-            ChunkHolder.FullChunkStatus var4 = ((LevelChunk)var3).getFullStatus();
-            if (!var4.isOrAfter(ChunkHolder.FullChunkStatus.TICKING)) {
-               return false;
+         for(int var2 = -8 + var1.x; var2 <= 8 + var1.x; ++var2) {
+            for(int var3 = 8 + var1.z; var3 <= 8 + var1.z; ++var3) {
+               ChunkAccess var4 = this.level.getChunk(var2, var3, ChunkStatus.FULL, false);
+               if (!(var4 instanceof LevelChunk)) {
+                  return false;
+               }
+
+               FullChunkStatus var5 = ((LevelChunk)var4).getFullStatus();
+               if (!var5.isOrAfter(FullChunkStatus.BLOCK_TICKING)) {
+                  return false;
+               }
             }
          }
-      }
 
-      return true;
+         return true;
+      }
    }
 
    private void updatePlayers() {
       HashSet var1 = Sets.newHashSet();
 
-      for(ServerPlayer var3 : this.level.getPlayers(VALID_PLAYER)) {
+      for(ServerPlayer var3 : this.level.getPlayers(this.validPlayer)) {
          this.dragonEvent.addPlayer(var3);
          var1.add(var3);
       }
@@ -381,13 +371,20 @@ public class EndDragonFight {
          if (!this.previouslyKilled) {
             this.level
                .setBlockAndUpdate(
-                  this.level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, EndPodiumFeature.END_PODIUM_LOCATION), Blocks.DRAGON_EGG.defaultBlockState()
+                  this.level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, EndPodiumFeature.getLocation(this.origin)),
+                  Blocks.DRAGON_EGG.defaultBlockState()
                );
          }
 
          this.previouslyKilled = true;
          this.dragonKilled = true;
       }
+   }
+
+   @Deprecated
+   @VisibleForTesting
+   public void removeAllGateways() {
+      this.gateways.clear();
    }
 
    private void spawnNewGateway() {
@@ -411,7 +408,7 @@ public class EndDragonFight {
    private void spawnExitPortal(boolean var1) {
       EndPodiumFeature var2 = new EndPodiumFeature(var1);
       if (this.portalLocation == null) {
-         this.portalLocation = this.level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EndPodiumFeature.END_PODIUM_LOCATION).below();
+         this.portalLocation = this.level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, EndPodiumFeature.getLocation(this.origin)).below();
 
          while(this.level.getBlockState(this.portalLocation).is(Blocks.BEDROCK) && this.portalLocation.getY() > this.level.getSeaLevel()) {
             this.portalLocation = this.portalLocation.below();
@@ -423,11 +420,13 @@ public class EndDragonFight {
 
    @Nullable
    private EnderDragon createNewDragon() {
-      this.level.getChunkAt(new BlockPos(0, 128, 0));
+      this.level.getChunkAt(new BlockPos(this.origin.getX(), 128 + this.origin.getY(), this.origin.getZ()));
       EnderDragon var1 = EntityType.ENDER_DRAGON.create(this.level);
       if (var1 != null) {
+         var1.setDragonFight(this);
+         var1.setFightOrigin(this.origin);
          var1.getPhaseManager().setPhase(EnderDragonPhase.HOLDING_PATTERN);
-         var1.moveTo(0.0, 128.0, 0.0, this.level.random.nextFloat() * 360.0F, 0.0F);
+         var1.moveTo((double)this.origin.getX(), (double)(128 + this.origin.getY()), (double)this.origin.getZ(), this.level.random.nextFloat() * 360.0F, 0.0F);
          this.level.addFreshEntity(var1);
          this.dragonUUID = var1.getUUID();
       }
@@ -530,6 +529,47 @@ public class EndDragonFight {
             var5.setInvulnerable(false);
             var5.setBeamTarget(null);
          }
+      }
+   }
+
+   @Nullable
+   public UUID getDragonUUID() {
+      return this.dragonUUID;
+   }
+
+   public static record Data(boolean c, boolean d, boolean e, boolean f, Optional<UUID> g, Optional<BlockPos> h, Optional<List<Integer>> i) {
+      final boolean needsStateScanning;
+      final boolean dragonKilled;
+      final boolean previouslyKilled;
+      final boolean isRespawning;
+      final Optional<UUID> dragonUUID;
+      final Optional<BlockPos> exitPortalLocation;
+      final Optional<List<Integer>> gateways;
+      public static final Codec<EndDragonFight.Data> CODEC = RecordCodecBuilder.create(
+         var0 -> var0.group(
+                  Codec.BOOL.fieldOf("NeedsStateScanning").orElse(true).forGetter(EndDragonFight.Data::needsStateScanning),
+                  Codec.BOOL.fieldOf("DragonKilled").orElse(false).forGetter(EndDragonFight.Data::dragonKilled),
+                  Codec.BOOL.fieldOf("PreviouslyKilled").orElse(false).forGetter(EndDragonFight.Data::previouslyKilled),
+                  Codec.BOOL.optionalFieldOf("IsRespawning", false).forGetter(EndDragonFight.Data::isRespawning),
+                  UUIDUtil.CODEC.optionalFieldOf("Dragon").forGetter(EndDragonFight.Data::dragonUUID),
+                  BlockPos.CODEC.optionalFieldOf("ExitPortalLocation").forGetter(EndDragonFight.Data::exitPortalLocation),
+                  Codec.list(Codec.INT).optionalFieldOf("Gateways").forGetter(EndDragonFight.Data::gateways)
+               )
+               .apply(var0, EndDragonFight.Data::new)
+      );
+      public static final EndDragonFight.Data DEFAULT = new EndDragonFight.Data(
+         true, false, false, false, Optional.empty(), Optional.empty(), Optional.empty()
+      );
+
+      public Data(boolean var1, boolean var2, boolean var3, boolean var4, Optional<UUID> var5, Optional<BlockPos> var6, Optional<List<Integer>> var7) {
+         super();
+         this.needsStateScanning = var1;
+         this.dragonKilled = var2;
+         this.previouslyKilled = var3;
+         this.isRespawning = var4;
+         this.dragonUUID = var5;
+         this.exitPortalLocation = var6;
+         this.gateways = var7;
       }
    }
 }

@@ -21,7 +21,7 @@ public class FleeSunGoal extends Goal {
       super();
       this.mob = var1;
       this.speedModifier = var2;
-      this.level = var1.level;
+      this.level = var1.level();
       this.setFlags(EnumSet.of(Goal.Flag.MOVE));
    }
 

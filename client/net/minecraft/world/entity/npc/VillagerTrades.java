@@ -670,6 +670,7 @@ public class VillagerTrades {
             new VillagerTrades.ItemsForEmeralds(Items.JUNGLE_SAPLING, 5, 1, 8, 1),
             new VillagerTrades.ItemsForEmeralds(Items.OAK_SAPLING, 5, 1, 8, 1),
             new VillagerTrades.ItemsForEmeralds(Items.SPRUCE_SAPLING, 5, 1, 8, 1),
+            new VillagerTrades.ItemsForEmeralds(Items.CHERRY_SAPLING, 5, 1, 8, 1),
             new VillagerTrades.ItemsForEmeralds(Items.MANGROVE_PROPAGULE, 5, 1, 8, 1),
             new VillagerTrades.ItemsForEmeralds(Items.RED_DYE, 1, 3, 12, 1),
             new VillagerTrades.ItemsForEmeralds(Items.WHITE_DYE, 1, 3, 12, 1),
@@ -713,9 +714,6 @@ public class VillagerTrades {
             new VillagerTrades.ItemsForEmeralds(Items.PODZOL, 3, 3, 6, 1)
          }
       )
-   );
-   public static final Int2ObjectMap<VillagerTrades.ItemListing[]> WANDERING_TRADER_TRADES_1_20 = toIntMap(
-      ImmutableMap.of(1, new VillagerTrades.ItemListing[]{new VillagerTrades.ItemsForEmeralds(Items.CHERRY_SAPLING, 5, 1, 8, 1)})
    );
 
    public VillagerTrades() {
@@ -1049,10 +1047,10 @@ public class VillagerTrades {
       @Nullable
       @Override
       public MerchantOffer getOffer(Entity var1, RandomSource var2) {
-         if (!(var1.level instanceof ServerLevel)) {
+         if (!(var1.level() instanceof ServerLevel)) {
             return null;
          } else {
-            ServerLevel var3 = (ServerLevel)var1.level;
+            ServerLevel var3 = (ServerLevel)var1.level();
             BlockPos var4 = var3.findNearestMapStructure(this.destination, var1.blockPosition(), 100, true);
             if (var4 != null) {
                ItemStack var5 = MapItem.create(var3, var4.getX(), var4.getZ(), (byte)2, true, true);

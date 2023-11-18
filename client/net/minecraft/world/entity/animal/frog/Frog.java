@@ -6,7 +6,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
 import javax.annotation.Nullable;
-import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -17,10 +16,8 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.stats.Stats;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.EntityTypeTags;
@@ -33,7 +30,6 @@ import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
@@ -58,7 +54,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -145,7 +140,7 @@ public class Frog extends Animal implements VariantHolder<FrogVariant> {
    }
 
    public Optional<Entity> getTongueTarget() {
-      return this.entityData.get(DATA_TONGUE_TARGET_ID).stream().mapToObj(this.level::getEntity).filter(Objects::nonNull).findFirst();
+      return this.entityData.get(DATA_TONGUE_TARGET_ID).stream().mapToObj(this.level()::getEntity).filter(Objects::nonNull).findFirst();
    }
 
    public void setTongueTarget(Entity var1) {
@@ -192,18 +187,18 @@ public class Frog extends Animal implements VariantHolder<FrogVariant> {
 
    @Override
    protected void customServerAiStep() {
-      this.level.getProfiler().push("frogBrain");
-      this.getBrain().tick((ServerLevel)this.level, this);
-      this.level.getProfiler().pop();
-      this.level.getProfiler().push("frogActivityUpdate");
+      this.level().getProfiler().push("frogBrain");
+      this.getBrain().tick((ServerLevel)this.level(), this);
+      this.level().getProfiler().pop();
+      this.level().getProfiler().push("frogActivityUpdate");
       FrogAi.updateActivity(this);
-      this.level.getProfiler().pop();
+      this.level().getProfiler().pop();
       super.customServerAiStep();
    }
 
    @Override
    public void tick() {
-      if (this.level.isClientSide()) {
+      if (this.level().isClientSide()) {
          this.swimIdleAnimationState.animateWhen(this.isInWaterOrBubble() && !this.walkAnimation.isMoving(), this.tickCount);
       }
 
@@ -270,25 +265,8 @@ public class Frog extends Animal implements VariantHolder<FrogVariant> {
 
    @Override
    public void spawnChildFromBreeding(ServerLevel var1, Animal var2) {
-      ServerPlayer var3 = this.getLoveCause();
-      if (var3 == null) {
-         var3 = var2.getLoveCause();
-      }
-
-      if (var3 != null) {
-         var3.awardStat(Stats.ANIMALS_BRED);
-         CriteriaTriggers.BRED_ANIMALS.trigger(var3, this, var2, null);
-      }
-
-      this.setAge(6000);
-      var2.setAge(6000);
-      this.resetLove();
-      var2.resetLove();
+      this.finalizeSpawnChildFromBreeding(var1, var2, null);
       this.getBrain().setMemory(MemoryModuleType.IS_PREGNANT, Unit.INSTANCE);
-      var1.broadcastEntityEvent(this, (byte)18);
-      if (var1.getGameRules().getBoolean(GameRules.RULE_DOMOBLOOT)) {
-         var1.addFreshEntity(new ExperienceOrb(var1, this.getX(), this.getY(), this.getZ(), this.getRandom().nextInt(7) + 1));
-      }
    }
 
    @Override

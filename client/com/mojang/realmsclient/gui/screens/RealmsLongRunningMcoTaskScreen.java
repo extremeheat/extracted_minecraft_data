@@ -1,6 +1,5 @@
 package com.mojang.realmsclient.gui.screens;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.exception.RealmsDefaultUncaughtExceptionHandler;
 import com.mojang.realmsclient.gui.ErrorCallback;
@@ -8,6 +7,7 @@ import com.mojang.realmsclient.util.task.LongRunningTask;
 import java.time.Duration;
 import javax.annotation.Nullable;
 import net.minecraft.client.GameNarrator;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
@@ -94,14 +94,14 @@ public class RealmsLongRunningMcoTaskScreen extends RealmsScreen implements Erro
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderBackground(var1);
-      drawCenteredString(var1, this.font, this.title, this.width / 2, row(3), 16777215);
+      var1.drawCenteredString(this.font, this.title, this.width / 2, row(3), 16777215);
       Component var5 = this.errorMessage;
       if (var5 == null) {
-         drawCenteredString(var1, this.font, SYMBOLS[this.animTicks % SYMBOLS.length], this.width / 2, row(8), 8421504);
+         var1.drawCenteredString(this.font, SYMBOLS[this.animTicks % SYMBOLS.length], this.width / 2, row(8), 8421504);
       } else {
-         drawCenteredString(var1, this.font, var5, this.width / 2, row(8), 16711680);
+         var1.drawCenteredString(this.font, var5, this.width / 2, row(8), 16711680);
       }
 
       super.render(var1, var2, var3, var4);

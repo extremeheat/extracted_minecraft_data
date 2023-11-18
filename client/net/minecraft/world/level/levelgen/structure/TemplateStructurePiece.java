@@ -75,26 +75,26 @@ public abstract class TemplateStructurePiece extends StructurePiece {
       this.boundingBox = this.template.getBoundingBox(this.placeSettings, this.templatePosition);
       if (this.template.placeInWorld(var1, this.templatePosition, var7, this.placeSettings, var4, 2)) {
          for(StructureTemplate.StructureBlockInfo var10 : this.template.filterBlocks(this.templatePosition, this.placeSettings, Blocks.STRUCTURE_BLOCK)) {
-            if (var10.nbt != null) {
-               StructureMode var11 = StructureMode.valueOf(var10.nbt.getString("mode"));
+            if (var10.nbt() != null) {
+               StructureMode var11 = StructureMode.valueOf(var10.nbt().getString("mode"));
                if (var11 == StructureMode.DATA) {
-                  this.handleDataMarker(var10.nbt.getString("metadata"), var10.pos, var1, var4, var5);
+                  this.handleDataMarker(var10.nbt().getString("metadata"), var10.pos(), var1, var4, var5);
                }
             }
          }
 
          for(StructureTemplate.StructureBlockInfo var18 : this.template.filterBlocks(this.templatePosition, this.placeSettings, Blocks.JIGSAW)) {
-            if (var18.nbt != null) {
-               String var12 = var18.nbt.getString("final_state");
+            if (var18.nbt() != null) {
+               String var12 = var18.nbt().getString("final_state");
                BlockState var13 = Blocks.AIR.defaultBlockState();
 
                try {
                   var13 = BlockStateParser.parseForBlock(var1.holderLookup(Registries.BLOCK), var12, true).blockState();
                } catch (CommandSyntaxException var15) {
-                  LOGGER.error("Error while parsing blockstate {} in jigsaw block @ {}", var12, var18.pos);
+                  LOGGER.error("Error while parsing blockstate {} in jigsaw block @ {}", var12, var18.pos());
                }
 
-               var1.setBlock(var18.pos, var13, 3);
+               var1.setBlock(var18.pos(), var13, 3);
             }
          }
       }

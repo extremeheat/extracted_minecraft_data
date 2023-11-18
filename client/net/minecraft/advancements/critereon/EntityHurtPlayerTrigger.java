@@ -17,7 +17,7 @@ public class EntityHurtPlayerTrigger extends SimpleCriterionTrigger<EntityHurtPl
       return ID;
    }
 
-   public EntityHurtPlayerTrigger.TriggerInstance createInstance(JsonObject var1, EntityPredicate.Composite var2, DeserializationContext var3) {
+   public EntityHurtPlayerTrigger.TriggerInstance createInstance(JsonObject var1, ContextAwarePredicate var2, DeserializationContext var3) {
       DamagePredicate var4 = DamagePredicate.fromJson(var1.get("damage"));
       return new EntityHurtPlayerTrigger.TriggerInstance(var2, var4);
    }
@@ -29,21 +29,21 @@ public class EntityHurtPlayerTrigger extends SimpleCriterionTrigger<EntityHurtPl
    public static class TriggerInstance extends AbstractCriterionTriggerInstance {
       private final DamagePredicate damage;
 
-      public TriggerInstance(EntityPredicate.Composite var1, DamagePredicate var2) {
+      public TriggerInstance(ContextAwarePredicate var1, DamagePredicate var2) {
          super(EntityHurtPlayerTrigger.ID, var1);
          this.damage = var2;
       }
 
       public static EntityHurtPlayerTrigger.TriggerInstance entityHurtPlayer() {
-         return new EntityHurtPlayerTrigger.TriggerInstance(EntityPredicate.Composite.ANY, DamagePredicate.ANY);
+         return new EntityHurtPlayerTrigger.TriggerInstance(ContextAwarePredicate.ANY, DamagePredicate.ANY);
       }
 
       public static EntityHurtPlayerTrigger.TriggerInstance entityHurtPlayer(DamagePredicate var0) {
-         return new EntityHurtPlayerTrigger.TriggerInstance(EntityPredicate.Composite.ANY, var0);
+         return new EntityHurtPlayerTrigger.TriggerInstance(ContextAwarePredicate.ANY, var0);
       }
 
       public static EntityHurtPlayerTrigger.TriggerInstance entityHurtPlayer(DamagePredicate.Builder var0) {
-         return new EntityHurtPlayerTrigger.TriggerInstance(EntityPredicate.Composite.ANY, var0.build());
+         return new EntityHurtPlayerTrigger.TriggerInstance(ContextAwarePredicate.ANY, var0.build());
       }
 
       public boolean matches(ServerPlayer var1, DamageSource var2, float var3, float var4, boolean var5) {

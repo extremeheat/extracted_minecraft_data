@@ -1,12 +1,11 @@
 package net.minecraft.client.gui.components;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Iterator;
 import java.util.List;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.client.sounds.SoundEventListener;
 import net.minecraft.client.sounds.WeighedSoundEvents;
@@ -14,7 +13,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
 
-public class SubtitleOverlay extends GuiComponent implements SoundEventListener {
+public class SubtitleOverlay implements SoundEventListener {
    private static final long DISPLAY_TIME = 3000L;
    private final Minecraft minecraft;
    private final List<SubtitleOverlay.Subtitle> subtitles = Lists.newArrayList();
@@ -25,7 +24,7 @@ public class SubtitleOverlay extends GuiComponent implements SoundEventListener 
       this.minecraft = var1;
    }
 
-   public void render(PoseStack var1) {
+   public void render(GuiGraphics var1) {
       if (!this.isListening && this.minecraft.options.showSubtitles().get()) {
          this.minecraft.getSoundManager().addListener(this);
          this.isListening = true;
@@ -69,25 +68,22 @@ public class SubtitleOverlay extends GuiComponent implements SoundEventListener 
             int var24 = this.minecraft.font.width(var13);
             int var25 = Mth.floor(Mth.clampedLerp(255.0F, 75.0F, (float)(Util.getMillis() - var30.getTime()) / (float)(3000.0 * var8)));
             int var26 = var25 << 16 | var25 << 8 | var25;
-            var1.pushPose();
-            var1.translate(
-               (float)this.minecraft.getWindow().getGuiScaledWidth() - (float)var20 * 1.0F - 2.0F,
-               (float)(this.minecraft.getWindow().getGuiScaledHeight() - 35) - (float)(var6 * (var21 + 1)) * 1.0F,
-               0.0F
-            );
-            var1.scale(1.0F, 1.0F, 1.0F);
-            fill(var1, -var20 - 1, -var22 - 1, var20 + 1, var22 + 1, this.minecraft.options.getBackgroundColor(0.8F));
+            var1.pose().pushPose();
+            var1.pose()
+               .translate((float)var1.guiWidth() - (float)var20 * 1.0F - 2.0F, (float)(var1.guiHeight() - 35) - (float)(var6 * (var21 + 1)) * 1.0F, 0.0F);
+            var1.pose().scale(1.0F, 1.0F, 1.0F);
+            var1.fill(-var20 - 1, -var22 - 1, var20 + 1, var22 + 1, this.minecraft.options.getBackgroundColor(0.8F));
             int var27 = var26 + -16777216;
             if (!var19) {
                if (var15 > 0.0) {
-                  drawString(var1, this.minecraft.font, ">", var20 - this.minecraft.font.width(">"), -var22, var27);
+                  var1.drawString(this.minecraft.font, ">", var20 - this.minecraft.font.width(">"), -var22, var27);
                } else if (var15 < 0.0) {
-                  drawString(var1, this.minecraft.font, "<", -var20, -var22, var27);
+                  var1.drawString(this.minecraft.font, "<", -var20, -var22, var27);
                }
             }
 
-            drawString(var1, this.minecraft.font, var13, -var24 / 2, -var22, var27);
-            var1.popPose();
+            var1.drawString(this.minecraft.font, var13, -var24 / 2, -var22, var27);
+            var1.pose().popPose();
             ++var6;
          }
       }

@@ -4,6 +4,9 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 
 public class SoundType {
+   public static final SoundType EMPTY = new SoundType(
+      1.0F, 1.0F, SoundEvents.EMPTY, SoundEvents.EMPTY, SoundEvents.EMPTY, SoundEvents.EMPTY, SoundEvents.EMPTY
+   );
    public static final SoundType WOOD = new SoundType(
       1.0F, 1.0F, SoundEvents.WOOD_BREAK, SoundEvents.WOOD_STEP, SoundEvents.WOOD_PLACE, SoundEvents.WOOD_HIT, SoundEvents.WOOD_FALL
    );
@@ -667,10 +670,28 @@ public class SoundType {
       SoundEvents.SUSPICIOUS_SAND_HIT,
       SoundEvents.SUSPICIOUS_SAND_FALL
    );
+   public static final SoundType SUSPICIOUS_GRAVEL = new SoundType(
+      1.0F,
+      1.0F,
+      SoundEvents.SUSPICIOUS_GRAVEL_BREAK,
+      SoundEvents.SUSPICIOUS_GRAVEL_STEP,
+      SoundEvents.SUSPICIOUS_GRAVEL_PLACE,
+      SoundEvents.SUSPICIOUS_GRAVEL_HIT,
+      SoundEvents.SUSPICIOUS_GRAVEL_FALL
+   );
    public static final SoundType DECORATED_POT = new SoundType(
       1.0F,
       1.0F,
-      SoundEvents.EMPTY,
+      SoundEvents.DECORATED_POT_BREAK,
+      SoundEvents.DECORATED_POT_STEP,
+      SoundEvents.DECORATED_POT_PLACE,
+      SoundEvents.DECORATED_POT_HIT,
+      SoundEvents.DECORATED_POT_FALL
+   );
+   public static final SoundType DECORATED_POT_CRACKED = new SoundType(
+      1.0F,
+      1.0F,
+      SoundEvents.DECORATED_POT_SHATTER,
       SoundEvents.DECORATED_POT_STEP,
       SoundEvents.DECORATED_POT_PLACE,
       SoundEvents.DECORATED_POT_HIT,

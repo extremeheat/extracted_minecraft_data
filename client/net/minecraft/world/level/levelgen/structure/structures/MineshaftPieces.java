@@ -819,11 +819,11 @@ public class MineshaftPieces {
          } else {
             for(int var10 = var3; var10 <= var6; ++var10) {
                for(int var11 = var5; var11 <= var8; ++var11) {
-                  if (var1.getBlockState(var9.set(var10, var4, var11)).getMaterial().isLiquid()) {
+                  if (var1.getBlockState(var9.set(var10, var4, var11)).liquid()) {
                      return true;
                   }
 
-                  if (var1.getBlockState(var9.set(var10, var7, var11)).getMaterial().isLiquid()) {
+                  if (var1.getBlockState(var9.set(var10, var7, var11)).liquid()) {
                      return true;
                   }
                }
@@ -831,11 +831,11 @@ public class MineshaftPieces {
 
             for(int var12 = var3; var12 <= var6; ++var12) {
                for(int var14 = var4; var14 <= var7; ++var14) {
-                  if (var1.getBlockState(var9.set(var12, var14, var5)).getMaterial().isLiquid()) {
+                  if (var1.getBlockState(var9.set(var12, var14, var5)).liquid()) {
                      return true;
                   }
 
-                  if (var1.getBlockState(var9.set(var12, var14, var8)).getMaterial().isLiquid()) {
+                  if (var1.getBlockState(var9.set(var12, var14, var8)).liquid()) {
                      return true;
                   }
                }
@@ -843,11 +843,11 @@ public class MineshaftPieces {
 
             for(int var13 = var5; var13 <= var8; ++var13) {
                for(int var15 = var4; var15 <= var7; ++var15) {
-                  if (var1.getBlockState(var9.set(var3, var15, var13)).getMaterial().isLiquid()) {
+                  if (var1.getBlockState(var9.set(var3, var15, var13)).liquid()) {
                      return true;
                   }
 
-                  if (var1.getBlockState(var9.set(var6, var15, var13)).getMaterial().isLiquid()) {
+                  if (var1.getBlockState(var9.set(var6, var15, var13)).liquid()) {
                      return true;
                   }
                }

@@ -6,6 +6,7 @@ import java.io.File;
 import java.net.Proxy;
 import java.nio.file.Path;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.client.User;
 import net.minecraft.client.resources.IndexedAssetSource;
 
@@ -14,15 +15,15 @@ public class GameConfig {
    public final DisplayData display;
    public final GameConfig.FolderData location;
    public final GameConfig.GameData game;
-   public final GameConfig.ServerData server;
+   public final GameConfig.QuickPlayData quickPlay;
 
-   public GameConfig(GameConfig.UserData var1, DisplayData var2, GameConfig.FolderData var3, GameConfig.GameData var4, GameConfig.ServerData var5) {
+   public GameConfig(GameConfig.UserData var1, DisplayData var2, GameConfig.FolderData var3, GameConfig.GameData var4, GameConfig.QuickPlayData var5) {
       super();
       this.user = var1;
       this.display = var2;
       this.location = var3;
       this.game = var4;
-      this.server = var5;
+      this.quickPlay = var5;
    }
 
    public static class FolderData {
@@ -62,15 +63,26 @@ public class GameConfig {
       }
    }
 
-   public static class ServerData {
+   public static record QuickPlayData(@Nullable String a, @Nullable String b, @Nullable String c, @Nullable String d) {
       @Nullable
-      public final String hostname;
-      public final int port;
+      private final String path;
+      @Nullable
+      private final String singleplayer;
+      @Nullable
+      private final String multiplayer;
+      @Nullable
+      private final String realms;
 
-      public ServerData(@Nullable String var1, int var2) {
+      public QuickPlayData(@Nullable String var1, @Nullable String var2, @Nullable String var3, @Nullable String var4) {
          super();
-         this.hostname = var1;
-         this.port = var2;
+         this.path = var1;
+         this.singleplayer = var2;
+         this.multiplayer = var3;
+         this.realms = var4;
+      }
+
+      public boolean isEnabled() {
+         return !Util.isBlank(this.singleplayer) || !Util.isBlank(this.multiplayer) || !Util.isBlank(this.realms);
       }
    }
 

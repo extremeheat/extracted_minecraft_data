@@ -118,11 +118,11 @@ public class Phantom extends FlyingMob implements Enemy {
    @Override
    public void tick() {
       super.tick();
-      if (this.level.isClientSide) {
+      if (this.level().isClientSide) {
          float var1 = Mth.cos((float)(this.getUniqueFlapTickOffset() + this.tickCount) * 7.448451F * 0.017453292F + 3.1415927F);
          float var2 = Mth.cos((float)(this.getUniqueFlapTickOffset() + this.tickCount + 1) * 7.448451F * 0.017453292F + 3.1415927F);
          if (var1 > 0.0F && var2 <= 0.0F) {
-            this.level
+            this.level()
                .playLocalSound(
                   this.getX(),
                   this.getY(),
@@ -139,8 +139,8 @@ public class Phantom extends FlyingMob implements Enemy {
          float var4 = Mth.cos(this.getYRot() * 0.017453292F) * (1.3F + 0.21F * (float)var3);
          float var5 = Mth.sin(this.getYRot() * 0.017453292F) * (1.3F + 0.21F * (float)var3);
          float var6 = (0.3F + var1 * 0.45F) * ((float)var3 * 0.2F + 1.0F);
-         this.level.addParticle(ParticleTypes.MYCELIUM, this.getX() + (double)var4, this.getY() + (double)var6, this.getZ() + (double)var5, 0.0, 0.0, 0.0);
-         this.level.addParticle(ParticleTypes.MYCELIUM, this.getX() - (double)var4, this.getY() + (double)var6, this.getZ() - (double)var5, 0.0, 0.0, 0.0);
+         this.level().addParticle(ParticleTypes.MYCELIUM, this.getX() + (double)var4, this.getY() + (double)var6, this.getZ() + (double)var5, 0.0, 0.0, 0.0);
+         this.level().addParticle(ParticleTypes.MYCELIUM, this.getX() - (double)var4, this.getY() + (double)var6, this.getZ() - (double)var5, 0.0, 0.0, 0.0);
       }
    }
 
@@ -262,7 +262,7 @@ public class Phantom extends FlyingMob implements Enemy {
             return false;
          } else {
             this.nextScanTick = reducedTickDelay(60);
-            List var1 = Phantom.this.level.getNearbyPlayers(this.attackTargeting, Phantom.this, Phantom.this.getBoundingBox().inflate(16.0, 64.0, 16.0));
+            List var1 = Phantom.this.level().getNearbyPlayers(this.attackTargeting, Phantom.this, Phantom.this.getBoundingBox().inflate(16.0, 64.0, 16.0));
             if (!var1.isEmpty()) {
                var1.sort(Comparator.<Entity, Double>comparing(Entity::getY).reversed());
 
@@ -307,7 +307,7 @@ public class Phantom extends FlyingMob implements Enemy {
 
       @Override
       public void stop() {
-         Phantom.this.anchorPoint = Phantom.this.level
+         Phantom.this.anchorPoint = Phantom.this.level()
             .getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, Phantom.this.anchorPoint)
             .above(10 + Phantom.this.random.nextInt(20));
       }
@@ -327,8 +327,8 @@ public class Phantom extends FlyingMob implements Enemy {
 
       private void setAnchorAboveTarget() {
          Phantom.this.anchorPoint = Phantom.this.getTarget().blockPosition().above(20 + Phantom.this.random.nextInt(20));
-         if (Phantom.this.anchorPoint.getY() < Phantom.this.level.getSeaLevel()) {
-            Phantom.this.anchorPoint = new BlockPos(Phantom.this.anchorPoint.getX(), Phantom.this.level.getSeaLevel() + 1, Phantom.this.anchorPoint.getZ());
+         if (Phantom.this.anchorPoint.getY() < Phantom.this.level().getSeaLevel()) {
+            Phantom.this.anchorPoint = new BlockPos(Phantom.this.anchorPoint.getX(), Phantom.this.level().getSeaLevel() + 1, Phantom.this.anchorPoint.getZ());
          }
       }
    }
@@ -391,12 +391,12 @@ public class Phantom extends FlyingMob implements Enemy {
             this.selectNext();
          }
 
-         if (Phantom.this.moveTargetPoint.y < Phantom.this.getY() && !Phantom.this.level.isEmptyBlock(Phantom.this.blockPosition().below(1))) {
+         if (Phantom.this.moveTargetPoint.y < Phantom.this.getY() && !Phantom.this.level().isEmptyBlock(Phantom.this.blockPosition().below(1))) {
             this.height = Math.max(1.0F, this.height);
             this.selectNext();
          }
 
-         if (Phantom.this.moveTargetPoint.y > Phantom.this.getY() && !Phantom.this.level.isEmptyBlock(Phantom.this.blockPosition().above(1))) {
+         if (Phantom.this.moveTargetPoint.y > Phantom.this.getY() && !Phantom.this.level().isEmptyBlock(Phantom.this.blockPosition().above(1))) {
             this.height = Math.min(-1.0F, this.height);
             this.selectNext();
          }
@@ -513,7 +513,8 @@ public class Phantom extends FlyingMob implements Enemy {
             } else {
                if (Phantom.this.tickCount > this.catSearchTick) {
                   this.catSearchTick = Phantom.this.tickCount + 20;
-                  List var5 = Phantom.this.level.getEntitiesOfClass(Cat.class, Phantom.this.getBoundingBox().inflate(16.0), EntitySelector.ENTITY_STILL_ALIVE);
+                  List var5 = Phantom.this.level()
+                     .getEntitiesOfClass(Cat.class, Phantom.this.getBoundingBox().inflate(16.0), EntitySelector.ENTITY_STILL_ALIVE);
 
                   for(Cat var4 : var5) {
                      var4.hiss();
@@ -546,7 +547,7 @@ public class Phantom extends FlyingMob implements Enemy {
                Phantom.this.doHurtTarget(var1);
                Phantom.this.attackPhase = Phantom.AttackPhase.CIRCLE;
                if (!Phantom.this.isSilent()) {
-                  Phantom.this.level.levelEvent(1039, Phantom.this.blockPosition(), 0);
+                  Phantom.this.level().levelEvent(1039, Phantom.this.blockPosition(), 0);
                }
             } else if (Phantom.this.horizontalCollision || Phantom.this.hurtTime > 0) {
                Phantom.this.attackPhase = Phantom.AttackPhase.CIRCLE;

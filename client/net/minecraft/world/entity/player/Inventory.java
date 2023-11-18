@@ -234,7 +234,7 @@ public class Inventory implements Container, Nameable {
       for(NonNullList var2 : this.compartments) {
          for(int var3 = 0; var3 < var2.size(); ++var3) {
             if (!((ItemStack)var2.get(var3)).isEmpty()) {
-               ((ItemStack)var2.get(var3)).inventoryTick(this.player.level, this.player, var3, this.selected == var3);
+               ((ItemStack)var2.get(var3)).inventoryTick(this.player.level(), this.player, var3, this.selected == var3);
             }
          }
       }
@@ -255,9 +255,8 @@ public class Inventory implements Container, Nameable {
                }
 
                if (var1 >= 0) {
-                  this.items.set(var1, var2.copy());
+                  this.items.set(var1, var2.copyAndClear());
                   this.items.get(var1).setPopTime(5);
-                  var2.setCount(0);
                   return true;
                } else if (this.player.getAbilities().instabuild) {
                   var2.setCount(0);

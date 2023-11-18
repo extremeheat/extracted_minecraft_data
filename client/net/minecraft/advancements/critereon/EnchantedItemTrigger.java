@@ -17,7 +17,7 @@ public class EnchantedItemTrigger extends SimpleCriterionTrigger<EnchantedItemTr
       return ID;
    }
 
-   public EnchantedItemTrigger.TriggerInstance createInstance(JsonObject var1, EntityPredicate.Composite var2, DeserializationContext var3) {
+   public EnchantedItemTrigger.TriggerInstance createInstance(JsonObject var1, ContextAwarePredicate var2, DeserializationContext var3) {
       ItemPredicate var4 = ItemPredicate.fromJson(var1.get("item"));
       MinMaxBounds.Ints var5 = MinMaxBounds.Ints.fromJson(var1.get("levels"));
       return new EnchantedItemTrigger.TriggerInstance(var2, var4, var5);
@@ -31,14 +31,14 @@ public class EnchantedItemTrigger extends SimpleCriterionTrigger<EnchantedItemTr
       private final ItemPredicate item;
       private final MinMaxBounds.Ints levels;
 
-      public TriggerInstance(EntityPredicate.Composite var1, ItemPredicate var2, MinMaxBounds.Ints var3) {
+      public TriggerInstance(ContextAwarePredicate var1, ItemPredicate var2, MinMaxBounds.Ints var3) {
          super(EnchantedItemTrigger.ID, var1);
          this.item = var2;
          this.levels = var3;
       }
 
       public static EnchantedItemTrigger.TriggerInstance enchantedItem() {
-         return new EnchantedItemTrigger.TriggerInstance(EntityPredicate.Composite.ANY, ItemPredicate.ANY, MinMaxBounds.Ints.ANY);
+         return new EnchantedItemTrigger.TriggerInstance(ContextAwarePredicate.ANY, ItemPredicate.ANY, MinMaxBounds.Ints.ANY);
       }
 
       public boolean matches(ItemStack var1, int var2) {

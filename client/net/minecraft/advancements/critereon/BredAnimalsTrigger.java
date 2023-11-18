@@ -20,10 +20,10 @@ public class BredAnimalsTrigger extends SimpleCriterionTrigger<BredAnimalsTrigge
       return ID;
    }
 
-   public BredAnimalsTrigger.TriggerInstance createInstance(JsonObject var1, EntityPredicate.Composite var2, DeserializationContext var3) {
-      EntityPredicate.Composite var4 = EntityPredicate.Composite.fromJson(var1, "parent", var3);
-      EntityPredicate.Composite var5 = EntityPredicate.Composite.fromJson(var1, "partner", var3);
-      EntityPredicate.Composite var6 = EntityPredicate.Composite.fromJson(var1, "child", var3);
+   public BredAnimalsTrigger.TriggerInstance createInstance(JsonObject var1, ContextAwarePredicate var2, DeserializationContext var3) {
+      ContextAwarePredicate var4 = EntityPredicate.fromJson(var1, "parent", var3);
+      ContextAwarePredicate var5 = EntityPredicate.fromJson(var1, "partner", var3);
+      ContextAwarePredicate var6 = EntityPredicate.fromJson(var1, "child", var3);
       return new BredAnimalsTrigger.TriggerInstance(var2, var4, var5, var6);
    }
 
@@ -35,11 +35,11 @@ public class BredAnimalsTrigger extends SimpleCriterionTrigger<BredAnimalsTrigge
    }
 
    public static class TriggerInstance extends AbstractCriterionTriggerInstance {
-      private final EntityPredicate.Composite parent;
-      private final EntityPredicate.Composite partner;
-      private final EntityPredicate.Composite child;
+      private final ContextAwarePredicate parent;
+      private final ContextAwarePredicate partner;
+      private final ContextAwarePredicate child;
 
-      public TriggerInstance(EntityPredicate.Composite var1, EntityPredicate.Composite var2, EntityPredicate.Composite var3, EntityPredicate.Composite var4) {
+      public TriggerInstance(ContextAwarePredicate var1, ContextAwarePredicate var2, ContextAwarePredicate var3, ContextAwarePredicate var4) {
          super(BredAnimalsTrigger.ID, var1);
          this.parent = var2;
          this.partner = var3;
@@ -48,24 +48,24 @@ public class BredAnimalsTrigger extends SimpleCriterionTrigger<BredAnimalsTrigge
 
       public static BredAnimalsTrigger.TriggerInstance bredAnimals() {
          return new BredAnimalsTrigger.TriggerInstance(
-            EntityPredicate.Composite.ANY, EntityPredicate.Composite.ANY, EntityPredicate.Composite.ANY, EntityPredicate.Composite.ANY
+            ContextAwarePredicate.ANY, ContextAwarePredicate.ANY, ContextAwarePredicate.ANY, ContextAwarePredicate.ANY
          );
       }
 
       public static BredAnimalsTrigger.TriggerInstance bredAnimals(EntityPredicate.Builder var0) {
          return new BredAnimalsTrigger.TriggerInstance(
-            EntityPredicate.Composite.ANY, EntityPredicate.Composite.ANY, EntityPredicate.Composite.ANY, EntityPredicate.Composite.wrap(var0.build())
+            ContextAwarePredicate.ANY, ContextAwarePredicate.ANY, ContextAwarePredicate.ANY, EntityPredicate.wrap(var0.build())
          );
       }
 
       public static BredAnimalsTrigger.TriggerInstance bredAnimals(EntityPredicate var0, EntityPredicate var1, EntityPredicate var2) {
          return new BredAnimalsTrigger.TriggerInstance(
-            EntityPredicate.Composite.ANY, EntityPredicate.Composite.wrap(var0), EntityPredicate.Composite.wrap(var1), EntityPredicate.Composite.wrap(var2)
+            ContextAwarePredicate.ANY, EntityPredicate.wrap(var0), EntityPredicate.wrap(var1), EntityPredicate.wrap(var2)
          );
       }
 
       public boolean matches(LootContext var1, LootContext var2, @Nullable LootContext var3) {
-         if (this.child == EntityPredicate.Composite.ANY || var3 != null && this.child.matches(var3)) {
+         if (this.child == ContextAwarePredicate.ANY || var3 != null && this.child.matches(var3)) {
             return this.parent.matches(var1) && this.partner.matches(var2) || this.parent.matches(var2) && this.partner.matches(var1);
          } else {
             return false;

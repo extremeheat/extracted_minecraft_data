@@ -93,7 +93,7 @@ public class Arrow extends AbstractArrow {
    @Override
    public void tick() {
       super.tick();
-      if (this.level.isClientSide) {
+      if (this.level().isClientSide) {
          if (this.inGround) {
             if (this.inGroundTime % 5 == 0) {
                this.makeParticle(1);
@@ -102,7 +102,7 @@ public class Arrow extends AbstractArrow {
             this.makeParticle(2);
          }
       } else if (this.inGround && this.inGroundTime != 0 && !this.effects.isEmpty() && this.inGroundTime >= 600) {
-         this.level.broadcastEntityEvent(this, (byte)0);
+         this.level().broadcastEntityEvent(this, (byte)0);
          this.potion = Potions.EMPTY;
          this.effects.clear();
          this.entityData.set(ID_EFFECT_COLOR, -1);
@@ -117,7 +117,7 @@ public class Arrow extends AbstractArrow {
          double var7 = (double)(var2 >> 0 & 0xFF) / 255.0;
 
          for(int var9 = 0; var9 < var1; ++var9) {
-            this.level.addParticle(ParticleTypes.ENTITY_EFFECT, this.getRandomX(0.5), this.getRandomY(), this.getRandomZ(0.5), var3, var5, var7);
+            this.level().addParticle(ParticleTypes.ENTITY_EFFECT, this.getRandomX(0.5), this.getRandomY(), this.getRandomZ(0.5), var3, var5, var7);
          }
       }
    }
@@ -216,7 +216,7 @@ public class Arrow extends AbstractArrow {
             double var7 = (double)(var2 >> 0 & 0xFF) / 255.0;
 
             for(int var9 = 0; var9 < 20; ++var9) {
-               this.level.addParticle(ParticleTypes.ENTITY_EFFECT, this.getRandomX(0.5), this.getRandomY(), this.getRandomZ(0.5), var3, var5, var7);
+               this.level().addParticle(ParticleTypes.ENTITY_EFFECT, this.getRandomX(0.5), this.getRandomY(), this.getRandomZ(0.5), var3, var5, var7);
             }
          }
       } else {

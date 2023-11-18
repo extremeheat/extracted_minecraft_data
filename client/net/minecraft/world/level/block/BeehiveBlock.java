@@ -47,7 +47,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
@@ -288,7 +288,7 @@ public class BeehiveBlock extends BaseEntityBlock {
    // $QF: Could not properly define all variable types!
    // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
-   public List<ItemStack> getDrops(BlockState var1, LootContext.Builder var2) {
+   public List<ItemStack> getDrops(BlockState var1, LootParams.Builder var2) {
       Entity var3 = var2.getOptionalParameter(LootContextParams.THIS_ENTITY);
       if (var3 instanceof PrimedTnt || var3 instanceof Creeper || var3 instanceof WitherSkull || var3 instanceof WitherBoss || var3 instanceof MinecartTNT) {
          BlockEntity var4 = var2.getOptionalParameter(LootContextParams.BLOCK_ENTITY);

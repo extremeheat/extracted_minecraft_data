@@ -1,179 +1,351 @@
 package net.minecraft.world.level.lighting;
 
-import java.util.Locale;
+import java.util.Objects;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
-import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.DataLayer;
+import net.minecraft.world.level.chunk.LightChunk;
 import net.minecraft.world.level.chunk.LightChunkGetter;
-import net.minecraft.world.phys.shapes.Shapes;
-import net.minecraft.world.phys.shapes.VoxelShape;
-import org.apache.commons.lang3.mutable.MutableInt;
+import org.jetbrains.annotations.VisibleForTesting;
 
-public final class SkyLightEngine extends LayerLightEngine<SkyLightSectionStorage.SkyDataLayerStorageMap, SkyLightSectionStorage> {
-   private static final Direction[] DIRECTIONS = Direction.values();
-   private static final Direction[] HORIZONTALS = new Direction[]{Direction.NORTH, Direction.SOUTH, Direction.WEST, Direction.EAST};
+public final class SkyLightEngine extends LightEngine<SkyLightSectionStorage.SkyDataLayerStorageMap, SkyLightSectionStorage> {
+   private static final long REMOVE_TOP_SKY_SOURCE_ENTRY = LightEngine.QueueEntry.decreaseAllDirections(15);
+   private static final long REMOVE_SKY_SOURCE_ENTRY = LightEngine.QueueEntry.decreaseSkipOneDirection(15, Direction.UP);
+   private static final long ADD_SKY_SOURCE_ENTRY = LightEngine.QueueEntry.increaseSkipOneDirection(15, false, Direction.UP);
+   private final BlockPos.MutableBlockPos mutablePos = new BlockPos.MutableBlockPos();
+   private final ChunkSkyLightSources emptyChunkSources;
 
    public SkyLightEngine(LightChunkGetter var1) {
-      super(var1, LightLayer.SKY, new SkyLightSectionStorage(var1));
+      this(var1, new SkyLightSectionStorage(var1));
    }
 
-   @Override
-   protected int computeLevelFromNeighbor(long var1, long var3, int var5) {
-      if (var3 == 9223372036854775807L || var1 == 9223372036854775807L) {
-         return 15;
-      } else if (var5 >= 15) {
-         return var5;
-      } else {
-         MutableInt var6 = new MutableInt();
-         BlockState var7 = this.getStateAndOpacity(var3, var6);
-         if (var6.getValue() >= 15) {
-            return 15;
-         } else {
-            int var8 = BlockPos.getX(var1);
-            int var9 = BlockPos.getY(var1);
-            int var10 = BlockPos.getZ(var1);
-            int var11 = BlockPos.getX(var3);
-            int var12 = BlockPos.getY(var3);
-            int var13 = BlockPos.getZ(var3);
-            int var14 = Integer.signum(var11 - var8);
-            int var15 = Integer.signum(var12 - var9);
-            int var16 = Integer.signum(var13 - var10);
-            Direction var17 = Direction.fromNormal(var14, var15, var16);
-            if (var17 == null) {
-               throw new IllegalStateException(String.format(Locale.ROOT, "Light was spread in illegal direction %d, %d, %d", var14, var15, var16));
-            } else {
-               BlockState var18 = this.getStateAndOpacity(var1, null);
-               VoxelShape var19 = this.getShape(var18, var1, var17);
-               VoxelShape var20 = this.getShape(var7, var3, var17.getOpposite());
-               if (Shapes.faceShapeOccludes(var19, var20)) {
-                  return 15;
-               } else {
-                  boolean var21 = var8 == var11 && var10 == var13;
-                  boolean var22 = var21 && var9 > var12;
-                  return var22 && var5 == 0 && var6.getValue() == 0 ? 0 : var5 + Math.max(1, var6.getValue());
-               }
-            }
-         }
-      }
+   @VisibleForTesting
+   protected SkyLightEngine(LightChunkGetter var1, SkyLightSectionStorage var2) {
+      super(var1, var2);
+      this.emptyChunkSources = new ChunkSkyLightSources(var1.getLevel());
    }
 
-   @Override
-   protected void checkNeighborsAfterUpdate(long var1, int var3, boolean var4) {
-      long var5 = SectionPos.blockToSection(var1);
-      int var7 = BlockPos.getY(var1);
-      int var8 = SectionPos.sectionRelative(var7);
-      int var9 = SectionPos.blockToSectionCoord(var7);
-      int var10;
-      if (var8 != 0) {
-         var10 = 0;
-      } else {
-         int var11 = 0;
-
-         while(!this.storage.storingLightForSection(SectionPos.offset(var5, 0, -var11 - 1, 0)) && this.storage.hasSectionsBelow(var9 - var11 - 1)) {
-            ++var11;
-         }
-
-         var10 = var11;
-      }
-
-      long var30 = BlockPos.offset(var1, 0, -1 - var10 * 16, 0);
-      long var13 = SectionPos.blockToSection(var30);
-      if (var5 == var13 || this.storage.storingLightForSection(var13)) {
-         this.checkNeighbor(var1, var30, var3, var4);
-      }
-
-      long var15 = BlockPos.offset(var1, Direction.UP);
-      long var17 = SectionPos.blockToSection(var15);
-      if (var5 == var17 || this.storage.storingLightForSection(var17)) {
-         this.checkNeighbor(var1, var15, var3, var4);
-      }
-
-      for(Direction var22 : HORIZONTALS) {
-         int var23 = 0;
-
-         do {
-            long var24 = BlockPos.offset(var1, var22.getStepX(), -var23, var22.getStepZ());
-            long var26 = SectionPos.blockToSection(var24);
-            if (var5 == var26) {
-               this.checkNeighbor(var1, var24, var3, var4);
-               break;
-            }
-
-            if (this.storage.storingLightForSection(var26)) {
-               long var28 = BlockPos.offset(var1, 0, -var23, 0);
-               this.checkNeighbor(var28, var24, var3, var4);
-            }
-         } while(++var23 > var10 * 16);
-      }
+   private static boolean isSourceLevel(int var0) {
+      return var0 == 15;
    }
 
-   @Override
-   protected int getComputedLevel(long var1, long var3, int var5) {
-      int var6 = var5;
-      long var7 = SectionPos.blockToSection(var1);
-      DataLayer var9 = this.storage.getDataLayer(var7, true);
+   private int getLowestSourceY(int var1, int var2, int var3) {
+      ChunkSkyLightSources var4 = this.getChunkSources(SectionPos.blockToSectionCoord(var1), SectionPos.blockToSectionCoord(var2));
+      return var4 == null ? var3 : var4.getLowestSourceY(SectionPos.sectionRelative(var1), SectionPos.sectionRelative(var2));
+   }
 
-      for(Direction var13 : DIRECTIONS) {
-         long var14 = BlockPos.offset(var1, var13);
-         if (var14 != var3) {
-            long var16 = SectionPos.blockToSection(var14);
-            DataLayer var18;
-            if (var7 == var16) {
-               var18 = var9;
-            } else {
-               var18 = this.storage.getDataLayer(var16, true);
-            }
-
-            int var19;
-            if (var18 != null) {
-               var19 = this.getLevel(var18, var14);
-            } else {
-               if (var13 == Direction.DOWN) {
-                  continue;
-               }
-
-               var19 = 15 - this.storage.getLightValue(var14, true);
-            }
-
-            int var20 = this.computeLevelFromNeighbor(var14, var1, var19);
-            if (var6 > var20) {
-               var6 = var20;
-            }
-
-            if (var6 == 0) {
-               return var6;
-            }
-         }
-      }
-
-      return var6;
+   @Nullable
+   private ChunkSkyLightSources getChunkSources(int var1, int var2) {
+      LightChunk var3 = this.chunkSource.getChunkForLighting(var1, var2);
+      return var3 != null ? var3.getSkyLightSources() : null;
    }
 
    @Override
    protected void checkNode(long var1) {
-      this.storage.runAllUpdates();
-      long var3 = SectionPos.blockToSection(var1);
-      if (this.storage.storingLightForSection(var3)) {
-         super.checkNode(var1);
-      } else {
-         for(var1 = BlockPos.getFlatIndex(var1);
-            !this.storage.storingLightForSection(var3) && !this.storage.isAboveData(var3);
-            var1 = BlockPos.offset(var1, 0, 16, 0)
-         ) {
-            var3 = SectionPos.offset(var3, Direction.UP);
-         }
+      int var3 = BlockPos.getX(var1);
+      int var4 = BlockPos.getY(var1);
+      int var5 = BlockPos.getZ(var1);
+      long var6 = SectionPos.blockToSection(var1);
+      int var8 = this.storage.lightOnInSection(var6) ? this.getLowestSourceY(var3, var5, 2147483647) : 2147483647;
+      if (var8 != 2147483647) {
+         this.updateSourcesInColumn(var3, var5, var8);
+      }
 
-         if (this.storage.storingLightForSection(var3)) {
-            super.checkNode(var1);
+      if (this.storage.storingLightForSection(var6)) {
+         boolean var9 = var4 >= var8;
+         if (var9) {
+            this.enqueueDecrease(var1, REMOVE_SKY_SOURCE_ENTRY);
+            this.enqueueIncrease(var1, ADD_SKY_SOURCE_ENTRY);
+         } else {
+            int var10 = this.storage.getStoredLevel(var1);
+            if (var10 > 0) {
+               this.storage.setStoredLevel(var1, 0);
+               this.enqueueDecrease(var1, LightEngine.QueueEntry.decreaseAllDirections(var10));
+            } else {
+               this.enqueueDecrease(var1, PULL_LIGHT_IN_ENTRY);
+            }
+         }
+      }
+   }
+
+   private void updateSourcesInColumn(int var1, int var2, int var3) {
+      int var4 = SectionPos.sectionToBlockCoord(this.storage.getBottomSectionY());
+      this.removeSourcesBelow(var1, var2, var3, var4);
+      this.addSourcesAbove(var1, var2, var3, var4);
+   }
+
+   private void removeSourcesBelow(int var1, int var2, int var3, int var4) {
+      if (var3 > var4) {
+         int var5 = SectionPos.blockToSectionCoord(var1);
+         int var6 = SectionPos.blockToSectionCoord(var2);
+         int var7 = var3 - 1;
+
+         for(int var8 = SectionPos.blockToSectionCoord(var7); this.storage.hasLightDataAtOrBelow(var8); --var8) {
+            if (this.storage.storingLightForSection(SectionPos.asLong(var5, var8, var6))) {
+               int var9 = SectionPos.sectionToBlockCoord(var8);
+               int var10 = var9 + 15;
+
+               for(int var11 = Math.min(var10, var7); var11 >= var9; --var11) {
+                  long var12 = BlockPos.asLong(var1, var11, var2);
+                  if (!isSourceLevel(this.storage.getStoredLevel(var12))) {
+                     return;
+                  }
+
+                  this.storage.setStoredLevel(var12, 0);
+                  this.enqueueDecrease(var12, var11 == var3 - 1 ? REMOVE_TOP_SKY_SOURCE_ENTRY : REMOVE_SKY_SOURCE_ENTRY);
+               }
+            }
+         }
+      }
+   }
+
+   private void addSourcesAbove(int var1, int var2, int var3, int var4) {
+      int var5 = SectionPos.blockToSectionCoord(var1);
+      int var6 = SectionPos.blockToSectionCoord(var2);
+      int var7 = Math.max(
+         Math.max(this.getLowestSourceY(var1 - 1, var2, -2147483648), this.getLowestSourceY(var1 + 1, var2, -2147483648)),
+         Math.max(this.getLowestSourceY(var1, var2 - 1, -2147483648), this.getLowestSourceY(var1, var2 + 1, -2147483648))
+      );
+      int var8 = Math.max(var3, var4);
+
+      for(long var9 = SectionPos.asLong(var5, SectionPos.blockToSectionCoord(var8), var6);
+         !this.storage.isAboveData(var9);
+         var9 = SectionPos.offset(var9, Direction.UP)
+      ) {
+         if (this.storage.storingLightForSection(var9)) {
+            int var11 = SectionPos.sectionToBlockCoord(SectionPos.y(var9));
+            int var12 = var11 + 15;
+
+            for(int var13 = Math.max(var11, var8); var13 <= var12; ++var13) {
+               long var14 = BlockPos.asLong(var1, var13, var2);
+               if (isSourceLevel(this.storage.getStoredLevel(var14))) {
+                  return;
+               }
+
+               this.storage.setStoredLevel(var14, 15);
+               if (var13 < var7 || var13 == var3) {
+                  this.enqueueIncrease(var14, ADD_SKY_SOURCE_ENTRY);
+               }
+            }
          }
       }
    }
 
    @Override
-   public String getDebugData(long var1) {
-      return super.getDebugData(var1) + (this.storage.isAboveData(var1) ? "*" : "");
+   protected void propagateIncrease(long var1, long var3, int var5) {
+      BlockState var6 = null;
+      int var7 = this.countEmptySectionsBelowIfAtBorder(var1);
+
+      for(Direction var11 : PROPAGATION_DIRECTIONS) {
+         if (LightEngine.QueueEntry.shouldPropagateInDirection(var3, var11)) {
+            long var12 = BlockPos.offset(var1, var11);
+            if (this.storage.storingLightForSection(SectionPos.blockToSection(var12))) {
+               int var14 = this.storage.getStoredLevel(var12);
+               int var15 = var5 - 1;
+               if (var15 > var14) {
+                  this.mutablePos.set(var12);
+                  BlockState var16 = this.getState(this.mutablePos);
+                  int var17 = var5 - this.getOpacity(var16, this.mutablePos);
+                  if (var17 > var14) {
+                     if (var6 == null) {
+                        var6 = LightEngine.QueueEntry.isFromEmptyShape(var3) ? Blocks.AIR.defaultBlockState() : this.getState(this.mutablePos.set(var1));
+                     }
+
+                     if (!this.shapeOccludes(var1, var6, var12, var16, var11)) {
+                        this.storage.setStoredLevel(var12, var17);
+                        if (var17 > 1) {
+                           this.enqueueIncrease(var12, LightEngine.QueueEntry.increaseSkipOneDirection(var17, isEmptyShape(var16), var11.getOpposite()));
+                        }
+
+                        this.propagateFromEmptySections(var12, var11, var17, true, var7);
+                     }
+                  }
+               }
+            }
+         }
+      }
+   }
+
+   @Override
+   protected void propagateDecrease(long var1, long var3) {
+      int var5 = this.countEmptySectionsBelowIfAtBorder(var1);
+      int var6 = LightEngine.QueueEntry.getFromLevel(var3);
+
+      for(Direction var10 : PROPAGATION_DIRECTIONS) {
+         if (LightEngine.QueueEntry.shouldPropagateInDirection(var3, var10)) {
+            long var11 = BlockPos.offset(var1, var10);
+            if (this.storage.storingLightForSection(SectionPos.blockToSection(var11))) {
+               int var13 = this.storage.getStoredLevel(var11);
+               if (var13 != 0) {
+                  if (var13 <= var6 - 1) {
+                     this.storage.setStoredLevel(var11, 0);
+                     this.enqueueDecrease(var11, LightEngine.QueueEntry.decreaseSkipOneDirection(var13, var10.getOpposite()));
+                     this.propagateFromEmptySections(var11, var10, var13, false, var5);
+                  } else {
+                     this.enqueueIncrease(var11, LightEngine.QueueEntry.increaseOnlyOneDirection(var13, false, var10.getOpposite()));
+                  }
+               }
+            }
+         }
+      }
+   }
+
+   private int countEmptySectionsBelowIfAtBorder(long var1) {
+      int var3 = BlockPos.getY(var1);
+      int var4 = SectionPos.sectionRelative(var3);
+      if (var4 != 0) {
+         return 0;
+      } else {
+         int var5 = BlockPos.getX(var1);
+         int var6 = BlockPos.getZ(var1);
+         int var7 = SectionPos.sectionRelative(var5);
+         int var8 = SectionPos.sectionRelative(var6);
+         if (var7 != 0 && var7 != 15 && var8 != 0 && var8 != 15) {
+            return 0;
+         } else {
+            int var9 = SectionPos.blockToSectionCoord(var5);
+            int var10 = SectionPos.blockToSectionCoord(var3);
+            int var11 = SectionPos.blockToSectionCoord(var6);
+            int var12 = 0;
+
+            while(
+               !this.storage.storingLightForSection(SectionPos.asLong(var9, var10 - var12 - 1, var11))
+                  && this.storage.hasLightDataAtOrBelow(var10 - var12 - 1)
+            ) {
+               ++var12;
+            }
+
+            return var12;
+         }
+      }
+   }
+
+   private void propagateFromEmptySections(long var1, Direction var3, int var4, boolean var5, int var6) {
+      if (var6 != 0) {
+         int var7 = BlockPos.getX(var1);
+         int var8 = BlockPos.getZ(var1);
+         if (crossedSectionEdge(var3, SectionPos.sectionRelative(var7), SectionPos.sectionRelative(var8))) {
+            int var9 = BlockPos.getY(var1);
+            int var10 = SectionPos.blockToSectionCoord(var7);
+            int var11 = SectionPos.blockToSectionCoord(var8);
+            int var12 = SectionPos.blockToSectionCoord(var9) - 1;
+            int var13 = var12 - var6 + 1;
+
+            while(var12 >= var13) {
+               if (!this.storage.storingLightForSection(SectionPos.asLong(var10, var12, var11))) {
+                  --var12;
+               } else {
+                  int var14 = SectionPos.sectionToBlockCoord(var12);
+
+                  for(int var15 = 15; var15 >= 0; --var15) {
+                     long var16 = BlockPos.asLong(var7, var14 + var15, var8);
+                     if (var5) {
+                        this.storage.setStoredLevel(var16, var4);
+                        if (var4 > 1) {
+                           this.enqueueIncrease(var16, LightEngine.QueueEntry.increaseSkipOneDirection(var4, true, var3.getOpposite()));
+                        }
+                     } else {
+                        this.storage.setStoredLevel(var16, 0);
+                        this.enqueueDecrease(var16, LightEngine.QueueEntry.decreaseSkipOneDirection(var4, var3.getOpposite()));
+                     }
+                  }
+
+                  --var12;
+               }
+            }
+         }
+      }
+   }
+
+   private static boolean crossedSectionEdge(Direction var0, int var1, int var2) {
+      return switch(var0) {
+         case NORTH -> var2 == 15;
+         case SOUTH -> var2 == 0;
+         case WEST -> var1 == 15;
+         case EAST -> var1 == 0;
+         default -> false;
+      };
+   }
+
+   @Override
+   public void setLightEnabled(ChunkPos var1, boolean var2) {
+      super.setLightEnabled(var1, var2);
+      if (var2) {
+         ChunkSkyLightSources var3 = Objects.requireNonNullElse(this.getChunkSources(var1.x, var1.z), this.emptyChunkSources);
+         int var4 = var3.getHighestLowestSourceY() - 1;
+         int var5 = SectionPos.blockToSectionCoord(var4) + 1;
+         long var6 = SectionPos.getZeroNode(var1.x, var1.z);
+         int var8 = this.storage.getTopSectionY(var6);
+         int var9 = Math.max(this.storage.getBottomSectionY(), var5);
+
+         for(int var10 = var8 - 1; var10 >= var9; --var10) {
+            DataLayer var11 = this.storage.getDataLayerToWrite(SectionPos.asLong(var1.x, var10, var1.z));
+            if (var11 != null && var11.isEmpty()) {
+               var11.fill(15);
+            }
+         }
+      }
+   }
+
+   @Override
+   public void propagateLightSources(ChunkPos var1) {
+      long var2 = SectionPos.getZeroNode(var1.x, var1.z);
+      this.storage.setLightEnabled(var2, true);
+      ChunkSkyLightSources var4 = Objects.requireNonNullElse(this.getChunkSources(var1.x, var1.z), this.emptyChunkSources);
+      ChunkSkyLightSources var5 = Objects.requireNonNullElse(this.getChunkSources(var1.x, var1.z - 1), this.emptyChunkSources);
+      ChunkSkyLightSources var6 = Objects.requireNonNullElse(this.getChunkSources(var1.x, var1.z + 1), this.emptyChunkSources);
+      ChunkSkyLightSources var7 = Objects.requireNonNullElse(this.getChunkSources(var1.x - 1, var1.z), this.emptyChunkSources);
+      ChunkSkyLightSources var8 = Objects.requireNonNullElse(this.getChunkSources(var1.x + 1, var1.z), this.emptyChunkSources);
+      int var9 = this.storage.getTopSectionY(var2);
+      int var10 = this.storage.getBottomSectionY();
+      int var11 = SectionPos.sectionToBlockCoord(var1.x);
+      int var12 = SectionPos.sectionToBlockCoord(var1.z);
+
+      for(int var13 = var9 - 1; var13 >= var10; --var13) {
+         long var14 = SectionPos.asLong(var1.x, var13, var1.z);
+         DataLayer var16 = this.storage.getDataLayerToWrite(var14);
+         if (var16 != null) {
+            int var17 = SectionPos.sectionToBlockCoord(var13);
+            int var18 = var17 + 15;
+            boolean var19 = false;
+
+            for(int var20 = 0; var20 < 16; ++var20) {
+               for(int var21 = 0; var21 < 16; ++var21) {
+                  int var22 = var4.getLowestSourceY(var21, var20);
+                  if (var22 <= var18) {
+                     int var23 = var20 == 0 ? var5.getLowestSourceY(var21, 15) : var4.getLowestSourceY(var21, var20 - 1);
+                     int var24 = var20 == 15 ? var6.getLowestSourceY(var21, 0) : var4.getLowestSourceY(var21, var20 + 1);
+                     int var25 = var21 == 0 ? var7.getLowestSourceY(15, var20) : var4.getLowestSourceY(var21 - 1, var20);
+                     int var26 = var21 == 15 ? var8.getLowestSourceY(0, var20) : var4.getLowestSourceY(var21 + 1, var20);
+                     int var27 = Math.max(Math.max(var23, var24), Math.max(var25, var26));
+
+                     for(int var28 = var18; var28 >= Math.max(var17, var22); --var28) {
+                        var16.set(var21, SectionPos.sectionRelative(var28), var20, 15);
+                        if (var28 == var22 || var28 < var27) {
+                           long var29 = BlockPos.asLong(var11 + var21, var28, var12 + var20);
+                           this.enqueueIncrease(
+                              var29,
+                              LightEngine.QueueEntry.increaseSkySourceInDirections(var28 == var22, var28 < var23, var28 < var24, var28 < var25, var28 < var26)
+                           );
+                        }
+                     }
+
+                     if (var22 < var17) {
+                        var19 = true;
+                     }
+                  }
+               }
+            }
+
+            if (!var19) {
+               break;
+            }
+         }
+      }
    }
 }

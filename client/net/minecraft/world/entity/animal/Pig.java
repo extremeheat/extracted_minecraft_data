@@ -91,7 +91,7 @@ public class Pig extends Animal implements ItemSteerable, Saddleable {
 
    @Override
    public void onSyncedDataUpdated(EntityDataAccessor<?> var1) {
-      if (DATA_BOOST_TIME.equals(var1) && this.level.isClientSide) {
+      if (DATA_BOOST_TIME.equals(var1) && this.level().isClientSide) {
          this.steering.onSynced();
       }
 
@@ -141,11 +141,11 @@ public class Pig extends Animal implements ItemSteerable, Saddleable {
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       boolean var3 = this.isFood(var1.getItemInHand(var2));
       if (!var3 && this.isSaddled() && !this.isVehicle() && !var1.isSecondaryUseActive()) {
-         if (!this.level.isClientSide) {
+         if (!this.level().isClientSide) {
             var1.startRiding(this);
          }
 
-         return InteractionResult.sidedSuccess(this.level.isClientSide);
+         return InteractionResult.sidedSuccess(this.level().isClientSide);
       } else {
          InteractionResult var4 = super.mobInteract(var1, var2);
          if (!var4.consumesAction()) {
@@ -179,7 +179,7 @@ public class Pig extends Animal implements ItemSteerable, Saddleable {
    public void equipSaddle(@Nullable SoundSource var1) {
       this.steering.setSaddle(true);
       if (var1 != null) {
-         this.level.playSound(null, this, SoundEvents.PIG_SADDLE, var1, 0.5F, 1.0F);
+         this.level().playSound(null, this, SoundEvents.PIG_SADDLE, var1, 0.5F, 1.0F);
       }
    }
 
@@ -200,10 +200,10 @@ public class Pig extends Animal implements ItemSteerable, Saddleable {
 
             for(int[] var12 : var3) {
                var5.set(var4.getX() + var12[0], var4.getY(), var4.getZ() + var12[1]);
-               double var13 = this.level.getBlockFloorHeight(var5);
+               double var13 = this.level().getBlockFloorHeight(var5);
                if (DismountHelper.isBlockFloorValid(var13)) {
                   Vec3 var15 = Vec3.upFromBottomCenterOf(var5, var13);
-                  if (DismountHelper.canDismountTo(this.level, var1, var8.move(var15))) {
+                  if (DismountHelper.canDismountTo(this.level(), var1, var8.move(var15))) {
                      var1.setPose(var7);
                      return var15;
                   }
@@ -241,7 +241,7 @@ public class Pig extends Animal implements ItemSteerable, Saddleable {
    }
 
    @Override
-   protected void tickRidden(LivingEntity var1, Vec3 var2) {
+   protected void tickRidden(Player var1, Vec3 var2) {
       super.tickRidden(var1, var2);
       this.setRot(var1.getYRot(), var1.getXRot() * 0.5F);
       this.yRotO = this.yBodyRot = this.yHeadRot = this.getYRot();
@@ -249,12 +249,12 @@ public class Pig extends Animal implements ItemSteerable, Saddleable {
    }
 
    @Override
-   protected Vec3 getRiddenInput(LivingEntity var1, Vec3 var2) {
+   protected Vec3 getRiddenInput(Player var1, Vec3 var2) {
       return new Vec3(0.0, 0.0, 1.0);
    }
 
    @Override
-   protected float getRiddenSpeed(LivingEntity var1) {
+   protected float getRiddenSpeed(Player var1) {
       return (float)(this.getAttributeValue(Attributes.MOVEMENT_SPEED) * 0.225 * (double)this.steering.boostFactor());
    }
 

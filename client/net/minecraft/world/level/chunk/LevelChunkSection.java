@@ -2,7 +2,6 @@ package net.minecraft.world.level.chunk;
 
 import java.util.function.Predicate;
 import net.minecraft.core.Holder;
-import net.minecraft.core.QuartPos;
 import net.minecraft.core.Registry;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.level.biome.Biome;
@@ -19,30 +18,23 @@ public class LevelChunkSection {
    public static final int SECTION_HEIGHT = 16;
    public static final int SECTION_SIZE = 4096;
    public static final int BIOME_CONTAINER_BITS = 2;
-   private final int bottomBlockY;
    private short nonEmptyBlockCount;
    private short tickingBlockCount;
    private short tickingFluidCount;
    private final PalettedContainer<BlockState> states;
    private PalettedContainerRO<Holder<Biome>> biomes;
 
-   public LevelChunkSection(int var1, PalettedContainer<BlockState> var2, PalettedContainerRO<Holder<Biome>> var3) {
+   public LevelChunkSection(PalettedContainer<BlockState> var1, PalettedContainerRO<Holder<Biome>> var2) {
       super();
-      this.bottomBlockY = getBottomBlockY(var1);
-      this.states = var2;
-      this.biomes = var3;
+      this.states = var1;
+      this.biomes = var2;
       this.recalcBlockCounts();
    }
 
-   public LevelChunkSection(int var1, Registry<Biome> var2) {
+   public LevelChunkSection(Registry<Biome> var1) {
       super();
-      this.bottomBlockY = getBottomBlockY(var1);
       this.states = new PalettedContainer<>(Block.BLOCK_STATE_REGISTRY, Blocks.AIR.defaultBlockState(), PalettedContainer.Strategy.SECTION_STATES);
-      this.biomes = new PalettedContainer<>(var2.asHolderIdMap(), var2.getHolderOrThrow(Biomes.PLAINS), PalettedContainer.Strategy.SECTION_BIOMES);
-   }
-
-   public static int getBottomBlockY(int var0) {
-      return var0 << 4;
+      this.biomes = new PalettedContainer<>(var1.asHolderIdMap(), var1.getHolderOrThrow(Biomes.PLAINS), PalettedContainer.Strategy.SECTION_BIOMES);
    }
 
    public BlockState getBlockState(int var1, int var2, int var3) {
@@ -114,10 +106,6 @@ public class LevelChunkSection {
 
    public boolean isRandomlyTickingFluids() {
       return this.tickingFluidCount > 0;
-   }
-
-   public int bottomBlockY() {
-      return this.bottomBlockY;
    }
 
    public void recalcBlockCounts() {
@@ -195,19 +183,18 @@ public class LevelChunkSection {
       return this.biomes.get(var1, var2, var3);
    }
 
-   public void fillBiomesFromNoise(BiomeResolver var1, Climate.Sampler var2, int var3, int var4) {
-      PalettedContainer var5 = this.biomes.recreate();
-      int var6 = QuartPos.fromBlock(this.bottomBlockY());
+   public void fillBiomesFromNoise(BiomeResolver var1, Climate.Sampler var2, int var3, int var4, int var5) {
+      PalettedContainer var6 = this.biomes.recreate();
       boolean var7 = true;
 
       for(int var8 = 0; var8 < 4; ++var8) {
          for(int var9 = 0; var9 < 4; ++var9) {
             for(int var10 = 0; var10 < 4; ++var10) {
-               var5.getAndSetUnchecked(var8, var9, var10, var1.getNoiseBiome(var3 + var8, var6 + var9, var4 + var10, var2));
+               var6.getAndSetUnchecked(var8, var9, var10, var1.getNoiseBiome(var3 + var8, var4 + var9, var5 + var10, var2));
             }
          }
       }
 
-      this.biomes = var5;
+      this.biomes = var6;
    }
 }

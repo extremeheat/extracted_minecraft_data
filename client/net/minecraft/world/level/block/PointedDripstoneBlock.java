@@ -14,7 +14,6 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ThrownTrident;
@@ -35,7 +34,6 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -216,11 +214,6 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
       }
    }
 
-   @Override
-   public PushReaction getPistonPushReaction(BlockState var1) {
-      return PushReaction.DESTROY;
-   }
-
    @Nullable
    @Override
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
@@ -296,11 +289,6 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
    @Override
    public DamageSource getFallDamageSource(Entity var1) {
       return var1.damageSources().fallingStalactite(var1);
-   }
-
-   @Override
-   public Predicate<Entity> getHurtsEntitySelector() {
-      return EntitySelector.NO_CREATIVE_OR_SPECTATOR.and(EntitySelector.LIVING_ENTITY_STILL_ALIVE);
    }
 
    private static void spawnFallingStalactite(BlockState var0, ServerLevel var1, BlockPos var2) {

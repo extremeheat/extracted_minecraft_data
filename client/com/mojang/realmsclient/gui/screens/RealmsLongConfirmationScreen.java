@@ -1,14 +1,16 @@
 package com.mojang.realmsclient.gui.screens;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import net.minecraft.client.GameNarrator;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.realms.RealmsScreen;
 
 public class RealmsLongConfirmationScreen extends RealmsScreen {
+   static final Component WARNING = Component.translatable("mco.warning");
+   static final Component INFO = Component.translatable("mco.info");
    private final RealmsLongConfirmationScreen.Type type;
    private final Component line2;
    private final Component line3;
@@ -35,7 +37,7 @@ public class RealmsLongConfirmationScreen extends RealmsScreen {
          );
       } else {
          this.addRenderableWidget(
-            Button.builder(Component.translatable("mco.gui.ok"), var1 -> this.callback.accept(true)).bounds(this.width / 2 - 50, row(8), 100, 20).build()
+            Button.builder(CommonComponents.GUI_OK, var1 -> this.callback.accept(true)).bounds(this.width / 2 - 50, row(8), 100, 20).build()
          );
       }
    }
@@ -56,23 +58,23 @@ public class RealmsLongConfirmationScreen extends RealmsScreen {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderBackground(var1);
-      drawCenteredString(var1, this.font, this.type.text, this.width / 2, row(2), this.type.colorCode);
-      drawCenteredString(var1, this.font, this.line2, this.width / 2, row(4), 16777215);
-      drawCenteredString(var1, this.font, this.line3, this.width / 2, row(6), 16777215);
+      var1.drawCenteredString(this.font, this.type.text, this.width / 2, row(2), this.type.colorCode);
+      var1.drawCenteredString(this.font, this.line2, this.width / 2, row(4), 16777215);
+      var1.drawCenteredString(this.font, this.line3, this.width / 2, row(6), 16777215);
       super.render(var1, var2, var3, var4);
    }
 
    public static enum Type {
-      Warning("Warning!", 16711680),
-      Info("Info!", 8226750);
+      WARNING(RealmsLongConfirmationScreen.WARNING, 16711680),
+      INFO(RealmsLongConfirmationScreen.INFO, 8226750);
 
       public final int colorCode;
       public final Component text;
 
-      private Type(String var3, int var4) {
-         this.text = Component.literal(var3);
+      private Type(Component var3, int var4) {
+         this.text = var3;
          this.colorCode = var4;
       }
    }

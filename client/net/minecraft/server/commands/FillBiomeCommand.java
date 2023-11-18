@@ -133,9 +133,9 @@ public class FillBiomeCommand {
 
          var10.getChunkSource().chunkMap.resendBiomesForChunks(var11);
          var0.sendSuccess(
-            Component.translatable(
-               "commands.fillbiome.success.count", var15.getValue(), var7.minX(), var7.minY(), var7.minZ(), var7.maxX(), var7.maxY(), var7.maxZ()
-            ),
+            () -> Component.translatable(
+                  "commands.fillbiome.success.count", var15.getValue(), var7.minX(), var7.minY(), var7.minZ(), var7.maxX(), var7.maxY(), var7.maxZ()
+               ),
             true
          );
          return var15.getValue();

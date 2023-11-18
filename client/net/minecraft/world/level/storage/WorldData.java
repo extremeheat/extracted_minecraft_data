@@ -13,6 +13,7 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
+import net.minecraft.world.level.dimension.end.EndDragonFight;
 import net.minecraft.world.level.levelgen.WorldOptions;
 
 public interface WorldData {
@@ -27,10 +28,13 @@ public interface WorldData {
 
    Set<String> getKnownServerBrands();
 
+   Set<String> getRemovedFeatureFlags();
+
    void setModdedInfo(String var1, boolean var2);
 
    default void fillCrashReportCategory(CrashReportCategory var1) {
       var1.setDetail("Known server brands", () -> String.join(", ", this.getKnownServerBrands()));
+      var1.setDetail("Removed feature flags", () -> String.join(", ", this.getRemovedFeatureFlags()));
       var1.setDetail("Level was modded", () -> Boolean.toString(this.wasModded()));
       var1.setDetail("Level storage version", () -> {
          int var1x = this.getVersion();
@@ -85,9 +89,9 @@ public interface WorldData {
    @Nullable
    CompoundTag getLoadedPlayerTag();
 
-   CompoundTag endDragonFightData();
+   EndDragonFight.Data endDragonFightData();
 
-   void setEndDragonFightData(CompoundTag var1);
+   void setEndDragonFightData(EndDragonFight.Data var1);
 
    WorldOptions worldGenOptions();
 

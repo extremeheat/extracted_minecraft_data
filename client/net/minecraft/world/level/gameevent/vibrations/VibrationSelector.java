@@ -46,7 +46,7 @@ public class VibrationSelector {
             } else if (var1.distance() > var7.distance()) {
                return false;
             } else {
-               return VibrationListener.getGameEventFrequency(var1.gameEvent()) > VibrationListener.getGameEventFrequency(var7.gameEvent());
+               return VibrationSystem.getGameEventFrequency(var1.gameEvent()) > VibrationSystem.getGameEventFrequency(var7.gameEvent());
             }
          }
       }

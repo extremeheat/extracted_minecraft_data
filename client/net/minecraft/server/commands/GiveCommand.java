@@ -57,42 +57,43 @@ public class GiveCommand {
    private static int giveItem(CommandSourceStack var0, ItemInput var1, Collection<ServerPlayer> var2, int var3) throws CommandSyntaxException {
       int var4 = var1.getItem().getMaxStackSize();
       int var5 = var4 * 100;
+      ItemStack var6 = var1.createItemStack(var3, false);
       if (var3 > var5) {
-         var0.sendFailure(Component.translatable("commands.give.failed.toomanyitems", var5, var1.createItemStack(var3, false).getDisplayName()));
+         var0.sendFailure(Component.translatable("commands.give.failed.toomanyitems", var5, var6.getDisplayName()));
          return 0;
       } else {
-         for(ServerPlayer var7 : var2) {
-            int var8 = var3;
+         for(ServerPlayer var8 : var2) {
+            int var9 = var3;
 
-            while(var8 > 0) {
-               int var9 = Math.min(var4, var8);
-               var8 -= var9;
-               ItemStack var10 = var1.createItemStack(var9, false);
-               boolean var11 = var7.getInventory().add(var10);
-               if (var11 && var10.isEmpty()) {
-                  var10.setCount(1);
-                  ItemEntity var13 = var7.drop(var10, false);
-                  if (var13 != null) {
-                     var13.makeFakeItem();
+            while(var9 > 0) {
+               int var10 = Math.min(var4, var9);
+               var9 -= var10;
+               ItemStack var11 = var1.createItemStack(var10, false);
+               boolean var12 = var8.getInventory().add(var11);
+               if (var12 && var11.isEmpty()) {
+                  var11.setCount(1);
+                  ItemEntity var14 = var8.drop(var11, false);
+                  if (var14 != null) {
+                     var14.makeFakeItem();
                   }
 
-                  var7.level
+                  var8.level()
                      .playSound(
                         null,
-                        var7.getX(),
-                        var7.getY(),
-                        var7.getZ(),
+                        var8.getX(),
+                        var8.getY(),
+                        var8.getZ(),
                         SoundEvents.ITEM_PICKUP,
                         SoundSource.PLAYERS,
                         0.2F,
-                        ((var7.getRandom().nextFloat() - var7.getRandom().nextFloat()) * 0.7F + 1.0F) * 2.0F
+                        ((var8.getRandom().nextFloat() - var8.getRandom().nextFloat()) * 0.7F + 1.0F) * 2.0F
                      );
-                  var7.containerMenu.broadcastChanges();
+                  var8.containerMenu.broadcastChanges();
                } else {
-                  ItemEntity var12 = var7.drop(var10, false);
-                  if (var12 != null) {
-                     var12.setNoPickUpDelay();
-                     var12.setTarget(var7.getUUID());
+                  ItemEntity var13 = var8.drop(var11, false);
+                  if (var13 != null) {
+                     var13.setNoPickUpDelay();
+                     var13.setTarget(var8.getUUID());
                   }
                }
             }
@@ -100,18 +101,13 @@ public class GiveCommand {
 
          if (var2.size() == 1) {
             var0.sendSuccess(
-               Component.translatable(
-                  "commands.give.success.single",
-                  var3,
-                  var1.createItemStack(var3, false).getDisplayName(),
-                  ((ServerPlayer)var2.iterator().next()).getDisplayName()
-               ),
+               () -> Component.translatable(
+                     "commands.give.success.single", var3, var6.getDisplayName(), ((ServerPlayer)var2.iterator().next()).getDisplayName()
+                  ),
                true
             );
          } else {
-            var0.sendSuccess(
-               Component.translatable("commands.give.success.single", var3, var1.createItemStack(var3, false).getDisplayName(), var2.size()), true
-            );
+            var0.sendSuccess(() -> Component.translatable("commands.give.success.single", var3, var6.getDisplayName(), var2.size()), true);
          }
 
          return var2.size();

@@ -44,7 +44,6 @@ import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.npc.InventoryCarrier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
-import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ProjectileWeaponItem;
@@ -160,13 +159,11 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
    @Override
    protected void dropCustomDeathLoot(DamageSource var1, int var2, boolean var3) {
       super.dropCustomDeathLoot(var1, var2, var3);
-      if (this.getLevel().enabledFeatures().contains(FeatureFlags.UPDATE_1_20)) {
-         Entity var4 = var1.getEntity();
-         if (var4 instanceof Creeper var5 && var5.canDropMobsSkull()) {
-            ItemStack var6 = new ItemStack(Items.PIGLIN_HEAD);
-            var5.increaseDroppedSkulls();
-            this.spawnAtLocation(var6);
-         }
+      Entity var4 = var1.getEntity();
+      if (var4 instanceof Creeper var5 && var5.canDropMobsSkull()) {
+         ItemStack var6 = new ItemStack(Items.PIGLIN_HEAD);
+         var5.increaseDroppedSkulls();
+         this.spawnAtLocation(var6);
       }
 
       this.inventory.removeAllItems().forEach(this::spawnAtLocation);
@@ -273,7 +270,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
       InteractionResult var3 = super.mobInteract(var1, var2);
       if (var3.consumesAction()) {
          return var3;
-      } else if (!this.level.isClientSide) {
+      } else if (!this.level().isClientSide) {
          return PiglinAi.mobInteract(this, var1, var2);
       } else {
          boolean var4 = PiglinAi.canAdmire(this, var1.getItemInHand(var2)) && this.getArmPose() != PiglinArmPose.ADMIRING_ITEM;
@@ -295,7 +292,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
    @Override
    public void setBaby(boolean var1) {
       this.getEntityData().set(DATA_BABY_ID, var1);
-      if (!this.level.isClientSide) {
+      if (!this.level().isClientSide) {
          AttributeInstance var2 = this.getAttribute(Attributes.MOVEMENT_SPEED);
          var2.removeModifier(SPEED_MODIFIER_BABY);
          if (var1) {
@@ -320,9 +317,9 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
 
    @Override
    protected void customServerAiStep() {
-      this.level.getProfiler().push("piglinBrain");
-      this.getBrain().tick((ServerLevel)this.level, this);
-      this.level.getProfiler().pop();
+      this.level().getProfiler().push("piglinBrain");
+      this.getBrain().tick((ServerLevel)this.level(), this);
+      this.level().getProfiler().pop();
       PiglinAi.updateActivity(this);
       super.customServerAiStep();
    }
@@ -383,7 +380,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
    @Override
    public boolean hurt(DamageSource var1, float var2) {
       boolean var3 = super.hurt(var1, var2);
-      if (this.level.isClientSide) {
+      if (this.level().isClientSide) {
          return false;
       } else {
          if (var3 && var1.getEntity() instanceof LivingEntity) {
@@ -424,7 +421,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
 
    @Override
    public boolean wantsToPickUp(ItemStack var1) {
-      return this.level.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) && this.canPickUpLoot() && PiglinAi.wantsToPickup(this, var1);
+      return this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING) && this.canPickUpLoot() && PiglinAi.wantsToPickup(this, var1);
    }
 
    protected boolean canReplaceCurrentItem(ItemStack var1) {
@@ -472,7 +469,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
 
    @Override
    protected SoundEvent getAmbientSound() {
-      return this.level.isClientSide ? null : PiglinAi.getSoundForCurrentActivity(this).orElse(null);
+      return this.level().isClientSide ? null : PiglinAi.getSoundForCurrentActivity(this).orElse(null);
    }
 
    @Override

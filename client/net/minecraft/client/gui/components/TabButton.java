@@ -1,9 +1,8 @@
 package net.minecraft.client.gui.components;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.tabs.Tab;
 import net.minecraft.client.gui.components.tabs.TabManager;
 import net.minecraft.client.gui.narration.NarratedElementType;
@@ -33,9 +32,8 @@ public class TabButton extends AbstractWidget {
    }
 
    @Override
-   public void renderWidget(PoseStack var1, int var2, int var3, float var4) {
-      RenderSystem.setShaderTexture(0, TEXTURE_LOCATION);
-      blitNineSliced(var1, this.getX(), this.getY(), this.width, this.height, 2, 2, 2, 0, 130, 24, 0, this.getTextureY());
+   public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
+      var1.blitNineSliced(TEXTURE_LOCATION, this.getX(), this.getY(), this.width, this.height, 2, 2, 2, 0, 130, 24, 0, this.getTextureY());
       Font var5 = Minecraft.getInstance().font;
       int var6 = this.active ? -1 : -6250336;
       this.renderString(var1, var5, var6);
@@ -44,7 +42,7 @@ public class TabButton extends AbstractWidget {
       }
    }
 
-   public void renderString(PoseStack var1, Font var2, int var3) {
+   public void renderString(GuiGraphics var1, Font var2, int var3) {
       int var4 = this.getX() + 1;
       int var5 = this.getY() + (this.isSelected() ? 0 : 3);
       int var6 = this.getX() + this.getWidth() - 1;
@@ -52,11 +50,11 @@ public class TabButton extends AbstractWidget {
       renderScrollingString(var1, var2, this.getMessage(), var4, var5, var6, var7, var3);
    }
 
-   private void renderFocusUnderline(PoseStack var1, Font var2, int var3) {
+   private void renderFocusUnderline(GuiGraphics var1, Font var2, int var3) {
       int var4 = Math.min(var2.width(this.getMessage()), this.getWidth() - 4);
       int var5 = this.getX() + (this.getWidth() - var4) / 2;
       int var6 = this.getY() + this.getHeight() - 2;
-      fill(var1, var5, var6, var5 + var4, var6 + 1, var3);
+      var1.fill(var5, var6, var5 + var4, var6 + 1, var3);
    }
 
    protected int getTextureY() {

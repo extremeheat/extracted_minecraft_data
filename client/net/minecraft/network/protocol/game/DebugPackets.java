@@ -41,7 +41,6 @@ import net.minecraft.world.entity.animal.Bee;
 import net.minecraft.world.entity.monster.warden.Warden;
 import net.minecraft.world.entity.npc.InventoryCarrier;
 import net.minecraft.world.entity.npc.Villager;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
@@ -131,7 +130,7 @@ public class DebugPackets {
    // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private static void writeBrain(LivingEntity var0, FriendlyByteBuf var1) {
       Brain var2 = var0.getBrain();
-      long var3 = var0.level.getGameTime();
+      long var3 = var0.level().getGameTime();
       if (var0 instanceof InventoryCarrier) {
          SimpleContainer var5 = ((InventoryCarrier)var0).getInventory();
          var1.writeUtf(var5.isEmpty() ? "" : var5.toString());
@@ -213,9 +212,9 @@ public class DebugPackets {
                long var12 = var1 - (Long)var11;
                var9 = var12 + " ticks ago";
             } else if (var10.canExpire()) {
-               var9 = getShortDescription((ServerLevel)var0.level, var11) + " (ttl: " + var10.getTimeToLive() + ")";
+               var9 = getShortDescription((ServerLevel)var0.level(), var11) + " (ttl: " + var10.getTimeToLive() + ")";
             } else {
-               var9 = getShortDescription((ServerLevel)var0.level, var11);
+               var9 = getShortDescription((ServerLevel)var0.level(), var11);
             }
          } else {
             var9 = "-";
@@ -265,8 +264,8 @@ public class DebugPackets {
    private static void sendPacketToAllPlayers(ServerLevel var0, FriendlyByteBuf var1, ResourceLocation var2) {
       ClientboundCustomPayloadPacket var3 = new ClientboundCustomPayloadPacket(var2, var1);
 
-      for(Player var5 : var0.players()) {
-         ((ServerPlayer)var5).connection.send(var3);
+      for(ServerPlayer var5 : var0.players()) {
+         var5.connection.send(var3);
       }
    }
 }

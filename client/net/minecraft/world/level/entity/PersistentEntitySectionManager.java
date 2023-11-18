@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
-import net.minecraft.server.level.ChunkHolder;
+import net.minecraft.server.level.FullChunkStatus;
 import net.minecraft.util.CsvOutput;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.world.entity.Entity;
@@ -128,7 +128,7 @@ public class PersistentEntitySectionManager<T extends EntityAccess> implements A
       this.visibleEntityStorage.remove((T)var1);
    }
 
-   public void updateChunkStatus(ChunkPos var1, ChunkHolder.FullChunkStatus var2) {
+   public void updateChunkStatus(ChunkPos var1, FullChunkStatus var2) {
       Visibility var3 = Visibility.fromFullChunkStatus(var2);
       this.updateChunkStatus(var1, var3);
    }

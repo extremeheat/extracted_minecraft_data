@@ -186,7 +186,7 @@ public abstract class BaseCommandBlock implements CommandSource {
             var1.openMinecartCommandBlock(this);
          }
 
-         return InteractionResult.sidedSuccess(var1.level.isClientSide);
+         return InteractionResult.sidedSuccess(var1.level().isClientSide);
       }
    }
 
@@ -208,4 +208,6 @@ public abstract class BaseCommandBlock implements CommandSource {
    public boolean shouldInformAdmins() {
       return this.getLevel().getGameRules().getBoolean(GameRules.RULE_COMMANDBLOCKOUTPUT);
    }
+
+   public abstract boolean isValid();
 }

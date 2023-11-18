@@ -19,23 +19,24 @@ import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.world.level.block.CeilingHangingSignBlock;
 import net.minecraft.world.level.block.SignBlock;
-import net.minecraft.world.level.block.WallSignBlock;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.RotationSegment;
 import net.minecraft.world.level.block.state.properties.WoodType;
 import net.minecraft.world.phys.Vec3;
 
 public class HangingSignRenderer extends SignRenderer {
    private static final String PLANK = "plank";
    private static final String V_CHAINS = "vChains";
-   public static final String NORMAL_CHAINS = "normalChains";
-   public static final String CHAIN_L_1 = "chainL1";
-   public static final String CHAIN_L_2 = "chainL2";
-   public static final String CHAIN_R_1 = "chainR1";
-   public static final String CHAIN_R_2 = "chainR2";
-   public static final String BOARD = "board";
+   private static final String NORMAL_CHAINS = "normalChains";
+   private static final String CHAIN_L_1 = "chainL1";
+   private static final String CHAIN_L_2 = "chainL2";
+   private static final String CHAIN_R_1 = "chainR1";
+   private static final String CHAIN_R_2 = "chainR2";
+   private static final String BOARD = "board";
+   private static final float MODEL_RENDER_SCALE = 1.0F;
+   private static final float TEXT_RENDER_SCALE = 0.9F;
+   private static final Vec3 TEXT_OFFSET = new Vec3(0.0, -0.3199999928474426, 0.0729999989271164);
    private final Map<WoodType, HangingSignRenderer.HangingSignModel> hangingSignModels;
 
    public HangingSignRenderer(BlockEntityRendererProvider.Context var1) {
@@ -49,35 +50,30 @@ public class HangingSignRenderer extends SignRenderer {
    }
 
    @Override
-   public void render(SignBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
-      BlockState var7 = var1.getBlockState();
-      var3.pushPose();
-      WoodType var8 = SignBlock.getWoodType(var7.getBlock());
-      HangingSignRenderer.HangingSignModel var9 = this.hangingSignModels.get(var8);
-      boolean var10 = !(var7.getBlock() instanceof CeilingHangingSignBlock);
-      boolean var11 = var7.hasProperty(BlockStateProperties.ATTACHED) && var7.getValue(BlockStateProperties.ATTACHED);
-      var3.translate(0.5, 0.9375, 0.5);
-      if (var11) {
-         float var12 = -RotationSegment.convertToDegrees(var7.getValue(CeilingHangingSignBlock.ROTATION));
-         var3.mulPose(Axis.YP.rotationDegrees(var12));
-      } else {
-         var3.mulPose(Axis.YP.rotationDegrees(this.getSignAngle(var7, var10)));
-      }
-
-      var3.translate(0.0F, -0.3125F, 0.0F);
-      var9.evaluateVisibleParts(var7);
-      float var13 = 1.0F;
-      this.renderSign(var3, var4, var5, var6, 1.0F, var8, var9);
-      this.renderSignText(var1, var3, var4, var5, 1.0F);
-   }
-
-   private float getSignAngle(BlockState var1, boolean var2) {
-      return var2 ? -var1.getValue(WallSignBlock.FACING).toYRot() : -((float)(var1.getValue(CeilingHangingSignBlock.ROTATION) * 360) / 16.0F);
+   public float getSignModelRenderScale() {
+      return 1.0F;
    }
 
    @Override
-   Material getSignMaterial(WoodType var1) {
-      return Sheets.getHangingSignMaterial(var1);
+   public float getSignTextRenderScale() {
+      return 0.9F;
+   }
+
+   @Override
+   public void render(SignBlockEntity var1, float var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
+      BlockState var7 = var1.getBlockState();
+      SignBlock var8 = (SignBlock)var7.getBlock();
+      WoodType var9 = SignBlock.getWoodType(var8);
+      HangingSignRenderer.HangingSignModel var10 = this.hangingSignModels.get(var9);
+      var10.evaluateVisibleParts(var7);
+      this.renderSignWithText(var1, var3, var4, var5, var6, var7, var8, var9, var10);
+   }
+
+   @Override
+   void translateSign(PoseStack var1, float var2, BlockState var3) {
+      var1.translate(0.5, 0.9375, 0.5);
+      var1.mulPose(Axis.YP.rotationDegrees(var2));
+      var1.translate(0.0F, -0.3125F, 0.0F);
    }
 
    @Override
@@ -87,8 +83,13 @@ public class HangingSignRenderer extends SignRenderer {
    }
 
    @Override
-   Vec3 getTextOffset(float var1) {
-      return new Vec3(0.0, (double)(-0.32F * var1), (double)(0.063F * var1));
+   Material getSignMaterial(WoodType var1) {
+      return Sheets.getHangingSignMaterial(var1);
+   }
+
+   @Override
+   Vec3 getTextOffset() {
+      return TEXT_OFFSET;
    }
 
    public static LayerDefinition createHangingSignLayer() {

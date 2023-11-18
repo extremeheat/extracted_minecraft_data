@@ -25,6 +25,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.level.storage.LevelStorageSource;
+import net.minecraft.world.level.validation.ContentValidationException;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
@@ -243,12 +244,12 @@ public class FileDownload {
       var1 = findAvailableFolderName(var1);
 
       try {
-         for(LevelStorageSource.LevelDirectory var44 : var3.findLevelCandidates()) {
-            String var46 = var44.directoryName();
-            if (var46.toLowerCase(Locale.ROOT).startsWith(var1.toLowerCase(Locale.ROOT))) {
-               Matcher var48 = var4.matcher(var46);
-               if (var48.matches()) {
-                  int var11 = Integer.parseInt(var48.group(1));
+         for(LevelStorageSource.LevelDirectory var48 : var3.findLevelCandidates()) {
+            String var50 = var48.directoryName();
+            if (var50.toLowerCase(Locale.ROOT).startsWith(var1.toLowerCase(Locale.ROOT))) {
+               Matcher var52 = var4.matcher(var50);
+               if (var52.matches()) {
+                  int var11 = Integer.parseInt(var52.group(1));
                   if (var11 > var6) {
                      var6 = var11;
                   }
@@ -257,8 +258,8 @@ public class FileDownload {
                }
             }
          }
-      } catch (Exception var39) {
-         LOGGER.error("Error getting level list", var39);
+      } catch (Exception var43) {
+         LOGGER.error("Error getting level list", var43);
          this.error = true;
          return;
       }
@@ -269,58 +270,60 @@ public class FileDownload {
       } else {
          var5 = var1 + (var6 == 1 ? "" : "-" + var6);
          if (!var3.isNewLevelIdAcceptable(var5)) {
-            boolean var42 = false;
+            boolean var46 = false;
 
-            while(!var42) {
+            while(!var46) {
                ++var6;
                var5 = var1 + (var6 == 1 ? "" : "-" + var6);
                if (var3.isNewLevelIdAcceptable(var5)) {
-                  var42 = true;
+                  var46 = true;
                }
             }
          }
       }
 
-      TarArchiveInputStream var43 = null;
-      File var45 = new File(Minecraft.getInstance().gameDirectory.getAbsolutePath(), "saves");
+      TarArchiveInputStream var47 = null;
+      File var49 = new File(Minecraft.getInstance().gameDirectory.getAbsolutePath(), "saves");
 
       try {
-         var45.mkdir();
-         var43 = new TarArchiveInputStream(new GzipCompressorInputStream(new BufferedInputStream(new FileInputStream(var2))));
+         var49.mkdir();
+         var47 = new TarArchiveInputStream(new GzipCompressorInputStream(new BufferedInputStream(new FileInputStream(var2))));
 
-         for(TarArchiveEntry var47 = var43.getNextTarEntry(); var47 != null; var47 = var43.getNextTarEntry()) {
-            File var49 = new File(var45, var47.getName().replace("world", var5));
-            if (var47.isDirectory()) {
-               var49.mkdirs();
+         for(TarArchiveEntry var51 = var47.getNextTarEntry(); var51 != null; var51 = var47.getNextTarEntry()) {
+            File var53 = new File(var49, var51.getName().replace("world", var5));
+            if (var51.isDirectory()) {
+               var53.mkdirs();
             } else {
-               var49.createNewFile();
+               var53.createNewFile();
 
-               try (FileOutputStream var50 = new FileOutputStream(var49)) {
-                  IOUtils.copy(var43, var50);
+               try (FileOutputStream var54 = new FileOutputStream(var53)) {
+                  IOUtils.copy(var47, var54);
                }
             }
          }
-      } catch (Exception var37) {
-         LOGGER.error("Error extracting world", var37);
+      } catch (Exception var41) {
+         LOGGER.error("Error extracting world", var41);
          this.error = true;
       } finally {
-         if (var43 != null) {
-            var43.close();
+         if (var47 != null) {
+            var47.close();
          }
 
          if (var2 != null) {
             var2.delete();
          }
 
-         try (LevelStorageSource.LevelStorageAccess var15 = var3.createAccess(var5)) {
+         try (LevelStorageSource.LevelStorageAccess var15 = var3.validateAndCreateAccess(var5)) {
             var15.renameLevel(var5.trim());
             Path var16 = var15.getLevelPath(LevelResource.LEVEL_DATA_FILE);
             deletePlayerTag(var16.toFile());
-         } catch (IOException var36) {
-            LOGGER.error("Failed to rename unpacked realms level {}", var5, var36);
+         } catch (IOException var39) {
+            LOGGER.error("Failed to rename unpacked realms level {}", var5, var39);
+         } catch (ContentValidationException var40) {
+            LOGGER.warn("{}", var40.getMessage());
          }
 
-         this.resourcePackPath = new File(var45, var5 + File.separator + "resources.zip");
+         this.resourcePackPath = new File(var49, var5 + File.separator + "resources.zip");
       }
    }
 

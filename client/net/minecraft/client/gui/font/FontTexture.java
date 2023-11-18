@@ -3,31 +3,26 @@ package net.minecraft.client.gui.font;
 import com.mojang.blaze3d.font.SheetGlyphInfo;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.TextureUtil;
+import java.nio.file.Path;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.AbstractTexture;
+import net.minecraft.client.renderer.texture.Dumpable;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 
-public class FontTexture extends AbstractTexture {
+public class FontTexture extends AbstractTexture implements Dumpable {
    private static final int SIZE = 256;
-   private final ResourceLocation name;
-   private final RenderType normalType;
-   private final RenderType seeThroughType;
-   private final RenderType polygonOffsetType;
+   private final GlyphRenderTypes renderTypes;
    private final boolean colored;
    private final FontTexture.Node root;
 
-   public FontTexture(ResourceLocation var1, boolean var2) {
+   public FontTexture(GlyphRenderTypes var1, boolean var2) {
       super();
-      this.name = var1;
       this.colored = var2;
       this.root = new FontTexture.Node(0, 0, 256, 256);
       TextureUtil.prepareImage(var2 ? NativeImage.InternalGlFormat.RGBA : NativeImage.InternalGlFormat.RED, this.getId(), 256, 256);
-      this.normalType = var2 ? RenderType.text(var1) : RenderType.textIntensity(var1);
-      this.seeThroughType = var2 ? RenderType.textSeeThrough(var1) : RenderType.textIntensitySeeThrough(var1);
-      this.polygonOffsetType = var2 ? RenderType.textPolygonOffset(var1) : RenderType.textIntensityPolygonOffset(var1);
+      this.renderTypes = var1;
    }
 
    @Override
@@ -52,9 +47,7 @@ public class FontTexture extends AbstractTexture {
             float var4 = 256.0F;
             float var5 = 0.01F;
             return new BakedGlyph(
-               this.normalType,
-               this.seeThroughType,
-               this.polygonOffsetType,
+               this.renderTypes,
                ((float)var2.x + 0.01F) / 256.0F,
                ((float)var2.x - 0.01F + (float)var1.getPixelWidth()) / 256.0F,
                ((float)var2.y + 0.01F) / 256.0F,
@@ -70,8 +63,10 @@ public class FontTexture extends AbstractTexture {
       }
    }
 
-   public ResourceLocation getName() {
-      return this.name;
+   @Override
+   public void dumpContents(ResourceLocation var1, Path var2) {
+      String var3 = var1.toDebugFileName();
+      TextureUtil.writeAsPNG(var2, var3, this.getId(), 0, 256, 256, var0 -> (var0 & 0xFF000000) == 0 ? -16777216 : var0);
    }
 
    static class Node {

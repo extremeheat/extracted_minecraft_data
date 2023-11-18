@@ -20,7 +20,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
-import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
@@ -121,12 +121,12 @@ public class GiveGiftToHero extends Behavior<Villager> {
       } else {
          VillagerProfession var2 = var1.getVillagerData().getProfession();
          if (GIFTS.containsKey(var2)) {
-            LootTable var3 = var1.level.getServer().getLootTables().get(GIFTS.get(var2));
-            LootContext.Builder var4 = new LootContext.Builder((ServerLevel)var1.level)
+            LootTable var3 = var1.level().getServer().getLootData().getLootTable(GIFTS.get(var2));
+            LootParams var4 = new LootParams.Builder((ServerLevel)var1.level())
                .withParameter(LootContextParams.ORIGIN, var1.position())
                .withParameter(LootContextParams.THIS_ENTITY, var1)
-               .withRandom(var1.getRandom());
-            return var3.getRandomItems(var4.create(LootContextParamSets.GIFT));
+               .create(LootContextParamSets.GIFT);
+            return var3.getRandomItems(var4);
          } else {
             return ImmutableList.of(new ItemStack(Items.WHEAT_SEEDS));
          }

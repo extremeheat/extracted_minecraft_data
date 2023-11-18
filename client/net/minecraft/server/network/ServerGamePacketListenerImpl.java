@@ -142,6 +142,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.HasCustomInventoryScreen;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PlayerRideableJumping;
 import net.minecraft.world.entity.RelativeMovement;
@@ -320,7 +321,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
 
       if (this.player.getLastActionTime() > 0L
          && this.server.getPlayerIdleTimeout() > 0
-         && Util.getMillis() - this.player.getLastActionTime() > (long)(this.server.getPlayerIdleTimeout() * 1000 * 60)) {
+         && Util.getMillis() - this.player.getLastActionTime() > (long)this.server.getPlayerIdleTimeout() * 1000L * 60L) {
          this.disconnect(Component.translatable("multiplayer.disconnect.idling"));
       }
    }
@@ -370,7 +371,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
 
    @Override
    public void handlePlayerInput(ServerboundPlayerInputPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       this.player.setPlayerInput(var1.getXxa(), var1.getZza(), var1.isJumping(), var1.isShiftKeyDown());
    }
 
@@ -386,15 +387,17 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
       return Mth.clamp(var0, -2.0E7, 2.0E7);
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void handleMoveVehicle(ServerboundMoveVehiclePacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       if (containsInvalidValues(var1.getX(), var1.getY(), var1.getZ(), var1.getYRot(), var1.getXRot())) {
          this.disconnect(Component.translatable("multiplayer.disconnect.invalid_vehicle_movement"));
       } else {
          Entity var2 = this.player.getRootVehicle();
          if (var2 != this.player && var2.getControllingPassenger() == this.player && var2 == this.lastVehicle) {
-            ServerLevel var3 = this.player.getLevel();
+            ServerLevel var3 = this.player.serverLevel();
             double var4 = var2.getX();
             double var6 = var2.getY();
             double var8 = var2.getZ();
@@ -422,6 +425,10 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
             var20 = var12 - this.vehicleLastGoodY - 1.0E-6;
             var22 = var14 - this.vehicleLastGoodZ;
             boolean var29 = var2.verticalCollisionBelow;
+            if (var2 instanceof LivingEntity var30 && var30.onClimbable()) {
+               var30.resetFallDistance();
+            }
+
             var2.move(MoverType.PLAYER, new Vec3(var18, var20, var22));
             var18 = var10 - var2.getX();
             var20 = var12 - var2.getY();
@@ -447,7 +454,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
                return;
             }
 
-            this.player.getLevel().getChunkSource().move(this.player);
+            this.player.serverLevel().getChunkSource().move(this.player);
             this.player.checkMovementStatistics(this.player.getX() - var4, this.player.getY() - var6, this.player.getZ() - var8);
             this.clientVehicleIsFloating = var20 >= -0.03125 && !var29 && !this.server.isFlightAllowed() && !var2.isNoGravity() && this.noBlocksAround(var2);
             this.vehicleLastGoodX = var2.getX();
@@ -458,12 +465,12 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
    }
 
    private boolean noBlocksAround(Entity var1) {
-      return var1.level.getBlockStates(var1.getBoundingBox().inflate(0.0625).expandTowards(0.0, -0.55, 0.0)).allMatch(BlockBehaviour.BlockStateBase::isAir);
+      return var1.level().getBlockStates(var1.getBoundingBox().inflate(0.0625).expandTowards(0.0, -0.55, 0.0)).allMatch(BlockBehaviour.BlockStateBase::isAir);
    }
 
    @Override
    public void handleAcceptTeleportPacket(ServerboundAcceptTeleportationPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       if (var1.getId() == this.awaitingTeleport) {
          if (this.awaitingPositionFromClient == null) {
             this.disconnect(Component.translatable("multiplayer.disconnect.invalid_player_movement"));
@@ -491,19 +498,19 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
 
    @Override
    public void handleRecipeBookSeenRecipePacket(ServerboundRecipeBookSeenRecipePacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       this.server.getRecipeManager().byKey(var1.getRecipe()).ifPresent(this.player.getRecipeBook()::removeHighlight);
    }
 
    @Override
    public void handleRecipeBookChangeSettingsPacket(ServerboundRecipeBookChangeSettingsPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       this.player.getRecipeBook().setBookSetting(var1.getBookType(), var1.isOpen(), var1.isFiltering());
    }
 
    @Override
    public void handleSeenAdvancements(ServerboundSeenAdvancementsPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       if (var1.getAction() == ServerboundSeenAdvancementsPacket.Action.OPENED_TAB) {
          ResourceLocation var2 = var1.getTab();
          Advancement var3 = this.server.getAdvancements().getAdvancement(var2);
@@ -515,7 +522,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
 
    @Override
    public void handleCustomCommandSuggestions(ServerboundCommandSuggestionPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       StringReader var2 = new StringReader(var1.getCommand());
       if (var2.canRead() && var2.peek() == '/') {
          var2.skip();
@@ -531,7 +538,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
 
    @Override
    public void handleSetCommandBlock(ServerboundSetCommandBlockPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       if (!this.server.isCommandBlockEnabled()) {
          this.player.sendSystemMessage(Component.translatable("advMode.notEnabled"));
       } else if (!this.player.canUseGameMasterBlocks()) {
@@ -540,7 +547,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
          BaseCommandBlock var2 = null;
          CommandBlockEntity var3 = null;
          BlockPos var4 = var1.getPos();
-         BlockEntity var5 = this.player.level.getBlockEntity(var4);
+         BlockEntity var5 = this.player.level().getBlockEntity(var4);
          if (var5 instanceof CommandBlockEntity) {
             var3 = (CommandBlockEntity)var5;
             var2 = var3.getCommandBlock();
@@ -550,7 +557,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
          boolean var7 = var1.isTrackOutput();
          if (var2 != null) {
             CommandBlockEntity.Mode var8 = var3.getMode();
-            BlockState var9 = this.player.level.getBlockState(var4);
+            BlockState var9 = this.player.level().getBlockState(var4);
             Direction var10 = var9.getValue(CommandBlock.FACING);
 
             BlockState var12 = (switch(var1.getMode()) {
@@ -559,9 +566,9 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
                default -> Blocks.COMMAND_BLOCK.defaultBlockState();
             }).setValue(CommandBlock.FACING, var10).setValue(CommandBlock.CONDITIONAL, Boolean.valueOf(var1.isConditional()));
             if (var12 != var9) {
-               this.player.level.setBlock(var4, var12, 2);
+               this.player.level().setBlock(var4, var12, 2);
                var5.setBlockState(var12);
-               this.player.level.getChunkAt(var4).setBlockEntity(var5);
+               this.player.level().getChunkAt(var4).setBlockEntity(var5);
             }
 
             var2.setCommand(var6);
@@ -585,13 +592,13 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
 
    @Override
    public void handleSetCommandMinecart(ServerboundSetCommandMinecartPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       if (!this.server.isCommandBlockEnabled()) {
          this.player.sendSystemMessage(Component.translatable("advMode.notEnabled"));
       } else if (!this.player.canUseGameMasterBlocks()) {
          this.player.sendSystemMessage(Component.translatable("advMode.notAllowed"));
       } else {
-         BaseCommandBlock var2 = var1.getCommandBlock(this.player.level);
+         BaseCommandBlock var2 = var1.getCommandBlock(this.player.level());
          if (var2 != null) {
             var2.setCommand(var1.getCommand());
             var2.setTrackOutput(var1.isTrackOutput());
@@ -607,7 +614,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
 
    @Override
    public void handlePickItem(ServerboundPickItemPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       this.player.getInventory().pickSlot(var1.getSlot());
       this.player
          .connection
@@ -622,7 +629,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
 
    @Override
    public void handleRenameItem(ServerboundRenameItemPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       AbstractContainerMenu var3 = this.player.containerMenu;
       if (var3 instanceof AnvilMenu var2) {
          if (!((AnvilMenu)var2).stillValid(this.player)) {
@@ -630,10 +637,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
             return;
          }
 
-         String var4 = SharedConstants.filterText(var1.getName());
-         if (var4.length() <= 50) {
-            ((AnvilMenu)var2).setItemName(var4);
-         }
+         ((AnvilMenu)var2).setItemName(var1.getName());
       }
    }
 
@@ -641,7 +645,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
    // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void handleSetBeaconPacket(ServerboundSetBeaconPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       AbstractContainerMenu var3 = this.player.containerMenu;
       if (var3 instanceof BeaconMenu var2) {
          if (!this.player.containerMenu.stillValid(this.player)) {
@@ -657,11 +661,11 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
    // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void handleSetStructureBlock(ServerboundSetStructureBlockPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       if (this.player.canUseGameMasterBlocks()) {
          BlockPos var2 = var1.getPos();
-         BlockState var3 = this.player.level.getBlockState(var2);
-         BlockEntity var4 = this.player.level.getBlockEntity(var2);
+         BlockState var3 = this.player.level().getBlockState(var2);
+         BlockEntity var4 = this.player.level().getBlockEntity(var2);
          if (var4 instanceof StructureBlockEntity var5) {
             var5.setMode(var1.getMode());
             var5.setStructureName(var1.getName());
@@ -686,7 +690,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
                } else if (var1.getUpdateType() == StructureBlockEntity.UpdateType.LOAD_AREA) {
                   if (!var5.isStructureLoadable()) {
                      this.player.displayClientMessage(Component.translatable("structure_block.load_not_found", var6), false);
-                  } else if (var5.loadStructure(this.player.getLevel())) {
+                  } else if (var5.loadStructure(this.player.serverLevel())) {
                      this.player.displayClientMessage(Component.translatable("structure_block.load_success", var6), false);
                   } else {
                      this.player.displayClientMessage(Component.translatable("structure_block.load_prepare", var6), false);
@@ -703,7 +707,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
             }
 
             var5.setChanged();
-            this.player.level.sendBlockUpdated(var2, var3, var3, 3);
+            this.player.level().sendBlockUpdated(var2, var3, var3, 3);
          }
       }
    }
@@ -712,11 +716,11 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
    // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void handleSetJigsawBlock(ServerboundSetJigsawBlockPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       if (this.player.canUseGameMasterBlocks()) {
          BlockPos var2 = var1.getPos();
-         BlockState var3 = this.player.level.getBlockState(var2);
-         BlockEntity var4 = this.player.level.getBlockEntity(var2);
+         BlockState var3 = this.player.level().getBlockState(var2);
+         BlockEntity var4 = this.player.level().getBlockEntity(var2);
          if (var4 instanceof JigsawBlockEntity var5) {
             var5.setName(var1.getName());
             var5.setTarget(var1.getTarget());
@@ -724,7 +728,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
             var5.setFinalState(var1.getFinalState());
             var5.setJoint(var1.getJoint());
             var5.setChanged();
-            this.player.level.sendBlockUpdated(var2, var3, var3, 3);
+            this.player.level().sendBlockUpdated(var2, var3, var3, 3);
          }
       }
    }
@@ -733,19 +737,19 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
    // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void handleJigsawGenerate(ServerboundJigsawGeneratePacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       if (this.player.canUseGameMasterBlocks()) {
          BlockPos var2 = var1.getPos();
-         BlockEntity var3 = this.player.level.getBlockEntity(var2);
+         BlockEntity var3 = this.player.level().getBlockEntity(var2);
          if (var3 instanceof JigsawBlockEntity var4) {
-            var4.generate(this.player.getLevel(), var1.levels(), var1.keepJigsaws());
+            var4.generate(this.player.serverLevel(), var1.levels(), var1.keepJigsaws());
          }
       }
    }
 
    @Override
    public void handleSelectTrade(ServerboundSelectTradePacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       int var2 = var1.getItem();
       AbstractContainerMenu var4 = this.player.containerMenu;
       if (var4 instanceof MerchantMenu var3) {
@@ -830,9 +834,9 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
 
    @Override
    public void handleEntityTagQuery(ServerboundEntityTagQuery var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       if (this.player.hasPermissions(2)) {
-         Entity var2 = this.player.getLevel().getEntity(var1.getEntityId());
+         Entity var2 = this.player.level().getEntity(var1.getEntityId());
          if (var2 != null) {
             CompoundTag var3 = var2.saveWithoutId(new CompoundTag());
             this.player.connection.send(new ClientboundTagQueryPacket(var1.getTransactionId(), var3));
@@ -842,9 +846,9 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
 
    @Override
    public void handleBlockEntityTagQuery(ServerboundBlockEntityTagQuery var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       if (this.player.hasPermissions(2)) {
-         BlockEntity var2 = this.player.getLevel().getBlockEntity(var1.getPos());
+         BlockEntity var2 = this.player.level().getBlockEntity(var1.getPos());
          CompoundTag var3 = var2 != null ? var2.saveWithoutMetadata() : null;
          this.player.connection.send(new ClientboundTagQueryPacket(var1.getTransactionId(), var3));
       }
@@ -852,11 +856,11 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
 
    @Override
    public void handleMovePlayer(ServerboundMovePlayerPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       if (containsInvalidValues(var1.getX(0.0), var1.getY(0.0), var1.getZ(0.0), var1.getYRot(0.0F), var1.getXRot(0.0F))) {
          this.disconnect(Component.translatable("multiplayer.disconnect.invalid_player_movement"));
       } else {
-         ServerLevel var2 = this.player.getLevel();
+         ServerLevel var2 = this.player.serverLevel();
          if (!this.player.wonGame) {
             if (this.tickCount == 0) {
                this.resetPosition();
@@ -882,74 +886,73 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
                float var10 = Mth.wrapDegrees(var1.getXRot(this.player.getXRot()));
                if (this.player.isPassenger()) {
                   this.player.absMoveTo(this.player.getX(), this.player.getY(), this.player.getZ(), var9, var10);
-                  this.player.getLevel().getChunkSource().move(this.player);
+                  this.player.serverLevel().getChunkSource().move(this.player);
                } else {
                   double var11 = this.player.getX();
                   double var13 = this.player.getY();
                   double var15 = this.player.getZ();
-                  double var17 = this.player.getY();
-                  double var19 = var3 - this.firstGoodX;
-                  double var21 = var5 - this.firstGoodY;
-                  double var23 = var7 - this.firstGoodZ;
-                  double var25 = this.player.getDeltaMovement().lengthSqr();
-                  double var27 = var19 * var19 + var21 * var21 + var23 * var23;
+                  double var17 = var3 - this.firstGoodX;
+                  double var19 = var5 - this.firstGoodY;
+                  double var21 = var7 - this.firstGoodZ;
+                  double var23 = this.player.getDeltaMovement().lengthSqr();
+                  double var25 = var17 * var17 + var19 * var19 + var21 * var21;
                   if (this.player.isSleeping()) {
-                     if (var27 > 1.0) {
+                     if (var25 > 1.0) {
                         this.teleport(this.player.getX(), this.player.getY(), this.player.getZ(), var9, var10);
                      }
                   } else {
                      ++this.receivedMovePacketCount;
-                     int var29 = this.receivedMovePacketCount - this.knownMovePacketCount;
-                     if (var29 > 5) {
-                        LOGGER.debug("{} is sending move packets too frequently ({} packets since last tick)", this.player.getName().getString(), var29);
-                        var29 = 1;
+                     int var27 = this.receivedMovePacketCount - this.knownMovePacketCount;
+                     if (var27 > 5) {
+                        LOGGER.debug("{} is sending move packets too frequently ({} packets since last tick)", this.player.getName().getString(), var27);
+                        var27 = 1;
                      }
 
                      if (!this.player.isChangingDimension()
-                        && (!this.player.getLevel().getGameRules().getBoolean(GameRules.RULE_DISABLE_ELYTRA_MOVEMENT_CHECK) || !this.player.isFallFlying())) {
-                        float var30 = this.player.isFallFlying() ? 300.0F : 100.0F;
-                        if (var27 - var25 > (double)(var30 * (float)var29) && !this.isSingleplayerOwner()) {
-                           LOGGER.warn("{} moved too quickly! {},{},{}", new Object[]{this.player.getName().getString(), var19, var21, var23});
+                        && (!this.player.level().getGameRules().getBoolean(GameRules.RULE_DISABLE_ELYTRA_MOVEMENT_CHECK) || !this.player.isFallFlying())) {
+                        float var28 = this.player.isFallFlying() ? 300.0F : 100.0F;
+                        if (var25 - var23 > (double)(var28 * (float)var27) && !this.isSingleplayerOwner()) {
+                           LOGGER.warn("{} moved too quickly! {},{},{}", new Object[]{this.player.getName().getString(), var17, var19, var21});
                            this.teleport(this.player.getX(), this.player.getY(), this.player.getZ(), this.player.getYRot(), this.player.getXRot());
                            return;
                         }
                      }
 
-                     AABB var43 = this.player.getBoundingBox();
-                     var19 = var3 - this.lastGoodX;
-                     var21 = var5 - this.lastGoodY;
-                     var23 = var7 - this.lastGoodZ;
-                     boolean var31 = var21 > 0.0;
-                     if (this.player.isOnGround() && !var1.isOnGround() && var31) {
+                     AABB var41 = this.player.getBoundingBox();
+                     var17 = var3 - this.lastGoodX;
+                     var19 = var5 - this.lastGoodY;
+                     var21 = var7 - this.lastGoodZ;
+                     boolean var29 = var19 > 0.0;
+                     if (this.player.onGround() && !var1.isOnGround() && var29) {
                         this.player.jumpFromGround();
                      }
 
-                     boolean var32 = this.player.verticalCollisionBelow;
-                     this.player.move(MoverType.PLAYER, new Vec3(var19, var21, var23));
-                     var19 = var3 - this.player.getX();
-                     var21 = var5 - this.player.getY();
-                     if (var21 > -0.5 || var21 < 0.5) {
-                        var21 = 0.0;
+                     boolean var30 = this.player.verticalCollisionBelow;
+                     this.player.move(MoverType.PLAYER, new Vec3(var17, var19, var21));
+                     var17 = var3 - this.player.getX();
+                     var19 = var5 - this.player.getY();
+                     if (var19 > -0.5 || var19 < 0.5) {
+                        var19 = 0.0;
                      }
 
-                     var23 = var7 - this.player.getZ();
-                     var27 = var19 * var19 + var21 * var21 + var23 * var23;
-                     boolean var35 = false;
+                     var21 = var7 - this.player.getZ();
+                     var25 = var17 * var17 + var19 * var19 + var21 * var21;
+                     boolean var33 = false;
                      if (!this.player.isChangingDimension()
-                        && var27 > 0.0625
+                        && var25 > 0.0625
                         && !this.player.isSleeping()
                         && !this.player.gameMode.isCreative()
                         && this.player.gameMode.getGameModeForPlayer() != GameType.SPECTATOR) {
-                        var35 = true;
+                        var33 = true;
                         LOGGER.warn("{} moved wrongly!", this.player.getName().getString());
                      }
 
-                     this.player.absMoveTo(var3, var5, var7, var9, var10);
                      if (this.player.noPhysics
                         || this.player.isSleeping()
-                        || (!var35 || !var2.noCollision(this.player, var43)) && !this.isPlayerCollidingWithAnythingNew(var2, var43)) {
-                        this.clientIsFloating = var21 >= -0.03125
-                           && !var32
+                        || (!var33 || !var2.noCollision(this.player, var41)) && !this.isPlayerCollidingWithAnythingNew(var2, var41, var3, var5, var7)) {
+                        this.player.absMoveTo(var3, var5, var7, var9, var10);
+                        this.clientIsFloating = var19 >= -0.03125
+                           && !var30
                            && this.player.gameMode.getGameModeForPlayer() != GameType.SPECTATOR
                            && !this.server.isFlightAllowed()
                            && !this.player.getAbilities().mayfly
@@ -957,10 +960,13 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
                            && !this.player.isFallFlying()
                            && !this.player.isAutoSpinAttack()
                            && this.noBlocksAround(this.player);
-                        this.player.getLevel().getChunkSource().move(this.player);
-                        this.player.doCheckFallDamage(this.player.getY() - var17, var1.isOnGround());
-                        this.player.setOnGround(var1.isOnGround());
-                        if (var31) {
+                        this.player.serverLevel().getChunkSource().move(this.player);
+                        this.player.doCheckFallDamage(this.player.getX() - var11, this.player.getY() - var13, this.player.getZ() - var15, var1.isOnGround());
+                        this.player
+                           .setOnGroundWithKnownMovement(
+                              var1.isOnGround(), new Vec3(this.player.getX() - var11, this.player.getY() - var13, this.player.getZ() - var15)
+                           );
+                        if (var29) {
                            this.player.resetFallDistance();
                         }
 
@@ -970,7 +976,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
                         this.lastGoodZ = this.player.getZ();
                      } else {
                         this.teleport(var11, var13, var15, var9, var10);
-                        this.player.doCheckFallDamage(this.player.getY() - var17, var1.isOnGround());
+                        this.player.doCheckFallDamage(this.player.getX() - var11, this.player.getY() - var13, this.player.getZ() - var15, var1.isOnGround());
                      }
                   }
                }
@@ -979,12 +985,13 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
       }
    }
 
-   private boolean isPlayerCollidingWithAnythingNew(LevelReader var1, AABB var2) {
-      Iterable var3 = var1.getCollisions(this.player, this.player.getBoundingBox().deflate(9.999999747378752E-6));
-      VoxelShape var4 = Shapes.create(var2.deflate(9.999999747378752E-6));
+   private boolean isPlayerCollidingWithAnythingNew(LevelReader var1, AABB var2, double var3, double var5, double var7) {
+      AABB var9 = this.player.getBoundingBox().move(var3 - this.player.getX(), var5 - this.player.getY(), var7 - this.player.getZ());
+      Iterable var10 = var1.getCollisions(this.player, var9.deflate(9.999999747378752E-6));
+      VoxelShape var11 = Shapes.create(var2.deflate(9.999999747378752E-6));
 
-      for(VoxelShape var6 : var3) {
-         if (!Shapes.joinIsNotEmpty(var6, var4, BooleanOp.AND)) {
+      for(VoxelShape var13 : var10) {
+         if (!Shapes.joinIsNotEmpty(var13, var11, BooleanOp.AND)) {
             return true;
          }
       }
@@ -1016,7 +1023,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
 
    @Override
    public void handlePlayerAction(ServerboundPlayerActionPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       BlockPos var2 = var1.getPos();
       this.player.resetLastActionTime();
       ServerboundPlayerActionPacket.Action var3 = var1.getAction();
@@ -1048,7 +1055,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
          case START_DESTROY_BLOCK:
          case ABORT_DESTROY_BLOCK:
          case STOP_DESTROY_BLOCK:
-            this.player.gameMode.handleBlockBreakAction(var2, var3, var1.getDirection(), this.player.level.getMaxBuildHeight(), var1.getSequence());
+            this.player.gameMode.handleBlockBreakAction(var2, var3, var1.getDirection(), this.player.level().getMaxBuildHeight(), var1.getSequence());
             this.player.connection.ackBlockChangesUpTo(var1.getSequence());
             return;
          default:
@@ -1067,9 +1074,9 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
 
    @Override
    public void handleUseItemOn(ServerboundUseItemOnPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       this.player.connection.ackBlockChangesUpTo(var1.getSequence());
-      ServerLevel var2 = this.player.getLevel();
+      ServerLevel var2 = this.player.serverLevel();
       InteractionHand var3 = var1.getHand();
       ItemStack var4 = this.player.getItemInHand(var3);
       if (var4.isItemEnabled(var2.enabledFeatures())) {
@@ -1083,7 +1090,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
             if (Math.abs(var9.x()) < 1.0000001 && Math.abs(var9.y()) < 1.0000001 && Math.abs(var9.z()) < 1.0000001) {
                Direction var12 = var5.getDirection();
                this.player.resetLastActionTime();
-               int var13 = this.player.level.getMaxBuildHeight();
+               int var13 = this.player.level().getMaxBuildHeight();
                if (var7.getY() < var13) {
                   if (this.awaitingPositionFromClient == null
                      && this.player.distanceToSqr((double)var7.getX() + 0.5, (double)var7.getY() + 0.5, (double)var7.getZ() + 0.5) < 64.0
@@ -1115,9 +1122,9 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
 
    @Override
    public void handleUseItem(ServerboundUseItemPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       this.ackBlockChangesUpTo(var1.getSequence());
-      ServerLevel var2 = this.player.getLevel();
+      ServerLevel var2 = this.player.serverLevel();
       InteractionHand var3 = var1.getHand();
       ItemStack var4 = this.player.getItemInHand(var3);
       this.player.resetLastActionTime();
@@ -1131,7 +1138,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
 
    @Override
    public void handleTeleportToEntityPacket(ServerboundTeleportToEntityPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       if (this.player.isSpectator()) {
          for(ServerLevel var3 : this.server.getAllLevels()) {
             Entity var4 = var1.getEntity(var3);
@@ -1145,7 +1152,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
 
    @Override
    public void handleResourcePackResponse(ServerboundResourcePackPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       if (var1.getAction() == ServerboundResourcePackPacket.Action.DECLINED && this.server.isResourcePackRequired()) {
          LOGGER.info("Disconnecting {} due to resource pack rejection", this.player.getName());
          this.disconnect(Component.translatable("multiplayer.requiredTexturePrompt.disconnect"));
@@ -1156,7 +1163,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
    // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void handlePaddleBoat(ServerboundPaddleBoatPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       Entity var2 = this.player.getControlledVehicle();
       if (var2 instanceof Boat var3) {
          var3.setPaddleState(var1.getLeft(), var1.getRight());
@@ -1210,7 +1217,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
 
    @Override
    public void handleSetCarriedItem(ServerboundSetCarriedItemPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       if (var1.getSlot() >= 0 && var1.getSlot() < Inventory.getSelectionSize()) {
          if (this.player.getInventory().selected != var1.getSlot() && this.player.getUsedItemHand() == InteractionHand.MAIN_HAND) {
             this.player.stopUsingItem();
@@ -1386,7 +1393,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
 
    @Override
    public void handleAnimate(ServerboundSwingPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       this.player.resetLastActionTime();
       this.player.swing(var1.getHand());
    }
@@ -1395,7 +1402,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
    // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void handlePlayerCommand(ServerboundPlayerCommandPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       this.player.resetLastActionTime();
       switch(var1.getAction()) {
          case PRESS_SHIFT_KEY:
@@ -1472,14 +1479,14 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
             var1.signedBody().pack(this.messageSignatureCache),
             var1.unsignedContent(),
             var1.filterMask(),
-            var2.toNetwork(this.player.level.registryAccess())
+            var2.toNetwork(this.player.level().registryAccess())
          )
       );
       this.addPendingMessage(var1);
    }
 
    public void sendDisguisedChatMessage(Component var1, ChatType.Bound var2) {
-      this.send(new ClientboundDisguisedChatPacket(var1, var2.toNetwork(this.player.level.registryAccess())));
+      this.send(new ClientboundDisguisedChatPacket(var1, var2.toNetwork(this.player.level().registryAccess())));
    }
 
    public SocketAddress getRemoteAddress() {
@@ -1488,8 +1495,8 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
 
    @Override
    public void handleInteract(ServerboundInteractPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
-      final ServerLevel var2 = this.player.getLevel();
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      final ServerLevel var2 = this.player.serverLevel();
       final Entity var3 = var1.getTarget(var2);
       this.player.resetLastActionTime();
       this.player.setShiftKeyDown(var1.isUsingSecondaryAction());
@@ -1550,7 +1557,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
 
    @Override
    public void handleClientCommand(ServerboundClientCommandPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       this.player.resetLastActionTime();
       ServerboundClientCommandPacket.Action var2 = var1.getAction();
       switch(var2) {
@@ -1567,7 +1574,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
                this.player = this.server.getPlayerList().respawn(this.player, false);
                if (this.server.isHardcore()) {
                   this.player.setGameMode(GameType.SPECTATOR);
-                  this.player.getLevel().getGameRules().getRule(GameRules.RULE_SPECTATORSGENERATECHUNKS).set(false, this.server);
+                  this.player.level().getGameRules().getRule(GameRules.RULE_SPECTATORSGENERATECHUNKS).set(false, this.server);
                }
             }
             break;
@@ -1578,13 +1585,13 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
 
    @Override
    public void handleContainerClose(ServerboundContainerClosePacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       this.player.doCloseContainer();
    }
 
    @Override
    public void handleContainerClick(ServerboundContainerClickPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       this.player.resetLastActionTime();
       if (this.player.containerMenu.containerId == var1.getContainerId()) {
          if (this.player.isSpectator()) {
@@ -1623,7 +1630,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
 
    @Override
    public void handlePlaceRecipe(ServerboundPlaceRecipePacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       this.player.resetLastActionTime();
       if (!this.player.isSpectator() && this.player.containerMenu.containerId == var1.getContainerId() && this.player.containerMenu instanceof RecipeBookMenu) {
          if (!this.player.containerMenu.stillValid(this.player)) {
@@ -1639,7 +1646,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
 
    @Override
    public void handleContainerButtonClick(ServerboundContainerButtonClickPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       this.player.resetLastActionTime();
       if (this.player.containerMenu.containerId == var1.getContainerId() && !this.player.isSpectator()) {
          if (!this.player.containerMenu.stillValid(this.player)) {
@@ -1655,19 +1662,19 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
 
    @Override
    public void handleSetCreativeModeSlot(ServerboundSetCreativeModeSlotPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       if (this.player.gameMode.isCreative()) {
          boolean var2 = var1.getSlotNum() < 0;
          ItemStack var3 = var1.getItem();
-         if (!var3.isItemEnabled(this.player.getLevel().enabledFeatures())) {
+         if (!var3.isItemEnabled(this.player.level().enabledFeatures())) {
             return;
          }
 
          CompoundTag var4 = BlockItem.getBlockEntityData(var3);
          if (!var3.isEmpty() && var4 != null && var4.contains("x") && var4.contains("y") && var4.contains("z")) {
             BlockPos var5 = BlockEntity.getPosFromTag(var4);
-            if (this.player.level.isLoaded(var5)) {
-               BlockEntity var6 = this.player.level.getBlockEntity(var5);
+            if (this.player.level().isLoaded(var5)) {
+               BlockEntity var6 = this.player.level().getBlockEntity(var5);
                if (var6 != null) {
                   var6.saveToItem(var3);
                }
@@ -1694,32 +1701,16 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
 
    private void updateSignText(ServerboundSignUpdatePacket var1, List<FilteredText> var2) {
       this.player.resetLastActionTime();
-      ServerLevel var3 = this.player.getLevel();
+      ServerLevel var3 = this.player.serverLevel();
       BlockPos var4 = var1.getPos();
       if (var3.hasChunkAt(var4)) {
-         BlockState var5 = var3.getBlockState(var4);
-         BlockEntity var6 = var3.getBlockEntity(var4);
-         if (!(var6 instanceof SignBlockEntity)) {
+         BlockEntity var5 = var3.getBlockEntity(var4);
+         if (!(var5 instanceof SignBlockEntity)) {
             return;
          }
 
-         SignBlockEntity var7 = (SignBlockEntity)var6;
-         if (!var7.isEditable() || !this.player.getUUID().equals(var7.getPlayerWhoMayEdit())) {
-            LOGGER.warn("Player {} just tried to change non-editable sign", this.player.getName().getString());
-            return;
-         }
-
-         for(int var8 = 0; var8 < var2.size(); ++var8) {
-            FilteredText var9 = (FilteredText)var2.get(var8);
-            if (this.player.isTextFilteringEnabled()) {
-               var7.setMessage(var8, Component.literal(var9.filteredOrEmpty()));
-            } else {
-               var7.setMessage(var8, Component.literal(var9.raw()), Component.literal(var9.filteredOrEmpty()));
-            }
-         }
-
-         var7.setChanged();
-         var3.sendBlockUpdated(var4, var5, var5, 3);
+         SignBlockEntity var6 = (SignBlockEntity)var5;
+         var6.updateSignText(this.player, var1.isFrontText(), var2);
       }
    }
 
@@ -1736,13 +1727,13 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
 
    @Override
    public void handlePlayerAbilities(ServerboundPlayerAbilitiesPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       this.player.getAbilities().flying = var1.isFlying() && this.player.getAbilities().mayfly;
    }
 
    @Override
    public void handleClientInformation(ServerboundClientInformationPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       this.player.updateOptions(var1);
    }
 
@@ -1752,7 +1743,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
 
    @Override
    public void handleChangeDifficulty(ServerboundChangeDifficultyPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       if (this.player.hasPermissions(2) || this.isSingleplayerOwner()) {
          this.server.setDifficulty(var1.getDifficulty(), false);
       }
@@ -1760,7 +1751,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
 
    @Override
    public void handleLockDifficulty(ServerboundLockDifficultyPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       if (this.player.hasPermissions(2) || this.isSingleplayerOwner()) {
          this.server.setDifficultyLocked(var1.isLocked());
       }
@@ -1768,7 +1759,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
 
    @Override
    public void handleChatSessionUpdate(ServerboundChatSessionUpdatePacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.getLevel());
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       RemoteChatSession.Data var2 = var1.chatSession();
       ProfilePublicKey.Data var3 = this.chatSession != null ? this.chatSession.profilePublicKey().data() : null;
       ProfilePublicKey.Data var4 = var2.profilePublicKey();
@@ -1777,7 +1768,12 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
             this.disconnect(ProfilePublicKey.EXPIRED_PROFILE_PUBLIC_KEY);
          } else {
             try {
-               SignatureValidator var5 = this.server.getServiceSignatureValidator();
+               SignatureValidator var5 = this.server.getProfileKeySignatureValidator();
+               if (var5 == null) {
+                  LOGGER.warn("Ignoring chat session from {} due to missing Services public key", this.player.getGameProfile().getName());
+                  return;
+               }
+
                this.resetPlayerChatState(var2.validate(this.player.getGameProfile(), var5, Duration.ZERO));
             } catch (ProfilePublicKey.ValidationException var6) {
                LOGGER.error("Failed to validate profile key: {}", var6.getMessage());

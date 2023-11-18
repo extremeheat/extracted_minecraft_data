@@ -76,7 +76,7 @@ public class Vindicator extends AbstractIllager {
    @Override
    protected void customServerAiStep() {
       if (!this.isNoAi() && GoalUtils.hasGroundPathNavigation(this)) {
-         boolean var1 = ((ServerLevel)this.level).isRaided(this.blockPosition());
+         boolean var1 = ((ServerLevel)this.level()).isRaided(this.blockPosition());
          ((GroundPathNavigation)this.getNavigation()).setCanOpenDoors(var1);
       }
 

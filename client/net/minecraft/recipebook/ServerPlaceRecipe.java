@@ -133,7 +133,7 @@ public class ServerPlaceRecipe<C extends Container> implements PlaceRecipe<Integ
    protected void moveItemToGrid(Slot var1, ItemStack var2) {
       int var3 = this.inventory.findSlotMatchingUnusedItem(var2);
       if (var3 != -1) {
-         ItemStack var4 = this.inventory.getItem(var3).copy();
+         ItemStack var4 = this.inventory.getItem(var3);
          if (!var4.isEmpty()) {
             if (var4.getCount() > 1) {
                this.inventory.removeItem(var3, 1);
@@ -141,9 +141,8 @@ public class ServerPlaceRecipe<C extends Container> implements PlaceRecipe<Integ
                this.inventory.removeItemNoUpdate(var3);
             }
 
-            var4.setCount(1);
             if (var1.getItem().isEmpty()) {
-               var1.set(var4);
+               var1.set(var4.copyWithCount(1));
             } else {
                var1.getItem().grow(1);
             }
@@ -162,7 +161,9 @@ public class ServerPlaceRecipe<C extends Container> implements PlaceRecipe<Integ
                int var5 = this.inventory.getSlotWithRemainingSpace(var4);
                if (var5 == -1 && var1.size() <= var2) {
                   for(ItemStack var7 : var1) {
-                     if (var7.sameItem(var4) && var7.getCount() != var7.getMaxStackSize() && var7.getCount() + var4.getCount() <= var7.getMaxStackSize()) {
+                     if (ItemStack.isSameItem(var7, var4)
+                        && var7.getCount() != var7.getMaxStackSize()
+                        && var7.getCount() + var4.getCount() <= var7.getMaxStackSize()) {
                         var7.grow(var4.getCount());
                         var4.setCount(0);
                         break;

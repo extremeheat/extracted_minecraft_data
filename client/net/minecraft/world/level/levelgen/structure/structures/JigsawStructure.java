@@ -4,10 +4,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
-import java.util.function.Function;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.WorldGenerationContext;
@@ -19,20 +19,22 @@ import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 
 public final class JigsawStructure extends Structure {
    public static final int MAX_TOTAL_STRUCTURE_RANGE = 128;
-   public static final Codec<JigsawStructure> CODEC = RecordCodecBuilder.mapCodec(
-         var0 -> var0.group(
-                  settingsCodec(var0),
-                  StructureTemplatePool.CODEC.fieldOf("start_pool").forGetter(var0x -> var0x.startPool),
-                  ResourceLocation.CODEC.optionalFieldOf("start_jigsaw_name").forGetter(var0x -> var0x.startJigsawName),
-                  Codec.intRange(0, 7).fieldOf("size").forGetter(var0x -> var0x.maxDepth),
-                  HeightProvider.CODEC.fieldOf("start_height").forGetter(var0x -> var0x.startHeight),
-                  Codec.BOOL.fieldOf("use_expansion_hack").forGetter(var0x -> var0x.useExpansionHack),
-                  Heightmap.Types.CODEC.optionalFieldOf("project_start_to_heightmap").forGetter(var0x -> var0x.projectStartToHeightmap),
-                  Codec.intRange(1, 128).fieldOf("max_distance_from_center").forGetter(var0x -> var0x.maxDistanceFromCenter)
-               )
-               .apply(var0, JigsawStructure::new)
+   public static final Codec<JigsawStructure> CODEC = ExtraCodecs.validate(
+         RecordCodecBuilder.mapCodec(
+            var0 -> var0.group(
+                     settingsCodec(var0),
+                     StructureTemplatePool.CODEC.fieldOf("start_pool").forGetter(var0x -> var0x.startPool),
+                     ResourceLocation.CODEC.optionalFieldOf("start_jigsaw_name").forGetter(var0x -> var0x.startJigsawName),
+                     Codec.intRange(0, 7).fieldOf("size").forGetter(var0x -> var0x.maxDepth),
+                     HeightProvider.CODEC.fieldOf("start_height").forGetter(var0x -> var0x.startHeight),
+                     Codec.BOOL.fieldOf("use_expansion_hack").forGetter(var0x -> var0x.useExpansionHack),
+                     Heightmap.Types.CODEC.optionalFieldOf("project_start_to_heightmap").forGetter(var0x -> var0x.projectStartToHeightmap),
+                     Codec.intRange(1, 128).fieldOf("max_distance_from_center").forGetter(var0x -> var0x.maxDistanceFromCenter)
+                  )
+                  .apply(var0, JigsawStructure::new)
+         ),
+         JigsawStructure::verifyRange
       )
-      .flatXmap(verifyRange(), verifyRange())
       .codec();
    private final Holder<StructureTemplatePool> startPool;
    private final Optional<ResourceLocation> startJigsawName;
@@ -42,16 +44,14 @@ public final class JigsawStructure extends Structure {
    private final Optional<Heightmap.Types> projectStartToHeightmap;
    private final int maxDistanceFromCenter;
 
-   private static Function<JigsawStructure, DataResult<JigsawStructure>> verifyRange() {
-      return var0 -> {
-         byte var1 = switch(var0.terrainAdaptation()) {
-            case NONE -> 0;
-            case BURY, BEARD_THIN, BEARD_BOX -> 12;
-         };
-         return var0.maxDistanceFromCenter + var1 > 128
-            ? DataResult.error(() -> "Structure size including terrain adaptation must not exceed 128")
-            : DataResult.success(var0);
+   private static DataResult<JigsawStructure> verifyRange(JigsawStructure var0) {
+      byte var1 = switch(var0.terrainAdaptation()) {
+         case NONE -> 0;
+         case BURY, BEARD_THIN, BEARD_BOX -> 12;
       };
+      return var0.maxDistanceFromCenter + var1 > 128
+         ? DataResult.error(() -> "Structure size including terrain adaptation must not exceed 128")
+         : DataResult.success(var0);
    }
 
    public JigsawStructure(

@@ -15,15 +15,17 @@ public abstract class ChunkTracker extends DynamicGraphMinFixedPoint {
 
    @Override
    protected void checkNeighborsAfterUpdate(long var1, int var3, boolean var4) {
-      ChunkPos var5 = new ChunkPos(var1);
-      int var6 = var5.x;
-      int var7 = var5.z;
+      if (!var4 || var3 < this.levelCount - 2) {
+         ChunkPos var5 = new ChunkPos(var1);
+         int var6 = var5.x;
+         int var7 = var5.z;
 
-      for(int var8 = -1; var8 <= 1; ++var8) {
-         for(int var9 = -1; var9 <= 1; ++var9) {
-            long var10 = ChunkPos.asLong(var6 + var8, var7 + var9);
-            if (var10 != var1) {
-               this.checkNeighbor(var1, var10, var3, var4);
+         for(int var8 = -1; var8 <= 1; ++var8) {
+            for(int var9 = -1; var9 <= 1; ++var9) {
+               long var10 = ChunkPos.asLong(var6 + var8, var7 + var9);
+               if (var10 != var1) {
+                  this.checkNeighbor(var1, var10, var3, var4);
+               }
             }
          }
       }

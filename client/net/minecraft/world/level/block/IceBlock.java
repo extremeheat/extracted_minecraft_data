@@ -13,12 +13,14 @@ import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Material;
-import net.minecraft.world.level.material.PushReaction;
 
 public class IceBlock extends HalfTransparentBlock {
    public IceBlock(BlockBehaviour.Properties var1) {
       super(var1);
+   }
+
+   public static BlockState meltsInto() {
+      return Blocks.WATER.defaultBlockState();
    }
 
    @Override
@@ -30,9 +32,9 @@ public class IceBlock extends HalfTransparentBlock {
             return;
          }
 
-         Material var7 = var1.getBlockState(var3.below()).getMaterial();
-         if (var7.blocksMotion() || var7.isLiquid()) {
-            var1.setBlockAndUpdate(var3, Blocks.WATER.defaultBlockState());
+         BlockState var7 = var1.getBlockState(var3.below());
+         if (var7.blocksMotion() || var7.liquid()) {
+            var1.setBlockAndUpdate(var3, meltsInto());
          }
       }
    }
@@ -48,13 +50,8 @@ public class IceBlock extends HalfTransparentBlock {
       if (var2.dimensionType().ultraWarm()) {
          var2.removeBlock(var3, false);
       } else {
-         var2.setBlockAndUpdate(var3, Blocks.WATER.defaultBlockState());
-         var2.neighborChanged(var3, Blocks.WATER, var3);
+         var2.setBlockAndUpdate(var3, meltsInto());
+         var2.neighborChanged(var3, meltsInto().getBlock(), var3);
       }
-   }
-
-   @Override
-   public PushReaction getPistonPushReaction(BlockState var1) {
-      return PushReaction.NORMAL;
    }
 }

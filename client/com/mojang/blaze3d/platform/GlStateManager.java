@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -579,6 +580,27 @@ public class GlStateManager {
    public static void _texSubImage2D(int var0, int var1, int var2, int var3, int var4, int var5, int var6, int var7, long var8) {
       RenderSystem.assertOnRenderThreadOrInit();
       GL11.glTexSubImage2D(var0, var1, var2, var3, var4, var5, var6, var7, var8);
+   }
+
+   public static void upload(int var0, int var1, int var2, int var3, int var4, NativeImage.Format var5, IntBuffer var6, Consumer<IntBuffer> var7) {
+      if (!RenderSystem.isOnRenderThreadOrInit()) {
+         RenderSystem.recordRenderCall(() -> _upload(var0, var1, var2, var3, var4, var5, var6, var7));
+      } else {
+         _upload(var0, var1, var2, var3, var4, var5, var6, var7);
+      }
+   }
+
+   private static void _upload(int var0, int var1, int var2, int var3, int var4, NativeImage.Format var5, IntBuffer var6, Consumer<IntBuffer> var7) {
+      try {
+         RenderSystem.assertOnRenderThreadOrInit();
+         _pixelStore(3314, var3);
+         _pixelStore(3316, 0);
+         _pixelStore(3315, 0);
+         var5.setUnpackPixelStoreState();
+         GL11.glTexSubImage2D(3553, var0, var1, var2, var3, var4, var5.glFormat(), 5121, var6);
+      } finally {
+         var7.accept(var6);
+      }
    }
 
    public static void _getTexImage(int var0, int var1, int var2, int var3, long var4) {

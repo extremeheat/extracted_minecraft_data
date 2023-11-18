@@ -3,7 +3,6 @@ package net.minecraft.client.gui.screens.reporting;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.minecraft.report.AbuseReportLimits;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -12,11 +11,12 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.Optionull;
 import net.minecraft.client.GuiMessageTag;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.PlayerFaceRenderer;
+import net.minecraft.client.gui.navigation.CommonInputs;
 import net.minecraft.client.gui.navigation.ScreenDirection;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.chat.ChatTrustLevel;
@@ -91,15 +91,15 @@ public class ChatSelectionScreen extends Screen {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderBackground(var1);
       this.chatSelectionList.render(var1, var2, var3, var4);
-      drawCenteredString(var1, this.font, this.title, this.width / 2, 16, 16777215);
+      var1.drawCenteredString(this.font, this.title, this.width / 2, 16, 16777215);
       AbuseReportLimits var5 = this.reportingContext.sender().reportLimits();
       int var6 = this.report.reportedMessages().size();
       int var7 = var5.maxReportedMessageCount();
       MutableComponent var8 = Component.translatable("gui.chatSelection.selected", var6, var7);
-      drawCenteredString(var1, this.font, var8, this.width / 2, 16 + 9 * 3 / 2, 10526880);
+      var1.drawCenteredString(this.font, var8, this.width / 2, 16 + 9 * 3 / 2, 10526880);
       this.contextInfoLabel.renderCentered(var1, this.width / 2, this.chatSelectionList.getFooterTop());
       super.render(var1, var2, var3, var4);
    }
@@ -179,7 +179,7 @@ public class ChatSelectionScreen extends Screen {
       }
 
       @Override
-      protected void renderItem(PoseStack var1, int var2, int var3, float var4, int var5, int var6, int var7, int var8, int var9) {
+      protected void renderItem(GuiGraphics var1, int var2, int var3, float var4, int var5, int var6, int var7, int var8, int var9) {
          ChatSelectionScreen.ChatSelectionList.Entry var10 = this.getEntry(var5);
          if (this.shouldHighlightEntry(var10)) {
             boolean var11 = this.getSelected() == var10;
@@ -234,13 +234,13 @@ public class ChatSelectionScreen extends Screen {
          }
 
          @Override
-         public void render(PoseStack var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
+         public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
             int var11 = var3 + var6 / 2;
             int var12 = var4 + var5 - 8;
             int var13 = ChatSelectionScreen.this.font.width(this.text);
             int var14 = (var4 + var12 - var13) / 2;
             int var15 = var11 - 9 / 2;
-            GuiComponent.drawString(var1, ChatSelectionScreen.this.font, this.text, var14, var15, -6250336);
+            var1.drawString(ChatSelectionScreen.this.font, this.text, var14, var15, -6250336);
          }
 
          @Override
@@ -328,16 +328,14 @@ public class ChatSelectionScreen extends Screen {
          }
 
          @Override
-         public void render(PoseStack var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
+         public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
             if (this.isSelected() && this.canReport) {
                this.renderSelectedCheckmark(var1, var3, var4, var6);
             }
 
             int var11 = var4 + this.getTextIndent();
             int var12 = var3 + 1 + (var6 - 9) / 2;
-            GuiComponent.drawString(
-               var1, ChatSelectionScreen.this.font, Language.getInstance().getVisualOrder(this.text), var11, var12, this.canReport ? -1 : -1593835521
-            );
+            var1.drawString(ChatSelectionScreen.this.font, Language.getInstance().getVisualOrder(this.text), var11, var12, this.canReport ? -1 : -1593835521);
             if (this.hoverText != null && var9) {
                ChatSelectionScreen.this.setTooltipForNextRenderPass(this.hoverText);
             }
@@ -346,7 +344,7 @@ public class ChatSelectionScreen extends Screen {
             this.renderTag(var1, var11 + var13 + 4, var3, var6, var7, var8);
          }
 
-         private void renderTag(PoseStack var1, int var2, int var3, int var4, int var5, int var6) {
+         private void renderTag(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6) {
             if (this.tagIcon != null) {
                int var7 = var3 + (var4 - this.tagIcon.height) / 2;
                this.tagIcon.draw(var1, var2, var7);
@@ -356,11 +354,10 @@ public class ChatSelectionScreen extends Screen {
             }
          }
 
-         private void renderSelectedCheckmark(PoseStack var1, int var2, int var3, int var4) {
+         private void renderSelectedCheckmark(GuiGraphics var1, int var2, int var3, int var4) {
             int var6 = var2 + (var4 - 8) / 2;
-            RenderSystem.setShaderTexture(0, CHECKMARK_TEXTURE);
             RenderSystem.enableBlend();
-            GuiComponent.blit(var1, var3, var6, 0.0F, 0.0F, 9, 8, 9, 8);
+            var1.blit(CHECKMARK_TEXTURE, var3, var6, 0.0F, 0.0F, 9, 8, 9, 8);
             RenderSystem.disableBlend();
          }
 
@@ -390,7 +387,7 @@ public class ChatSelectionScreen extends Screen {
 
          @Override
          public boolean keyPressed(int var1, int var2, int var3) {
-            return var1 != 257 && var1 != 32 && var1 != 335 ? false : this.toggleReport();
+            return CommonInputs.selected(var1) ? this.toggleReport() : false;
          }
 
          @Override
@@ -433,17 +430,12 @@ public class ChatSelectionScreen extends Screen {
          }
 
          @Override
-         public void render(PoseStack var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
+         public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
             int var11 = var4 - 12 - 4;
             int var12 = var3 + (var6 - 12) / 2;
-            this.renderFace(var1, var11, var12, this.skin);
+            PlayerFaceRenderer.draw(var1, this.skin, var11, var12, 12);
             int var13 = var3 + 1 + (var6 - 9) / 2;
-            GuiComponent.drawString(var1, ChatSelectionScreen.this.font, this.heading, var4, var13, this.canReport ? -1 : -1593835521);
-         }
-
-         private void renderFace(PoseStack var1, int var2, int var3, ResourceLocation var4) {
-            RenderSystem.setShaderTexture(0, var4);
-            PlayerFaceRenderer.draw(var1, var2, var3, 12);
+            var1.drawString(ChatSelectionScreen.this.font, this.heading, var4, var13, this.canReport ? -1 : -1593835521);
          }
       }
 
@@ -453,7 +445,7 @@ public class ChatSelectionScreen extends Screen {
          }
 
          @Override
-         public void render(PoseStack var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
+         public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
          }
       }
    }

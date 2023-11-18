@@ -1,20 +1,60 @@
 package net.minecraft.client.gui.screens;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.MultiLineLabel;
+import net.minecraft.client.gui.components.MultiLineTextWidget;
+import net.minecraft.client.gui.components.StringWidget;
+import net.minecraft.client.gui.layouts.FrameLayout;
+import net.minecraft.client.gui.layouts.GridLayout;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
 public class DisconnectedScreen extends Screen {
-   private final Component reason;
-   private MultiLineLabel message = MultiLineLabel.EMPTY;
+   private static final Component TO_SERVER_LIST = Component.translatable("gui.toMenu");
+   private static final Component TO_TITLE = Component.translatable("gui.toTitle");
    private final Screen parent;
-   private int textHeight;
+   private final Component reason;
+   private final Component buttonText;
+   private final GridLayout layout = new GridLayout();
 
    public DisconnectedScreen(Screen var1, Component var2, Component var3) {
+      this(var1, var2, var3, TO_SERVER_LIST);
+   }
+
+   public DisconnectedScreen(Screen var1, Component var2, Component var3, Component var4) {
       super(var2);
       this.parent = var1;
       this.reason = var3;
+      this.buttonText = var4;
+   }
+
+   @Override
+   protected void init() {
+      this.layout.defaultCellSetting().alignHorizontallyCenter().padding(10);
+      GridLayout.RowHelper var1 = this.layout.createRowHelper(1);
+      var1.addChild(new StringWidget(this.title, this.font));
+      var1.addChild(new MultiLineTextWidget(this.reason, this.font).setMaxWidth(this.width - 50).setCentered(true));
+      Button var2;
+      if (this.minecraft.allowsMultiplayer()) {
+         var2 = Button.builder(this.buttonText, var1x -> this.minecraft.setScreen(this.parent)).build();
+      } else {
+         var2 = Button.builder(TO_TITLE, var1x -> this.minecraft.setScreen(new TitleScreen())).build();
+      }
+
+      var1.addChild(var2);
+      this.layout.arrangeElements();
+      this.layout.visitWidgets(this::addRenderableWidget);
+      this.repositionElements();
+   }
+
+   @Override
+   protected void repositionElements() {
+      FrameLayout.centerInRectangle(this.layout, this.getRectangle());
+   }
+
+   @Override
+   public Component getNarrationMessage() {
+      return CommonComponents.joinForNarration(this.title, this.reason);
    }
 
    @Override
@@ -23,21 +63,8 @@ public class DisconnectedScreen extends Screen {
    }
 
    @Override
-   protected void init() {
-      this.message = MultiLineLabel.create(this.font, this.reason, this.width - 50);
-      this.textHeight = this.message.getLineCount() * 9;
-      this.addRenderableWidget(
-         Button.builder(Component.translatable("gui.toMenu"), var1 -> this.minecraft.setScreen(this.parent))
-            .bounds(this.width / 2 - 100, Math.min(this.height / 2 + this.textHeight / 2 + 9, this.height - 30), 200, 20)
-            .build()
-      );
-   }
-
-   @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderBackground(var1);
-      drawCenteredString(var1, this.font, this.title, this.width / 2, this.height / 2 - this.textHeight / 2 - 9 * 2, 11184810);
-      this.message.renderCentered(var1, this.width / 2, this.height / 2 - this.textHeight / 2);
       super.render(var1, var2, var3, var4);
    }
 }

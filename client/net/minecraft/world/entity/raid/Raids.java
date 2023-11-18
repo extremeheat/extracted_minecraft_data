@@ -70,7 +70,7 @@ public class Raids extends SavedData {
 
    public static boolean canJoinRaid(Raider var0, Raid var1) {
       if (var0 != null && var1 != null && var1.getLevel() != null) {
-         return var0.isAlive() && var0.canJoinRaid() && var0.getNoActionTime() <= 2400 && var0.level.dimensionType() == var1.getLevel().dimensionType();
+         return var0.isAlive() && var0.canJoinRaid() && var0.getNoActionTime() <= 2400 && var0.level().dimensionType() == var1.getLevel().dimensionType();
       } else {
          return false;
       }
@@ -83,7 +83,7 @@ public class Raids extends SavedData {
       } else if (this.level.getGameRules().getBoolean(GameRules.RULE_DISABLE_RAIDS)) {
          return null;
       } else {
-         DimensionType var2 = var1.level.dimensionType();
+         DimensionType var2 = var1.level().dimensionType();
          if (!var2.hasRaids()) {
             return null;
          } else {
@@ -106,7 +106,7 @@ public class Raids extends SavedData {
                var4 = var3;
             }
 
-            Raid var12 = this.getOrCreateRaid(var1.getLevel(), var4);
+            Raid var12 = this.getOrCreateRaid(var1.serverLevel(), var4);
             boolean var13 = false;
             if (!var12.isStarted()) {
                if (!this.raidMap.containsKey(var12.getId())) {

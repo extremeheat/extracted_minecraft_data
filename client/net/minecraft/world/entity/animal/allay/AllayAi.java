@@ -104,7 +104,7 @@ public class AllayAi {
 
    public static void hearNoteblock(LivingEntity var0, BlockPos var1) {
       Brain var2 = var0.getBrain();
-      GlobalPos var3 = GlobalPos.of(var0.getLevel().dimension(), var1);
+      GlobalPos var3 = GlobalPos.of(var0.level().dimension(), var1);
       Optional var4 = var2.getMemory(MemoryModuleType.LIKED_NOTEBLOCK_POSITION);
       if (var4.isEmpty()) {
          var2.setMemory(MemoryModuleType.LIKED_NOTEBLOCK_POSITION, var3);
@@ -136,7 +136,7 @@ public class AllayAi {
 
    private static boolean shouldDepositItemsAtLikedNoteblock(LivingEntity var0, Brain<?> var1, GlobalPos var2) {
       Optional var3 = var1.getMemory(MemoryModuleType.LIKED_NOTEBLOCK_COOLDOWN_TICKS);
-      Level var4 = var0.getLevel();
+      Level var4 = var0.level();
       return var4.dimension() == var2.dimension() && var4.getBlockState(var2.pos()).is(Blocks.NOTE_BLOCK) && var3.isPresent();
    }
 
@@ -147,7 +147,7 @@ public class AllayAi {
    // $QF: Could not properly define all variable types!
    // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public static Optional<ServerPlayer> getLikedPlayer(LivingEntity var0) {
-      Level var1 = var0.getLevel();
+      Level var1 = var0.level();
       if (!var1.isClientSide() && var1 instanceof ServerLevel var2) {
          Optional var3 = var0.getBrain().getMemory(MemoryModuleType.LIKED_PLAYER);
          if (var3.isPresent()) {

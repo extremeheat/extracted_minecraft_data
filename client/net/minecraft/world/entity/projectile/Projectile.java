@@ -47,8 +47,8 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    public Entity getOwner() {
       if (this.cachedOwner != null && !this.cachedOwner.isRemoved()) {
          return this.cachedOwner;
-      } else if (this.ownerUUID != null && this.level instanceof ServerLevel) {
-         this.cachedOwner = ((ServerLevel)this.level).getEntity(this.ownerUUID);
+      } else if (this.ownerUUID != null && this.level() instanceof ServerLevel) {
+         this.cachedOwner = ((ServerLevel)this.level()).getEntity(this.ownerUUID);
          return this.cachedOwner;
       } else {
          return null;
@@ -80,6 +80,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    protected void readAdditionalSaveData(CompoundTag var1) {
       if (var1.hasUUID("Owner")) {
          this.ownerUUID = var1.getUUID("Owner");
+         this.cachedOwner = null;
       }
 
       this.leftOwner = var1.getBoolean("LeftOwner");
@@ -103,7 +104,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    private boolean checkLeftOwner() {
       Entity var1 = this.getOwner();
       if (var1 != null) {
-         for(Entity var3 : this.level
+         for(Entity var3 : this.level()
             .getEntities(this, this.getBoundingBox().expandTowards(this.getDeltaMovement()).inflate(1.0), var0 -> !var0.isSpectator() && var0.isPickable())) {
             if (var3.getRootVehicle() == var1.getRootVehicle()) {
                return false;
@@ -137,19 +138,19 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       float var9 = Mth.cos(var3 * 0.017453292F) * Mth.cos(var2 * 0.017453292F);
       this.shoot((double)var7, (double)var8, (double)var9, var5, var6);
       Vec3 var10 = var1.getDeltaMovement();
-      this.setDeltaMovement(this.getDeltaMovement().add(var10.x, var1.isOnGround() ? 0.0 : var10.y, var10.z));
+      this.setDeltaMovement(this.getDeltaMovement().add(var10.x, var1.onGround() ? 0.0 : var10.y, var10.z));
    }
 
    protected void onHit(HitResult var1) {
       HitResult.Type var2 = var1.getType();
       if (var2 == HitResult.Type.ENTITY) {
          this.onHitEntity((EntityHitResult)var1);
-         this.level.gameEvent(GameEvent.PROJECTILE_LAND, var1.getLocation(), GameEvent.Context.of(this, null));
+         this.level().gameEvent(GameEvent.PROJECTILE_LAND, var1.getLocation(), GameEvent.Context.of(this, null));
       } else if (var2 == HitResult.Type.BLOCK) {
          BlockHitResult var3 = (BlockHitResult)var1;
          this.onHitBlock(var3);
          BlockPos var4 = var3.getBlockPos();
-         this.level.gameEvent(GameEvent.PROJECTILE_LAND, var4, GameEvent.Context.of(this, this.level.getBlockState(var4)));
+         this.level().gameEvent(GameEvent.PROJECTILE_LAND, var4, GameEvent.Context.of(this, this.level().getBlockState(var4)));
       }
    }
 
@@ -157,8 +158,8 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    }
 
    protected void onHitBlock(BlockHitResult var1) {
-      BlockState var2 = this.level.getBlockState(var1.getBlockPos());
-      var2.onProjectileHit(this.level, var2, var1, this);
+      BlockState var2 = this.level().getBlockState(var1.getBlockPos());
+      var2.onProjectileHit(this.level(), var2, var1, this);
    }
 
    @Override
@@ -211,7 +212,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    @Override
    public void recreateFromPacket(ClientboundAddEntityPacket var1) {
       super.recreateFromPacket(var1);
-      Entity var2 = this.level.getEntity(var1.getData());
+      Entity var2 = this.level().getEntity(var1.getData());
       if (var2 != null) {
          this.setOwner(var2);
       }

@@ -80,7 +80,7 @@ public class WhitelistCommand {
 
    private static int reload(CommandSourceStack var0) {
       var0.getServer().getPlayerList().reloadWhiteList();
-      var0.sendSuccess(Component.translatable("commands.whitelist.reloaded"), true);
+      var0.sendSuccess(() -> Component.translatable("commands.whitelist.reloaded"), true);
       var0.getServer().kickUnlistedPlayers(var0);
       return 1;
    }
@@ -93,7 +93,7 @@ public class WhitelistCommand {
          if (!var2.isWhiteListed(var5)) {
             UserWhiteListEntry var6 = new UserWhiteListEntry(var5);
             var2.add(var6);
-            var0.sendSuccess(Component.translatable("commands.whitelist.add.success", ComponentUtils.getDisplayName(var5)), true);
+            var0.sendSuccess(() -> Component.translatable("commands.whitelist.add.success", ComponentUtils.getDisplayName(var5)), true);
             ++var3;
          }
       }
@@ -113,7 +113,7 @@ public class WhitelistCommand {
          if (var2.isWhiteListed(var5)) {
             UserWhiteListEntry var6 = new UserWhiteListEntry(var5);
             var2.remove(var6);
-            var0.sendSuccess(Component.translatable("commands.whitelist.remove.success", ComponentUtils.getDisplayName(var5)), true);
+            var0.sendSuccess(() -> Component.translatable("commands.whitelist.remove.success", ComponentUtils.getDisplayName(var5)), true);
             ++var3;
          }
       }
@@ -132,7 +132,7 @@ public class WhitelistCommand {
          throw ERROR_ALREADY_ENABLED.create();
       } else {
          var1.setUsingWhiteList(true);
-         var0.sendSuccess(Component.translatable("commands.whitelist.enabled"), true);
+         var0.sendSuccess(() -> Component.translatable("commands.whitelist.enabled"), true);
          var0.getServer().kickUnlistedPlayers(var0);
          return 1;
       }
@@ -144,7 +144,7 @@ public class WhitelistCommand {
          throw ERROR_ALREADY_DISABLED.create();
       } else {
          var1.setUsingWhiteList(false);
-         var0.sendSuccess(Component.translatable("commands.whitelist.disabled"), true);
+         var0.sendSuccess(() -> Component.translatable("commands.whitelist.disabled"), true);
          return 1;
       }
    }
@@ -152,9 +152,9 @@ public class WhitelistCommand {
    private static int showList(CommandSourceStack var0) {
       String[] var1 = var0.getServer().getPlayerList().getWhiteListNames();
       if (var1.length == 0) {
-         var0.sendSuccess(Component.translatable("commands.whitelist.none"), false);
+         var0.sendSuccess(() -> Component.translatable("commands.whitelist.none"), false);
       } else {
-         var0.sendSuccess(Component.translatable("commands.whitelist.list", var1.length, String.join(", ", var1)), false);
+         var0.sendSuccess(() -> Component.translatable("commands.whitelist.list", var1.length, String.join(", ", var1)), false);
       }
 
       return var1.length;

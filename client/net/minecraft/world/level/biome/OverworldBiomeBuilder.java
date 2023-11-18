@@ -31,7 +31,6 @@ public final class OverworldBiomeBuilder {
    public static final float EROSION_INDEX_2_START = -0.375F;
    private static final float EROSION_DEEP_DARK_DRYNESS_THRESHOLD = -0.225F;
    private static final float DEPTH_DEEP_DARK_DRYNESS_THRESHOLD = 0.9F;
-   private final OverworldBiomeBuilder.Modifier modifier;
    private final Climate.Parameter FULL_RANGE = Climate.Parameter.span(-1.0F, 1.0F);
    private final Climate.Parameter[] temperatures = new Climate.Parameter[]{
       Climate.Parameter.span(-1.0F, -0.45F),
@@ -107,12 +106,7 @@ public final class OverworldBiomeBuilder {
    };
 
    public OverworldBiomeBuilder() {
-      this(OverworldBiomeBuilder.Modifier.NONE);
-   }
-
-   public OverworldBiomeBuilder(OverworldBiomeBuilder.Modifier var1) {
       super();
-      this.modifier = var1;
    }
 
    public List<Climate.ParameterPoint> spawnTarget() {
@@ -686,10 +680,14 @@ public final class OverworldBiomeBuilder {
    }
 
    private ResourceKey<Biome> pickPlateauBiome(int var1, int var2, Climate.Parameter var3) {
-      ResourceKey var4 = this.PLATEAU_BIOMES_VARIANT[var1][var2];
-      return var3.max() >= 0L && var4 != null && (var4 != Biomes.CHERRY_GROVE || this.modifier == OverworldBiomeBuilder.Modifier.UPDATE_1_20)
-         ? var4
-         : this.PLATEAU_BIOMES[var1][var2];
+      if (var3.max() >= 0L) {
+         ResourceKey var4 = this.PLATEAU_BIOMES_VARIANT[var1][var2];
+         if (var4 != null) {
+            return var4;
+         }
+      }
+
+      return this.PLATEAU_BIOMES[var1][var2];
    }
 
    private ResourceKey<Biome> pickPeakBiome(int var1, int var2, Climate.Parameter var3) {
@@ -852,13 +850,5 @@ public final class OverworldBiomeBuilder {
    @VisibleForDebug
    public Climate.Parameter[] getWeirdnessThresholds() {
       return new Climate.Parameter[]{Climate.Parameter.span(-2.0F, 0.0F), Climate.Parameter.span(0.0F, 2.0F)};
-   }
-
-   public static enum Modifier {
-      NONE,
-      UPDATE_1_20;
-
-      private Modifier() {
-      }
    }
 }

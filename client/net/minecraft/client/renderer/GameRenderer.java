@@ -9,11 +9,10 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.shaders.Program;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexSorting;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import com.mojang.math.Axis;
@@ -36,6 +35,7 @@ import net.minecraft.Util;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.MapRenderer;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
@@ -84,6 +84,7 @@ public class GameRenderer implements AutoCloseable {
    static final Logger LOGGER = LogUtils.getLogger();
    private static final boolean DEPTH_BUFFER_DEBUG = false;
    public static final float PROJECTION_Z_NEAR = 0.05F;
+   private static final float GUI_Z_NEAR = 1000.0F;
    final Minecraft minecraft;
    private final ResourceManager resourceManager;
    private final RandomSource random = RandomSource.create();
@@ -157,10 +158,6 @@ public class GameRenderer implements AutoCloseable {
    private static ShaderInstance positionTexShader;
    @Nullable
    private static ShaderInstance positionTexColorShader;
-   @Nullable
-   private static ShaderInstance blockShader;
-   @Nullable
-   private static ShaderInstance newEntityShader;
    @Nullable
    private static ShaderInstance particleShader;
    @Nullable
@@ -261,6 +258,14 @@ public class GameRenderer implements AutoCloseable {
    private static ShaderInstance rendertypeLinesShader;
    @Nullable
    private static ShaderInstance rendertypeCrumblingShader;
+   @Nullable
+   private static ShaderInstance rendertypeGuiShader;
+   @Nullable
+   private static ShaderInstance rendertypeGuiOverlayShader;
+   @Nullable
+   private static ShaderInstance rendertypeGuiTextHighlightShader;
+   @Nullable
+   private static ShaderInstance rendertypeGuiGhostRecipeOverlayShader;
 
    public GameRenderer(Minecraft var1, ItemInHandRenderer var2, ResourceManager var3, RenderBuffers var4) {
       super();
@@ -420,6 +425,8 @@ public class GameRenderer implements AutoCloseable {
             throw new RuntimeException("could not preload blit shader", var3);
          }
 
+         rendertypeGuiShader = this.preloadShader(var1, "rendertype_gui", DefaultVertexFormat.POSITION_COLOR);
+         rendertypeGuiOverlayShader = this.preloadShader(var1, "rendertype_gui_overlay", DefaultVertexFormat.POSITION_COLOR);
          positionShader = this.preloadShader(var1, "position", DefaultVertexFormat.POSITION);
          positionColorShader = this.preloadShader(var1, "position_color", DefaultVertexFormat.POSITION_COLOR);
          positionColorTexShader = this.preloadShader(var1, "position_color_tex", DefaultVertexFormat.POSITION_COLOR_TEX);
@@ -448,8 +455,6 @@ public class GameRenderer implements AutoCloseable {
       ArrayList var3 = Lists.newArrayListWithCapacity(this.shaders.size());
 
       try {
-         var3.add(Pair.of(new ShaderInstance(var1, "block", DefaultVertexFormat.BLOCK), (Consumer<ShaderInstance>)var0 -> blockShader = var0));
-         var3.add(Pair.of(new ShaderInstance(var1, "new_entity", DefaultVertexFormat.NEW_ENTITY), (Consumer<ShaderInstance>)var0 -> newEntityShader = var0));
          var3.add(Pair.of(new ShaderInstance(var1, "particle", DefaultVertexFormat.PARTICLE), (Consumer<ShaderInstance>)var0 -> particleShader = var0));
          var3.add(Pair.of(new ShaderInstance(var1, "position", DefaultVertexFormat.POSITION), (Consumer<ShaderInstance>)var0 -> positionShader = var0));
          var3.add(
@@ -754,6 +759,29 @@ public class GameRenderer implements AutoCloseable {
                new ShaderInstance(var1, "rendertype_crumbling", DefaultVertexFormat.BLOCK), (Consumer<ShaderInstance>)var0 -> rendertypeCrumblingShader = var0
             )
          );
+         var3.add(
+            Pair.of(
+               new ShaderInstance(var1, "rendertype_gui", DefaultVertexFormat.POSITION_COLOR), (Consumer<ShaderInstance>)var0 -> rendertypeGuiShader = var0
+            )
+         );
+         var3.add(
+            Pair.of(
+               new ShaderInstance(var1, "rendertype_gui_overlay", DefaultVertexFormat.POSITION_COLOR),
+               (Consumer<ShaderInstance>)var0 -> rendertypeGuiOverlayShader = var0
+            )
+         );
+         var3.add(
+            Pair.of(
+               new ShaderInstance(var1, "rendertype_gui_text_highlight", DefaultVertexFormat.POSITION_COLOR),
+               (Consumer<ShaderInstance>)var0 -> rendertypeGuiTextHighlightShader = var0
+            )
+         );
+         var3.add(
+            Pair.of(
+               new ShaderInstance(var1, "rendertype_gui_ghost_recipe_overlay", DefaultVertexFormat.POSITION_COLOR),
+               (Consumer<ShaderInstance>)var0 -> rendertypeGuiGhostRecipeOverlayShader = var0
+            )
+         );
       } catch (IOException var5) {
          var3.forEach(var0 -> ((ShaderInstance)var0.getFirst()).close());
          throw new RuntimeException("could not reload shaders", var5);
@@ -1001,7 +1029,7 @@ public class GameRenderer implements AutoCloseable {
    }
 
    public void resetProjectionMatrix(Matrix4f var1) {
-      RenderSystem.setProjectionMatrix(var1);
+      RenderSystem.setProjectionMatrix(var1, VertexSorting.DISTANCE_TO_ORIGIN);
    }
 
    public Matrix4f getProjectionMatrix(double var1) {
@@ -1075,23 +1103,23 @@ public class GameRenderer implements AutoCloseable {
          RenderSystem.clear(256, Minecraft.ON_OSX);
          Matrix4f var8 = new Matrix4f()
             .setOrtho(
-               0.0F, (float)((double)var7.getWidth() / var7.getGuiScale()), (float)((double)var7.getHeight() / var7.getGuiScale()), 0.0F, 1000.0F, 3000.0F
+               0.0F, (float)((double)var7.getWidth() / var7.getGuiScale()), (float)((double)var7.getHeight() / var7.getGuiScale()), 0.0F, 1000.0F, 21000.0F
             );
-         RenderSystem.setProjectionMatrix(var8);
+         RenderSystem.setProjectionMatrix(var8, VertexSorting.ORTHOGRAPHIC_Z);
          PoseStack var9 = RenderSystem.getModelViewStack();
          var9.pushPose();
          var9.setIdentity();
-         var9.translate(0.0F, 0.0F, -2000.0F);
+         var9.translate(0.0F, 0.0F, -11000.0F);
          RenderSystem.applyModelViewMatrix();
          Lighting.setupFor3DItems();
-         PoseStack var10 = new PoseStack();
+         GuiGraphics var10 = new GuiGraphics(this.minecraft, this.renderBuffers.bufferSource());
          if (var4 && this.minecraft.level != null) {
             this.minecraft.getProfiler().popPush("gui");
             if (this.minecraft.player != null) {
-               float var11 = Mth.lerp(var1, this.minecraft.player.oPortalTime, this.minecraft.player.portalTime);
+               float var11 = Mth.lerp(var1, this.minecraft.player.oSpinningEffectIntensity, this.minecraft.player.spinningEffectIntensity);
                float var12 = this.minecraft.options.screenEffectScale().get().floatValue();
                if (var11 > 0.0F && this.minecraft.player.hasEffect(MobEffects.CONFUSION) && var12 < 1.0F) {
-                  this.renderConfusionOverlay(var11 * (1.0F - var12));
+                  this.renderConfusionOverlay(var10, var11 * (1.0F - var12));
                }
             }
 
@@ -1161,6 +1189,7 @@ public class GameRenderer implements AutoCloseable {
          this.minecraft.getProfiler().push("toasts");
          this.minecraft.getToasts().render(var10);
          this.minecraft.getProfiler().pop();
+         var10.flush();
          var9.popPose();
          RenderSystem.applyModelViewMatrix();
       }
@@ -1260,7 +1289,7 @@ public class GameRenderer implements AutoCloseable {
       }
 
       float var10 = this.minecraft.options.screenEffectScale().get().floatValue();
-      float var11 = Mth.lerp(var1, this.minecraft.player.oPortalTime, this.minecraft.player.portalTime) * var10 * var10;
+      float var11 = Mth.lerp(var1, this.minecraft.player.oSpinningEffectIntensity, this.minecraft.player.spinningEffectIntensity) * var10 * var10;
       if (var11 > 0.0F) {
          int var12 = this.minecraft.player.hasEffect(MobEffects.CONFUSION) ? 7 : 20;
          float var13 = 5.0F / (var11 * var11 + 5.0F) - var11 * 0.04F;
@@ -1347,39 +1376,31 @@ public class GameRenderer implements AutoCloseable {
       }
    }
 
-   private void renderConfusionOverlay(float var1) {
-      int var2 = this.minecraft.getWindow().getGuiScaledWidth();
-      int var3 = this.minecraft.getWindow().getGuiScaledHeight();
-      double var4 = Mth.lerp((double)var1, 2.0, 1.0);
-      float var6 = 0.2F * var1;
-      float var7 = 0.4F * var1;
-      float var8 = 0.2F * var1;
-      double var9 = (double)var2 * var4;
-      double var11 = (double)var3 * var4;
-      double var13 = ((double)var2 - var9) / 2.0;
-      double var15 = ((double)var3 - var11) / 2.0;
+   private void renderConfusionOverlay(GuiGraphics var1, float var2) {
+      int var3 = var1.guiWidth();
+      int var4 = var1.guiHeight();
+      var1.pose().pushPose();
+      float var5 = Mth.lerp(var2, 2.0F, 1.0F);
+      var1.pose().translate((float)var3 / 2.0F, (float)var4 / 2.0F, 0.0F);
+      var1.pose().scale(var5, var5, var5);
+      var1.pose().translate((float)(-var3) / 2.0F, (float)(-var4) / 2.0F, 0.0F);
+      float var6 = 0.2F * var2;
+      float var7 = 0.4F * var2;
+      float var8 = 0.2F * var2;
       RenderSystem.disableDepthTest();
       RenderSystem.depthMask(false);
       RenderSystem.enableBlend();
       RenderSystem.blendFuncSeparate(
          GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ONE
       );
-      RenderSystem.setShaderColor(var6, var7, var8, 1.0F);
-      RenderSystem.setShader(GameRenderer::getPositionTexShader);
-      RenderSystem.setShaderTexture(0, NAUSEA_LOCATION);
-      Tesselator var17 = Tesselator.getInstance();
-      BufferBuilder var18 = var17.getBuilder();
-      var18.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-      var18.vertex(var13, var15 + var11, -90.0).uv(0.0F, 1.0F).endVertex();
-      var18.vertex(var13 + var9, var15 + var11, -90.0).uv(1.0F, 1.0F).endVertex();
-      var18.vertex(var13 + var9, var15, -90.0).uv(1.0F, 0.0F).endVertex();
-      var18.vertex(var13, var15, -90.0).uv(0.0F, 0.0F).endVertex();
-      var17.end();
-      RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+      var1.setColor(var6, var7, var8, 1.0F);
+      var1.blit(NAUSEA_LOCATION, 0, 0, -90, 0.0F, 0.0F, var3, var4, var3, var4);
+      var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
       RenderSystem.defaultBlendFunc();
       RenderSystem.disableBlend();
       RenderSystem.depthMask(true);
       RenderSystem.enableDepthTest();
+      var1.pose().popPose();
    }
 
    public Minecraft getMinecraft() {
@@ -1429,16 +1450,6 @@ public class GameRenderer implements AutoCloseable {
    @Nullable
    public static ShaderInstance getPositionTexColorShader() {
       return positionTexColorShader;
-   }
-
-   @Nullable
-   public static ShaderInstance getBlockShader() {
-      return blockShader;
-   }
-
-   @Nullable
-   public static ShaderInstance getNewEntityShader() {
-      return newEntityShader;
    }
 
    @Nullable
@@ -1689,6 +1700,26 @@ public class GameRenderer implements AutoCloseable {
    @Nullable
    public static ShaderInstance getRendertypeCrumblingShader() {
       return rendertypeCrumblingShader;
+   }
+
+   @Nullable
+   public static ShaderInstance getRendertypeGuiShader() {
+      return rendertypeGuiShader;
+   }
+
+   @Nullable
+   public static ShaderInstance getRendertypeGuiOverlayShader() {
+      return rendertypeGuiOverlayShader;
+   }
+
+   @Nullable
+   public static ShaderInstance getRendertypeGuiTextHighlightShader() {
+      return rendertypeGuiTextHighlightShader;
+   }
+
+   @Nullable
+   public static ShaderInstance getRendertypeGuiGhostRecipeOverlayShader() {
+      return rendertypeGuiGhostRecipeOverlayShader;
    }
 
    public static record ResourceCache(ResourceProvider a, Map<ResourceLocation, Resource> b) implements ResourceProvider {

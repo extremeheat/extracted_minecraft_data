@@ -49,7 +49,7 @@ public class StonecutterMenu extends AbstractContainerMenu {
    public StonecutterMenu(int var1, Inventory var2, final ContainerLevelAccess var3) {
       super(MenuType.STONECUTTER, var1);
       this.access = var3;
-      this.level = var2.player.level;
+      this.level = var2.player.level();
       this.inputSlot = this.addSlot(new Slot(this.container, 0, 20, 33));
       this.resultSlot = this.addSlot(new Slot(this.resultContainer, 1, 143, 33) {
          @Override
@@ -59,8 +59,8 @@ public class StonecutterMenu extends AbstractContainerMenu {
 
          @Override
          public void onTake(Player var1, ItemStack var2) {
-            var2.onCraftedBy(var1.level, var1, var2.getCount());
-            StonecutterMenu.this.resultContainer.awardUsedRecipes(var1);
+            var2.onCraftedBy(var1.level(), var1, var2.getCount());
+            StonecutterMenu.this.resultContainer.awardUsedRecipes(var1, this.getRelevantItems());
             ItemStack var3x = StonecutterMenu.this.inputSlot.remove(1);
             if (!var3x.isEmpty()) {
                StonecutterMenu.this.setupResultSlot();
@@ -74,6 +74,10 @@ public class StonecutterMenu extends AbstractContainerMenu {
                }
             });
             super.onTake(var1, var2);
+         }
+
+         private List<ItemStack> getRelevantItems() {
+            return List.of(StonecutterMenu.this.inputSlot.getItem());
          }
       });
 
@@ -183,7 +187,7 @@ public class StonecutterMenu extends AbstractContainerMenu {
          Item var6 = var5.getItem();
          var3 = var5.copy();
          if (var2 == 1) {
-            var6.onCraftedBy(var5, var1.level, var1);
+            var6.onCraftedBy(var5, var1.level(), var1);
             if (!this.moveItemStackTo(var5, 2, 38, true)) {
                return ItemStack.EMPTY;
             }

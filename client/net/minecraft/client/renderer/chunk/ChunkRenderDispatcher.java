@@ -9,6 +9,7 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.VertexSorting;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.ObjectArraySet;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
@@ -308,7 +309,7 @@ public class ChunkRenderDispatcher {
       private final Set<BlockEntity> globalBlockEntities = Sets.newHashSet();
       private final Map<RenderType, VertexBuffer> buffers = RenderType.chunkBufferLayers()
          .stream()
-         .collect(Collectors.toMap(var0 -> var0, var0 -> new VertexBuffer()));
+         .collect(Collectors.toMap(var0 -> var0, var0 -> new VertexBuffer(VertexBuffer.Usage.STATIC)));
       private AABB bb;
       private boolean dirty = true;
       final BlockPos.MutableBlockPos origin = new BlockPos.MutableBlockPos(-1, -1, -1);
@@ -628,7 +629,7 @@ public class ChunkRenderDispatcher {
                if (var12.contains(RenderType.translucent())) {
                   BufferBuilder var22 = var4.builder(RenderType.translucent());
                   if (!var22.isCurrentBatchEmpty()) {
-                     var22.setQuadSortOrigin(var1 - (float)var7.getX(), var2 - (float)var7.getY(), var3 - (float)var7.getZ());
+                     var22.setQuadSorting(VertexSorting.byDistance(var1 - (float)var7.getX(), var2 - (float)var7.getY(), var3 - (float)var7.getZ()));
                      var5.transparencyState = var22.getSortState();
                   }
                }
@@ -711,8 +712,12 @@ public class ChunkRenderDispatcher {
                   BufferBuilder var7 = var1.builder(RenderType.translucent());
                   RenderChunk.this.beginLayer(var7);
                   var7.restoreSortState(var6);
-                  var7.setQuadSortOrigin(
-                     var3 - (float)RenderChunk.this.origin.getX(), var4 - (float)RenderChunk.this.origin.getY(), var5 - (float)RenderChunk.this.origin.getZ()
+                  var7.setQuadSorting(
+                     VertexSorting.byDistance(
+                        var3 - (float)RenderChunk.this.origin.getX(),
+                        var4 - (float)RenderChunk.this.origin.getY(),
+                        var5 - (float)RenderChunk.this.origin.getZ()
+                     )
                   );
                   this.compiledChunk.transparencyState = var7.getSortState();
                   BufferBuilder.RenderedBuffer var8 = var7.end();

@@ -151,7 +151,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
          this.setCollarColor(DyeColor.byId(var1.getInt("CollarColor")));
       }
 
-      this.readPersistentAngerSaveData(this.level, var1);
+      this.readPersistentAngerSaveData(this.level(), var1);
    }
 
    @Override
@@ -183,15 +183,15 @@ public class Wolf extends TamableAnimal implements NeutralMob {
    @Override
    public void aiStep() {
       super.aiStep();
-      if (!this.level.isClientSide && this.isWet && !this.isShaking && !this.isPathFinding() && this.onGround) {
+      if (!this.level().isClientSide && this.isWet && !this.isShaking && !this.isPathFinding() && this.onGround()) {
          this.isShaking = true;
          this.shakeAnim = 0.0F;
          this.shakeAnimO = 0.0F;
-         this.level.broadcastEntityEvent(this, (byte)8);
+         this.level().broadcastEntityEvent(this, (byte)8);
       }
 
-      if (!this.level.isClientSide) {
-         this.updatePersistentAnger((ServerLevel)this.level, true);
+      if (!this.level().isClientSide) {
+         this.updatePersistentAnger((ServerLevel)this.level(), true);
       }
    }
 
@@ -208,8 +208,8 @@ public class Wolf extends TamableAnimal implements NeutralMob {
 
          if (this.isInWaterRainOrBubble()) {
             this.isWet = true;
-            if (this.isShaking && !this.level.isClientSide) {
-               this.level.broadcastEntityEvent(this, (byte)56);
+            if (this.isShaking && !this.level().isClientSide) {
+               this.level().broadcastEntityEvent(this, (byte)56);
                this.cancelShake();
             }
          } else if ((this.isWet || this.isShaking) && this.isShaking) {
@@ -235,7 +235,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
                for(int var4 = 0; var4 < var2; ++var4) {
                   float var5 = (this.random.nextFloat() * 2.0F - 1.0F) * this.getBbWidth() * 0.5F;
                   float var6 = (this.random.nextFloat() * 2.0F - 1.0F) * this.getBbWidth() * 0.5F;
-                  this.level
+                  this.level()
                      .addParticle(ParticleTypes.SPLASH, this.getX() + (double)var5, (double)(var1 + 0.8F), this.getZ() + (double)var6, var3.x, var3.y, var3.z);
                }
             }
@@ -297,7 +297,7 @@ public class Wolf extends TamableAnimal implements NeutralMob {
          return false;
       } else {
          Entity var3 = var1.getEntity();
-         if (!this.level.isClientSide) {
+         if (!this.level().isClientSide) {
             this.setOrderedToSit(false);
          }
 
@@ -332,64 +332,66 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       this.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(4.0);
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
       Item var4 = var3.getItem();
-      if (this.level.isClientSide) {
+      if (this.level().isClientSide) {
          boolean var7 = this.isOwnedBy(var1) || this.isTame() || var3.is(Items.BONE) && !this.isTame() && !this.isAngry();
          return var7 ? InteractionResult.CONSUME : InteractionResult.PASS;
-      } else {
-         if (this.isTame()) {
-            if (this.isFood(var3) && this.getHealth() < this.getMaxHealth()) {
-               if (!var1.getAbilities().instabuild) {
-                  var3.shrink(1);
-               }
-
-               this.heal((float)var4.getFoodProperties().getNutrition());
-               return InteractionResult.SUCCESS;
-            }
-
-            if (!(var4 instanceof DyeItem)) {
-               InteractionResult var6 = super.mobInteract(var1, var2);
-               if ((!var6.consumesAction() || this.isBaby()) && this.isOwnedBy(var1)) {
-                  this.setOrderedToSit(!this.isOrderedToSit());
-                  this.jumping = false;
-                  this.navigation.stop();
-                  this.setTarget(null);
-                  return InteractionResult.SUCCESS;
-               }
-
-               return var6;
-            }
-
-            DyeColor var5 = ((DyeItem)var4).getDyeColor();
-            if (var5 != this.getCollarColor()) {
-               this.setCollarColor(var5);
-               if (!var1.getAbilities().instabuild) {
-                  var3.shrink(1);
-               }
-
-               return InteractionResult.SUCCESS;
-            }
-         } else if (var3.is(Items.BONE) && !this.isAngry()) {
+      } else if (this.isTame()) {
+         if (this.isFood(var3) && this.getHealth() < this.getMaxHealth()) {
             if (!var1.getAbilities().instabuild) {
                var3.shrink(1);
             }
 
-            if (this.random.nextInt(3) == 0) {
-               this.tame(var1);
-               this.navigation.stop();
-               this.setTarget(null);
-               this.setOrderedToSit(true);
-               this.level.broadcastEntityEvent(this, (byte)7);
-            } else {
-               this.level.broadcastEntityEvent(this, (byte)6);
+            this.heal((float)var4.getFoodProperties().getNutrition());
+            return InteractionResult.SUCCESS;
+         } else {
+            if (var4 instanceof DyeItem var5 && this.isOwnedBy(var1)) {
+               DyeColor var8 = var5.getDyeColor();
+               if (var8 != this.getCollarColor()) {
+                  this.setCollarColor(var8);
+                  if (!var1.getAbilities().instabuild) {
+                     var3.shrink(1);
+                  }
+
+                  return InteractionResult.SUCCESS;
+               }
+
+               return super.mobInteract(var1, var2);
             }
 
-            return InteractionResult.SUCCESS;
+            InteractionResult var6 = super.mobInteract(var1, var2);
+            if ((!var6.consumesAction() || this.isBaby()) && this.isOwnedBy(var1)) {
+               this.setOrderedToSit(!this.isOrderedToSit());
+               this.jumping = false;
+               this.navigation.stop();
+               this.setTarget(null);
+               return InteractionResult.SUCCESS;
+            } else {
+               return var6;
+            }
+         }
+      } else if (var3.is(Items.BONE) && !this.isAngry()) {
+         if (!var1.getAbilities().instabuild) {
+            var3.shrink(1);
          }
 
+         if (this.random.nextInt(3) == 0) {
+            this.tame(var1);
+            this.navigation.stop();
+            this.setTarget(null);
+            this.setOrderedToSit(true);
+            this.level().broadcastEntityEvent(this, (byte)7);
+         } else {
+            this.level().broadcastEntityEvent(this, (byte)6);
+         }
+
+         return InteractionResult.SUCCESS;
+      } else {
          return super.mobInteract(var1, var2);
       }
    }

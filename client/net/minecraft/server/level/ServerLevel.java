@@ -62,6 +62,7 @@ import net.minecraft.network.protocol.game.ClientboundSoundEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerScoreboard;
 import net.minecraft.server.level.progress.ChunkProgressListener;
@@ -73,11 +74,13 @@ import net.minecraft.util.AbortableIterationConsumer;
 import net.minecraft.util.CsvOutput;
 import net.minecraft.util.Mth;
 import net.minecraft.util.ProgressListener;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.Unit;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.RandomSequences;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -185,11 +188,12 @@ public class ServerLevel extends Level implements WorldGenLevel {
    private boolean handlingTick;
    private final List<CustomSpawner> customSpawners;
    @Nullable
-   private final EndDragonFight dragonFight;
+   private EndDragonFight dragonFight;
    final Int2ObjectMap<EnderDragonPart> dragonParts = new Int2ObjectOpenHashMap();
    private final StructureManager structureManager;
    private final StructureCheck structureCheck;
    private final boolean tickTime;
+   private final RandomSequences randomSequences;
 
    public ServerLevel(
       MinecraftServer var1,
@@ -202,28 +206,29 @@ public class ServerLevel extends Level implements WorldGenLevel {
       boolean var8,
       long var9,
       List<CustomSpawner> var11,
-      boolean var12
+      boolean var12,
+      @Nullable RandomSequences var13
    ) {
       super(var4, var5, var1.registryAccess(), var6.type(), var1::getProfiler, false, var8, var9, var1.getMaxChainedNeighborUpdates());
       this.tickTime = var12;
       this.server = var1;
       this.customSpawners = var11;
       this.serverLevelData = var4;
-      ChunkGenerator var13 = var6.generator();
-      boolean var14 = var1.forceSynchronousWrites();
-      DataFixer var15 = var1.getFixerUpper();
-      EntityStorage var16 = new EntityStorage(this, var3.getDimensionPath(var5).resolve("entities"), var15, var14, var1);
-      this.entityManager = new PersistentEntitySectionManager<>(Entity.class, new ServerLevel.EntityCallbacks(), var16);
+      ChunkGenerator var14 = var6.generator();
+      boolean var15 = var1.forceSynchronousWrites();
+      DataFixer var16 = var1.getFixerUpper();
+      EntityStorage var17 = new EntityStorage(this, var3.getDimensionPath(var5).resolve("entities"), var16, var15, var1);
+      this.entityManager = new PersistentEntitySectionManager<>(Entity.class, new ServerLevel.EntityCallbacks(), var17);
       this.chunkSource = new ServerChunkCache(
          this,
          var3,
-         var15,
+         var16,
          var1.getStructureManager(),
          var2,
-         var13,
+         var14,
          var1.getPlayerList().getViewDistance(),
          var1.getPlayerList().getSimulationDistance(),
-         var14,
+         var15,
          var7,
          this.entityManager::updateChunkStatus,
          () -> var1.overworld().getDataStorage()
@@ -239,28 +244,37 @@ public class ServerLevel extends Level implements WorldGenLevel {
          var4.setGameType(var1.getDefaultGameType());
       }
 
-      long var17 = var1.getWorldData().worldGenOptions().seed();
+      long var18 = var1.getWorldData().worldGenOptions().seed();
       this.structureCheck = new StructureCheck(
          this.chunkSource.chunkScanner(),
          this.registryAccess(),
          var1.getStructureManager(),
          var5,
-         var13,
+         var14,
          this.chunkSource.randomState(),
          this,
-         var13.getBiomeSource(),
-         var17,
-         var15
+         var14.getBiomeSource(),
+         var18,
+         var16
       );
       this.structureManager = new StructureManager(this, var1.getWorldData().worldGenOptions(), this.structureCheck);
       if (this.dimension() == Level.END && this.dimensionTypeRegistration().is(BuiltinDimensionTypes.END)) {
-         this.dragonFight = new EndDragonFight(this, var17, var1.getWorldData().endDragonFightData());
+         this.dragonFight = new EndDragonFight(this, var18, var1.getWorldData().endDragonFightData());
       } else {
          this.dragonFight = null;
       }
 
       this.sleepStatus = new SleepStatus();
       this.gameEventDispatcher = new GameEventDispatcher(this);
+      this.randomSequences = Objects.requireNonNullElseGet(
+         var13, () -> this.getDataStorage().computeIfAbsent(var2x -> RandomSequences.load(var18, var2x), () -> new RandomSequences(var18), "random_sequences")
+      );
+   }
+
+   @Deprecated
+   @VisibleForTesting
+   public void setDragonFight(@Nullable EndDragonFight var1) {
+      this.dragonFight = var1;
    }
 
    public void setWeatherParameters(int var1, int var2, boolean var3, boolean var4) {
@@ -474,14 +488,18 @@ public class ServerLevel extends Level implements WorldGenLevel {
 
       var7.popPush("tickBlocks");
       if (var2 > 0) {
-         for(LevelChunkSection var25 : var1.getSections()) {
-            if (var25.isRandomlyTicking()) {
-               int var27 = var25.bottomBlockY();
+         LevelChunkSection[] var18 = var1.getSections();
+
+         for(int var20 = 0; var20 < var18.length; ++var20) {
+            LevelChunkSection var22 = var18[var20];
+            if (var22.isRandomlyTicking()) {
+               int var25 = var1.getSectionYFromSectionIndex(var20);
+               int var27 = SectionPos.sectionToBlockCoord(var25);
 
                for(int var29 = 0; var29 < var2; ++var29) {
                   BlockPos var30 = this.getBlockRandomPos(var5, var27, var6, 15);
                   var7.push("randomTick");
-                  BlockState var15 = var25.getBlockState(var30.getX() - var5, var30.getY() - var27, var30.getZ() - var6);
+                  BlockState var15 = var22.getBlockState(var30.getX() - var5, var30.getY() - var27, var30.getZ() - var6);
                   if (var15.isRandomlyTicking()) {
                      var15.randomTick(this, var30, this.random);
                   }
@@ -867,7 +885,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
    @Override
    public void destroyBlockProgress(int var1, BlockPos var2, int var3) {
       for(ServerPlayer var5 : this.server.getPlayerList().getPlayers()) {
-         if (var5 != null && var5.level == this && var5.getId() != var1) {
+         if (var5 != null && var5.level() == this && var5.getId() != var1) {
             double var6 = (double)var2.getX() - var5.getX();
             double var8 = (double)var2.getY() - var5.getY();
             double var10 = (double)var2.getZ() - var5.getZ();
@@ -1122,7 +1140,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
    }
 
    private boolean sendParticles(ServerPlayer var1, boolean var2, double var3, double var5, double var7, Packet<?> var9) {
-      if (var1.getLevel() != this) {
+      if (var1.level() != this) {
          return false;
       } else {
          BlockPos var10 = var1.blockPosition();
@@ -1432,7 +1450,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
    }
 
    @Nullable
-   public EndDragonFight dragonFight() {
+   public EndDragonFight getDragonFight() {
       return this.dragonFight;
    }
 
@@ -1543,6 +1561,14 @@ public class ServerLevel extends Level implements WorldGenLevel {
    @Override
    public FeatureFlagSet enabledFeatures() {
       return this.server.getWorldData().enabledFeatures();
+   }
+
+   public RandomSource getRandomSequence(ResourceLocation var1) {
+      return this.randomSequences.get(var1);
+   }
+
+   public RandomSequences getRandomSequences() {
+      return this.randomSequences;
    }
 
    final class EntityCallbacks implements LevelCallback<Entity> {

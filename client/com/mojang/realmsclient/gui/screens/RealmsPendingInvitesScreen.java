@@ -1,7 +1,5 @@
 package com.mojang.realmsclient.gui.screens;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.RealmsMainScreen;
 import com.mojang.realmsclient.client.RealmsClient;
@@ -13,7 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.screens.Screen;
@@ -40,8 +38,8 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
    private Button acceptButton;
    private Button rejectButton;
 
-   public RealmsPendingInvitesScreen(Screen var1) {
-      super(Component.translatable("mco.invites.title"));
+   public RealmsPendingInvitesScreen(Screen var1, Component var2) {
+      super(var2);
       this.lastScreen = var1;
    }
 
@@ -132,29 +130,29 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.toolTip = null;
       this.renderBackground(var1);
       this.pendingInvitationSelectionList.render(var1, var2, var3, var4);
-      drawCenteredString(var1, this.font, this.title, this.width / 2, 12, 16777215);
+      var1.drawCenteredString(this.font, this.title, this.width / 2, 12, 16777215);
       if (this.toolTip != null) {
          this.renderMousehoverTooltip(var1, this.toolTip, var2, var3);
       }
 
       if (this.pendingInvitationSelectionList.getItemCount() == 0 && this.loaded) {
-         drawCenteredString(var1, this.font, NO_PENDING_INVITES_TEXT, this.width / 2, this.height / 2 - 20, 16777215);
+         var1.drawCenteredString(this.font, NO_PENDING_INVITES_TEXT, this.width / 2, this.height / 2 - 20, 16777215);
       }
 
       super.render(var1, var2, var3, var4);
    }
 
-   protected void renderMousehoverTooltip(PoseStack var1, @Nullable Component var2, int var3, int var4) {
+   protected void renderMousehoverTooltip(GuiGraphics var1, @Nullable Component var2, int var3, int var4) {
       if (var2 != null) {
          int var5 = var3 + 12;
          int var6 = var4 - 12;
          int var7 = this.font.width(var2);
-         fillGradient(var1, var5 - 3, var6 - 3, var5 + var7 + 3, var6 + 8 + 3, -1073741824, -1073741824);
-         this.font.drawShadow(var1, var2, (float)var5, (float)var6, 16777215);
+         var1.fillGradient(var5 - 3, var6 - 3, var5 + var7 + 3, var6 + 8 + 3, -1073741824, -1073741824);
+         var1.drawString(this.font, var2, var5, var6, 16777215);
       }
    }
 
@@ -179,7 +177,7 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
       }
 
       @Override
-      public void render(PoseStack var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
+      public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
          this.renderPendingInvitationItem(var1, this.pendingInvite, var4, var3, var7, var8);
       }
 
@@ -189,11 +187,10 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
          return true;
       }
 
-      private void renderPendingInvitationItem(PoseStack var1, PendingInvite var2, int var3, int var4, int var5, int var6) {
-         RealmsPendingInvitesScreen.this.font.draw(var1, var2.worldName, (float)(var3 + 38), (float)(var4 + 1), 16777215);
-         RealmsPendingInvitesScreen.this.font.draw(var1, var2.worldOwnerName, (float)(var3 + 38), (float)(var4 + 12), 7105644);
-         RealmsPendingInvitesScreen.this.font
-            .draw(var1, RealmsUtil.convertToAgePresentationFromInstant(var2.date), (float)(var3 + 38), (float)(var4 + 24), 7105644);
+      private void renderPendingInvitationItem(GuiGraphics var1, PendingInvite var2, int var3, int var4, int var5, int var6) {
+         var1.drawString(RealmsPendingInvitesScreen.this.font, var2.worldName, var3 + 38, var4 + 1, 16777215, false);
+         var1.drawString(RealmsPendingInvitesScreen.this.font, var2.worldOwnerName, var3 + 38, var4 + 12, 7105644, false);
+         var1.drawString(RealmsPendingInvitesScreen.this.font, RealmsUtil.convertToAgePresentationFromInstant(var2.date), var3 + 38, var4 + 24, 7105644, false);
          RowButton.drawButtonsInRow(var1, this.rowButtons, RealmsPendingInvitesScreen.this.pendingInvitationSelectionList, var3, var4, var5, var6);
          RealmsUtil.renderPlayerFace(var1, var3, var4, 32, var2.worldOwnerUuid);
       }
@@ -203,7 +200,7 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
          Component var1 = CommonComponents.joinLines(
             Component.literal(this.pendingInvite.worldName),
             Component.literal(this.pendingInvite.worldOwnerName),
-            Component.literal(RealmsUtil.convertToAgePresentationFromInstant(this.pendingInvite.date))
+            RealmsUtil.convertToAgePresentationFromInstant(this.pendingInvite.date)
          );
          return Component.translatable("narrator.select", var1);
       }
@@ -214,10 +211,9 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
          }
 
          @Override
-         protected void draw(PoseStack var1, int var2, int var3, boolean var4) {
-            RenderSystem.setShaderTexture(0, RealmsPendingInvitesScreen.ACCEPT_ICON_LOCATION);
+         protected void draw(GuiGraphics var1, int var2, int var3, boolean var4) {
             float var5 = var4 ? 19.0F : 0.0F;
-            GuiComponent.blit(var1, var2, var3, var5, 0.0F, 18, 18, 37, 18);
+            var1.blit(RealmsPendingInvitesScreen.ACCEPT_ICON_LOCATION, var2, var3, var5, 0.0F, 18, 18, 37, 18);
             if (var4) {
                RealmsPendingInvitesScreen.this.toolTip = RealmsPendingInvitesScreen.ACCEPT_INVITE_TOOLTIP;
             }
@@ -235,10 +231,9 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
          }
 
          @Override
-         protected void draw(PoseStack var1, int var2, int var3, boolean var4) {
-            RenderSystem.setShaderTexture(0, RealmsPendingInvitesScreen.REJECT_ICON_LOCATION);
+         protected void draw(GuiGraphics var1, int var2, int var3, boolean var4) {
             float var5 = var4 ? 19.0F : 0.0F;
-            GuiComponent.blit(var1, var2, var3, var5, 0.0F, 18, 18, 37, 18);
+            var1.blit(RealmsPendingInvitesScreen.REJECT_ICON_LOCATION, var2, var3, var5, 0.0F, 18, 18, 37, 18);
             if (var4) {
                RealmsPendingInvitesScreen.this.toolTip = RealmsPendingInvitesScreen.REJECT_INVITE_TOOLTIP;
             }
@@ -271,7 +266,7 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
       }
 
       @Override
-      public void renderBackground(PoseStack var1) {
+      public void renderBackground(GuiGraphics var1) {
          RealmsPendingInvitesScreen.this.renderBackground(var1);
       }
 

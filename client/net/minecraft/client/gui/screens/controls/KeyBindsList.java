@@ -1,7 +1,6 @@
 package net.minecraft.client.gui.screens.controls;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -10,7 +9,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ComponentPath;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.Tooltip;
@@ -81,10 +80,10 @@ public class KeyBindsList extends ContainerObjectSelectionList<KeyBindsList.Entr
       }
 
       @Override
-      public void render(PoseStack var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         KeyBindsList.this.minecraft
-            .font
-            .draw(var1, this.name, (float)(KeyBindsList.this.minecraft.screen.width / 2 - this.width / 2), (float)(var3 + var6 - 9 - 1), 16777215);
+      public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
+         var1.drawString(
+            KeyBindsList.this.minecraft.font, this.name, KeyBindsList.this.minecraft.screen.width / 2 - this.width / 2, var3 + var6 - 9 - 1, 16777215, false
+         );
       }
 
       @Nullable
@@ -156,9 +155,9 @@ public class KeyBindsList extends ContainerObjectSelectionList<KeyBindsList.Entr
       }
 
       @Override
-      public void render(PoseStack var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         float var10003 = (float)(var4 + 90 - KeyBindsList.this.maxNameWidth);
-         KeyBindsList.this.minecraft.font.draw(var1, this.name, var10003, (float)(var3 + var6 / 2 - 9 / 2), 16777215);
+      public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
+         int var10003 = var4 + 90 - KeyBindsList.this.maxNameWidth;
+         var1.drawString(KeyBindsList.this.minecraft.font, this.name, var10003, var3 + var6 / 2 - 9 / 2, 16777215, false);
          this.resetButton.setX(var4 + 190);
          this.resetButton.setY(var3);
          this.resetButton.render(var1, var7, var8, var10);
@@ -167,7 +166,7 @@ public class KeyBindsList extends ContainerObjectSelectionList<KeyBindsList.Entr
          if (this.hasCollision) {
             boolean var11 = true;
             int var12 = this.changeButton.getX() - 6;
-            GuiComponent.fill(var1, var12, var3 + 2, var12 + 3, var3 + var6 + 2, ChatFormatting.RED.getColor() | 0xFF000000);
+            var1.fill(var12, var3 + 2, var12 + 3, var3 + var6 + 2, ChatFormatting.RED.getColor() | 0xFF000000);
          }
 
          this.changeButton.render(var1, var7, var8, var10);

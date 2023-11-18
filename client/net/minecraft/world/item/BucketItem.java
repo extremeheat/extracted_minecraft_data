@@ -25,7 +25,6 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.FlowingFluid;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraft.world.level.material.Material;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 
@@ -104,24 +103,23 @@ public class BucketItem extends Item implements DispensibleContainerItem {
       } else {
          BlockState var5 = var2.getBlockState(var3);
          Block var6 = var5.getBlock();
-         Material var7 = var5.getMaterial();
-         boolean var8 = var5.canBeReplaced(this.content);
-         boolean var9 = var5.isAir()
-            || var8
+         boolean var7 = var5.canBeReplaced(this.content);
+         boolean var8 = var5.isAir()
+            || var7
             || var6 instanceof LiquidBlockContainer && ((LiquidBlockContainer)var6).canPlaceLiquid(var2, var3, var5, this.content);
-         if (!var9) {
+         if (!var8) {
             return var4 != null && this.emptyContents(var1, var2, var4.getBlockPos().relative(var4.getDirection()), null);
          } else if (var2.dimensionType().ultraWarm() && this.content.is(FluidTags.WATER)) {
-            int var10 = var3.getX();
-            int var11 = var3.getY();
-            int var12 = var3.getZ();
+            int var9 = var3.getX();
+            int var10 = var3.getY();
+            int var11 = var3.getZ();
             var2.playSound(
                var1, var3, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5F, 2.6F + (var2.random.nextFloat() - var2.random.nextFloat()) * 0.8F
             );
 
-            for(int var13 = 0; var13 < 8; ++var13) {
+            for(int var12 = 0; var12 < 8; ++var12) {
                var2.addParticle(
-                  ParticleTypes.LARGE_SMOKE, (double)var10 + Math.random(), (double)var11 + Math.random(), (double)var12 + Math.random(), 0.0, 0.0, 0.0
+                  ParticleTypes.LARGE_SMOKE, (double)var9 + Math.random(), (double)var10 + Math.random(), (double)var11 + Math.random(), 0.0, 0.0, 0.0
                );
             }
 
@@ -131,7 +129,7 @@ public class BucketItem extends Item implements DispensibleContainerItem {
             this.playEmptySound(var1, var2, var3);
             return true;
          } else {
-            if (!var2.isClientSide && var8 && !var7.isLiquid()) {
+            if (!var2.isClientSide && var7 && !var5.liquid()) {
                var2.destroyBlock(var3, true);
             }
 

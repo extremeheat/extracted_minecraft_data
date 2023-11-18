@@ -23,7 +23,7 @@ public class WeightedPressurePlateBlock extends BasePressurePlateBlock {
 
    @Override
    protected int getSignalStrength(Level var1, BlockPos var2) {
-      int var3 = Math.min(var1.getEntitiesOfClass(Entity.class, TOUCH_AABB.move(var2)).size(), this.maxWeight);
+      int var3 = Math.min(getEntityCount(var1, TOUCH_AABB.move(var2), Entity.class), this.maxWeight);
       if (var3 > 0) {
          float var4 = (float)Math.min(this.maxWeight, var3) / (float)this.maxWeight;
          return Mth.ceil(var4 * 15.0F);

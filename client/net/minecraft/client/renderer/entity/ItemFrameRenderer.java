@@ -82,7 +82,7 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T> {
             float var15 = 0.0078125F;
             var4.scale(0.0078125F, 0.0078125F, 0.0078125F);
             var4.translate(-64.0F, -64.0F, 0.0F);
-            MapItemSavedData var16 = MapItem.getSavedData(var18.getAsInt(), var1.level);
+            MapItemSavedData var16 = MapItem.getSavedData(var18.getAsInt(), var1.level());
             var4.translate(0.0F, 0.0F, -1.0F);
             if (var16 != null) {
                int var17 = this.getLightVal((T)var1, 15728850, var6);
@@ -91,7 +91,7 @@ public class ItemFrameRenderer<T extends ItemFrame> extends EntityRenderer<T> {
          } else {
             int var20 = this.getLightVal((T)var1, 15728880, var6);
             var4.scale(0.5F, 0.5F, 0.5F);
-            this.itemRenderer.renderStatic(var12, ItemDisplayContext.FIXED, var20, OverlayTexture.NO_OVERLAY, var4, var5, var1.level, var1.getId());
+            this.itemRenderer.renderStatic(var12, ItemDisplayContext.FIXED, var20, OverlayTexture.NO_OVERLAY, var4, var5, var1.level(), var1.getId());
          }
       }
 

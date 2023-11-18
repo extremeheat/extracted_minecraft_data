@@ -120,9 +120,9 @@ public class TitleCommand {
       }
 
       if (var1.size() == 1) {
-         var0.sendSuccess(Component.translatable("commands.title.cleared.single", ((ServerPlayer)var1.iterator().next()).getDisplayName()), true);
+         var0.sendSuccess(() -> Component.translatable("commands.title.cleared.single", ((ServerPlayer)var1.iterator().next()).getDisplayName()), true);
       } else {
-         var0.sendSuccess(Component.translatable("commands.title.cleared.multiple", var1.size()), true);
+         var0.sendSuccess(() -> Component.translatable("commands.title.cleared.multiple", var1.size()), true);
       }
 
       return var1.size();
@@ -136,9 +136,9 @@ public class TitleCommand {
       }
 
       if (var1.size() == 1) {
-         var0.sendSuccess(Component.translatable("commands.title.reset.single", ((ServerPlayer)var1.iterator().next()).getDisplayName()), true);
+         var0.sendSuccess(() -> Component.translatable("commands.title.reset.single", ((ServerPlayer)var1.iterator().next()).getDisplayName()), true);
       } else {
-         var0.sendSuccess(Component.translatable("commands.title.reset.multiple", var1.size()), true);
+         var0.sendSuccess(() -> Component.translatable("commands.title.reset.multiple", var1.size()), true);
       }
 
       return var1.size();
@@ -150,9 +150,11 @@ public class TitleCommand {
       }
 
       if (var1.size() == 1) {
-         var0.sendSuccess(Component.translatable("commands.title.show." + var3 + ".single", ((ServerPlayer)var1.iterator().next()).getDisplayName()), true);
+         var0.sendSuccess(
+            () -> Component.translatable("commands.title.show." + var3 + ".single", ((ServerPlayer)var1.iterator().next()).getDisplayName()), true
+         );
       } else {
-         var0.sendSuccess(Component.translatable("commands.title.show." + var3 + ".multiple", var1.size()), true);
+         var0.sendSuccess(() -> Component.translatable("commands.title.show." + var3 + ".multiple", var1.size()), true);
       }
 
       return var1.size();
@@ -166,9 +168,9 @@ public class TitleCommand {
       }
 
       if (var1.size() == 1) {
-         var0.sendSuccess(Component.translatable("commands.title.times.single", ((ServerPlayer)var1.iterator().next()).getDisplayName()), true);
+         var0.sendSuccess(() -> Component.translatable("commands.title.times.single", ((ServerPlayer)var1.iterator().next()).getDisplayName()), true);
       } else {
-         var0.sendSuccess(Component.translatable("commands.title.times.multiple", var1.size()), true);
+         var0.sendSuccess(() -> Component.translatable("commands.title.times.multiple", var1.size()), true);
       }
 
       return var1.size();

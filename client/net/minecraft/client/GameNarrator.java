@@ -5,8 +5,10 @@ import com.mojang.text2speech.Narrator;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.components.toasts.ToastComponent;
+import net.minecraft.client.main.SilentInitException;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import org.lwjgl.util.tinyfd.TinyFileDialogs;
 import org.slf4j.Logger;
 
 public class GameNarrator {
@@ -92,5 +94,25 @@ public class GameNarrator {
 
    public void destroy() {
       this.narrator.destroy();
+   }
+
+   public void checkStatus(boolean var1) {
+      if (var1
+         && !this.isActive()
+         && !TinyFileDialogs.tinyfd_messageBox(
+            "Minecraft",
+            "Failed to initialize text-to-speech library. Do you want to continue?\nIf this problem persists, please report it at bugs.mojang.com",
+            "yesno",
+            "error",
+            true
+         )) {
+         throw new GameNarrator.NarratorInitException("Narrator library is not active");
+      }
+   }
+
+   public static class NarratorInitException extends SilentInitException {
+      public NarratorInitException(String var1) {
+         super(var1);
+      }
    }
 }

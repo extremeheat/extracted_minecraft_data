@@ -26,7 +26,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ChunkHolder;
+import net.minecraft.server.level.FullChunkStatus;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.AbortableIterationConsumer;
@@ -79,7 +79,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    public static final int MAX_LEVEL_SIZE = 30000000;
    public static final int LONG_PARTICLE_CLIP_RANGE = 512;
    public static final int SHORT_PARTICLE_CLIP_RANGE = 32;
-   private static final Direction[] DIRECTIONS = Direction.values();
    public static final int MAX_BRIGHTNESS = 15;
    public static final int TICKS_PER_DAY = 24000;
    public static final int MAX_ENTITY_SPAWN_Y = 20000000;
@@ -220,19 +219,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
             return false;
          } else {
             BlockState var8 = this.getBlockState(var1);
-            if ((var3 & 128) == 0
-               && var8 != var7
-               && (
-                  var8.getLightBlock(this, var1) != var7.getLightBlock(this, var1)
-                     || var8.getLightEmission() != var7.getLightEmission()
-                     || var8.useShapeForLightOcclusion()
-                     || var7.useShapeForLightOcclusion()
-               )) {
-               this.getProfiler().push("queueCheckLight");
-               this.getChunkSource().getLightEngine().checkBlock(var1);
-               this.getProfiler().pop();
-            }
-
             if (var8 == var2) {
                if (var7 != var8) {
                   this.setBlocksDirty(var1, var7, var8);
@@ -240,7 +226,7 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
                if ((var3 & 2) != 0
                   && (!this.isClientSide || (var3 & 4) == 0)
-                  && (this.isClientSide || var5.getFullStatus() != null && var5.getFullStatus().isOrAfter(ChunkHolder.FullChunkStatus.TICKING))) {
+                  && (this.isClientSide || var5.getFullStatus() != null && var5.getFullStatus().isOrAfter(FullChunkStatus.BLOCK_TICKING))) {
                   this.sendBlockUpdated(var1, var7, var2, var3);
                }
 
@@ -708,80 +694,6 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    @Override
    public int getSeaLevel() {
       return 63;
-   }
-
-   public int getDirectSignalTo(BlockPos var1) {
-      int var2 = 0;
-      var2 = Math.max(var2, this.getDirectSignal(var1.below(), Direction.DOWN));
-      if (var2 >= 15) {
-         return var2;
-      } else {
-         var2 = Math.max(var2, this.getDirectSignal(var1.above(), Direction.UP));
-         if (var2 >= 15) {
-            return var2;
-         } else {
-            var2 = Math.max(var2, this.getDirectSignal(var1.north(), Direction.NORTH));
-            if (var2 >= 15) {
-               return var2;
-            } else {
-               var2 = Math.max(var2, this.getDirectSignal(var1.south(), Direction.SOUTH));
-               if (var2 >= 15) {
-                  return var2;
-               } else {
-                  var2 = Math.max(var2, this.getDirectSignal(var1.west(), Direction.WEST));
-                  if (var2 >= 15) {
-                     return var2;
-                  } else {
-                     var2 = Math.max(var2, this.getDirectSignal(var1.east(), Direction.EAST));
-                     return var2 >= 15 ? var2 : var2;
-                  }
-               }
-            }
-         }
-      }
-   }
-
-   public boolean hasSignal(BlockPos var1, Direction var2) {
-      return this.getSignal(var1, var2) > 0;
-   }
-
-   public int getSignal(BlockPos var1, Direction var2) {
-      BlockState var3 = this.getBlockState(var1);
-      int var4 = var3.getSignal(this, var1, var2);
-      return var3.isRedstoneConductor(this, var1) ? Math.max(var4, this.getDirectSignalTo(var1)) : var4;
-   }
-
-   public boolean hasNeighborSignal(BlockPos var1) {
-      if (this.getSignal(var1.below(), Direction.DOWN) > 0) {
-         return true;
-      } else if (this.getSignal(var1.above(), Direction.UP) > 0) {
-         return true;
-      } else if (this.getSignal(var1.north(), Direction.NORTH) > 0) {
-         return true;
-      } else if (this.getSignal(var1.south(), Direction.SOUTH) > 0) {
-         return true;
-      } else if (this.getSignal(var1.west(), Direction.WEST) > 0) {
-         return true;
-      } else {
-         return this.getSignal(var1.east(), Direction.EAST) > 0;
-      }
-   }
-
-   public int getBestNeighborSignal(BlockPos var1) {
-      int var2 = 0;
-
-      for(Direction var6 : DIRECTIONS) {
-         int var7 = this.getSignal(var1.relative(var6), var6);
-         if (var7 >= 15) {
-            return 15;
-         }
-
-         if (var7 > var2) {
-            var2 = var7;
-         }
-      }
-
-      return var2;
    }
 
    public void disconnect() {

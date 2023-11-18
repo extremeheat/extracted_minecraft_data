@@ -1,8 +1,6 @@
 package net.minecraft.client.gui.screens.recipebook;
 
 import com.google.common.collect.Lists;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -13,7 +11,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.ClientRecipeBook;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.RecipeBookCategories;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.StateSwitchingButton;
@@ -37,7 +35,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
 
-public class RecipeBookComponent extends GuiComponent implements PlaceRecipe<Ingredient>, Renderable, GuiEventListener, NarratableEntry, RecipeShownListener {
+public class RecipeBookComponent implements PlaceRecipe<Ingredient>, Renderable, GuiEventListener, NarratableEntry, RecipeShownListener {
    protected static final ResourceLocation RECIPE_BOOK_LOCATION = new ResourceLocation("textures/gui/recipe_book.png");
    private static final Component SEARCH_HINT = Component.translatable("gui.recipebook.search_hint")
       .withStyle(ChatFormatting.ITALIC)
@@ -242,14 +240,13 @@ public class RecipeBookComponent extends GuiComponent implements PlaceRecipe<Ing
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       if (this.isVisible()) {
-         var1.pushPose();
-         var1.translate(0.0F, 0.0F, 100.0F);
-         RenderSystem.setShaderTexture(0, RECIPE_BOOK_LOCATION);
+         var1.pose().pushPose();
+         var1.pose().translate(0.0F, 0.0F, 100.0F);
          int var5 = (this.width - 147) / 2 - this.xOffset;
          int var6 = (this.height - 166) / 2;
-         blit(var1, var5, var6, 1, 1, 147, 166);
+         var1.blit(RECIPE_BOOK_LOCATION, var5, var6, 1, 1, 147, 166);
          this.searchBox.render(var1, var2, var3, var4);
 
          for(RecipeBookTabButton var8 : this.tabButtons) {
@@ -258,11 +255,11 @@ public class RecipeBookComponent extends GuiComponent implements PlaceRecipe<Ing
 
          this.filterButton.render(var1, var2, var3, var4);
          this.recipeBookPage.render(var1, var5, var6, var2, var3, var4);
-         var1.popPose();
+         var1.pose().popPose();
       }
    }
 
-   public void renderTooltip(PoseStack var1, int var2, int var3, int var4, int var5) {
+   public void renderTooltip(GuiGraphics var1, int var2, int var3, int var4, int var5) {
       if (this.isVisible()) {
          this.recipeBookPage.renderTooltip(var1, var4, var5);
          this.renderGhostRecipeTooltip(var1, var2, var3, var4, var5);
@@ -273,7 +270,7 @@ public class RecipeBookComponent extends GuiComponent implements PlaceRecipe<Ing
       return ONLY_CRAFTABLES_TOOLTIP;
    }
 
-   private void renderGhostRecipeTooltip(PoseStack var1, int var2, int var3, int var4, int var5) {
+   private void renderGhostRecipeTooltip(GuiGraphics var1, int var2, int var3, int var4, int var5) {
       ItemStack var6 = null;
 
       for(int var7 = 0; var7 < this.ghostRecipe.size(); ++var7) {
@@ -286,11 +283,11 @@ public class RecipeBookComponent extends GuiComponent implements PlaceRecipe<Ing
       }
 
       if (var6 != null && this.minecraft.screen != null) {
-         this.minecraft.screen.renderComponentTooltip(var1, this.minecraft.screen.getTooltipFromItem(var6), var4, var5);
+         var1.renderComponentTooltip(this.minecraft.font, Screen.getTooltipFromItem(this.minecraft, var6), var4, var5);
       }
    }
 
-   public void renderGhostRecipe(PoseStack var1, int var2, int var3, boolean var4, float var5) {
+   public void renderGhostRecipe(GuiGraphics var1, int var2, int var3, boolean var4, float var5) {
       this.ghostRecipe.render(var1, this.minecraft, var2, var3, var4, var5);
    }
 
@@ -314,32 +311,36 @@ public class RecipeBookComponent extends GuiComponent implements PlaceRecipe<Ing
 
             return true;
          } else if (this.searchBox.mouseClicked(var1, var3, var5)) {
-            return true;
-         } else if (this.filterButton.mouseClicked(var1, var3, var5)) {
-            boolean var8 = this.toggleFiltering();
-            this.filterButton.setStateTriggered(var8);
-            this.updateFilterButtonTooltip();
-            this.sendUpdateSettings();
-            this.updateCollections(false);
+            this.searchBox.setFocused(true);
             return true;
          } else {
-            for(RecipeBookTabButton var7 : this.tabButtons) {
-               if (var7.mouseClicked(var1, var3, var5)) {
-                  if (this.selectedTab != var7) {
-                     if (this.selectedTab != null) {
-                        this.selectedTab.setStateTriggered(false);
+            this.searchBox.setFocused(false);
+            if (this.filterButton.mouseClicked(var1, var3, var5)) {
+               boolean var8 = this.toggleFiltering();
+               this.filterButton.setStateTriggered(var8);
+               this.updateFilterButtonTooltip();
+               this.sendUpdateSettings();
+               this.updateCollections(false);
+               return true;
+            } else {
+               for(RecipeBookTabButton var7 : this.tabButtons) {
+                  if (var7.mouseClicked(var1, var3, var5)) {
+                     if (this.selectedTab != var7) {
+                        if (this.selectedTab != null) {
+                           this.selectedTab.setStateTriggered(false);
+                        }
+
+                        this.selectedTab = var7;
+                        this.selectedTab.setStateTriggered(true);
+                        this.updateCollections(true);
                      }
 
-                     this.selectedTab = var7;
-                     this.selectedTab.setStateTriggered(true);
-                     this.updateCollections(true);
+                     return true;
                   }
-
-                  return true;
                }
-            }
 
-            return false;
+               return false;
+            }
          }
       } else {
          return false;

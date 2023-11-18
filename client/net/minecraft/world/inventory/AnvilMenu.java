@@ -2,6 +2,9 @@ package net.minecraft.world.inventory;
 
 import com.mojang.logging.LogUtils;
 import java.util.Map;
+import javax.annotation.Nullable;
+import net.minecraft.SharedConstants;
+import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.player.Inventory;
@@ -13,7 +16,6 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.block.AnvilBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 public class AnvilMenu extends ItemCombinerMenu {
@@ -24,6 +26,7 @@ public class AnvilMenu extends ItemCombinerMenu {
    private static final boolean DEBUG_COST = false;
    public static final int MAX_NAME_LENGTH = 50;
    private int repairItemCountCost;
+   @Nullable
    private String itemName;
    private final DataSlot cost = DataSlot.standalone();
    private static final int COST_FAIL = 0;
@@ -222,16 +225,16 @@ public class AnvilMenu extends ItemCombinerMenu {
             }
          }
 
-         if (StringUtils.isBlank(this.itemName)) {
-            if (var1.hasCustomHoverName()) {
+         if (this.itemName != null && !Util.isBlank(this.itemName)) {
+            if (!this.itemName.equals(var1.getHoverName().getString())) {
                var4 = 1;
                var2 += var4;
-               var5.resetHoverName();
+               var5.setHoverName(Component.literal(this.itemName));
             }
-         } else if (!this.itemName.equals(var1.getHoverName().getString())) {
+         } else if (var1.hasCustomHoverName()) {
             var4 = 1;
             var2 += var4;
-            var5.setHoverName(Component.literal(this.itemName));
+            var5.resetHoverName();
          }
 
          this.cost.set(var3 + var2);
@@ -270,18 +273,30 @@ public class AnvilMenu extends ItemCombinerMenu {
       return var0 * 2 + 1;
    }
 
-   public void setItemName(String var1) {
-      this.itemName = var1;
-      if (this.getSlot(2).hasItem()) {
-         ItemStack var2 = this.getSlot(2).getItem();
-         if (StringUtils.isBlank(var1)) {
-            var2.resetHoverName();
-         } else {
-            var2.setHoverName(Component.literal(this.itemName));
+   public boolean setItemName(String var1) {
+      String var2 = validateName(var1);
+      if (var2 != null && !var2.equals(this.itemName)) {
+         this.itemName = var2;
+         if (this.getSlot(2).hasItem()) {
+            ItemStack var3 = this.getSlot(2).getItem();
+            if (Util.isBlank(var2)) {
+               var3.resetHoverName();
+            } else {
+               var3.setHoverName(Component.literal(var2));
+            }
          }
-      }
 
-      this.createResult();
+         this.createResult();
+         return true;
+      } else {
+         return false;
+      }
+   }
+
+   @Nullable
+   private static String validateName(String var0) {
+      String var1 = SharedConstants.filterText(var0);
+      return var1.length() <= 50 ? var1 : null;
    }
 
    public int getCost() {

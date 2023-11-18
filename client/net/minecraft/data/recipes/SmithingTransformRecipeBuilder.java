@@ -20,7 +20,7 @@ public class SmithingTransformRecipeBuilder {
    private final Ingredient addition;
    private final RecipeCategory category;
    private final Item result;
-   private final Advancement.Builder advancement = Advancement.Builder.advancement();
+   private final Advancement.Builder advancement = Advancement.Builder.recipeAdvancement();
    private final RecipeSerializer<?> type;
 
    public SmithingTransformRecipeBuilder(RecipeSerializer<?> var1, Ingredient var2, Ingredient var3, Ingredient var4, RecipeCategory var5, Item var6) {

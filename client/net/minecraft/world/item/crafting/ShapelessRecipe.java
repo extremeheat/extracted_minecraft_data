@@ -106,7 +106,7 @@ public class ShapelessRecipe implements CraftingRecipe {
          NonNullList var1 = NonNullList.create();
 
          for(int var2 = 0; var2 < var0.size(); ++var2) {
-            Ingredient var3 = Ingredient.fromJson(var0.get(var2));
+            Ingredient var3 = Ingredient.fromJson(var0.get(var2), false);
             if (!var3.isEmpty()) {
                var1.add(var3);
             }

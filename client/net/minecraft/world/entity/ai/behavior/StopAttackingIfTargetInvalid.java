@@ -39,7 +39,7 @@ public class StopAttackingIfTargetInvalid {
                         if (var7.canAttack(var10)
                            && (!var2 || !isTiredOfTryingToReachTarget(var7, var3.tryGet(var5)))
                            && var10.isAlive()
-                           && var10.level == var7.level
+                           && var10.level() == var7.level()
                            && !var0.test(var10)) {
                            return true;
                         } else {
@@ -53,6 +53,6 @@ public class StopAttackingIfTargetInvalid {
    }
 
    private static boolean isTiredOfTryingToReachTarget(LivingEntity var0, Optional<Long> var1) {
-      return var1.isPresent() && var0.level.getGameTime() - var1.get() > 200L;
+      return var1.isPresent() && var0.level().getGameTime() - var1.get() > 200L;
    }
 }

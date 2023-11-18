@@ -1,9 +1,11 @@
 package net.minecraft.world.inventory;
 
 import java.util.Collections;
+import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
@@ -14,11 +16,14 @@ public interface RecipeHolder {
    @Nullable
    Recipe<?> getRecipeUsed();
 
-   default void awardUsedRecipes(Player var1) {
-      Recipe var2 = this.getRecipeUsed();
-      if (var2 != null && !var2.isSpecial()) {
-         var1.awardRecipes(Collections.singleton(var2));
-         this.setRecipeUsed(null);
+   default void awardUsedRecipes(Player var1, List<ItemStack> var2) {
+      Recipe var3 = this.getRecipeUsed();
+      if (var3 != null) {
+         var1.triggerRecipeCrafted(var3, var2);
+         if (!var3.isSpecial()) {
+            var1.awardRecipes(Collections.singleton(var3));
+            this.setRecipeUsed(null);
+         }
       }
    }
 

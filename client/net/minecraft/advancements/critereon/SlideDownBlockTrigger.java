@@ -22,7 +22,7 @@ public class SlideDownBlockTrigger extends SimpleCriterionTrigger<SlideDownBlock
       return ID;
    }
 
-   public SlideDownBlockTrigger.TriggerInstance createInstance(JsonObject var1, EntityPredicate.Composite var2, DeserializationContext var3) {
+   public SlideDownBlockTrigger.TriggerInstance createInstance(JsonObject var1, ContextAwarePredicate var2, DeserializationContext var3) {
       Block var4 = deserializeBlock(var1);
       StatePropertiesPredicate var5 = StatePropertiesPredicate.fromJson(var1.get("state"));
       if (var4 != null) {
@@ -53,14 +53,14 @@ public class SlideDownBlockTrigger extends SimpleCriterionTrigger<SlideDownBlock
       private final Block block;
       private final StatePropertiesPredicate state;
 
-      public TriggerInstance(EntityPredicate.Composite var1, @Nullable Block var2, StatePropertiesPredicate var3) {
+      public TriggerInstance(ContextAwarePredicate var1, @Nullable Block var2, StatePropertiesPredicate var3) {
          super(SlideDownBlockTrigger.ID, var1);
          this.block = var2;
          this.state = var3;
       }
 
       public static SlideDownBlockTrigger.TriggerInstance slidesDownBlock(Block var0) {
-         return new SlideDownBlockTrigger.TriggerInstance(EntityPredicate.Composite.ANY, var0, StatePropertiesPredicate.ANY);
+         return new SlideDownBlockTrigger.TriggerInstance(ContextAwarePredicate.ANY, var0, StatePropertiesPredicate.ANY);
       }
 
       @Override

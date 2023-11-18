@@ -24,7 +24,6 @@ public class ServerList {
    public ServerList(Minecraft var1) {
       super();
       this.minecraft = var1;
-      this.load();
    }
 
    public void load() {

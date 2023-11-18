@@ -1,15 +1,14 @@
 package net.minecraft.client.gui.screens.inventory;
 
 import com.mojang.blaze3d.platform.Lighting;
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.datafixers.util.Pair;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BannerRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.ModelBakery;
@@ -69,7 +68,7 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
       this.renderTooltip(var1, var2, var3);
    }
@@ -79,51 +78,51 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
    }
 
    @Override
-   protected void renderBg(PoseStack var1, float var2, int var3, int var4) {
+   protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
       this.renderBackground(var1);
-      RenderSystem.setShaderTexture(0, BG_LOCATION);
       int var5 = this.leftPos;
       int var6 = this.topPos;
-      blit(var1, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
+      var1.blit(BG_LOCATION, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
       Slot var7 = this.menu.getBannerSlot();
       Slot var8 = this.menu.getDyeSlot();
       Slot var9 = this.menu.getPatternSlot();
       Slot var10 = this.menu.getResultSlot();
       if (!var7.hasItem()) {
-         blit(var1, var5 + var7.x, var6 + var7.y, this.imageWidth, 0, 16, 16);
+         var1.blit(BG_LOCATION, var5 + var7.x, var6 + var7.y, this.imageWidth, 0, 16, 16);
       }
 
       if (!var8.hasItem()) {
-         blit(var1, var5 + var8.x, var6 + var8.y, this.imageWidth + 16, 0, 16, 16);
+         var1.blit(BG_LOCATION, var5 + var8.x, var6 + var8.y, this.imageWidth + 16, 0, 16, 16);
       }
 
       if (!var9.hasItem()) {
-         blit(var1, var5 + var9.x, var6 + var9.y, this.imageWidth + 32, 0, 16, 16);
+         var1.blit(BG_LOCATION, var5 + var9.x, var6 + var9.y, this.imageWidth + 32, 0, 16, 16);
       }
 
       int var11 = (int)(41.0F * this.scrollOffs);
-      blit(var1, var5 + 119, var6 + 13 + var11, 232 + (this.displayPatterns ? 0 : 12), 0, 12, 15);
+      var1.blit(BG_LOCATION, var5 + 119, var6 + 13 + var11, 232 + (this.displayPatterns ? 0 : 12), 0, 12, 15);
       Lighting.setupForFlatItems();
       if (this.resultBannerPatterns != null && !this.hasMaxPatterns) {
-         MultiBufferSource.BufferSource var12 = this.minecraft.renderBuffers().bufferSource();
-         var1.pushPose();
-         var1.translate((float)(var5 + 139), (float)(var6 + 52), 0.0F);
-         var1.scale(24.0F, -24.0F, 1.0F);
-         var1.translate(0.5F, 0.5F, 0.5F);
-         float var13 = 0.6666667F;
-         var1.scale(0.6666667F, -0.6666667F, -0.6666667F);
+         var1.pose().pushPose();
+         var1.pose().translate((float)(var5 + 139), (float)(var6 + 52), 0.0F);
+         var1.pose().scale(24.0F, -24.0F, 1.0F);
+         var1.pose().translate(0.5F, 0.5F, 0.5F);
+         float var12 = 0.6666667F;
+         var1.pose().scale(0.6666667F, -0.6666667F, -0.6666667F);
          this.flag.xRot = 0.0F;
          this.flag.y = -32.0F;
-         BannerRenderer.renderPatterns(var1, var12, 15728880, OverlayTexture.NO_OVERLAY, this.flag, ModelBakery.BANNER_BASE, true, this.resultBannerPatterns);
-         var1.popPose();
-         var12.endBatch();
+         BannerRenderer.renderPatterns(
+            var1.pose(), var1.bufferSource(), 15728880, OverlayTexture.NO_OVERLAY, this.flag, ModelBakery.BANNER_BASE, true, this.resultBannerPatterns
+         );
+         var1.pose().popPose();
+         var1.flush();
       } else if (this.hasMaxPatterns) {
-         blit(var1, var5 + var10.x - 2, var6 + var10.y - 2, this.imageWidth, 17, 17, 16);
+         var1.blit(BG_LOCATION, var5 + var10.x - 2, var6 + var10.y - 2, this.imageWidth, 17, 17, 16);
       }
 
       if (this.displayPatterns) {
          int var23 = var5 + 60;
-         int var24 = var6 + 13;
+         int var13 = var6 + 13;
          List var14 = this.menu.getSelectablePatterns();
 
          label64:
@@ -135,9 +134,8 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
                   break label64;
                }
 
-               RenderSystem.setShaderTexture(0, BG_LOCATION);
                int var19 = var23 + var16 * 14;
-               int var20 = var24 + var15 * 14;
+               int var20 = var13 + var15 * 14;
                boolean var21 = var3 >= var19 && var4 >= var20 && var3 < var19 + 14 && var4 < var20 + 14;
                int var22;
                if (var18 == this.menu.getSelectedBannerPatternIndex()) {
@@ -148,8 +146,8 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
                   var22 = this.imageHeight;
                }
 
-               blit(var1, var19, var20, 0, var22, 14, 14);
-               this.renderPattern((Holder<BannerPattern>)var14.get(var18), var19, var20);
+               var1.blit(BG_LOCATION, var19, var20, 0, var22, 14, 14);
+               this.renderPattern(var1, (Holder<BannerPattern>)var14.get(var18), var19, var20);
             }
          }
       }
@@ -157,27 +155,26 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
       Lighting.setupFor3DItems();
    }
 
-   private void renderPattern(Holder<BannerPattern> var1, int var2, int var3) {
-      CompoundTag var4 = new CompoundTag();
-      ListTag var5 = new BannerPattern.Builder().addPattern(BannerPatterns.BASE, DyeColor.GRAY).addPattern(var1, DyeColor.WHITE).toListTag();
-      var4.put("Patterns", var5);
-      ItemStack var6 = new ItemStack(Items.GRAY_BANNER);
-      BlockItem.setBlockEntityData(var6, BlockEntityType.BANNER, var4);
-      PoseStack var7 = new PoseStack();
-      var7.pushPose();
-      var7.translate((float)var2 + 0.5F, (float)(var3 + 16), 0.0F);
-      var7.scale(6.0F, -6.0F, 1.0F);
-      var7.translate(0.5F, 0.5F, 0.0F);
-      var7.translate(0.5F, 0.5F, 0.5F);
-      float var8 = 0.6666667F;
-      var7.scale(0.6666667F, -0.6666667F, -0.6666667F);
-      MultiBufferSource.BufferSource var9 = this.minecraft.renderBuffers().bufferSource();
+   private void renderPattern(GuiGraphics var1, Holder<BannerPattern> var2, int var3, int var4) {
+      CompoundTag var5 = new CompoundTag();
+      ListTag var6 = new BannerPattern.Builder().addPattern(BannerPatterns.BASE, DyeColor.GRAY).addPattern(var2, DyeColor.WHITE).toListTag();
+      var5.put("Patterns", var6);
+      ItemStack var7 = new ItemStack(Items.GRAY_BANNER);
+      BlockItem.setBlockEntityData(var7, BlockEntityType.BANNER, var5);
+      PoseStack var8 = new PoseStack();
+      var8.pushPose();
+      var8.translate((float)var3 + 0.5F, (float)(var4 + 16), 0.0F);
+      var8.scale(6.0F, -6.0F, 1.0F);
+      var8.translate(0.5F, 0.5F, 0.0F);
+      var8.translate(0.5F, 0.5F, 0.5F);
+      float var9 = 0.6666667F;
+      var8.scale(0.6666667F, -0.6666667F, -0.6666667F);
       this.flag.xRot = 0.0F;
       this.flag.y = -32.0F;
-      List var10 = BannerBlockEntity.createPatterns(DyeColor.GRAY, BannerBlockEntity.getItemPatterns(var6));
-      BannerRenderer.renderPatterns(var7, var9, 15728880, OverlayTexture.NO_OVERLAY, this.flag, ModelBakery.BANNER_BASE, true, var10);
-      var7.popPose();
-      var9.endBatch();
+      List var10 = BannerBlockEntity.createPatterns(DyeColor.GRAY, BannerBlockEntity.getItemPatterns(var7));
+      BannerRenderer.renderPatterns(var8, var1.bufferSource(), 15728880, OverlayTexture.NO_OVERLAY, this.flag, ModelBakery.BANNER_BASE, true, var10);
+      var8.popPose();
+      var1.flush();
    }
 
    @Override

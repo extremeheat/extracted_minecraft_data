@@ -128,45 +128,45 @@ public class FallingBlockEntity extends Entity {
          }
 
          this.move(MoverType.SELF, this.getDeltaMovement());
-         if (!this.level.isClientSide) {
+         if (!this.level().isClientSide) {
             BlockPos var2 = this.blockPosition();
             boolean var3 = this.blockState.getBlock() instanceof ConcretePowderBlock;
-            boolean var4 = var3 && this.level.getFluidState(var2).is(FluidTags.WATER);
+            boolean var4 = var3 && this.level().getFluidState(var2).is(FluidTags.WATER);
             double var5 = this.getDeltaMovement().lengthSqr();
             if (var3 && var5 > 1.0) {
-               BlockHitResult var7 = this.level
+               BlockHitResult var7 = this.level()
                   .clip(new ClipContext(new Vec3(this.xo, this.yo, this.zo), this.position(), ClipContext.Block.COLLIDER, ClipContext.Fluid.SOURCE_ONLY, this));
-               if (var7.getType() != HitResult.Type.MISS && this.level.getFluidState(var7.getBlockPos()).is(FluidTags.WATER)) {
+               if (var7.getType() != HitResult.Type.MISS && this.level().getFluidState(var7.getBlockPos()).is(FluidTags.WATER)) {
                   var2 = var7.getBlockPos();
                   var4 = true;
                }
             }
 
-            if (this.onGround || var4) {
-               BlockState var16 = this.level.getBlockState(var2);
+            if (this.onGround() || var4) {
+               BlockState var16 = this.level().getBlockState(var2);
                this.setDeltaMovement(this.getDeltaMovement().multiply(0.7, -0.5, 0.7));
                if (!var16.is(Blocks.MOVING_PISTON)) {
                   if (!this.cancelDrop) {
-                     boolean var8 = var16.canBeReplaced(new DirectionalPlaceContext(this.level, var2, Direction.DOWN, ItemStack.EMPTY, Direction.UP));
-                     boolean var9 = FallingBlock.isFree(this.level.getBlockState(var2.below())) && (!var3 || !var4);
-                     boolean var10 = this.blockState.canSurvive(this.level, var2) && !var9;
+                     boolean var8 = var16.canBeReplaced(new DirectionalPlaceContext(this.level(), var2, Direction.DOWN, ItemStack.EMPTY, Direction.UP));
+                     boolean var9 = FallingBlock.isFree(this.level().getBlockState(var2.below())) && (!var3 || !var4);
+                     boolean var10 = this.blockState.canSurvive(this.level(), var2) && !var9;
                      if (var8 && var10) {
-                        if (this.blockState.hasProperty(BlockStateProperties.WATERLOGGED) && this.level.getFluidState(var2).getType() == Fluids.WATER) {
+                        if (this.blockState.hasProperty(BlockStateProperties.WATERLOGGED) && this.level().getFluidState(var2).getType() == Fluids.WATER) {
                            this.blockState = this.blockState.setValue(BlockStateProperties.WATERLOGGED, Boolean.valueOf(true));
                         }
 
-                        if (this.level.setBlock(var2, this.blockState, 3)) {
-                           ((ServerLevel)this.level)
+                        if (this.level().setBlock(var2, this.blockState, 3)) {
+                           ((ServerLevel)this.level())
                               .getChunkSource()
                               .chunkMap
-                              .broadcast(this, new ClientboundBlockUpdatePacket(var2, this.level.getBlockState(var2)));
+                              .broadcast(this, new ClientboundBlockUpdatePacket(var2, this.level().getBlockState(var2)));
                            this.discard();
                            if (var1 instanceof Fallable) {
-                              ((Fallable)var1).onLand(this.level, var2, this.blockState, var16, this);
+                              ((Fallable)var1).onLand(this.level(), var2, this.blockState, var16, this);
                            }
 
                            if (this.blockData != null && this.blockState.hasBlockEntity()) {
-                              BlockEntity var11 = this.level.getBlockEntity(var2);
+                              BlockEntity var11 = this.level().getBlockEntity(var2);
                               if (var11 != null) {
                                  CompoundTag var12 = var11.saveWithoutMetadata();
 
@@ -183,14 +183,14 @@ public class FallingBlockEntity extends Entity {
                                  var11.setChanged();
                               }
                            }
-                        } else if (this.dropItem && this.level.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
+                        } else if (this.dropItem && this.level().getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
                            this.discard();
                            this.callOnBrokenAfterFall(var1, var2);
                            this.spawnAtLocation(var1);
                         }
                      } else {
                         this.discard();
-                        if (this.dropItem && this.level.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
+                        if (this.dropItem && this.level().getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
                            this.callOnBrokenAfterFall(var1, var2);
                            this.spawnAtLocation(var1);
                         }
@@ -200,9 +200,9 @@ public class FallingBlockEntity extends Entity {
                      this.callOnBrokenAfterFall(var1, var2);
                   }
                }
-            } else if (!this.level.isClientSide
-               && (this.time > 100 && (var2.getY() <= this.level.getMinBuildHeight() || var2.getY() > this.level.getMaxBuildHeight()) || this.time > 600)) {
-               if (this.dropItem && this.level.getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
+            } else if (!this.level().isClientSide
+               && (this.time > 100 && (var2.getY() <= this.level().getMinBuildHeight() || var2.getY() > this.level().getMaxBuildHeight()) || this.time > 600)) {
+               if (this.dropItem && this.level().getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
                   this.spawnAtLocation(var1);
                }
 
@@ -216,12 +216,10 @@ public class FallingBlockEntity extends Entity {
 
    public void callOnBrokenAfterFall(Block var1, BlockPos var2) {
       if (var1 instanceof Fallable) {
-         ((Fallable)var1).onBrokenAfterFall(this.level, var2, this);
+         ((Fallable)var1).onBrokenAfterFall(this.level(), var2, this);
       }
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public boolean causeFallDamage(float var1, float var2, DamageSource var3) {
       if (!this.hurtEntities) {
@@ -231,20 +229,13 @@ public class FallingBlockEntity extends Entity {
          if (var4 < 0) {
             return false;
          } else {
-            Predicate var5;
-            DamageSource var6;
-            if (this.blockState.getBlock() instanceof Fallable var7) {
-               var5 = var7.getHurtsEntitySelector();
-               var6 = var7.getFallDamageSource(this);
-            } else {
-               var5 = EntitySelector.NO_SPECTATORS;
-               var6 = this.damageSources().fallingBlock(this);
-            }
-
+            Predicate var5 = EntitySelector.NO_CREATIVE_OR_SPECTATOR.and(EntitySelector.LIVING_ENTITY_STILL_ALIVE);
+            Block var8 = this.blockState.getBlock();
+            DamageSource var6 = var8 instanceof Fallable var7 ? var7.getFallDamageSource(this) : this.damageSources().fallingBlock(this);
             float var10 = (float)Math.min(Mth.floor((float)var4 * this.fallDamagePerDistance), this.fallDamageMax);
-            this.level.getEntities(this, this.getBoundingBox(), var5).forEach(var2x -> var2x.hurt(var6, var10));
-            boolean var8 = this.blockState.is(BlockTags.ANVIL);
-            if (var8 && var10 > 0.0F && this.random.nextFloat() < 0.05F + (float)var4 * 0.05F) {
+            this.level().getEntities(this, this.getBoundingBox(), var5).forEach(var2x -> var2x.hurt(var6, var10));
+            boolean var11 = this.blockState.is(BlockTags.ANVIL);
+            if (var11 && var10 > 0.0F && this.random.nextFloat() < 0.05F + (float)var4 * 0.05F) {
                BlockState var9 = AnvilBlock.damage(this.blockState);
                if (var9 == null) {
                   this.cancelDrop = true;
@@ -269,11 +260,13 @@ public class FallingBlockEntity extends Entity {
       if (this.blockData != null) {
          var1.put("TileEntityData", this.blockData);
       }
+
+      var1.putBoolean("CancelDrop", this.cancelDrop);
    }
 
    @Override
    protected void readAdditionalSaveData(CompoundTag var1) {
-      this.blockState = NbtUtils.readBlockState(this.level.holderLookup(Registries.BLOCK), var1.getCompound("BlockState"));
+      this.blockState = NbtUtils.readBlockState(this.level().holderLookup(Registries.BLOCK), var1.getCompound("BlockState"));
       this.time = var1.getInt("Time");
       if (var1.contains("HurtEntities", 99)) {
          this.hurtEntities = var1.getBoolean("HurtEntities");
@@ -291,6 +284,7 @@ public class FallingBlockEntity extends Entity {
          this.blockData = var1.getCompound("TileEntityData");
       }
 
+      this.cancelDrop = var1.getBoolean("CancelDrop");
       if (this.blockState.isAir()) {
          this.blockState = Blocks.SAND.defaultBlockState();
       }

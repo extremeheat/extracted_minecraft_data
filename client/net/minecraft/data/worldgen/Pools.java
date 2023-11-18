@@ -31,5 +31,6 @@ public class Pools {
       PillagerOutpostPools.bootstrap(var0);
       VillagePools.bootstrap(var0);
       AncientCityStructurePieces.bootstrap(var0);
+      TrailRuinsStructurePools.bootstrap(var0);
    }
 }

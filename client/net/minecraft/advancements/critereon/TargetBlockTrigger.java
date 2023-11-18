@@ -19,9 +19,9 @@ public class TargetBlockTrigger extends SimpleCriterionTrigger<TargetBlockTrigge
       return ID;
    }
 
-   public TargetBlockTrigger.TriggerInstance createInstance(JsonObject var1, EntityPredicate.Composite var2, DeserializationContext var3) {
+   public TargetBlockTrigger.TriggerInstance createInstance(JsonObject var1, ContextAwarePredicate var2, DeserializationContext var3) {
       MinMaxBounds.Ints var4 = MinMaxBounds.Ints.fromJson(var1.get("signal_strength"));
-      EntityPredicate.Composite var5 = EntityPredicate.Composite.fromJson(var1, "projectile", var3);
+      ContextAwarePredicate var5 = EntityPredicate.fromJson(var1, "projectile", var3);
       return new TargetBlockTrigger.TriggerInstance(var2, var4, var5);
    }
 
@@ -32,16 +32,16 @@ public class TargetBlockTrigger extends SimpleCriterionTrigger<TargetBlockTrigge
 
    public static class TriggerInstance extends AbstractCriterionTriggerInstance {
       private final MinMaxBounds.Ints signalStrength;
-      private final EntityPredicate.Composite projectile;
+      private final ContextAwarePredicate projectile;
 
-      public TriggerInstance(EntityPredicate.Composite var1, MinMaxBounds.Ints var2, EntityPredicate.Composite var3) {
+      public TriggerInstance(ContextAwarePredicate var1, MinMaxBounds.Ints var2, ContextAwarePredicate var3) {
          super(TargetBlockTrigger.ID, var1);
          this.signalStrength = var2;
          this.projectile = var3;
       }
 
-      public static TargetBlockTrigger.TriggerInstance targetHit(MinMaxBounds.Ints var0, EntityPredicate.Composite var1) {
-         return new TargetBlockTrigger.TriggerInstance(EntityPredicate.Composite.ANY, var0, var1);
+      public static TargetBlockTrigger.TriggerInstance targetHit(MinMaxBounds.Ints var0, ContextAwarePredicate var1) {
+         return new TargetBlockTrigger.TriggerInstance(ContextAwarePredicate.ANY, var0, var1);
       }
 
       @Override

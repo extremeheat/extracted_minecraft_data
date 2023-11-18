@@ -36,7 +36,8 @@ public record ClientboundLoginPacket(
    boolean n,
    boolean o,
    boolean p,
-   Optional<GlobalPos> q
+   Optional<GlobalPos> q,
+   int r
 ) implements Packet<ClientGamePacketListener> {
    private final int playerId;
    private final boolean hardcore;
@@ -56,6 +57,7 @@ public record ClientboundLoginPacket(
    private final boolean isDebug;
    private final boolean isFlat;
    private final Optional<GlobalPos> lastDeathLocation;
+   private final int portalCooldown;
    private static final RegistryOps<Tag> BUILTIN_CONTEXT_OPS = RegistryOps.create(
       NbtOps.INSTANCE, RegistryAccess.fromRegistryOfRegistries(BuiltInRegistries.REGISTRY)
    );
@@ -78,7 +80,8 @@ public record ClientboundLoginPacket(
          var1.readBoolean(),
          var1.readBoolean(),
          var1.readBoolean(),
-         var1.readOptional(FriendlyByteBuf::readGlobalPos)
+         var1.readOptional(FriendlyByteBuf::readGlobalPos),
+         var1.readVarInt()
       );
    }
 
@@ -99,7 +102,8 @@ public record ClientboundLoginPacket(
       boolean var15,
       boolean var16,
       boolean var17,
-      Optional<GlobalPos> var18
+      Optional<GlobalPos> var18,
+      int var19
    ) {
       super();
       this.playerId = var1;
@@ -119,6 +123,7 @@ public record ClientboundLoginPacket(
       this.isDebug = var16;
       this.isFlat = var17;
       this.lastDeathLocation = var18;
+      this.portalCooldown = var19;
    }
 
    @Override
@@ -140,6 +145,7 @@ public record ClientboundLoginPacket(
       var1.writeBoolean(this.isDebug);
       var1.writeBoolean(this.isFlat);
       var1.writeOptional(this.lastDeathLocation, FriendlyByteBuf::writeGlobalPos);
+      var1.writeVarInt(this.portalCooldown);
    }
 
    public void handle(ClientGamePacketListener var1) {

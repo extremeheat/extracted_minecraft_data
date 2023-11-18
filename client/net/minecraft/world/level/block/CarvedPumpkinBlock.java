@@ -8,10 +8,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.entity.animal.SnowGolem;
-import net.minecraft.world.item.Equipable;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
@@ -21,12 +19,10 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.level.block.state.pattern.BlockPattern;
 import net.minecraft.world.level.block.state.pattern.BlockPatternBuilder;
-import net.minecraft.world.level.block.state.predicate.BlockMaterialPredicate;
 import net.minecraft.world.level.block.state.predicate.BlockStatePredicate;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
-import net.minecraft.world.level.material.Material;
 
-public class CarvedPumpkinBlock extends HorizontalDirectionalBlock implements Equipable {
+public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
    public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
    @Nullable
    private BlockPattern snowGolemBase;
@@ -142,7 +138,7 @@ public class CarvedPumpkinBlock extends HorizontalDirectionalBlock implements Eq
          this.ironGolemBase = BlockPatternBuilder.start()
             .aisle("~ ~", "###", "~#~")
             .where('#', BlockInWorld.hasState(BlockStatePredicate.forBlock(Blocks.IRON_BLOCK)))
-            .where('~', BlockInWorld.hasState(BlockMaterialPredicate.forMaterial(Material.AIR)))
+            .where('~', var0 -> var0.getState().isAir())
             .build();
       }
 
@@ -155,15 +151,10 @@ public class CarvedPumpkinBlock extends HorizontalDirectionalBlock implements Eq
             .aisle("~^~", "###", "~#~")
             .where('^', BlockInWorld.hasState(PUMPKINS_PREDICATE))
             .where('#', BlockInWorld.hasState(BlockStatePredicate.forBlock(Blocks.IRON_BLOCK)))
-            .where('~', BlockInWorld.hasState(BlockMaterialPredicate.forMaterial(Material.AIR)))
+            .where('~', var0 -> var0.getState().isAir())
             .build();
       }
 
       return this.ironGolemFull;
-   }
-
-   @Override
-   public EquipmentSlot getEquipmentSlot() {
-      return EquipmentSlot.HEAD;
    }
 }

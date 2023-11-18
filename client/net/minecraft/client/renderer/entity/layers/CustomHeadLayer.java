@@ -15,8 +15,10 @@ import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.WalkAnimationState;
 import net.minecraft.world.entity.monster.ZombieVillager;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.item.ArmorItem;
@@ -47,6 +49,8 @@ public class CustomHeadLayer<T extends LivingEntity, M extends EntityModel<T> & 
       this.itemInHandRenderer = var6;
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void render(PoseStack var1, MultiBufferSource var2, int var3, T var4, float var5, float var6, float var7, float var8, float var9, float var10) {
       ItemStack var11 = var4.getItemBySlot(EquipmentSlot.HEAD);
       if (!var11.isEmpty()) {
@@ -64,7 +68,7 @@ public class CustomHeadLayer<T extends LivingEntity, M extends EntityModel<T> & 
 
          this.getParentModel().getHead().translateAndRotate(var1);
          if (var12 instanceof BlockItem && ((BlockItem)var12).getBlock() instanceof AbstractSkullBlock) {
-            float var21 = 1.1875F;
+            float var24 = 1.1875F;
             var1.scale(1.1875F, -1.1875F, -1.1875F);
             if (var13) {
                var1.translate(0.0F, 0.0625F, 0.0F);
@@ -79,11 +83,20 @@ public class CustomHeadLayer<T extends LivingEntity, M extends EntityModel<T> & 
             }
 
             var1.translate(-0.5, 0.0, -0.5);
-            SkullBlock.Type var22 = ((AbstractSkullBlock)((BlockItem)var12).getBlock()).getType();
-            SkullModelBase var18 = this.skullModels.get(var22);
-            RenderType var19 = SkullBlockRenderer.getRenderType(var22, var16);
-            SkullBlockRenderer.renderSkull(null, 180.0F, var5, var1, var2, var3, var18, var19);
-         } else if (!(var12 instanceof ArmorItem var20) || var20.getEquipmentSlot() != EquipmentSlot.HEAD) {
+            SkullBlock.Type var25 = ((AbstractSkullBlock)((BlockItem)var12).getBlock()).getType();
+            SkullModelBase var18 = this.skullModels.get(var25);
+            RenderType var19 = SkullBlockRenderer.getRenderType(var25, var16);
+            Entity var22 = var4.getVehicle();
+            WalkAnimationState var20;
+            if (var22 instanceof LivingEntity var21) {
+               var20 = var21.walkAnimation;
+            } else {
+               var20 = var4.walkAnimation;
+            }
+
+            float var26 = var20.position(var7);
+            SkullBlockRenderer.renderSkull(null, 180.0F, var26, var1, var2, var3, var18, var19);
+         } else if (!(var12 instanceof ArmorItem var23) || var23.getEquipmentSlot() != EquipmentSlot.HEAD) {
             translateToHead(var1, var13);
             this.itemInHandRenderer.renderItem(var4, var11, ItemDisplayContext.HEAD, false, var1, var2, var3);
          }

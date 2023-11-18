@@ -74,11 +74,13 @@ public class MerchantOffer {
    }
 
    public ItemStack getCostA() {
-      int var1 = this.baseCostA.getCount();
-      ItemStack var2 = this.baseCostA.copy();
-      int var3 = Math.max(0, Mth.floor((float)(var1 * this.demand) * this.priceMultiplier));
-      var2.setCount(Mth.clamp(var1 + var3 + this.specialPriceDiff, 1, this.baseCostA.getItem().getMaxStackSize()));
-      return var2;
+      if (this.baseCostA.isEmpty()) {
+         return ItemStack.EMPTY;
+      } else {
+         int var1 = this.baseCostA.getCount();
+         int var2 = Math.max(0, Mth.floor((float)(var1 * this.demand) * this.priceMultiplier));
+         return this.baseCostA.copyWithCount(Mth.clamp(var1 + var2 + this.specialPriceDiff, 1, this.baseCostA.getItem().getMaxStackSize()));
+      }
    }
 
    public ItemStack getCostB() {
@@ -188,7 +190,7 @@ public class MerchantOffer {
             var3.setDamageValue(var3.getDamageValue());
          }
 
-         return ItemStack.isSame(var3, var2) && (!var2.hasTag() || var3.hasTag() && NbtUtils.compareNbt(var2.getTag(), var3.getTag(), false));
+         return ItemStack.isSameItem(var3, var2) && (!var2.hasTag() || var3.hasTag() && NbtUtils.compareNbt(var2.getTag(), var3.getTag(), false));
       }
    }
 

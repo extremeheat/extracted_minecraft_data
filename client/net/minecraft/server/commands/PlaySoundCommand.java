@@ -152,9 +152,11 @@ public class PlaySoundCommand {
          throw ERROR_TOO_FAR.create();
       } else {
          if (var1.size() == 1) {
-            var0.sendSuccess(Component.translatable("commands.playsound.success.single", var2, ((ServerPlayer)var1.iterator().next()).getDisplayName()), true);
+            var0.sendSuccess(
+               () -> Component.translatable("commands.playsound.success.single", var2, ((ServerPlayer)var1.iterator().next()).getDisplayName()), true
+            );
          } else {
-            var0.sendSuccess(Component.translatable("commands.playsound.success.multiple", var2, var1.size()), true);
+            var0.sendSuccess(() -> Component.translatable("commands.playsound.success.multiple", var2, var1.size()), true);
          }
 
          return var11;

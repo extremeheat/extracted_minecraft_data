@@ -25,7 +25,7 @@ public class FollowParentGoal extends Goal {
       if (this.animal.getAge() >= 0) {
          return false;
       } else {
-         List var1 = this.animal.level.getEntitiesOfClass(this.animal.getClass(), this.animal.getBoundingBox().inflate(8.0, 4.0, 8.0));
+         List var1 = this.animal.level().getEntitiesOfClass(this.animal.getClass(), this.animal.getBoundingBox().inflate(8.0, 4.0, 8.0));
          Animal var2 = null;
          double var3 = 1.7976931348623157E308;
 

@@ -35,7 +35,7 @@ public class HurtByTargetGoal extends TargetGoal {
       int var1 = this.mob.getLastHurtByMobTimestamp();
       LivingEntity var2 = this.mob.getLastHurtByMob();
       if (var1 != this.timestamp && var2 != null) {
-         if (var2.getType() == EntityType.PLAYER && this.mob.level.getGameRules().getBoolean(GameRules.RULE_UNIVERSAL_ANGER)) {
+         if (var2.getType() == EntityType.PLAYER && this.mob.level().getGameRules().getBoolean(GameRules.RULE_UNIVERSAL_ANGER)) {
             return false;
          } else {
             for(Class var6 : this.toIgnoreDamage) {
@@ -73,7 +73,7 @@ public class HurtByTargetGoal extends TargetGoal {
    protected void alertOthers() {
       double var1 = this.getFollowDistance();
       AABB var3 = AABB.unitCubeFromLowerCorner(this.mob.position()).inflate(var1, 10.0, var1);
-      List var4 = this.mob.level.getEntitiesOfClass(this.mob.getClass(), var3, EntitySelector.NO_SPECTATORS);
+      List var4 = this.mob.level().getEntitiesOfClass(this.mob.getClass(), var3, EntitySelector.NO_SPECTATORS);
       Iterator var5 = var4.iterator();
 
       while(true) {

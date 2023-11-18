@@ -34,7 +34,7 @@ public class HurtBySensor extends Sensor<LivingEntity> {
       }
 
       var3.getMemory(MemoryModuleType.HURT_BY_ENTITY).ifPresent(var2x -> {
-         if (!var2x.isAlive() || var2x.level != var1) {
+         if (!var2x.isAlive() || var2x.level() != var1) {
             var3.eraseMemory(MemoryModuleType.HURT_BY_ENTITY);
          }
       });

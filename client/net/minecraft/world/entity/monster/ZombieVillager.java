@@ -129,11 +129,11 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
 
    @Override
    public void tick() {
-      if (!this.level.isClientSide && this.isAlive() && this.isConverting()) {
+      if (!this.level().isClientSide && this.isAlive() && this.isConverting()) {
          int var1 = this.getConversionProgress();
          this.villagerConversionTime -= var1;
          if (this.villagerConversionTime <= 0) {
-            this.finishConversion((ServerLevel)this.level);
+            this.finishConversion((ServerLevel)this.level());
          }
       }
 
@@ -149,7 +149,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
                var3.shrink(1);
             }
 
-            if (!this.level.isClientSide) {
+            if (!this.level().isClientSide) {
                this.startConverting(var1.getUUID(), this.random.nextInt(2401) + 3600);
             }
 
@@ -181,15 +181,15 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
       this.villagerConversionTime = var2;
       this.getEntityData().set(DATA_CONVERTING_ID, true);
       this.removeEffect(MobEffects.WEAKNESS);
-      this.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, var2, Math.min(this.level.getDifficulty().getId() - 1, 0)));
-      this.level.broadcastEntityEvent(this, (byte)16);
+      this.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, var2, Math.min(this.level().getDifficulty().getId() - 1, 0)));
+      this.level().broadcastEntityEvent(this, (byte)16);
    }
 
    @Override
    public void handleEntityEvent(byte var1) {
       if (var1 == 16) {
          if (!this.isSilent()) {
-            this.level
+            this.level()
                .playLocalSound(
                   this.getX(),
                   this.getEyeY(),
@@ -258,7 +258,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
          for(int var4 = (int)this.getX() - 4; var4 < (int)this.getX() + 4 && var2 < 14; ++var4) {
             for(int var5 = (int)this.getY() - 4; var5 < (int)this.getY() + 4 && var2 < 14; ++var5) {
                for(int var6 = (int)this.getZ() - 4; var6 < (int)this.getZ() + 4 && var2 < 14; ++var6) {
-                  BlockState var7 = this.level.getBlockState(var3.set(var4, var5, var6));
+                  BlockState var7 = this.level().getBlockState(var3.set(var4, var5, var6));
                   if (var7.is(Blocks.IRON_BARS) || var7.getBlock() instanceof BedBlock) {
                      if (this.random.nextFloat() < 0.3F) {
                         ++var1;

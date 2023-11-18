@@ -24,7 +24,7 @@ public class SitWhenOrderedToGoal extends Goal {
          return false;
       } else if (this.mob.isInWaterOrBubble()) {
          return false;
-      } else if (!this.mob.isOnGround()) {
+      } else if (!this.mob.onGround()) {
          return false;
       } else {
          LivingEntity var1 = this.mob.getOwner();

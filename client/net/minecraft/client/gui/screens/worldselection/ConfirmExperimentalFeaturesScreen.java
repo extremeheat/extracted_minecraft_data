@@ -1,10 +1,9 @@
 package net.minecraft.client.gui.screens.worldselection;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import java.util.Collection;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineLabel;
 import net.minecraft.client.gui.components.MultiLineTextWidget;
@@ -68,7 +67,7 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
    }
 
    @Override
-   public void render(PoseStack var1, int var2, int var3, float var4) {
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.renderBackground(var1);
       super.render(var1, var2, var3, var4);
    }
@@ -101,10 +100,10 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
       }
 
       @Override
-      public void render(PoseStack var1, int var2, int var3, float var4) {
+      public void render(GuiGraphics var1, int var2, int var3, float var4) {
          this.renderBackground(var1);
          this.packList.render(var1, var2, var3, var4);
-         drawCenteredString(var1, this.font, this.title, this.width / 2, 10, 16777215);
+         var1.drawCenteredString(this.font, this.title, this.width / 2, 10, 16777215);
          super.render(var1, var2, var3, var4);
       }
 
@@ -141,8 +140,8 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
          }
 
          @Override
-         public void render(PoseStack var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-            GuiComponent.drawString(var1, DetailsScreen.this.minecraft.font, this.packId, var4, var3, 16777215);
+         public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
+            var1.drawString(DetailsScreen.this.minecraft.font, this.packId, var4, var3, 16777215);
             this.splitMessage.renderLeftAligned(var1, var4, var3 + 12, 9, 16777215);
          }
 

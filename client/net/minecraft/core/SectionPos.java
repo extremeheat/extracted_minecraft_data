@@ -180,6 +180,10 @@ public class SectionPos extends Vec3i {
       return asLong(blockToSectionCoord(BlockPos.getX(var0)), blockToSectionCoord(BlockPos.getY(var0)), blockToSectionCoord(BlockPos.getZ(var0)));
    }
 
+   public static long getZeroNode(int var0, int var1) {
+      return getZeroNode(asLong(var0, 0, var1));
+   }
+
    public static long getZeroNode(long var0) {
       return var0 & -1048576L;
    }
