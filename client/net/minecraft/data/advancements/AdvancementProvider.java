@@ -29,11 +29,11 @@ public class AdvancementProvider implements DataProvider {
          HashSet var3 = new HashSet();
          ArrayList var4 = new ArrayList();
          Consumer var5 = var4x -> {
-            if (!var3.add(var4x.getId())) {
-               throw new IllegalStateException("Duplicate advancement " + var4x.getId());
+            if (!var3.add(var4x.id())) {
+               throw new IllegalStateException("Duplicate advancement " + var4x.id());
             } else {
-               Path var5x = this.pathProvider.json(var4x.getId());
-               var4.add(DataProvider.saveStable(var1, var4x.deconstruct().serializeToJson(), var5x));
+               Path var5x = this.pathProvider.json(var4x.id());
+               var4.add(DataProvider.saveStable(var1, var4x.value().serializeToJson(), var5x));
             }
          };
 

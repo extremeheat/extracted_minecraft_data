@@ -59,6 +59,17 @@ public class DecoratedPotBlockEntity extends BlockEntity {
       this.decorations = DecoratedPotBlockEntity.Decorations.load(BlockItem.getBlockEntityData(var1));
    }
 
+   public ItemStack getItem() {
+      return createDecoratedPotItem(this.decorations);
+   }
+
+   public static ItemStack createDecoratedPotItem(DecoratedPotBlockEntity.Decorations var0) {
+      ItemStack var1 = Items.DECORATED_POT.getDefaultInstance();
+      CompoundTag var2 = var0.save(new CompoundTag());
+      BlockItem.setBlockEntityData(var1, BlockEntityType.DECORATED_POT, var2);
+      return var1;
+   }
+
    public static record Decorations(Item b, Item c, Item d, Item e) {
       private final Item back;
       private final Item left;
@@ -77,10 +88,14 @@ public class DecoratedPotBlockEntity extends BlockEntity {
       }
 
       public CompoundTag save(CompoundTag var1) {
-         ListTag var2 = new ListTag();
-         this.sorted().forEach(var1x -> var2.add(StringTag.valueOf(BuiltInRegistries.ITEM.getKey(var1x).toString())));
-         var1.put("sherds", var2);
-         return var1;
+         if (this.equals(EMPTY)) {
+            return var1;
+         } else {
+            ListTag var2 = new ListTag();
+            this.sorted().forEach(var1x -> var2.add(StringTag.valueOf(BuiltInRegistries.ITEM.getKey(var1x).toString())));
+            var1.put("sherds", var2);
+            return var1;
+         }
       }
 
       public Stream<Item> sorted() {
@@ -101,7 +116,7 @@ public class DecoratedPotBlockEntity extends BlockEntity {
             return Items.BRICK;
          } else {
             Tag var2 = var0.get(var1);
-            return BuiltInRegistries.ITEM.get(new ResourceLocation(var2.getAsString()));
+            return BuiltInRegistries.ITEM.get(ResourceLocation.tryParse(var2.getAsString()));
          }
       }
    }

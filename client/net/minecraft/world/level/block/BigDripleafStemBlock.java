@@ -97,14 +97,14 @@ public class BigDripleafStemBlock extends HorizontalDirectionalBlock implements 
    }
 
    @Override
-   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
-      Optional var5 = BlockUtil.getTopConnectedBlock(var1, var2, var3.getBlock(), Direction.UP, Blocks.BIG_DRIPLEAF);
-      if (!var5.isPresent()) {
+   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
+      Optional var4 = BlockUtil.getTopConnectedBlock(var1, var2, var3.getBlock(), Direction.UP, Blocks.BIG_DRIPLEAF);
+      if (var4.isEmpty()) {
          return false;
       } else {
-         BlockPos var6 = ((BlockPos)var5.get()).above();
-         BlockState var7 = var1.getBlockState(var6);
-         return BigDripleafBlock.canPlaceAt(var1, var6, var7);
+         BlockPos var5 = ((BlockPos)var4.get()).above();
+         BlockState var6 = var1.getBlockState(var5);
+         return BigDripleafBlock.canPlaceAt(var1, var5, var6);
       }
    }
 
@@ -116,7 +116,7 @@ public class BigDripleafStemBlock extends HorizontalDirectionalBlock implements 
    @Override
    public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
       Optional var5 = BlockUtil.getTopConnectedBlock(var1, var3, var4.getBlock(), Direction.UP, Blocks.BIG_DRIPLEAF);
-      if (var5.isPresent()) {
+      if (!var5.isEmpty()) {
          BlockPos var6 = (BlockPos)var5.get();
          BlockPos var7 = var6.above();
          Direction var8 = var4.getValue(FACING);

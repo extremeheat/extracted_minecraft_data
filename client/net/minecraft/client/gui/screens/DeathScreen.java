@@ -6,15 +6,16 @@ import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
+import net.minecraft.resources.ResourceLocation;
 
 public class DeathScreen extends Screen {
+   private static final ResourceLocation DRAFT_REPORT_SPRITE = new ResourceLocation("icon/draft_report");
    private int delayTicker;
    private final Component causeOfDeath;
    private final boolean hardcore;
@@ -48,9 +49,9 @@ public class DeathScreen extends Screen {
       );
       this.exitButtons.add(this.exitToTitleButton);
       this.setButtonsActive(false);
-      this.deathScore = Component.translatable("deathScreen.score")
-         .append(": ")
-         .append(Component.literal(Integer.toString(this.minecraft.player.getScore())).withStyle(ChatFormatting.YELLOW));
+      this.deathScore = Component.translatable(
+         "deathScreen.score.value", Component.literal(Integer.toString(this.minecraft.player.getScore())).withStyle(ChatFormatting.YELLOW)
+      );
    }
 
    @Override
@@ -86,13 +87,13 @@ public class DeathScreen extends Screen {
          this.minecraft.level.disconnect();
       }
 
-      this.minecraft.clearLevel(new GenericDirtMessageScreen(Component.translatable("menu.savingLevel")));
+      this.minecraft.disconnect(new GenericDirtMessageScreen(Component.translatable("menu.savingLevel")));
       this.minecraft.setScreen(new TitleScreen());
    }
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      var1.fillGradient(0, 0, this.width, this.height, 1615855616, -1602211792);
+      super.render(var1, var2, var3, var4);
       var1.pose().pushPose();
       var1.pose().scale(2.0F, 2.0F, 2.0F);
       var1.drawCenteredString(this.font, this.title, this.width / 2 / 2, 30, 16777215);
@@ -107,18 +108,16 @@ public class DeathScreen extends Screen {
          var1.renderComponentHoverEffect(this.font, var5, var2, var3);
       }
 
-      super.render(var1, var2, var3, var4);
       if (this.exitToTitleButton != null && this.minecraft.getReportingContext().hasDraftReport()) {
-         var1.blit(
-            AbstractWidget.WIDGETS_LOCATION,
-            this.exitToTitleButton.getX() + this.exitToTitleButton.getWidth() - 17,
-            this.exitToTitleButton.getY() + 3,
-            182,
-            24,
-            15,
-            15
+         var1.blitSprite(
+            DRAFT_REPORT_SPRITE, this.exitToTitleButton.getX() + this.exitToTitleButton.getWidth() - 17, this.exitToTitleButton.getY() + 3, 15, 15
          );
       }
+   }
+
+   @Override
+   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
+      var1.fillGradient(0, 0, this.width, this.height, 1615855616, -1602211792);
    }
 
    @Nullable

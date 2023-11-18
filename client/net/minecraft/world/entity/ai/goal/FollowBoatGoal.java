@@ -53,8 +53,9 @@ public class FollowBoatGoal extends Goal {
    @Override
    public void start() {
       for(Boat var3 : this.mob.level().getEntitiesOfClass(Boat.class, this.mob.getBoundingBox().inflate(5.0))) {
-         if (var3.getControllingPassenger() != null && var3.getControllingPassenger() instanceof Player) {
-            this.following = (Player)var3.getControllingPassenger();
+         LivingEntity var5 = var3.getControllingPassenger();
+         if (var5 instanceof Player var4) {
+            this.following = (Player)var4;
             break;
          }
       }

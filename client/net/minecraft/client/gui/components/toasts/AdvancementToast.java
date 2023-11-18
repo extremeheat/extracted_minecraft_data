@@ -1,29 +1,31 @@
 package net.minecraft.client.gui.components.toasts;
 
 import java.util.List;
-import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.advancements.FrameType;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 
 public class AdvancementToast implements Toast {
+   private static final ResourceLocation BACKGROUND_SPRITE = new ResourceLocation("toast/advancement");
    public static final int DISPLAY_TIME = 5000;
-   private final Advancement advancement;
+   private final AdvancementHolder advancement;
    private boolean playedSound;
 
-   public AdvancementToast(Advancement var1) {
+   public AdvancementToast(AdvancementHolder var1) {
       super();
       this.advancement = var1;
    }
 
    @Override
    public Toast.Visibility render(GuiGraphics var1, ToastComponent var2, long var3) {
-      DisplayInfo var5 = this.advancement.getDisplay();
-      var1.blit(TEXTURE, 0, 0, 0, 0, this.width(), this.height());
+      DisplayInfo var5 = this.advancement.value().display().orElse(null);
+      var1.blitSprite(BACKGROUND_SPRITE, 0, 0, this.width(), this.height());
       if (var5 != null) {
          List var6 = var2.getMinecraft().font.split(var5.getTitle(), 125);
          int var7 = var5.getFrame() == FrameType.CHALLENGE ? 16746751 : 16776960;

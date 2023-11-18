@@ -4,7 +4,7 @@ import com.mojang.authlib.GameProfile;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Mth;
+import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.phys.Vec3;
 
@@ -43,18 +43,12 @@ public class RemotePlayer extends AbstractClientPlayer {
    @Override
    public void aiStep() {
       if (this.lerpSteps > 0) {
-         double var1 = this.getX() + (this.lerpX - this.getX()) / (double)this.lerpSteps;
-         double var3 = this.getY() + (this.lerpY - this.getY()) / (double)this.lerpSteps;
-         double var5 = this.getZ() + (this.lerpZ - this.getZ()) / (double)this.lerpSteps;
-         this.setYRot(this.getYRot() + (float)Mth.wrapDegrees(this.lerpYRot - (double)this.getYRot()) / (float)this.lerpSteps);
-         this.setXRot(this.getXRot() + (float)(this.lerpXRot - (double)this.getXRot()) / (float)this.lerpSteps);
+         this.lerpPositionAndRotationStep(this.lerpSteps, this.lerpX, this.lerpY, this.lerpZ, this.lerpYRot, this.lerpXRot);
          --this.lerpSteps;
-         this.setPos(var1, var3, var5);
-         this.setRot(this.getYRot(), this.getXRot());
       }
 
       if (this.lerpHeadSteps > 0) {
-         this.yHeadRot += (float)(Mth.wrapDegrees(this.lyHeadRot - (double)this.yHeadRot) / (double)this.lerpHeadSteps);
+         this.lerpHeadRotationStep(this.lerpHeadSteps, this.lerpYHeadRot);
          --this.lerpHeadSteps;
       }
 
@@ -71,14 +65,14 @@ public class RemotePlayer extends AbstractClientPlayer {
 
       this.oBob = this.bob;
       this.updateSwingTime();
-      float var7;
+      float var1;
       if (this.onGround() && !this.isDeadOrDying()) {
-         var7 = (float)Math.min(0.1, this.getDeltaMovement().horizontalDistance());
+         var1 = (float)Math.min(0.1, this.getDeltaMovement().horizontalDistance());
       } else {
-         var7 = 0.0F;
+         var1 = 0.0F;
       }
 
-      this.bob += (var7 - this.bob) * 0.4F;
+      this.bob += (var1 - this.bob) * 0.4F;
       this.level().getProfiler().push("push");
       this.pushEntities();
       this.level().getProfiler().pop();
@@ -98,5 +92,11 @@ public class RemotePlayer extends AbstractClientPlayer {
    public void sendSystemMessage(Component var1) {
       Minecraft var2 = Minecraft.getInstance();
       var2.gui.getChat().addMessage(var1);
+   }
+
+   @Override
+   public void recreateFromPacket(ClientboundAddEntityPacket var1) {
+      super.recreateFromPacket(var1);
+      this.setOldPosAndRot();
    }
 }

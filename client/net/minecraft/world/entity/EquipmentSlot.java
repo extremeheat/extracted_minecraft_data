@@ -1,6 +1,8 @@
 package net.minecraft.world.entity;
 
-public enum EquipmentSlot {
+import net.minecraft.util.StringRepresentable;
+
+public enum EquipmentSlot implements StringRepresentable {
    MAINHAND(EquipmentSlot.Type.HAND, 0, 0, "mainhand"),
    OFFHAND(EquipmentSlot.Type.HAND, 1, 5, "offhand"),
    FEET(EquipmentSlot.Type.ARMOR, 0, 1, "feet"),
@@ -8,6 +10,7 @@ public enum EquipmentSlot {
    CHEST(EquipmentSlot.Type.ARMOR, 2, 3, "chest"),
    HEAD(EquipmentSlot.Type.ARMOR, 3, 4, "head");
 
+   public static final StringRepresentable.EnumCodec<EquipmentSlot> CODEC = StringRepresentable.fromEnum(EquipmentSlot::values);
    private final EquipmentSlot.Type type;
    private final int index;
    private final int filterFlag;
@@ -44,14 +47,18 @@ public enum EquipmentSlot {
       return this.type == EquipmentSlot.Type.ARMOR;
    }
 
-   public static EquipmentSlot byName(String var0) {
-      for(EquipmentSlot var4 : values()) {
-         if (var4.getName().equals(var0)) {
-            return var4;
-         }
-      }
+   @Override
+   public String getSerializedName() {
+      return this.name;
+   }
 
-      throw new IllegalArgumentException("Invalid slot '" + var0 + "'");
+   public static EquipmentSlot byName(String var0) {
+      EquipmentSlot var1 = CODEC.byName(var0);
+      if (var1 != null) {
+         return var1;
+      } else {
+         throw new IllegalArgumentException("Invalid slot '" + var0 + "'");
+      }
    }
 
    public static EquipmentSlot byTypeAndIndex(EquipmentSlot.Type var0, int var1) {

@@ -1,7 +1,6 @@
 package net.minecraft.world.scores;
 
 import java.util.Comparator;
-import javax.annotation.Nullable;
 
 public class Score {
    public static final Comparator<Score> SCORE_COMPARATOR = (var0, var1) -> {
@@ -12,7 +11,6 @@ public class Score {
       }
    };
    private final Scoreboard scoreboard;
-   @Nullable
    private final Objective objective;
    private final String owner;
    private int count;
@@ -57,7 +55,6 @@ public class Score {
       }
    }
 
-   @Nullable
    public Objective getObjective() {
       return this.objective;
    }

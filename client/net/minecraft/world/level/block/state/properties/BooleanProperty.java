@@ -29,12 +29,18 @@ public class BooleanProperty extends Property<Boolean> {
       return var1.toString();
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
       } else {
-         return var1 instanceof BooleanProperty var2 && super.equals(var1) ? this.values.equals(var2.values) : false;
+         if (var1 instanceof BooleanProperty var2 && super.equals(var1)) {
+            return this.values.equals(var2.values);
+         }
+
+         return false;
       }
    }
 

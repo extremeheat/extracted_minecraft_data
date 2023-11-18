@@ -16,6 +16,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.effect.AttributeModifierTemplate;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffectUtil;
@@ -24,7 +25,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.item.ItemStack;
 
 public class PotionUtils {
-   public static final String TAG_CUSTOM_POTION_EFFECTS = "CustomPotionEffects";
+   public static final String TAG_CUSTOM_POTION_EFFECTS = "custom_potion_effects";
    public static final String TAG_CUSTOM_POTION_COLOR = "CustomPotionColor";
    public static final String TAG_POTION = "Potion";
    private static final int EMPTY_COLOR = 16253176;
@@ -63,8 +64,8 @@ public class PotionUtils {
    }
 
    public static void getCustomEffects(@Nullable CompoundTag var0, List<MobEffectInstance> var1) {
-      if (var0 != null && var0.contains("CustomPotionEffects", 9)) {
-         ListTag var2 = var0.getList("CustomPotionEffects", 10);
+      if (var0 != null && var0.contains("custom_potion_effects", 9)) {
+         ListTag var2 = var0.getList("custom_potion_effects", 10);
 
          for(int var3 = 0; var3 < var2.size(); ++var3) {
             CompoundTag var4 = var2.getCompound(var3);
@@ -145,13 +146,13 @@ public class PotionUtils {
          return var0;
       } else {
          CompoundTag var2 = var0.getOrCreateTag();
-         ListTag var3 = var2.getList("CustomPotionEffects", 9);
+         ListTag var3 = var2.getList("custom_potion_effects", 9);
 
          for(MobEffectInstance var5 : var1) {
             var3.add(var5.save(new CompoundTag()));
          }
 
-         var2.put("CustomPotionEffects", var3);
+         var2.put("custom_potion_effects", var3);
          return var0;
       }
    }
@@ -171,11 +172,7 @@ public class PotionUtils {
             Map var8 = var7.getAttributeModifiers();
             if (!var8.isEmpty()) {
                for(Entry var10 : var8.entrySet()) {
-                  AttributeModifier var11 = (AttributeModifier)var10.getValue();
-                  AttributeModifier var12 = new AttributeModifier(
-                     var11.getName(), var7.getAttributeModifierValue(var5.getAmplifier(), var11), var11.getOperation()
-                  );
-                  var3.add(new Pair((Attribute)var10.getKey(), var12));
+                  var3.add(new Pair((Attribute)var10.getKey(), ((AttributeModifierTemplate)var10.getValue()).create(var5.getAmplifier())));
                }
             }
 
@@ -195,32 +192,32 @@ public class PotionUtils {
          var1.add(CommonComponents.EMPTY);
          var1.add(Component.translatable("potion.whenDrank").withStyle(ChatFormatting.DARK_PURPLE));
 
-         for(Pair var14 : var3) {
-            AttributeModifier var15 = (AttributeModifier)var14.getSecond();
-            double var16 = var15.getAmount();
-            double var17;
-            if (var15.getOperation() != AttributeModifier.Operation.MULTIPLY_BASE && var15.getOperation() != AttributeModifier.Operation.MULTIPLY_TOTAL) {
-               var17 = var15.getAmount();
+         for(Pair var12 : var3) {
+            AttributeModifier var13 = (AttributeModifier)var12.getSecond();
+            double var14 = var13.getAmount();
+            double var15;
+            if (var13.getOperation() != AttributeModifier.Operation.MULTIPLY_BASE && var13.getOperation() != AttributeModifier.Operation.MULTIPLY_TOTAL) {
+               var15 = var13.getAmount();
             } else {
-               var17 = var15.getAmount() * 100.0;
+               var15 = var13.getAmount() * 100.0;
             }
 
-            if (var16 > 0.0) {
+            if (var14 > 0.0) {
                var1.add(
                   Component.translatable(
-                        "attribute.modifier.plus." + var15.getOperation().toValue(),
-                        ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(var17),
-                        Component.translatable(((Attribute)var14.getFirst()).getDescriptionId())
+                        "attribute.modifier.plus." + var13.getOperation().toValue(),
+                        ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(var15),
+                        Component.translatable(((Attribute)var12.getFirst()).getDescriptionId())
                      )
                      .withStyle(ChatFormatting.BLUE)
                );
-            } else if (var16 < 0.0) {
-               var17 *= -1.0;
+            } else if (var14 < 0.0) {
+               var15 *= -1.0;
                var1.add(
                   Component.translatable(
-                        "attribute.modifier.take." + var15.getOperation().toValue(),
-                        ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(var17),
-                        Component.translatable(((Attribute)var14.getFirst()).getDescriptionId())
+                        "attribute.modifier.take." + var13.getOperation().toValue(),
+                        ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(var15),
+                        Component.translatable(((Attribute)var12.getFirst()).getDescriptionId())
                      )
                      .withStyle(ChatFormatting.RED)
                );

@@ -1,8 +1,7 @@
 package net.minecraft.data.recipes;
 
-import java.util.function.Consumer;
 import javax.annotation.Nullable;
-import net.minecraft.advancements.CriterionTriggerInstance;
+import net.minecraft.advancements.Criterion;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
@@ -11,19 +10,19 @@ import net.minecraft.world.level.ItemLike;
 public interface RecipeBuilder {
    ResourceLocation ROOT_RECIPE_ADVANCEMENT = new ResourceLocation("recipes/root");
 
-   RecipeBuilder unlockedBy(String var1, CriterionTriggerInstance var2);
+   RecipeBuilder unlockedBy(String var1, Criterion<?> var2);
 
    RecipeBuilder group(@Nullable String var1);
 
    Item getResult();
 
-   void save(Consumer<FinishedRecipe> var1, ResourceLocation var2);
+   void save(RecipeOutput var1, ResourceLocation var2);
 
-   default void save(Consumer<FinishedRecipe> var1) {
+   default void save(RecipeOutput var1) {
       this.save(var1, getDefaultRecipeId(this.getResult()));
    }
 
-   default void save(Consumer<FinishedRecipe> var1, String var2) {
+   default void save(RecipeOutput var1, String var2) {
       ResourceLocation var3 = getDefaultRecipeId(this.getResult());
       ResourceLocation var4 = new ResourceLocation(var2);
       if (var4.equals(var3)) {

@@ -18,6 +18,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
@@ -56,24 +57,27 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, M extends Ent
       float var7 = Mth.rotLerp(var3, var1.yBodyRotO, var1.yBodyRot);
       float var8 = Mth.rotLerp(var3, var1.yHeadRotO, var1.yHeadRot);
       float var9 = var8 - var7;
-      if (var1.isPassenger() && var1.getVehicle() instanceof LivingEntity var10) {
-         var7 = Mth.rotLerp(var3, var10.yBodyRotO, var10.yBodyRot);
-         var9 = var8 - var7;
-         float var11 = Mth.wrapDegrees(var9);
-         if (var11 < -85.0F) {
-            var11 = -85.0F;
-         }
+      if (var1.isPassenger()) {
+         Entity var11 = var1.getVehicle();
+         if (var11 instanceof LivingEntity var10) {
+            var7 = Mth.rotLerp(var3, var10.yBodyRotO, var10.yBodyRot);
+            var9 = var8 - var7;
+            float var24 = Mth.wrapDegrees(var9);
+            if (var24 < -85.0F) {
+               var24 = -85.0F;
+            }
 
-         if (var11 >= 85.0F) {
-            var11 = 85.0F;
-         }
+            if (var24 >= 85.0F) {
+               var24 = 85.0F;
+            }
 
-         var7 = var8 - var11;
-         if (var11 * var11 > 2500.0F) {
-            var7 += var11 * 0.2F;
-         }
+            var7 = var8 - var24;
+            if (var24 * var24 > 2500.0F) {
+               var7 += var24 * 0.2F;
+            }
 
-         var9 = var8 - var7;
+            var9 = var8 - var7;
+         }
       }
 
       float var23 = Mth.lerp(var3, var1.xRotO, var1.getXRot());
@@ -83,34 +87,34 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, M extends Ent
       }
 
       if (var1.hasPose(Pose.SLEEPING)) {
-         Direction var24 = var1.getBedOrientation();
-         if (var24 != null) {
+         Direction var25 = var1.getBedOrientation();
+         if (var25 != null) {
             float var12 = var1.getEyeHeight(Pose.STANDING) - 0.1F;
-            var4.translate((float)(-var24.getStepX()) * var12, 0.0F, (float)(-var24.getStepZ()) * var12);
+            var4.translate((float)(-var25.getStepX()) * var12, 0.0F, (float)(-var25.getStepZ()) * var12);
          }
       }
 
-      float var25 = this.getBob((T)var1, var3);
-      this.setupRotations((T)var1, var4, var25, var7, var3);
+      float var26 = this.getBob((T)var1, var3);
+      this.setupRotations((T)var1, var4, var26, var7, var3);
       var4.scale(-1.0F, -1.0F, 1.0F);
       this.scale((T)var1, var4, var3);
       var4.translate(0.0F, -1.501F, 0.0F);
-      float var26 = 0.0F;
+      float var27 = 0.0F;
       float var13 = 0.0F;
       if (!var1.isPassenger() && var1.isAlive()) {
-         var26 = var1.walkAnimation.speed(var3);
+         var27 = var1.walkAnimation.speed(var3);
          var13 = var1.walkAnimation.position(var3);
          if (var1.isBaby()) {
             var13 *= 3.0F;
          }
 
-         if (var26 > 1.0F) {
-            var26 = 1.0F;
+         if (var27 > 1.0F) {
+            var27 = 1.0F;
          }
       }
 
-      this.model.prepareMobModel((T)var1, var13, var26, var3);
-      this.model.setupAnim((T)var1, var13, var26, var25, var9, var23);
+      this.model.prepareMobModel((T)var1, var13, var27, var3);
+      this.model.setupAnim((T)var1, var13, var27, var26, var9, var23);
       Minecraft var14 = Minecraft.getInstance();
       boolean var15 = this.isBodyVisible((T)var1);
       boolean var16 = !var15 && !var1.isInvisibleTo(var14.player);
@@ -123,8 +127,8 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, M extends Ent
       }
 
       if (!var1.isSpectator()) {
-         for(RenderLayer var28 : this.layers) {
-            var28.render(var4, var5, var6, var1, var13, var26, var3, var25, var9, var23);
+         for(RenderLayer var29 : this.layers) {
+            var29.render(var4, var5, var6, var1, var13, var27, var3, var26, var9, var23);
          }
       }
 

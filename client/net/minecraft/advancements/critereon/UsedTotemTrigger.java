@@ -1,25 +1,20 @@
 package net.minecraft.advancements.critereon;
 
 import com.google.gson.JsonObject;
-import net.minecraft.resources.ResourceLocation;
+import java.util.Optional;
+import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.Criterion;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
 
 public class UsedTotemTrigger extends SimpleCriterionTrigger<UsedTotemTrigger.TriggerInstance> {
-   static final ResourceLocation ID = new ResourceLocation("used_totem");
-
    public UsedTotemTrigger() {
       super();
    }
 
-   @Override
-   public ResourceLocation getId() {
-      return ID;
-   }
-
-   public UsedTotemTrigger.TriggerInstance createInstance(JsonObject var1, ContextAwarePredicate var2, DeserializationContext var3) {
-      ItemPredicate var4 = ItemPredicate.fromJson(var1.get("item"));
+   public UsedTotemTrigger.TriggerInstance createInstance(JsonObject var1, Optional<ContextAwarePredicate> var2, DeserializationContext var3) {
+      Optional var4 = ItemPredicate.fromJson(var1.get("item"));
       return new UsedTotemTrigger.TriggerInstance(var2, var4);
    }
 
@@ -28,30 +23,31 @@ public class UsedTotemTrigger extends SimpleCriterionTrigger<UsedTotemTrigger.Tr
    }
 
    public static class TriggerInstance extends AbstractCriterionTriggerInstance {
-      private final ItemPredicate item;
+      private final Optional<ItemPredicate> item;
 
-      public TriggerInstance(ContextAwarePredicate var1, ItemPredicate var2) {
-         super(UsedTotemTrigger.ID, var1);
+      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ItemPredicate> var2) {
+         super(var1);
          this.item = var2;
       }
 
-      public static UsedTotemTrigger.TriggerInstance usedTotem(ItemPredicate var0) {
-         return new UsedTotemTrigger.TriggerInstance(ContextAwarePredicate.ANY, var0);
+      public static Criterion<UsedTotemTrigger.TriggerInstance> usedTotem(ItemPredicate var0) {
+         return CriteriaTriggers.USED_TOTEM.createCriterion(new UsedTotemTrigger.TriggerInstance(Optional.empty(), Optional.of(var0)));
       }
 
-      public static UsedTotemTrigger.TriggerInstance usedTotem(ItemLike var0) {
-         return new UsedTotemTrigger.TriggerInstance(ContextAwarePredicate.ANY, ItemPredicate.Builder.item().of(var0).build());
+      public static Criterion<UsedTotemTrigger.TriggerInstance> usedTotem(ItemLike var0) {
+         return CriteriaTriggers.USED_TOTEM
+            .createCriterion(new UsedTotemTrigger.TriggerInstance(Optional.empty(), Optional.of(ItemPredicate.Builder.item().of(var0).build())));
       }
 
       public boolean matches(ItemStack var1) {
-         return this.item.matches(var1);
+         return this.item.isEmpty() || this.item.get().matches(var1);
       }
 
       @Override
-      public JsonObject serializeToJson(SerializationContext var1) {
-         JsonObject var2 = super.serializeToJson(var1);
-         var2.add("item", this.item.serializeToJson());
-         return var2;
+      public JsonObject serializeToJson() {
+         JsonObject var1 = super.serializeToJson();
+         this.item.ifPresent(var1x -> var1.add("item", var1x.serializeToJson()));
+         return var1;
       }
    }
 }

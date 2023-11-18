@@ -11,7 +11,6 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.GameProfileArgument;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.server.players.UserBanList;
 
 public class PardonCommand {
@@ -44,7 +43,7 @@ public class PardonCommand {
          if (var2.isBanned(var5)) {
             var2.remove(var5);
             ++var3;
-            var0.sendSuccess(() -> Component.translatable("commands.pardon.success", ComponentUtils.getDisplayName(var5)), true);
+            var0.sendSuccess(() -> Component.translatable("commands.pardon.success", Component.literal(var5.getName())), true);
          }
       }
 

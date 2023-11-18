@@ -28,9 +28,9 @@ import net.minecraft.commands.arguments.ScoreboardSlotArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.server.ServerScoreboard;
+import net.minecraft.world.scores.DisplaySlot;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.Score;
-import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 
 public class ScoreboardCommand {
@@ -573,26 +573,24 @@ public class ScoreboardCommand {
       return var2.size();
    }
 
-   private static int clearDisplaySlot(CommandSourceStack var0, int var1) throws CommandSyntaxException {
+   private static int clearDisplaySlot(CommandSourceStack var0, DisplaySlot var1) throws CommandSyntaxException {
       ServerScoreboard var2 = var0.getServer().getScoreboard();
       if (var2.getDisplayObjective(var1) == null) {
          throw ERROR_DISPLAY_SLOT_ALREADY_EMPTY.create();
       } else {
          var2.setDisplayObjective(var1, null);
-         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.objectives.display.cleared", Scoreboard.getDisplaySlotNames()[var1]), true);
+         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.objectives.display.cleared", var1.getSerializedName()), true);
          return 0;
       }
    }
 
-   private static int setDisplaySlot(CommandSourceStack var0, int var1, Objective var2) throws CommandSyntaxException {
+   private static int setDisplaySlot(CommandSourceStack var0, DisplaySlot var1, Objective var2) throws CommandSyntaxException {
       ServerScoreboard var3 = var0.getServer().getScoreboard();
       if (var3.getDisplayObjective(var1) == var2) {
          throw ERROR_DISPLAY_SLOT_ALREADY_SET.create();
       } else {
          var3.setDisplayObjective(var1, var2);
-         var0.sendSuccess(
-            () -> Component.translatable("commands.scoreboard.objectives.display.set", Scoreboard.getDisplaySlotNames()[var1], var2.getDisplayName()), true
-         );
+         var0.sendSuccess(() -> Component.translatable("commands.scoreboard.objectives.display.set", var1.getSerializedName(), var2.getDisplayName()), true);
          return 0;
       }
    }

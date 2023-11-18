@@ -19,6 +19,8 @@ public class HoneyBottleItem extends Item {
       super(var1);
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public ItemStack finishUsingItem(ItemStack var1, Level var2, LivingEntity var3) {
       super.finishUsingItem(var1, var2, var3);
@@ -34,11 +36,10 @@ public class HoneyBottleItem extends Item {
       if (var1.isEmpty()) {
          return new ItemStack(Items.GLASS_BOTTLE);
       } else {
-         if (var3 instanceof Player && !((Player)var3).getAbilities().instabuild) {
-            ItemStack var6 = new ItemStack(Items.GLASS_BOTTLE);
-            Player var5 = (Player)var3;
-            if (!var5.getInventory().add(var6)) {
-               var5.drop(var6, false);
+         if (var3 instanceof Player var6 && !var6.getAbilities().instabuild) {
+            ItemStack var5 = new ItemStack(Items.GLASS_BOTTLE);
+            if (!var6.getInventory().add(var5)) {
+               var6.drop(var5, false);
             }
          }
 

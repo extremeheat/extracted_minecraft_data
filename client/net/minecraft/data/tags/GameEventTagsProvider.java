@@ -32,8 +32,7 @@ public class GameEventTagsProvider extends IntrinsicHolderTagsProvider<GameEvent
       GameEvent.ENTITY_INTERACT,
       GameEvent.ENTITY_MOUNT,
       GameEvent.ENTITY_PLACE,
-      GameEvent.ENTITY_ROAR,
-      GameEvent.ENTITY_SHAKE,
+      GameEvent.ENTITY_ACTION,
       GameEvent.EQUIP,
       GameEvent.EXPLODE,
       GameEvent.FLUID_PICKUP,
@@ -50,7 +49,8 @@ public class GameEventTagsProvider extends IntrinsicHolderTagsProvider<GameEvent
       GameEvent.SPLASH,
       GameEvent.STEP,
       GameEvent.SWIM,
-      GameEvent.TELEPORT
+      GameEvent.TELEPORT,
+      GameEvent.UNEQUIP
    };
 
    public GameEventTagsProvider(PackOutput var1, CompletableFuture<HolderLookup.Provider> var2) {

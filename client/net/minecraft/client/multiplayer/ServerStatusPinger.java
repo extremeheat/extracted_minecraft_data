@@ -1,26 +1,18 @@
 package net.minecraft.client.multiplayer;
 
-import com.google.common.base.Splitter;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.mojang.authlib.GameProfile;
 import com.mojang.logging.LogUtils;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelException;
-import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandler;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,21 +26,18 @@ import net.minecraft.client.multiplayer.resolver.ResolvedServerAddress;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.client.multiplayer.resolver.ServerNameResolver;
 import net.minecraft.network.Connection;
-import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.handshake.ClientIntentionPacket;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.status.ClientStatusPacketListener;
 import net.minecraft.network.protocol.status.ClientboundPongResponsePacket;
 import net.minecraft.network.protocol.status.ClientboundStatusResponsePacket;
 import net.minecraft.network.protocol.status.ServerStatus;
 import net.minecraft.network.protocol.status.ServerboundPingRequestPacket;
 import net.minecraft.network.protocol.status.ServerboundStatusRequestPacket;
-import net.minecraft.util.Mth;
 import org.slf4j.Logger;
 
 public class ServerStatusPinger {
-   static final Splitter SPLITTER = Splitter.on('\u0000').limit(6);
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Component CANT_CONNECT_MESSAGE = Component.translatable("multiplayer.status.cannot_connect").withStyle(var0 -> var0.withColor(-65536));
    private final List<Connection> connections = Collections.synchronizedList(Lists.newArrayList());
@@ -58,18 +47,18 @@ public class ServerStatusPinger {
    }
 
    public void pingServer(final ServerData var1, final Runnable var2) throws UnknownHostException {
-      ServerAddress var3 = ServerAddress.parseString(var1.ip);
+      final ServerAddress var3 = ServerAddress.parseString(var1.ip);
       Optional var4 = ServerNameResolver.DEFAULT.resolveAddress(var3).map(ResolvedServerAddress::asInetSocketAddress);
-      if (!var4.isPresent()) {
+      if (var4.isEmpty()) {
          this.onPingFailed(ConnectScreen.UNKNOWN_HOST_MESSAGE, var1);
       } else {
          final InetSocketAddress var5 = (InetSocketAddress)var4.get();
-         final Connection var6 = Connection.connectToServer(var5, false);
+         final Connection var6 = Connection.connectToServer(var5, false, null);
          this.connections.add(var6);
          var1.motd = Component.translatable("multiplayer.status.pinging");
          var1.ping = -1L;
          var1.playerList = Collections.emptyList();
-         var6.setListener(new ClientStatusPacketListener() {
+         ClientStatusPacketListener var7 = new ClientStatusPacketListener() {
             private boolean success;
             private boolean receivedPing;
             private long pingStart;
@@ -110,7 +99,7 @@ public class ServerStatusPinger {
                   }, () -> var1.status = Component.translatable("multiplayer.status.unknown").withStyle(ChatFormatting.DARK_GRAY));
                   var2x.favicon().ifPresent(var2xxx -> {
                      if (!Arrays.equals(var2xxx.iconBytes(), var1.getIconBytes())) {
-                        var1.setIconBytes(var2xxx.iconBytes());
+                        var1.setIconBytes(ServerData.validateIcon(var2xxx.iconBytes()));
                         var2.run();
                      }
                   });
@@ -132,7 +121,7 @@ public class ServerStatusPinger {
             public void onDisconnect(Component var1x) {
                if (!this.success) {
                   ServerStatusPinger.this.onPingFailed(var1x, var1);
-                  ServerStatusPinger.this.pingLegacyServer(var5, var1);
+                  ServerStatusPinger.this.pingLegacyServer(var5, var3, var1);
                }
             }
 
@@ -140,13 +129,13 @@ public class ServerStatusPinger {
             public boolean isAcceptingMessages() {
                return var6.isConnected();
             }
-         });
+         };
 
          try {
-            var6.send(new ClientIntentionPacket(var3.getHost(), var3.getPort(), ConnectionProtocol.STATUS));
+            var6.initiateServerboundStatusConnection(var3.getHost(), var3.getPort(), var7);
             var6.send(new ServerboundStatusRequestPacket());
-         } catch (Throwable var8) {
-            LOGGER.error("Failed to ping server {}", var3, var8);
+         } catch (Throwable var9) {
+            LOGGER.error("Failed to ping server {}", var3, var9);
          }
       }
    }
@@ -157,84 +146,32 @@ public class ServerStatusPinger {
       var2.status = CommonComponents.EMPTY;
    }
 
-   void pingLegacyServer(final InetSocketAddress var1, final ServerData var2) {
+   void pingLegacyServer(InetSocketAddress var1, final ServerAddress var2, final ServerData var3) {
       ((Bootstrap)((Bootstrap)((Bootstrap)new Bootstrap().group((EventLoopGroup)Connection.NETWORK_WORKER_GROUP.get()))
                .handler(new ChannelInitializer<Channel>() {
-                  protected void initChannel(Channel var1x) {
+                  protected void initChannel(Channel var1) {
                      try {
-                        var1x.config().setOption(ChannelOption.TCP_NODELAY, true);
-                     } catch (ChannelException var3) {
+                        var1.config().setOption(ChannelOption.TCP_NODELAY, true);
+                     } catch (ChannelException var3x) {
                      }
          
-                     var1x.pipeline().addLast(new ChannelHandler[]{new SimpleChannelInboundHandler<ByteBuf>() {
-                        public void channelActive(ChannelHandlerContext var1x) throws Exception {
-                           super.channelActive(var1x);
-                           ByteBuf var2x = Unpooled.buffer();
-         
-                           try {
-                              var2x.writeByte(254);
-                              var2x.writeByte(1);
-                              var2x.writeByte(250);
-                              char[] var3 = "MC|PingHost".toCharArray();
-                              var2x.writeShort(var3.length);
-         
-                              for(char var7 : var3) {
-                                 var2x.writeChar(var7);
-                              }
-         
-                              var2x.writeShort(7 + 2 * var1.getHostName().length());
-                              var2x.writeByte(127);
-                              var3 = var1.getHostName().toCharArray();
-                              var2x.writeShort(var3.length);
-         
-                              for(char var15 : var3) {
-                                 var2x.writeChar(var15);
-                              }
-         
-                              var2x.writeInt(var1.getPort());
-                              var1x.channel().writeAndFlush(var2x).addListener(ChannelFutureListener.CLOSE_ON_FAILURE);
-                           } finally {
-                              var2x.release();
-                           }
-                        }
-         
-                        protected void channelRead0(ChannelHandlerContext var1x, ByteBuf var2x) {
-                           short var3 = var2x.readUnsignedByte();
-                           if (var3 == 255) {
-                              String var4 = new String(var2x.readBytes(var2x.readShort() * 2).array(), StandardCharsets.UTF_16BE);
-                              String[] var5 = (String[])Iterables.toArray(ServerStatusPinger.SPLITTER.split(var4), String.class);
-                              if ("\u00a71".equals(var5[0])) {
-                                 int var6 = Mth.getInt(var5[1], 0);
-                                 String var7 = var5[2];
-                                 String var8 = var5[3];
-                                 int var9 = Mth.getInt(var5[4], -1);
-                                 int var10 = Mth.getInt(var5[5], -1);
-                                 var2.protocol = -1;
-                                 var2.version = Component.literal(var7);
-                                 var2.motd = Component.literal(var8);
-                                 var2.status = ServerStatusPinger.formatPlayerCount(var9, var10);
-                                 var2.players = new ServerStatus.Players(var10, var9, List.of());
-                              }
-                           }
-         
-                           var1x.close();
-                        }
-         
-                        public void exceptionCaught(ChannelHandlerContext var1x, Throwable var2x) {
-                           var1x.close();
-                        }
-                     }});
+                     var1.pipeline().addLast(new ChannelHandler[]{new LegacyServerPinger(var2, (var1x, var2xx, var3xxx, var4, var5) -> {
+                        var3.protocol = -1;
+                        var3.version = Component.literal(var2xx);
+                        var3.motd = Component.literal(var3xxx);
+                        var3.status = ServerStatusPinger.formatPlayerCount(var4, var5);
+                        var3.players = new ServerStatus.Players(var5, var4, List.of());
+                     })});
                   }
                }))
             .channel(NioSocketChannel.class))
          .connect(var1.getAddress(), var1.getPort());
    }
 
-   static Component formatPlayerCount(int var0, int var1) {
-      return Component.literal(Integer.toString(var0))
-         .append(Component.literal("/").withStyle(ChatFormatting.DARK_GRAY))
-         .append(Integer.toString(var1))
-         .withStyle(ChatFormatting.GRAY);
+   public static Component formatPlayerCount(int var0, int var1) {
+      MutableComponent var2 = Component.literal(Integer.toString(var0)).withStyle(ChatFormatting.GRAY);
+      MutableComponent var3 = Component.literal(Integer.toString(var1)).withStyle(ChatFormatting.GRAY);
+      return Component.translatable("multiplayer.status.player_count", var2, var3).withStyle(ChatFormatting.DARK_GRAY);
    }
 
    public void tick() {

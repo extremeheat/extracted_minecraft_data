@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 
 public class CloseServerTask extends LongRunningTask {
    private static final Logger LOGGER = LogUtils.getLogger();
+   private static final Component TITLE = Component.translatable("mco.configure.world.closing");
    private final RealmsServer serverData;
    private final RealmsConfigureWorldScreen configureScreen;
 
@@ -21,7 +22,6 @@ public class CloseServerTask extends LongRunningTask {
 
    @Override
    public void run() {
-      this.setTitle(Component.translatable("mco.configure.world.closing"));
       RealmsClient var1 = RealmsClient.create();
 
       for(int var2 = 0; var2 < 25; ++var2) {
@@ -49,8 +49,13 @@ public class CloseServerTask extends LongRunningTask {
             }
 
             LOGGER.error("Failed to close server", var5);
-            this.error("Failed to close the server");
+            this.error(var5);
          }
       }
+   }
+
+   @Override
+   public Component getTitle() {
+      return TITLE;
    }
 }

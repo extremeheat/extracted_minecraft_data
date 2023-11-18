@@ -1,6 +1,7 @@
 package com.mojang.realmsclient.gui.screens;
 
 import com.mojang.realmsclient.dto.RealmsServer;
+import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -27,9 +28,7 @@ public class RealmsSettingsScreen extends RealmsScreen {
 
    @Override
    public void tick() {
-      this.nameEdit.tick();
-      this.descEdit.tick();
-      this.doneButton.active = !this.nameEdit.getValue().trim().isEmpty();
+      this.doneButton.active = !Util.isBlank(this.nameEdit.getValue());
    }
 
    @Override
@@ -83,13 +82,12 @@ public class RealmsSettingsScreen extends RealmsScreen {
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
-      var1.drawCenteredString(this.font, this.title, this.width / 2, 17, 16777215);
-      var1.drawString(this.font, NAME_LABEL, this.width / 2 - 106, row(3), 10526880, false);
-      var1.drawString(this.font, DESCRIPTION_LABEL, this.width / 2 - 106, row(7), 10526880, false);
+      super.render(var1, var2, var3, var4);
+      var1.drawCenteredString(this.font, this.title, this.width / 2, 17, -1);
+      var1.drawString(this.font, NAME_LABEL, this.width / 2 - 106, row(3), -6250336, false);
+      var1.drawString(this.font, DESCRIPTION_LABEL, this.width / 2 - 106, row(7), -6250336, false);
       this.nameEdit.render(var1, var2, var3, var4);
       this.descEdit.render(var1, var2, var3, var4);
-      super.render(var1, var2, var3, var4);
    }
 
    public void save() {

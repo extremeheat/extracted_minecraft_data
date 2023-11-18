@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.decoration;
 
-import java.util.List;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -289,10 +288,7 @@ public class ArmorStand extends LivingEntity {
 
    @Override
    protected void pushEntities() {
-      List var1 = this.level().getEntities(this, this.getBoundingBox(), RIDABLE_MINECARTS);
-
-      for(int var2 = 0; var2 < var1.size(); ++var2) {
-         Entity var3 = (Entity)var1.get(var2);
+      for(Entity var3 : this.level().getEntities(this, this.getBoundingBox(), RIDABLE_MINECARTS)) {
          if (this.distanceToSqr(var3) <= 0.2) {
             var3.push(this);
          }
@@ -404,14 +400,13 @@ public class ArmorStand extends LivingEntity {
          this.causeDamage(var1, 4.0F);
          return false;
       } else {
-         boolean var3 = var1.getDirectEntity() instanceof AbstractArrow;
-         boolean var4 = var3 && ((AbstractArrow)var1.getDirectEntity()).getPierceLevel() > 0;
-         boolean var5 = "player".equals(var1.getMsgId());
-         if (!var5 && !var3) {
+         boolean var3 = "player".equals(var1.getMsgId());
+         boolean var4 = var1.is(DamageTypeTags.ALWAYS_KILLS_ARMOR_STANDS);
+         if (!var3 && !var4) {
             return false;
          } else {
-            Entity var7 = var1.getEntity();
-            if (var7 instanceof Player var6 && !var6.getAbilities().mayBuild) {
+            Entity var6 = var1.getEntity();
+            if (var6 instanceof Player var5 && !var5.getAbilities().mayBuild) {
                return false;
             }
 
@@ -419,13 +414,18 @@ public class ArmorStand extends LivingEntity {
                this.playBrokenSound();
                this.showBreakingParticles();
                this.kill();
-               return var4;
+               var6 = var1.getDirectEntity();
+               if (var6 instanceof AbstractArrow var8 && var8.getPierceLevel() > 0) {
+                  return true;
+               }
+
+               return false;
             } else {
-               long var8 = this.level().getGameTime();
-               if (var8 - this.lastHit > 5L && !var3) {
+               long var7 = this.level().getGameTime();
+               if (var7 - this.lastHit > 5L && !var4) {
                   this.level().broadcastEntityEvent(this, (byte)32);
                   this.gameEvent(GameEvent.ENTITY_DAMAGE, var1.getEntity());
-                  this.lastHit = var8;
+                  this.lastHit = var7;
                } else {
                   this.brokenByPlayer(var1);
                   this.showBreakingParticles();
@@ -535,11 +535,6 @@ public class ArmorStand extends LivingEntity {
    @Override
    protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
       return var2.height * (this.isBaby() ? 0.5F : 0.9F);
-   }
-
-   @Override
-   public double getMyRidingOffset() {
-      return this.isMarker() ? 0.0 : 0.10000000149011612;
    }
 
    @Override

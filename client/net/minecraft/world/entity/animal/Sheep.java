@@ -23,6 +23,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -59,6 +60,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
+import org.joml.Vector3f;
 
 public class Sheep extends Animal implements Shearable {
    private static final int EAT_ANIMATION_TICKS = 40;
@@ -347,7 +349,7 @@ public class Sheep extends Animal implements Shearable {
       return this.level()
          .getRecipeManager()
          .getRecipeFor(RecipeType.CRAFTING, var5, this.level())
-         .map(var2x -> var2x.assemble(var5, this.level().registryAccess()))
+         .map(var2x -> var2x.value().assemble(var5, this.level().registryAccess()))
          .map(ItemStack::getItem)
          .filter(DyeItem.class::isInstance)
          .map(DyeItem.class::cast)
@@ -375,5 +377,10 @@ public class Sheep extends Animal implements Shearable {
    @Override
    protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
       return 0.95F * var2.height;
+   }
+
+   @Override
+   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
+      return new Vector3f(0.0F, var2.height - 0.0625F * var3, 0.0F);
    }
 }

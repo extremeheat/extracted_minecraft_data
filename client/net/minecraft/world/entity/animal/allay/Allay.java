@@ -5,6 +5,7 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
 import java.util.Optional;
 import java.util.function.BiConsumer;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Vec3i;
@@ -64,7 +65,6 @@ import net.minecraft.world.level.gameevent.GameEventListener;
 import net.minecraft.world.level.gameevent.PositionSource;
 import net.minecraft.world.level.gameevent.vibrations.VibrationSystem;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 
 public class Allay extends PathfinderMob implements InventoryCarrier, VibrationSystem {
@@ -76,7 +76,6 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    private static final Ingredient DUPLICATION_ITEM = Ingredient.of(Items.AMETHYST_SHARD);
    private static final int DUPLICATION_COOLDOWN_TICKS = 6000;
    private static final int NUM_OF_DUPLICATION_HEARTS = 3;
-   private static final double RIDING_OFFSET = 0.4;
    private static final EntityDataAccessor<Boolean> DATA_DANCING = SynchedEntityData.defineId(Allay.class, EntityDataSerializers.BOOLEAN);
    private static final EntityDataAccessor<Boolean> DATA_CAN_DUPLICATE = SynchedEntityData.defineId(Allay.class, EntityDataSerializers.BOOLEAN);
    protected static final ImmutableList<SensorType<? extends Sensor<? super Allay>>> SENSOR_TYPES = ImmutableList.of(
@@ -427,10 +426,6 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
       return this.entityData.get(DATA_DANCING);
    }
 
-   public boolean isPanicking() {
-      return this.brain.getMemory(MemoryModuleType.IS_PANICKING).isPresent();
-   }
-
    public void setDancing(boolean var1) {
       if (!this.level().isClientSide && this.isEffectiveAi() && (!var1 || !this.isPanicking())) {
          this.entityData.set(DATA_DANCING, var1);
@@ -555,8 +550,8 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    }
 
    @Override
-   public double getMyRidingOffset() {
-      return 0.4;
+   protected float ridingOffset(Entity var1) {
+      return 0.04F;
    }
 
    @Override

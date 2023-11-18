@@ -1,23 +1,19 @@
 package net.minecraft.world.level.storage.loot;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
-import java.lang.reflect.Type;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import net.minecraft.util.GsonHelper;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.loot.entries.LootPoolEntries;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntry;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
 import net.minecraft.world.level.storage.loot.functions.FunctionUserBuilder;
@@ -28,19 +24,29 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemConditions;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
-import org.apache.commons.lang3.ArrayUtils;
+import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 import org.apache.commons.lang3.mutable.MutableInt;
 
 public class LootPool {
-   final LootPoolEntryContainer[] entries;
-   final LootItemCondition[] conditions;
+   public static final Codec<LootPool> CODEC = RecordCodecBuilder.create(
+      var0 -> var0.group(
+               LootPoolEntries.CODEC.listOf().fieldOf("entries").forGetter(var0x -> var0x.entries),
+               ExtraCodecs.strictOptionalField(LootItemConditions.CODEC.listOf(), "conditions", List.of()).forGetter(var0x -> var0x.conditions),
+               ExtraCodecs.strictOptionalField(LootItemFunctions.CODEC.listOf(), "functions", List.of()).forGetter(var0x -> var0x.functions),
+               NumberProviders.CODEC.fieldOf("rolls").forGetter(var0x -> var0x.rolls),
+               NumberProviders.CODEC.fieldOf("bonus_rolls").orElse(ConstantValue.exactly(0.0F)).forGetter(var0x -> var0x.bonusRolls)
+            )
+            .apply(var0, LootPool::new)
+   );
+   private final List<LootPoolEntryContainer> entries;
+   private final List<LootItemCondition> conditions;
    private final Predicate<LootContext> compositeCondition;
-   final LootItemFunction[] functions;
+   private final List<LootItemFunction> functions;
    private final BiFunction<ItemStack, LootContext, ItemStack> compositeFunction;
-   final NumberProvider rolls;
-   final NumberProvider bonusRolls;
+   private final NumberProvider rolls;
+   private final NumberProvider bonusRolls;
 
-   LootPool(LootPoolEntryContainer[] var1, LootItemCondition[] var2, LootItemFunction[] var3, NumberProvider var4, NumberProvider var5) {
+   LootPool(List<LootPoolEntryContainer> var1, List<LootItemCondition> var2, List<LootItemFunction> var3, NumberProvider var4, NumberProvider var5) {
       super();
       this.entries = var1;
       this.conditions = var2;
@@ -56,8 +62,8 @@ public class LootPool {
       ArrayList var4 = Lists.newArrayList();
       MutableInt var5 = new MutableInt();
 
-      for(LootPoolEntryContainer var9 : this.entries) {
-         var9.expand(var2, var3x -> {
+      for(LootPoolEntryContainer var7 : this.entries) {
+         var7.expand(var2, var3x -> {
             int var4x = var3x.getWeight(var2.getLuck());
             if (var4x > 0) {
                var4.add(var3x);
@@ -73,10 +79,10 @@ public class LootPool {
          } else {
             int var11 = var3.nextInt(var5.intValue());
 
-            for(LootPoolEntry var13 : var4) {
-               var11 -= var13.getWeight(var2.getLuck());
+            for(LootPoolEntry var9 : var4) {
+               var11 -= var9.getWeight(var2.getLuck());
                if (var11 < 0) {
-                  var13.createItemStack(var1, var2);
+                  var9.createItemStack(var1, var2);
                   return;
                }
             }
@@ -96,16 +102,16 @@ public class LootPool {
    }
 
    public void validate(ValidationContext var1) {
-      for(int var2 = 0; var2 < this.conditions.length; ++var2) {
-         this.conditions[var2].validate(var1.forChild(".condition[" + var2 + "]"));
+      for(int var2 = 0; var2 < this.conditions.size(); ++var2) {
+         this.conditions.get(var2).validate(var1.forChild(".condition[" + var2 + "]"));
       }
 
-      for(int var3 = 0; var3 < this.functions.length; ++var3) {
-         this.functions[var3].validate(var1.forChild(".functions[" + var3 + "]"));
+      for(int var3 = 0; var3 < this.functions.size(); ++var3) {
+         this.functions.get(var3).validate(var1.forChild(".functions[" + var3 + "]"));
       }
 
-      for(int var4 = 0; var4 < this.entries.length; ++var4) {
-         this.entries[var4].validate(var1.forChild(".entries[" + var4 + "]"));
+      for(int var4 = 0; var4 < this.entries.size(); ++var4) {
+         this.entries.get(var4).validate(var1.forChild(".entries[" + var4 + "]"));
       }
 
       this.rolls.validate(var1.forChild(".rolls"));
@@ -117,9 +123,9 @@ public class LootPool {
    }
 
    public static class Builder implements FunctionUserBuilder<LootPool.Builder>, ConditionUserBuilder<LootPool.Builder> {
-      private final List<LootPoolEntryContainer> entries = Lists.newArrayList();
-      private final List<LootItemCondition> conditions = Lists.newArrayList();
-      private final List<LootItemFunction> functions = Lists.newArrayList();
+      private final com.google.common.collect.ImmutableList.Builder<LootPoolEntryContainer> entries = ImmutableList.builder();
+      private final com.google.common.collect.ImmutableList.Builder<LootItemCondition> conditions = ImmutableList.builder();
+      private final com.google.common.collect.ImmutableList.Builder<LootItemFunction> functions = ImmutableList.builder();
       private NumberProvider rolls = ConstantValue.exactly(1.0F);
       private NumberProvider bonusRolls = ConstantValue.exactly(0.0F);
 
@@ -157,49 +163,7 @@ public class LootPool {
       }
 
       public LootPool build() {
-         if (this.rolls == null) {
-            throw new IllegalArgumentException("Rolls not set");
-         } else {
-            return new LootPool(
-               this.entries.toArray(new LootPoolEntryContainer[0]),
-               this.conditions.toArray(new LootItemCondition[0]),
-               this.functions.toArray(new LootItemFunction[0]),
-               this.rolls,
-               this.bonusRolls
-            );
-         }
-      }
-   }
-
-   public static class Serializer implements JsonDeserializer<LootPool>, JsonSerializer<LootPool> {
-      public Serializer() {
-         super();
-      }
-
-      public LootPool deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
-         JsonObject var4 = GsonHelper.convertToJsonObject(var1, "loot pool");
-         LootPoolEntryContainer[] var5 = (LootPoolEntryContainer[])GsonHelper.getAsObject(var4, "entries", var3, LootPoolEntryContainer[].class);
-         LootItemCondition[] var6 = (LootItemCondition[])GsonHelper.getAsObject(var4, "conditions", new LootItemCondition[0], var3, LootItemCondition[].class);
-         LootItemFunction[] var7 = (LootItemFunction[])GsonHelper.getAsObject(var4, "functions", new LootItemFunction[0], var3, LootItemFunction[].class);
-         NumberProvider var8 = GsonHelper.getAsObject(var4, "rolls", var3, NumberProvider.class);
-         NumberProvider var9 = GsonHelper.getAsObject(var4, "bonus_rolls", ConstantValue.exactly(0.0F), var3, NumberProvider.class);
-         return new LootPool(var5, var6, var7, var8, var9);
-      }
-
-      public JsonElement serialize(LootPool var1, Type var2, JsonSerializationContext var3) {
-         JsonObject var4 = new JsonObject();
-         var4.add("rolls", var3.serialize(var1.rolls));
-         var4.add("bonus_rolls", var3.serialize(var1.bonusRolls));
-         var4.add("entries", var3.serialize(var1.entries));
-         if (!ArrayUtils.isEmpty(var1.conditions)) {
-            var4.add("conditions", var3.serialize(var1.conditions));
-         }
-
-         if (!ArrayUtils.isEmpty(var1.functions)) {
-            var4.add("functions", var3.serialize(var1.functions));
-         }
-
-         return var4;
+         return new LootPool(this.entries.build(), this.conditions.build(), this.functions.build(), this.rolls, this.bonusRolls);
       }
    }
 }

@@ -55,15 +55,15 @@ public class PaintingRenderer extends EntityRenderer<Painting> {
       float var18 = var7.getU0();
       float var19 = var7.getU1();
       float var20 = var7.getV0();
-      float var21 = var7.getV(1.0);
+      float var21 = var7.getV(0.0625F);
       float var22 = var7.getU0();
-      float var23 = var7.getU(1.0);
+      float var23 = var7.getU(0.0625F);
       float var24 = var7.getV0();
       float var25 = var7.getV1();
       int var26 = var4 / 16;
       int var27 = var5 / 16;
-      double var28 = 16.0 / (double)var26;
-      double var30 = 16.0 / (double)var27;
+      double var28 = 1.0 / (double)var26;
+      double var30 = 1.0 / (double)var27;
 
       for(int var32 = 0; var32 < var26; ++var32) {
          for(int var33 = 0; var33 < var27; ++var33) {
@@ -92,10 +92,10 @@ public class PaintingRenderer extends EntityRenderer<Painting> {
             }
 
             int var42 = LevelRenderer.getLightColor(var3.level(), new BlockPos(var38, var39, var40));
-            float var43 = var6.getU(var28 * (double)(var26 - var32));
-            float var44 = var6.getU(var28 * (double)(var26 - (var32 + 1)));
-            float var45 = var6.getV(var30 * (double)(var27 - var33));
-            float var46 = var6.getV(var30 * (double)(var27 - (var33 + 1)));
+            float var43 = var6.getU((float)(var28 * (double)(var26 - var32)));
+            float var44 = var6.getU((float)(var28 * (double)(var26 - (var32 + 1))));
+            float var45 = var6.getV((float)(var30 * (double)(var27 - var33)));
+            float var46 = var6.getV((float)(var30 * (double)(var27 - (var33 + 1))));
             this.vertex(var9, var10, var2, var34, var37, var44, var45, -0.5F, 0, 0, -1, var42);
             this.vertex(var9, var10, var2, var35, var37, var43, var45, -0.5F, 0, 0, -1, var42);
             this.vertex(var9, var10, var2, var35, var36, var43, var46, -0.5F, 0, 0, -1, var42);

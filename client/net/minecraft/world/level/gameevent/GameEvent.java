@@ -30,8 +30,7 @@ public class GameEvent {
    public static final GameEvent ENTITY_INTERACT = register("entity_interact");
    public static final GameEvent ENTITY_MOUNT = register("entity_mount");
    public static final GameEvent ENTITY_PLACE = register("entity_place");
-   public static final GameEvent ENTITY_ROAR = register("entity_roar");
-   public static final GameEvent ENTITY_SHAKE = register("entity_shake");
+   public static final GameEvent ENTITY_ACTION = register("entity_action");
    public static final GameEvent EQUIP = register("equip");
    public static final GameEvent EXPLODE = register("explode");
    public static final GameEvent FLAP = register("flap");
@@ -55,6 +54,7 @@ public class GameEvent {
    public static final GameEvent STEP = register("step");
    public static final GameEvent SWIM = register("swim");
    public static final GameEvent TELEPORT = register("teleport");
+   public static final GameEvent UNEQUIP = register("unequip");
    public static final GameEvent RESONATE_1 = register("resonate_1");
    public static final GameEvent RESONATE_2 = register("resonate_2");
    public static final GameEvent RESONATE_3 = register("resonate_3");
@@ -71,18 +71,12 @@ public class GameEvent {
    public static final GameEvent RESONATE_14 = register("resonate_14");
    public static final GameEvent RESONATE_15 = register("resonate_15");
    public static final int DEFAULT_NOTIFICATION_RADIUS = 16;
-   private final String name;
    private final int notificationRadius;
    private final Holder.Reference<GameEvent> builtInRegistryHolder = BuiltInRegistries.GAME_EVENT.createIntrusiveHolder(this);
 
-   public GameEvent(String var1, int var2) {
+   public GameEvent(int var1) {
       super();
-      this.name = var1;
-      this.notificationRadius = var2;
-   }
-
-   public String getName() {
-      return this.name;
+      this.notificationRadius = var1;
    }
 
    public int getNotificationRadius() {
@@ -94,12 +88,12 @@ public class GameEvent {
    }
 
    private static GameEvent register(String var0, int var1) {
-      return Registry.register(BuiltInRegistries.GAME_EVENT, var0, new GameEvent(var0, var1));
+      return Registry.register(BuiltInRegistries.GAME_EVENT, var0, new GameEvent(var1));
    }
 
    @Override
    public String toString() {
-      return "Game Event{ " + this.name + " , " + this.notificationRadius + "}";
+      return "Game Event{ " + this.builtInRegistryHolder().key().location() + " , " + this.notificationRadius + "}";
    }
 
    @Deprecated

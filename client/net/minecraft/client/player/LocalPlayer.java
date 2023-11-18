@@ -68,7 +68,7 @@ import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.item.ElytraItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.BaseCommandBlock;
 import net.minecraft.world.level.GameType;
@@ -110,8 +110,6 @@ public class LocalPlayer extends AbstractClientPlayer {
    private boolean wasSprinting;
    private int positionReminder;
    private boolean flashOnSetHealth;
-   @Nullable
-   private String serverBrand;
    public Input input;
    protected final Minecraft minecraft;
    protected int sprintTriggerTime;
@@ -132,6 +130,7 @@ public class LocalPlayer extends AbstractClientPlayer {
    private boolean wasFallFlying;
    private int waterVisionTime;
    private boolean showDeathScreen = true;
+   private boolean doLimitedCrafting = false;
 
    public LocalPlayer(Minecraft var1, ClientLevel var2, ClientPacketListener var3, StatsCounter var4, ClientRecipeBook var5, boolean var6, boolean var7) {
       super(var2, var3.getLocalGameProfile());
@@ -374,15 +373,6 @@ public class LocalPlayer extends AbstractClientPlayer {
       this.connection.send(new ServerboundPlayerCommandPacket(this, ServerboundPlayerCommandPacket.Action.OPEN_INVENTORY));
    }
 
-   public void setServerBrand(@Nullable String var1) {
-      this.serverBrand = var1;
-   }
-
-   @Nullable
-   public String getServerBrand() {
-      return this.serverBrand;
-   }
-
    public StatsCounter getStats() {
       return this.stats;
    }
@@ -391,7 +381,7 @@ public class LocalPlayer extends AbstractClientPlayer {
       return this.recipeBook;
    }
 
-   public void removeRecipeHighlight(Recipe<?> var1) {
+   public void removeRecipeHighlight(RecipeHolder<?> var1) {
       if (this.recipeBook.willHighlight(var1)) {
          this.recipeBook.removeHighlight(var1);
          this.connection.send(new ServerboundRecipeBookSeenRecipePacket(var1));
@@ -474,6 +464,14 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    public boolean shouldShowDeathScreen() {
       return this.showDeathScreen;
+   }
+
+   public void setDoLimitedCrafting(boolean var1) {
+      this.doLimitedCrafting = var1;
+   }
+
+   public boolean getDoLimitedCrafting() {
+      return this.doLimitedCrafting;
    }
 
    @Override
@@ -665,8 +663,9 @@ public class LocalPlayer extends AbstractClientPlayer {
       boolean var3 = this.hasEnoughImpulseToStartSprinting();
       this.crouching = !this.getAbilities().flying
          && !this.isSwimming()
-         && this.canEnterPose(Pose.CROUCHING)
-         && (this.isShiftKeyDown() || !this.isSleeping() && !this.canEnterPose(Pose.STANDING));
+         && !this.isPassenger()
+         && this.canPlayerFitWithinBlocksAndEntitiesWhen(Pose.CROUCHING)
+         && (this.isShiftKeyDown() || !this.isSleeping() && !this.canPlayerFitWithinBlocksAndEntitiesWhen(Pose.STANDING));
       float var4 = Mth.clamp(0.3F + EnchantmentHelper.getSneakingSpeedBonus(this), 0.0F, 1.0F);
       this.input.tick(this.isMovingSlowly(), var4);
       this.minecraft.getTutorial().onInput(this.input);

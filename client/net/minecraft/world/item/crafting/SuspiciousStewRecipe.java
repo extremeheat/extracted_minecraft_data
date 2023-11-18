@@ -1,7 +1,6 @@
 package net.minecraft.world.item.crafting;
 
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
@@ -12,8 +11,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SuspiciousEffectHolder;
 
 public class SuspiciousStewRecipe extends CustomRecipe {
-   public SuspiciousStewRecipe(ResourceLocation var1, CraftingBookCategory var2) {
-      super(var1, var2);
+   public SuspiciousStewRecipe(CraftingBookCategory var1) {
+      super(var1);
    }
 
    public boolean matches(CraftingContainer var1, Level var2) {
@@ -52,7 +51,7 @@ public class SuspiciousStewRecipe extends CustomRecipe {
          if (!var5.isEmpty()) {
             SuspiciousEffectHolder var6 = SuspiciousEffectHolder.tryGet(var5.getItem());
             if (var6 != null) {
-               SuspiciousStewItem.saveMobEffect(var3, var6.getSuspiciousEffect(), var6.getEffectDuration());
+               SuspiciousStewItem.saveMobEffects(var3, var6.getSuspiciousEffects());
                break;
             }
          }

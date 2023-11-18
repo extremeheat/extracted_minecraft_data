@@ -2,6 +2,7 @@ package net.minecraft.server.network;
 
 import com.google.common.collect.Lists;
 import com.google.common.primitives.Floats;
+import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.StringReader;
@@ -11,7 +12,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap.Entry;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.net.SocketAddress;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,12 +31,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
-import net.minecraft.CrashReport;
-import net.minecraft.CrashReportCategory;
-import net.minecraft.ReportedException;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
-import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.commands.CommandSigningContext;
 import net.minecraft.commands.CommandSourceStack;
@@ -48,7 +45,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.network.Connection;
-import net.minecraft.network.PacketSendListener;
 import net.minecraft.network.TickablePacketListener;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
@@ -64,18 +60,18 @@ import net.minecraft.network.chat.SignedMessageBody;
 import net.minecraft.network.chat.SignedMessageChain;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketUtils;
+import net.minecraft.network.protocol.common.ServerboundClientInformationPacket;
 import net.minecraft.network.protocol.game.ClientboundBlockChangedAckPacket;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundCommandSuggestionsPacket;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
-import net.minecraft.network.protocol.game.ClientboundDisconnectPacket;
 import net.minecraft.network.protocol.game.ClientboundDisguisedChatPacket;
-import net.minecraft.network.protocol.game.ClientboundKeepAlivePacket;
 import net.minecraft.network.protocol.game.ClientboundMoveVehiclePacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerChatPacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
 import net.minecraft.network.protocol.game.ClientboundSetCarriedItemPacket;
+import net.minecraft.network.protocol.game.ClientboundStartConfigurationPacket;
 import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
 import net.minecraft.network.protocol.game.ClientboundTagQueryPacket;
 import net.minecraft.network.protocol.game.ServerGamePacketListener;
@@ -86,18 +82,17 @@ import net.minecraft.network.protocol.game.ServerboundChatAckPacket;
 import net.minecraft.network.protocol.game.ServerboundChatCommandPacket;
 import net.minecraft.network.protocol.game.ServerboundChatPacket;
 import net.minecraft.network.protocol.game.ServerboundChatSessionUpdatePacket;
+import net.minecraft.network.protocol.game.ServerboundChunkBatchReceivedPacket;
 import net.minecraft.network.protocol.game.ServerboundClientCommandPacket;
-import net.minecraft.network.protocol.game.ServerboundClientInformationPacket;
 import net.minecraft.network.protocol.game.ServerboundCommandSuggestionPacket;
+import net.minecraft.network.protocol.game.ServerboundConfigurationAcknowledgedPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerButtonClickPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
-import net.minecraft.network.protocol.game.ServerboundCustomPayloadPacket;
 import net.minecraft.network.protocol.game.ServerboundEditBookPacket;
 import net.minecraft.network.protocol.game.ServerboundEntityTagQuery;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.network.protocol.game.ServerboundJigsawGeneratePacket;
-import net.minecraft.network.protocol.game.ServerboundKeepAlivePacket;
 import net.minecraft.network.protocol.game.ServerboundLockDifficultyPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.network.protocol.game.ServerboundMoveVehiclePacket;
@@ -108,11 +103,9 @@ import net.minecraft.network.protocol.game.ServerboundPlayerAbilitiesPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerCommandPacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerInputPacket;
-import net.minecraft.network.protocol.game.ServerboundPongPacket;
 import net.minecraft.network.protocol.game.ServerboundRecipeBookChangeSettingsPacket;
 import net.minecraft.network.protocol.game.ServerboundRecipeBookSeenRecipePacket;
 import net.minecraft.network.protocol.game.ServerboundRenameItemPacket;
-import net.minecraft.network.protocol.game.ServerboundResourcePackPacket;
 import net.minecraft.network.protocol.game.ServerboundSeenAdvancementsPacket;
 import net.minecraft.network.protocol.game.ServerboundSelectTradePacket;
 import net.minecraft.network.protocol.game.ServerboundSetBeaconPacket;
@@ -127,6 +120,8 @@ import net.minecraft.network.protocol.game.ServerboundSwingPacket;
 import net.minecraft.network.protocol.game.ServerboundTeleportToEntityPacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemOnPacket;
 import net.minecraft.network.protocol.game.ServerboundUseItemPacket;
+import net.minecraft.network.protocol.status.ClientboundPongResponsePacket;
+import net.minecraft.network.protocol.status.ServerboundPingRequestPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -185,21 +180,20 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.slf4j.Logger;
 
-public class ServerGamePacketListenerImpl implements ServerPlayerConnection, TickablePacketListener, ServerGamePacketListener {
+public class ServerGamePacketListenerImpl
+   extends ServerCommonPacketListenerImpl
+   implements ServerGamePacketListener,
+   ServerPlayerConnection,
+   TickablePacketListener {
    static final Logger LOGGER = LogUtils.getLogger();
-   private static final int LATENCY_CHECK_INTERVAL = 15000;
    public static final double MAX_INTERACTION_DISTANCE = Mth.square(6.0);
    private static final int NO_BLOCK_UPDATES_TO_ACK = -1;
    private static final int TRACKED_MESSAGE_DISCONNECT_THRESHOLD = 4096;
    private static final Component CHAT_VALIDATION_FAILED = Component.translatable("multiplayer.disconnect.chat_validation_failed");
-   private final Connection connection;
-   private final MinecraftServer server;
    public ServerPlayer player;
+   public final PlayerChunkSender chunkSender;
    private int tickCount;
    private int ackBlockChangesUpTo = -1;
-   private long keepAliveTime;
-   private boolean keepAlivePending;
-   private long keepAliveChallenge;
    private int chatSpamTickCount;
    private int dropSpamTickCount;
    private double firstGoodX;
@@ -233,15 +227,14 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
    private final LastSeenMessagesValidator lastSeenMessages = new LastSeenMessagesValidator(20);
    private final MessageSignatureCache messageSignatureCache = MessageSignatureCache.createDefault();
    private final FutureChain chatMessageChain;
+   private boolean waitingForSwitchToConfig;
 
-   public ServerGamePacketListenerImpl(MinecraftServer var1, Connection var2, ServerPlayer var3) {
-      super();
-      this.server = var1;
-      this.connection = var2;
+   public ServerGamePacketListenerImpl(MinecraftServer var1, Connection var2, ServerPlayer var3, CommonListenerCookie var4) {
+      super(var1, var2, var4);
+      this.chunkSender = new PlayerChunkSender(var2.isMemoryConnection());
       var2.setListener(this);
       this.player = var3;
       var3.connection = this;
-      this.keepAliveTime = Util.getMillis();
       var3.getTextFilter().join();
       this.signedMessageDecoder = var1.enforceSecureProfile() ? SignedMessageChain.Decoder.REJECT_ALL : SignedMessageChain.Decoder.unsigned(var3.getUUID());
       this.chatMessageChain = new FutureChain(var1);
@@ -297,20 +290,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
          this.aboveGroundVehicleTickCount = 0;
       }
 
-      this.server.getProfiler().push("keepAlive");
-      long var1 = Util.getMillis();
-      if (var1 - this.keepAliveTime >= 15000L) {
-         if (this.keepAlivePending) {
-            this.disconnect(Component.translatable("disconnect.timeout"));
-         } else {
-            this.keepAlivePending = true;
-            this.keepAliveTime = var1;
-            this.keepAliveChallenge = var1;
-            this.send(new ClientboundKeepAlivePacket(this.keepAliveChallenge));
-         }
-      }
-
-      this.server.getProfiler().pop();
+      this.keepConnectionAlive();
       if (this.chatSpamTickCount > 0) {
          --this.chatSpamTickCount;
       }
@@ -337,17 +317,21 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
 
    @Override
    public boolean isAcceptingMessages() {
-      return this.connection.isConnected();
+      return this.connection.isConnected() && !this.waitingForSwitchToConfig;
    }
 
-   private boolean isSingleplayerOwner() {
-      return this.server.isSingleplayerOwner(this.player.getGameProfile());
+   @Override
+   public boolean shouldHandleMessage(Packet<?> var1) {
+      if (super.shouldHandleMessage(var1)) {
+         return true;
+      } else {
+         return this.waitingForSwitchToConfig && this.connection.isConnected() && var1 instanceof ServerboundConfigurationAcknowledgedPacket;
+      }
    }
 
-   public void disconnect(Component var1) {
-      this.connection.send(new ClientboundDisconnectPacket(var1), PacketSendListener.thenRun(() -> this.connection.disconnect(var1)));
-      this.connection.setReadOnly();
-      this.server.executeBlocking(this.connection::handleDisconnection);
+   @Override
+   protected GameProfile playerProfile() {
+      return this.player.getGameProfile();
    }
 
    private <T, R> CompletableFuture<R> filterTextPacket(T var1, BiFunction<TextFilter, T, CompletableFuture<R>> var2) {
@@ -416,7 +400,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
                   "{} (vehicle of {}) moved too quickly! {},{},{}",
                   new Object[]{var2.getName().getString(), this.player.getName().getString(), var18, var20, var22}
                );
-               this.connection.send(new ClientboundMoveVehiclePacket(var2));
+               this.send(new ClientboundMoveVehiclePacket(var2));
                return;
             }
 
@@ -450,7 +434,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
             boolean var33 = var3.noCollision(var2, var2.getBoundingBox().deflate(0.0625));
             if (var28 && (var32 || !var33)) {
                var2.absMoveTo(var4, var6, var8, var16, var17);
-               this.connection.send(new ClientboundMoveVehiclePacket(var2));
+               this.send(new ClientboundMoveVehiclePacket(var2));
                return;
             }
 
@@ -512,8 +496,8 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
    public void handleSeenAdvancements(ServerboundSeenAdvancementsPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       if (var1.getAction() == ServerboundSeenAdvancementsPacket.Action.OPENED_TAB) {
-         ResourceLocation var2 = var1.getTab();
-         Advancement var3 = this.server.getAdvancements().getAdvancement(var2);
+         ResourceLocation var2 = Objects.requireNonNull(var1.getTab());
+         AdvancementHolder var3 = this.server.getAdvancements().get(var2);
          if (var3 != null) {
             this.player.getAdvancements().setSelectedTab(var3);
          }
@@ -533,7 +517,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
          .getCommands()
          .getDispatcher()
          .getCompletionSuggestions(var3)
-         .thenAccept(var2x -> this.connection.send(new ClientboundCommandSuggestionsPacket(var1.getId(), var2x)));
+         .thenAccept(var2x -> this.send(new ClientboundCommandSuggestionsPacket(var1.getId(), var2x)));
    }
 
    @Override
@@ -1150,15 +1134,6 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
       }
    }
 
-   @Override
-   public void handleResourcePackResponse(ServerboundResourcePackPacket var1) {
-      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
-      if (var1.getAction() == ServerboundResourcePackPacket.Action.DECLINED && this.server.isResourcePackRequired()) {
-         LOGGER.info("Disconnecting {} due to resource pack rejection", this.player.getName());
-         this.disconnect(Component.translatable("multiplayer.requiredTexturePrompt.disconnect"));
-      }
-   }
-
    // $QF: Could not properly define all variable types!
    // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
@@ -1171,13 +1146,14 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
    }
 
    @Override
-   public void handlePong(ServerboundPongPacket var1) {
+   public void onDisconnect(Component var1) {
+      LOGGER.info("{} lost connection: {}", this.player.getName().getString(), var1.getString());
+      this.removePlayerFromWorld();
+      super.onDisconnect(var1);
    }
 
-   @Override
-   public void onDisconnect(Component var1) {
+   private void removePlayerFromWorld() {
       this.chatMessageChain.close();
-      LOGGER.info("{} lost connection: {}", this.player.getName().getString(), var1.getString());
       this.server.invalidateStatus();
       this.server
          .getPlayerList()
@@ -1185,10 +1161,6 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
       this.player.disconnect();
       this.server.getPlayerList().remove(this.player);
       this.player.getTextFilter().leave();
-      if (this.isSingleplayerOwner()) {
-         LOGGER.info("Stopping singleplayer server as player logged out");
-         this.server.halt(false);
-      }
    }
 
    public void ackBlockChangesUpTo(int var1) {
@@ -1196,22 +1168,6 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
          throw new IllegalArgumentException("Expected packet sequence nr >= 0");
       } else {
          this.ackBlockChangesUpTo = Math.max(var1, this.ackBlockChangesUpTo);
-      }
-   }
-
-   @Override
-   public void send(Packet<?> var1) {
-      this.send(var1, null);
-   }
-
-   public void send(Packet<?> var1, @Nullable PacketSendListener var2) {
-      try {
-         this.connection.send(var1, var2);
-      } catch (Throwable var6) {
-         CrashReport var4 = CrashReport.forThrowable(var6, "Sending packet");
-         CrashReportCategory var5 = var4.addCategory("Packet being sent");
-         var5.setDetail("Packet class", () -> var1.getClass().getCanonicalName());
-         throw new ReportedException(var4);
       }
    }
 
@@ -1247,10 +1203,10 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
                }
 
                CompletableFuture var4 = this.filterTextPacket(var3.signedContent());
-               CompletableFuture var5 = this.server.getChatDecorator().decorate(this.player, var3.decoratedContent());
-               this.chatMessageChain.append(var4x -> CompletableFuture.allOf(var4, var5).thenAcceptAsync(var4xx -> {
-                     PlayerChatMessage var5x = var3.withUnsignedContent((Component)var5.join()).filter(((FilteredText)var4.join()).mask());
-                     this.broadcastChatMessage(var5x);
+               Component var5 = this.server.getChatDecorator().decorate(this.player, var3.decoratedContent());
+               this.chatMessageChain.append(var4x -> var4.thenAcceptAsync(var3xx -> {
+                     PlayerChatMessage var4xx = var3.withUnsignedContent(var5).filter(var3xx.mask());
+                     this.broadcastChatMessage(var4xx);
                   }, var4x));
             });
          }
@@ -1284,7 +1240,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
       }
 
       CommandSigningContext.SignedArguments var5 = new CommandSigningContext.SignedArguments(var4);
-      var3 = Commands.mapSource(var3, var1x -> var1x.withSigningContext(var5));
+      var3 = Commands.mapSource(var3, var2x -> var2x.withSigningContext(var5, this.chatMessageChain));
       this.server.getCommands().performCommand(var3, var1.command());
    }
 
@@ -1491,6 +1447,17 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
 
    public SocketAddress getRemoteAddress() {
       return this.connection.getRemoteAddress();
+   }
+
+   public void switchToConfig() {
+      this.waitingForSwitchToConfig = true;
+      this.removePlayerFromWorld();
+      this.send(new ClientboundStartConfigurationPacket());
+   }
+
+   @Override
+   public void handlePingRequest(ServerboundPingRequestPacket var1) {
+      this.connection.send(new ClientboundPongResponsePacket(var1.getTime()));
    }
 
    @Override
@@ -1715,17 +1682,6 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
    }
 
    @Override
-   public void handleKeepAlive(ServerboundKeepAlivePacket var1) {
-      if (this.keepAlivePending && var1.getId() == this.keepAliveChallenge) {
-         int var2 = (int)(Util.getMillis() - this.keepAliveTime);
-         this.player.latency = (this.player.latency * 3 + var2) / 4;
-         this.keepAlivePending = false;
-      } else if (!this.isSingleplayerOwner()) {
-         this.disconnect(Component.translatable("disconnect.timeout"));
-      }
-   }
-
-   @Override
    public void handlePlayerAbilities(ServerboundPlayerAbilitiesPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       this.player.getAbilities().flying = var1.isFlying() && this.player.getAbilities().mayfly;
@@ -1734,11 +1690,7 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
    @Override
    public void handleClientInformation(ServerboundClientInformationPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
-      this.player.updateOptions(var1);
-   }
-
-   @Override
-   public void handleCustomPayload(ServerboundCustomPayloadPacket var1) {
+      this.player.updateOptions(var1.information());
    }
 
    @Override
@@ -1774,13 +1726,29 @@ public class ServerGamePacketListenerImpl implements ServerPlayerConnection, Tic
                   return;
                }
 
-               this.resetPlayerChatState(var2.validate(this.player.getGameProfile(), var5, Duration.ZERO));
+               this.resetPlayerChatState(var2.validate(this.player.getGameProfile(), var5));
             } catch (ProfilePublicKey.ValidationException var6) {
                LOGGER.error("Failed to validate profile key: {}", var6.getMessage());
                this.disconnect(var6.getComponent());
             }
          }
       }
+   }
+
+   @Override
+   public void handleConfigurationAcknowledged(ServerboundConfigurationAcknowledgedPacket var1) {
+      if (!this.waitingForSwitchToConfig) {
+         throw new IllegalStateException("Client acknowledged config, but none was requested");
+      } else {
+         this.connection
+            .setListener(new ServerConfigurationPacketListenerImpl(this.server, this.connection, this.createCookie(this.player.clientInformation())));
+      }
+   }
+
+   @Override
+   public void handleChunkBatchReceived(ServerboundChunkBatchReceivedPacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      this.chunkSender.onChunkBatchReceivedByClient(var1.desiredChunksPerTick());
    }
 
    private void resetPlayerChatState(RemoteChatSession var1) {

@@ -35,7 +35,12 @@ public abstract class DiodeBlock extends HorizontalDirectionalBlock {
 
    @Override
    public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      return canSupportRigidBlock(var2, var3.below());
+      BlockPos var4 = var3.below();
+      return this.canSurviveOn(var2, var4, var2.getBlockState(var4));
+   }
+
+   protected boolean canSurviveOn(LevelReader var1, BlockPos var2, BlockState var3) {
+      return var3.isFaceSturdy(var1, var2, Direction.UP, SupportType.RIGID);
    }
 
    @Override

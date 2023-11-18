@@ -7,11 +7,11 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import java.util.Arrays;
 import java.util.Collection;
-import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.storage.loot.LootDataManager;
 import net.minecraft.world.level.storage.loot.LootDataType;
@@ -41,9 +41,9 @@ public class ResourceLocationArgument implements ArgumentType<ResourceLocation> 
       return new ResourceLocationArgument();
    }
 
-   public static Advancement getAdvancement(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
+   public static AdvancementHolder getAdvancement(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
       ResourceLocation var2 = getId(var0, var1);
-      Advancement var3 = ((CommandSourceStack)var0.getSource()).getServer().getAdvancements().getAdvancement(var2);
+      AdvancementHolder var3 = ((CommandSourceStack)var0.getSource()).getServer().getAdvancements().get(var2);
       if (var3 == null) {
          throw ERROR_UNKNOWN_ADVANCEMENT.create(var2);
       } else {
@@ -51,7 +51,7 @@ public class ResourceLocationArgument implements ArgumentType<ResourceLocation> 
       }
    }
 
-   public static Recipe<?> getRecipe(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
+   public static RecipeHolder<?> getRecipe(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
       RecipeManager var2 = ((CommandSourceStack)var0.getSource()).getServer().getRecipeManager();
       ResourceLocation var3 = getId(var0, var1);
       return var2.byKey(var3).orElseThrow(() -> ERROR_UNKNOWN_RECIPE.create(var3));

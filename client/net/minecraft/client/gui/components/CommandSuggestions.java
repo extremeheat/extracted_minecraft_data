@@ -72,6 +72,7 @@ public class CommandSuggestions {
    private CommandSuggestions.SuggestionsList suggestions;
    private boolean allowSuggestions;
    boolean keepSuggestions;
+   private boolean allowHiding = true;
 
    public CommandSuggestions(Minecraft var1, Screen var2, EditBox var3, Font var4, boolean var5, boolean var6, int var7, int var8, boolean var9, int var10) {
       super();
@@ -95,14 +96,19 @@ public class CommandSuggestions {
       }
    }
 
+   public void setAllowHiding(boolean var1) {
+      this.allowHiding = var1;
+   }
+
    public boolean keyPressed(int var1, int var2, int var3) {
-      if (this.suggestions != null && this.suggestions.keyPressed(var1, var2, var3)) {
+      boolean var4 = this.suggestions != null;
+      if (var4 && this.suggestions.keyPressed(var1, var2, var3)) {
          return true;
-      } else if (this.screen.getFocused() == this.input && var1 == 258) {
+      } else if (this.screen.getFocused() != this.input || var1 != 258 || this.allowHiding && !var4) {
+         return false;
+      } else {
          this.showSuggestions(true);
          return true;
-      } else {
-         return false;
       }
    }
 
@@ -128,6 +134,22 @@ public class CommandSuggestions {
             int var7 = this.anchorToBottom ? this.screen.height - 12 : 72;
             this.suggestions = new CommandSuggestions.SuggestionsList(var6, var7, var3, this.sortSuggestions(var2), var1);
          }
+      }
+   }
+
+   public boolean isVisible() {
+      return this.suggestions != null;
+   }
+
+   public Component getUsageNarration() {
+      if (this.suggestions != null && this.suggestions.tabCycles) {
+         return this.allowHiding
+            ? Component.translatable("narration.suggestion.usage.cycle.hidable")
+            : Component.translatable("narration.suggestion.usage.cycle.fixed");
+      } else {
+         return this.allowHiding
+            ? Component.translatable("narration.suggestion.usage.fill.hidable")
+            : Component.translatable("narration.suggestion.usage.fill.fixed");
       }
    }
 
@@ -364,13 +386,15 @@ public class CommandSuggestions {
       private int offset;
       private int current;
       private Vec2 lastMouse = Vec2.ZERO;
-      private boolean tabCycles;
+      boolean tabCycles;
       private int lastNarratedEntry;
 
       SuggestionsList(int var2, int var3, int var4, List<Suggestion> var5, boolean var6) {
          super();
-         int var7 = var2 - 1;
-         int var8 = CommandSuggestions.this.anchorToBottom ? var3 - 3 - Math.min(var5.size(), CommandSuggestions.this.suggestionLineLimit) * 12 : var3;
+         int var7 = var2 - (CommandSuggestions.this.input.isBordered() ? 0 : 1);
+         int var8 = CommandSuggestions.this.anchorToBottom
+            ? var3 - 3 - Math.min(var5.size(), CommandSuggestions.this.suggestionLineLimit) * 12
+            : var3 - (CommandSuggestions.this.input.isBordered() ? 1 : 0);
          this.rect = new Rect2i(var7, var8, var4 + 1, Math.min(var5.size(), CommandSuggestions.this.suggestionLineLimit) * 12);
          this.originalContents = CommandSuggestions.this.input.getValue();
          this.lastNarratedEntry = var6 ? -1 : 0;

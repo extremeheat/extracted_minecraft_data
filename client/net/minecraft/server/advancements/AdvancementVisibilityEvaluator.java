@@ -2,8 +2,10 @@ package net.minecraft.server.advancements;
 
 import it.unimi.dsi.fastutil.Stack;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import java.util.Optional;
 import java.util.function.Predicate;
 import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementNode;
 import net.minecraft.advancements.DisplayInfo;
 
 public class AdvancementVisibilityEvaluator {
@@ -14,13 +16,15 @@ public class AdvancementVisibilityEvaluator {
    }
 
    private static AdvancementVisibilityEvaluator.VisibilityRule evaluateVisibilityRule(Advancement var0, boolean var1) {
-      DisplayInfo var2 = var0.getDisplay();
-      if (var2 == null) {
+      Optional var2 = var0.display();
+      if (var2.isEmpty()) {
          return AdvancementVisibilityEvaluator.VisibilityRule.HIDE;
       } else if (var1) {
          return AdvancementVisibilityEvaluator.VisibilityRule.SHOW;
       } else {
-         return var2.isHidden() ? AdvancementVisibilityEvaluator.VisibilityRule.HIDE : AdvancementVisibilityEvaluator.VisibilityRule.NO_CHANGE;
+         return ((DisplayInfo)var2.get()).isHidden()
+            ? AdvancementVisibilityEvaluator.VisibilityRule.HIDE
+            : AdvancementVisibilityEvaluator.VisibilityRule.NO_CHANGE;
       }
    }
 
@@ -40,14 +44,17 @@ public class AdvancementVisibilityEvaluator {
    }
 
    private static boolean evaluateVisibility(
-      Advancement var0, Stack<AdvancementVisibilityEvaluator.VisibilityRule> var1, Predicate<Advancement> var2, AdvancementVisibilityEvaluator.Output var3
+      AdvancementNode var0,
+      Stack<AdvancementVisibilityEvaluator.VisibilityRule> var1,
+      Predicate<AdvancementNode> var2,
+      AdvancementVisibilityEvaluator.Output var3
    ) {
       boolean var4 = var2.test(var0);
-      AdvancementVisibilityEvaluator.VisibilityRule var5 = evaluateVisibilityRule(var0, var4);
+      AdvancementVisibilityEvaluator.VisibilityRule var5 = evaluateVisibilityRule(var0.advancement(), var4);
       boolean var6 = var4;
       var1.push(var5);
 
-      for(Advancement var8 : var0.getChildren()) {
+      for(AdvancementNode var8 : var0.children()) {
          var6 |= evaluateVisibility(var8, var1, var2, var3);
       }
 
@@ -57,8 +64,8 @@ public class AdvancementVisibilityEvaluator {
       return var6;
    }
 
-   public static void evaluateVisibility(Advancement var0, Predicate<Advancement> var1, AdvancementVisibilityEvaluator.Output var2) {
-      Advancement var3 = var0.getRoot();
+   public static void evaluateVisibility(AdvancementNode var0, Predicate<AdvancementNode> var1, AdvancementVisibilityEvaluator.Output var2) {
+      AdvancementNode var3 = var0.root();
       ObjectArrayList var4 = new ObjectArrayList();
 
       for(int var5 = 0; var5 <= 2; ++var5) {
@@ -70,7 +77,7 @@ public class AdvancementVisibilityEvaluator {
 
    @FunctionalInterface
    public interface Output {
-      void accept(Advancement var1, boolean var2);
+      void accept(AdvancementNode var1, boolean var2);
    }
 
    static enum VisibilityRule {

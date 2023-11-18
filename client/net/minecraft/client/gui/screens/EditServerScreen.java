@@ -29,12 +29,6 @@ public class EditServerScreen extends Screen {
    }
 
    @Override
-   public void tick() {
-      this.nameEdit.tick();
-      this.ipEdit.tick();
-   }
-
-   @Override
    protected void init() {
       this.nameEdit = new EditBox(this.font, this.width / 2 - 100, 66, 200, 20, Component.translatable("addServer.enterName"));
       this.nameEdit.setValue(this.serverData.name);
@@ -98,12 +92,11 @@ public class EditServerScreen extends Screen {
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
+      super.render(var1, var2, var3, var4);
       var1.drawCenteredString(this.font, this.title, this.width / 2, 17, 16777215);
-      var1.drawString(this.font, NAME_LABEL, this.width / 2 - 100, 53, 10526880);
-      var1.drawString(this.font, IP_LABEL, this.width / 2 - 100, 94, 10526880);
+      var1.drawString(this.font, NAME_LABEL, this.width / 2 - 100 + 1, 53, 10526880);
+      var1.drawString(this.font, IP_LABEL, this.width / 2 - 100 + 1, 94, 10526880);
       this.nameEdit.render(var1, var2, var3, var4);
       this.ipEdit.render(var1, var2, var3, var4);
-      super.render(var1, var2, var3, var4);
    }
 }

@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 
 public class WorldCreationTask extends LongRunningTask {
    private static final Logger LOGGER = LogUtils.getLogger();
+   private static final Component TITLE = Component.translatable("mco.create.world.wait");
    private final String name;
    private final String motd;
    private final long worldId;
@@ -24,18 +25,22 @@ public class WorldCreationTask extends LongRunningTask {
 
    @Override
    public void run() {
-      this.setTitle(Component.translatable("mco.create.world.wait"));
       RealmsClient var1 = RealmsClient.create();
 
       try {
          var1.initializeWorld(this.worldId, this.name, this.motd);
          setScreen(this.lastScreen);
       } catch (RealmsServiceException var3) {
-         LOGGER.error("Couldn't create world");
-         this.error(var3.toString());
+         LOGGER.error("Couldn't create world", var3);
+         this.error(var3);
       } catch (Exception var4) {
-         LOGGER.error("Could not create world");
-         this.error(var4.getLocalizedMessage());
+         LOGGER.error("Could not create world", var4);
+         this.error(var4);
       }
+   }
+
+   @Override
+   public Component getTitle() {
+      return TITLE;
    }
 }

@@ -3,9 +3,10 @@ package net.minecraft.advancements.critereon;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import java.util.Arrays;
+import java.util.Optional;
 import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.Criterion;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
@@ -21,24 +22,16 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.MatchTool;
 
 public class ItemUsedOnLocationTrigger extends SimpleCriterionTrigger<ItemUsedOnLocationTrigger.TriggerInstance> {
-   final ResourceLocation id;
-
-   public ItemUsedOnLocationTrigger(ResourceLocation var1) {
+   public ItemUsedOnLocationTrigger() {
       super();
-      this.id = var1;
    }
 
-   @Override
-   public ResourceLocation getId() {
-      return this.id;
-   }
-
-   public ItemUsedOnLocationTrigger.TriggerInstance createInstance(JsonObject var1, ContextAwarePredicate var2, DeserializationContext var3) {
-      ContextAwarePredicate var4 = ContextAwarePredicate.fromElement("location", var3, var1.get("location"), LootContextParamSets.ADVANCEMENT_LOCATION);
-      if (var4 == null) {
+   public ItemUsedOnLocationTrigger.TriggerInstance createInstance(JsonObject var1, Optional<ContextAwarePredicate> var2, DeserializationContext var3) {
+      Optional var4 = ContextAwarePredicate.fromElement("location", var3, var1.get("location"), LootContextParamSets.ADVANCEMENT_LOCATION);
+      if (var4.isEmpty()) {
          throw new JsonParseException("Failed to parse 'location' field");
       } else {
-         return new ItemUsedOnLocationTrigger.TriggerInstance(this.id, var2, var4);
+         return new ItemUsedOnLocationTrigger.TriggerInstance(var2, (Optional<ContextAwarePredicate>)var4.get());
       }
    }
 
@@ -51,54 +44,52 @@ public class ItemUsedOnLocationTrigger extends SimpleCriterionTrigger<ItemUsedOn
          .withParameter(LootContextParams.BLOCK_STATE, var5)
          .withParameter(LootContextParams.TOOL, var3)
          .create(LootContextParamSets.ADVANCEMENT_LOCATION);
-      LootContext var7 = new LootContext.Builder(var6).create(null);
+      LootContext var7 = new LootContext.Builder(var6).create(Optional.empty());
       this.trigger(var1, var1x -> var1x.matches(var7));
    }
 
    public static class TriggerInstance extends AbstractCriterionTriggerInstance {
-      private final ContextAwarePredicate location;
+      private final Optional<ContextAwarePredicate> location;
 
-      public TriggerInstance(ResourceLocation var1, ContextAwarePredicate var2, ContextAwarePredicate var3) {
-         super(var1, var2);
-         this.location = var3;
+      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ContextAwarePredicate> var2) {
+         super(var1);
+         this.location = var2;
       }
 
-      public static ItemUsedOnLocationTrigger.TriggerInstance placedBlock(Block var0) {
+      public static Criterion<ItemUsedOnLocationTrigger.TriggerInstance> placedBlock(Block var0) {
          ContextAwarePredicate var1 = ContextAwarePredicate.create(LootItemBlockStatePropertyCondition.hasBlockStateProperties(var0).build());
-         return new ItemUsedOnLocationTrigger.TriggerInstance(CriteriaTriggers.PLACED_BLOCK.id, ContextAwarePredicate.ANY, var1);
+         return CriteriaTriggers.PLACED_BLOCK.createCriterion(new ItemUsedOnLocationTrigger.TriggerInstance(Optional.empty(), Optional.of(var1)));
       }
 
-      public static ItemUsedOnLocationTrigger.TriggerInstance placedBlock(LootItemCondition.Builder... var0) {
+      public static Criterion<ItemUsedOnLocationTrigger.TriggerInstance> placedBlock(LootItemCondition.Builder... var0) {
          ContextAwarePredicate var1 = ContextAwarePredicate.create(
             Arrays.stream(var0).map(LootItemCondition.Builder::build).toArray(var0x -> new LootItemCondition[var0x])
          );
-         return new ItemUsedOnLocationTrigger.TriggerInstance(CriteriaTriggers.PLACED_BLOCK.id, ContextAwarePredicate.ANY, var1);
+         return CriteriaTriggers.PLACED_BLOCK.createCriterion(new ItemUsedOnLocationTrigger.TriggerInstance(Optional.empty(), Optional.of(var1)));
       }
 
-      private static ItemUsedOnLocationTrigger.TriggerInstance itemUsedOnLocation(
-         LocationPredicate.Builder var0, ItemPredicate.Builder var1, ResourceLocation var2
-      ) {
-         ContextAwarePredicate var3 = ContextAwarePredicate.create(LocationCheck.checkLocation(var0).build(), MatchTool.toolMatches(var1).build());
-         return new ItemUsedOnLocationTrigger.TriggerInstance(var2, ContextAwarePredicate.ANY, var3);
+      private static ItemUsedOnLocationTrigger.TriggerInstance itemUsedOnLocation(LocationPredicate.Builder var0, ItemPredicate.Builder var1) {
+         ContextAwarePredicate var2 = ContextAwarePredicate.create(LocationCheck.checkLocation(var0).build(), MatchTool.toolMatches(var1).build());
+         return new ItemUsedOnLocationTrigger.TriggerInstance(Optional.empty(), Optional.of(var2));
       }
 
-      public static ItemUsedOnLocationTrigger.TriggerInstance itemUsedOnBlock(LocationPredicate.Builder var0, ItemPredicate.Builder var1) {
-         return itemUsedOnLocation(var0, var1, CriteriaTriggers.ITEM_USED_ON_BLOCK.id);
+      public static Criterion<ItemUsedOnLocationTrigger.TriggerInstance> itemUsedOnBlock(LocationPredicate.Builder var0, ItemPredicate.Builder var1) {
+         return CriteriaTriggers.ITEM_USED_ON_BLOCK.createCriterion(itemUsedOnLocation(var0, var1));
       }
 
-      public static ItemUsedOnLocationTrigger.TriggerInstance allayDropItemOnBlock(LocationPredicate.Builder var0, ItemPredicate.Builder var1) {
-         return itemUsedOnLocation(var0, var1, CriteriaTriggers.ALLAY_DROP_ITEM_ON_BLOCK.id);
+      public static Criterion<ItemUsedOnLocationTrigger.TriggerInstance> allayDropItemOnBlock(LocationPredicate.Builder var0, ItemPredicate.Builder var1) {
+         return CriteriaTriggers.ALLAY_DROP_ITEM_ON_BLOCK.createCriterion(itemUsedOnLocation(var0, var1));
       }
 
       public boolean matches(LootContext var1) {
-         return this.location.matches(var1);
+         return this.location.isEmpty() || this.location.get().matches(var1);
       }
 
       @Override
-      public JsonObject serializeToJson(SerializationContext var1) {
-         JsonObject var2 = super.serializeToJson(var1);
-         var2.add("location", this.location.toJson(var1));
-         return var2;
+      public JsonObject serializeToJson() {
+         JsonObject var1 = super.serializeToJson();
+         this.location.ifPresent(var1x -> var1.add("location", var1x.toJson()));
+         return var1;
       }
    }
 }

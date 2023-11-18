@@ -19,6 +19,7 @@ import net.minecraft.commands.CommandFunction;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.FunctionInstantiationException;
 import net.minecraft.commands.arguments.item.FunctionArgument;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -100,21 +101,26 @@ public class DebugCommand {
             for(CommandFunction var9 : var1) {
                var7.println(var9.getId());
                DebugCommand.Tracer var10 = new DebugCommand.Tracer(var7);
-               var2 += var0.getServer().getFunctions().execute(var9, var0.withSource(var10).withMaximumPermission(2), var10);
+
+               try {
+                  var2 += var0.getServer().getFunctions().execute(var9, var0.withSource(var10).withMaximumPermission(2), var10, null);
+               } catch (FunctionInstantiationException var13) {
+                  var0.sendFailure(var13.messageComponent());
+               }
             }
          }
-      } catch (IOException | UncheckedIOException var13) {
-         LOGGER.warn("Tracing failed", var13);
+      } catch (IOException | UncheckedIOException var15) {
+         LOGGER.warn("Tracing failed", var15);
          var0.sendFailure(Component.translatable("commands.debug.function.traceFailed"));
       }
 
-      int var14 = var2;
+      int var16 = var2;
       if (var1.size() == 1) {
          var0.sendSuccess(
-            () -> Component.translatable("commands.debug.function.success.single", var14, ((CommandFunction)var1.iterator().next()).getId(), var4), true
+            () -> Component.translatable("commands.debug.function.success.single", var16, ((CommandFunction)var1.iterator().next()).getId(), var4), true
          );
       } else {
-         var0.sendSuccess(() -> Component.translatable("commands.debug.function.success.multiple", var14, var1.size(), var4), true);
+         var0.sendSuccess(() -> Component.translatable("commands.debug.function.success.multiple", var16, var1.size(), var4), true);
       }
 
       return var2;

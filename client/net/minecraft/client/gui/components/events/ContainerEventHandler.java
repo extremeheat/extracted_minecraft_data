@@ -63,8 +63,8 @@ public interface ContainerEventHandler extends GuiEventListener {
    void setDragging(boolean var1);
 
    @Override
-   default boolean mouseScrolled(double var1, double var3, double var5) {
-      return this.getChildAt(var1, var3).filter(var6 -> var6.mouseScrolled(var1, var3, var5)).isPresent();
+   default boolean mouseScrolled(double var1, double var3, double var5, double var7) {
+      return this.getChildAt(var1, var3).filter(var8 -> var8.mouseScrolled(var1, var3, var5, var7)).isPresent();
    }
 
    @Override

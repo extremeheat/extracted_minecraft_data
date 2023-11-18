@@ -14,15 +14,12 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
 public class LanguageSelectScreen extends OptionsSubScreen {
-   private static final Component WARNING_LABEL = Component.literal("(")
-      .append(Component.translatable("options.languageWarning"))
-      .append(")")
-      .withStyle(ChatFormatting.GRAY);
+   private static final Component WARNING_LABEL = Component.translatable("options.languageAccuracyWarning").withStyle(ChatFormatting.GRAY);
    private LanguageSelectScreen.LanguageSelectionList packSelectionList;
    final LanguageManager languageManager;
 
    public LanguageSelectScreen(Screen var1, Options var2, LanguageManager var3) {
-      super(var1, var2, Component.translatable("options.language"));
+      super(var1, var2, Component.translatable("options.language.title"));
       this.languageManager = var3;
    }
 
@@ -65,10 +62,15 @@ public class LanguageSelectScreen extends OptionsSubScreen {
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
+      super.render(var1, var2, var3, var4);
       this.packSelectionList.render(var1, var2, var3, var4);
       var1.drawCenteredString(this.font, this.title, this.width / 2, 16, 16777215);
-      var1.drawCenteredString(this.font, WARNING_LABEL, this.width / 2, this.height - 56, 8421504);
-      super.render(var1, var2, var3, var4);
+      var1.drawCenteredString(this.font, WARNING_LABEL, this.width / 2, this.height - 56, -8355712);
+   }
+
+   @Override
+   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
+      this.renderDirtBackground(var1);
    }
 
    class LanguageSelectionList extends ObjectSelectionList<LanguageSelectScreen.LanguageSelectionList.Entry> {
@@ -97,11 +99,6 @@ public class LanguageSelectScreen extends OptionsSubScreen {
          return super.getRowWidth() + 50;
       }
 
-      @Override
-      protected void renderBackground(GuiGraphics var1) {
-         LanguageSelectScreen.this.renderBackground(var1);
-      }
-
       public class Entry extends ObjectSelectionList.Entry<LanguageSelectScreen.LanguageSelectionList.Entry> {
          final String code;
          private final Component language;
@@ -120,18 +117,13 @@ public class LanguageSelectScreen extends OptionsSubScreen {
 
          @Override
          public boolean mouseClicked(double var1, double var3, int var5) {
-            if (var5 == 0) {
-               this.select();
-               if (Util.getMillis() - this.lastClickTime < 250L) {
-                  LanguageSelectScreen.this.onDone();
-               }
-
-               this.lastClickTime = Util.getMillis();
-               return true;
-            } else {
-               this.lastClickTime = Util.getMillis();
-               return false;
+            this.select();
+            if (Util.getMillis() - this.lastClickTime < 250L) {
+               LanguageSelectScreen.this.onDone();
             }
+
+            this.lastClickTime = Util.getMillis();
+            return true;
          }
 
          void select() {

@@ -264,7 +264,6 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.SCULK_VEIN, var3);
       var0.put(Blocks.SCULK_SHRIEKER, var3);
       var0.put(Blocks.MANGROVE_PROPAGULE, var3);
-      var0.put(Blocks.MANGROVE_LOG, var3);
       var0.put(Blocks.FROGSPAWN, var3);
       RenderType var4 = RenderType.translucent();
       var0.put(Blocks.ICE, var4);

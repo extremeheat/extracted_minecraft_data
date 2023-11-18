@@ -92,6 +92,10 @@ public class Mth {
       return Math.min(Math.max(var0, var1), var2);
    }
 
+   public static long clamp(long var0, long var2, long var4) {
+      return Math.min(Math.max(var0, var2), var4);
+   }
+
    public static float clamp(float var0, float var1, float var2) {
       return var0 < var1 ? var1 : Math.min(var0, var2);
    }
@@ -489,6 +493,11 @@ public class Mth {
       return var1 + floor(var0 * (float)(var2 - var1));
    }
 
+   public static int lerpDiscrete(float var0, int var1, int var2) {
+      int var3 = var2 - var1;
+      return var1 + floor(var0 * (float)(var3 - 1)) + (var0 > 0.0F ? 1 : 0);
+   }
+
    public static float lerp(float var0, float var1, float var2) {
       return var1 + var0 * (var2 - var1);
    }
@@ -535,6 +544,10 @@ public class Mth {
 
    public static float rotLerp(float var0, float var1, float var2) {
       return var1 + var0 * wrapDegrees(var2 - var1);
+   }
+
+   public static double rotLerp(double var0, double var2, double var4) {
+      return var2 + var0 * wrapDegrees(var4 - var2);
    }
 
    public static float triangleWave(float var0, float var1) {

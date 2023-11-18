@@ -14,6 +14,7 @@ import net.minecraft.commands.CommandSigningContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.selector.EntitySelector;
 import net.minecraft.commands.arguments.selector.EntitySelectorParser;
+import net.minecraft.network.chat.ChatDecorator;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.PlayerChatMessage;
@@ -53,17 +54,17 @@ public class MessageArgument implements SignedArgument<MessageArgument.Message> 
    private static void resolveSignedMessage(Consumer<PlayerChatMessage> var0, CommandSourceStack var1, PlayerChatMessage var2) {
       MinecraftServer var3 = var1.getServer();
       CompletableFuture var4 = filterPlainText(var1, var2);
-      CompletableFuture var5 = var3.getChatDecorator().decorate(var1.getPlayer(), var2.decoratedContent());
-      var1.getChatMessageChainer().append(var4x -> CompletableFuture.allOf(var4, var5).thenAcceptAsync(var4xx -> {
-            PlayerChatMessage var5x = var2.withUnsignedContent((Component)var5.join()).filter(((FilteredText)var4.join()).mask());
-            var0.accept(var5x);
+      Component var5 = var3.getChatDecorator().decorate(var1.getPlayer(), var2.decoratedContent());
+      var1.getChatMessageChainer().append(var4x -> var4.thenAcceptAsync(var3xx -> {
+            PlayerChatMessage var4xx = var2.withUnsignedContent(var5).filter(var3xx.mask());
+            var0.accept(var4xx);
          }, var4x));
    }
 
    private static void resolveDisguisedMessage(Consumer<PlayerChatMessage> var0, CommandSourceStack var1, PlayerChatMessage var2) {
-      MinecraftServer var3 = var1.getServer();
-      CompletableFuture var4 = var3.getChatDecorator().decorate(var1.getPlayer(), var2.decoratedContent());
-      var1.getChatMessageChainer().append(var3x -> var4.thenAcceptAsync(var2xx -> var0.accept(var2.withUnsignedContent(var2xx)), var3x));
+      ChatDecorator var3 = var1.getServer().getChatDecorator();
+      Component var4 = var3.decorate(var1.getPlayer(), var2.decoratedContent());
+      var0.accept(var2.withUnsignedContent(var4));
    }
 
    private static CompletableFuture<FilteredText> filterPlainText(CommandSourceStack var0, PlayerChatMessage var1) {

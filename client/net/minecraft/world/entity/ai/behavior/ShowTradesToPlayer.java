@@ -31,7 +31,7 @@ public class ShowTradesToPlayer extends Behavior<Villager> {
 
    public boolean checkExtraStartConditions(ServerLevel var1, Villager var2) {
       Brain var3 = var2.getBrain();
-      if (!var3.getMemory(MemoryModuleType.INTERACTION_TARGET).isPresent()) {
+      if (var3.getMemory(MemoryModuleType.INTERACTION_TARGET).isEmpty()) {
          return false;
       } else {
          LivingEntity var4 = var3.getMemory(MemoryModuleType.INTERACTION_TARGET).get();
@@ -96,7 +96,7 @@ public class ShowTradesToPlayer extends Behavior<Villager> {
    private void updateDisplayItems(Villager var1) {
       for(MerchantOffer var3 : var1.getOffers()) {
          if (!var3.isOutOfStock() && this.playerItemStackMatchesCostOfOffer(var3)) {
-            this.displayItems.add(var3.getResult());
+            this.displayItems.add(var3.assemble());
          }
       }
    }

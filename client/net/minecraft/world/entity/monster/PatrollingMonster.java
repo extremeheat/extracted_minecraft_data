@@ -60,11 +60,6 @@ public abstract class PatrollingMonster extends Monster {
       this.patrolling = var1.getBoolean("Patrolling");
    }
 
-   @Override
-   public double getMyRidingOffset() {
-      return -0.45;
-   }
-
    public boolean canBeLeader() {
       return true;
    }
@@ -163,7 +158,7 @@ public abstract class PatrollingMonster extends Monster {
       @Override
       public boolean canUse() {
          boolean var1 = this.mob.level().getGameTime() < this.cooldownUntil;
-         return this.mob.isPatrolling() && this.mob.getTarget() == null && !this.mob.isVehicle() && this.mob.hasPatrolTarget() && !var1;
+         return this.mob.isPatrolling() && this.mob.getTarget() == null && !this.mob.hasControllingPassenger() && this.mob.hasPatrolTarget() && !var1;
       }
 
       @Override

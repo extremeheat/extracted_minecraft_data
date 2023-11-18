@@ -16,6 +16,7 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.WorldStem;
 import net.minecraft.util.Mth;
@@ -92,7 +93,7 @@ public class OptimizeWorldScreen extends Screen {
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
+      super.render(var1, var2, var3, var4);
       var1.drawCenteredString(this.font, this.title, this.width / 2, 20, 16777215);
       int var5 = this.width / 2 - 150;
       int var6 = this.width / 2 + 150;
@@ -113,10 +114,10 @@ public class OptimizeWorldScreen extends Screen {
          }
 
          int var13 = this.upgrader.getConverted() + this.upgrader.getSkipped();
-         var1.drawCenteredString(this.font, var13 + " / " + this.upgrader.getTotalChunks(), this.width / 2, var7 + 2 * 9 + 2, 10526880);
-         var1.drawCenteredString(this.font, Mth.floor(this.upgrader.getProgress() * 100.0F) + "%", this.width / 2, var7 + (var8 - var7) / 2 - 9 / 2, 10526880);
+         MutableComponent var14 = Component.translatable("optimizeWorld.progress.counter", var13, this.upgrader.getTotalChunks());
+         MutableComponent var15 = Component.translatable("optimizeWorld.progress.percentage", Mth.floor(this.upgrader.getProgress() * 100.0F));
+         var1.drawCenteredString(this.font, var14, this.width / 2, var7 + 2 * 9 + 2, 10526880);
+         var1.drawCenteredString(this.font, var15, this.width / 2, var7 + (var8 - var7) / 2 - 9 / 2, 10526880);
       }
-
-      super.render(var1, var2, var3, var4);
    }
 }

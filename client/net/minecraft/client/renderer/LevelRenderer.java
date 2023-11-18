@@ -2,7 +2,6 @@ package net.minecraft.client.renderer;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
 import com.google.gson.JsonSyntaxException;
 import com.mojang.blaze3d.pipeline.RenderTarget;
@@ -31,23 +30,13 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import java.io.IOException;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Queue;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
@@ -64,8 +53,8 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
-import net.minecraft.client.renderer.chunk.ChunkRenderDispatcher;
 import net.minecraft.client.renderer.chunk.RenderRegionCache;
+import net.minecraft.client.renderer.chunk.SectionRenderDispatcher;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.texture.TextureAtlas;
@@ -85,7 +74,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.BlockDestructionProgress;
-import net.minecraft.server.level.ChunkMap;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.sounds.SoundEvent;
@@ -108,6 +96,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.RecordItem;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.biome.Biome;
@@ -143,16 +132,13 @@ import org.slf4j.Logger;
 
 public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseable {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final int CHUNK_SIZE = 16;
-   private static final int HALF_CHUNK_SIZE = 8;
+   public static final int SECTION_SIZE = 16;
+   public static final int HALF_SECTION_SIZE = 8;
    private static final float SKY_DISC_RADIUS = 512.0F;
-   private static final int MINIMUM_ADVANCED_CULLING_DISTANCE = 60;
-   private static final double CEILED_SECTION_DIAGONAL = Math.ceil(Math.sqrt(3.0) * 16.0);
    private static final int MIN_FOG_DISTANCE = 32;
    private static final int RAIN_RADIUS = 10;
    private static final int RAIN_DIAMETER = 21;
    private static final int TRANSPARENT_SORT_COUNT = 15;
-   private static final int HALF_A_SECOND_IN_MILLIS = 500;
    private static final ResourceLocation MOON_LOCATION = new ResourceLocation("textures/environment/moon_phases.png");
    private static final ResourceLocation SUN_LOCATION = new ResourceLocation("textures/environment/sun.png");
    private static final ResourceLocation CLOUDS_LOCATION = new ResourceLocation("textures/environment/clouds.png");
@@ -167,12 +153,9 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
    private final RenderBuffers renderBuffers;
    @Nullable
    private ClientLevel level;
-   private final BlockingQueue<ChunkRenderDispatcher.RenderChunk> recentlyCompiledChunks = new LinkedBlockingQueue<>();
-   private final AtomicReference<LevelRenderer.RenderChunkStorage> renderChunkStorage = new AtomicReference<>();
-   private final ObjectArrayList<LevelRenderer.RenderChunkInfo> renderChunksInFrustum = new ObjectArrayList(10000);
+   private final SectionOcclusionGraph sectionOcclusionGraph = new SectionOcclusionGraph();
+   private final ObjectArrayList<SectionRenderDispatcher.RenderSection> visibleSections = new ObjectArrayList(10000);
    private final Set<BlockEntity> globalBlockEntities = Sets.newHashSet();
-   @Nullable
-   private Future<?> lastFullRenderChunkUpdate;
    @Nullable
    private ViewArea viewArea;
    @Nullable
@@ -205,12 +188,9 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
    private RenderTarget cloudsTarget;
    @Nullable
    private PostChain transparencyChain;
-   private double lastCameraX = 4.9E-324;
-   private double lastCameraY = 4.9E-324;
-   private double lastCameraZ = 4.9E-324;
-   private int lastCameraChunkX = -2147483648;
-   private int lastCameraChunkY = -2147483648;
-   private int lastCameraChunkZ = -2147483648;
+   private int lastCameraSectionX = -2147483648;
+   private int lastCameraSectionY = -2147483648;
+   private int lastCameraSectionZ = -2147483648;
    private double prevCamX = 4.9E-324;
    private double prevCamY = 4.9E-324;
    private double prevCamZ = 4.9E-324;
@@ -223,7 +203,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
    @Nullable
    private CloudStatus prevCloudsType;
    @Nullable
-   private ChunkRenderDispatcher chunkRenderDispatcher;
+   private SectionRenderDispatcher sectionRenderDispatcher;
    private int lastViewDistance = -1;
    private int renderedEntities;
    private int culledEntities;
@@ -236,9 +216,6 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
    private double xTransparentOld;
    private double yTransparentOld;
    private double zTransparentOld;
-   private boolean needsFullRenderChunkUpdate = true;
-   private final AtomicLong nextFullUpdateMillis = new AtomicLong(0L);
-   private final AtomicBoolean needsFrustumUpdate = new AtomicBoolean(false);
    private int rainSoundTime;
    private final float[] rainSizeX = new float[1024];
    private final float[] rainSizeZ = new float[1024];
@@ -532,7 +509,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          if (this.minecraft.getResourcePackRepository().getSelectedIds().size() > 1) {
             Component var6 = this.minecraft.getResourceManager().listPacks().findFirst().map(var0 -> Component.literal(var0.packId())).orElse(null);
             this.minecraft.options.graphicsMode().set(GraphicsStatus.FANCY);
-            this.minecraft.clearResourcePacksOnError(var5, var6);
+            this.minecraft.clearResourcePacksOnError(var5, var6, null);
          } else {
             CrashReport var12 = this.minecraft.fillReport(new CrashReport(var4, var5));
             this.minecraft.options.graphicsMode().set(GraphicsStatus.FANCY);
@@ -685,12 +662,9 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
    }
 
    public void setLevel(@Nullable ClientLevel var1) {
-      this.lastCameraX = 4.9E-324;
-      this.lastCameraY = 4.9E-324;
-      this.lastCameraZ = 4.9E-324;
-      this.lastCameraChunkX = -2147483648;
-      this.lastCameraChunkY = -2147483648;
-      this.lastCameraChunkZ = -2147483648;
+      this.lastCameraSectionX = -2147483648;
+      this.lastCameraSectionY = -2147483648;
+      this.lastCameraSectionZ = -2147483648;
       this.entityRenderDispatcher.setLevel(var1);
       this.level = var1;
       if (var1 != null) {
@@ -701,14 +675,14 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
             this.viewArea = null;
          }
 
-         if (this.chunkRenderDispatcher != null) {
-            this.chunkRenderDispatcher.dispose();
+         if (this.sectionRenderDispatcher != null) {
+            this.sectionRenderDispatcher.dispose();
          }
 
-         this.chunkRenderDispatcher = null;
+         this.sectionRenderDispatcher = null;
          this.globalBlockEntities.clear();
-         this.renderChunkStorage.set(null);
-         this.renderChunksInFrustum.clear();
+         this.sectionOcclusionGraph.waitAndReset(null);
+         this.visibleSections.clear();
       }
    }
 
@@ -724,43 +698,32 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       if (this.level != null) {
          this.graphicsChanged();
          this.level.clearTintCaches();
-         if (this.chunkRenderDispatcher == null) {
-            this.chunkRenderDispatcher = new ChunkRenderDispatcher(
+         if (this.sectionRenderDispatcher == null) {
+            this.sectionRenderDispatcher = new SectionRenderDispatcher(
                this.level, this, Util.backgroundExecutor(), this.minecraft.is64Bit(), this.renderBuffers.fixedBufferPack()
             );
          } else {
-            this.chunkRenderDispatcher.setLevel(this.level);
+            this.sectionRenderDispatcher.setLevel(this.level);
          }
 
-         this.needsFullRenderChunkUpdate = true;
          this.generateClouds = true;
-         this.recentlyCompiledChunks.clear();
          ItemBlockRenderTypes.setFancy(Minecraft.useFancyGraphics());
          this.lastViewDistance = this.minecraft.options.getEffectiveRenderDistance();
          if (this.viewArea != null) {
             this.viewArea.releaseAllBuffers();
          }
 
-         this.chunkRenderDispatcher.blockUntilClear();
+         this.sectionRenderDispatcher.blockUntilClear();
          synchronized(this.globalBlockEntities) {
             this.globalBlockEntities.clear();
          }
 
-         this.viewArea = new ViewArea(this.chunkRenderDispatcher, this.level, this.minecraft.options.getEffectiveRenderDistance(), this);
-         if (this.lastFullRenderChunkUpdate != null) {
-            try {
-               this.lastFullRenderChunkUpdate.get();
-               this.lastFullRenderChunkUpdate = null;
-            } catch (Exception var3) {
-               LOGGER.warn("Full update failed", var3);
-            }
-         }
-
-         this.renderChunkStorage.set(new LevelRenderer.RenderChunkStorage(this.viewArea.chunks.length));
-         this.renderChunksInFrustum.clear();
-         Entity var5 = this.minecraft.getCameraEntity();
-         if (var5 != null) {
-            this.viewArea.repositionCamera(var5.getX(), var5.getZ());
+         this.viewArea = new ViewArea(this.sectionRenderDispatcher, this.level, this.minecraft.options.getEffectiveRenderDistance(), this);
+         this.sectionOcclusionGraph.waitAndReset(this.viewArea);
+         this.visibleSections.clear();
+         Entity var4 = this.minecraft.getCameraEntity();
+         if (var4 != null) {
+            this.viewArea.repositionCamera(var4.getX(), var4.getZ());
          }
       }
    }
@@ -776,9 +739,9 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       }
    }
 
-   public String getChunkStatistics() {
-      int var1 = this.viewArea.chunks.length;
-      int var2 = this.countRenderedChunks();
+   public String getSectionStatistics() {
+      int var1 = this.viewArea.sections.length;
+      int var2 = this.countRenderedSections();
       return String.format(
          Locale.ROOT,
          "C: %d/%d %sD: %d, %s",
@@ -786,29 +749,29 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          var1,
          this.minecraft.smartCull ? "(s) " : "",
          this.lastViewDistance,
-         this.chunkRenderDispatcher == null ? "null" : this.chunkRenderDispatcher.getStats()
+         this.sectionRenderDispatcher == null ? "null" : this.sectionRenderDispatcher.getStats()
       );
    }
 
-   public ChunkRenderDispatcher getChunkRenderDispatcher() {
-      return this.chunkRenderDispatcher;
+   public SectionRenderDispatcher getSectionRenderDispatcher() {
+      return this.sectionRenderDispatcher;
    }
 
-   public double getTotalChunks() {
-      return (double)this.viewArea.chunks.length;
+   public double getTotalSections() {
+      return (double)this.viewArea.sections.length;
    }
 
    public double getLastViewDistance() {
       return (double)this.lastViewDistance;
    }
 
-   public int countRenderedChunks() {
+   public int countRenderedSections() {
       int var1 = 0;
-      ObjectListIterator var2 = this.renderChunksInFrustum.iterator();
+      ObjectListIterator var2 = this.visibleSections.iterator();
 
       while(var2.hasNext()) {
-         LevelRenderer.RenderChunkInfo var3 = (LevelRenderer.RenderChunkInfo)var2.next();
-         if (!var3.chunk.getCompiledChunk().hasNoRenderableLayers()) {
+         SectionRenderDispatcher.RenderSection var3 = (SectionRenderDispatcher.RenderSection)var2.next();
+         if (!var3.getCompiled().hasNoRenderableLayers()) {
             ++var1;
          }
       }
@@ -840,85 +803,54 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       int var12 = SectionPos.posToSectionCoord(var6);
       int var13 = SectionPos.posToSectionCoord(var8);
       int var14 = SectionPos.posToSectionCoord(var10);
-      if (this.lastCameraChunkX != var12 || this.lastCameraChunkY != var13 || this.lastCameraChunkZ != var14) {
-         this.lastCameraX = var6;
-         this.lastCameraY = var8;
-         this.lastCameraZ = var10;
-         this.lastCameraChunkX = var12;
-         this.lastCameraChunkY = var13;
-         this.lastCameraChunkZ = var14;
+      if (this.lastCameraSectionX != var12 || this.lastCameraSectionY != var13 || this.lastCameraSectionZ != var14) {
+         this.lastCameraSectionX = var12;
+         this.lastCameraSectionY = var13;
+         this.lastCameraSectionZ = var14;
          this.viewArea.repositionCamera(var6, var10);
       }
 
-      this.chunkRenderDispatcher.setCamera(var5);
+      this.sectionRenderDispatcher.setCamera(var5);
       this.level.getProfiler().popPush("cull");
       this.minecraft.getProfiler().popPush("culling");
       BlockPos var15 = var1.getBlockPosition();
       double var16 = Math.floor(var5.x / 8.0);
       double var18 = Math.floor(var5.y / 8.0);
       double var20 = Math.floor(var5.z / 8.0);
-      this.needsFullRenderChunkUpdate = this.needsFullRenderChunkUpdate || var16 != this.prevCamX || var18 != this.prevCamY || var20 != this.prevCamZ;
-      this.nextFullUpdateMillis.updateAndGet(var1x -> {
-         if (var1x > 0L && System.currentTimeMillis() > var1x) {
-            this.needsFullRenderChunkUpdate = true;
-            return 0L;
-         } else {
-            return var1x;
-         }
-      });
+      if (var16 != this.prevCamX || var18 != this.prevCamY || var20 != this.prevCamZ) {
+         this.sectionOcclusionGraph.invalidate();
+      }
+
       this.prevCamX = var16;
       this.prevCamY = var18;
       this.prevCamZ = var20;
       this.minecraft.getProfiler().popPush("update");
-      boolean var22 = this.minecraft.smartCull;
-      if (var4 && this.level.getBlockState(var15).isSolidRender(this.level, var15)) {
-         var22 = false;
-      }
-
       if (!var3) {
-         if (this.needsFullRenderChunkUpdate && (this.lastFullRenderChunkUpdate == null || this.lastFullRenderChunkUpdate.isDone())) {
-            this.minecraft.getProfiler().push("full_update_schedule");
-            this.needsFullRenderChunkUpdate = false;
-            boolean var23 = var22;
-            this.lastFullRenderChunkUpdate = Util.backgroundExecutor().submit(() -> {
-               ArrayDeque var4x = Queues.newArrayDeque();
-               this.initializeQueueForFullUpdate(var1, var4x);
-               LevelRenderer.RenderChunkStorage var5x = new LevelRenderer.RenderChunkStorage(this.viewArea.chunks.length);
-               this.updateRenderChunks(var5x.renderChunks, var5x.renderInfoMap, var5, var4x, var23);
-               this.renderChunkStorage.set(var5x);
-               this.needsFrustumUpdate.set(true);
-            });
-            this.minecraft.getProfiler().pop();
+         boolean var22 = this.minecraft.smartCull;
+         if (var4 && this.level.getBlockState(var15).isSolidRender(this.level, var15)) {
+            var22 = false;
          }
 
-         LevelRenderer.RenderChunkStorage var28 = this.renderChunkStorage.get();
-         if (!this.recentlyCompiledChunks.isEmpty()) {
-            this.minecraft.getProfiler().push("partial_update");
-            ArrayDeque var24 = Queues.newArrayDeque();
-
-            while(!this.recentlyCompiledChunks.isEmpty()) {
-               ChunkRenderDispatcher.RenderChunk var25 = this.recentlyCompiledChunks.poll();
-               LevelRenderer.RenderChunkInfo var26 = var28.renderInfoMap.get(var25);
-               if (var26 != null && var26.chunk == var25) {
-                  var24.add(var26);
-               }
-            }
-
-            this.updateRenderChunks(var28.renderChunks, var28.renderInfoMap, var5, var24, var22);
-            this.needsFrustumUpdate.set(true);
-            this.minecraft.getProfiler().pop();
-         }
-
-         double var29 = Math.floor((double)(var1.getXRot() / 2.0F));
-         double var30 = Math.floor((double)(var1.getYRot() / 2.0F));
-         if (this.needsFrustumUpdate.compareAndSet(true, false) || var29 != this.prevCamRotX || var30 != this.prevCamRotY) {
-            this.applyFrustum(new Frustum(var2).offsetToFullyIncludeCameraCube(8));
-            this.prevCamRotX = var29;
-            this.prevCamRotY = var30;
+         Entity.setViewScale(
+            Mth.clamp((double)this.minecraft.options.getEffectiveRenderDistance() / 8.0, 1.0, 2.5) * this.minecraft.options.entityDistanceScaling().get()
+         );
+         this.minecraft.getProfiler().push("section_occlusion_graph");
+         this.sectionOcclusionGraph.update(var22, var1, var2, this.visibleSections);
+         this.minecraft.getProfiler().pop();
+         double var23 = Math.floor((double)(var1.getXRot() / 2.0F));
+         double var25 = Math.floor((double)(var1.getYRot() / 2.0F));
+         if (this.sectionOcclusionGraph.consumeFrustumUpdate() || var23 != this.prevCamRotX || var25 != this.prevCamRotY) {
+            this.applyFrustum(offsetFrustum(var2));
+            this.prevCamRotX = var23;
+            this.prevCamRotY = var25;
          }
       }
 
       this.minecraft.getProfiler().pop();
+   }
+
+   public static Frustum offsetFrustum(Frustum var0) {
+      return new Frustum(var0).offsetToFullyIncludeCameraCube(8);
    }
 
    private void applyFrustum(Frustum var1) {
@@ -926,156 +858,14 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          throw new IllegalStateException("applyFrustum called from wrong thread: " + Thread.currentThread().getName());
       } else {
          this.minecraft.getProfiler().push("apply_frustum");
-         this.renderChunksInFrustum.clear();
-
-         for(LevelRenderer.RenderChunkInfo var3 : this.renderChunkStorage.get().renderChunks) {
-            if (var1.isVisible(var3.chunk.getBoundingBox())) {
-               this.renderChunksInFrustum.add(var3);
-            }
-         }
-
+         this.visibleSections.clear();
+         this.sectionOcclusionGraph.addSectionsInFrustum(var1, this.visibleSections);
          this.minecraft.getProfiler().pop();
       }
    }
 
-   private void initializeQueueForFullUpdate(Camera var1, Queue<LevelRenderer.RenderChunkInfo> var2) {
-      boolean var3 = true;
-      Vec3 var4 = var1.getPosition();
-      BlockPos var5 = var1.getBlockPosition();
-      ChunkRenderDispatcher.RenderChunk var6 = this.viewArea.getRenderChunkAt(var5);
-      if (var6 == null) {
-         boolean var7 = var5.getY() > this.level.getMinBuildHeight();
-         int var8 = var7 ? this.level.getMaxBuildHeight() - 8 : this.level.getMinBuildHeight() + 8;
-         int var9 = Mth.floor(var4.x / 16.0) * 16;
-         int var10 = Mth.floor(var4.z / 16.0) * 16;
-         ArrayList var11 = Lists.newArrayList();
-
-         for(int var12 = -this.lastViewDistance; var12 <= this.lastViewDistance; ++var12) {
-            for(int var13 = -this.lastViewDistance; var13 <= this.lastViewDistance; ++var13) {
-               ChunkRenderDispatcher.RenderChunk var14 = this.viewArea
-                  .getRenderChunkAt(new BlockPos(var9 + SectionPos.sectionToBlockCoord(var12, 8), var8, var10 + SectionPos.sectionToBlockCoord(var13, 8)));
-               if (var14 != null) {
-                  var11.add(new LevelRenderer.RenderChunkInfo(var14, null, 0));
-               }
-            }
-         }
-
-         var11.sort(Comparator.comparingDouble(var1x -> var5.distSqr(var1x.chunk.getOrigin().offset(8, 8, 8))));
-         var2.addAll(var11);
-      } else {
-         var2.add(new LevelRenderer.RenderChunkInfo(var6, null, 0));
-      }
-   }
-
-   public void addRecentlyCompiledChunk(ChunkRenderDispatcher.RenderChunk var1) {
-      this.recentlyCompiledChunks.add(var1);
-   }
-
-   private void updateRenderChunks(
-      LinkedHashSet<LevelRenderer.RenderChunkInfo> var1, LevelRenderer.RenderInfoMap var2, Vec3 var3, Queue<LevelRenderer.RenderChunkInfo> var4, boolean var5
-   ) {
-      boolean var6 = true;
-      BlockPos var7 = new BlockPos(Mth.floor(var3.x / 16.0) * 16, Mth.floor(var3.y / 16.0) * 16, Mth.floor(var3.z / 16.0) * 16);
-      BlockPos var8 = var7.offset(8, 8, 8);
-      Entity.setViewScale(
-         Mth.clamp((double)this.minecraft.options.getEffectiveRenderDistance() / 8.0, 1.0, 2.5) * this.minecraft.options.entityDistanceScaling().get()
-      );
-
-      while(!var4.isEmpty()) {
-         LevelRenderer.RenderChunkInfo var9 = (LevelRenderer.RenderChunkInfo)var4.poll();
-         ChunkRenderDispatcher.RenderChunk var10 = var9.chunk;
-         var1.add(var9);
-         boolean var11 = Math.abs(var10.getOrigin().getX() - var7.getX()) > 60
-            || Math.abs(var10.getOrigin().getY() - var7.getY()) > 60
-            || Math.abs(var10.getOrigin().getZ() - var7.getZ()) > 60;
-
-         for(Direction var15 : DIRECTIONS) {
-            ChunkRenderDispatcher.RenderChunk var16 = this.getRelativeFrom(var7, var10, var15);
-            if (var16 != null && (!var5 || !var9.hasDirection(var15.getOpposite()))) {
-               if (var5 && var9.hasSourceDirections()) {
-                  ChunkRenderDispatcher.CompiledChunk var17 = var10.getCompiledChunk();
-                  boolean var18 = false;
-
-                  for(int var19 = 0; var19 < DIRECTIONS.length; ++var19) {
-                     if (var9.hasSourceDirection(var19) && var17.facesCanSeeEachother(DIRECTIONS[var19].getOpposite(), var15)) {
-                        var18 = true;
-                        break;
-                     }
-                  }
-
-                  if (!var18) {
-                     continue;
-                  }
-               }
-
-               if (var5 && var11) {
-                  BlockPos var23 = var16.getOrigin();
-                  BlockPos var25 = var23.offset(
-                     (var15.getAxis() == Direction.Axis.X ? var8.getX() <= var23.getX() : var8.getX() >= var23.getX()) ? 0 : 16,
-                     (var15.getAxis() == Direction.Axis.Y ? var8.getY() <= var23.getY() : var8.getY() >= var23.getY()) ? 0 : 16,
-                     (var15.getAxis() == Direction.Axis.Z ? var8.getZ() <= var23.getZ() : var8.getZ() >= var23.getZ()) ? 0 : 16
-                  );
-                  Vec3 var27 = new Vec3((double)var25.getX(), (double)var25.getY(), (double)var25.getZ());
-                  Vec3 var20 = var3.subtract(var27).normalize().scale(CEILED_SECTION_DIAGONAL);
-                  boolean var21 = true;
-
-                  while(var3.subtract(var27).lengthSqr() > 3600.0) {
-                     var27 = var27.add(var20);
-                     if (var27.y > (double)this.level.getMaxBuildHeight() || var27.y < (double)this.level.getMinBuildHeight()) {
-                        break;
-                     }
-
-                     ChunkRenderDispatcher.RenderChunk var22 = this.viewArea.getRenderChunkAt(BlockPos.containing(var27.x, var27.y, var27.z));
-                     if (var22 == null || var2.get(var22) == null) {
-                        var21 = false;
-                        break;
-                     }
-                  }
-
-                  if (!var21) {
-                     continue;
-                  }
-               }
-
-               LevelRenderer.RenderChunkInfo var24 = var2.get(var16);
-               if (var24 != null) {
-                  var24.addSourceDirection(var15);
-               } else if (!var16.hasAllNeighbors()) {
-                  if (!this.closeToBorder(var7, var10)) {
-                     this.nextFullUpdateMillis.set(System.currentTimeMillis() + 500L);
-                  }
-               } else {
-                  LevelRenderer.RenderChunkInfo var26 = new LevelRenderer.RenderChunkInfo(var16, var15, var9.step + 1);
-                  var26.setDirections(var9.directions, var15);
-                  var4.add(var26);
-                  var2.put(var16, var26);
-               }
-            }
-         }
-      }
-   }
-
-   @Nullable
-   private ChunkRenderDispatcher.RenderChunk getRelativeFrom(BlockPos var1, ChunkRenderDispatcher.RenderChunk var2, Direction var3) {
-      BlockPos var4 = var2.getRelativeOrigin(var3);
-      if (Mth.abs(var1.getX() - var4.getX()) > this.lastViewDistance * 16) {
-         return null;
-      } else if (Mth.abs(var1.getY() - var4.getY()) > this.lastViewDistance * 16
-         || var4.getY() < this.level.getMinBuildHeight()
-         || var4.getY() >= this.level.getMaxBuildHeight()) {
-         return null;
-      } else {
-         return Mth.abs(var1.getZ() - var4.getZ()) > this.lastViewDistance * 16 ? null : this.viewArea.getRenderChunkAt(var4);
-      }
-   }
-
-   private boolean closeToBorder(BlockPos var1, ChunkRenderDispatcher.RenderChunk var2) {
-      int var3 = SectionPos.blockToSectionCoord(var1.getX());
-      int var4 = SectionPos.blockToSectionCoord(var1.getZ());
-      BlockPos var5 = var2.getOrigin();
-      int var6 = SectionPos.blockToSectionCoord(var5.getX());
-      int var7 = SectionPos.blockToSectionCoord(var5.getZ());
-      return !ChunkMap.isChunkInRange(var6, var7, var3, var4, this.lastViewDistance - 3);
+   public void addRecentlyCompiledSection(SectionRenderDispatcher.RenderSection var1) {
+      this.sectionOcclusionGraph.onSectionCompiled(var1);
    }
 
    private void captureFrustum(Matrix4f var1, Matrix4f var2, double var3, double var5, double var7, Frustum var9) {
@@ -1154,12 +944,12 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       FogRenderer.setupFog(var6, FogRenderer.FogMode.FOG_TERRAIN, Math.max(var21, 32.0F), var22, var2);
       var10.popPush("terrain_setup");
       this.setupRender(var6, var20, var19, this.minecraft.player.isSpectator());
-      var10.popPush("compilechunks");
-      this.compileChunks(var6);
+      var10.popPush("compile_sections");
+      this.compileSections(var6);
       var10.popPush("terrain");
-      this.renderChunkLayer(RenderType.solid(), var1, var12, var14, var16, var9);
-      this.renderChunkLayer(RenderType.cutoutMipped(), var1, var12, var14, var16, var9);
-      this.renderChunkLayer(RenderType.cutout(), var1, var12, var14, var16, var9);
+      this.renderSectionLayer(RenderType.solid(), var1, var12, var14, var16, var9);
+      this.renderSectionLayer(RenderType.cutoutMipped(), var1, var12, var14, var16, var9);
+      this.renderSectionLayer(RenderType.cutout(), var1, var12, var14, var16, var9);
       if (this.level.effects().constantAmbientLight()) {
          Lighting.setupNetherLevel(var1.last().pose());
       } else {
@@ -1190,7 +980,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       for(Entity var26 : this.level.entitiesForRendering()) {
          if (this.entityRenderDispatcher.shouldRender(var26, var20, var12, var14, var16) || var26.hasIndirectPassenger(this.minecraft.player)) {
             BlockPos var27 = var26.blockPosition();
-            if ((this.level.isOutsideBuildHeight(var27.getY()) || this.isChunkCompiled(var27))
+            if ((this.level.isOutsideBuildHeight(var27.getY()) || this.isSectionCompiled(var27))
                && (var26 != var6.getEntity() || var6.isDetached() || var6.getEntity() instanceof LivingEntity && ((LivingEntity)var6.getEntity()).isSleeping())
                && (!(var26 instanceof LocalPlayer) || var6.getEntity() == var26)) {
                ++this.renderedEntities;
@@ -1223,11 +1013,11 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       var24.endBatch(RenderType.entityCutoutNoCull(TextureAtlas.LOCATION_BLOCKS));
       var24.endBatch(RenderType.entitySmoothCutout(TextureAtlas.LOCATION_BLOCKS));
       var10.popPush("blockentities");
-      ObjectListIterator var39 = this.renderChunksInFrustum.iterator();
+      ObjectListIterator var39 = this.visibleSections.iterator();
 
       while(var39.hasNext()) {
-         LevelRenderer.RenderChunkInfo var43 = (LevelRenderer.RenderChunkInfo)var39.next();
-         List var48 = var43.chunk.getCompiledChunk().getRenderableBlockEntities();
+         SectionRenderDispatcher.RenderSection var43 = (SectionRenderDispatcher.RenderSection)var39.next();
+         List var48 = var43.getCompiled().getRenderableBlockEntities();
          if (!var48.isEmpty()) {
             for(BlockEntity var56 : var48) {
                BlockPos var57 = var56.getBlockPos();
@@ -1341,9 +1131,9 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          this.translucentTarget.clear(Minecraft.ON_OSX);
          this.translucentTarget.copyDepthFrom(this.minecraft.getMainRenderTarget());
          var10.popPush("translucent");
-         this.renderChunkLayer(RenderType.translucent(), var1, var12, var14, var16, var9);
+         this.renderSectionLayer(RenderType.translucent(), var1, var12, var14, var16, var9);
          var10.popPush("string");
-         this.renderChunkLayer(RenderType.tripwire(), var1, var12, var14, var16, var9);
+         this.renderSectionLayer(RenderType.tripwire(), var1, var12, var14, var16, var9);
          this.particlesTarget.clear(Minecraft.ON_OSX);
          this.particlesTarget.copyDepthFrom(this.minecraft.getMainRenderTarget());
          RenderStateShard.PARTICLES_TARGET.setupRenderState();
@@ -1356,11 +1146,11 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
             this.translucentTarget.clear(Minecraft.ON_OSX);
          }
 
-         this.renderChunkLayer(RenderType.translucent(), var1, var12, var14, var16, var9);
+         this.renderSectionLayer(RenderType.translucent(), var1, var12, var14, var16, var9);
          var24.endBatch(RenderType.lines());
          var24.endBatch();
          var10.popPush("string");
-         this.renderChunkLayer(RenderType.tripwire(), var1, var12, var14, var16, var9);
+         this.renderSectionLayer(RenderType.tripwire(), var1, var12, var14, var16, var9);
          var10.popPush("particles");
          this.minecraft.particleEngine.render(var1, var24, var8, var6, var2);
       }
@@ -1422,7 +1212,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          .render(var1, var11 - var2, var13 - var4, var15 - var6, var17, var8, var9, var10, this.entityRenderDispatcher.getPackedLightCoords(var1, var8));
    }
 
-   private void renderChunkLayer(RenderType var1, PoseStack var2, double var3, double var5, double var7, Matrix4f var9) {
+   private void renderSectionLayer(RenderType var1, PoseStack var2, double var3, double var5, double var7, Matrix4f var9) {
       RenderSystem.assertOnRenderThread();
       var1.setupRenderState();
       if (var1 == RenderType.translucent()) {
@@ -1441,11 +1231,11 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
             this.yTransparentOld = var5;
             this.zTransparentOld = var7;
             int var20 = 0;
-            ObjectListIterator var21 = this.renderChunksInFrustum.iterator();
+            ObjectListIterator var21 = this.visibleSections.iterator();
 
             while(var21.hasNext()) {
-               LevelRenderer.RenderChunkInfo var22 = (LevelRenderer.RenderChunkInfo)var21.next();
-               if (var20 < 15 && (var19 || var22.isAxisAlignedWith(var16, var17, var18)) && var22.chunk.resortTransparency(var1, this.chunkRenderDispatcher)) {
+               SectionRenderDispatcher.RenderSection var22 = (SectionRenderDispatcher.RenderSection)var21.next();
+               if (var20 < 15 && (var19 || var22.isAxisAlignedWith(var16, var17, var18)) && var22.resortTransparency(var1, this.sectionRenderDispatcher)) {
                   ++var20;
                }
             }
@@ -1457,7 +1247,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       this.minecraft.getProfiler().push("filterempty");
       this.minecraft.getProfiler().popPush(() -> "render_" + var1);
       boolean var23 = var1 != RenderType.translucent();
-      ObjectListIterator var11 = this.renderChunksInFrustum.listIterator(var23 ? 0 : this.renderChunksInFrustum.size());
+      ObjectListIterator var11 = this.visibleSections.listIterator(var23 ? 0 : this.visibleSections.size());
       ShaderInstance var24 = RenderSystem.getShader();
 
       for(int var13 = 0; var13 < 12; ++var13) {
@@ -1510,18 +1300,19 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       Uniform var25 = var24.CHUNK_OFFSET;
 
       while(var23 ? var11.hasNext() : var11.hasPrevious()) {
-         LevelRenderer.RenderChunkInfo var27 = var23 ? (LevelRenderer.RenderChunkInfo)var11.next() : (LevelRenderer.RenderChunkInfo)var11.previous();
-         ChunkRenderDispatcher.RenderChunk var15 = var27.chunk;
-         if (!var15.getCompiledChunk().isEmpty(var1)) {
-            VertexBuffer var28 = var15.getBuffer(var1);
-            BlockPos var29 = var15.getOrigin();
+         SectionRenderDispatcher.RenderSection var27 = var23
+            ? (SectionRenderDispatcher.RenderSection)var11.next()
+            : (SectionRenderDispatcher.RenderSection)var11.previous();
+         if (!var27.getCompiled().isEmpty(var1)) {
+            VertexBuffer var15 = var27.getBuffer(var1);
+            BlockPos var28 = var27.getOrigin();
             if (var25 != null) {
-               var25.set((float)((double)var29.getX() - var3), (float)((double)var29.getY() - var5), (float)((double)var29.getZ() - var7));
+               var25.set((float)((double)var28.getX() - var3), (float)((double)var28.getY() - var5), (float)((double)var28.getZ() - var7));
                var25.upload();
             }
 
-            var28.bind();
-            var28.draw();
+            var15.bind();
+            var15.draw();
          }
       }
 
@@ -1536,90 +1327,95 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
    }
 
    private void renderDebug(PoseStack var1, MultiBufferSource var2, Camera var3) {
-      if (this.minecraft.chunkPath || this.minecraft.chunkVisibility) {
+      if (this.minecraft.sectionPath || this.minecraft.sectionVisibility) {
          double var4 = var3.getPosition().x();
          double var6 = var3.getPosition().y();
          double var8 = var3.getPosition().z();
+         ObjectListIterator var10 = this.visibleSections.iterator();
 
-         for(ObjectListIterator var10 = this.renderChunksInFrustum.iterator(); var10.hasNext(); var1.popPose()) {
-            LevelRenderer.RenderChunkInfo var11 = (LevelRenderer.RenderChunkInfo)var10.next();
-            ChunkRenderDispatcher.RenderChunk var12 = var11.chunk;
-            BlockPos var13 = var12.getOrigin();
-            var1.pushPose();
-            var1.translate((double)var13.getX() - var4, (double)var13.getY() - var6, (double)var13.getZ() - var8);
-            Matrix4f var14 = var1.last().pose();
-            if (this.minecraft.chunkPath) {
-               VertexConsumer var15 = var2.getBuffer(RenderType.lines());
-               int var16 = var11.step == 0 ? 0 : Mth.hsvToRgb((float)var11.step / 50.0F, 0.9F, 0.9F);
-               int var17 = var16 >> 16 & 0xFF;
-               int var18 = var16 >> 8 & 0xFF;
-               int var19 = var16 & 0xFF;
+         while(var10.hasNext()) {
+            SectionRenderDispatcher.RenderSection var11 = (SectionRenderDispatcher.RenderSection)var10.next();
+            SectionOcclusionGraph.Node var12 = this.sectionOcclusionGraph.getNode(var11);
+            if (var12 != null) {
+               BlockPos var13 = var11.getOrigin();
+               var1.pushPose();
+               var1.translate((double)var13.getX() - var4, (double)var13.getY() - var6, (double)var13.getZ() - var8);
+               Matrix4f var14 = var1.last().pose();
+               if (this.minecraft.sectionPath) {
+                  VertexConsumer var15 = var2.getBuffer(RenderType.lines());
+                  int var16 = var12.step == 0 ? 0 : Mth.hsvToRgb((float)var12.step / 50.0F, 0.9F, 0.9F);
+                  int var17 = var16 >> 16 & 0xFF;
+                  int var18 = var16 >> 8 & 0xFF;
+                  int var19 = var16 & 0xFF;
 
-               for(int var20 = 0; var20 < DIRECTIONS.length; ++var20) {
-                  if (var11.hasSourceDirection(var20)) {
-                     Direction var21 = DIRECTIONS[var20];
-                     var15.vertex(var14, 8.0F, 8.0F, 8.0F)
-                        .color(var17, var18, var19, 255)
-                        .normal((float)var21.getStepX(), (float)var21.getStepY(), (float)var21.getStepZ())
-                        .endVertex();
-                     var15.vertex(var14, (float)(8 - 16 * var21.getStepX()), (float)(8 - 16 * var21.getStepY()), (float)(8 - 16 * var21.getStepZ()))
-                        .color(var17, var18, var19, 255)
-                        .normal((float)var21.getStepX(), (float)var21.getStepY(), (float)var21.getStepZ())
-                        .endVertex();
-                  }
-               }
-            }
-
-            if (this.minecraft.chunkVisibility && !var12.getCompiledChunk().hasNoRenderableLayers()) {
-               VertexConsumer var28 = var2.getBuffer(RenderType.lines());
-               int var29 = 0;
-
-               for(Direction var36 : DIRECTIONS) {
-                  for(Direction var24 : DIRECTIONS) {
-                     boolean var25 = var12.getCompiledChunk().facesCanSeeEachother(var36, var24);
-                     if (!var25) {
-                        ++var29;
-                        var28.vertex(var14, (float)(8 + 8 * var36.getStepX()), (float)(8 + 8 * var36.getStepY()), (float)(8 + 8 * var36.getStepZ()))
-                           .color(255, 0, 0, 255)
-                           .normal((float)var36.getStepX(), (float)var36.getStepY(), (float)var36.getStepZ())
+                  for(int var20 = 0; var20 < DIRECTIONS.length; ++var20) {
+                     if (var12.hasSourceDirection(var20)) {
+                        Direction var21 = DIRECTIONS[var20];
+                        var15.vertex(var14, 8.0F, 8.0F, 8.0F)
+                           .color(var17, var18, var19, 255)
+                           .normal((float)var21.getStepX(), (float)var21.getStepY(), (float)var21.getStepZ())
                            .endVertex();
-                        var28.vertex(var14, (float)(8 + 8 * var24.getStepX()), (float)(8 + 8 * var24.getStepY()), (float)(8 + 8 * var24.getStepZ()))
-                           .color(255, 0, 0, 255)
-                           .normal((float)var24.getStepX(), (float)var24.getStepY(), (float)var24.getStepZ())
+                        var15.vertex(var14, (float)(8 - 16 * var21.getStepX()), (float)(8 - 16 * var21.getStepY()), (float)(8 - 16 * var21.getStepZ()))
+                           .color(var17, var18, var19, 255)
+                           .normal((float)var21.getStepX(), (float)var21.getStepY(), (float)var21.getStepZ())
                            .endVertex();
                      }
                   }
                }
 
-               if (var29 > 0) {
-                  VertexConsumer var31 = var2.getBuffer(RenderType.debugQuads());
-                  float var33 = 0.5F;
-                  float var35 = 0.2F;
-                  var31.vertex(var14, 0.5F, 15.5F, 0.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
-                  var31.vertex(var14, 15.5F, 15.5F, 0.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
-                  var31.vertex(var14, 15.5F, 15.5F, 15.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
-                  var31.vertex(var14, 0.5F, 15.5F, 15.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
-                  var31.vertex(var14, 0.5F, 0.5F, 15.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
-                  var31.vertex(var14, 15.5F, 0.5F, 15.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
-                  var31.vertex(var14, 15.5F, 0.5F, 0.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
-                  var31.vertex(var14, 0.5F, 0.5F, 0.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
-                  var31.vertex(var14, 0.5F, 15.5F, 0.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
-                  var31.vertex(var14, 0.5F, 15.5F, 15.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
-                  var31.vertex(var14, 0.5F, 0.5F, 15.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
-                  var31.vertex(var14, 0.5F, 0.5F, 0.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
-                  var31.vertex(var14, 15.5F, 0.5F, 0.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
-                  var31.vertex(var14, 15.5F, 0.5F, 15.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
-                  var31.vertex(var14, 15.5F, 15.5F, 15.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
-                  var31.vertex(var14, 15.5F, 15.5F, 0.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
-                  var31.vertex(var14, 0.5F, 0.5F, 0.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
-                  var31.vertex(var14, 15.5F, 0.5F, 0.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
-                  var31.vertex(var14, 15.5F, 15.5F, 0.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
-                  var31.vertex(var14, 0.5F, 15.5F, 0.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
-                  var31.vertex(var14, 0.5F, 15.5F, 15.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
-                  var31.vertex(var14, 15.5F, 15.5F, 15.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
-                  var31.vertex(var14, 15.5F, 0.5F, 15.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
-                  var31.vertex(var14, 0.5F, 0.5F, 15.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
+               if (this.minecraft.sectionVisibility && !var11.getCompiled().hasNoRenderableLayers()) {
+                  VertexConsumer var28 = var2.getBuffer(RenderType.lines());
+                  int var29 = 0;
+
+                  for(Direction var36 : DIRECTIONS) {
+                     for(Direction var24 : DIRECTIONS) {
+                        boolean var25 = var11.getCompiled().facesCanSeeEachother(var36, var24);
+                        if (!var25) {
+                           ++var29;
+                           var28.vertex(var14, (float)(8 + 8 * var36.getStepX()), (float)(8 + 8 * var36.getStepY()), (float)(8 + 8 * var36.getStepZ()))
+                              .color(255, 0, 0, 255)
+                              .normal((float)var36.getStepX(), (float)var36.getStepY(), (float)var36.getStepZ())
+                              .endVertex();
+                           var28.vertex(var14, (float)(8 + 8 * var24.getStepX()), (float)(8 + 8 * var24.getStepY()), (float)(8 + 8 * var24.getStepZ()))
+                              .color(255, 0, 0, 255)
+                              .normal((float)var24.getStepX(), (float)var24.getStepY(), (float)var24.getStepZ())
+                              .endVertex();
+                        }
+                     }
+                  }
+
+                  if (var29 > 0) {
+                     VertexConsumer var31 = var2.getBuffer(RenderType.debugQuads());
+                     float var33 = 0.5F;
+                     float var35 = 0.2F;
+                     var31.vertex(var14, 0.5F, 15.5F, 0.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
+                     var31.vertex(var14, 15.5F, 15.5F, 0.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
+                     var31.vertex(var14, 15.5F, 15.5F, 15.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
+                     var31.vertex(var14, 0.5F, 15.5F, 15.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
+                     var31.vertex(var14, 0.5F, 0.5F, 15.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
+                     var31.vertex(var14, 15.5F, 0.5F, 15.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
+                     var31.vertex(var14, 15.5F, 0.5F, 0.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
+                     var31.vertex(var14, 0.5F, 0.5F, 0.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
+                     var31.vertex(var14, 0.5F, 15.5F, 0.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
+                     var31.vertex(var14, 0.5F, 15.5F, 15.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
+                     var31.vertex(var14, 0.5F, 0.5F, 15.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
+                     var31.vertex(var14, 0.5F, 0.5F, 0.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
+                     var31.vertex(var14, 15.5F, 0.5F, 0.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
+                     var31.vertex(var14, 15.5F, 0.5F, 15.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
+                     var31.vertex(var14, 15.5F, 15.5F, 15.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
+                     var31.vertex(var14, 15.5F, 15.5F, 0.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
+                     var31.vertex(var14, 0.5F, 0.5F, 0.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
+                     var31.vertex(var14, 15.5F, 0.5F, 0.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
+                     var31.vertex(var14, 15.5F, 15.5F, 0.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
+                     var31.vertex(var14, 0.5F, 15.5F, 0.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
+                     var31.vertex(var14, 0.5F, 15.5F, 15.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
+                     var31.vertex(var14, 15.5F, 15.5F, 15.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
+                     var31.vertex(var14, 15.5F, 0.5F, 15.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
+                     var31.vertex(var14, 0.5F, 0.5F, 15.5F).color(0.9F, 0.9F, 0.0F, 0.2F).endVertex();
+                  }
                }
+
+               var1.popPose();
             }
          }
       }
@@ -2187,45 +1983,44 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       return var1.end();
    }
 
-   private void compileChunks(Camera var1) {
-      this.minecraft.getProfiler().push("populate_chunks_to_compile");
+   private void compileSections(Camera var1) {
+      this.minecraft.getProfiler().push("populate_sections_to_compile");
       LevelLightEngine var2 = this.level.getLightEngine();
       RenderRegionCache var3 = new RenderRegionCache();
       BlockPos var4 = var1.getBlockPosition();
       ArrayList var5 = Lists.newArrayList();
-      ObjectListIterator var6 = this.renderChunksInFrustum.iterator();
+      ObjectListIterator var6 = this.visibleSections.iterator();
 
       while(var6.hasNext()) {
-         LevelRenderer.RenderChunkInfo var7 = (LevelRenderer.RenderChunkInfo)var6.next();
-         ChunkRenderDispatcher.RenderChunk var8 = var7.chunk;
-         SectionPos var9 = SectionPos.of(var8.getOrigin());
-         if (var8.isDirty() && var2.lightOnInSection(var9)) {
-            boolean var10 = false;
+         SectionRenderDispatcher.RenderSection var7 = (SectionRenderDispatcher.RenderSection)var6.next();
+         SectionPos var8 = SectionPos.of(var7.getOrigin());
+         if (var7.isDirty() && var2.lightOnInSection(var8)) {
+            boolean var9 = false;
             if (this.minecraft.options.prioritizeChunkUpdates().get() == PrioritizeChunkUpdates.NEARBY) {
-               BlockPos var11 = var8.getOrigin().offset(8, 8, 8);
-               var10 = var11.distSqr(var4) < 768.0 || var8.isDirtyFromPlayer();
+               BlockPos var10 = var7.getOrigin().offset(8, 8, 8);
+               var9 = var10.distSqr(var4) < 768.0 || var7.isDirtyFromPlayer();
             } else if (this.minecraft.options.prioritizeChunkUpdates().get() == PrioritizeChunkUpdates.PLAYER_AFFECTED) {
-               var10 = var8.isDirtyFromPlayer();
+               var9 = var7.isDirtyFromPlayer();
             }
 
-            if (var10) {
+            if (var9) {
                this.minecraft.getProfiler().push("build_near_sync");
-               this.chunkRenderDispatcher.rebuildChunkSync(var8, var3);
-               var8.setNotDirty();
+               this.sectionRenderDispatcher.rebuildSectionSync(var7, var3);
+               var7.setNotDirty();
                this.minecraft.getProfiler().pop();
             } else {
-               var5.add(var8);
+               var5.add(var7);
             }
          }
       }
 
       this.minecraft.getProfiler().popPush("upload");
-      this.chunkRenderDispatcher.uploadAllPendingUploads();
+      this.sectionRenderDispatcher.uploadAllPendingUploads();
       this.minecraft.getProfiler().popPush("schedule_async_compile");
 
-      for(ChunkRenderDispatcher.RenderChunk var13 : var5) {
-         var13.rebuildChunkAsync(this.chunkRenderDispatcher, var3);
-         var13.setNotDirty();
+      for(SectionRenderDispatcher.RenderSection var12 : var5) {
+         var12.rebuildSectionAsync(this.sectionRenderDispatcher, var3);
+         var12.setNotDirty();
       }
 
       this.minecraft.getProfiler().pop();
@@ -3261,12 +3056,16 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       }
    }
 
-   public boolean hasRenderedAllChunks() {
-      return this.chunkRenderDispatcher.isQueueEmpty();
+   public boolean hasRenderedAllSections() {
+      return this.sectionRenderDispatcher.isQueueEmpty();
+   }
+
+   public void onChunkLoaded(ChunkPos var1) {
+      this.sectionOcclusionGraph.onChunkLoaded(var1);
    }
 
    public void needsUpdate() {
-      this.needsFullRenderChunkUpdate = true;
+      this.sectionOcclusionGraph.invalidate();
       this.generateClouds = true;
    }
 
@@ -3296,9 +3095,9 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       }
    }
 
-   public boolean isChunkCompiled(BlockPos var1) {
-      ChunkRenderDispatcher.RenderChunk var2 = this.viewArea.getRenderChunkAt(var1);
-      return var2 != null && var2.compiled.get() != ChunkRenderDispatcher.CompiledChunk.UNCOMPILED;
+   public boolean isSectionCompiled(BlockPos var1) {
+      SectionRenderDispatcher.RenderSection var2 = this.viewArea.getRenderSectionAt(var1);
+      return var2 != null && var2.compiled.get() != SectionRenderDispatcher.CompiledSection.UNCOMPILED;
    }
 
    @Nullable
@@ -3329,93 +3128,6 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
    @Nullable
    public RenderTarget getCloudsTarget() {
       return this.cloudsTarget;
-   }
-
-   static class RenderChunkInfo {
-      final ChunkRenderDispatcher.RenderChunk chunk;
-      private byte sourceDirections;
-      byte directions;
-      final int step;
-
-      RenderChunkInfo(ChunkRenderDispatcher.RenderChunk var1, @Nullable Direction var2, int var3) {
-         super();
-         this.chunk = var1;
-         if (var2 != null) {
-            this.addSourceDirection(var2);
-         }
-
-         this.step = var3;
-      }
-
-      public void setDirections(byte var1, Direction var2) {
-         this.directions = (byte)(this.directions | var1 | 1 << var2.ordinal());
-      }
-
-      public boolean hasDirection(Direction var1) {
-         return (this.directions & 1 << var1.ordinal()) > 0;
-      }
-
-      public void addSourceDirection(Direction var1) {
-         this.sourceDirections = (byte)(this.sourceDirections | this.sourceDirections | 1 << var1.ordinal());
-      }
-
-      public boolean hasSourceDirection(int var1) {
-         return (this.sourceDirections & 1 << var1) > 0;
-      }
-
-      public boolean hasSourceDirections() {
-         return this.sourceDirections != 0;
-      }
-
-      public boolean isAxisAlignedWith(int var1, int var2, int var3) {
-         BlockPos var4 = this.chunk.getOrigin();
-         return var1 == var4.getX() / 16 || var3 == var4.getZ() / 16 || var2 == var4.getY() / 16;
-      }
-
-      @Override
-      public int hashCode() {
-         return this.chunk.getOrigin().hashCode();
-      }
-
-      @Override
-      public boolean equals(Object var1) {
-         if (!(var1 instanceof LevelRenderer.RenderChunkInfo)) {
-            return false;
-         } else {
-            LevelRenderer.RenderChunkInfo var2 = (LevelRenderer.RenderChunkInfo)var1;
-            return this.chunk.getOrigin().equals(var2.chunk.getOrigin());
-         }
-      }
-   }
-
-   static class RenderChunkStorage {
-      public final LevelRenderer.RenderInfoMap renderInfoMap;
-      public final LinkedHashSet<LevelRenderer.RenderChunkInfo> renderChunks;
-
-      public RenderChunkStorage(int var1) {
-         super();
-         this.renderInfoMap = new LevelRenderer.RenderInfoMap(var1);
-         this.renderChunks = new LinkedHashSet<>(var1);
-      }
-   }
-
-   static class RenderInfoMap {
-      private final LevelRenderer.RenderChunkInfo[] infos;
-
-      RenderInfoMap(int var1) {
-         super();
-         this.infos = new LevelRenderer.RenderChunkInfo[var1];
-      }
-
-      public void put(ChunkRenderDispatcher.RenderChunk var1, LevelRenderer.RenderChunkInfo var2) {
-         this.infos[var1.index] = var2;
-      }
-
-      @Nullable
-      public LevelRenderer.RenderChunkInfo get(ChunkRenderDispatcher.RenderChunk var1) {
-         int var2 = var1.index;
-         return var2 >= 0 && var2 < this.infos.length ? this.infos[var2] : null;
-      }
    }
 
    public static class TransparencyShaderException extends RuntimeException {

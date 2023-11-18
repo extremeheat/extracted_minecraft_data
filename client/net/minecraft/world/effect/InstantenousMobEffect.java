@@ -11,7 +11,7 @@ public class InstantenousMobEffect extends MobEffect {
    }
 
    @Override
-   public boolean isDurationEffectTick(int var1, int var2) {
+   public boolean shouldApplyEffectTickThisTick(int var1, int var2) {
       return var1 >= 1;
    }
 }

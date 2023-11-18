@@ -2,8 +2,9 @@ package net.minecraft.network.protocol.status;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ServerPingPacketListener;
 
-public class ServerboundPingRequestPacket implements Packet<ServerStatusPacketListener> {
+public class ServerboundPingRequestPacket implements Packet<ServerPingPacketListener> {
    private final long time;
 
    public ServerboundPingRequestPacket(long var1) {
@@ -21,7 +22,7 @@ public class ServerboundPingRequestPacket implements Packet<ServerStatusPacketLi
       var1.writeLong(this.time);
    }
 
-   public void handle(ServerStatusPacketListener var1) {
+   public void handle(ServerPingPacketListener var1) {
       var1.handlePingRequest(this);
    }
 

@@ -70,6 +70,7 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.phys.AABB;
 
 public abstract class Mob extends LivingEntity implements Targeting {
    private static final EntityDataAccessor<Byte> DATA_MOB_FLAGS_ID = SynchedEntityData.defineId(Mob.class, EntityDataSerializers.BYTE);
@@ -86,6 +87,7 @@ public abstract class Mob extends LivingEntity implements Targeting {
    public static final float DEFAULT_EQUIPMENT_DROP_CHANCE = 0.085F;
    public static final int PRESERVE_ITEM_DROP_CHANCE = 2;
    public static final int UPDATE_GOAL_SELECTOR_EVERY_N_TICKS = 2;
+   private static final double DEFAULT_ATTACK_REACH = Math.sqrt(2.0399999618530273) - 0.6000000238418579;
    public int ambientSoundTime;
    protected int xpReward;
    protected LookControl lookControl;
@@ -199,11 +201,9 @@ public abstract class Mob extends LivingEntity implements Targeting {
    @Nullable
    @Override
    public LivingEntity getControllingPassenger() {
-      if (!this.isNoAi()) {
-         Entity var2 = this.getFirstPassenger();
-         if (var2 instanceof Mob var1) {
-            return (LivingEntity)var1;
-         }
+      Entity var1 = this.getFirstPassenger();
+      if (!this.isNoAi() && var1 instanceof Mob var2 && var1.canControlVehicle()) {
+         return (LivingEntity)var2;
       }
 
       return null;
@@ -602,6 +602,8 @@ public abstract class Mob extends LivingEntity implements Targeting {
       }
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    protected boolean canReplaceCurrentItem(ItemStack var1, ItemStack var2) {
       if (var2.isEmpty()) {
          return true;
@@ -609,10 +611,10 @@ public abstract class Mob extends LivingEntity implements Targeting {
          if (!(var2.getItem() instanceof SwordItem)) {
             return true;
          } else {
-            SwordItem var6 = (SwordItem)var1.getItem();
-            SwordItem var8 = (SwordItem)var2.getItem();
-            if (var6.getDamage() != var8.getDamage()) {
-               return var6.getDamage() > var8.getDamage();
+            SwordItem var8 = (SwordItem)var1.getItem();
+            SwordItem var10 = (SwordItem)var2.getItem();
+            if (var8.getDamage() != var10.getDamage()) {
+               return var8.getDamage() > var10.getDamage();
             } else {
                return this.canReplaceEqualItem(var1, var2);
             }
@@ -621,40 +623,42 @@ public abstract class Mob extends LivingEntity implements Targeting {
          return this.canReplaceEqualItem(var1, var2);
       } else if (var1.getItem() instanceof CrossbowItem && var2.getItem() instanceof CrossbowItem) {
          return this.canReplaceEqualItem(var1, var2);
-      } else if (var1.getItem() instanceof ArmorItem) {
-         if (EnchantmentHelper.hasBindingCurse(var2)) {
-            return false;
-         } else if (!(var2.getItem() instanceof ArmorItem)) {
-            return true;
-         } else {
-            ArmorItem var5 = (ArmorItem)var1.getItem();
-            ArmorItem var7 = (ArmorItem)var2.getItem();
-            if (var5.getDefense() != var7.getDefense()) {
-               return var5.getDefense() > var7.getDefense();
-            } else if (var5.getToughness() != var7.getToughness()) {
-               return var5.getToughness() > var7.getToughness();
-            } else {
-               return this.canReplaceEqualItem(var1, var2);
-            }
-         }
       } else {
-         if (var1.getItem() instanceof DiggerItem) {
-            if (var2.getItem() instanceof BlockItem) {
+         Item var4 = var1.getItem();
+         if (var4 instanceof ArmorItem var3) {
+            if (EnchantmentHelper.hasBindingCurse(var2)) {
+               return false;
+            } else if (!(var2.getItem() instanceof ArmorItem)) {
                return true;
+            } else {
+               ArmorItem var7 = (ArmorItem)var2.getItem();
+               if (var3.getDefense() != var7.getDefense()) {
+                  return var3.getDefense() > var7.getDefense();
+               } else if (var3.getToughness() != var7.getToughness()) {
+                  return var3.getToughness() > var7.getToughness();
+               } else {
+                  return this.canReplaceEqualItem(var1, var2);
+               }
             }
-
-            if (var2.getItem() instanceof DiggerItem) {
-               DiggerItem var3 = (DiggerItem)var1.getItem();
-               DiggerItem var4 = (DiggerItem)var2.getItem();
-               if (var3.getAttackDamage() != var4.getAttackDamage()) {
-                  return var3.getAttackDamage() > var4.getAttackDamage();
+         } else {
+            if (var1.getItem() instanceof DiggerItem) {
+               if (var2.getItem() instanceof BlockItem) {
+                  return true;
                }
 
-               return this.canReplaceEqualItem(var1, var2);
-            }
-         }
+               Item var5 = var2.getItem();
+               if (var5 instanceof DiggerItem var6) {
+                  DiggerItem var9 = (DiggerItem)var1.getItem();
+                  if (var9.getAttackDamage() != var6.getAttackDamage()) {
+                     return var9.getAttackDamage() > var6.getAttackDamage();
+                  }
 
-         return false;
+                  return this.canReplaceEqualItem(var1, var2);
+               }
+            }
+
+            return false;
+         }
       }
    }
 
@@ -1350,17 +1354,29 @@ public abstract class Mob extends LivingEntity implements Targeting {
       return this.isLeftHanded() ? HumanoidArm.LEFT : HumanoidArm.RIGHT;
    }
 
-   public double getMeleeAttackRangeSqr(LivingEntity var1) {
-      return (double)(this.getBbWidth() * 2.0F * this.getBbWidth() * 2.0F + var1.getBbWidth());
-   }
-
-   public double getPerceivedTargetDistanceSquareForMeleeAttack(LivingEntity var1) {
-      return Math.max(this.distanceToSqr(var1.getMeleeAttackReferencePosition()), this.distanceToSqr(var1.position()));
-   }
-
    public boolean isWithinMeleeAttackRange(LivingEntity var1) {
-      double var2 = this.getPerceivedTargetDistanceSquareForMeleeAttack(var1);
-      return var2 <= this.getMeleeAttackRangeSqr(var1);
+      return this.getAttackBoundingBox().intersects(var1.getHitbox());
+   }
+
+   protected AABB getAttackBoundingBox() {
+      Entity var2 = this.getVehicle();
+      AABB var1;
+      if (var2 != null) {
+         AABB var3 = var2.getBoundingBox();
+         AABB var4 = this.getBoundingBox();
+         var1 = new AABB(
+            Math.min(var4.minX, var3.minX),
+            var4.minY,
+            Math.min(var4.minZ, var3.minZ),
+            Math.max(var4.maxX, var3.maxX),
+            var4.maxY,
+            Math.max(var4.maxZ, var3.maxZ)
+         );
+      } else {
+         var1 = this.getBoundingBox();
+      }
+
+      return var1.inflate(DEFAULT_ATTACK_REACH, 0.0, DEFAULT_ATTACK_REACH);
    }
 
    @Override

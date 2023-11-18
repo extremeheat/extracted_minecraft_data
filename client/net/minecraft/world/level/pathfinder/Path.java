@@ -1,8 +1,5 @@
 package net.minecraft.world.level.pathfinder;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -15,10 +12,8 @@ import net.minecraft.world.phys.Vec3;
 
 public class Path {
    private final List<Node> nodes;
-   private Node[] openSet = new Node[0];
-   private Node[] closedSet = new Node[0];
    @Nullable
-   private Set<Target> targetNodes;
+   private Path.DebugData debugData;
    private int nextNodeIndex;
    private final BlockPos target;
    private final float distToTarget;
@@ -128,86 +123,34 @@ public class Path {
 
    @VisibleForDebug
    void setDebug(Node[] var1, Node[] var2, Set<Target> var3) {
-      this.openSet = var1;
-      this.closedSet = var2;
-      this.targetNodes = var3;
+      this.debugData = new Path.DebugData(var1, var2, var3);
    }
 
-   @VisibleForDebug
-   public Node[] getOpenSet() {
-      return this.openSet;
-   }
-
-   @VisibleForDebug
-   public Node[] getClosedSet() {
-      return this.closedSet;
+   @Nullable
+   public Path.DebugData debugData() {
+      return this.debugData;
    }
 
    public void writeToStream(FriendlyByteBuf var1) {
-      if (this.targetNodes != null && !this.targetNodes.isEmpty()) {
+      if (this.debugData != null && !this.debugData.targetNodes.isEmpty()) {
          var1.writeBoolean(this.reached);
          var1.writeInt(this.nextNodeIndex);
-         var1.writeInt(this.targetNodes.size());
-         this.targetNodes.forEach(var1x -> var1x.writeToStream(var1));
-         var1.writeInt(this.target.getX());
-         var1.writeInt(this.target.getY());
-         var1.writeInt(this.target.getZ());
-         var1.writeInt(this.nodes.size());
-
-         for(Node var3 : this.nodes) {
-            var3.writeToStream(var1);
-         }
-
-         var1.writeInt(this.openSet.length);
-
-         for(Node var5 : this.openSet) {
-            var5.writeToStream(var1);
-         }
-
-         var1.writeInt(this.closedSet.length);
-
-         for(Node var11 : this.closedSet) {
-            var11.writeToStream(var1);
-         }
+         var1.writeBlockPos(this.target);
+         var1.writeCollection(this.nodes, (var0, var1x) -> var1x.writeToStream(var0));
+         this.debugData.write(var1);
       }
    }
 
    public static Path createFromStream(FriendlyByteBuf var0) {
       boolean var1 = var0.readBoolean();
       int var2 = var0.readInt();
-      int var3 = var0.readInt();
-      HashSet var4 = Sets.newHashSet();
-
-      for(int var5 = 0; var5 < var3; ++var5) {
-         var4.add(Target.createFromStream(var0));
-      }
-
-      BlockPos var11 = new BlockPos(var0.readInt(), var0.readInt(), var0.readInt());
-      ArrayList var6 = Lists.newArrayList();
-      int var7 = var0.readInt();
-
-      for(int var8 = 0; var8 < var7; ++var8) {
-         var6.add(Node.createFromStream(var0));
-      }
-
-      Node[] var12 = new Node[var0.readInt()];
-
-      for(int var9 = 0; var9 < var12.length; ++var9) {
-         var12[var9] = Node.createFromStream(var0);
-      }
-
-      Node[] var13 = new Node[var0.readInt()];
-
-      for(int var10 = 0; var10 < var13.length; ++var10) {
-         var13[var10] = Node.createFromStream(var0);
-      }
-
-      Path var14 = new Path(var6, var11, var1);
-      var14.openSet = var12;
-      var14.closedSet = var13;
-      var14.targetNodes = var4;
-      var14.nextNodeIndex = var2;
-      return var14;
+      BlockPos var3 = var0.readBlockPos();
+      List var4 = var0.readList(Node::createFromStream);
+      Path.DebugData var5 = Path.DebugData.read(var0);
+      Path var6 = new Path(var4, var3, var1);
+      var6.debugData = var5;
+      var6.nextNodeIndex = var2;
+      return var6;
    }
 
    @Override
@@ -221,5 +164,56 @@ public class Path {
 
    public float getDistToTarget() {
       return this.distToTarget;
+   }
+
+   static Node[] readNodeArray(FriendlyByteBuf var0) {
+      Node[] var1 = new Node[var0.readVarInt()];
+
+      for(int var2 = 0; var2 < var1.length; ++var2) {
+         var1[var2] = Node.createFromStream(var0);
+      }
+
+      return var1;
+   }
+
+   static void writeNodeArray(FriendlyByteBuf var0, Node[] var1) {
+      var0.writeVarInt(var1.length);
+
+      for(Node var5 : var1) {
+         var5.writeToStream(var0);
+      }
+   }
+
+   public Path copy() {
+      Path var1 = new Path(this.nodes, this.target, this.reached);
+      var1.debugData = this.debugData;
+      var1.nextNodeIndex = this.nextNodeIndex;
+      return var1;
+   }
+
+   public static record DebugData(Node[] a, Node[] b, Set<Target> c) {
+      private final Node[] openSet;
+      private final Node[] closedSet;
+      final Set<Target> targetNodes;
+
+      public DebugData(Node[] var1, Node[] var2, Set<Target> var3) {
+         super();
+         this.openSet = var1;
+         this.closedSet = var2;
+         this.targetNodes = var3;
+      }
+
+      public void write(FriendlyByteBuf var1) {
+         var1.writeCollection(this.targetNodes, (var0, var1x) -> var1x.writeToStream(var0));
+         Path.writeNodeArray(var1, this.openSet);
+         Path.writeNodeArray(var1, this.closedSet);
+      }
+
+      public static Path.DebugData read(FriendlyByteBuf var0) {
+         HashSet var1 = var0.readCollection(HashSet::new, Target::createFromStream);
+         Node[] var2 = Path.readNodeArray(var0);
+         Node[] var3 = Path.readNodeArray(var0);
+         return new Path.DebugData(var2, var3, var1);
+      }
    }
 }

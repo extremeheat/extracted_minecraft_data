@@ -22,6 +22,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
@@ -45,6 +46,7 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import org.joml.Vector3f;
 
 public class Hoglin extends Animal implements Enemy, HoglinBase {
    private static final EntityDataAccessor<Boolean> DATA_IMMUNE_TO_ZOMBIFICATION = SynchedEntityData.defineId(Hoglin.class, EntityDataSerializers.BOOLEAN);
@@ -82,7 +84,8 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
          MemoryModuleType.NEAREST_VISIBLE_ADULT_HOGLINS,
          MemoryModuleType.NEAREST_VISIBLE_ADULT,
          MemoryModuleType.NEAREST_REPELLENT,
-         MemoryModuleType.PACIFIED
+         MemoryModuleType.PACIFIED,
+         MemoryModuleType.IS_PANICKING
       }
    );
 
@@ -222,8 +225,8 @@ public class Hoglin extends Animal implements Enemy, HoglinBase {
    }
 
    @Override
-   public double getPassengersRidingOffset() {
-      return (double)this.getBbHeight() - (this.isBaby() ? 0.2 : 0.15);
+   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
+      return new Vector3f(0.0F, var2.height + 0.09375F * var3, 0.0F);
    }
 
    @Override

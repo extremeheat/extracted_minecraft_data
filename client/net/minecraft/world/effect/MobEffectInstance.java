@@ -8,8 +8,10 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.ints.Int2IntFunction;
 import java.util.Optional;
 import javax.annotation.Nullable;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
@@ -18,6 +20,14 @@ import org.slf4j.Logger;
 public class MobEffectInstance implements Comparable<MobEffectInstance> {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final int INFINITE_DURATION = -1;
+   private static final String TAG_ID = "id";
+   private static final String TAG_AMBIENT = "ambient";
+   private static final String TAG_HIDDEN_EFFECT = "hidden_effect";
+   private static final String TAG_AMPLIFIER = "amplifier";
+   private static final String TAG_DURATION = "duration";
+   private static final String TAG_SHOW_PARTICLES = "show_particles";
+   private static final String TAG_SHOW_ICON = "show_icon";
+   private static final String TAG_FACTOR_CALCULATION_DATA = "factor_calculation_data";
    private final MobEffect effect;
    private int duration;
    private int amplifier;
@@ -93,22 +103,21 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
          LOGGER.warn("This method should only be called for matching effects!");
       }
 
-      int var2 = this.duration;
-      boolean var3 = false;
+      boolean var2 = false;
       if (var1.amplifier > this.amplifier) {
          if (var1.isShorterDurationThan(this)) {
-            MobEffectInstance var4 = this.hiddenEffect;
+            MobEffectInstance var3 = this.hiddenEffect;
             this.hiddenEffect = new MobEffectInstance(this);
-            this.hiddenEffect.hiddenEffect = var4;
+            this.hiddenEffect.hiddenEffect = var3;
          }
 
          this.amplifier = var1.amplifier;
          this.duration = var1.duration;
-         var3 = true;
+         var2 = true;
       } else if (this.isShorterDurationThan(var1)) {
          if (var1.amplifier == this.amplifier) {
             this.duration = var1.duration;
-            var3 = true;
+            var2 = true;
          } else if (this.hiddenEffect == null) {
             this.hiddenEffect = new MobEffectInstance(var1);
          } else {
@@ -116,22 +125,22 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
          }
       }
 
-      if (!var1.ambient && this.ambient || var3) {
+      if (!var1.ambient && this.ambient || var2) {
          this.ambient = var1.ambient;
-         var3 = true;
+         var2 = true;
       }
 
       if (var1.visible != this.visible) {
          this.visible = var1.visible;
-         var3 = true;
+         var2 = true;
       }
 
       if (var1.showIcon != this.showIcon) {
          this.showIcon = var1.showIcon;
-         var3 = true;
+         var2 = true;
       }
 
-      return var3;
+      return var2;
    }
 
    private boolean isShorterDurationThan(MobEffectInstance var1) {
@@ -177,8 +186,8 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
    public boolean tick(LivingEntity var1, Runnable var2) {
       if (this.hasRemainingDuration()) {
          int var3 = this.isInfiniteDuration() ? var1.tickCount : this.duration;
-         if (this.effect.isDurationEffectTick(var3, this.amplifier)) {
-            this.applyEffect(var1);
+         if (this.effect.shouldApplyEffectTickThisTick(var3, this.amplifier)) {
+            this.effect.applyEffectTick(var1, this.amplifier);
          }
 
          this.tickDownDuration();
@@ -205,10 +214,8 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
       return this.duration = this.mapDuration(var0 -> var0 - 1);
    }
 
-   public void applyEffect(LivingEntity var1) {
-      if (this.hasRemainingDuration()) {
-         this.effect.applyEffectTick(var1, this.amplifier);
-      }
+   public void onEffectStarted(LivingEntity var1) {
+      this.effect.onEffectStarted(var1, this.amplifier);
    }
 
    public String getDescriptionId() {
@@ -260,21 +267,22 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
    }
 
    public CompoundTag save(CompoundTag var1) {
-      var1.putInt("Id", MobEffect.getId(this.getEffect()));
+      ResourceLocation var2 = BuiltInRegistries.MOB_EFFECT.getKey(this.effect);
+      var1.putString("id", var2.toString());
       this.writeDetailsTo(var1);
       return var1;
    }
 
    private void writeDetailsTo(CompoundTag var1) {
-      var1.putByte("Amplifier", (byte)this.getAmplifier());
-      var1.putInt("Duration", this.getDuration());
-      var1.putBoolean("Ambient", this.isAmbient());
-      var1.putBoolean("ShowParticles", this.isVisible());
-      var1.putBoolean("ShowIcon", this.showIcon());
+      var1.putByte("amplifier", (byte)this.getAmplifier());
+      var1.putInt("duration", this.getDuration());
+      var1.putBoolean("ambient", this.isAmbient());
+      var1.putBoolean("show_particles", this.isVisible());
+      var1.putBoolean("show_icon", this.showIcon());
       if (this.hiddenEffect != null) {
          CompoundTag var2 = new CompoundTag();
          this.hiddenEffect.save(var2);
-         var1.put("HiddenEffect", var2);
+         var1.put("hidden_effect", var2);
       }
 
       this.factorData
@@ -282,40 +290,40 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
             var1x -> MobEffectInstance.FactorData.CODEC
                   .encodeStart(NbtOps.INSTANCE, var1x)
                   .resultOrPartial(LOGGER::error)
-                  .ifPresent(var1xx -> var1.put("FactorCalculationData", var1xx))
+                  .ifPresent(var1xx -> var1.put("factor_calculation_data", var1xx))
          );
    }
 
    @Nullable
    public static MobEffectInstance load(CompoundTag var0) {
-      int var1 = var0.getInt("Id");
-      MobEffect var2 = MobEffect.byId(var1);
+      String var1 = var0.getString("id");
+      MobEffect var2 = BuiltInRegistries.MOB_EFFECT.get(ResourceLocation.tryParse(var1));
       return var2 == null ? null : loadSpecifiedEffect(var2, var0);
    }
 
    private static MobEffectInstance loadSpecifiedEffect(MobEffect var0, CompoundTag var1) {
-      byte var2 = var1.getByte("Amplifier");
-      int var3 = var1.getInt("Duration");
-      boolean var4 = var1.getBoolean("Ambient");
+      byte var2 = var1.getByte("amplifier");
+      int var3 = var1.getInt("duration");
+      boolean var4 = var1.getBoolean("ambient");
       boolean var5 = true;
-      if (var1.contains("ShowParticles", 1)) {
-         var5 = var1.getBoolean("ShowParticles");
+      if (var1.contains("show_particles", 1)) {
+         var5 = var1.getBoolean("show_particles");
       }
 
       boolean var6 = var5;
-      if (var1.contains("ShowIcon", 1)) {
-         var6 = var1.getBoolean("ShowIcon");
+      if (var1.contains("show_icon", 1)) {
+         var6 = var1.getBoolean("show_icon");
       }
 
       MobEffectInstance var7 = null;
-      if (var1.contains("HiddenEffect", 10)) {
-         var7 = loadSpecifiedEffect(var0, var1.getCompound("HiddenEffect"));
+      if (var1.contains("hidden_effect", 10)) {
+         var7 = loadSpecifiedEffect(var0, var1.getCompound("hidden_effect"));
       }
 
       Optional var8;
-      if (var1.contains("FactorCalculationData", 10)) {
+      if (var1.contains("factor_calculation_data", 10)) {
          var8 = MobEffectInstance.FactorData.CODEC
-            .parse(new Dynamic(NbtOps.INSTANCE, var1.getCompound("FactorCalculationData")))
+            .parse(new Dynamic(NbtOps.INSTANCE, var1.getCompound("factor_calculation_data")))
             .resultOrPartial(LOGGER::error);
       } else {
          var8 = Optional.empty();

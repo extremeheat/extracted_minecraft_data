@@ -8,6 +8,9 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.BrewingStandMenu;
 
 public class BrewingStandScreen extends AbstractContainerScreen<BrewingStandMenu> {
+   private static final ResourceLocation FUEL_LENGTH_SPRITE = new ResourceLocation("container/brewing_stand/fuel_length");
+   private static final ResourceLocation BREW_PROGRESS_SPRITE = new ResourceLocation("container/brewing_stand/brew_progress");
+   private static final ResourceLocation BUBBLES_SPRITE = new ResourceLocation("container/brewing_stand/bubbles");
    private static final ResourceLocation BREWING_STAND_LOCATION = new ResourceLocation("textures/gui/container/brewing_stand.png");
    private static final int[] BUBBLELENGTHS = new int[]{29, 24, 20, 16, 11, 6, 0};
 
@@ -23,7 +26,6 @@ public class BrewingStandScreen extends AbstractContainerScreen<BrewingStandMenu
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
       super.render(var1, var2, var3, var4);
       this.renderTooltip(var1, var2, var3);
    }
@@ -36,19 +38,19 @@ public class BrewingStandScreen extends AbstractContainerScreen<BrewingStandMenu
       int var7 = this.menu.getFuel();
       int var8 = Mth.clamp((18 * var7 + 20 - 1) / 20, 0, 18);
       if (var8 > 0) {
-         var1.blit(BREWING_STAND_LOCATION, var5 + 60, var6 + 44, 176, 29, var8, 4);
+         var1.blitSprite(FUEL_LENGTH_SPRITE, 18, 4, 0, 0, var5 + 60, var6 + 44, var8, 4);
       }
 
       int var9 = this.menu.getBrewingTicks();
       if (var9 > 0) {
          int var10 = (int)(28.0F * (1.0F - (float)var9 / 400.0F));
          if (var10 > 0) {
-            var1.blit(BREWING_STAND_LOCATION, var5 + 97, var6 + 16, 176, 0, 9, var10);
+            var1.blitSprite(BREW_PROGRESS_SPRITE, 9, 28, 0, 0, var5 + 97, var6 + 16, 9, var10);
          }
 
          var10 = BUBBLELENGTHS[var9 / 2 % 7];
          if (var10 > 0) {
-            var1.blit(BREWING_STAND_LOCATION, var5 + 63, var6 + 14 + 29 - var10, 185, 29 - var10, 12, var10);
+            var1.blitSprite(BUBBLES_SPRITE, 12, 29, 0, 29 - var10, var5 + 63, var6 + 14 + 29 - var10, 12, var10);
          }
       }
    }

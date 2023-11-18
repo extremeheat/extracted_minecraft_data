@@ -130,7 +130,7 @@ public class StringDecomposer {
    }
 
    public static boolean iterateFormatted(FormattedText var0, Style var1, FormattedCharSink var2) {
-      return !var0.visit((var1x, var2x) -> iterateFormatted(var2x, 0, var1x, var2) ? Optional.empty() : STOP_ITERATION, var1).isPresent();
+      return var0.visit((var1x, var2x) -> iterateFormatted(var2x, 0, var1x, var2) ? Optional.empty() : STOP_ITERATION, var1).isEmpty();
    }
 
    public static String filterBrokenSurrogates(String var0) {

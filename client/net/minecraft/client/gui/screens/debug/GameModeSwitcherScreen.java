@@ -20,7 +20,9 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 
 public class GameModeSwitcherScreen extends Screen {
-   static final ResourceLocation GAMEMODE_SWITCHER_LOCATION = new ResourceLocation("textures/gui/container/gamemode_switcher.png");
+   static final ResourceLocation SLOT_SPRITE = new ResourceLocation("gamemode_switcher/slot");
+   static final ResourceLocation SELECTION_SPRITE = new ResourceLocation("gamemode_switcher/selection");
+   private static final ResourceLocation GAMEMODE_SWITCHER_LOCATION = new ResourceLocation("textures/gui/container/gamemode_switcher.png");
    private static final int SPRITE_SHEET_WIDTH = 128;
    private static final int SPRITE_SHEET_HEIGHT = 128;
    private static final int SLOT_AREA = 26;
@@ -93,6 +95,10 @@ public class GameModeSwitcherScreen extends Screen {
             }
          }
       }
+   }
+
+   @Override
+   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
    }
 
    private void switchToHoveredGameMode() {
@@ -217,11 +223,11 @@ public class GameModeSwitcherScreen extends Screen {
       }
 
       private void drawSlot(GuiGraphics var1) {
-         var1.blit(GameModeSwitcherScreen.GAMEMODE_SWITCHER_LOCATION, this.getX(), this.getY(), 0.0F, 75.0F, 26, 26, 128, 128);
+         var1.blitSprite(GameModeSwitcherScreen.SLOT_SPRITE, this.getX(), this.getY(), 26, 26);
       }
 
       private void drawSelection(GuiGraphics var1) {
-         var1.blit(GameModeSwitcherScreen.GAMEMODE_SWITCHER_LOCATION, this.getX(), this.getY(), 26.0F, 75.0F, 26, 26, 128, 128);
+         var1.blitSprite(GameModeSwitcherScreen.SELECTION_SPRITE, this.getX(), this.getY(), 26, 26);
       }
    }
 }

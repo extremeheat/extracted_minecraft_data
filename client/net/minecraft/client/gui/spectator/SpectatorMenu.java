@@ -5,12 +5,15 @@ import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.List;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.spectator.SpectatorGui;
 import net.minecraft.client.gui.spectator.categories.SpectatorPage;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 public class SpectatorMenu {
+   static final ResourceLocation CLOSE_SPRITE = new ResourceLocation("spectator/close");
+   static final ResourceLocation SCROLL_LEFT_SPRITE = new ResourceLocation("spectator/scroll_left");
+   static final ResourceLocation SCROLL_RIGHT_SPRITE = new ResourceLocation("spectator/scroll_right");
    private static final SpectatorMenuItem CLOSE_ITEM = new SpectatorMenu.CloseSpectatorItem();
    private static final SpectatorMenuItem SCROLL_LEFT = new SpectatorMenu.ScrollMenuItem(-1, true);
    private static final SpectatorMenuItem SCROLL_RIGHT_ENABLED = new SpectatorMenu.ScrollMenuItem(1, true);
@@ -128,7 +131,7 @@ public class SpectatorMenu {
 
       @Override
       public void renderIcon(GuiGraphics var1, float var2, int var3) {
-         var1.blit(SpectatorGui.SPECTATOR_LOCATION, 0, 0, 128.0F, 0.0F, 16, 16, 256, 256);
+         var1.blitSprite(SpectatorMenu.CLOSE_SPRITE, 0, 0, 16, 16);
       }
 
       @Override
@@ -160,9 +163,9 @@ public class SpectatorMenu {
       @Override
       public void renderIcon(GuiGraphics var1, float var2, int var3) {
          if (this.direction < 0) {
-            var1.blit(SpectatorGui.SPECTATOR_LOCATION, 0, 0, 144.0F, 0.0F, 16, 16, 256, 256);
+            var1.blitSprite(SpectatorMenu.SCROLL_LEFT_SPRITE, 0, 0, 16, 16);
          } else {
-            var1.blit(SpectatorGui.SPECTATOR_LOCATION, 0, 0, 160.0F, 0.0F, 16, 16, 256, 256);
+            var1.blitSprite(SpectatorMenu.SCROLL_RIGHT_SPRITE, 0, 0, 16, 16);
          }
       }
 

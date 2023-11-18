@@ -1,6 +1,5 @@
 package net.minecraft.client.gui.components;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -23,13 +22,10 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 
 public abstract class AbstractWidget implements Renderable, GuiEventListener, LayoutElement, NarratableEntry {
-   public static final ResourceLocation WIDGETS_LOCATION = new ResourceLocation("textures/gui/widgets.png");
-   public static final ResourceLocation ACCESSIBILITY_TEXTURE = new ResourceLocation("textures/gui/accessibility.png");
    private static final double PERIOD_PER_SCROLLED_PIXEL = 0.5;
    private static final double MIN_SCROLL_PERIOD = 3.0;
    protected int width;
@@ -122,20 +118,25 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
    protected abstract void renderWidget(GuiGraphics var1, int var2, int var3, float var4);
 
    protected static void renderScrollingString(GuiGraphics var0, Font var1, Component var2, int var3, int var4, int var5, int var6, int var7) {
-      int var8 = var1.width(var2);
-      int var9 = (var4 + var6 - 9) / 2 + 1;
-      int var10 = var5 - var3;
-      if (var8 > var10) {
-         int var11 = var8 - var10;
-         double var12 = (double)Util.getMillis() / 1000.0;
-         double var14 = Math.max((double)var11 * 0.5, 3.0);
-         double var16 = Math.sin(1.5707963267948966 * Math.cos(6.283185307179586 * var12 / var14)) / 2.0 + 0.5;
-         double var18 = Mth.lerp(var16, 0.0, (double)var11);
-         var0.enableScissor(var3, var4, var5, var6);
-         var0.drawString(var1, var2, var3 - (int)var18, var9, var7);
+      renderScrollingString(var0, var1, var2, (var3 + var5) / 2, var3, var4, var5, var6, var7);
+   }
+
+   protected static void renderScrollingString(GuiGraphics var0, Font var1, Component var2, int var3, int var4, int var5, int var6, int var7, int var8) {
+      int var9 = var1.width(var2);
+      int var10 = (var5 + var7 - 9) / 2 + 1;
+      int var11 = var6 - var4;
+      if (var9 > var11) {
+         int var12 = var9 - var11;
+         double var13 = (double)Util.getMillis() / 1000.0;
+         double var15 = Math.max((double)var12 * 0.5, 3.0);
+         double var17 = Math.sin(1.5707963267948966 * Math.cos(6.283185307179586 * var13 / var15)) / 2.0 + 0.5;
+         double var19 = Mth.lerp(var17, 0.0, (double)var12);
+         var0.enableScissor(var4, var5, var6, var7);
+         var0.drawString(var1, var2, var4 - (int)var19, var10, var8);
          var0.disableScissor();
       } else {
-         var0.drawCenteredString(var1, var2, (var3 + var5) / 2, var9, var7);
+         int var21 = Mth.clamp(var3, var4 + var9 / 2, var6 - var9 / 2);
+         var0.drawCenteredString(var1, var2, var21, var10, var8);
       }
    }
 
@@ -143,20 +144,6 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
       int var5 = this.getX() + var3;
       int var6 = this.getX() + this.getWidth() - var3;
       renderScrollingString(var1, var2, this.getMessage(), var5, this.getY(), var6, this.getY() + this.getHeight(), var4);
-   }
-
-   public void renderTexture(
-      GuiGraphics var1, ResourceLocation var2, int var3, int var4, int var5, int var6, int var7, int var8, int var9, int var10, int var11
-   ) {
-      int var12 = var6;
-      if (!this.isActive()) {
-         var12 = var6 + var7 * 2;
-      } else if (this.isHoveredOrFocused()) {
-         var12 = var6 + var7;
-      }
-
-      RenderSystem.enableDepthTest();
-      var1.blit(var2, var3, var4, (float)var5, (float)var12, var8, var9, var10, var11);
    }
 
    public void onClick(double var1, double var3) {
@@ -250,6 +237,10 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
 
    public void setWidth(int var1) {
       this.width = var1;
+   }
+
+   public void setHeight(int var1) {
+      this.height = var1;
    }
 
    public void setAlpha(float var1) {

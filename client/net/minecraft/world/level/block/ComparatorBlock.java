@@ -14,6 +14,7 @@ import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ComparatorBlockEntity;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -39,6 +40,13 @@ public class ComparatorBlock extends DiodeBlock implements EntityBlock {
    @Override
    protected int getDelay(BlockState var1) {
       return 2;
+   }
+
+   @Override
+   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+      return var2 == Direction.DOWN && !this.canSurviveOn(var4, var6, var3)
+         ? Blocks.AIR.defaultBlockState()
+         : super.updateShape(var1, var2, var3, var4, var5, var6);
    }
 
    @Override

@@ -7,22 +7,23 @@ import java.io.IOException;
 public class EndTag implements Tag {
    private static final int SELF_SIZE_IN_BYTES = 8;
    public static final TagType<EndTag> TYPE = new TagType<EndTag>() {
-      public EndTag load(DataInput var1, int var2, NbtAccounter var3) {
-         var3.accountBytes(8L);
+      public EndTag load(DataInput var1, NbtAccounter var2) {
+         var2.accountBytes(8L);
          return EndTag.INSTANCE;
       }
 
       @Override
-      public StreamTagVisitor.ValueResult parse(DataInput var1, StreamTagVisitor var2) {
+      public StreamTagVisitor.ValueResult parse(DataInput var1, StreamTagVisitor var2, NbtAccounter var3) {
+         var3.accountBytes(8L);
          return var2.visitEnd();
       }
 
       @Override
-      public void skip(DataInput var1, int var2) {
+      public void skip(DataInput var1, int var2, NbtAccounter var3) {
       }
 
       @Override
-      public void skip(DataInput var1) {
+      public void skip(DataInput var1, NbtAccounter var2) {
       }
 
       @Override

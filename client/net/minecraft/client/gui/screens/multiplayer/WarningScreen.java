@@ -50,11 +50,10 @@ public abstract class WarningScreen extends Screen {
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
+      super.render(var1, var2, var3, var4);
       this.renderTitle(var1);
       int var5 = this.width / 2 - this.message.getWidth() / 2;
       this.message.renderLeftAligned(var1, var5, 70, this.getLineHeight(), 16777215);
-      super.render(var1, var2, var3, var4);
    }
 
    protected void renderTitle(GuiGraphics var1) {

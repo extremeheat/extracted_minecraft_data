@@ -51,6 +51,19 @@ public abstract class VoxelShape {
       }
    }
 
+   public VoxelShape singleEncompassing() {
+      return this.isEmpty()
+         ? Shapes.empty()
+         : Shapes.box(
+            this.min(Direction.Axis.X),
+            this.min(Direction.Axis.Y),
+            this.min(Direction.Axis.Z),
+            this.max(Direction.Axis.X),
+            this.max(Direction.Axis.Y),
+            this.max(Direction.Axis.Z)
+         );
+   }
+
    protected double get(Direction.Axis var1, int var2) {
       return this.getCoords(var1).getDouble(var2);
    }

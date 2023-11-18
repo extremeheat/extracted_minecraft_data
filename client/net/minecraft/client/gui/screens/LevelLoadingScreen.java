@@ -59,18 +59,17 @@ public class LevelLoadingScreen extends Screen {
       if (this.done) {
          var1.add(NarratedElementType.TITLE, Component.translatable("narrator.loading.done"));
       } else {
-         String var2 = this.getFormattedProgress();
-         var1.add(NarratedElementType.TITLE, var2);
+         var1.add(NarratedElementType.TITLE, this.getFormattedProgress());
       }
    }
 
-   private String getFormattedProgress() {
-      return Mth.clamp(this.progressListener.getProgress(), 0, 100) + "%";
+   private Component getFormattedProgress() {
+      return Component.translatable("loading.progress", Mth.clamp(this.progressListener.getProgress(), 0, 100));
    }
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
+      super.render(var1, var2, var3, var4);
       long var5 = Util.getMillis();
       if (var5 - this.lastNarration > 2000L) {
          this.lastNarration = var5;

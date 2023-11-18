@@ -1,13 +1,13 @@
 package net.minecraft.world.level.storage.loot.functions;
 
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSyntaxException;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.List;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -18,11 +18,22 @@ import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class SetContainerLootTable extends LootItemConditionalFunction {
-   final ResourceLocation name;
-   final long seed;
-   final BlockEntityType<?> type;
+   public static final Codec<SetContainerLootTable> CODEC = RecordCodecBuilder.create(
+      var0 -> commonFields(var0)
+            .and(
+               var0.group(
+                  ResourceLocation.CODEC.fieldOf("name").forGetter(var0x -> var0x.name),
+                  ExtraCodecs.strictOptionalField(Codec.LONG, "seed", 0L).forGetter(var0x -> var0x.seed),
+                  BuiltInRegistries.BLOCK_ENTITY_TYPE.holderByNameCodec().fieldOf("type").forGetter(var0x -> var0x.type)
+               )
+            )
+            .apply(var0, SetContainerLootTable::new)
+   );
+   private final ResourceLocation name;
+   private final long seed;
+   private final Holder<BlockEntityType<?>> type;
 
-   SetContainerLootTable(LootItemCondition[] var1, ResourceLocation var2, long var3, BlockEntityType<?> var5) {
+   private SetContainerLootTable(List<LootItemCondition> var1, ResourceLocation var2, long var3, Holder<BlockEntityType<?>> var5) {
       super(var1);
       this.name = var2;
       this.seed = var3;
@@ -49,7 +60,7 @@ public class SetContainerLootTable extends LootItemConditionalFunction {
             var3.putLong("LootTableSeed", this.seed);
          }
 
-         BlockItem.setBlockEntityData(var1, this.type, var3);
+         BlockItem.setBlockEntityData(var1, this.type.value(), var3);
          return var1;
       }
    }
@@ -64,35 +75,10 @@ public class SetContainerLootTable extends LootItemConditionalFunction {
    }
 
    public static LootItemConditionalFunction.Builder<?> withLootTable(BlockEntityType<?> var0, ResourceLocation var1) {
-      return simpleBuilder(var2 -> new SetContainerLootTable(var2, var1, 0L, var0));
+      return simpleBuilder(var2 -> new SetContainerLootTable(var2, var1, 0L, var0.builtInRegistryHolder()));
    }
 
    public static LootItemConditionalFunction.Builder<?> withLootTable(BlockEntityType<?> var0, ResourceLocation var1, long var2) {
-      return simpleBuilder(var4 -> new SetContainerLootTable(var4, var1, var2, var0));
-   }
-
-   public static class Serializer extends LootItemConditionalFunction.Serializer<SetContainerLootTable> {
-      public Serializer() {
-         super();
-      }
-
-      public void serialize(JsonObject var1, SetContainerLootTable var2, JsonSerializationContext var3) {
-         super.serialize(var1, var2, var3);
-         var1.addProperty("name", var2.name.toString());
-         var1.addProperty("type", BuiltInRegistries.BLOCK_ENTITY_TYPE.getKey(var2.type).toString());
-         if (var2.seed != 0L) {
-            var1.addProperty("seed", var2.seed);
-         }
-      }
-
-      public SetContainerLootTable deserialize(JsonObject var1, JsonDeserializationContext var2, LootItemCondition[] var3) {
-         ResourceLocation var4 = new ResourceLocation(GsonHelper.getAsString(var1, "name"));
-         long var5 = GsonHelper.getAsLong(var1, "seed", 0L);
-         ResourceLocation var7 = new ResourceLocation(GsonHelper.getAsString(var1, "type"));
-         BlockEntityType var8 = BuiltInRegistries.BLOCK_ENTITY_TYPE
-            .getOptional(var7)
-            .orElseThrow(() -> new JsonSyntaxException("Unknown block entity type id '" + var7 + "'"));
-         return new SetContainerLootTable(var3, var4, var5, var8);
-      }
+      return simpleBuilder(var4 -> new SetContainerLootTable(var4, var1, var2, var0.builtInRegistryHolder()));
    }
 }

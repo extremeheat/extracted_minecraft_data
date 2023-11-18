@@ -13,24 +13,22 @@ import org.slf4j.Logger;
 
 public class OpenServerTask extends LongRunningTask {
    private static final Logger LOGGER = LogUtils.getLogger();
+   private static final Component TITLE = Component.translatable("mco.configure.world.opening");
    private final RealmsServer serverData;
    private final Screen returnScreen;
    private final boolean join;
-   private final RealmsMainScreen mainScreen;
    private final Minecraft minecraft;
 
-   public OpenServerTask(RealmsServer var1, Screen var2, RealmsMainScreen var3, boolean var4, Minecraft var5) {
+   public OpenServerTask(RealmsServer var1, Screen var2, boolean var3, Minecraft var4) {
       super();
       this.serverData = var1;
       this.returnScreen = var2;
-      this.join = var4;
-      this.mainScreen = var3;
-      this.minecraft = var5;
+      this.join = var3;
+      this.minecraft = var4;
    }
 
    @Override
    public void run() {
-      this.setTitle(Component.translatable("mco.configure.world.opening"));
       RealmsClient var1 = RealmsClient.create();
 
       for(int var2 = 0; var2 < 25; ++var2) {
@@ -48,7 +46,7 @@ public class OpenServerTask extends LongRunningTask {
 
                   this.serverData.state = RealmsServer.State.OPEN;
                   if (this.join) {
-                     this.mainScreen.play(this.serverData, this.returnScreen);
+                     RealmsMainScreen.play(this.serverData, this.returnScreen);
                   } else {
                      this.minecraft.setScreen(this.returnScreen);
                   }
@@ -67,8 +65,13 @@ public class OpenServerTask extends LongRunningTask {
             }
 
             LOGGER.error("Failed to open server", var5);
-            this.error("Failed to open the server");
+            this.error(var5);
          }
       }
+   }
+
+   @Override
+   public Component getTitle() {
+      return TITLE;
    }
 }

@@ -23,7 +23,8 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 
 public class SocialInteractionsScreen extends Screen {
-   protected static final ResourceLocation SOCIAL_INTERACTIONS_LOCATION = new ResourceLocation("textures/gui/social_interactions.png");
+   private static final ResourceLocation BACKGROUND_SPRITE = new ResourceLocation("social_interactions/background");
+   private static final ResourceLocation SEARCH_SPRITE = new ResourceLocation("icon/search");
    private static final Component TAB_ALL = Component.translatable("gui.socialInteractions.tab_all");
    private static final Component TAB_HIDDEN = Component.translatable("gui.socialInteractions.tab_hidden");
    private static final Component TAB_BLOCKED = Component.translatable("gui.socialInteractions.tab_blocked");
@@ -84,12 +85,6 @@ public class SocialInteractionsScreen extends Screen {
    }
 
    @Override
-   public void tick() {
-      super.tick();
-      this.searchBox.tick();
-   }
-
-   @Override
    protected void init() {
       if (this.initialized) {
          this.socialInteractionsPlayerList.updateSize(this.width, this.height, 88, this.listEnd());
@@ -113,7 +108,7 @@ public class SocialInteractionsScreen extends Screen {
          Button.builder(TAB_BLOCKED, var1x -> this.showPage(SocialInteractionsScreen.Page.BLOCKED)).bounds(var3 - var1 + 1, 45, var1, 20).build()
       );
       String var7 = this.searchBox != null ? this.searchBox.getValue() : "";
-      this.searchBox = new EditBox(this.font, this.marginX() + 29, 75, 198, 13, SEARCH_HINT) {
+      this.searchBox = new EditBox(this.font, this.marginX() + 28, 74, 200, 15, SEARCH_HINT) {
          @Override
          protected MutableComponent createNarrationMessage() {
             return !SocialInteractionsScreen.this.searchBox.getValue().isEmpty() && SocialInteractionsScreen.this.socialInteractionsPlayerList.isEmpty()
@@ -179,17 +174,17 @@ public class SocialInteractionsScreen extends Screen {
    }
 
    @Override
-   public void renderBackground(GuiGraphics var1) {
-      int var2 = this.marginX() + 3;
-      super.renderBackground(var1);
-      var1.blitNineSliced(SOCIAL_INTERACTIONS_LOCATION, var2, 64, 236, this.windowHeight() + 16, 8, 236, 34, 1, 1);
-      var1.blit(SOCIAL_INTERACTIONS_LOCATION, var2 + 10, 76, 243, 1, 12, 12);
+   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
+      int var5 = this.marginX() + 3;
+      super.renderBackground(var1, var2, var3, var4);
+      var1.blitSprite(BACKGROUND_SPRITE, var5, 64, 236, this.windowHeight() + 16);
+      var1.blitSprite(SEARCH_SPRITE, var5 + 10, 76, 12, 12);
    }
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
+      super.render(var1, var2, var3, var4);
       this.updateServerLabel(this.minecraft);
-      this.renderBackground(var1);
       if (this.serverLabel != null) {
          var1.drawString(this.minecraft.font, this.serverLabel, this.marginX() + 8, 35, -1);
       }
@@ -206,7 +201,6 @@ public class SocialInteractionsScreen extends Screen {
 
       this.searchBox.render(var1, var2, var3, var4);
       this.blockingHintButton.visible = this.page == SocialInteractionsScreen.Page.BLOCKED;
-      super.render(var1, var2, var3, var4);
    }
 
    @Override

@@ -15,22 +15,22 @@ public class SharedConstants {
    @Deprecated
    public static final boolean SNAPSHOT = false;
    @Deprecated
-   public static final int WORLD_VERSION = 3465;
+   public static final int WORLD_VERSION = 3578;
    @Deprecated
    public static final String SERIES = "main";
    @Deprecated
-   public static final String VERSION_STRING = "1.20.1";
+   public static final String VERSION_STRING = "1.20.2";
    @Deprecated
-   public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 763;
+   public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 764;
    @Deprecated
-   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 142;
-   public static final int SNBT_NAG_VERSION = 3437;
+   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 153;
+   public static final int SNBT_NAG_VERSION = 3563;
    private static final int SNAPSHOT_PROTOCOL_BIT = 30;
    public static final boolean THROW_ON_TASK_FAILURE = false;
    @Deprecated
-   public static final int RESOURCE_PACK_FORMAT = 15;
+   public static final int RESOURCE_PACK_FORMAT = 18;
    @Deprecated
-   public static final int DATA_PACK_FORMAT = 15;
+   public static final int DATA_PACK_FORMAT = 18;
    @Deprecated
    public static final int LANGUAGE_FORMAT = 1;
    public static final int REPORT_FORMAT_VERSION = 1;
@@ -84,6 +84,7 @@ public class SharedConstants {
    public static final boolean DEBUG_BYPASS_REALMS_VERSION_CHECK = false;
    public static final boolean DEBUG_SOCIAL_INTERACTIONS = false;
    public static final boolean DEBUG_VALIDATE_RESOURCE_PATH_CASE = false;
+   public static final boolean DEBUG_UNLOCK_ALL_TRADES = false;
    public static final boolean DEBUG_IGNORE_LOCAL_MOB_CAP = false;
    public static final boolean DEBUG_SMALL_SPAWN = false;
    public static final boolean DEBUG_DISABLE_LIQUID_SPREADING = false;
@@ -127,6 +128,7 @@ public class SharedConstants {
    public static final int MAX_RENDER_DISTANCE = 32;
    public static final char[] ILLEGAL_FILE_CHARACTERS = new char[]{'/', '\n', '\r', '\t', '\u0000', '\f', '`', '?', '*', '\\', '<', '>', '|', '"', ':'};
    public static final int TICKS_PER_SECOND = 20;
+   public static final int MILLIS_PER_TICK = 50;
    public static final int TICKS_PER_MINUTE = 1200;
    public static final int TICKS_PER_GAME_DAY = 24000;
    public static final float AVERAGE_GAME_TICKS_PER_RANDOM_TICK_PER_BLOCK = 1365.3334F;
@@ -185,7 +187,7 @@ public class SharedConstants {
    }
 
    public static int getProtocolVersion() {
-      return 763;
+      return 764;
    }
 
    public static boolean debugVoidTerrain(ChunkPos var0) {

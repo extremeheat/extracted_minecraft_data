@@ -202,8 +202,7 @@ public class Explosion {
       List var40 = this.level.getEntities(this.source, new AABB((double)var33, (double)var36, (double)var38, (double)var34, (double)var7, (double)var9));
       Vec3 var11 = new Vec3(this.x, this.y, this.z);
 
-      for(int var41 = 0; var41 < var40.size(); ++var41) {
-         Entity var13 = (Entity)var40.get(var41);
+      for(Entity var13 : var40) {
          if (!var13.ignoreExplosion()) {
             double var42 = Math.sqrt(var13.distanceToSqr(var11)) / (double)var32;
             if (var42 <= 1.0) {

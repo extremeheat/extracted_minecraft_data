@@ -62,7 +62,7 @@ public class Vindicator extends AbstractIllager {
       this.goalSelector.addGoal(1, new Vindicator.VindicatorBreakDoorGoal(this));
       this.goalSelector.addGoal(2, new AbstractIllager.RaiderOpenDoorGoal(this));
       this.goalSelector.addGoal(3, new Raider.HoldGroundAttackGoal(this, 10.0F));
-      this.goalSelector.addGoal(4, new Vindicator.VindicatorMeleeAttackGoal(this));
+      this.goalSelector.addGoal(4, new MeleeAttackGoal(this, 1.0, false));
       this.targetSelector.addGoal(1, new HurtByTargetGoal(this, Raider.class).setAlertOthers());
       this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
       this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, AbstractVillager.class, true));
@@ -233,22 +233,6 @@ public class Vindicator extends AbstractIllager {
       public void start() {
          super.start();
          this.mob.setNoActionTime(0);
-      }
-   }
-
-   class VindicatorMeleeAttackGoal extends MeleeAttackGoal {
-      public VindicatorMeleeAttackGoal(Vindicator var2) {
-         super(var2, 1.0, false);
-      }
-
-      @Override
-      protected double getAttackReachSqr(LivingEntity var1) {
-         if (this.mob.getVehicle() instanceof Ravager) {
-            float var2 = this.mob.getVehicle().getBbWidth() - 0.1F;
-            return (double)(var2 * 2.0F * var2 * 2.0F + var1.getBbWidth());
-         } else {
-            return super.getAttackReachSqr(var1);
-         }
       }
    }
 }

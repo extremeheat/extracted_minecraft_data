@@ -448,7 +448,7 @@ public class ParticleEngine implements PreparableReloadListener {
    }
 
    public void destroy(BlockPos var1, BlockState var2) {
-      if (!var2.isAir() && var2.shouldSpawnParticlesOnBreak()) {
+      if (!var2.isAir() && var2.shouldSpawnTerrainParticles()) {
          VoxelShape var3 = var2.getShape(this.level, var1);
          double var4 = 0.25;
          var3.forAllBoxes(
@@ -492,7 +492,7 @@ public class ParticleEngine implements PreparableReloadListener {
 
    public void crack(BlockPos var1, Direction var2) {
       BlockState var3 = this.level.getBlockState(var1);
-      if (var3.getRenderShape() != RenderShape.INVISIBLE) {
+      if (var3.getRenderShape() != RenderShape.INVISIBLE && var3.shouldSpawnTerrainParticles()) {
          int var4 = var1.getX();
          int var5 = var1.getY();
          int var6 = var1.getZ();

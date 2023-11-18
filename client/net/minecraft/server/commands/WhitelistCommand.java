@@ -11,7 +11,6 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.GameProfileArgument;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.server.players.UserWhiteList;
 import net.minecraft.server.players.UserWhiteListEntry;
@@ -93,7 +92,7 @@ public class WhitelistCommand {
          if (!var2.isWhiteListed(var5)) {
             UserWhiteListEntry var6 = new UserWhiteListEntry(var5);
             var2.add(var6);
-            var0.sendSuccess(() -> Component.translatable("commands.whitelist.add.success", ComponentUtils.getDisplayName(var5)), true);
+            var0.sendSuccess(() -> Component.translatable("commands.whitelist.add.success", Component.literal(var5.getName())), true);
             ++var3;
          }
       }
@@ -113,7 +112,7 @@ public class WhitelistCommand {
          if (var2.isWhiteListed(var5)) {
             UserWhiteListEntry var6 = new UserWhiteListEntry(var5);
             var2.remove(var6);
-            var0.sendSuccess(() -> Component.translatable("commands.whitelist.remove.success", ComponentUtils.getDisplayName(var5)), true);
+            var0.sendSuccess(() -> Component.translatable("commands.whitelist.remove.success", Component.literal(var5.getName())), true);
             ++var3;
          }
       }

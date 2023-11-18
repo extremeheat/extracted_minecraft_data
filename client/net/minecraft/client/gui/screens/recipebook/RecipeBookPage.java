@@ -9,11 +9,21 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.StateSwitchingButton;
+import net.minecraft.client.gui.components.WidgetSprites;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.stats.RecipeBook;
-import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 
 public class RecipeBookPage {
    public static final int ITEMS_PER_PAGE = 20;
+   private static final WidgetSprites PAGE_FORWARD_SPRITES = new WidgetSprites(
+      new ResourceLocation("recipe_book/page_forward"), new ResourceLocation("recipe_book/page_forward_highlighted")
+   );
+   private static final WidgetSprites PAGE_BACKWARD_SPRITES = new WidgetSprites(
+      new ResourceLocation("recipe_book/page_backward"), new ResourceLocation("recipe_book/page_backward_highlighted")
+   );
    private final List<RecipeButton> buttons = Lists.newArrayListWithCapacity(20);
    @Nullable
    private RecipeButton hoveredButton;
@@ -27,7 +37,7 @@ public class RecipeBookPage {
    private int currentPage;
    private RecipeBook recipeBook;
    @Nullable
-   private Recipe<?> lastClickedRecipe;
+   private RecipeHolder<?> lastClickedRecipe;
    @Nullable
    private RecipeCollection lastClickedRecipeCollection;
 
@@ -48,9 +58,9 @@ public class RecipeBookPage {
       }
 
       this.forwardButton = new StateSwitchingButton(var2 + 93, var3 + 137, 12, 17, false);
-      this.forwardButton.initTextureValues(1, 208, 13, 18, RecipeBookComponent.RECIPE_BOOK_LOCATION);
+      this.forwardButton.initTextureValues(PAGE_FORWARD_SPRITES);
       this.backButton = new StateSwitchingButton(var2 + 38, var3 + 137, 12, 17, true);
-      this.backButton.initTextureValues(1, 208, 13, 18, RecipeBookComponent.RECIPE_BOOK_LOCATION);
+      this.backButton.initTextureValues(PAGE_BACKWARD_SPRITES);
    }
 
    public void addListener(RecipeBookComponent var1) {
@@ -92,7 +102,7 @@ public class RecipeBookPage {
 
    public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, float var6) {
       if (this.totalPages > 1) {
-         String var7 = this.currentPage + 1 + "/" + this.totalPages;
+         MutableComponent var7 = Component.translatable("gui.recipebook.page", this.currentPage + 1, this.totalPages);
          int var8 = this.minecraft.font.width(var7);
          var1.drawString(this.minecraft.font, var7, var2 - var8 / 2 + 73, var3 + 141, -1, false);
       }
@@ -118,7 +128,7 @@ public class RecipeBookPage {
    }
 
    @Nullable
-   public Recipe<?> getLastClickedRecipe() {
+   public RecipeHolder<?> getLastClickedRecipe() {
       return this.lastClickedRecipe;
    }
 
@@ -170,7 +180,7 @@ public class RecipeBookPage {
       }
    }
 
-   public void recipesShown(List<Recipe<?>> var1) {
+   public void recipesShown(List<RecipeHolder<?>> var1) {
       for(RecipeShownListener var3 : this.showListeners) {
          var3.recipesShown(var1);
       }

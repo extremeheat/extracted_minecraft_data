@@ -342,7 +342,7 @@ public class DataCommands {
       }
    }
 
-   private static Tag getSingleTag(NbtPathArgument.NbtPath var0, DataAccessor var1) throws CommandSyntaxException {
+   public static Tag getSingleTag(NbtPathArgument.NbtPath var0, DataAccessor var1) throws CommandSyntaxException {
       List var2 = var0.get(var1.getData());
       Iterator var3 = var2.iterator();
       Tag var4 = (Tag)var3.next();

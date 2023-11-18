@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.UUID;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.BlockSource;
+import net.minecraft.core.dispenser.BlockSource;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.sounds.SoundEvent;
@@ -47,8 +47,8 @@ public class ArmorItem extends Item implements Equipable {
    private final Multimap<Attribute, AttributeModifier> defaultModifiers;
 
    public static boolean dispenseArmor(BlockSource var0, ItemStack var1) {
-      BlockPos var2 = var0.getPos().relative(var0.getBlockState().getValue(DispenserBlock.FACING));
-      List var3 = var0.getLevel()
+      BlockPos var2 = var0.pos().relative(var0.state().getValue(DispenserBlock.FACING));
+      List var3 = var0.level()
          .getEntitiesOfClass(LivingEntity.class, new AABB(var2), EntitySelector.NO_SPECTATORS.and(new EntitySelector.MobCanWearArmorEntitySelector(var1)));
       if (var3.isEmpty()) {
          return false;

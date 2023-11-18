@@ -42,6 +42,9 @@ import org.slf4j.Logger;
 public class ServerEntity {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int TOLERANCE_LEVEL_ROTATION = 1;
+   private static final double TOLERANCE_LEVEL_POSITION = 7.62939453125E-6;
+   public static final int FORCED_POS_UPDATE_PERIOD = 60;
+   private static final int FORCED_TELEPORT_PERIOD = 400;
    private final ServerLevel level;
    private final Entity entity;
    private final int updateInterval;
@@ -275,7 +278,8 @@ public class ServerEntity {
          var2.accept(new ClientboundSetPassengersPacket(this.entity.getVehicle()));
       }
 
-      if (this.entity instanceof Mob var12 && ((Mob)var12).isLeashed()) {
+      Entity var13 = this.entity;
+      if (var13 instanceof Mob var12 && ((Mob)var12).isLeashed()) {
          var2.accept(new ClientboundSetEntityLinkPacket((Entity)var12, ((Mob)var12).getLeashHolder()));
       }
    }

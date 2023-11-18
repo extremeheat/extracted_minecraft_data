@@ -66,6 +66,7 @@ import net.minecraft.util.datafix.fixes.ChunkToProtochunkFix;
 import net.minecraft.util.datafix.fixes.ColorlessShulkerEntityFix;
 import net.minecraft.util.datafix.fixes.CriteriaRenameFix;
 import net.minecraft.util.datafix.fixes.DecoratedPotFieldRenameFix;
+import net.minecraft.util.datafix.fixes.DropInvalidSignDataFix;
 import net.minecraft.util.datafix.fixes.DyeItemRenameFix;
 import net.minecraft.util.datafix.fixes.EffectDurationFix;
 import net.minecraft.util.datafix.fixes.EntityArmorStandSilentFix;
@@ -138,6 +139,7 @@ import net.minecraft.util.datafix.fixes.LevelUUIDFix;
 import net.minecraft.util.datafix.fixes.MapIdFix;
 import net.minecraft.util.datafix.fixes.MemoryExpiryDataFix;
 import net.minecraft.util.datafix.fixes.MissingDimensionFix;
+import net.minecraft.util.datafix.fixes.MobEffectIdFix;
 import net.minecraft.util.datafix.fixes.MobSpawnerEntityIdentifiersFix;
 import net.minecraft.util.datafix.fixes.NamedEntityFix;
 import net.minecraft.util.datafix.fixes.NamespacedTypeRenameFix;
@@ -159,6 +161,7 @@ import net.minecraft.util.datafix.fixes.OverreachingTickFix;
 import net.minecraft.util.datafix.fixes.PlayerUUIDFix;
 import net.minecraft.util.datafix.fixes.PoiTypeRemoveFix;
 import net.minecraft.util.datafix.fixes.PoiTypeRenameFix;
+import net.minecraft.util.datafix.fixes.RandomSequenceSettingsFix;
 import net.minecraft.util.datafix.fixes.RecipesFix;
 import net.minecraft.util.datafix.fixes.RecipesRenameningFix;
 import net.minecraft.util.datafix.fixes.RedstoneWireConnectionsFix;
@@ -170,6 +173,7 @@ import net.minecraft.util.datafix.fixes.RenamedCoralFix;
 import net.minecraft.util.datafix.fixes.ReorganizePoi;
 import net.minecraft.util.datafix.fixes.SavedDataFeaturePoolElementFix;
 import net.minecraft.util.datafix.fixes.SavedDataUUIDFix;
+import net.minecraft.util.datafix.fixes.ScoreboardDisplaySlotFix;
 import net.minecraft.util.datafix.fixes.SpawnerDataFix;
 import net.minecraft.util.datafix.fixes.StatsCounterFix;
 import net.minecraft.util.datafix.fixes.StatsRenameFix;
@@ -427,7 +431,6 @@ public class DataFixers {
       var0.addFixer(new LevelFlatGeneratorInfoFix(var42, false));
       Schema var43 = var0.addSchema(1451, 6, V1451_6::new);
       var0.addFixer(new StatsCounterFix(var43, true));
-      var0.addFixer(new WriteAndReadFix(var43, "Rewrite objectives", References.OBJECTIVE));
       var0.addFixer(new BlockEntityJukeboxFix(var43, false));
       Schema var44 = var0.addSchema(1451, 7, SAME_NAMESPACED);
       var0.addFixer(new VillagerTradeFix(var44, false));
@@ -440,6 +443,7 @@ public class DataFixers {
       Schema var47 = var0.addSchema(1460, V1460::new);
       var0.addFixer(new EntityPaintingMotiveFix(var47, false));
       Schema var48 = var0.addSchema(1466, V1466::new);
+      var0.addFixer(new AddNewChoices(var48, "Add DUMMY block entity", References.BLOCK_ENTITY));
       var0.addFixer(new ChunkToProtochunkFix(var48, true));
       Schema var49 = var0.addSchema(1470, V1470::new);
       var0.addFixer(new AddNewChoices(var49, "Add 1.13 entities fix", References.ENTITY));
@@ -1162,6 +1166,15 @@ public class DataFixers {
       var0.addFixer(new ChunkDeleteLightFix(var193));
       Schema var194 = var0.addSchema(3459, SAME_NAMESPACED);
       var0.addFixer(new LegacyDragonFightFix(var194));
+      Schema var195 = var0.addSchema(3564, SAME_NAMESPACED);
+      var0.addFixer(new DropInvalidSignDataFix(var195, "Drop invalid sign datafix data", "minecraft:sign"));
+      var0.addFixer(new DropInvalidSignDataFix(var195, "Drop invalid hanging sign datafix data", "minecraft:hanging_sign"));
+      Schema var196 = var0.addSchema(3565, SAME_NAMESPACED);
+      var0.addFixer(new RandomSequenceSettingsFix(var196));
+      Schema var197 = var0.addSchema(3566, SAME_NAMESPACED);
+      var0.addFixer(new ScoreboardDisplaySlotFix(var197));
+      Schema var198 = var0.addSchema(3568, SAME_NAMESPACED);
+      var0.addFixer(new MobEffectIdFix(var198));
    }
 
    private static UnaryOperator<String> createRenamer(Map<String, String> var0) {

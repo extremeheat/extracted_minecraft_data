@@ -6,12 +6,14 @@ import com.google.common.collect.UnmodifiableIterator;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -166,9 +168,9 @@ public class LiquidBlock extends Block implements BucketPickup {
    }
 
    @Override
-   public ItemStack pickupBlock(LevelAccessor var1, BlockPos var2, BlockState var3) {
-      if (var3.getValue(LEVEL) == 0) {
-         var1.setBlock(var2, Blocks.AIR.defaultBlockState(), 11);
+   public ItemStack pickupBlock(@Nullable Player var1, LevelAccessor var2, BlockPos var3, BlockState var4) {
+      if (var4.getValue(LEVEL) == 0) {
+         var2.setBlock(var3, Blocks.AIR.defaultBlockState(), 11);
          return new ItemStack(this.fluid.getBucket());
       } else {
          return ItemStack.EMPTY;

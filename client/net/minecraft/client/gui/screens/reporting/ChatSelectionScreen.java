@@ -6,6 +6,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Optionull;
@@ -21,8 +22,9 @@ import net.minecraft.client.gui.navigation.ScreenDirection;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.chat.ChatTrustLevel;
 import net.minecraft.client.multiplayer.chat.LoggedChatMessage;
-import net.minecraft.client.multiplayer.chat.report.ChatReportBuilder;
+import net.minecraft.client.multiplayer.chat.report.ChatReport;
 import net.minecraft.client.multiplayer.chat.report.ReportingContext;
+import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -33,6 +35,7 @@ import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
 
 public class ChatSelectionScreen extends Screen {
+   static final ResourceLocation CHECKMARK_SPRITE = new ResourceLocation("icon/checkmark");
    private static final Component TITLE = Component.translatable("gui.chatSelection.title");
    private static final Component CONTEXT_INFO = Component.translatable("gui.chatSelection.context").withStyle(ChatFormatting.GRAY);
    @Nullable
@@ -42,11 +45,11 @@ public class ChatSelectionScreen extends Screen {
    private MultiLineLabel contextInfoLabel;
    @Nullable
    private ChatSelectionScreen.ChatSelectionList chatSelectionList;
-   final ChatReportBuilder report;
-   private final Consumer<ChatReportBuilder> onSelected;
+   final ChatReport.Builder report;
+   private final Consumer<ChatReport.Builder> onSelected;
    private ChatSelectionLogFiller chatLogFiller;
 
-   public ChatSelectionScreen(@Nullable Screen var1, ReportingContext var2, ChatReportBuilder var3, Consumer<ChatReportBuilder> var4) {
+   public ChatSelectionScreen(@Nullable Screen var1, ReportingContext var2, ChatReport.Builder var3, Consumer<ChatReport.Builder> var4) {
       super(TITLE);
       this.lastScreen = var1;
       this.reportingContext = var2;
@@ -59,7 +62,6 @@ public class ChatSelectionScreen extends Screen {
       this.chatLogFiller = new ChatSelectionLogFiller(this.reportingContext, this::canReport);
       this.contextInfoLabel = MultiLineLabel.create(this.font, CONTEXT_INFO, this.width - 16);
       this.chatSelectionList = new ChatSelectionScreen.ChatSelectionList(this.minecraft, (this.contextInfoLabel.getLineCount() + 1) * 9);
-      this.chatSelectionList.setRenderBackground(false);
       this.addWidget(this.chatSelectionList);
       this.addRenderableWidget(
          Button.builder(CommonComponents.GUI_BACK, var1 -> this.onClose()).bounds(this.width / 2 - 155, this.height - 32, 150, 20).build()
@@ -92,7 +94,7 @@ public class ChatSelectionScreen extends Screen {
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
+      super.render(var1, var2, var3, var4);
       this.chatSelectionList.render(var1, var2, var3, var4);
       var1.drawCenteredString(this.font, this.title, this.width / 2, 16, 16777215);
       AbuseReportLimits var5 = this.reportingContext.sender().reportLimits();
@@ -101,7 +103,11 @@ public class ChatSelectionScreen extends Screen {
       MutableComponent var8 = Component.translatable("gui.chatSelection.selected", var6, var7);
       var1.drawCenteredString(this.font, var8, this.width / 2, 16 + 9 * 3 / 2, 10526880);
       this.contextInfoLabel.renderCentered(var1, this.width / 2, this.chatSelectionList.getFooterTop());
-      super.render(var1, var2, var3, var4);
+   }
+
+   @Override
+   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
+      this.renderDirtBackground(var1);
    }
 
    @Override
@@ -288,7 +294,6 @@ public class ChatSelectionScreen extends Screen {
       }
 
       public class MessageEntry extends ChatSelectionScreen.ChatSelectionList.Entry {
-         private static final ResourceLocation CHECKMARK_TEXTURE = new ResourceLocation("minecraft", "textures/gui/checkmark.png");
          private static final int CHECKMARK_WIDTH = 9;
          private static final int CHECKMARK_HEIGHT = 8;
          private static final int INDENT_AMOUNT = 11;
@@ -357,7 +362,7 @@ public class ChatSelectionScreen extends Screen {
          private void renderSelectedCheckmark(GuiGraphics var1, int var2, int var3, int var4) {
             int var6 = var2 + (var4 - 8) / 2;
             RenderSystem.enableBlend();
-            var1.blit(CHECKMARK_TEXTURE, var3, var6, 0.0F, 0.0F, 9, 8, 9, 8);
+            var1.blitSprite(ChatSelectionScreen.CHECKMARK_SPRITE, var3, var6, 9, 8);
             RenderSystem.disableBlend();
          }
 
@@ -377,12 +382,8 @@ public class ChatSelectionScreen extends Screen {
 
          @Override
          public boolean mouseClicked(double var1, double var3, int var5) {
-            if (var5 == 0) {
-               ChatSelectionList.this.setSelected(null);
-               return this.toggleReport();
-            } else {
-               return false;
-            }
+            ChatSelectionList.this.setSelected(null);
+            return this.toggleReport();
          }
 
          @Override
@@ -419,21 +420,21 @@ public class ChatSelectionScreen extends Screen {
       public class MessageHeadingEntry extends ChatSelectionScreen.ChatSelectionList.Entry {
          private static final int FACE_SIZE = 12;
          private final Component heading;
-         private final ResourceLocation skin;
+         private final Supplier<PlayerSkin> skin;
          private final boolean canReport;
 
          public MessageHeadingEntry(GameProfile var2, Component var3, boolean var4) {
             super();
             this.heading = var3;
             this.canReport = var4;
-            this.skin = ChatSelectionList.this.minecraft.getSkinManager().getInsecureSkinLocation(var2);
+            this.skin = ChatSelectionList.this.minecraft.getSkinManager().lookupInsecure(var2);
          }
 
          @Override
          public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
             int var11 = var4 - 12 - 4;
             int var12 = var3 + (var6 - 12) / 2;
-            PlayerFaceRenderer.draw(var1, this.skin, var11, var12, 12);
+            PlayerFaceRenderer.draw(var1, this.skin.get(), var11, var12, 12);
             int var13 = var3 + 1 + (var6 - 9) / 2;
             var1.drawString(ChatSelectionScreen.this.font, this.heading, var4, var13, this.canReport ? -1 : -1593835521);
          }

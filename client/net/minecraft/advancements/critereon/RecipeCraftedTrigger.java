@@ -1,31 +1,26 @@
 package net.minecraft.advancements.critereon;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
+import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.Criterion;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
 
 public class RecipeCraftedTrigger extends SimpleCriterionTrigger<RecipeCraftedTrigger.TriggerInstance> {
-   static final ResourceLocation ID = new ResourceLocation("recipe_crafted");
-
    public RecipeCraftedTrigger() {
       super();
    }
 
-   @Override
-   public ResourceLocation getId() {
-      return ID;
-   }
-
-   protected RecipeCraftedTrigger.TriggerInstance createInstance(JsonObject var1, ContextAwarePredicate var2, DeserializationContext var3) {
+   protected RecipeCraftedTrigger.TriggerInstance createInstance(JsonObject var1, Optional<ContextAwarePredicate> var2, DeserializationContext var3) {
       ResourceLocation var4 = new ResourceLocation(GsonHelper.getAsString(var1, "recipe_id"));
-      ItemPredicate[] var5 = ItemPredicate.fromJsonArray(var1.get("ingredients"));
-      return new RecipeCraftedTrigger.TriggerInstance(var2, var4, List.of(var5));
+      List var5 = ItemPredicate.fromJsonArray(var1.get("ingredients"));
+      return new RecipeCraftedTrigger.TriggerInstance(var2, var4, var5);
    }
 
    public void trigger(ServerPlayer var1, ResourceLocation var2, List<ItemStack> var3) {
@@ -36,18 +31,19 @@ public class RecipeCraftedTrigger extends SimpleCriterionTrigger<RecipeCraftedTr
       private final ResourceLocation recipeId;
       private final List<ItemPredicate> predicates;
 
-      public TriggerInstance(ContextAwarePredicate var1, ResourceLocation var2, List<ItemPredicate> var3) {
-         super(RecipeCraftedTrigger.ID, var1);
+      public TriggerInstance(Optional<ContextAwarePredicate> var1, ResourceLocation var2, List<ItemPredicate> var3) {
+         super(var1);
          this.recipeId = var2;
          this.predicates = var3;
       }
 
-      public static RecipeCraftedTrigger.TriggerInstance craftedItem(ResourceLocation var0, List<ItemPredicate> var1) {
-         return new RecipeCraftedTrigger.TriggerInstance(ContextAwarePredicate.ANY, var0, var1);
+      public static Criterion<RecipeCraftedTrigger.TriggerInstance> craftedItem(ResourceLocation var0, List<ItemPredicate.Builder> var1) {
+         return CriteriaTriggers.RECIPE_CRAFTED
+            .createCriterion(new RecipeCraftedTrigger.TriggerInstance(Optional.empty(), var0, var1.stream().map(ItemPredicate.Builder::build).toList()));
       }
 
-      public static RecipeCraftedTrigger.TriggerInstance craftedItem(ResourceLocation var0) {
-         return new RecipeCraftedTrigger.TriggerInstance(ContextAwarePredicate.ANY, var0, List.of());
+      public static Criterion<RecipeCraftedTrigger.TriggerInstance> craftedItem(ResourceLocation var0) {
+         return CriteriaTriggers.RECIPE_CRAFTED.createCriterion(new RecipeCraftedTrigger.TriggerInstance(Optional.empty(), var0, List.of()));
       }
 
       boolean matches(ResourceLocation var1, List<ItemStack> var2) {
@@ -78,20 +74,14 @@ public class RecipeCraftedTrigger extends SimpleCriterionTrigger<RecipeCraftedTr
       }
 
       @Override
-      public JsonObject serializeToJson(SerializationContext var1) {
-         JsonObject var2 = super.serializeToJson(var1);
-         var2.addProperty("recipe_id", this.recipeId.toString());
-         if (this.predicates.size() > 0) {
-            JsonArray var3 = new JsonArray();
-
-            for(ItemPredicate var5 : this.predicates) {
-               var3.add(var5.serializeToJson());
-            }
-
-            var2.add("ingredients", var3);
+      public JsonObject serializeToJson() {
+         JsonObject var1 = super.serializeToJson();
+         var1.addProperty("recipe_id", this.recipeId.toString());
+         if (!this.predicates.isEmpty()) {
+            var1.add("ingredients", ItemPredicate.serializeToJsonArray(this.predicates));
          }
 
-         return var2;
+         return var1;
       }
    }
 }

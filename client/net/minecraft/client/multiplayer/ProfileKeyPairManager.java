@@ -21,9 +21,7 @@ public interface ProfileKeyPairManager {
    };
 
    static ProfileKeyPairManager create(UserApiService var0, User var1, Path var2) {
-      return (ProfileKeyPairManager)(var1.getType() == User.Type.MSA
-         ? new AccountProfileKeyPairManager(var0, var1.getGameProfile().getId(), var2)
-         : EMPTY_KEY_MANAGER);
+      return (ProfileKeyPairManager)(var1.getType() == User.Type.MSA ? new AccountProfileKeyPairManager(var0, var1.getProfileId(), var2) : EMPTY_KEY_MANAGER);
    }
 
    CompletableFuture<Optional<ProfileKeyPair>> prepareKeyPair();

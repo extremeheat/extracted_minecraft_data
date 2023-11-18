@@ -3,18 +3,19 @@ package net.minecraft.data.advancements.packs;
 import com.google.common.collect.BiMap;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.advancements.AdvancementRequirements;
 import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.FrameType;
-import net.minecraft.advancements.RequirementsStrategy;
 import net.minecraft.advancements.critereon.BeeNestDestroyedTrigger;
 import net.minecraft.advancements.critereon.BlockPredicate;
 import net.minecraft.advancements.critereon.BredAnimalsTrigger;
 import net.minecraft.advancements.critereon.ConsumeItemTrigger;
-import net.minecraft.advancements.critereon.ContextAwarePredicate;
 import net.minecraft.advancements.critereon.EffectsChangedTrigger;
 import net.minecraft.advancements.critereon.EnchantmentPredicate;
 import net.minecraft.advancements.critereon.EntityFlagsPredicate;
@@ -124,8 +125,8 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
    }
 
    @Override
-   public void generate(HolderLookup.Provider var1, Consumer<Advancement> var2) {
-      Advancement var3 = Advancement.Builder.advancement()
+   public void generate(HolderLookup.Provider var1, Consumer<AdvancementHolder> var2) {
+      AdvancementHolder var3 = Advancement.Builder.advancement()
          .display(
             Blocks.HAY_BLOCK,
             Component.translatable("advancements.husbandry.root.title"),
@@ -138,7 +139,7 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
          )
          .addCriterion("consumed_item", ConsumeItemTrigger.TriggerInstance.usedItem())
          .save(var2, "husbandry/root");
-      Advancement var4 = Advancement.Builder.advancement()
+      AdvancementHolder var4 = Advancement.Builder.advancement()
          .parent(var3)
          .display(
             Items.WHEAT,
@@ -150,7 +151,7 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
             true,
             false
          )
-         .requirements(RequirementsStrategy.OR)
+         .requirements(AdvancementRequirements.Strategy.OR)
          .addCriterion("wheat", ItemUsedOnLocationTrigger.TriggerInstance.placedBlock(Blocks.WHEAT))
          .addCriterion("pumpkin_stem", ItemUsedOnLocationTrigger.TriggerInstance.placedBlock(Blocks.PUMPKIN_STEM))
          .addCriterion("melon_stem", ItemUsedOnLocationTrigger.TriggerInstance.placedBlock(Blocks.MELON_STEM))
@@ -159,7 +160,7 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
          .addCriterion("torchflower", ItemUsedOnLocationTrigger.TriggerInstance.placedBlock(Blocks.TORCHFLOWER_CROP))
          .addCriterion("pitcher_pod", ItemUsedOnLocationTrigger.TriggerInstance.placedBlock(Blocks.PITCHER_CROP))
          .save(var2, "husbandry/plant_seed");
-      Advancement var5 = Advancement.Builder.advancement()
+      AdvancementHolder var5 = Advancement.Builder.advancement()
          .parent(var3)
          .display(
             Items.WHEAT,
@@ -171,7 +172,7 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
             true,
             false
          )
-         .requirements(RequirementsStrategy.OR)
+         .requirements(AdvancementRequirements.Strategy.OR)
          .addCriterion("bred", BredAnimalsTrigger.TriggerInstance.bredAnimals())
          .save(var2, "husbandry/breed_an_animal");
       createBreedAllAnimalsAdvancement(var5, var2, BREEDABLE_ANIMALS.stream(), INDIRECTLY_BREEDABLE_ANIMALS.stream());
@@ -204,7 +205,7 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
          .rewards(AdvancementRewards.Builder.experience(100))
          .addCriterion("netherite_hoe", InventoryChangeTrigger.TriggerInstance.hasItems(Items.NETHERITE_HOE))
          .save(var2, "husbandry/obtain_netherite_hoe");
-      Advancement var6 = Advancement.Builder.advancement()
+      AdvancementHolder var6 = Advancement.Builder.advancement()
          .parent(var3)
          .display(
             Items.LEAD,
@@ -218,9 +219,9 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
          )
          .addCriterion("tamed_animal", TameAnimalTrigger.TriggerInstance.tamedAnimal())
          .save(var2, "husbandry/tame_an_animal");
-      Advancement var7 = addFish(Advancement.Builder.advancement())
+      AdvancementHolder var7 = addFish(Advancement.Builder.advancement())
          .parent(var3)
-         .requirements(RequirementsStrategy.OR)
+         .requirements(AdvancementRequirements.Strategy.OR)
          .display(
             Items.FISHING_ROD,
             Component.translatable("advancements.husbandry.fishy_business.title"),
@@ -232,9 +233,9 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
             false
          )
          .save(var2, "husbandry/fishy_business");
-      Advancement var8 = addFishBuckets(Advancement.Builder.advancement())
+      AdvancementHolder var8 = addFishBuckets(Advancement.Builder.advancement())
          .parent(var7)
-         .requirements(RequirementsStrategy.OR)
+         .requirements(AdvancementRequirements.Strategy.OR)
          .display(
             Items.PUFFERFISH_BUCKET,
             Component.translatable("advancements.husbandry.tactical_fishing.title"),
@@ -246,12 +247,12 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
             false
          )
          .save(var2, "husbandry/tactical_fishing");
-      Advancement var9 = Advancement.Builder.advancement()
+      AdvancementHolder var9 = Advancement.Builder.advancement()
          .parent(var8)
-         .requirements(RequirementsStrategy.OR)
+         .requirements(AdvancementRequirements.Strategy.OR)
          .addCriterion(
             BuiltInRegistries.ITEM.getKey(Items.AXOLOTL_BUCKET).getPath(),
-            FilledBucketTrigger.TriggerInstance.filledBucket(ItemPredicate.Builder.item().of(Items.AXOLOTL_BUCKET).build())
+            FilledBucketTrigger.TriggerInstance.filledBucket(ItemPredicate.Builder.item().of(Items.AXOLOTL_BUCKET))
          )
          .display(
             Items.AXOLOTL_BUCKET,
@@ -266,9 +267,7 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
          .save(var2, "husbandry/axolotl_in_a_bucket");
       Advancement.Builder.advancement()
          .parent(var9)
-         .addCriterion(
-            "kill_axolotl_target", EffectsChangedTrigger.TriggerInstance.gotEffectsFrom(EntityPredicate.Builder.entity().of(EntityType.AXOLOTL).build())
-         )
+         .addCriterion("kill_axolotl_target", EffectsChangedTrigger.TriggerInstance.gotEffectsFrom(EntityPredicate.Builder.entity().of(EntityType.AXOLOTL)))
          .display(
             Items.TROPICAL_FISH_BUCKET,
             Component.translatable("advancements.husbandry.kill_axolotl_target.title"),
@@ -294,12 +293,12 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
          )
          .rewards(AdvancementRewards.Builder.experience(50))
          .save(var2, "husbandry/complete_catalogue");
-      Advancement var10 = Advancement.Builder.advancement()
+      AdvancementHolder var10 = Advancement.Builder.advancement()
          .parent(var3)
          .addCriterion(
             "safely_harvest_honey",
             ItemUsedOnLocationTrigger.TriggerInstance.itemUsedOnBlock(
-               LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of(BlockTags.BEEHIVES).build()).setSmokey(true),
+               LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of(BlockTags.BEEHIVES)).setSmokey(true),
                ItemPredicate.Builder.item().of(Items.GLASS_BOTTLE)
             )
          )
@@ -314,7 +313,7 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
             false
          )
          .save(var2, "husbandry/safely_harvest_honey");
-      Advancement var11 = Advancement.Builder.advancement()
+      AdvancementHolder var11 = Advancement.Builder.advancement()
          .parent(var10)
          .display(
             Items.HONEYCOMB,
@@ -329,7 +328,7 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
          .addCriterion(
             "wax_on",
             ItemUsedOnLocationTrigger.TriggerInstance.itemUsedOnBlock(
-               LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of(((BiMap)HoneycombItem.WAXABLES.get()).keySet()).build()),
+               LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of(((BiMap)HoneycombItem.WAXABLES.get()).keySet())),
                ItemPredicate.Builder.item().of(Items.HONEYCOMB)
             )
          )
@@ -349,17 +348,16 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
          .addCriterion(
             "wax_off",
             ItemUsedOnLocationTrigger.TriggerInstance.itemUsedOnBlock(
-               LocationPredicate.Builder.location()
-                  .setBlock(BlockPredicate.Builder.block().of(((BiMap)HoneycombItem.WAX_OFF_BY_BLOCK.get()).keySet()).build()),
+               LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of(((BiMap)HoneycombItem.WAX_OFF_BY_BLOCK.get()).keySet())),
                ItemPredicate.Builder.item().of(WAX_SCRAPING_TOOLS)
             )
          )
          .save(var2, "husbandry/wax_off");
-      Advancement var12 = Advancement.Builder.advancement()
+      AdvancementHolder var12 = Advancement.Builder.advancement()
          .parent(var3)
          .addCriterion(
             BuiltInRegistries.ITEM.getKey(Items.TADPOLE_BUCKET).getPath(),
-            FilledBucketTrigger.TriggerInstance.filledBucket(ItemPredicate.Builder.item().of(Items.TADPOLE_BUCKET).build())
+            FilledBucketTrigger.TriggerInstance.filledBucket(ItemPredicate.Builder.item().of(Items.TADPOLE_BUCKET))
          )
          .display(
             Items.TADPOLE_BUCKET,
@@ -372,7 +370,7 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
             false
          )
          .save(var2, "husbandry/tadpole_in_a_bucket");
-      Advancement var13 = addLeashedFrogVariants(Advancement.Builder.advancement())
+      AdvancementHolder var13 = addLeashedFrogVariants(Advancement.Builder.advancement())
          .parent(var12)
          .display(
             Items.LEAD,
@@ -438,9 +436,7 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
             "ride_a_boat_with_a_goat",
             StartRidingTrigger.TriggerInstance.playerStartsRiding(
                EntityPredicate.Builder.entity()
-                  .vehicle(
-                     EntityPredicate.Builder.entity().of(EntityType.BOAT).passenger(EntityPredicate.Builder.entity().of(EntityType.GOAT).build()).build()
-                  )
+                  .vehicle(EntityPredicate.Builder.entity().of(EntityType.BOAT).passenger(EntityPredicate.Builder.entity().of(EntityType.GOAT)))
             )
          )
          .save(var2, "husbandry/ride_a_boat_with_a_goat");
@@ -459,12 +455,12 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
          .addCriterion(
             "make_a_sign_glow",
             ItemUsedOnLocationTrigger.TriggerInstance.itemUsedOnBlock(
-               LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of(BlockTags.ALL_SIGNS).build()),
+               LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of(BlockTags.ALL_SIGNS)),
                ItemPredicate.Builder.item().of(Items.GLOW_INK_SAC)
             )
          )
          .save(var2, "husbandry/make_a_sign_glow");
-      Advancement var14 = Advancement.Builder.advancement()
+      AdvancementHolder var14 = Advancement.Builder.advancement()
          .parent(var3)
          .display(
             Items.COOKIE,
@@ -479,7 +475,7 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
          .addCriterion(
             "allay_deliver_item_to_player",
             PickedUpItemTrigger.TriggerInstance.thrownItemPickedUpByPlayer(
-               ContextAwarePredicate.ANY, ItemPredicate.ANY, EntityPredicate.wrap(EntityPredicate.Builder.entity().of(EntityType.ALLAY).build())
+               Optional.empty(), Optional.empty(), Optional.of(EntityPredicate.wrap(EntityPredicate.Builder.entity().of(EntityType.ALLAY)))
             )
          )
          .save(var2, "husbandry/allay_deliver_item_to_player");
@@ -498,12 +494,12 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
          .addCriterion(
             "allay_deliver_cake_to_note_block",
             ItemUsedOnLocationTrigger.TriggerInstance.allayDropItemOnBlock(
-               LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of(Blocks.NOTE_BLOCK).build()),
+               LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of(Blocks.NOTE_BLOCK)),
                ItemPredicate.Builder.item().of(Items.CAKE)
             )
          )
          .save(var2, "husbandry/allay_deliver_cake_to_note_block");
-      Advancement var15 = Advancement.Builder.advancement()
+      AdvancementHolder var15 = Advancement.Builder.advancement()
          .parent(var3)
          .display(
             Items.SNIFFER_EGG,
@@ -517,7 +513,7 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
          )
          .addCriterion("obtain_sniffer_egg", InventoryChangeTrigger.TriggerInstance.hasItems(Items.SNIFFER_EGG))
          .save(var2, "husbandry/obtain_sniffer_egg");
-      Advancement var16 = Advancement.Builder.advancement()
+      AdvancementHolder var16 = Advancement.Builder.advancement()
          .parent(var15)
          .display(
             Items.TORCHFLOWER_SEEDS,
@@ -533,8 +529,8 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
             "feed_snifflet",
             PlayerInteractTrigger.TriggerInstance.itemUsedOnEntity(
                ItemPredicate.Builder.item().of(ItemTags.SNIFFER_FOOD),
-               EntityPredicate.wrap(
-                  EntityPredicate.Builder.entity().of(EntityType.SNIFFER).flags(EntityFlagsPredicate.Builder.flags().setIsBaby(true).build()).build()
+               Optional.of(
+                  EntityPredicate.wrap(EntityPredicate.Builder.entity().of(EntityType.SNIFFER).flags(EntityFlagsPredicate.Builder.flags().setIsBaby(true)))
                )
             )
          )
@@ -551,14 +547,14 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
             true,
             true
          )
-         .requirements(RequirementsStrategy.OR)
+         .requirements(AdvancementRequirements.Strategy.OR)
          .addCriterion("torchflower", ItemUsedOnLocationTrigger.TriggerInstance.placedBlock(Blocks.TORCHFLOWER_CROP))
          .addCriterion("pitcher_pod", ItemUsedOnLocationTrigger.TriggerInstance.placedBlock(Blocks.PITCHER_CROP))
          .save(var2, "husbandry/plant_any_sniffer_seed");
    }
 
-   public static Advancement createBreedAllAnimalsAdvancement(
-      Advancement var0, Consumer<Advancement> var1, Stream<EntityType<?>> var2, Stream<EntityType<?>> var3
+   public static AdvancementHolder createBreedAllAnimalsAdvancement(
+      AdvancementHolder var0, Consumer<AdvancementHolder> var1, Stream<EntityType<?>> var2, Stream<EntityType<?>> var3
    ) {
       return addBreedable(Advancement.Builder.advancement(), var2, var3)
          .parent(var0)
@@ -584,7 +580,9 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
                   var1.key().location().toString(),
                   PlayerInteractTrigger.TriggerInstance.itemUsedOnEntity(
                      ItemPredicate.Builder.item().of(Items.LEAD),
-                     EntityPredicate.wrap(EntityPredicate.Builder.entity().of(EntityType.FROG).subPredicate(EntitySubPredicate.variant(var1.value())).build())
+                     Optional.of(
+                        EntityPredicate.wrap(EntityPredicate.Builder.entity().of(EntityType.FROG).subPredicate(EntitySubPredicate.variant(var1.value())))
+                     )
                   )
                )
          );
@@ -609,7 +607,9 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
          var1x -> var0.addCriterion(
                EntityType.getKey(var1x).toString(),
                BredAnimalsTrigger.TriggerInstance.bredAnimals(
-                  EntityPredicate.Builder.entity().of(var1x).build(), EntityPredicate.Builder.entity().of(var1x).build(), EntityPredicate.ANY
+                  Optional.of(EntityPredicate.Builder.entity().of(var1x).build()),
+                  Optional.of(EntityPredicate.Builder.entity().of(var1x).build()),
+                  Optional.empty()
                )
             )
       );
@@ -619,7 +619,7 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
    private static Advancement.Builder addFishBuckets(Advancement.Builder var0) {
       for(Item var4 : FISH_BUCKETS) {
          var0.addCriterion(
-            BuiltInRegistries.ITEM.getKey(var4).getPath(), FilledBucketTrigger.TriggerInstance.filledBucket(ItemPredicate.Builder.item().of(var4).build())
+            BuiltInRegistries.ITEM.getKey(var4).getPath(), FilledBucketTrigger.TriggerInstance.filledBucket(ItemPredicate.Builder.item().of(var4))
          );
       }
 
@@ -630,7 +630,7 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
       for(Item var4 : FISH) {
          var0.addCriterion(
             BuiltInRegistries.ITEM.getKey(var4).getPath(),
-            FishingRodHookedTrigger.TriggerInstance.fishedItem(ItemPredicate.ANY, EntityPredicate.ANY, ItemPredicate.Builder.item().of(var4).build())
+            FishingRodHookedTrigger.TriggerInstance.fishedItem(Optional.empty(), Optional.empty(), Optional.of(ItemPredicate.Builder.item().of(var4).build()))
          );
       }
 
@@ -645,9 +645,7 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
          .forEach(
             var1 -> var0.addCriterion(
                   var1.getKey().location().toString(),
-                  TameAnimalTrigger.TriggerInstance.tamedAnimal(
-                     EntityPredicate.Builder.entity().subPredicate(EntitySubPredicate.variant(var1.getValue())).build()
-                  )
+                  TameAnimalTrigger.TriggerInstance.tamedAnimal(EntityPredicate.Builder.entity().subPredicate(EntitySubPredicate.variant(var1.getValue())))
                )
          );
       return var0;

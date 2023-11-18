@@ -78,7 +78,7 @@ public class PiglinAi {
    public static final Item BARTERING_ITEM = Items.GOLD_INGOT;
    private static final int PLAYER_ANGER_RANGE = 16;
    private static final int ANGER_DURATION = 600;
-   private static final int ADMIRE_DURATION = 120;
+   private static final int ADMIRE_DURATION = 119;
    private static final int MAX_DISTANCE_TO_WALK_TO_ITEM = 9;
    private static final int MAX_TIME_TO_WALK_TO_ITEM = 200;
    private static final int HOW_LONG_TIME_TO_DISABLE_ADMIRE_WALKING_IF_CANT_REACH_ITEM = 200;
@@ -144,7 +144,7 @@ public class PiglinAi {
             babyAvoidNemesis(),
             avoidZombified(),
             StopHoldingItemIfNoLongerAdmiring.create(),
-            StartAdmiringItemIfSeen.create(120),
+            StartAdmiringItemIfSeen.create(119),
             StartCelebratingIfTargetDead.create(300, PiglinAi::wantsToDance),
             StopBeingAngryIfTargetDead.create()
          )
@@ -794,7 +794,7 @@ public class PiglinAi {
    }
 
    private static void admireGoldItem(LivingEntity var0) {
-      var0.getBrain().setMemoryWithExpiry(MemoryModuleType.ADMIRING_ITEM, true, 120L);
+      var0.getBrain().setMemoryWithExpiry(MemoryModuleType.ADMIRING_ITEM, true, 119L);
    }
 
    private static boolean isAdmiringItem(Piglin var0) {

@@ -8,14 +8,15 @@ import java.util.List;
 import java.util.Optional;
 import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
 import net.minecraft.client.renderer.texture.SpriteContents;
+import net.minecraft.client.renderer.texture.atlas.SpriteResourceLoader;
 import net.minecraft.client.renderer.texture.atlas.SpriteSource;
 import net.minecraft.client.renderer.texture.atlas.SpriteSourceType;
 import net.minecraft.client.renderer.texture.atlas.SpriteSources;
-import net.minecraft.client.resources.metadata.animation.AnimationMetadataSection;
 import net.minecraft.client.resources.metadata.animation.FrameSize;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.ResourceMetadata;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import org.slf4j.Logger;
@@ -105,20 +106,20 @@ public class Unstitcher implements SpriteSource {
          this.yDivisor = var5;
       }
 
-      public SpriteContents get() {
+      public SpriteContents apply(SpriteResourceLoader var1) {
          try {
-            NativeImage var1 = this.image.get();
-            double var2 = (double)var1.getWidth() / this.xDivisor;
-            double var4 = (double)var1.getHeight() / this.yDivisor;
-            int var6 = Mth.floor(this.region.x * var2);
-            int var7 = Mth.floor(this.region.y * var4);
-            int var8 = Mth.floor(this.region.width * var2);
-            int var9 = Mth.floor(this.region.height * var4);
-            NativeImage var10 = new NativeImage(NativeImage.Format.RGBA, var8, var9, false);
-            var1.copyRect(var10, var6, var7, 0, 0, var8, var9, false, false);
-            return new SpriteContents(this.region.sprite, new FrameSize(var8, var9), var10, AnimationMetadataSection.EMPTY);
-         } catch (Exception var15) {
-            Unstitcher.LOGGER.error("Failed to unstitch region {}", this.region.sprite, var15);
+            NativeImage var2 = this.image.get();
+            double var3 = (double)var2.getWidth() / this.xDivisor;
+            double var5 = (double)var2.getHeight() / this.yDivisor;
+            int var7 = Mth.floor(this.region.x * var3);
+            int var8 = Mth.floor(this.region.y * var5);
+            int var9 = Mth.floor(this.region.width * var3);
+            int var10 = Mth.floor(this.region.height * var5);
+            NativeImage var11 = new NativeImage(NativeImage.Format.RGBA, var9, var10, false);
+            var2.copyRect(var11, var7, var8, 0, 0, var9, var10, false, false);
+            return new SpriteContents(this.region.sprite, new FrameSize(var9, var10), var11, ResourceMetadata.EMPTY);
+         } catch (Exception var16) {
+            Unstitcher.LOGGER.error("Failed to unstitch region {}", this.region.sprite, var16);
          } finally {
             this.image.release();
          }

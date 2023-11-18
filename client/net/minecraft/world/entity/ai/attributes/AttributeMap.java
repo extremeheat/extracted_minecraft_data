@@ -93,7 +93,7 @@ public class AttributeMap {
       var1.asMap().forEach((var1x, var2) -> {
          AttributeInstance var3 = this.attributes.get(var1x);
          if (var3 != null) {
-            var2.forEach(var3::removeModifier);
+            var2.forEach(var1xx -> var3.removeModifier(var1xx.getId()));
          }
       });
    }
@@ -102,7 +102,7 @@ public class AttributeMap {
       var1.forEach((var1x, var2) -> {
          AttributeInstance var3 = this.getInstance(var1x);
          if (var3 != null) {
-            var3.removeModifier(var2);
+            var3.removeModifier(var2.getId());
             var3.addTransientModifier(var2);
          }
       });

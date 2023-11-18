@@ -4,6 +4,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import javax.annotation.Nullable;
@@ -19,10 +20,13 @@ import net.minecraft.server.packs.metadata.pack.PackMetadataSection;
 import net.minecraft.server.packs.repository.BuiltInPackSource;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackSource;
+import net.minecraft.world.level.validation.DirectoryValidator;
 
 public class ClientPackSource extends BuiltInPackSource {
    private static final PackMetadataSection VERSION_METADATA_SECTION = new PackMetadataSection(
-      Component.translatable("resourcePack.vanilla.description"), SharedConstants.getCurrentVersion().getPackVersion(PackType.CLIENT_RESOURCES)
+      Component.translatable("resourcePack.vanilla.description"),
+      SharedConstants.getCurrentVersion().getPackVersion(PackType.CLIENT_RESOURCES),
+      Optional.empty()
    );
    private static final BuiltInMetadata BUILT_IN_METADATA = BuiltInMetadata.of(PackMetadataSection.TYPE, VERSION_METADATA_SECTION);
    private static final Component VANILLA_NAME = Component.translatable("resourcePack.vanilla.name");
@@ -34,8 +38,8 @@ public class ClientPackSource extends BuiltInPackSource {
    @Nullable
    private final Path externalAssetDir;
 
-   public ClientPackSource(Path var1) {
-      super(PackType.CLIENT_RESOURCES, createVanillaPackSource(var1), PACKS_DIR);
+   public ClientPackSource(Path var1, DirectoryValidator var2) {
+      super(PackType.CLIENT_RESOURCES, createVanillaPackSource(var1), PACKS_DIR, var2);
       this.externalAssetDir = this.findExplodedAssetPacks(var1);
    }
 
@@ -65,7 +69,7 @@ public class ClientPackSource extends BuiltInPackSource {
    @Nullable
    @Override
    protected Pack createVanillaPack(PackResources var1) {
-      return Pack.readMetaAndCreate("vanilla", VANILLA_NAME, true, var1x -> var1, PackType.CLIENT_RESOURCES, Pack.Position.BOTTOM, PackSource.BUILT_IN);
+      return Pack.readMetaAndCreate("vanilla", VANILLA_NAME, true, fixedResources(var1), PackType.CLIENT_RESOURCES, Pack.Position.BOTTOM, PackSource.BUILT_IN);
    }
 
    @Nullable

@@ -60,11 +60,6 @@ public class V1451_6 extends NamespacedSchema {
       }
    };
    protected static final HookFunction REPACK_OBJECTIVE_ID = new HookFunction() {
-      private String packWithDot(String var1) {
-         ResourceLocation var2 = ResourceLocation.tryParse(var1);
-         return var2 != null ? var2.getNamespace() + "." + var2.getPath() : var1;
-      }
-
       public <T> T apply(DynamicOps<T> var1, T var2) {
          Dynamic var3 = new Dynamic(var1, var2);
          Optional var4 = var3.get("CriteriaType")
@@ -72,14 +67,14 @@ public class V1451_6 extends NamespacedSchema {
             .get()
             .left()
             .flatMap(
-               var2x -> {
-                  Optional var3x = var2x.get("type").asString().get().left();
-                  Optional var4x = var2x.get("id").asString().get().left();
-                  if (var3x.isPresent() && var4x.isPresent()) {
-                     String var5 = (String)var3x.get();
-                     return var5.equals("_special")
-                        ? Optional.of((T)var3.createString((String)var4x.get()))
-                        : Optional.of((T)var2x.createString(this.packWithDot(var5) + ":" + this.packWithDot((String)var4x.get())));
+               var1x -> {
+                  Optional var2x = var1x.get("type").asString().get().left();
+                  Optional var3x = var1x.get("id").asString().get().left();
+                  if (var2x.isPresent() && var3x.isPresent()) {
+                     String var4x = (String)var2x.get();
+                     return var4x.equals("_special")
+                        ? Optional.of((T)var3.createString((String)var3x.get()))
+                        : Optional.of((T)var1x.createString(V1451_6.packNamespacedWithDot(var4x) + ":" + V1451_6.packNamespacedWithDot((String)var3x.get())));
                   } else {
                      return Optional.empty();
                   }
@@ -149,5 +144,10 @@ public class V1451_6 extends NamespacedSchema {
       var4.put("minecraft:custom", () -> DSL.optionalFields("id", DSL.constType(namespacedString())));
       var4.put("_special", () -> DSL.optionalFields("id", DSL.constType(DSL.string())));
       return var4;
+   }
+
+   public static String packNamespacedWithDot(String var0) {
+      ResourceLocation var1 = ResourceLocation.tryParse(var0);
+      return var1 != null ? var1.getNamespace() + "." + var1.getPath() : var0;
    }
 }

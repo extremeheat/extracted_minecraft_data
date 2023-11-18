@@ -3,14 +3,14 @@ package net.minecraft.network.protocol.game;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 
 public class ServerboundRecipeBookSeenRecipePacket implements Packet<ServerGamePacketListener> {
    private final ResourceLocation recipe;
 
-   public ServerboundRecipeBookSeenRecipePacket(Recipe<?> var1) {
+   public ServerboundRecipeBookSeenRecipePacket(RecipeHolder<?> var1) {
       super();
-      this.recipe = var1.getId();
+      this.recipe = var1.id();
    }
 
    public ServerboundRecipeBookSeenRecipePacket(FriendlyByteBuf var1) {

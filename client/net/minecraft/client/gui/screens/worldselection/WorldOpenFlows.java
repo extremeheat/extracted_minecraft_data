@@ -9,6 +9,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
+import net.minecraft.CrashReportCategory;
+import net.minecraft.ReportedException;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
@@ -16,8 +18,8 @@ import net.minecraft.client.gui.screens.AlertScreen;
 import net.minecraft.client.gui.screens.BackupConfirmScreen;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.DatapackLoadFailureScreen;
+import net.minecraft.client.gui.screens.NoticeWithLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.SymlinkWarningScreen;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.core.MappedRegistry;
@@ -36,6 +38,7 @@ import net.minecraft.server.WorldStem;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.repository.ServerPacksSource;
 import net.minecraft.server.packs.resources.CloseableResourceManager;
+import net.minecraft.util.MemoryReserve;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
 import net.minecraft.world.level.dimension.LevelStem;
@@ -59,7 +62,20 @@ public class WorldOpenFlows {
    }
 
    public void loadLevel(Screen var1, String var2) {
-      this.doLoadLevel(var1, var2, false, true);
+      try {
+         this.doLoadLevel(var1, var2, false, true);
+      } catch (OutOfMemoryError var8) {
+         MemoryReserve.release();
+         System.gc();
+         String var4 = "Ran out of memory trying to read level data of world folder \"" + var2 + "\"";
+         LOGGER.error(LogUtils.FATAL_MARKER, var4);
+         OutOfMemoryError var5 = new OutOfMemoryError("Ran out of memory reading level data");
+         var5.initCause(var8);
+         CrashReport var6 = CrashReport.forThrowable(var5, var4);
+         CrashReportCategory var7 = var6.addCategory("World details");
+         var7.setDetail("World folder", var2);
+         throw new ReportedException(var6);
+      }
    }
 
    public void createFreshLevel(String var1, LevelSettings var2, WorldOptions var3, Function<RegistryAccess, WorldDimensions> var4) {
@@ -100,7 +116,7 @@ public class WorldOpenFlows {
          return null;
       } catch (ContentValidationException var4) {
          LOGGER.warn("{}", var4.getMessage());
-         this.minecraft.setScreen(new SymlinkWarningScreen(null));
+         this.minecraft.setScreen(NoticeWithLinkScreen.createWorldSymlinkWarningScreen(null));
          return null;
       }
    }

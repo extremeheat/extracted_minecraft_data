@@ -32,7 +32,8 @@ public class AccessibilityOptionsScreen extends SimpleOptionsSubScreen {
          var0.glintStrength(),
          var0.hideLightningFlash(),
          var0.darkMojangStudiosBackground(),
-         var0.panoramaSpeed()
+         var0.panoramaSpeed(),
+         var0.narratorHotkey()
       };
    }
 

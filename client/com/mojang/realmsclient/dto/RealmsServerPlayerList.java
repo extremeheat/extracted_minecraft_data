@@ -9,13 +9,13 @@ import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.util.JsonUtils;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import org.slf4j.Logger;
 
 public class RealmsServerPlayerList extends ValueObject {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final JsonParser JSON_PARSER = new JsonParser();
    public long serverId;
-   public List<String> players;
+   public List<UUID> players;
 
    public RealmsServerPlayerList() {
       super();
@@ -28,7 +28,7 @@ public class RealmsServerPlayerList extends ValueObject {
          var1.serverId = JsonUtils.getLongOr("serverId", var0, -1L);
          String var2 = JsonUtils.getStringOr("playerList", var0, null);
          if (var2 != null) {
-            JsonElement var3 = JSON_PARSER.parse(var2);
+            JsonElement var3 = JsonParser.parseString(var2);
             if (var3.isJsonArray()) {
                var1.players = parsePlayers(var3.getAsJsonArray());
             } else {
@@ -44,13 +44,15 @@ public class RealmsServerPlayerList extends ValueObject {
       return var1;
    }
 
-   private static List<String> parsePlayers(JsonArray var0) {
-      ArrayList var1 = Lists.newArrayList();
+   private static List<UUID> parsePlayers(JsonArray var0) {
+      ArrayList var1 = new ArrayList(var0.size());
 
       for(JsonElement var3 : var0) {
-         try {
-            var1.add(var3.getAsString());
-         } catch (Exception var5) {
+         if (var3.isJsonObject()) {
+            UUID var4 = JsonUtils.getUuidOr("playerId", var3.getAsJsonObject(), null);
+            if (var4 != null) {
+               var1.add(var4);
+            }
          }
       }
 

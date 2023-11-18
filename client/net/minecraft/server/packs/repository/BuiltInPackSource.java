@@ -14,6 +14,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.VanillaPackResources;
+import net.minecraft.world.level.validation.DirectoryValidator;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
@@ -23,12 +24,14 @@ public abstract class BuiltInPackSource implements RepositorySource {
    private final PackType packType;
    private final VanillaPackResources vanillaPack;
    private final ResourceLocation packDir;
+   private final DirectoryValidator validator;
 
-   public BuiltInPackSource(PackType var1, VanillaPackResources var2, ResourceLocation var3) {
+   public BuiltInPackSource(PackType var1, VanillaPackResources var2, ResourceLocation var3, DirectoryValidator var4) {
       super();
       this.packType = var1;
       this.vanillaPack = var2;
       this.packDir = var3;
+      this.validator = var4;
    }
 
    @Override
@@ -69,7 +72,10 @@ public abstract class BuiltInPackSource implements RepositorySource {
       if (var1 != null && Files.isDirectory(var1)) {
          try {
             FolderRepositorySource.discoverPacks(
-               var1, true, (var2x, var3) -> var2.accept(pathToId(var2x), var2xx -> this.createBuiltinPack(var2xx, var3, this.getPackTitle(var2xx)))
+               var1,
+               this.validator,
+               true,
+               (var2x, var3) -> var2.accept(pathToId(var2x), var2xx -> this.createBuiltinPack(var2xx, var3, this.getPackTitle(var2xx)))
             );
          } catch (IOException var4) {
             LOGGER.warn("Failed to discover packs in {}", var1, var4);
@@ -83,4 +89,18 @@ public abstract class BuiltInPackSource implements RepositorySource {
 
    @Nullable
    protected abstract Pack createBuiltinPack(String var1, Pack.ResourcesSupplier var2, Component var3);
+
+   protected static Pack.ResourcesSupplier fixedResources(final PackResources var0) {
+      return new Pack.ResourcesSupplier() {
+         @Override
+         public PackResources openPrimary(String var1) {
+            return var0;
+         }
+
+         @Override
+         public PackResources openFull(String var1, Pack.Info var2) {
+            return var0;
+         }
+      };
+   }
 }

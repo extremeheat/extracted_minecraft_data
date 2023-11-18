@@ -161,7 +161,7 @@ class SwitchGrid {
          Optional var5 = var1.infoUnderneath;
          CycleButton.Builder var6 = CycleButton.onOffBuilder(this.stateSupplier.getAsBoolean());
          var6.displayOnlyValue();
-         boolean var7 = this.info != null && !var5.isPresent();
+         boolean var7 = this.info != null && var5.isEmpty();
          if (var7) {
             Tooltip var8 = Tooltip.create(this.info);
             var6.withTooltip(var1x -> var8);

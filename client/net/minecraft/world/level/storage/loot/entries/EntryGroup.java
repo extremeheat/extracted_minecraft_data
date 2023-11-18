@@ -1,11 +1,14 @@
 package net.minecraft.world.level.storage.loot.entries;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableList;
+import com.mojang.serialization.Codec;
 import java.util.List;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class EntryGroup extends CompositeEntryBase {
-   EntryGroup(LootPoolEntryContainer[] var1, LootItemCondition[] var2) {
+   public static final Codec<EntryGroup> CODEC = createCodec(EntryGroup::new);
+
+   EntryGroup(List<LootPoolEntryContainer> var1, List<LootItemCondition> var2) {
       super(var1, var2);
    }
 
@@ -15,29 +18,27 @@ public class EntryGroup extends CompositeEntryBase {
    }
 
    @Override
-   protected ComposableEntryContainer compose(ComposableEntryContainer[] var1) {
-      switch(var1.length) {
-         case 0:
-            return ALWAYS_TRUE;
-         case 1:
-            return var1[0];
-         case 2:
-            ComposableEntryContainer var2 = var1[0];
-            ComposableEntryContainer var3 = var1[1];
-            return (var2x, var3x) -> {
+   protected ComposableEntryContainer compose(List<? extends ComposableEntryContainer> var1) {
+      return switch(var1.size()) {
+         case 0 -> ALWAYS_TRUE;
+         case 1 -> (ComposableEntryContainer)var1.get(0);
+         case 2 -> {
+            ComposableEntryContainer var2 = (ComposableEntryContainer)var1.get(0);
+            ComposableEntryContainer var3 = (ComposableEntryContainer)var1.get(1);
+            yield (var2x, var3x) -> {
                var2.expand(var2x, var3x);
                var3.expand(var2x, var3x);
                return true;
             };
-         default:
-            return (var1x, var2x) -> {
-               for(ComposableEntryContainer var6 : var1) {
-                  var6.expand(var1x, var2x);
-               }
+         }
+         default -> (var1x, var2x) -> {
+         for(ComposableEntryContainer var4 : var1) {
+            var4.expand(var1x, var2x);
+         }
 
-               return true;
-            };
-      }
+         return true;
+      };
+      };
    }
 
    public static EntryGroup.Builder list(LootPoolEntryContainer.Builder<?>... var0) {
@@ -45,7 +46,7 @@ public class EntryGroup extends CompositeEntryBase {
    }
 
    public static class Builder extends LootPoolEntryContainer.Builder<EntryGroup.Builder> {
-      private final List<LootPoolEntryContainer> entries = Lists.newArrayList();
+      private final com.google.common.collect.ImmutableList.Builder<LootPoolEntryContainer> entries = ImmutableList.builder();
 
       public Builder(LootPoolEntryContainer.Builder<?>... var1) {
          super();
@@ -67,7 +68,7 @@ public class EntryGroup extends CompositeEntryBase {
 
       @Override
       public LootPoolEntryContainer build() {
-         return new EntryGroup(this.entries.toArray(new LootPoolEntryContainer[0]), this.getConditions());
+         return new EntryGroup(this.entries.build(), this.getConditions());
       }
    }
 }

@@ -25,6 +25,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ItemBasedSteering;
@@ -70,6 +71,7 @@ import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
+import org.joml.Vector3f;
 
 public class Strider extends Animal implements ItemSteerable, Saddleable {
    private static final UUID SUFFOCATING_MODIFIER_UUID = UUID.fromString("9e362924-01de-4ddd-a2b2-d0f7a405a174");
@@ -86,8 +88,6 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
    private final ItemBasedSteering steering = new ItemBasedSteering(this.entityData, DATA_BOOST_TIME, DATA_SADDLE_ID);
    @Nullable
    private TemptGoal temptGoal;
-   @Nullable
-   private PanicGoal panicGoal;
 
    public Strider(EntityType<? extends Strider> var1, Level var2) {
       super(var1, var2);
@@ -157,8 +157,7 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
 
    @Override
    protected void registerGoals() {
-      this.panicGoal = new PanicGoal(this, 1.65);
-      this.goalSelector.addGoal(1, this.panicGoal);
+      this.goalSelector.addGoal(1, new PanicGoal(this, 1.65));
       this.goalSelector.addGoal(2, new BreedGoal(this, 1.0));
       this.temptGoal = new TemptGoal(this, 1.4, TEMPT_ITEMS, false);
       this.goalSelector.addGoal(3, this.temptGoal);
@@ -191,10 +190,11 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
    }
 
    @Override
-   public double getPassengersRidingOffset() {
-      float var1 = Math.min(0.25F, this.walkAnimation.speed());
-      float var2 = this.walkAnimation.position();
-      return (double)this.getBbHeight() - 0.19 + (double)(0.12F * Mth.cos(var2 * 1.5F) * 2.0F * var1);
+   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
+      float var4 = Math.min(0.25F, this.walkAnimation.speed());
+      float var5 = this.walkAnimation.position();
+      float var6 = 0.12F * Mth.cos(var5 * 1.5F) * 2.0F * var4;
+      return new Vector3f(0.0F, var2.height + var6 * var3, 0.0F);
    }
 
    @Override
@@ -205,13 +205,14 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
    @Nullable
    @Override
    public LivingEntity getControllingPassenger() {
-      Entity var2 = this.getFirstPassenger();
-      if (var2 instanceof Player var1
-         && (((Player)var1).getMainHandItem().is(Items.WARPED_FUNGUS_ON_A_STICK) || ((Player)var1).getOffhandItem().is(Items.WARPED_FUNGUS_ON_A_STICK))) {
-         return (LivingEntity)var1;
+      if (this.isSaddled()) {
+         Entity var2 = this.getFirstPassenger();
+         if (var2 instanceof Player var1 && ((Player)var1).isHolding(Items.WARPED_FUNGUS_ON_A_STICK)) {
+            return (LivingEntity)var1;
+         }
       }
 
-      return null;
+      return super.getControllingPassenger();
    }
 
    @Override
@@ -333,10 +334,6 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
       super.tick();
       this.floatStrider();
       this.checkInsideBlocks();
-   }
-
-   private boolean isPanicking() {
-      return this.panicGoal != null && this.panicGoal.isRunning();
    }
 
    private boolean isBeingTempted() {

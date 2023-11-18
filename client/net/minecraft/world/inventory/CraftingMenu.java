@@ -10,6 +10,7 @@ import net.minecraft.world.entity.player.StackedContents;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -60,11 +61,12 @@ public class CraftingMenu extends RecipeBookMenu<CraftingContainer> {
          ItemStack var6 = ItemStack.EMPTY;
          Optional var7 = var1.getServer().getRecipeManager().getRecipeFor(RecipeType.CRAFTING, var3, var1);
          if (var7.isPresent()) {
-            CraftingRecipe var8 = (CraftingRecipe)var7.get();
+            RecipeHolder var8 = (RecipeHolder)var7.get();
+            CraftingRecipe var9 = (CraftingRecipe)var8.value();
             if (var4.setRecipeUsed(var1, var5, var8)) {
-               ItemStack var9 = var8.assemble(var3, var1.registryAccess());
-               if (var9.isItemEnabled(var1.enabledFeatures())) {
-                  var6 = var9;
+               ItemStack var10 = var9.assemble(var3, var1.registryAccess());
+               if (var10.isItemEnabled(var1.enabledFeatures())) {
+                  var6 = var10;
                }
             }
          }
@@ -92,8 +94,8 @@ public class CraftingMenu extends RecipeBookMenu<CraftingContainer> {
    }
 
    @Override
-   public boolean recipeMatches(Recipe<? super CraftingContainer> var1) {
-      return var1.matches(this.craftSlots, this.player.level());
+   public boolean recipeMatches(RecipeHolder<? extends Recipe<CraftingContainer>> var1) {
+      return var1.value().matches(this.craftSlots, this.player.level());
    }
 
    @Override

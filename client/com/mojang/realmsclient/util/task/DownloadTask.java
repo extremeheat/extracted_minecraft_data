@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 
 public class DownloadTask extends LongRunningTask {
    private static final Logger LOGGER = LogUtils.getLogger();
+   private static final Component TITLE = Component.translatable("mco.download.preparing");
    private final long worldId;
    private final int slot;
    private final Screen lastScreen;
@@ -28,7 +29,6 @@ public class DownloadTask extends LongRunningTask {
 
    @Override
    public void run() {
-      this.setTitle(Component.translatable("mco.download.preparing"));
       RealmsClient var1 = RealmsClient.create();
       int var2 = 0;
 
@@ -59,7 +59,7 @@ public class DownloadTask extends LongRunningTask {
                return;
             }
 
-            LOGGER.error("Couldn't download world data");
+            LOGGER.error("Couldn't download world data", var5);
             setScreen(new RealmsGenericErrorScreen(var5, this.lastScreen));
             return;
          } catch (Exception var6) {
@@ -68,9 +68,14 @@ public class DownloadTask extends LongRunningTask {
             }
 
             LOGGER.error("Couldn't download world data", var6);
-            this.error(var6.getLocalizedMessage());
+            this.error(var6);
             return;
          }
       }
+   }
+
+   @Override
+   public Component getTitle() {
+      return TITLE;
    }
 }

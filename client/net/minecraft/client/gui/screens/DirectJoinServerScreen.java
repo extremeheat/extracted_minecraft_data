@@ -26,11 +26,6 @@ public class DirectJoinServerScreen extends Screen {
    }
 
    @Override
-   public void tick() {
-      this.ipEdit.tick();
-   }
-
-   @Override
    public boolean keyPressed(int var1, int var2, int var3) {
       if (!this.selectButton.active || this.getFocused() != this.ipEdit || var1 != 257 && var1 != 335) {
          return super.keyPressed(var1, var2, var3);
@@ -90,10 +85,9 @@ public class DirectJoinServerScreen extends Screen {
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
-      var1.drawCenteredString(this.font, this.title, this.width / 2, 20, 16777215);
-      var1.drawString(this.font, ENTER_IP_LABEL, this.width / 2 - 100, 100, 10526880);
-      this.ipEdit.render(var1, var2, var3, var4);
       super.render(var1, var2, var3, var4);
+      var1.drawCenteredString(this.font, this.title, this.width / 2, 20, 16777215);
+      var1.drawString(this.font, ENTER_IP_LABEL, this.width / 2 - 100 + 1, 100, 10526880);
+      this.ipEdit.render(var1, var2, var3, var4);
    }
 }

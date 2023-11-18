@@ -167,7 +167,7 @@ public class Painting extends HangingEntity implements VariantHolder<Holder<Pain
    }
 
    @Override
-   public void lerpTo(double var1, double var3, double var5, float var7, float var8, int var9, boolean var10) {
+   public void lerpTo(double var1, double var3, double var5, float var7, float var8, int var9) {
       this.setPos(var1, var3, var5);
    }
 

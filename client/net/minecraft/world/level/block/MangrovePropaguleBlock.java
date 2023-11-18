@@ -113,7 +113,7 @@ public class MangrovePropaguleBlock extends SaplingBlock implements SimpleWaterl
    }
 
    @Override
-   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
+   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
       return !isHanging(var3) || !isFullyGrown(var3);
    }
 

@@ -1,15 +1,13 @@
 package net.minecraft.world.level.storage.loot.entries;
 
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.List;
 import java.util.function.Consumer;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -17,10 +15,17 @@ import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class TagEntry extends LootPoolSingletonContainer {
-   final TagKey<Item> tag;
-   final boolean expand;
+   public static final Codec<TagEntry> CODEC = RecordCodecBuilder.create(
+      var0 -> var0.group(
+               TagKey.codec(Registries.ITEM).fieldOf("name").forGetter(var0x -> var0x.tag), Codec.BOOL.fieldOf("expand").forGetter(var0x -> var0x.expand)
+            )
+            .and(singletonFields(var0))
+            .apply(var0, TagEntry::new)
+   );
+   private final TagKey<Item> tag;
+   private final boolean expand;
 
-   TagEntry(TagKey<Item> var1, boolean var2, int var3, int var4, LootItemCondition[] var5, LootItemFunction[] var6) {
+   private TagEntry(TagKey<Item> var1, boolean var2, int var3, int var4, List<LootItemCondition> var5, List<LootItemFunction> var6) {
       super(var3, var4, var5, var6);
       this.tag = var1;
       this.expand = var2;
@@ -64,24 +69,5 @@ public class TagEntry extends LootPoolSingletonContainer {
 
    public static LootPoolSingletonContainer.Builder<?> expandTag(TagKey<Item> var0) {
       return simpleBuilder((var1, var2, var3, var4) -> new TagEntry(var0, true, var1, var2, var3, var4));
-   }
-
-   public static class Serializer extends LootPoolSingletonContainer.Serializer<TagEntry> {
-      public Serializer() {
-         super();
-      }
-
-      public void serializeCustom(JsonObject var1, TagEntry var2, JsonSerializationContext var3) {
-         super.serializeCustom(var1, var2, var3);
-         var1.addProperty("name", var2.tag.location().toString());
-         var1.addProperty("expand", var2.expand);
-      }
-
-      protected TagEntry deserialize(JsonObject var1, JsonDeserializationContext var2, int var3, int var4, LootItemCondition[] var5, LootItemFunction[] var6) {
-         ResourceLocation var7 = new ResourceLocation(GsonHelper.getAsString(var1, "name"));
-         TagKey var8 = TagKey.create(Registries.ITEM, var7);
-         boolean var9 = GsonHelper.getAsBoolean(var1, "expand");
-         return new TagEntry(var8, var9, var3, var4, var5, var6);
-      }
    }
 }

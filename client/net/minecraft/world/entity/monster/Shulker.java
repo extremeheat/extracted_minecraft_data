@@ -46,7 +46,6 @@ import net.minecraft.world.entity.animal.AbstractGolem;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.ShulkerBullet;
-import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -260,14 +259,6 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
    }
 
    @Override
-   public double getMyRidingOffset() {
-      EntityType var1 = this.getVehicle().getType();
-      return !(this.getVehicle() instanceof Boat) && var1 != EntityType.MINECART
-         ? super.getMyRidingOffset()
-         : 0.1875 - this.getVehicle().getPassengersRidingOffset();
-   }
-
-   @Override
    public boolean startRiding(Entity var1, boolean var2) {
       if (this.level().isClientSide()) {
          this.clientOldAttachPosition = null;
@@ -411,7 +402,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
    }
 
    @Override
-   public void lerpTo(double var1, double var3, double var5, float var7, float var8, int var9, boolean var10) {
+   public void lerpTo(double var1, double var3, double var5, float var7, float var8, int var9) {
       this.lerpSteps = 0;
       this.setPos(var1, var3, var5);
       this.setRot(var7, var8);
@@ -491,7 +482,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
 
    void setRawPeekAmount(int var1) {
       if (!this.level().isClientSide) {
-         this.getAttribute(Attributes.ARMOR).removeModifier(COVERED_ARMOR_MODIFIER);
+         this.getAttribute(Attributes.ARMOR).removeModifier(COVERED_ARMOR_MODIFIER.getId());
          if (var1 == 0) {
             this.getAttribute(Attributes.ARMOR).addPermanentModifier(COVERED_ARMOR_MODIFIER);
             this.playSound(SoundEvents.SHULKER_CLOSE, 1.0F, 1.0F);

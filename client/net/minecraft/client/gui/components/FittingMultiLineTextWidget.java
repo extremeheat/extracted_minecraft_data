@@ -13,7 +13,7 @@ public class FittingMultiLineTextWidget extends AbstractScrollWidget {
    public FittingMultiLineTextWidget(int var1, int var2, int var3, int var4, Component var5, Font var6) {
       super(var1, var2, var3, var4, var5);
       this.font = var6;
-      this.multilineWidget = new MultiLineTextWidget(0, 0, var5, var6).setMaxWidth(this.getWidth() - this.totalInnerPadding());
+      this.multilineWidget = new MultiLineTextWidget(var5, var6).setMaxWidth(this.getWidth() - this.totalInnerPadding());
    }
 
    public FittingMultiLineTextWidget setColor(int var1) {
@@ -65,6 +65,10 @@ public class FittingMultiLineTextWidget extends AbstractScrollWidget {
             super.renderWidget(var1, var2, var3, var4);
          }
       }
+   }
+
+   public boolean showingScrollBar() {
+      return super.scrollbarVisible();
    }
 
    @Override

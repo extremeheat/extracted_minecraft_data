@@ -1,20 +1,16 @@
 package net.minecraft.world.item.crafting;
 
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.inventory.CraftingContainer;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.DecoratedPotBlockEntity;
 
 public class DecoratedPotRecipe extends CustomRecipe {
-   public DecoratedPotRecipe(ResourceLocation var1, CraftingBookCategory var2) {
-      super(var1, var2);
+   public DecoratedPotRecipe(CraftingBookCategory var1) {
+      super(var1);
    }
 
    public boolean matches(CraftingContainer var1, Level var2) {
@@ -50,14 +46,7 @@ public class DecoratedPotRecipe extends CustomRecipe {
       DecoratedPotBlockEntity.Decorations var3 = new DecoratedPotBlockEntity.Decorations(
          var1.getItem(1).getItem(), var1.getItem(3).getItem(), var1.getItem(5).getItem(), var1.getItem(7).getItem()
       );
-      return createDecoratedPotItem(var3);
-   }
-
-   public static ItemStack createDecoratedPotItem(DecoratedPotBlockEntity.Decorations var0) {
-      ItemStack var1 = Items.DECORATED_POT.getDefaultInstance();
-      CompoundTag var2 = var0.save(new CompoundTag());
-      BlockItem.setBlockEntityData(var1, BlockEntityType.DECORATED_POT, var2);
-      return var1;
+      return DecoratedPotBlockEntity.createDecoratedPotItem(var3);
    }
 
    @Override

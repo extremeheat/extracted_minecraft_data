@@ -19,6 +19,7 @@ import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.protocol.game.ServerboundClientCommandPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
@@ -33,8 +34,12 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 
 public class StatsScreen extends Screen implements StatsUpdateListener {
+   static final ResourceLocation SLOT_SPRITE = new ResourceLocation("container/slot");
+   static final ResourceLocation HEADER_SPRITE = new ResourceLocation("statistics/header");
+   static final ResourceLocation SORT_UP_SPRITE = new ResourceLocation("statistics/sort_up");
+   static final ResourceLocation SORT_DOWN_SPRITE = new ResourceLocation("statistics/sort_down");
    private static final Component PENDING_TEXT = Component.translatable("multiplayer.downloadingStats");
-   private static final ResourceLocation STATS_ICON_LOCATION = new ResourceLocation("textures/gui/container/stats_icons.png");
+   static final Component NO_VALUE_DISPLAY = Component.translatable("stats.none");
    protected final Screen lastScreen;
    private StatsScreen.GeneralStatisticsList statsList;
    StatsScreen.ItemStatisticsList itemStatsList;
@@ -43,7 +48,6 @@ public class StatsScreen extends Screen implements StatsUpdateListener {
    @Nullable
    private ObjectSelectionList<?> activeList;
    private boolean isLoading = true;
-   private static final int SLOT_TEX_SIZE = 128;
    private static final int SLOT_BG_SIZE = 18;
    private static final int SLOT_STAT_HEIGHT = 20;
    private static final int SLOT_BG_X = 1;
@@ -107,16 +111,21 @@ public class StatsScreen extends Screen implements StatsUpdateListener {
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       if (this.isLoading) {
-         this.renderBackground(var1);
+         this.renderBackground(var1, var2, var3, var4);
          var1.drawCenteredString(this.font, PENDING_TEXT, this.width / 2, this.height / 2, 16777215);
          var1.drawCenteredString(
             this.font, LOADING_SYMBOLS[(int)(Util.getMillis() / 150L % (long)LOADING_SYMBOLS.length)], this.width / 2, this.height / 2 + 9 * 2, 16777215
          );
       } else {
+         super.render(var1, var2, var3, var4);
          this.getActiveList().render(var1, var2, var3, var4);
          var1.drawCenteredString(this.font, this.title, this.width / 2, 20, 16777215);
-         super.render(var1, var2, var3, var4);
       }
+   }
+
+   @Override
+   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
+      this.renderDirtBackground(var1);
    }
 
    @Override
@@ -159,12 +168,12 @@ public class StatsScreen extends Screen implements StatsUpdateListener {
    }
 
    void blitSlot(GuiGraphics var1, int var2, int var3, Item var4) {
-      this.blitSlotIcon(var1, var2 + 1, var3 + 1, 0, 0);
+      this.blitSlotIcon(var1, var2 + 1, var3 + 1, SLOT_SPRITE);
       var1.renderFakeItem(var4.getDefaultInstance(), var2 + 2, var3 + 2);
    }
 
-   void blitSlotIcon(GuiGraphics var1, int var2, int var3, int var4, int var5) {
-      var1.blit(STATS_ICON_LOCATION, var2, var3, 0, (float)var4, (float)var5, 18, 18, 128, 128);
+   void blitSlotIcon(GuiGraphics var1, int var2, int var3, ResourceLocation var4) {
+      var1.blitSprite(var4, var2, var3, 0, 18, 18);
    }
 
    class GeneralStatisticsList extends ObjectSelectionList<StatsScreen.GeneralStatisticsList.Entry> {
@@ -178,11 +187,6 @@ public class StatsScreen extends Screen implements StatsUpdateListener {
             Stat var5 = (Stat)var4.next();
             this.addEntry(new StatsScreen.GeneralStatisticsList.Entry(var5));
          }
-      }
-
-      @Override
-      protected void renderBackground(GuiGraphics var1) {
-         StatsScreen.this.renderBackground(var1);
       }
 
       class Entry extends ObjectSelectionList.Entry<StatsScreen.GeneralStatisticsList.Entry> {
@@ -218,7 +222,14 @@ public class StatsScreen extends Screen implements StatsUpdateListener {
    class ItemStatisticsList extends ObjectSelectionList<StatsScreen.ItemStatisticsList.ItemRow> {
       protected final List<StatType<Block>> blockColumns;
       protected final List<StatType<Item>> itemColumns;
-      private final int[] iconOffsets = new int[]{3, 4, 1, 2, 5, 6};
+      private final ResourceLocation[] iconSprites = new ResourceLocation[]{
+         new ResourceLocation("statistics/block_mined"),
+         new ResourceLocation("statistics/item_broken"),
+         new ResourceLocation("statistics/item_crafted"),
+         new ResourceLocation("statistics/item_used"),
+         new ResourceLocation("statistics/item_picked_up"),
+         new ResourceLocation("statistics/item_dropped")
+      };
       protected int headerPressed = -1;
       protected final Comparator<StatsScreen.ItemStatisticsList.ItemRow> itemStatSorter = new StatsScreen.ItemStatisticsList.ItemRowComparator();
       @Nullable
@@ -276,19 +287,20 @@ public class StatsScreen extends Screen implements StatsUpdateListener {
             this.headerPressed = -1;
          }
 
-         for(int var4 = 0; var4 < this.iconOffsets.length; ++var4) {
-            StatsScreen.this.blitSlotIcon(var1, var2 + StatsScreen.this.getColumnX(var4) - 18, var3 + 1, 0, this.headerPressed == var4 ? 0 : 18);
+         for(int var4 = 0; var4 < this.iconSprites.length; ++var4) {
+            ResourceLocation var5 = this.headerPressed == var4 ? StatsScreen.SLOT_SPRITE : StatsScreen.HEADER_SPRITE;
+            StatsScreen.this.blitSlotIcon(var1, var2 + StatsScreen.this.getColumnX(var4) - 18, var3 + 1, var5);
          }
 
          if (this.sortColumn != null) {
             int var6 = StatsScreen.this.getColumnX(this.getColumnIndex(this.sortColumn)) - 36;
-            int var5 = this.sortOrder == 1 ? 2 : 1;
-            StatsScreen.this.blitSlotIcon(var1, var2 + var6, var3 + 1, 18 * var5, 0);
+            ResourceLocation var8 = this.sortOrder == 1 ? StatsScreen.SORT_UP_SPRITE : StatsScreen.SORT_DOWN_SPRITE;
+            StatsScreen.this.blitSlotIcon(var1, var2 + var6, var3 + 1, var8);
          }
 
-         for(int var7 = 0; var7 < this.iconOffsets.length; ++var7) {
-            int var8 = this.headerPressed == var7 ? 1 : 0;
-            StatsScreen.this.blitSlotIcon(var1, var2 + StatsScreen.this.getColumnX(var7) - 18 + var8, var3 + 1 + var8, 18 * this.iconOffsets[var7], 18);
+         for(int var7 = 0; var7 < this.iconSprites.length; ++var7) {
+            int var9 = this.headerPressed == var7 ? 1 : 0;
+            StatsScreen.this.blitSlotIcon(var1, var2 + StatsScreen.this.getColumnX(var7) - 18 + var9, var3 + 1 + var9, this.iconSprites[var7]);
          }
       }
 
@@ -303,15 +315,10 @@ public class StatsScreen extends Screen implements StatsUpdateListener {
       }
 
       @Override
-      protected void renderBackground(GuiGraphics var1) {
-         StatsScreen.this.renderBackground(var1);
-      }
-
-      @Override
       protected void clickedHeader(int var1, int var2) {
          this.headerPressed = -1;
 
-         for(int var3 = 0; var3 < this.iconOffsets.length; ++var3) {
+         for(int var3 = 0; var3 < this.iconSprites.length; ++var3) {
             int var4 = var1 - StatsScreen.this.getColumnX(var3);
             if (var4 >= -36 && var4 <= 0) {
                this.headerPressed = var3;
@@ -350,12 +357,12 @@ public class StatsScreen extends Screen implements StatsUpdateListener {
                }
 
                Item var6 = var4.getItem();
-               this.renderMousehoverTooltip(var1, this.getString(var6), var2, var3);
+               var1.renderTooltip(StatsScreen.this.font, this.getString(var6), var2, var3);
             } else {
                Component var10 = null;
                int var7 = var2 - var5;
 
-               for(int var8 = 0; var8 < this.iconOffsets.length; ++var8) {
+               for(int var8 = 0; var8 < this.iconSprites.length; ++var8) {
                   int var9 = StatsScreen.this.getColumnX(var8);
                   if (var7 >= var9 - 18 && var7 <= var9) {
                      var10 = this.getColumn(var8).getDisplayName();
@@ -363,21 +370,10 @@ public class StatsScreen extends Screen implements StatsUpdateListener {
                   }
                }
 
-               this.renderMousehoverTooltip(var1, var10, var2, var3);
+               if (var10 != null) {
+                  var1.renderTooltip(StatsScreen.this.font, var10, var2, var3);
+               }
             }
-         }
-      }
-
-      protected void renderMousehoverTooltip(GuiGraphics var1, @Nullable Component var2, int var3, int var4) {
-         if (var2 != null) {
-            int var5 = var3 + 12;
-            int var6 = var4 - 12;
-            int var7 = StatsScreen.this.font.width(var2);
-            var1.fillGradient(var5 - 3, var6 - 3, var5 + var7 + 3, var6 + 8 + 3, -1073741824, -1073741824);
-            var1.pose().pushPose();
-            var1.pose().translate(0.0F, 0.0F, 400.0F);
-            var1.drawString(StatsScreen.this.font, var2, var5, var6, -1);
-            var1.pose().popPose();
          }
       }
 
@@ -438,8 +434,10 @@ public class StatsScreen extends Screen implements StatsUpdateListener {
          }
 
          protected void renderStat(GuiGraphics var1, @Nullable Stat<?> var2, int var3, int var4, boolean var5) {
-            String var6 = var2 == null ? "-" : var2.format(StatsScreen.this.stats.getValue(var2));
-            var1.drawString(StatsScreen.this.font, var6, var3 - StatsScreen.this.font.width(var6), var4 + 5, var5 ? 16777215 : 9474192);
+            Object var6 = var2 == null ? StatsScreen.NO_VALUE_DISPLAY : Component.literal(var2.format(StatsScreen.this.stats.getValue(var2)));
+            var1.drawString(
+               StatsScreen.this.font, (Component)var6, var3 - StatsScreen.this.font.width((FormattedText)var6), var4 + 5, var5 ? 16777215 : 9474192
+            );
          }
 
          @Override
@@ -487,11 +485,6 @@ public class StatsScreen extends Screen implements StatsUpdateListener {
                this.addEntry(new StatsScreen.MobsStatisticsList.MobRow(var4));
             }
          }
-      }
-
-      @Override
-      protected void renderBackground(GuiGraphics var1) {
-         StatsScreen.this.renderBackground(var1);
       }
 
       class MobRow extends ObjectSelectionList.Entry<StatsScreen.MobsStatisticsList.MobRow> {

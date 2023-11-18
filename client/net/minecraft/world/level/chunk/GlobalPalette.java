@@ -48,7 +48,7 @@ public class GlobalPalette<T> implements Palette<T> {
 
    @Override
    public int getSerializedSize() {
-      return FriendlyByteBuf.getVarIntSize(0);
+      return 0;
    }
 
    @Override

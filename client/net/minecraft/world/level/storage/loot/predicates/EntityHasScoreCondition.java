@@ -2,17 +2,12 @@ package net.minecraft.world.level.storage.loot.predicates;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
-import java.util.LinkedHashMap;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 import java.util.stream.Stream;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.storage.loot.IntRange;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -20,13 +15,20 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.Scoreboard;
 
-public class EntityHasScoreCondition implements LootItemCondition {
-   final Map<String, IntRange> scores;
-   final LootContext.EntityTarget entityTarget;
+public record EntityHasScoreCondition(Map<String, IntRange> b, LootContext.EntityTarget c) implements LootItemCondition {
+   private final Map<String, IntRange> scores;
+   private final LootContext.EntityTarget entityTarget;
+   public static final Codec<EntityHasScoreCondition> CODEC = RecordCodecBuilder.create(
+      var0 -> var0.group(
+               Codec.unboundedMap(Codec.STRING, IntRange.CODEC).fieldOf("scores").forGetter(EntityHasScoreCondition::scores),
+               LootContext.EntityTarget.CODEC.fieldOf("entity").forGetter(EntityHasScoreCondition::entityTarget)
+            )
+            .apply(var0, EntityHasScoreCondition::new)
+   );
 
-   EntityHasScoreCondition(Map<String, IntRange> var1, LootContext.EntityTarget var2) {
+   public EntityHasScoreCondition(Map<String, IntRange> var1, LootContext.EntityTarget var2) {
       super();
-      this.scores = ImmutableMap.copyOf(var1);
+      this.scores = var1;
       this.entityTarget = var2;
    }
 
@@ -73,7 +75,7 @@ public class EntityHasScoreCondition implements LootItemCondition {
    }
 
    public static class Builder implements LootItemCondition.Builder {
-      private final Map<String, IntRange> scores = Maps.newHashMap();
+      private final com.google.common.collect.ImmutableMap.Builder<String, IntRange> scores = ImmutableMap.builder();
       private final LootContext.EntityTarget entityTarget;
 
       public Builder(LootContext.EntityTarget var1) {
@@ -88,35 +90,7 @@ public class EntityHasScoreCondition implements LootItemCondition {
 
       @Override
       public LootItemCondition build() {
-         return new EntityHasScoreCondition(this.scores, this.entityTarget);
-      }
-   }
-
-   public static class Serializer implements net.minecraft.world.level.storage.loot.Serializer<EntityHasScoreCondition> {
-      public Serializer() {
-         super();
-      }
-
-      public void serialize(JsonObject var1, EntityHasScoreCondition var2, JsonSerializationContext var3) {
-         JsonObject var4 = new JsonObject();
-
-         for(Entry var6 : var2.scores.entrySet()) {
-            var4.add((String)var6.getKey(), var3.serialize(var6.getValue()));
-         }
-
-         var1.add("scores", var4);
-         var1.add("entity", var3.serialize(var2.entityTarget));
-      }
-
-      public EntityHasScoreCondition deserialize(JsonObject var1, JsonDeserializationContext var2) {
-         Set var3 = GsonHelper.getAsJsonObject(var1, "scores").entrySet();
-         LinkedHashMap var4 = Maps.newLinkedHashMap();
-
-         for(Entry var6 : var3) {
-            var4.put((String)var6.getKey(), GsonHelper.convertToObject((JsonElement)var6.getValue(), "score", var2, IntRange.class));
-         }
-
-         return new EntityHasScoreCondition(var4, GsonHelper.getAsObject(var1, "entity", var2, LootContext.EntityTarget.class));
+         return new EntityHasScoreCondition(this.scores.build(), this.entityTarget);
       }
    }
 }

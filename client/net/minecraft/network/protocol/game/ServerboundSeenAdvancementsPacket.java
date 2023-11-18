@@ -1,7 +1,7 @@
 package net.minecraft.network.protocol.game;
 
 import javax.annotation.Nullable;
-import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.resources.ResourceLocation;
@@ -17,8 +17,8 @@ public class ServerboundSeenAdvancementsPacket implements Packet<ServerGamePacke
       this.tab = var2;
    }
 
-   public static ServerboundSeenAdvancementsPacket openedTab(Advancement var0) {
-      return new ServerboundSeenAdvancementsPacket(ServerboundSeenAdvancementsPacket.Action.OPENED_TAB, var0.getId());
+   public static ServerboundSeenAdvancementsPacket openedTab(AdvancementHolder var0) {
+      return new ServerboundSeenAdvancementsPacket(ServerboundSeenAdvancementsPacket.Action.OPENED_TAB, var0.id());
    }
 
    public static ServerboundSeenAdvancementsPacket closedScreen() {

@@ -15,7 +15,6 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.function.Function;
 
 public class ChunkBedBlockEntityInjecterFix extends DataFix {
@@ -56,22 +55,20 @@ public class ChunkBedBlockEntityInjecterFix extends DataFix {
                int var6x = var5x.get("xPos").asInt(0);
                int var7 = var5x.get("zPos").asInt(0);
                ArrayList var8 = Lists.newArrayList((Iterable)var4x.getOrCreate(var5));
-               List var9 = var5x.get("Sections").asList(Function.identity());
       
-               for(int var10 = 0; var10 < var9.size(); ++var10) {
-                  Dynamic var11 = (Dynamic)var9.get(var10);
+               for(Dynamic var11 : var5x.get("Sections").asList(Function.identity())) {
                   int var12 = var11.get("Y").asInt(0);
                   Streams.mapWithIndex(var11.get("Blocks").asIntStream(), (var4xx, var5xx) -> {
                         if (416 == (var4xx & 0xFF) << 4) {
                            int var7x = (int)var5xx;
                            int var8x = var7x & 15;
-                           int var9x = var7x >> 8 & 15;
-                           int var10x = var7x >> 4 & 15;
+                           int var9 = var7x >> 8 & 15;
+                           int var10 = var7x >> 4 & 15;
                            HashMap var11x = Maps.newHashMap();
                            var11x.put(var11.createString("id"), var11.createString("minecraft:bed"));
                            var11x.put(var11.createString("x"), var11.createInt(var8x + (var6x << 4)));
-                           var11x.put(var11.createString("y"), var11.createInt(var9x + (var12 << 4)));
-                           var11x.put(var11.createString("z"), var11.createInt(var10x + (var7 << 4)));
+                           var11x.put(var11.createString("y"), var11.createInt(var9 + (var12 << 4)));
+                           var11x.put(var11.createString("z"), var11.createInt(var10 + (var7 << 4)));
                            var11x.put(var11.createString("color"), var11.createShort((short)14));
                            return var11x;
                         } else {

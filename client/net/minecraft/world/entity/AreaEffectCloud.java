@@ -41,6 +41,7 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
    private static final float DEFAULT_RADIUS = 3.0F;
    public static final float DEFAULT_WIDTH = 6.0F;
    public static final float HEIGHT = 0.5F;
+   private static final String TAG_EFFECTS = "effects";
    private Potion potion = Potions.EMPTY;
    private final List<MobEffectInstance> effects = Lists.newArrayList();
    private final Map<Entity, Integer> victims = Maps.newHashMap();
@@ -357,8 +358,8 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
          this.setPotion(PotionUtils.getPotion(var1));
       }
 
-      if (var1.contains("Effects", 9)) {
-         ListTag var2 = var1.getList("Effects", 10);
+      if (var1.contains("effects", 9)) {
+         ListTag var2 = var1.getList("effects", 10);
          this.effects.clear();
 
          for(int var3 = 0; var3 < var2.size(); ++var3) {
@@ -400,7 +401,7 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
             var2.add(var4.save(new CompoundTag()));
          }
 
-         var1.put("Effects", var2);
+         var1.put("effects", var2);
       }
    }
 

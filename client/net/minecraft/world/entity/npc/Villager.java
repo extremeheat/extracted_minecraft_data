@@ -79,6 +79,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.entity.schedule.Schedule;
+import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -850,12 +851,19 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    @Override
    protected void updateTrades() {
       VillagerData var1 = this.getVillagerData();
-      Int2ObjectMap var2 = (Int2ObjectMap)VillagerTrades.TRADES.get(var1.getProfession());
+      Int2ObjectMap var2;
+      if (this.level().enabledFeatures().contains(FeatureFlags.TRADE_REBALANCE)) {
+         Int2ObjectMap var3 = (Int2ObjectMap)VillagerTrades.EXPERIMENTAL_TRADES.get(var1.getProfession());
+         var2 = var3 != null ? var3 : (Int2ObjectMap)VillagerTrades.TRADES.get(var1.getProfession());
+      } else {
+         var2 = (Int2ObjectMap)VillagerTrades.TRADES.get(var1.getProfession());
+      }
+
       if (var2 != null && !var2.isEmpty()) {
-         VillagerTrades.ItemListing[] var3 = (VillagerTrades.ItemListing[])var2.get(var1.getLevel());
-         if (var3 != null) {
+         VillagerTrades.ItemListing[] var5 = (VillagerTrades.ItemListing[])var2.get(var1.getLevel());
+         if (var5 != null) {
             MerchantOffers var4 = this.getOffers();
-            this.addOffersFromItemListings(var4, var3, 2);
+            this.addOffersFromItemListings(var4, var5, 2);
          }
       }
    }
@@ -885,10 +893,10 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
          List var6 = var1.getEntitiesOfClass(Villager.class, var5);
          List var7 = var6.stream().filter(var2x -> var2x.wantsToSpawnGolem(var2)).limit(5L).collect(Collectors.toList());
          if (var7.size() >= var4) {
-            if (SpawnUtil.trySpawnMob(
+            if (!SpawnUtil.trySpawnMob(
                   EntityType.IRON_GOLEM, MobSpawnType.MOB_SUMMONED, var1, this.blockPosition(), 10, 8, 6, SpawnUtil.Strategy.LEGACY_IRON_GOLEM
                )
-               .isPresent()) {
+               .isEmpty()) {
                var6.forEach(GolemSensor::golemDetected);
             }
          }

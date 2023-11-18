@@ -21,6 +21,7 @@ import net.minecraft.data.info.BiomeParametersDumpReport;
 import net.minecraft.data.info.BlockListReport;
 import net.minecraft.data.info.CommandsReport;
 import net.minecraft.data.info.RegistryDumpReport;
+import net.minecraft.data.loot.packs.TradeRebalanceLootTableProvider;
 import net.minecraft.data.loot.packs.VanillaLootTableProvider;
 import net.minecraft.data.metadata.PackMetadataGenerator;
 import net.minecraft.data.models.ModelProvider;
@@ -44,6 +45,7 @@ import net.minecraft.data.tags.PaintingVariantTagsProvider;
 import net.minecraft.data.tags.PoiTypeTagsProvider;
 import net.minecraft.data.tags.StructureTagsProvider;
 import net.minecraft.data.tags.TagsProvider;
+import net.minecraft.data.tags.TradeRebalanceStructureTagsProvider;
 import net.minecraft.data.tags.VanillaBlockTagsProvider;
 import net.minecraft.data.tags.VanillaItemTagsProvider;
 import net.minecraft.data.tags.WorldPresetTagsProvider;
@@ -143,6 +145,14 @@ public class Main {
       var13.addProvider(
          var0x -> PackMetadataGenerator.forFeaturePack(var0x, Component.translatable("dataPack.bundle.description"), FeatureFlagSet.of(FeatureFlags.BUNDLE))
       );
+      var13 = var9.getBuiltinDatapack(var3, "trade_rebalance");
+      var13.addProvider(
+         var0x -> PackMetadataGenerator.forFeaturePack(
+               var0x, Component.translatable("dataPack.trade_rebalance.description"), FeatureFlagSet.of(FeatureFlags.TRADE_REBALANCE)
+            )
+      );
+      var13.addProvider(TradeRebalanceLootTableProvider::create);
+      var13.addProvider(bindRegistries(TradeRebalanceStructureTagsProvider::new, var14));
       return var9;
    }
 }

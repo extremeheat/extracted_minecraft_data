@@ -17,7 +17,7 @@ import net.minecraft.network.chat.Component;
 public class ReportReasonSelectionScreen extends Screen {
    private static final Component REASON_TITLE = Component.translatable("gui.abuseReport.reason.title");
    private static final Component REASON_DESCRIPTION = Component.translatable("gui.abuseReport.reason.description");
-   private static final Component READ_INFO_LABEL = Component.translatable("gui.chatReport.read_info");
+   private static final Component READ_INFO_LABEL = Component.translatable("gui.abuseReport.read_info");
    private static final int FOOTER_HEIGHT = 95;
    private static final int BUTTON_WIDTH = 150;
    private static final int BUTTON_HEIGHT = 20;
@@ -41,7 +41,6 @@ public class ReportReasonSelectionScreen extends Screen {
    @Override
    protected void init() {
       this.reasonSelectionList = new ReportReasonSelectionScreen.ReasonSelectionList(this.minecraft);
-      this.reasonSelectionList.setRenderBackground(false);
       this.addWidget(this.reasonSelectionList);
       ReportReasonSelectionScreen.ReasonSelectionList.Entry var1 = Optionull.map(this.currentlySelectedReason, this.reasonSelectionList::findEntry);
       this.reasonSelectionList.setSelected(var1);
@@ -67,10 +66,9 @@ public class ReportReasonSelectionScreen extends Screen {
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
+      super.render(var1, var2, var3, var4);
       this.reasonSelectionList.render(var1, var2, var3, var4);
       var1.drawCenteredString(this.font, this.title, this.width / 2, 16, 16777215);
-      super.render(var1, var2, var3, var4);
       var1.fill(this.contentLeft(), this.descriptionTop(), this.contentRight(), this.descriptionBottom(), 2130706432);
       var1.drawString(this.font, REASON_DESCRIPTION, this.contentLeft() + 4, this.descriptionTop() + 4, -8421505);
       ReportReasonSelectionScreen.ReasonSelectionList.Entry var5 = this.reasonSelectionList.getSelected();
@@ -84,6 +82,11 @@ public class ReportReasonSelectionScreen extends Screen {
          int var12 = this.font.wordWrapHeight(var5.reason.description(), var10);
          var1.drawWordWrap(this.font, var5.reason.description(), var6, var8 + (var11 - var12) / 2, var10, -1);
       }
+   }
+
+   @Override
+   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
+      this.renderDirtBackground(var1);
    }
 
    private int buttonTop() {
@@ -162,12 +165,8 @@ public class ReportReasonSelectionScreen extends Screen {
 
          @Override
          public boolean mouseClicked(double var1, double var3, int var5) {
-            if (var5 == 0) {
-               ReasonSelectionList.this.setSelected(this);
-               return true;
-            } else {
-               return false;
-            }
+            ReasonSelectionList.this.setSelected(this);
+            return true;
          }
 
          public ReportReason getReason() {

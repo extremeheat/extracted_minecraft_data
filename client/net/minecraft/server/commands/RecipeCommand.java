@@ -14,7 +14,7 @@ import net.minecraft.commands.arguments.ResourceLocationArgument;
 import net.minecraft.commands.synchronization.SuggestionProviders;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 
 public class RecipeCommand {
    private static final SimpleCommandExceptionType ERROR_GIVE_FAILED = new SimpleCommandExceptionType(Component.translatable("commands.recipe.give.failed"));
@@ -84,7 +84,7 @@ public class RecipeCommand {
       );
    }
 
-   private static int giveRecipes(CommandSourceStack var0, Collection<ServerPlayer> var1, Collection<Recipe<?>> var2) throws CommandSyntaxException {
+   private static int giveRecipes(CommandSourceStack var0, Collection<ServerPlayer> var1, Collection<RecipeHolder<?>> var2) throws CommandSyntaxException {
       int var3 = 0;
 
       for(ServerPlayer var5 : var1) {
@@ -106,7 +106,7 @@ public class RecipeCommand {
       }
    }
 
-   private static int takeRecipes(CommandSourceStack var0, Collection<ServerPlayer> var1, Collection<Recipe<?>> var2) throws CommandSyntaxException {
+   private static int takeRecipes(CommandSourceStack var0, Collection<ServerPlayer> var1, Collection<RecipeHolder<?>> var2) throws CommandSyntaxException {
       int var3 = 0;
 
       for(ServerPlayer var5 : var1) {

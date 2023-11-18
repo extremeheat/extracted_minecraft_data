@@ -22,6 +22,7 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.server.level.ServerBossEvent;
@@ -77,10 +78,8 @@ public class Raid {
    public static final int DEFAULT_MAX_BAD_OMEN_LEVEL = 5;
    private static final int LOW_MOB_THRESHOLD = 2;
    private static final Component RAID_NAME_COMPONENT = Component.translatable("event.minecraft.raid");
-   private static final Component VICTORY = Component.translatable("event.minecraft.raid.victory");
-   private static final Component DEFEAT = Component.translatable("event.minecraft.raid.defeat");
-   private static final Component RAID_BAR_VICTORY_COMPONENT = RAID_NAME_COMPONENT.copy().append(" - ").append(VICTORY);
-   private static final Component RAID_BAR_DEFEAT_COMPONENT = RAID_NAME_COMPONENT.copy().append(" - ").append(DEFEAT);
+   private static final Component RAID_BAR_VICTORY_COMPONENT = Component.translatable("event.minecraft.raid.victory.full");
+   private static final Component RAID_BAR_DEFEAT_COMPONENT = Component.translatable("event.minecraft.raid.defeat.full");
    private static final int HERO_OF_THE_VILLAGE_DURATION = 48000;
    public static final int VALID_RAID_RADIUS_SQR = 9216;
    public static final int RAID_REMOVAL_THRESHOLD_SQR = 12544;
@@ -134,10 +133,8 @@ public class Raid {
       this.status = Raid.RaidStatus.getByName(var2.getString("Status"));
       this.heroesOfTheVillage.clear();
       if (var2.contains("HeroesOfTheVillage", 9)) {
-         ListTag var3 = var2.getList("HeroesOfTheVillage", 11);
-
-         for(int var4 = 0; var4 < var3.size(); ++var4) {
-            this.heroesOfTheVillage.add(NbtUtils.loadUUID(var3.get(var4)));
+         for(Tag var5 : var2.getList("HeroesOfTheVillage", 11)) {
+            this.heroesOfTheVillage.add(NbtUtils.loadUUID(var5));
          }
       }
    }

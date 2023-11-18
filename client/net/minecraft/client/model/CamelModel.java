@@ -38,7 +38,7 @@ public class CamelModel<T extends Camel> extends HierarchicalModel<T> {
    public static LayerDefinition createBodyLayer() {
       MeshDefinition var0 = new MeshDefinition();
       PartDefinition var1 = var0.getRoot();
-      CubeDeformation var2 = new CubeDeformation(0.1F);
+      CubeDeformation var2 = new CubeDeformation(0.05F);
       PartDefinition var3 = var1.addOrReplaceChild(
          "body", CubeListBuilder.create().texOffs(0, 25).addBox(-7.5F, -12.0F, -23.5F, 15.0F, 12.0F, 27.0F), PartPose.offset(0.0F, 4.0F, 9.5F)
       );
@@ -58,10 +58,10 @@ public class CamelModel<T extends Camel> extends HierarchicalModel<T> {
          PartPose.offset(0.0F, -3.0F, -19.5F)
       );
       var4.addOrReplaceChild(
-         "left_ear", CubeListBuilder.create().texOffs(45, 0).addBox(-0.5F, 0.5F, -1.0F, 3.0F, 1.0F, 2.0F), PartPose.offset(3.0F, -21.0F, -9.5F)
+         "left_ear", CubeListBuilder.create().texOffs(45, 0).addBox(-0.5F, 0.5F, -1.0F, 3.0F, 1.0F, 2.0F), PartPose.offset(2.5F, -21.0F, -9.5F)
       );
       var4.addOrReplaceChild(
-         "right_ear", CubeListBuilder.create().texOffs(67, 0).addBox(-2.5F, 0.5F, -1.0F, 3.0F, 1.0F, 2.0F), PartPose.offset(-3.0F, -21.0F, -9.5F)
+         "right_ear", CubeListBuilder.create().texOffs(67, 0).addBox(-2.5F, 0.5F, -1.0F, 3.0F, 1.0F, 2.0F), PartPose.offset(-2.5F, -21.0F, -9.5F)
       );
       var1.addOrReplaceChild(
          "left_hind_leg", CubeListBuilder.create().texOffs(58, 16).addBox(-2.5F, 2.0F, -2.5F, 5.0F, 21.0F, 5.0F), PartPose.offset(4.9F, 1.0F, 9.5F)

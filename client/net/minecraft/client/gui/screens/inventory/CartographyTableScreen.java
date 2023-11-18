@@ -12,6 +12,11 @@ import net.minecraft.world.item.MapItem;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 
 public class CartographyTableScreen extends AbstractContainerScreen<CartographyTableMenu> {
+   private static final ResourceLocation ERROR_SPRITE = new ResourceLocation("container/cartography_table/error");
+   private static final ResourceLocation SCALED_MAP_SPRITE = new ResourceLocation("container/cartography_table/scaled_map");
+   private static final ResourceLocation DUPLICATED_MAP_SPRITE = new ResourceLocation("container/cartography_table/duplicated_map");
+   private static final ResourceLocation MAP_SPRITE = new ResourceLocation("container/cartography_table/map");
+   private static final ResourceLocation LOCKED_SPRITE = new ResourceLocation("container/cartography_table/locked");
    private static final ResourceLocation BG_LOCATION = new ResourceLocation("textures/gui/container/cartography_table.png");
 
    public CartographyTableScreen(CartographyTableMenu var1, Inventory var2, Component var3) {
@@ -27,7 +32,6 @@ public class CartographyTableScreen extends AbstractContainerScreen<CartographyT
 
    @Override
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
-      this.renderBackground(var1);
       int var5 = this.leftPos;
       int var6 = this.topPos;
       var1.blit(BG_LOCATION, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
@@ -46,13 +50,13 @@ public class CartographyTableScreen extends AbstractContainerScreen<CartographyT
             if (var13.locked) {
                var14 = true;
                if (var9 || var10) {
-                  var1.blit(BG_LOCATION, var5 + 35, var6 + 31, this.imageWidth + 50, 132, 28, 21);
+                  var1.blitSprite(ERROR_SPRITE, var5 + 35, var6 + 31, 28, 21);
                }
             }
 
             if (var9 && var13.scale >= 4) {
                var14 = true;
-               var1.blit(BG_LOCATION, var5 + 35, var6 + 31, this.imageWidth + 50, 132, 28, 21);
+               var1.blitSprite(ERROR_SPRITE, var5 + 35, var6 + 31, 28, 21);
             }
          }
       } else {
@@ -69,25 +73,25 @@ public class CartographyTableScreen extends AbstractContainerScreen<CartographyT
       int var8 = this.leftPos;
       int var9 = this.topPos;
       if (var5 && !var7) {
-         var1.blit(BG_LOCATION, var8 + 67, var9 + 13, this.imageWidth, 66, 66, 66);
+         var1.blitSprite(SCALED_MAP_SPRITE, var8 + 67, var9 + 13, 66, 66);
          this.renderMap(var1, var2, var3, var8 + 85, var9 + 31, 0.226F);
       } else if (var4) {
-         var1.blit(BG_LOCATION, var8 + 67 + 16, var9 + 13, this.imageWidth, 132, 50, 66);
+         var1.blitSprite(DUPLICATED_MAP_SPRITE, var8 + 67 + 16, var9 + 13, 50, 66);
          this.renderMap(var1, var2, var3, var8 + 86, var9 + 16, 0.34F);
          var1.pose().pushPose();
          var1.pose().translate(0.0F, 0.0F, 1.0F);
-         var1.blit(BG_LOCATION, var8 + 67, var9 + 13 + 16, this.imageWidth, 132, 50, 66);
+         var1.blitSprite(DUPLICATED_MAP_SPRITE, var8 + 67, var9 + 13 + 16, 50, 66);
          this.renderMap(var1, var2, var3, var8 + 70, var9 + 32, 0.34F);
          var1.pose().popPose();
       } else if (var6) {
-         var1.blit(BG_LOCATION, var8 + 67, var9 + 13, this.imageWidth, 0, 66, 66);
+         var1.blitSprite(MAP_SPRITE, var8 + 67, var9 + 13, 66, 66);
          this.renderMap(var1, var2, var3, var8 + 71, var9 + 17, 0.45F);
          var1.pose().pushPose();
          var1.pose().translate(0.0F, 0.0F, 1.0F);
-         var1.blit(BG_LOCATION, var8 + 66, var9 + 12, 0, this.imageHeight, 66, 66);
+         var1.blitSprite(LOCKED_SPRITE, var8 + 118, var9 + 60, 10, 14);
          var1.pose().popPose();
       } else {
-         var1.blit(BG_LOCATION, var8 + 67, var9 + 13, this.imageWidth, 0, 66, 66);
+         var1.blitSprite(MAP_SPRITE, var8 + 67, var9 + 13, 66, 66);
          this.renderMap(var1, var2, var3, var8 + 71, var9 + 17, 0.45F);
       }
    }

@@ -14,6 +14,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.ChiseledBookShelfBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.gameevent.GameEvent;
 import org.slf4j.Logger;
 
 public class ChiseledBookShelfBlockEntity extends BlockEntity implements Container {
@@ -38,6 +39,7 @@ public class ChiseledBookShelfBlockEntity extends BlockEntity implements Contain
          }
 
          Objects.requireNonNull(this.level).setBlock(this.worldPosition, var2, 3);
+         this.level.gameEvent(GameEvent.BLOCK_CHANGE, this.worldPosition, GameEvent.Context.of(var2));
       } else {
          LOGGER.error("Expected slot 0-5, got {}", var1);
       }
@@ -101,6 +103,8 @@ public class ChiseledBookShelfBlockEntity extends BlockEntity implements Contain
       if (var2.is(ItemTags.BOOKSHELF_BOOKS)) {
          this.items.set(var1, var2);
          this.updateState(var1);
+      } else if (var2.isEmpty()) {
+         this.removeItem(var1, 1);
       }
    }
 

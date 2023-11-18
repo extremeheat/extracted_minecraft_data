@@ -16,7 +16,6 @@ import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
@@ -58,11 +57,13 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.protocol.game.ServerboundClientInformationPacket;
+import net.minecraft.network.protocol.common.ServerboundClientInformationPacket;
+import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Mth;
 import net.minecraft.util.datafix.DataFixTypes;
@@ -75,7 +76,7 @@ import org.slf4j.Logger;
 public class Options {
    static final Logger LOGGER = LogUtils.getLogger();
    static final Gson GSON = new Gson();
-   private static final TypeToken<List<String>> RESOURCE_PACK_TYPE = new TypeToken<List<String>>() {
+   private static final TypeToken<List<String>> LIST_OF_STRINGS_TYPE = new TypeToken<List<String>>() {
    };
    public static final int RENDER_DISTANCE_TINY = 2;
    public static final int RENDER_DISTANCE_SHORT = 4;
@@ -132,20 +133,7 @@ public class Options {
       OptionInstance.noTooltip(),
       OptionInstance.forOptionEnum(),
       new OptionInstance.Enum<>(
-         Arrays.asList(CloudStatus.values()),
-         Codec.either(Codec.BOOL, Codec.STRING).xmap(var0 -> (CloudStatus)var0.map(var0x -> var0x ? CloudStatus.FANCY : CloudStatus.OFF, var0x -> {
-               return switch(var0x) {
-                  case "true" -> CloudStatus.FANCY;
-                  case "fast" -> CloudStatus.FAST;
-                  default -> CloudStatus.OFF;
-               };
-            }), var0 -> {
-            return Either.right(switch(var0) {
-               case FANCY -> "true";
-               case FAST -> "fast";
-               case OFF -> "false";
-            });
-         })
+         Arrays.asList(CloudStatus.values()), ExtraCodecs.withAlternative(CloudStatus.CODEC, Codec.BOOL, var0 -> var0 ? CloudStatus.FANCY : CloudStatus.OFF)
       ),
       CloudStatus.FANCY,
       var0 -> {
@@ -265,6 +253,11 @@ public class Options {
          }
       }
    );
+   private final OptionInstance<Boolean> narratorHotkey = OptionInstance.createBoolean(
+      "options.accessibility.narrator_hotkey",
+      OptionInstance.cachedConstantTooltip(Component.translatable("options.accessibility.narrator_hotkey.tooltip")),
+      true
+   );
    @Nullable
    public String fullscreenVideoModeString;
    public boolean hideServerAddress;
@@ -275,10 +268,7 @@ public class Options {
       "options.mainHand",
       OptionInstance.noTooltip(),
       OptionInstance.forOptionEnum(),
-      new OptionInstance.Enum<>(
-         Arrays.asList(HumanoidArm.values()),
-         Codec.STRING.xmap(var0 -> "left".equals(var0) ? HumanoidArm.LEFT : HumanoidArm.RIGHT, var0 -> var0 == HumanoidArm.LEFT ? "left" : "right")
-      ),
+      new OptionInstance.Enum<>(Arrays.asList(HumanoidArm.values()), HumanoidArm.CODEC),
       HumanoidArm.RIGHT,
       var1x -> this.broadcastOptions()
    );
@@ -537,9 +527,6 @@ public class Options {
    private final File optionsFile;
    public boolean hideGui;
    private CameraType cameraType = CameraType.FIRST_PERSON;
-   public boolean renderDebug;
-   public boolean renderDebugCharts;
-   public boolean renderFpsChart;
    public String lastMpIp = "";
    public boolean smoothCamera;
    private final OptionInstance<Integer> fov = new OptionInstance<>(
@@ -794,6 +781,10 @@ public class Options {
 
    public OptionInstance<Boolean> highContrast() {
       return this.highContrast;
+   }
+
+   public OptionInstance<Boolean> narratorHotkey() {
+      return this.narratorHotkey;
    }
 
    public OptionInstance<HumanoidArm> mainHand() {
@@ -1099,6 +1090,7 @@ public class Options {
       var1.process("glintStrength", this.glintStrength);
       var1.process("damageTiltStrength", this.damageTiltStrength);
       var1.process("highContrast", this.highContrast);
+      var1.process("narratorHotkey", this.narratorHotkey);
       var1.process("gamma", this.gamma);
       var1.process("renderDistance", this.renderDistance);
       var1.process("simulationDistance", this.simulationDistance);
@@ -1111,8 +1103,8 @@ public class Options {
       var1.process("prioritizeChunkUpdates", this.prioritizeChunkUpdates);
       var1.process("biomeBlendRadius", this.biomeBlendRadius);
       var1.process("renderClouds", this.cloudStatus);
-      this.resourcePacks = var1.process("resourcePacks", this.resourcePacks, Options::readPackList, GSON::toJson);
-      this.incompatibleResourcePacks = var1.process("incompatibleResourcePacks", this.incompatibleResourcePacks, Options::readPackList, GSON::toJson);
+      this.resourcePacks = var1.process("resourcePacks", this.resourcePacks, Options::readListOfStrings, GSON::toJson);
+      this.incompatibleResourcePacks = var1.process("incompatibleResourcePacks", this.incompatibleResourcePacks, Options::readListOfStrings, GSON::toJson);
       this.lastMpIp = var1.process("lastServer", this.lastMpIp);
       this.languageCode = var1.process("lang", this.languageCode);
       var1.process("soundDevice", this.soundDevice);
@@ -1368,29 +1360,28 @@ public class Options {
       this.broadcastOptions();
    }
 
+   public ClientInformation buildPlayerInformation() {
+      int var1 = 0;
+
+      for(PlayerModelPart var3 : this.modelParts) {
+         var1 |= var3.getMask();
+      }
+
+      return new ClientInformation(
+         this.languageCode,
+         this.renderDistance.get(),
+         this.chatVisibility.get(),
+         this.chatColors.get(),
+         var1,
+         this.mainHand.get(),
+         this.minecraft.isTextFilteringEnabled(),
+         this.allowServerListing.get()
+      );
+   }
+
    public void broadcastOptions() {
       if (this.minecraft.player != null) {
-         int var1 = 0;
-
-         for(PlayerModelPart var3 : this.modelParts) {
-            var1 |= var3.getMask();
-         }
-
-         this.minecraft
-            .player
-            .connection
-            .send(
-               new ServerboundClientInformationPacket(
-                  this.languageCode,
-                  this.renderDistance.get(),
-                  this.chatVisibility.get(),
-                  this.chatColors.get(),
-                  var1,
-                  this.mainHand.get(),
-                  this.minecraft.isTextFilteringEnabled(),
-                  this.allowServerListing.get()
-               )
-            );
+         this.minecraft.player.connection.send(new ServerboundClientInformationPacket(this.buildPlayerInformation()));
       }
    }
 
@@ -1455,8 +1446,8 @@ public class Options {
       this.cameraType = var1;
    }
 
-   private static List<String> readPackList(String var0) {
-      List var1 = GsonHelper.fromNullableJson(GSON, var0, RESOURCE_PACK_TYPE);
+   private static List<String> readListOfStrings(String var0) {
+      List var1 = GsonHelper.fromNullableJson(GSON, var0, LIST_OF_STRINGS_TYPE);
       return (List<String>)(var1 != null ? var1 : Lists.newArrayList());
    }
 

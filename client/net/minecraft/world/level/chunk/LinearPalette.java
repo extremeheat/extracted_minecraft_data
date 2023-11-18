@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.function.Predicate;
 import net.minecraft.core.IdMap;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.VarInt;
 import org.apache.commons.lang3.Validate;
 
 public class LinearPalette<T> implements Palette<T> {
@@ -101,10 +102,10 @@ public class LinearPalette<T> implements Palette<T> {
 
    @Override
    public int getSerializedSize() {
-      int var1 = FriendlyByteBuf.getVarIntSize(this.getSize());
+      int var1 = VarInt.getByteSize(this.getSize());
 
       for(int var2 = 0; var2 < this.getSize(); ++var2) {
-         var1 += FriendlyByteBuf.getVarIntSize(this.registry.getId(this.values[var2]));
+         var1 += VarInt.getByteSize(this.registry.getId(this.values[var2]));
       }
 
       return var1;

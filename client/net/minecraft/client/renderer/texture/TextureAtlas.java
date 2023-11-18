@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
@@ -29,6 +30,8 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, Tickable 
    private List<SpriteContents> sprites = List.of();
    private List<TextureAtlasSprite.Ticker> animatedTextures = List.of();
    private Map<ResourceLocation, TextureAtlasSprite> texturesByName = Map.of();
+   @Nullable
+   private TextureAtlasSprite missingSprite;
    private final ResourceLocation location;
    private final int maxSupportedTextureSize;
    private int width;
@@ -53,30 +56,35 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, Tickable 
       this.mipLevel = var1.mipLevel();
       this.clearTextureData();
       this.texturesByName = Map.copyOf(var1.regions());
-      ArrayList var2 = new ArrayList();
-      ArrayList var3 = new ArrayList();
+      this.missingSprite = this.texturesByName.get(MissingTextureAtlasSprite.getLocation());
+      if (this.missingSprite == null) {
+         throw new IllegalStateException("Atlas '" + this.location + "' (" + this.texturesByName.size() + " sprites) has no missing texture sprite");
+      } else {
+         ArrayList var2 = new ArrayList();
+         ArrayList var3 = new ArrayList();
 
-      for(TextureAtlasSprite var5 : var1.regions().values()) {
-         var2.add(var5.contents());
+         for(TextureAtlasSprite var5 : var1.regions().values()) {
+            var2.add(var5.contents());
 
-         try {
-            var5.uploadFirstFrame();
-         } catch (Throwable var9) {
-            CrashReport var7 = CrashReport.forThrowable(var9, "Stitching texture atlas");
-            CrashReportCategory var8 = var7.addCategory("Texture being stitched together");
-            var8.setDetail("Atlas path", this.location);
-            var8.setDetail("Sprite", var5);
-            throw new ReportedException(var7);
+            try {
+               var5.uploadFirstFrame();
+            } catch (Throwable var9) {
+               CrashReport var7 = CrashReport.forThrowable(var9, "Stitching texture atlas");
+               CrashReportCategory var8 = var7.addCategory("Texture being stitched together");
+               var8.setDetail("Atlas path", this.location);
+               var8.setDetail("Sprite", var5);
+               throw new ReportedException(var7);
+            }
+
+            TextureAtlasSprite.Ticker var6 = var5.createTicker();
+            if (var6 != null) {
+               var3.add(var6);
+            }
          }
 
-         TextureAtlasSprite.Ticker var6 = var5.createTicker();
-         if (var6 != null) {
-            var3.add(var6);
-         }
+         this.sprites = List.copyOf(var2);
+         this.animatedTextures = List.copyOf(var3);
       }
-
-      this.sprites = List.copyOf(var2);
-      this.animatedTextures = List.copyOf(var3);
    }
 
    @Override
@@ -121,8 +129,12 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, Tickable 
    }
 
    public TextureAtlasSprite getSprite(ResourceLocation var1) {
-      TextureAtlasSprite var2 = this.texturesByName.get(var1);
-      return var2 == null ? this.texturesByName.get(MissingTextureAtlasSprite.getLocation()) : var2;
+      TextureAtlasSprite var2 = this.texturesByName.getOrDefault(var1, this.missingSprite);
+      if (var2 == null) {
+         throw new IllegalStateException("Tried to lookup sprite, but atlas is not initialized");
+      } else {
+         return var2;
+      }
    }
 
    public void clearTextureData() {
@@ -131,6 +143,7 @@ public class TextureAtlas extends AbstractTexture implements Dumpable, Tickable 
       this.sprites = List.of();
       this.animatedTextures = List.of();
       this.texturesByName = Map.of();
+      this.missingSprite = null;
    }
 
    public ResourceLocation location() {

@@ -53,8 +53,8 @@ public class GlowLichenBlock extends MultifaceBlock implements BonemealableBlock
    }
 
    @Override
-   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
-      return Direction.stream().anyMatch(var4x -> this.spreader.canSpreadInAnyDirection(var3, var1, var2, var4x.getOpposite()));
+   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
+      return Direction.stream().anyMatch(var4 -> this.spreader.canSpreadInAnyDirection(var3, var1, var2, var4.getOpposite()));
    }
 
    @Override

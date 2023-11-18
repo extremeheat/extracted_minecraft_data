@@ -1,21 +1,32 @@
 package net.minecraft.advancements.critereon;
 
 import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
-import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Optional;
 import javax.annotation.Nullable;
-import net.minecraft.util.GsonHelper;
+import net.minecraft.Util;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 
-public class DistancePredicate {
-   public static final DistancePredicate ANY = new DistancePredicate(
-      MinMaxBounds.Doubles.ANY, MinMaxBounds.Doubles.ANY, MinMaxBounds.Doubles.ANY, MinMaxBounds.Doubles.ANY, MinMaxBounds.Doubles.ANY
-   );
+public record DistancePredicate(MinMaxBounds.Doubles b, MinMaxBounds.Doubles c, MinMaxBounds.Doubles d, MinMaxBounds.Doubles e, MinMaxBounds.Doubles f) {
    private final MinMaxBounds.Doubles x;
    private final MinMaxBounds.Doubles y;
    private final MinMaxBounds.Doubles z;
    private final MinMaxBounds.Doubles horizontal;
    private final MinMaxBounds.Doubles absolute;
+   public static final Codec<DistancePredicate> CODEC = RecordCodecBuilder.create(
+      var0 -> var0.group(
+               ExtraCodecs.strictOptionalField(MinMaxBounds.Doubles.CODEC, "x", MinMaxBounds.Doubles.ANY).forGetter(DistancePredicate::x),
+               ExtraCodecs.strictOptionalField(MinMaxBounds.Doubles.CODEC, "y", MinMaxBounds.Doubles.ANY).forGetter(DistancePredicate::y),
+               ExtraCodecs.strictOptionalField(MinMaxBounds.Doubles.CODEC, "z", MinMaxBounds.Doubles.ANY).forGetter(DistancePredicate::z),
+               ExtraCodecs.strictOptionalField(MinMaxBounds.Doubles.CODEC, "horizontal", MinMaxBounds.Doubles.ANY).forGetter(DistancePredicate::horizontal),
+               ExtraCodecs.strictOptionalField(MinMaxBounds.Doubles.CODEC, "absolute", MinMaxBounds.Doubles.ANY).forGetter(DistancePredicate::absolute)
+            )
+            .apply(var0, DistancePredicate::new)
+   );
 
    public DistancePredicate(
       MinMaxBounds.Doubles var1, MinMaxBounds.Doubles var2, MinMaxBounds.Doubles var3, MinMaxBounds.Doubles var4, MinMaxBounds.Doubles var5
@@ -53,31 +64,13 @@ public class DistancePredicate {
       }
    }
 
-   public static DistancePredicate fromJson(@Nullable JsonElement var0) {
-      if (var0 != null && !var0.isJsonNull()) {
-         JsonObject var1 = GsonHelper.convertToJsonObject(var0, "distance");
-         MinMaxBounds.Doubles var2 = MinMaxBounds.Doubles.fromJson(var1.get("x"));
-         MinMaxBounds.Doubles var3 = MinMaxBounds.Doubles.fromJson(var1.get("y"));
-         MinMaxBounds.Doubles var4 = MinMaxBounds.Doubles.fromJson(var1.get("z"));
-         MinMaxBounds.Doubles var5 = MinMaxBounds.Doubles.fromJson(var1.get("horizontal"));
-         MinMaxBounds.Doubles var6 = MinMaxBounds.Doubles.fromJson(var1.get("absolute"));
-         return new DistancePredicate(var2, var3, var4, var5, var6);
-      } else {
-         return ANY;
-      }
+   public static Optional<DistancePredicate> fromJson(@Nullable JsonElement var0) {
+      return var0 != null && !var0.isJsonNull()
+         ? Optional.of(Util.getOrThrow(CODEC.parse(JsonOps.INSTANCE, var0), JsonParseException::new))
+         : Optional.empty();
    }
 
    public JsonElement serializeToJson() {
-      if (this == ANY) {
-         return JsonNull.INSTANCE;
-      } else {
-         JsonObject var1 = new JsonObject();
-         var1.add("x", this.x.serializeToJson());
-         var1.add("y", this.y.serializeToJson());
-         var1.add("z", this.z.serializeToJson());
-         var1.add("horizontal", this.horizontal.serializeToJson());
-         var1.add("absolute", this.absolute.serializeToJson());
-         return var1;
-      }
+      return Util.getOrThrow(CODEC.encodeStart(JsonOps.INSTANCE, this), IllegalStateException::new);
    }
 }

@@ -10,6 +10,7 @@ import com.mojang.blaze3d.platform.DisplayData;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.logging.LogUtils;
+import com.mojang.util.UndashedUuid;
 import java.io.File;
 import java.net.Authenticator;
 import java.net.InetSocketAddress;
@@ -19,6 +20,7 @@ import java.net.Proxy.Type;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.UUID;
 import javax.annotation.Nullable;
 import joptsimple.ArgumentAcceptingOptionSpec;
 import joptsimple.NonOptionArgumentSpec;
@@ -43,6 +45,7 @@ import net.minecraft.util.GsonHelper;
 import net.minecraft.util.NativeModuleLister;
 import net.minecraft.util.profiling.jfr.Environment;
 import net.minecraft.util.profiling.jfr.JvmProfiler;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.slf4j.Logger;
 
 public class Main {
@@ -98,7 +101,7 @@ public class Main {
       OptionSet var32 = var3.parse(var0);
       List var33 = var32.valuesOf(var31);
       if (!var33.isEmpty()) {
-         System.out.println("Completely ignored arguments: " + var33);
+         LOGGER.info("Completely ignored arguments: " + var33);
       }
 
       String var34 = parseArgument(var32, var12);
@@ -137,14 +140,16 @@ public class Main {
       File var51 = parseArgument(var32, var9);
       File var52 = var32.has(var10) ? parseArgument(var32, var10) : new File(var51, "assets/");
       File var53 = var32.has(var11) ? parseArgument(var32, var11) : new File(var51, "resourcepacks/");
-      String var54 = var32.has(var17) ? (String)var17.value(var32) : UUIDUtil.createOfflinePlayerUUID((String)var16.value(var32)).toString();
+      UUID var54 = var32.has(var17)
+         ? UndashedUuid.fromStringLenient((String)var17.value(var32))
+         : UUIDUtil.createOfflinePlayerUUID((String)var16.value(var32));
       String var55 = var32.has(var28) ? (String)var28.value(var32) : null;
       String var56 = (String)var32.valueOf(var18);
       String var57 = (String)var32.valueOf(var19);
       String var58 = parseArgument(var32, var5);
-      String var59 = parseArgument(var32, var6);
-      String var60 = parseArgument(var32, var7);
-      String var61 = parseArgument(var32, var8);
+      String var59 = unescapeJavaArgument(parseArgument(var32, var6));
+      String var60 = unescapeJavaArgument(parseArgument(var32, var7));
+      String var61 = unescapeJavaArgument(parseArgument(var32, var8));
       if (var32.has(var4)) {
          JvmProfiler.INSTANCE.start(Environment.CLIENT);
       }
@@ -244,6 +249,11 @@ public class Main {
       } finally {
          var67.destroy();
       }
+   }
+
+   @Nullable
+   private static String unescapeJavaArgument(@Nullable String var0) {
+      return var0 == null ? null : StringEscapeUtils.unescapeJava(var0);
    }
 
    private static Optional<String> emptyStringToEmptyOptional(String var0) {

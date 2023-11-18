@@ -63,10 +63,10 @@ public class DripstoneClusterFeature extends Feature<DripstoneClusterConfigurati
       DripstoneClusterConfiguration var11
    ) {
       Optional var12 = Column.scan(var1, var3, var11.floorToCeilingSearchRange, DripstoneUtils::isEmptyOrWater, DripstoneUtils::isNeitherEmptyNorWater);
-      if (var12.isPresent()) {
+      if (!var12.isEmpty()) {
          OptionalInt var13 = ((Column)var12.get()).getCeiling();
          OptionalInt var14 = ((Column)var12.get()).getFloor();
-         if (var13.isPresent() || var14.isPresent()) {
+         if (!var13.isEmpty() || !var14.isEmpty()) {
             boolean var15 = var2.nextFloat() < var6;
             Column var16;
             if (var15 && var14.isPresent() && this.canPlacePool(var1, var3.atY(var14.getAsInt()))) {

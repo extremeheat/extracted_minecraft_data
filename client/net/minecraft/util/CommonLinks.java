@@ -1,8 +1,12 @@
 package net.minecraft.util;
 
+import com.mojang.util.UndashedUuid;
+import java.util.UUID;
+
 public class CommonLinks {
    public static final String GDPR = "https://aka.ms/MinecraftGDPR";
    public static final String EULA = "https://aka.ms/MinecraftEULA";
+   public static final String PRIVACY_STATEMENT = "http://go.microsoft.com/fwlink/?LinkId=521839";
    public static final String ATTRIBUTION = "https://aka.ms/MinecraftJavaAttribution";
    public static final String LICENSES = "https://aka.ms/MinecraftJavaLicenses";
    public static final String BUY_MINECRAFT_JAVA = "https://aka.ms/BuyMinecraftJava";
@@ -25,11 +29,11 @@ public class CommonLinks {
       super();
    }
 
-   public static String extendRealms(String var0, String var1, boolean var2) {
+   public static String extendRealms(String var0, UUID var1, boolean var2) {
       return extendRealms(var0, var1) + "&ref=" + (var2 ? "expiredTrial" : "expiredRealm");
    }
 
-   public static String extendRealms(String var0, String var1) {
-      return "https://aka.ms/ExtendJavaRealms?subscriptionId=" + var0 + "&profileId=" + var1;
+   public static String extendRealms(String var0, UUID var1) {
+      return "https://aka.ms/ExtendJavaRealms?subscriptionId=" + var0 + "&profileId=" + UndashedUuid.toString(var1);
    }
 }

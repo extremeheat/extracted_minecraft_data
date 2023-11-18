@@ -2,8 +2,9 @@ package net.minecraft.data.advancements.packs;
 
 import java.util.function.Consumer;
 import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.advancements.AdvancementRequirements;
 import net.minecraft.advancements.FrameType;
-import net.minecraft.advancements.RequirementsStrategy;
 import net.minecraft.advancements.critereon.ChangeDimensionTrigger;
 import net.minecraft.advancements.critereon.CuredZombieVillagerTrigger;
 import net.minecraft.advancements.critereon.DamagePredicate;
@@ -32,8 +33,8 @@ public class VanillaStoryAdvancements implements AdvancementSubProvider {
    }
 
    @Override
-   public void generate(HolderLookup.Provider var1, Consumer<Advancement> var2) {
-      Advancement var3 = Advancement.Builder.advancement()
+   public void generate(HolderLookup.Provider var1, Consumer<AdvancementHolder> var2) {
+      AdvancementHolder var3 = Advancement.Builder.advancement()
          .display(
             Blocks.GRASS_BLOCK,
             Component.translatable("advancements.story.root.title"),
@@ -46,7 +47,7 @@ public class VanillaStoryAdvancements implements AdvancementSubProvider {
          )
          .addCriterion("crafting_table", InventoryChangeTrigger.TriggerInstance.hasItems(Blocks.CRAFTING_TABLE))
          .save(var2, "story/root");
-      Advancement var4 = Advancement.Builder.advancement()
+      AdvancementHolder var4 = Advancement.Builder.advancement()
          .parent(var3)
          .display(
             Items.WOODEN_PICKAXE,
@@ -58,9 +59,9 @@ public class VanillaStoryAdvancements implements AdvancementSubProvider {
             true,
             false
          )
-         .addCriterion("get_stone", InventoryChangeTrigger.TriggerInstance.hasItems(ItemPredicate.Builder.item().of(ItemTags.STONE_TOOL_MATERIALS).build()))
+         .addCriterion("get_stone", InventoryChangeTrigger.TriggerInstance.hasItems(ItemPredicate.Builder.item().of(ItemTags.STONE_TOOL_MATERIALS)))
          .save(var2, "story/mine_stone");
-      Advancement var5 = Advancement.Builder.advancement()
+      AdvancementHolder var5 = Advancement.Builder.advancement()
          .parent(var4)
          .display(
             Items.STONE_PICKAXE,
@@ -74,7 +75,7 @@ public class VanillaStoryAdvancements implements AdvancementSubProvider {
          )
          .addCriterion("stone_pickaxe", InventoryChangeTrigger.TriggerInstance.hasItems(Items.STONE_PICKAXE))
          .save(var2, "story/upgrade_tools");
-      Advancement var6 = Advancement.Builder.advancement()
+      AdvancementHolder var6 = Advancement.Builder.advancement()
          .parent(var5)
          .display(
             Items.IRON_INGOT,
@@ -88,7 +89,7 @@ public class VanillaStoryAdvancements implements AdvancementSubProvider {
          )
          .addCriterion("iron", InventoryChangeTrigger.TriggerInstance.hasItems(Items.IRON_INGOT))
          .save(var2, "story/smelt_iron");
-      Advancement var7 = Advancement.Builder.advancement()
+      AdvancementHolder var7 = Advancement.Builder.advancement()
          .parent(var6)
          .display(
             Items.IRON_PICKAXE,
@@ -102,7 +103,7 @@ public class VanillaStoryAdvancements implements AdvancementSubProvider {
          )
          .addCriterion("iron_pickaxe", InventoryChangeTrigger.TriggerInstance.hasItems(Items.IRON_PICKAXE))
          .save(var2, "story/iron_tools");
-      Advancement var8 = Advancement.Builder.advancement()
+      AdvancementHolder var8 = Advancement.Builder.advancement()
          .parent(var7)
          .display(
             Items.DIAMOND,
@@ -116,7 +117,7 @@ public class VanillaStoryAdvancements implements AdvancementSubProvider {
          )
          .addCriterion("diamond", InventoryChangeTrigger.TriggerInstance.hasItems(Items.DIAMOND))
          .save(var2, "story/mine_diamond");
-      Advancement var9 = Advancement.Builder.advancement()
+      AdvancementHolder var9 = Advancement.Builder.advancement()
          .parent(var6)
          .display(
             Items.LAVA_BUCKET,
@@ -130,7 +131,7 @@ public class VanillaStoryAdvancements implements AdvancementSubProvider {
          )
          .addCriterion("lava_bucket", InventoryChangeTrigger.TriggerInstance.hasItems(Items.LAVA_BUCKET))
          .save(var2, "story/lava_bucket");
-      Advancement var10 = Advancement.Builder.advancement()
+      AdvancementHolder var10 = Advancement.Builder.advancement()
          .parent(var6)
          .display(
             Items.IRON_CHESTPLATE,
@@ -142,7 +143,7 @@ public class VanillaStoryAdvancements implements AdvancementSubProvider {
             true,
             false
          )
-         .requirements(RequirementsStrategy.OR)
+         .requirements(AdvancementRequirements.Strategy.OR)
          .addCriterion("iron_helmet", InventoryChangeTrigger.TriggerInstance.hasItems(Items.IRON_HELMET))
          .addCriterion("iron_chestplate", InventoryChangeTrigger.TriggerInstance.hasItems(Items.IRON_CHESTPLATE))
          .addCriterion("iron_leggings", InventoryChangeTrigger.TriggerInstance.hasItems(Items.IRON_LEGGINGS))
@@ -162,7 +163,7 @@ public class VanillaStoryAdvancements implements AdvancementSubProvider {
          )
          .addCriterion("enchanted_item", EnchantedItemTrigger.TriggerInstance.enchantedItem())
          .save(var2, "story/enchant_item");
-      Advancement var11 = Advancement.Builder.advancement()
+      AdvancementHolder var11 = Advancement.Builder.advancement()
          .parent(var9)
          .display(
             Blocks.OBSIDIAN,
@@ -209,13 +210,13 @@ public class VanillaStoryAdvancements implements AdvancementSubProvider {
             true,
             false
          )
-         .requirements(RequirementsStrategy.OR)
+         .requirements(AdvancementRequirements.Strategy.OR)
          .addCriterion("diamond_helmet", InventoryChangeTrigger.TriggerInstance.hasItems(Items.DIAMOND_HELMET))
          .addCriterion("diamond_chestplate", InventoryChangeTrigger.TriggerInstance.hasItems(Items.DIAMOND_CHESTPLATE))
          .addCriterion("diamond_leggings", InventoryChangeTrigger.TriggerInstance.hasItems(Items.DIAMOND_LEGGINGS))
          .addCriterion("diamond_boots", InventoryChangeTrigger.TriggerInstance.hasItems(Items.DIAMOND_BOOTS))
          .save(var2, "story/shiny_gear");
-      Advancement var12 = Advancement.Builder.advancement()
+      AdvancementHolder var12 = Advancement.Builder.advancement()
          .parent(var11)
          .display(
             Items.FLINT_AND_STEEL,
@@ -243,7 +244,7 @@ public class VanillaStoryAdvancements implements AdvancementSubProvider {
          )
          .addCriterion("cured_zombie", CuredZombieVillagerTrigger.TriggerInstance.curedZombieVillager())
          .save(var2, "story/cure_zombie_villager");
-      Advancement var13 = Advancement.Builder.advancement()
+      AdvancementHolder var13 = Advancement.Builder.advancement()
          .parent(var12)
          .display(
             Items.ENDER_EYE,
@@ -255,7 +256,7 @@ public class VanillaStoryAdvancements implements AdvancementSubProvider {
             true,
             false
          )
-         .addCriterion("in_stronghold", PlayerTrigger.TriggerInstance.located(LocationPredicate.inStructure(BuiltinStructures.STRONGHOLD)))
+         .addCriterion("in_stronghold", PlayerTrigger.TriggerInstance.located(LocationPredicate.Builder.inStructure(BuiltinStructures.STRONGHOLD)))
          .save(var2, "story/follow_ender_eye");
       Advancement.Builder.advancement()
          .parent(var13)

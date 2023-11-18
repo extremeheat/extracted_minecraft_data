@@ -4,9 +4,11 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 
 public class TutorialToast implements Toast {
+   private static final ResourceLocation BACKGROUND_SPRITE = new ResourceLocation("toast/tutorial");
    public static final int PROGRESS_BAR_WIDTH = 154;
    public static final int PROGRESS_BAR_HEIGHT = 1;
    public static final int PROGRESS_BAR_X = 3;
@@ -31,7 +33,7 @@ public class TutorialToast implements Toast {
 
    @Override
    public Toast.Visibility render(GuiGraphics var1, ToastComponent var2, long var3) {
-      var1.blit(TEXTURE, 0, 0, 0, 96, this.width(), this.height());
+      var1.blitSprite(BACKGROUND_SPRITE, 0, 0, this.width(), this.height());
       this.icon.render(var1, 6, 6);
       if (this.message == null) {
          var1.drawString(var2.getMinecraft().font, this.title, 30, 12, -11534256, false);
@@ -67,25 +69,23 @@ public class TutorialToast implements Toast {
    }
 
    public static enum Icons {
-      MOVEMENT_KEYS(0, 0),
-      MOUSE(1, 0),
-      TREE(2, 0),
-      RECIPE_BOOK(0, 1),
-      WOODEN_PLANKS(1, 1),
-      SOCIAL_INTERACTIONS(2, 1),
-      RIGHT_CLICK(3, 1);
+      MOVEMENT_KEYS(new ResourceLocation("toast/movement_keys")),
+      MOUSE(new ResourceLocation("toast/mouse")),
+      TREE(new ResourceLocation("toast/tree")),
+      RECIPE_BOOK(new ResourceLocation("toast/recipe_book")),
+      WOODEN_PLANKS(new ResourceLocation("toast/wooden_planks")),
+      SOCIAL_INTERACTIONS(new ResourceLocation("toast/social_interactions")),
+      RIGHT_CLICK(new ResourceLocation("toast/right_click"));
 
-      private final int x;
-      private final int y;
+      private final ResourceLocation sprite;
 
-      private Icons(int var3, int var4) {
-         this.x = var3;
-         this.y = var4;
+      private Icons(ResourceLocation var3) {
+         this.sprite = var3;
       }
 
       public void render(GuiGraphics var1, int var2, int var3) {
          RenderSystem.enableBlend();
-         var1.blit(Toast.TEXTURE, var2, var3, 176 + this.x * 20, this.y * 20, 20, 20);
+         var1.blitSprite(this.sprite, var2, var3, 20, 20);
       }
    }
 }

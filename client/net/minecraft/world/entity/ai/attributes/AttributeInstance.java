@@ -89,7 +89,7 @@ public class AttributeInstance {
       this.onDirty.accept(this);
    }
 
-   public void removeModifier(AttributeModifier var1) {
+   private void removeModifier(AttributeModifier var1) {
       this.getModifiers(var1.getOperation()).remove(var1);
       this.modifierById.remove(var1.getId());
       this.permanentModifiers.remove(var1);

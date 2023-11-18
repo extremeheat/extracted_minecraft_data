@@ -1,13 +1,12 @@
 package com.mojang.realmsclient.gui.screens;
 
-import com.mojang.realmsclient.client.RealmsClient;
+import com.mojang.realmsclient.RealmsAvailability;
 import com.mojang.realmsclient.dto.RealmsNotification;
-import com.mojang.realmsclient.exception.RealmsServiceException;
 import com.mojang.realmsclient.gui.RealmsDataFetcher;
 import com.mojang.realmsclient.gui.task.DataFetcher;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.TitleScreen;
@@ -15,18 +14,17 @@ import net.minecraft.realms.RealmsScreen;
 import net.minecraft.resources.ResourceLocation;
 
 public class RealmsNotificationsScreen extends RealmsScreen {
-   private static final ResourceLocation INVITE_ICON_LOCATION = new ResourceLocation("realms", "textures/gui/realms/invite_icon.png");
-   private static final ResourceLocation TRIAL_ICON_LOCATION = new ResourceLocation("realms", "textures/gui/realms/trial_icon.png");
-   private static final ResourceLocation NEWS_ICON_LOCATION = new ResourceLocation("realms", "textures/gui/realms/news_notification_mainscreen.png");
-   private static final ResourceLocation UNSEEN_NOTIFICATION_ICON_LOCATION = new ResourceLocation("minecraft", "textures/gui/unseen_notification.png");
+   private static final ResourceLocation UNSEEN_NOTIFICATION_SPRITE = new ResourceLocation("icon/unseen_notification");
+   private static final ResourceLocation NEWS_SPRITE = new ResourceLocation("icon/news");
+   private static final ResourceLocation INVITE_SPRITE = new ResourceLocation("icon/invite");
+   private static final ResourceLocation TRIAL_AVAILABLE_SPRITE = new ResourceLocation("icon/trial_available");
+   private final CompletableFuture<Boolean> validClient = RealmsAvailability.get().thenApply(var0 -> var0.type() == RealmsAvailability.Type.SUCCESS);
    @Nullable
    private DataFetcher.Subscription realmsDataSubscription;
    @Nullable
    private RealmsNotificationsScreen.DataFetcherConfiguration currentConfiguration;
    private volatile int numberOfPendingInvites;
-   static boolean checkedMcoAvailability;
    private static boolean trialAvailable;
-   static boolean validClient;
    private static boolean hasUnreadNews;
    private static boolean hasUnseenNotifications;
    private final RealmsNotificationsScreen.DataFetcherConfiguration showAll = new RealmsNotificationsScreen.DataFetcherConfiguration() {
@@ -63,7 +61,6 @@ public class RealmsNotificationsScreen extends RealmsScreen {
 
    @Override
    public void init() {
-      this.checkIfMcoEnabled();
       if (this.realmsDataSubscription != null) {
          this.realmsDataSubscription.forceUpdate();
       }
@@ -77,7 +74,7 @@ public class RealmsNotificationsScreen extends RealmsScreen {
 
    @Nullable
    private RealmsNotificationsScreen.DataFetcherConfiguration getConfiguration() {
-      boolean var1 = this.inTitleScreen() && validClient;
+      boolean var1 = this.inTitleScreen() && this.validClient.getNow(false);
       if (!var1) {
          return null;
       } else {
@@ -110,75 +107,43 @@ public class RealmsNotificationsScreen extends RealmsScreen {
       return this.minecraft.screen instanceof TitleScreen;
    }
 
-   private void checkIfMcoEnabled() {
-      if (!checkedMcoAvailability) {
-         checkedMcoAvailability = true;
-         (new Thread("Realms Notification Availability checker #1") {
-            @Override
-            public void run() {
-               RealmsClient var1 = RealmsClient.create();
-
-               try {
-                  RealmsClient.CompatibleVersionResponse var2 = var1.clientCompatible();
-                  if (var2 != RealmsClient.CompatibleVersionResponse.COMPATIBLE) {
-                     return;
-                  }
-               } catch (RealmsServiceException var3) {
-                  if (var3.httpResultCode != 401) {
-                     RealmsNotificationsScreen.checkedMcoAvailability = false;
-                  }
-
-                  return;
-               }
-
-               RealmsNotificationsScreen.validClient = true;
-            }
-         }).start();
+   @Override
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
+      super.render(var1, var2, var3, var4);
+      if (this.validClient.getNow(false)) {
+         this.drawIcons(var1);
       }
    }
 
    @Override
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      if (validClient) {
-         this.drawIcons(var1);
-      }
-
-      super.render(var1, var2, var3, var4);
+   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
    }
 
    private void drawIcons(GuiGraphics var1) {
       int var2 = this.numberOfPendingInvites;
       boolean var3 = true;
       int var4 = this.height / 4 + 48;
-      int var5 = this.width / 2 + 80;
+      int var5 = this.width / 2 + 100;
       int var6 = var4 + 48 + 2;
-      int var7 = 0;
+      int var7 = var5 - 3;
       if (hasUnseenNotifications) {
-         var1.blit(UNSEEN_NOTIFICATION_ICON_LOCATION, var5 - var7 + 5, var6 + 3, 0.0F, 0.0F, 10, 10, 10, 10);
-         var7 += 14;
+         var1.blitSprite(UNSEEN_NOTIFICATION_SPRITE, var7 - 12, var6 + 3, 10, 10);
+         var7 -= 16;
       }
 
       if (this.currentConfiguration != null && this.currentConfiguration.showOldNotifications()) {
          if (hasUnreadNews) {
-            var1.pose().pushPose();
-            var1.pose().scale(0.4F, 0.4F, 0.4F);
-            var1.blit(NEWS_ICON_LOCATION, (int)((double)(var5 + 2 - var7) * 2.5), (int)((double)var6 * 2.5), 0.0F, 0.0F, 40, 40, 40, 40);
-            var1.pose().popPose();
-            var7 += 14;
+            var1.blitSprite(NEWS_SPRITE, var7 - 14, var6 + 1, 14, 14);
+            var7 -= 16;
          }
 
          if (var2 != 0) {
-            var1.blit(INVITE_ICON_LOCATION, var5 - var7, var6, 0.0F, 0.0F, 18, 15, 18, 30);
-            var7 += 16;
+            var1.blitSprite(INVITE_SPRITE, var7 - 14, var6 + 1, 14, 14);
+            var7 -= 16;
          }
 
          if (trialAvailable) {
-            byte var8 = 0;
-            if ((Util.getMillis() / 800L & 1L) == 1L) {
-               var8 = 8;
-            }
-
-            var1.blit(TRIAL_ICON_LOCATION, var5 + 4 - var7, var6 + 4, 0.0F, (float)var8, 8, 8, 8, 16);
+            var1.blitSprite(TRIAL_AVAILABLE_SPRITE, var7 - 10, var6 + 4, 8, 8);
          }
       }
    }

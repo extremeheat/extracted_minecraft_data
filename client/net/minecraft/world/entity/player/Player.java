@@ -19,7 +19,6 @@ import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
-import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
@@ -92,7 +91,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ProjectileWeaponItem;
 import net.minecraft.world.item.SwordItem;
-import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.BaseCommandBlock;
@@ -119,6 +118,8 @@ import org.slf4j.Logger;
 public abstract class Player extends LivingEntity {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final int MAX_NAME_LENGTH = 16;
+   public static final HumanoidArm DEFAULT_MAIN_HAND = HumanoidArm.RIGHT;
+   public static final int DEFAULT_MODEL_CUSTOMIZATION = 0;
    public static final int MAX_HEALTH = 20;
    public static final int SLEEP_DURATION = 100;
    public static final int WAKE_UP_DURATION = 10;
@@ -180,7 +181,7 @@ public abstract class Player extends LivingEntity {
 
    public Player(Level var1, BlockPos var2, float var3, GameProfile var4) {
       super(EntityType.PLAYER, var1);
-      this.setUUID(UUIDUtil.getOrCreatePlayerUUID(var4));
+      this.setUUID(var4.getId());
       this.gameProfile = var4;
       this.inventoryMenu = new InventoryMenu(this.inventory, !var1.isClientSide, this);
       this.containerMenu = this.inventoryMenu;
@@ -216,7 +217,7 @@ public abstract class Player extends LivingEntity {
       this.entityData.define(DATA_PLAYER_ABSORPTION_ID, 0.0F);
       this.entityData.define(DATA_SCORE_ID, 0);
       this.entityData.define(DATA_PLAYER_MODE_CUSTOMISATION, (byte)0);
-      this.entityData.define(DATA_PLAYER_MAIN_HAND, (byte)1);
+      this.entityData.define(DATA_PLAYER_MAIN_HAND, (byte)DEFAULT_MAIN_HAND.getId());
       this.entityData.define(DATA_SHOULDER_LEFT, new CompoundTag());
       this.entityData.define(DATA_SHOULDER_RIGHT, new CompoundTag());
    }
@@ -367,7 +368,7 @@ public abstract class Player extends LivingEntity {
    }
 
    protected void updatePlayerPose() {
-      if (this.canEnterPose(Pose.SWIMMING)) {
+      if (this.canPlayerFitWithinBlocksAndEntitiesWhen(Pose.SWIMMING)) {
          Pose var1;
          if (this.isFallFlying()) {
             var1 = Pose.FALL_FLYING;
@@ -384,9 +385,9 @@ public abstract class Player extends LivingEntity {
          }
 
          Pose var2;
-         if (this.isSpectator() || this.isPassenger() || this.canEnterPose(var1)) {
+         if (this.isSpectator() || this.isPassenger() || this.canPlayerFitWithinBlocksAndEntitiesWhen(var1)) {
             var2 = var1;
-         } else if (this.canEnterPose(Pose.CROUCHING)) {
+         } else if (this.canPlayerFitWithinBlocksAndEntitiesWhen(Pose.CROUCHING)) {
             var2 = Pose.CROUCHING;
          } else {
             var2 = Pose.SWIMMING;
@@ -394,6 +395,10 @@ public abstract class Player extends LivingEntity {
 
          this.setPose(var2);
       }
+   }
+
+   protected boolean canPlayerFitWithinBlocksAndEntitiesWhen(Pose var1) {
+      return this.level().noCollision(this, this.getDimensions(var1).makeBoundingBox(this.position()).deflate(1.0E-7));
    }
 
    @Override
@@ -532,8 +537,7 @@ public abstract class Player extends LivingEntity {
          List var3 = this.level().getEntities(this, var2);
          ArrayList var4 = Lists.newArrayList();
 
-         for(int var5 = 0; var5 < var3.size(); ++var5) {
-            Entity var6 = (Entity)var3.get(var5);
+         for(Entity var6 : var3) {
             if (var6.getType() == EntityType.EXPERIENCE_ORB) {
                var4.add(var6);
             } else if (!var6.isRemoved()) {
@@ -742,7 +746,7 @@ public abstract class Player extends LivingEntity {
    @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.setUUID(UUIDUtil.getOrCreatePlayerUUID(this.gameProfile));
+      this.setUUID(this.gameProfile.getId());
       ListTag var2 = var1.getList("Inventory", 10);
       this.inventory.load(var2);
       this.inventory.selected = var1.getInt("SelectedItemSlot");
@@ -1015,8 +1019,8 @@ public abstract class Player extends LivingEntity {
    }
 
    @Override
-   public double getMyRidingOffset() {
-      return -0.35;
+   protected float ridingOffset(Entity var1) {
+      return -0.6F;
    }
 
    @Override
@@ -1405,17 +1409,17 @@ public abstract class Player extends LivingEntity {
    public void resetStat(Stat<?> var1) {
    }
 
-   public int awardRecipes(Collection<Recipe<?>> var1) {
+   public int awardRecipes(Collection<RecipeHolder<?>> var1) {
       return 0;
    }
 
-   public void triggerRecipeCrafted(Recipe<?> var1, List<ItemStack> var2) {
+   public void triggerRecipeCrafted(RecipeHolder<?> var1, List<ItemStack> var2) {
    }
 
    public void awardRecipesByKey(ResourceLocation[] var1) {
    }
 
-   public int resetRecipes(Collection<Recipe<?>> var1) {
+   public int resetRecipes(Collection<RecipeHolder<?>> var1) {
       return 0;
    }
 
@@ -1902,11 +1906,7 @@ public abstract class Player extends LivingEntity {
    }
 
    @Override
-   public void setAbsorptionAmount(float var1) {
-      if (var1 < 0.0F) {
-         var1 = 0.0F;
-      }
-
+   protected void internalSetAbsorptionAmount(float var1) {
       this.getEntityData().set(DATA_PLAYER_ABSORPTION_ID, var1);
    }
 

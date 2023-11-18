@@ -9,6 +9,7 @@ import com.mojang.realmsclient.exception.RealmsServiceException;
 import com.mojang.realmsclient.util.RealmsUtil;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -16,6 +17,7 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.realms.RealmsObjectSelectionList;
@@ -25,9 +27,6 @@ import org.slf4j.Logger;
 
 public class RealmsPlayerScreen extends RealmsScreen {
    private static final Logger LOGGER = LogUtils.getLogger();
-   static final ResourceLocation OP_ICON_LOCATION = new ResourceLocation("realms", "textures/gui/realms/op_icon.png");
-   static final ResourceLocation USER_ICON_LOCATION = new ResourceLocation("realms", "textures/gui/realms/user_icon.png");
-   static final ResourceLocation CROSS_ICON_LOCATION = new ResourceLocation("realms", "textures/gui/realms/cross_player_icon.png");
    private static final ResourceLocation OPTIONS_BACKGROUND = new ResourceLocation("minecraft", "textures/gui/options_background.png");
    private static final Component QUESTION_TITLE = Component.translatable("mco.question");
    static final Component NORMAL_USER_TOOLTIP = Component.translatable("mco.configure.world.invites.normal.tooltip");
@@ -122,12 +121,12 @@ public class RealmsPlayerScreen extends RealmsScreen {
 
    void op(int var1) {
       RealmsClient var2 = RealmsClient.create();
-      String var3 = this.serverData.players.get(var1).getUuid();
+      UUID var3 = this.serverData.players.get(var1).getUuid();
 
       try {
          this.updateOps(var2.op(this.serverData.id, var3));
       } catch (RealmsServiceException var5) {
-         LOGGER.error("Couldn't op the user");
+         LOGGER.error("Couldn't op the user", var5);
       }
 
       this.updateButtonStates();
@@ -135,12 +134,12 @@ public class RealmsPlayerScreen extends RealmsScreen {
 
    void deop(int var1) {
       RealmsClient var2 = RealmsClient.create();
-      String var3 = this.serverData.players.get(var1).getUuid();
+      UUID var3 = this.serverData.players.get(var1).getUuid();
 
       try {
          this.updateOps(var2.deop(this.serverData.id, var3));
       } catch (RealmsServiceException var5) {
-         LOGGER.error("Couldn't deop the user");
+         LOGGER.error("Couldn't deop the user", var5);
       }
 
       this.updateButtonStates();
@@ -163,7 +162,7 @@ public class RealmsPlayerScreen extends RealmsScreen {
                try {
                   var3x.uninvite(this.serverData.id, var2.getUuid());
                } catch (RealmsServiceException var5) {
-                  LOGGER.error("Couldn't uninvite user");
+                  LOGGER.error("Couldn't uninvite user", var5);
                }
 
                this.serverData.players.remove(this.playerIndex);
@@ -180,16 +179,15 @@ public class RealmsPlayerScreen extends RealmsScreen {
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
+      super.render(var1, var2, var3, var4);
       this.invitedObjectSelectionList.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, this.title, this.width / 2, 17, 16777215);
+      var1.drawCenteredString(this.font, this.title, this.width / 2, 17, -1);
       int var5 = row(12) + 20;
       var1.setColor(0.25F, 0.25F, 0.25F, 1.0F);
       var1.blit(OPTIONS_BACKGROUND, 0, var5, 0.0F, 0.0F, this.width, this.height - var5, 32, 32);
       var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
       String var6 = this.serverData.players != null ? Integer.toString(this.serverData.players.size()) : "0";
-      var1.drawString(this.font, Component.translatable("mco.configure.world.invited.number", var6), this.column1X, row(0), 10526880, false);
-      super.render(var1, var2, var3, var4);
+      var1.drawString(this.font, Component.translatable("mco.configure.world.invited.number", var6), this.column1X, row(0), -6250336, false);
    }
 
    class Entry extends ObjectSelectionList.Entry<RealmsPlayerScreen.Entry> {
@@ -197,6 +195,15 @@ public class RealmsPlayerScreen extends RealmsScreen {
       private static final int Y_PADDING = 1;
       private static final int BUTTON_WIDTH = 8;
       private static final int BUTTON_HEIGHT = 7;
+      private static final WidgetSprites REMOVE_BUTTON_SPRITES = new WidgetSprites(
+         new ResourceLocation("player_list/remove_player"), new ResourceLocation("player_list/remove_player_highlighted")
+      );
+      private static final WidgetSprites MAKE_OP_BUTTON_SPRITES = new WidgetSprites(
+         new ResourceLocation("player_list/make_operator"), new ResourceLocation("player_list/make_operator_highlighted")
+      );
+      private static final WidgetSprites REMOVE_OP_BUTTON_SPRITES = new WidgetSprites(
+         new ResourceLocation("player_list/remove_operator"), new ResourceLocation("player_list/remove_operator_highlighted")
+      );
       private final PlayerInfo playerInfo;
       private final List<AbstractWidget> children = new ArrayList<>();
       private final ImageButton removeButton;
@@ -209,20 +216,14 @@ public class RealmsPlayerScreen extends RealmsScreen {
          int var3 = RealmsPlayerScreen.this.serverData.players.indexOf(this.playerInfo);
          int var4 = RealmsPlayerScreen.this.invitedObjectSelectionList.getRowRight() - 16 - 9;
          int var5 = RealmsPlayerScreen.this.invitedObjectSelectionList.getRowTop(var3) + 1;
-         this.removeButton = new ImageButton(
-            var4, var5, 8, 7, 0, 0, 7, RealmsPlayerScreen.CROSS_ICON_LOCATION, 8, 14, var2x -> RealmsPlayerScreen.this.uninvite(var3)
-         );
+         this.removeButton = new ImageButton(var4, var5, 8, 7, REMOVE_BUTTON_SPRITES, var2x -> RealmsPlayerScreen.this.uninvite(var3), CommonComponents.EMPTY);
          this.removeButton.setTooltip(Tooltip.create(RealmsPlayerScreen.REMOVE_ENTRY_TOOLTIP));
          this.children.add(this.removeButton);
          var4 += 11;
-         this.makeOpButton = new ImageButton(
-            var4, var5, 8, 7, 0, 0, 7, RealmsPlayerScreen.USER_ICON_LOCATION, 8, 14, var2x -> RealmsPlayerScreen.this.op(var3)
-         );
+         this.makeOpButton = new ImageButton(var4, var5, 8, 7, MAKE_OP_BUTTON_SPRITES, var2x -> RealmsPlayerScreen.this.op(var3), CommonComponents.EMPTY);
          this.makeOpButton.setTooltip(Tooltip.create(RealmsPlayerScreen.NORMAL_USER_TOOLTIP));
          this.children.add(this.makeOpButton);
-         this.removeOpButton = new ImageButton(
-            var4, var5, 8, 7, 0, 0, 7, RealmsPlayerScreen.OP_ICON_LOCATION, 8, 14, var2x -> RealmsPlayerScreen.this.deop(var3)
-         );
+         this.removeOpButton = new ImageButton(var4, var5, 8, 7, REMOVE_OP_BUTTON_SPRITES, var2x -> RealmsPlayerScreen.this.deop(var3), CommonComponents.EMPTY);
          this.removeOpButton.setTooltip(Tooltip.create(RealmsPlayerScreen.OP_TOOLTIP));
          this.children.add(this.removeOpButton);
          this.updateButtons();
@@ -247,11 +248,11 @@ public class RealmsPlayerScreen extends RealmsScreen {
       public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
          int var11;
          if (!this.playerInfo.getAccepted()) {
-            var11 = 10526880;
+            var11 = -6250336;
          } else if (this.playerInfo.getOnline()) {
             var11 = 8388479;
          } else {
-            var11 = 16777215;
+            var11 = -1;
          }
 
          RealmsUtil.renderPlayerFace(var1, RealmsPlayerScreen.this.column1X + 2 + 2, var3 + 1, 8, this.playerInfo.getUuid());
@@ -303,11 +304,6 @@ public class RealmsPlayerScreen extends RealmsScreen {
          super.setSelected(var1);
          RealmsPlayerScreen.this.playerIndex = this.children().indexOf(var1);
          RealmsPlayerScreen.this.updateButtonStates();
-      }
-
-      @Override
-      public void renderBackground(GuiGraphics var1) {
-         RealmsPlayerScreen.this.renderBackground(var1);
       }
 
       @Override

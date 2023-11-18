@@ -1,22 +1,14 @@
 package net.minecraft.world.item.crafting;
 
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
 public abstract class CustomRecipe implements CraftingRecipe {
-   private final ResourceLocation id;
    private final CraftingBookCategory category;
 
-   public CustomRecipe(ResourceLocation var1, CraftingBookCategory var2) {
+   public CustomRecipe(CraftingBookCategory var1) {
       super();
-      this.id = var1;
-      this.category = var2;
-   }
-
-   @Override
-   public ResourceLocation getId() {
-      return this.id;
+      this.category = var1;
    }
 
    @Override

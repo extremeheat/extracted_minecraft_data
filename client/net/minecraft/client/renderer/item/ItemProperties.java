@@ -89,7 +89,11 @@ public class ItemProperties {
          } else {
             return var1 == null
                ? 0.0F
-               : ArmorTrim.getTrim(var1.registryAccess(), var0x).map(ArmorTrim::material).map(Holder::value).map(TrimMaterial::itemModelIndex).orElse(0.0F);
+               : ArmorTrim.getTrim(var1.registryAccess(), var0x, true)
+                  .map(ArmorTrim::material)
+                  .map(Holder::value)
+                  .map(TrimMaterial::itemModelIndex)
+                  .orElse(0.0F);
          }
       };
       registerGeneric(ItemModelGenerators.TRIM_TYPE_PREDICATE_ID, var0);

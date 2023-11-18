@@ -1,11 +1,12 @@
 package net.minecraft.world.inventory;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.OptionalInt;
 import javax.annotation.Nullable;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.item.crafting.SmithingRecipe;
 import net.minecraft.world.level.Level;
@@ -24,8 +25,8 @@ public class SmithingMenu extends ItemCombinerMenu {
    public static final int SLOT_Y_PLACEMENT = 48;
    private final Level level;
    @Nullable
-   private SmithingRecipe selectedRecipe;
-   private final List<SmithingRecipe> recipes;
+   private RecipeHolder<SmithingRecipe> selectedRecipe;
+   private final List<RecipeHolder<SmithingRecipe>> recipes;
 
    public SmithingMenu(int var1, Inventory var2) {
       this(var1, var2, ContainerLevelAccess.NULL);
@@ -40,9 +41,9 @@ public class SmithingMenu extends ItemCombinerMenu {
    @Override
    protected ItemCombinerMenuSlotDefinition createInputSlotDefinitions() {
       return ItemCombinerMenuSlotDefinition.create()
-         .withSlot(0, 8, 48, var1 -> this.recipes.stream().anyMatch(var1x -> var1x.isTemplateIngredient(var1)))
-         .withSlot(1, 26, 48, var1 -> this.recipes.stream().anyMatch(var1x -> var1x.isBaseIngredient(var1)))
-         .withSlot(2, 44, 48, var1 -> this.recipes.stream().anyMatch(var1x -> var1x.isAdditionIngredient(var1)))
+         .withSlot(0, 8, 48, var1 -> this.recipes.stream().anyMatch(var1x -> var1x.value().isTemplateIngredient(var1)))
+         .withSlot(1, 26, 48, var1 -> this.recipes.stream().anyMatch(var1x -> var1x.value().isBaseIngredient(var1)))
+         .withSlot(2, 44, 48, var1 -> this.recipes.stream().anyMatch(var1x -> var1x.value().isAdditionIngredient(var1)))
          .withResultSlot(3, 98, 48)
          .build();
    }
@@ -54,7 +55,7 @@ public class SmithingMenu extends ItemCombinerMenu {
 
    @Override
    protected boolean mayPickup(Player var1, boolean var2) {
-      return this.selectedRecipe != null && this.selectedRecipe.matches(this.inputSlots, this.level);
+      return this.selectedRecipe != null && this.selectedRecipe.value().matches(this.inputSlots, this.level);
    }
 
    @Override
@@ -85,8 +86,8 @@ public class SmithingMenu extends ItemCombinerMenu {
       if (var1.isEmpty()) {
          this.resultSlots.setItem(0, ItemStack.EMPTY);
       } else {
-         SmithingRecipe var2 = (SmithingRecipe)var1.get(0);
-         ItemStack var3 = var2.assemble(this.inputSlots, this.level.registryAccess());
+         RecipeHolder var2 = (RecipeHolder)var1.get(0);
+         ItemStack var3 = ((SmithingRecipe)var2.value()).assemble(this.inputSlots, this.level.registryAccess());
          if (var3.isItemEnabled(this.level.enabledFeatures())) {
             this.selectedRecipe = var2;
             this.resultSlots.setRecipeUsed(var2);
@@ -97,16 +98,16 @@ public class SmithingMenu extends ItemCombinerMenu {
 
    @Override
    public int getSlotToQuickMoveTo(ItemStack var1) {
-      return this.recipes.stream().map(var1x -> findSlotMatchingIngredient(var1x, var1)).filter(Optional::isPresent).findFirst().orElse(Optional.of(0)).get();
+      return this.findSlotToQuickMoveTo(var1).orElse(0);
    }
 
-   private static Optional<Integer> findSlotMatchingIngredient(SmithingRecipe var0, ItemStack var1) {
+   private static OptionalInt findSlotMatchingIngredient(SmithingRecipe var0, ItemStack var1) {
       if (var0.isTemplateIngredient(var1)) {
-         return Optional.of(0);
+         return OptionalInt.of(0);
       } else if (var0.isBaseIngredient(var1)) {
-         return Optional.of(1);
+         return OptionalInt.of(1);
       } else {
-         return var0.isAdditionIngredient(var1) ? Optional.of(2) : Optional.empty();
+         return var0.isAdditionIngredient(var1) ? OptionalInt.of(2) : OptionalInt.empty();
       }
    }
 
@@ -117,6 +118,14 @@ public class SmithingMenu extends ItemCombinerMenu {
 
    @Override
    public boolean canMoveIntoInputSlots(ItemStack var1) {
-      return this.recipes.stream().map(var1x -> findSlotMatchingIngredient(var1x, var1)).anyMatch(Optional::isPresent);
+      return this.findSlotToQuickMoveTo(var1).isPresent();
+   }
+
+   private OptionalInt findSlotToQuickMoveTo(ItemStack var1) {
+      return this.recipes
+         .stream()
+         .flatMapToInt(var1x -> findSlotMatchingIngredient(var1x.value(), var1).stream())
+         .filter(var1x -> !this.getSlot(var1x).hasItem())
+         .findFirst();
    }
 }

@@ -6,7 +6,6 @@ import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.layouts.FrameLayout;
@@ -15,9 +14,13 @@ import net.minecraft.client.gui.screens.achievement.StatsScreen;
 import net.minecraft.client.gui.screens.advancements.AdvancementsScreen;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.gui.screens.social.SocialInteractionsScreen;
+import net.minecraft.client.multiplayer.ServerData;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
 public class PauseScreen extends Screen {
+   private static final ResourceLocation DRAFT_REPORT_SPRITE = new ResourceLocation("icon/draft_report");
    private static final int COLUMNS = 2;
    private static final int MENU_PADDING_TOP = 50;
    private static final int BUTTON_PADDING = 4;
@@ -32,7 +35,6 @@ public class PauseScreen extends Screen {
    private static final Component SHARE_TO_LAN = Component.translatable("menu.shareToLan");
    private static final Component PLAYER_REPORTING = Component.translatable("menu.playerReporting");
    private static final Component RETURN_TO_MENU = Component.translatable("menu.returnToMenu");
-   private static final Component DISCONNECT = Component.translatable("menu.disconnect");
    private static final Component SAVING_LEVEL = Component.translatable("menu.savingLevel");
    private static final Component GAME = Component.translatable("menu.game");
    private static final Component PAUSED = Component.translatable("menu.paused");
@@ -43,6 +45,10 @@ public class PauseScreen extends Screen {
    public PauseScreen(boolean var1) {
       super(var1 ? GAME : PAUSED);
       this.showPauseMenu = var1;
+   }
+
+   public boolean showsPauseMenu() {
+      return this.showPauseMenu;
    }
 
    @Override
@@ -80,7 +86,7 @@ public class PauseScreen extends Screen {
          var2.addChild(this.openScreenButton(PLAYER_REPORTING, SocialInteractionsScreen::new));
       }
 
-      Component var3 = this.minecraft.isLocalServer() ? RETURN_TO_MENU : DISCONNECT;
+      Component var3 = this.minecraft.isLocalServer() ? RETURN_TO_MENU : CommonComponents.GUI_DISCONNECT;
       this.disconnectButton = var2.addChild(Button.builder(var3, var1x -> {
          var1x.active = false;
          this.minecraft.getReportingContext().draftReportHandled(this.minecraft, this, this::onDisconnect, true);
@@ -92,18 +98,18 @@ public class PauseScreen extends Screen {
 
    private void onDisconnect() {
       boolean var1 = this.minecraft.isLocalServer();
-      boolean var2 = this.minecraft.isConnectedToRealms();
+      ServerData var2 = this.minecraft.getCurrentServer();
       this.minecraft.level.disconnect();
       if (var1) {
-         this.minecraft.clearLevel(new GenericDirtMessageScreen(SAVING_LEVEL));
+         this.minecraft.disconnect(new GenericDirtMessageScreen(SAVING_LEVEL));
       } else {
-         this.minecraft.clearLevel();
+         this.minecraft.disconnect();
       }
 
       TitleScreen var3 = new TitleScreen();
       if (var1) {
          this.minecraft.setScreen(var3);
-      } else if (var2) {
+      } else if (var2 != null && var2.isRealm()) {
          this.minecraft.setScreen(new RealmsMainScreen(var3));
       } else {
          this.minecraft.setScreen(new JoinMultiplayerScreen(var3));
@@ -117,21 +123,16 @@ public class PauseScreen extends Screen {
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      if (this.showPauseMenu) {
-         this.renderBackground(var1);
-      }
-
       super.render(var1, var2, var3, var4);
       if (this.showPauseMenu && this.minecraft != null && this.minecraft.getReportingContext().hasDraftReport() && this.disconnectButton != null) {
-         var1.blit(
-            AbstractWidget.WIDGETS_LOCATION,
-            this.disconnectButton.getX() + this.disconnectButton.getWidth() - 17,
-            this.disconnectButton.getY() + 3,
-            182,
-            24,
-            15,
-            15
-         );
+         var1.blitSprite(DRAFT_REPORT_SPRITE, this.disconnectButton.getX() + this.disconnectButton.getWidth() - 17, this.disconnectButton.getY() + 3, 15, 15);
+      }
+   }
+
+   @Override
+   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
+      if (this.showPauseMenu) {
+         super.renderBackground(var1, var2, var3, var4);
       }
    }
 

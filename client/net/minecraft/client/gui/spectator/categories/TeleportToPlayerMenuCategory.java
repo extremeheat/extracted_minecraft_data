@@ -5,16 +5,17 @@ import java.util.Comparator;
 import java.util.List;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.spectator.SpectatorGui;
 import net.minecraft.client.gui.spectator.PlayerMenuItem;
 import net.minecraft.client.gui.spectator.SpectatorMenu;
 import net.minecraft.client.gui.spectator.SpectatorMenuCategory;
 import net.minecraft.client.gui.spectator.SpectatorMenuItem;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.GameType;
 
 public class TeleportToPlayerMenuCategory implements SpectatorMenuCategory, SpectatorMenuItem {
+   private static final ResourceLocation TELEPORT_TO_PLAYER_SPRITE = new ResourceLocation("spectator/teleport_to_player");
    private static final Comparator<PlayerInfo> PROFILE_ORDER = Comparator.comparing(var0 -> var0.getProfile().getId());
    private static final Component TELEPORT_TEXT = Component.translatable("spectatorMenu.teleport");
    private static final Component TELEPORT_PROMPT = Component.translatable("spectatorMenu.teleport.prompt");
@@ -55,7 +56,7 @@ public class TeleportToPlayerMenuCategory implements SpectatorMenuCategory, Spec
 
    @Override
    public void renderIcon(GuiGraphics var1, float var2, int var3) {
-      var1.blit(SpectatorGui.SPECTATOR_LOCATION, 0, 0, 0.0F, 0.0F, 16, 16, 256, 256);
+      var1.blitSprite(TELEPORT_TO_PLAYER_SPRITE, 0, 0, 16, 16);
    }
 
    @Override

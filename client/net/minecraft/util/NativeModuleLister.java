@@ -72,7 +72,7 @@ public class NativeModuleLister {
                Pointer var5 = queryVersionValue(var3, "\\VarFileInfo\\Translation", var4);
                int[] var6 = var5.getIntArray(0L, var4.getValue() / 4);
                OptionalInt var7 = findLangAndCodepage(var6);
-               if (!var7.isPresent()) {
+               if (var7.isEmpty()) {
                   return Optional.empty();
                } else {
                   int var8 = var7.getAsInt();

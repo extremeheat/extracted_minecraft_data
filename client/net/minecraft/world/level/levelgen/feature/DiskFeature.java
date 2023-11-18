@@ -38,13 +38,12 @@ public class DiskFeature extends Feature<DiskConfiguration> {
 
    protected boolean placeColumn(DiskConfiguration var1, WorldGenLevel var2, RandomSource var3, int var4, int var5, BlockPos.MutableBlockPos var6) {
       boolean var7 = false;
-      Object var8 = null;
 
-      for(int var9 = var4; var9 > var5; --var9) {
-         var6.setY(var9);
+      for(int var8 = var4; var8 > var5; --var8) {
+         var6.setY(var8);
          if (var1.target().test(var2, var6)) {
-            BlockState var10 = var1.stateProvider().getState(var2, var3, var6);
-            var2.setBlock(var6, var10, 2);
+            BlockState var9 = var1.stateProvider().getState(var2, var3, var6);
+            var2.setBlock(var6, var9, 2);
             this.markAboveForPostProcessing(var2, var6);
             var7 = true;
          }

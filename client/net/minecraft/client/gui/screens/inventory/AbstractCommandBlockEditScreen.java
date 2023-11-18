@@ -30,7 +30,6 @@ public abstract class AbstractCommandBlockEditScreen extends Screen {
 
    @Override
    public void tick() {
-      this.commandEdit.tick();
       if (!this.getCommandBlock().isValid()) {
          this.onClose();
       }
@@ -81,6 +80,11 @@ public abstract class AbstractCommandBlockEditScreen extends Screen {
    }
 
    @Override
+   protected Component getUsageNarration() {
+      return this.commandSuggestions.isVisible() ? this.commandSuggestions.getUsageNarration() : super.getUsageNarration();
+   }
+
+   @Override
    public void resize(Minecraft var1, int var2, int var3) {
       String var4 = this.commandEdit.getValue();
       this.init(var1, var2, var3);
@@ -123,8 +127,8 @@ public abstract class AbstractCommandBlockEditScreen extends Screen {
    }
 
    @Override
-   public boolean mouseScrolled(double var1, double var3, double var5) {
-      return this.commandSuggestions.mouseScrolled(var5) ? true : super.mouseScrolled(var1, var3, var5);
+   public boolean mouseScrolled(double var1, double var3, double var5, double var7) {
+      return this.commandSuggestions.mouseScrolled(var7) ? true : super.mouseScrolled(var1, var3, var5, var7);
    }
 
    @Override
@@ -134,18 +138,17 @@ public abstract class AbstractCommandBlockEditScreen extends Screen {
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
+      super.render(var1, var2, var3, var4);
       var1.drawCenteredString(this.font, SET_COMMAND_LABEL, this.width / 2, 20, 16777215);
-      var1.drawString(this.font, COMMAND_LABEL, this.width / 2 - 150, 40, 10526880);
+      var1.drawString(this.font, COMMAND_LABEL, this.width / 2 - 150 + 1, 40, 10526880);
       this.commandEdit.render(var1, var2, var3, var4);
       int var5 = 75;
       if (!this.previousEdit.getValue().isEmpty()) {
          var5 += 5 * 9 + 1 + this.getPreviousY() - 135;
-         var1.drawString(this.font, PREVIOUS_OUTPUT_LABEL, this.width / 2 - 150, var5 + 4, 10526880);
+         var1.drawString(this.font, PREVIOUS_OUTPUT_LABEL, this.width / 2 - 150 + 1, var5 + 4, 10526880);
          this.previousEdit.render(var1, var2, var3, var4);
       }
 
-      super.render(var1, var2, var3, var4);
       this.commandSuggestions.render(var1, var2, var3);
    }
 }

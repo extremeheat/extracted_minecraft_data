@@ -8,9 +8,9 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.StackedContents;
-import net.minecraft.world.item.Equipable;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
 public class InventoryMenu extends RecipeBookMenu<CraftingContainer> {
@@ -56,9 +56,9 @@ public class InventoryMenu extends RecipeBookMenu<CraftingContainer> {
          final EquipmentSlot var9 = SLOT_IDS[var6];
          this.addSlot(new Slot(var1, 39 - var6, 8, 8 + var6 * 18) {
             @Override
-            public void setByPlayer(ItemStack var1) {
-               InventoryMenu.onEquipItem(var3, var9, var1, this.getItem());
-               super.setByPlayer(var1);
+            public void setByPlayer(ItemStack var1, ItemStack var2) {
+               InventoryMenu.onEquipItem(var3, var9, var1, var2);
+               super.setByPlayer(var1, var2);
             }
 
             @Override
@@ -96,9 +96,9 @@ public class InventoryMenu extends RecipeBookMenu<CraftingContainer> {
 
       this.addSlot(new Slot(var1, 40, 77, 62) {
          @Override
-         public void setByPlayer(ItemStack var1) {
-            InventoryMenu.onEquipItem(var3, EquipmentSlot.OFFHAND, var1, this.getItem());
-            super.setByPlayer(var1);
+         public void setByPlayer(ItemStack var1, ItemStack var2) {
+            InventoryMenu.onEquipItem(var3, EquipmentSlot.OFFHAND, var1, var2);
+            super.setByPlayer(var1, var2);
          }
 
          @Override
@@ -109,10 +109,7 @@ public class InventoryMenu extends RecipeBookMenu<CraftingContainer> {
    }
 
    static void onEquipItem(Player var0, EquipmentSlot var1, ItemStack var2, ItemStack var3) {
-      Equipable var4 = Equipable.get(var2);
-      if (var4 != null) {
-         var0.onEquipItem(var1, var3, var2);
-      }
+      var0.onEquipItem(var1, var3, var2);
    }
 
    public static boolean isHotbarSlot(int var0) {
@@ -131,8 +128,8 @@ public class InventoryMenu extends RecipeBookMenu<CraftingContainer> {
    }
 
    @Override
-   public boolean recipeMatches(Recipe<? super CraftingContainer> var1) {
-      return var1.matches(this.craftSlots, this.owner.level());
+   public boolean recipeMatches(RecipeHolder<? extends Recipe<CraftingContainer>> var1) {
+      return var1.value().matches(this.craftSlots, this.owner.level());
    }
 
    @Override
@@ -198,7 +195,7 @@ public class InventoryMenu extends RecipeBookMenu<CraftingContainer> {
          }
 
          if (var5.isEmpty()) {
-            var4.setByPlayer(ItemStack.EMPTY);
+            var4.setByPlayer(ItemStack.EMPTY, var3);
          } else {
             var4.setChanged();
          }

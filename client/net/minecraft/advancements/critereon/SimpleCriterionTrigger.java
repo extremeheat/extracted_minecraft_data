@@ -6,14 +6,16 @@ import com.google.common.collect.Sets;
 import com.google.gson.JsonObject;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import net.minecraft.advancements.CriterionTrigger;
+import net.minecraft.advancements.CriterionTriggerInstance;
 import net.minecraft.server.PlayerAdvancements;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.storage.loot.LootContext;
 
-public abstract class SimpleCriterionTrigger<T extends AbstractCriterionTriggerInstance> implements CriterionTrigger<T> {
+public abstract class SimpleCriterionTrigger<T extends SimpleCriterionTrigger.SimpleInstance> implements CriterionTrigger<T> {
    private final Map<PlayerAdvancements, Set<CriterionTrigger.Listener<T>>> players = Maps.newIdentityHashMap();
 
    public SimpleCriterionTrigger() {
@@ -41,10 +43,10 @@ public abstract class SimpleCriterionTrigger<T extends AbstractCriterionTriggerI
       this.players.remove(var1);
    }
 
-   protected abstract T createInstance(JsonObject var1, ContextAwarePredicate var2, DeserializationContext var3);
+   protected abstract T createInstance(JsonObject var1, Optional<ContextAwarePredicate> var2, DeserializationContext var3);
 
    public final T createInstance(JsonObject var1, DeserializationContext var2) {
-      ContextAwarePredicate var3 = EntityPredicate.fromJson(var1, "player", var2);
+      Optional var3 = EntityPredicate.fromJson(var1, "player", var2);
       return this.createInstance(var1, var3, var2);
    }
 
@@ -56,21 +58,28 @@ public abstract class SimpleCriterionTrigger<T extends AbstractCriterionTriggerI
          ArrayList var6 = null;
 
          for(CriterionTrigger.Listener var8 : var4) {
-            AbstractCriterionTriggerInstance var9 = (AbstractCriterionTriggerInstance)var8.getTriggerInstance();
-            if (var2.test(var9) && var9.getPlayerPredicate().matches(var5)) {
-               if (var6 == null) {
-                  var6 = Lists.newArrayList();
-               }
+            SimpleCriterionTrigger.SimpleInstance var9 = (SimpleCriterionTrigger.SimpleInstance)var8.trigger();
+            if (var2.test(var9)) {
+               Optional var10 = var9.playerPredicate();
+               if (var10.isEmpty() || ((ContextAwarePredicate)var10.get()).matches(var5)) {
+                  if (var6 == null) {
+                     var6 = Lists.newArrayList();
+                  }
 
-               var6.add(var8);
+                  var6.add(var8);
+               }
             }
          }
 
          if (var6 != null) {
-            for(CriterionTrigger.Listener var11 : var6) {
-               var11.run(var3);
+            for(CriterionTrigger.Listener var12 : var6) {
+               var12.run(var3);
             }
          }
       }
+   }
+
+   public interface SimpleInstance extends CriterionTriggerInstance {
+      Optional<ContextAwarePredicate> playerPredicate();
    }
 }

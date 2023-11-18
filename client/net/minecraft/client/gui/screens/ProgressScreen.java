@@ -38,7 +38,7 @@ public class ProgressScreen extends Screen implements ProgressListener {
    @Override
    public void progressStart(Component var1) {
       this.header = var1;
-      this.progressStage(Component.translatable("progress.working"));
+      this.progressStage(Component.translatable("menu.working"));
    }
 
    @Override
@@ -64,7 +64,7 @@ public class ProgressScreen extends Screen implements ProgressListener {
             this.minecraft.setScreen(null);
          }
       } else {
-         this.renderBackground(var1);
+         super.render(var1, var2, var3, var4);
          if (this.header != null) {
             var1.drawCenteredString(this.font, this.header, this.width / 2, 70, 16777215);
          }
@@ -72,8 +72,6 @@ public class ProgressScreen extends Screen implements ProgressListener {
          if (this.stage != null && this.progress != 0) {
             var1.drawCenteredString(this.font, Component.empty().append(this.stage).append(" " + this.progress + "%"), this.width / 2, 90, 16777215);
          }
-
-         super.render(var1, var2, var3, var4);
       }
    }
 }

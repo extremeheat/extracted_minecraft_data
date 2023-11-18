@@ -1,6 +1,14 @@
 package net.minecraft.network.protocol.game;
 
-public interface ServerGamePacketListener extends ServerPacketListener {
+import net.minecraft.network.ConnectionProtocol;
+import net.minecraft.network.protocol.common.ServerCommonPacketListener;
+
+public interface ServerGamePacketListener extends ServerPingPacketListener, ServerCommonPacketListener {
+   @Override
+   default ConnectionProtocol protocol() {
+      return ConnectionProtocol.PLAY;
+   }
+
    void handleAnimate(ServerboundSwingPacket var1);
 
    void handleChat(ServerboundChatPacket var1);
@@ -11,8 +19,6 @@ public interface ServerGamePacketListener extends ServerPacketListener {
 
    void handleClientCommand(ServerboundClientCommandPacket var1);
 
-   void handleClientInformation(ServerboundClientInformationPacket var1);
-
    void handleContainerButtonClick(ServerboundContainerButtonClickPacket var1);
 
    void handleContainerClick(ServerboundContainerClickPacket var1);
@@ -21,15 +27,9 @@ public interface ServerGamePacketListener extends ServerPacketListener {
 
    void handleContainerClose(ServerboundContainerClosePacket var1);
 
-   void handleCustomPayload(ServerboundCustomPayloadPacket var1);
-
    void handleInteract(ServerboundInteractPacket var1);
 
-   void handleKeepAlive(ServerboundKeepAlivePacket var1);
-
    void handleMovePlayer(ServerboundMovePlayerPacket var1);
-
-   void handlePong(ServerboundPongPacket var1);
 
    void handlePlayerAbilities(ServerboundPlayerAbilitiesPacket var1);
 
@@ -50,8 +50,6 @@ public interface ServerGamePacketListener extends ServerPacketListener {
    void handleUseItem(ServerboundUseItemPacket var1);
 
    void handleTeleportToEntityPacket(ServerboundTeleportToEntityPacket var1);
-
-   void handleResourcePackResponse(ServerboundResourcePackPacket var1);
 
    void handlePaddleBoat(ServerboundPaddleBoatPacket var1);
 
@@ -96,4 +94,8 @@ public interface ServerGamePacketListener extends ServerPacketListener {
    void handleLockDifficulty(ServerboundLockDifficultyPacket var1);
 
    void handleChatSessionUpdate(ServerboundChatSessionUpdatePacket var1);
+
+   void handleConfigurationAcknowledged(ServerboundConfigurationAcknowledgedPacket var1);
+
+   void handleChunkBatchReceived(ServerboundChunkBatchReceivedPacket var1);
 }

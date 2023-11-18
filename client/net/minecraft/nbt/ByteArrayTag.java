@@ -10,25 +10,26 @@ import org.apache.commons.lang3.ArrayUtils;
 public class ByteArrayTag extends CollectionTag<ByteTag> {
    private static final int SELF_SIZE_IN_BYTES = 24;
    public static final TagType<ByteArrayTag> TYPE = new TagType.VariableSize<ByteArrayTag>() {
-      public ByteArrayTag load(DataInput var1, int var2, NbtAccounter var3) throws IOException {
-         var3.accountBytes(24L);
-         int var4 = var1.readInt();
-         var3.accountBytes(1L * (long)var4);
-         byte[] var5 = new byte[var4];
-         var1.readFully(var5);
-         return new ByteArrayTag(var5);
+      public ByteArrayTag load(DataInput var1, NbtAccounter var2) throws IOException {
+         return new ByteArrayTag(readAccounted(var1, var2));
       }
 
       @Override
-      public StreamTagVisitor.ValueResult parse(DataInput var1, StreamTagVisitor var2) throws IOException {
-         int var3 = var1.readInt();
-         byte[] var4 = new byte[var3];
-         var1.readFully(var4);
-         return var2.visit(var4);
+      public StreamTagVisitor.ValueResult parse(DataInput var1, StreamTagVisitor var2, NbtAccounter var3) throws IOException {
+         return var2.visit(readAccounted(var1, var3));
+      }
+
+      private static byte[] readAccounted(DataInput var0, NbtAccounter var1) throws IOException {
+         var1.accountBytes(24L);
+         int var2 = var0.readInt();
+         var1.accountBytes(1L, (long)var2);
+         byte[] var3 = new byte[var2];
+         var0.readFully(var3);
+         return var3;
       }
 
       @Override
-      public void skip(DataInput var1) throws IOException {
+      public void skip(DataInput var1, NbtAccounter var2) throws IOException {
          var1.skipBytes(var1.readInt() * 1);
       }
 

@@ -27,6 +27,7 @@ import com.mojang.realmsclient.exception.RealmsHttpException;
 import com.mojang.realmsclient.exception.RealmsServiceException;
 import com.mojang.realmsclient.exception.RetryCallException;
 import com.mojang.realmsclient.util.WorldGenerationInfo;
+import com.mojang.util.UndashedUuid;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -36,12 +37,13 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.language.I18n;
 import org.slf4j.Logger;
 
 public class RealmsClient {
-   public static RealmsClient.Environment currentEnvironment = RealmsClient.Environment.PRODUCTION;
-   private static boolean initialized;
+   public static final RealmsClient.Environment ENVIRONMENT = Optional.ofNullable(System.getenv("realms.environment"))
+      .or(() -> Optional.ofNullable(System.getProperty("realms.environment")))
+      .flatMap(RealmsClient.Environment::byName)
+      .orElse(RealmsClient.Environment.PRODUCTION);
    private static final Logger LOGGER = LogUtils.getLogger();
    private final String sessionId;
    private final String username;
@@ -86,7 +88,6 @@ public class RealmsClient {
    private static final String PATH_NEWS = "/v1/news";
    private static final String PATH_MARK_NOTIFICATIONS_SEEN = "/seen";
    private static final String PATH_DISMISS_NOTIFICATIONS = "/dismiss";
-   private static final String PATH_STAGE_AVAILABLE = "/stageAvailable";
    private static final GuardedSerializer GSON = new GuardedSerializer();
 
    public static RealmsClient create() {
@@ -97,25 +98,7 @@ public class RealmsClient {
    public static RealmsClient create(Minecraft var0) {
       String var1 = var0.getUser().getName();
       String var2 = var0.getUser().getSessionId();
-      if (!initialized) {
-         initialized = true;
-         Optional var3 = Optional.ofNullable(System.getenv("realms.environment")).or(() -> Optional.ofNullable(System.getProperty("realms.environment")));
-         var3.flatMap(RealmsClient.Environment::byName).ifPresent(var0x -> currentEnvironment = var0x);
-      }
-
       return new RealmsClient(var2, var1, var0);
-   }
-
-   public static void switchToStage() {
-      currentEnvironment = RealmsClient.Environment.STAGE;
-   }
-
-   public static void switchToProd() {
-      currentEnvironment = RealmsClient.Environment.PRODUCTION;
-   }
-
-   public static void switchToLocal() {
-      currentEnvironment = RealmsClient.Environment.LOCAL;
    }
 
    public RealmsClient(String var1, String var2, Minecraft var3) {
@@ -192,16 +175,10 @@ public class RealmsClient {
       this.execute(Request.post(var6, var7, 5000, 10000));
    }
 
-   public Boolean mcoEnabled() throws RealmsServiceException {
+   public boolean hasParentalConsent() throws RealmsServiceException {
       String var1 = this.url("mco/available");
       String var2 = this.execute(Request.get(var1));
-      return Boolean.valueOf(var2);
-   }
-
-   public Boolean stageAvailable() throws RealmsServiceException {
-      String var1 = this.url("mco/stageAvailable");
-      String var2 = this.execute(Request.get(var1));
-      return Boolean.valueOf(var2);
+      return Boolean.parseBoolean(var2);
    }
 
    public RealmsClient.CompatibleVersionResponse clientCompatible() throws RealmsServiceException {
@@ -211,12 +188,12 @@ public class RealmsClient {
       try {
          return RealmsClient.CompatibleVersionResponse.valueOf(var2);
       } catch (IllegalArgumentException var5) {
-         throw new RealmsServiceException(500, "Could not check compatible version, got response: " + var2);
+         throw new RealmsServiceException(RealmsError.CustomError.unknownCompatibilityResponse(var2));
       }
    }
 
-   public void uninvite(long var1, String var3) throws RealmsServiceException {
-      String var4 = this.url("invites" + "/$WORLD_ID/invite/$UUID".replace("$WORLD_ID", String.valueOf(var1)).replace("$UUID", var3));
+   public void uninvite(long var1, UUID var3) throws RealmsServiceException {
+      String var4 = this.url("invites" + "/$WORLD_ID/invite/$UUID".replace("$WORLD_ID", String.valueOf(var1)).replace("$UUID", UndashedUuid.toString(var3)));
       this.execute(Request.delete(var4));
    }
 
@@ -276,14 +253,14 @@ public class RealmsClient {
       return Boolean.valueOf(this.execute(Request.put(var5, "")));
    }
 
-   public Ops op(long var1, String var3) throws RealmsServiceException {
-      String var4 = "/$WORLD_ID/$PROFILE_UUID".replace("$WORLD_ID", String.valueOf(var1)).replace("$PROFILE_UUID", var3);
+   public Ops op(long var1, UUID var3) throws RealmsServiceException {
+      String var4 = "/$WORLD_ID/$PROFILE_UUID".replace("$WORLD_ID", String.valueOf(var1)).replace("$PROFILE_UUID", UndashedUuid.toString(var3));
       String var5 = this.url("ops" + var4);
       return Ops.parse(this.execute(Request.post(var5, "")));
    }
 
-   public Ops deop(long var1, String var3) throws RealmsServiceException {
-      String var4 = "/$WORLD_ID/$PROFILE_UUID".replace("$WORLD_ID", String.valueOf(var1)).replace("$PROFILE_UUID", var3);
+   public Ops deop(long var1, UUID var3) throws RealmsServiceException {
+      String var4 = "/$WORLD_ID/$PROFILE_UUID".replace("$WORLD_ID", String.valueOf(var1)).replace("$PROFILE_UUID", UndashedUuid.toString(var3));
       String var5 = this.url("ops" + var4);
       return Ops.parse(this.execute(Request.delete(var5)));
    }
@@ -333,12 +310,7 @@ public class RealmsClient {
    }
 
    private boolean isBlocked(PendingInvite var1) {
-      try {
-         UUID var2 = UUID.fromString(var1.worldOwnerUuid);
-         return this.minecraft.getPlayerSocialManager().isBlocked(var2);
-      } catch (IllegalArgumentException var3) {
-         return false;
-      }
+      return this.minecraft.getPlayerSocialManager().isBlocked(var1.worldOwnerUuid);
    }
 
    public void acceptInvitation(String var1) throws RealmsServiceException {
@@ -398,7 +370,7 @@ public class RealmsClient {
 
    private String url(String var1, @Nullable String var2) {
       try {
-         return new URI(currentEnvironment.protocol, currentEnvironment.baseUrl, "/" + var1, var2, null).toASCIIString();
+         return new URI(ENVIRONMENT.protocol, ENVIRONMENT.baseUrl, "/" + var1, var2, null).toASCIIString();
       } catch (URISyntaxException var4) {
          throw new IllegalArgumentException(var1, var4);
       }
@@ -412,41 +384,24 @@ public class RealmsClient {
       try {
          int var2 = var1.responseCode();
          if (var2 != 503 && var2 != 277) {
-            String var7 = var1.text();
+            String var6 = var1.text();
             if (var2 >= 200 && var2 < 300) {
-               return var7;
+               return var6;
             } else if (var2 == 401) {
-               String var8 = var1.getHeader("WWW-Authenticate");
-               LOGGER.info("Could not authorize you against Realms server: {}", var8);
-               throw new RealmsServiceException(var2, var8);
+               String var7 = var1.getHeader("WWW-Authenticate");
+               LOGGER.info("Could not authorize you against Realms server: {}", var7);
+               throw new RealmsServiceException(new RealmsError.AuthenticationError(var7));
             } else {
-               RealmsError var4 = RealmsError.parse(var7);
-               if (var4 != null) {
-                  LOGGER.error(
-                     "Realms http code: {} -  error code: {} -  message: {} - raw body: {}",
-                     new Object[]{var2, var4.getErrorCode(), var4.getErrorMessage(), var7}
-                  );
-                  throw new RealmsServiceException(var2, var7, var4);
-               } else {
-                  LOGGER.error("Realms http code: {} - raw body (message failed to parse): {}", var2, var7);
-                  String var5 = getHttpCodeDescription(var2);
-                  throw new RealmsServiceException(var2, var5);
-               }
+               RealmsError var4 = RealmsError.parse(var2, var6);
+               throw new RealmsServiceException(var4);
             }
          } else {
             int var3 = var1.getRetryAfterHeader();
             throw new RetryCallException(var3, var2);
          }
-      } catch (RealmsHttpException var6) {
-         throw new RealmsServiceException(500, "Could not connect to Realms: " + var6.getMessage());
+      } catch (RealmsHttpException var5) {
+         throw new RealmsServiceException(RealmsError.CustomError.connectivityError(var5));
       }
-   }
-
-   private static String getHttpCodeDescription(int var0) {
-      return switch(var0) {
-         case 429 -> I18n.get("mco.errorMessage.serviceBusy");
-         default -> "Unknown error";
-      };
    }
 
    public static enum CompatibleVersionResponse {
@@ -463,8 +418,8 @@ public class RealmsClient {
       STAGE("pc-stage.realms.minecraft.net", "https"),
       LOCAL("localhost:8080", "http");
 
-      public String baseUrl;
-      public String protocol;
+      public final String baseUrl;
+      public final String protocol;
 
       private Environment(String var3, String var4) {
          this.baseUrl = var3;
@@ -477,7 +432,7 @@ public class RealmsClient {
          return switch(var1) {
             case "production" -> Optional.of(PRODUCTION);
             case "local" -> Optional.of(LOCAL);
-            case "stage" -> Optional.of(STAGE);
+            case "stage", "staging" -> Optional.of(STAGE);
             default -> Optional.empty();
          };
       }

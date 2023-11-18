@@ -3,6 +3,7 @@ package net.minecraft.client.gui.screens;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.platform.Monitor;
+import com.mojang.blaze3d.platform.VideoMode;
 import com.mojang.blaze3d.platform.Window;
 import java.util.ArrayList;
 import java.util.Optional;
@@ -86,10 +87,20 @@ public class VideoSettingsScreen extends OptionsSubScreen {
          (var1x, var2x) -> {
             if (var3 == null) {
                return Component.translatable("options.fullscreen.unavailable");
+            } else if (var2x == -1) {
+               return Options.genericValueLabel(var1x, Component.translatable("options.fullscreen.current"));
             } else {
-               return var2x == -1
-                  ? Options.genericValueLabel(var1x, Component.translatable("options.fullscreen.current"))
-                  : Options.genericValueLabel(var1x, Component.literal(var3.getMode(var2x).toString()));
+               VideoMode var3x = var3.getMode(var2x);
+               return Options.genericValueLabel(
+                  var1x,
+                  Component.translatable(
+                     "options.fullscreen.entry",
+                     var3x.getWidth(),
+                     var3x.getHeight(),
+                     var3x.getRefreshRate(),
+                     var3x.getRedBits() + var3x.getGreenBits() + var3x.getBlueBits()
+                  )
+               );
             }
          },
          new OptionInstance.IntRange(-1, var3 != null ? var3.getModeCount() - 1 : -1),
@@ -167,13 +178,13 @@ public class VideoSettingsScreen extends OptionsSubScreen {
    }
 
    @Override
-   public boolean mouseScrolled(double var1, double var3, double var5) {
+   public boolean mouseScrolled(double var1, double var3, double var5, double var7) {
       if (Screen.hasControlDown()) {
-         OptionInstance var7 = this.options.guiScale();
-         int var8 = var7.get() + (int)Math.signum(var5);
-         if (var8 != 0) {
-            var7.set(var8);
-            if (var7.get() == var8) {
+         OptionInstance var9 = this.options.guiScale();
+         int var10 = var9.get() + (int)Math.signum(var7);
+         if (var10 != 0) {
+            var9.set(var10);
+            if (var9.get() == var10) {
                this.minecraft.resizeDisplay();
                return true;
             }
@@ -181,12 +192,17 @@ public class VideoSettingsScreen extends OptionsSubScreen {
 
          return false;
       } else {
-         return super.mouseScrolled(var1, var3, var5);
+         return super.mouseScrolled(var1, var3, var5, var7);
       }
    }
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       this.basicListRender(var1, this.list, var2, var3, var4);
+   }
+
+   @Override
+   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
+      this.renderDirtBackground(var1);
    }
 }

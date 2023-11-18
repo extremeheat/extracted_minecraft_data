@@ -394,7 +394,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       private final BlockBehaviour.StatePredicate hasPostProcess;
       private final BlockBehaviour.StatePredicate emissiveRendering;
       private final Optional<BlockBehaviour.OffsetFunction> offsetFunction;
-      private final boolean spawnParticlesOnBreak;
+      private final boolean spawnTerrainParticles;
       private final NoteBlockInstrument instrument;
       private final boolean replaceable;
       @Nullable
@@ -421,7 +421,7 @@ public abstract class BlockBehaviour implements FeatureElement {
          this.hasPostProcess = var4.hasPostProcess;
          this.emissiveRendering = var4.emissiveRendering;
          this.offsetFunction = var4.offsetFunction;
-         this.spawnParticlesOnBreak = var4.spawnParticlesOnBreak;
+         this.spawnTerrainParticles = var4.spawnTerrainParticles;
          this.instrument = var4.instrument;
          this.replaceable = var4.replaceable;
       }
@@ -642,7 +642,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       }
 
       public boolean hasOffsetFunction() {
-         return !this.offsetFunction.isEmpty();
+         return this.offsetFunction.isPresent();
       }
 
       public boolean triggerEvent(Level var1, BlockPos var2, int var3, int var4) {
@@ -764,6 +764,10 @@ public abstract class BlockBehaviour implements FeatureElement {
          return var1.contains(this.getBlock().builtInRegistryHolder());
       }
 
+      public boolean is(Holder<Block> var1) {
+         return this.is((Block)var1.value());
+      }
+
       public Stream<TagKey<Block>> getTags() {
          return this.getBlock().builtInRegistryHolder().tags();
       }
@@ -819,8 +823,8 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this.requiresCorrectToolForDrops;
       }
 
-      public boolean shouldSpawnParticlesOnBreak() {
-         return this.spawnParticlesOnBreak;
+      public boolean shouldSpawnTerrainParticles() {
+         return this.spawnTerrainParticles;
       }
 
       public NoteBlockInstrument instrument() {
@@ -926,7 +930,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       boolean forceSolidOff;
       boolean forceSolidOn;
       PushReaction pushReaction = PushReaction.NORMAL;
-      boolean spawnParticlesOnBreak = true;
+      boolean spawnTerrainParticles = true;
       NoteBlockInstrument instrument = NoteBlockInstrument.HARP;
       boolean replaceable;
       BlockBehaviour.StateArgumentPredicate<EntityType<?>> isValidSpawn = (var0, var1, var2, var3) -> var0.isFaceSturdy(var1, var2, Direction.UP)
@@ -969,7 +973,7 @@ public abstract class BlockBehaviour implements FeatureElement {
          var1.pushReaction = var0.properties.pushReaction;
          var1.requiresCorrectToolForDrops = var0.properties.requiresCorrectToolForDrops;
          var1.offsetFunction = var0.properties.offsetFunction;
-         var1.spawnParticlesOnBreak = var0.properties.spawnParticlesOnBreak;
+         var1.spawnTerrainParticles = var0.properties.spawnTerrainParticles;
          var1.requiredFeatures = var0.properties.requiredFeatures;
          var1.emissiveRendering = var0.properties.emissiveRendering;
          var1.instrument = var0.properties.instrument;
@@ -1167,8 +1171,8 @@ public abstract class BlockBehaviour implements FeatureElement {
          return this;
       }
 
-      public BlockBehaviour.Properties noParticlesOnBreak() {
-         this.spawnParticlesOnBreak = false;
+      public BlockBehaviour.Properties noTerrainParticles() {
+         this.spawnTerrainParticles = false;
          return this;
       }
 

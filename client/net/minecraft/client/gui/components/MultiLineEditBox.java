@@ -2,6 +2,7 @@ package net.minecraft.client.gui.components;
 
 import java.util.function.Consumer;
 import net.minecraft.SharedConstants;
+import net.minecraft.Util;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarratedElementType;
@@ -17,10 +18,11 @@ public class MultiLineEditBox extends AbstractScrollWidget {
    private static final String CURSOR_APPEND_CHARACTER = "_";
    private static final int TEXT_COLOR = -2039584;
    private static final int PLACEHOLDER_TEXT_COLOR = -857677600;
+   private static final int CURSOR_BLINK_INTERVAL_MS = 300;
    private final Font font;
    private final Component placeholder;
    private final MultilineTextField textField;
-   private int frame;
+   private long focusedTime = Util.getMillis();
 
    public MultiLineEditBox(Font var1, int var2, int var3, int var4, int var5, Component var6, Component var7) {
       super(var2, var3, var4, var5, var7);
@@ -46,10 +48,6 @@ public class MultiLineEditBox extends AbstractScrollWidget {
       return this.textField.value();
    }
 
-   public void tick() {
-      ++this.frame;
-   }
-
    @Override
    public void updateWidgetNarration(NarrationElementOutput var1) {
       var1.add(NarratedElementType.TITLE, Component.translatable("gui.narrate.editBox", this.getMessage(), this.getValue()));
@@ -57,14 +55,12 @@ public class MultiLineEditBox extends AbstractScrollWidget {
 
    @Override
    public boolean mouseClicked(double var1, double var3, int var5) {
-      if (super.mouseClicked(var1, var3, var5)) {
-         return true;
-      } else if (this.withinContentAreaPoint(var1, var3) && var5 == 0) {
+      if (this.withinContentAreaPoint(var1, var3) && var5 == 0) {
          this.textField.setSelecting(Screen.hasShiftDown());
          this.seekCursorScreen(var1, var3);
          return true;
       } else {
-         return false;
+         return super.mouseClicked(var1, var3, var5);
       }
    }
 
@@ -111,7 +107,7 @@ public class MultiLineEditBox extends AbstractScrollWidget {
          );
       } else {
          int var6 = this.textField.cursor();
-         boolean var7 = this.isFocused() && this.frame / 6 % 2 == 0;
+         boolean var7 = this.isFocused() && (Util.getMillis() - this.focusedTime) / 300L % 2L == 0L;
          boolean var8 = var6 < var5.length();
          int var9 = 0;
          int var10 = 0;
@@ -225,5 +221,13 @@ public class MultiLineEditBox extends AbstractScrollWidget {
       double var5 = var1 - (double)this.getX() - (double)this.innerPadding();
       double var7 = var3 - (double)this.getY() - (double)this.innerPadding() + this.scrollAmount();
       this.textField.seekCursorToPoint(var5, var7);
+   }
+
+   @Override
+   public void setFocused(boolean var1) {
+      super.setFocused(var1);
+      if (var1) {
+         this.focusedTime = Util.getMillis();
+      }
    }
 }

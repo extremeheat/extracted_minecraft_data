@@ -758,7 +758,7 @@ public class LevelChunk extends ChunkAccess {
 
       @Override
       public String toString() {
-         return this.ticker.toString() + " <wrapped>";
+         return this.ticker + " <wrapped>";
       }
    }
 }

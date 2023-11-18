@@ -116,16 +116,18 @@ public class BuiltInRegistries {
    public static final DefaultedRegistry<GameEvent> GAME_EVENT = registerDefaultedWithIntrusiveHolders(Registries.GAME_EVENT, "step", var0 -> GameEvent.STEP);
    public static final Registry<SoundEvent> SOUND_EVENT = registerSimple(Registries.SOUND_EVENT, var0 -> SoundEvents.ITEM_PICKUP);
    public static final DefaultedRegistry<Fluid> FLUID = registerDefaultedWithIntrusiveHolders(Registries.FLUID, "empty", var0 -> Fluids.EMPTY);
-   public static final Registry<MobEffect> MOB_EFFECT = registerSimple(Registries.MOB_EFFECT, var0 -> MobEffects.LUCK);
+   public static final Registry<MobEffect> MOB_EFFECT = registerSimpleWithIntrusiveHolders(Registries.MOB_EFFECT, var0 -> MobEffects.LUCK);
    public static final DefaultedRegistry<Block> BLOCK = registerDefaultedWithIntrusiveHolders(Registries.BLOCK, "air", var0 -> Blocks.AIR);
-   public static final Registry<Enchantment> ENCHANTMENT = registerSimple(Registries.ENCHANTMENT, var0 -> Enchantments.BLOCK_FORTUNE);
+   public static final Registry<Enchantment> ENCHANTMENT = registerSimpleWithIntrusiveHolders(Registries.ENCHANTMENT, var0 -> Enchantments.BLOCK_FORTUNE);
    public static final DefaultedRegistry<EntityType<?>> ENTITY_TYPE = registerDefaultedWithIntrusiveHolders(
       Registries.ENTITY_TYPE, "pig", var0 -> EntityType.PIG
    );
    public static final DefaultedRegistry<Item> ITEM = registerDefaultedWithIntrusiveHolders(Registries.ITEM, "air", var0 -> Items.AIR);
-   public static final DefaultedRegistry<Potion> POTION = registerDefaulted(Registries.POTION, "empty", var0 -> Potions.EMPTY);
+   public static final DefaultedRegistry<Potion> POTION = registerDefaultedWithIntrusiveHolders(Registries.POTION, "empty", var0 -> Potions.EMPTY);
    public static final Registry<ParticleType<?>> PARTICLE_TYPE = registerSimple(Registries.PARTICLE_TYPE, var0 -> ParticleTypes.BLOCK);
-   public static final Registry<BlockEntityType<?>> BLOCK_ENTITY_TYPE = registerSimple(Registries.BLOCK_ENTITY_TYPE, var0 -> BlockEntityType.FURNACE);
+   public static final Registry<BlockEntityType<?>> BLOCK_ENTITY_TYPE = registerSimpleWithIntrusiveHolders(
+      Registries.BLOCK_ENTITY_TYPE, var0 -> BlockEntityType.FURNACE
+   );
    public static final DefaultedRegistry<PaintingVariant> PAINTING_VARIANT = registerDefaulted(
       Registries.PAINTING_VARIANT, "kebab", PaintingVariants::bootstrap
    );
@@ -235,6 +237,10 @@ public class BuiltInRegistries {
 
    private static <T> Registry<T> registerSimple(ResourceKey<? extends Registry<T>> var0, BuiltInRegistries.RegistryBootstrap<T> var1) {
       return registerSimple(var0, Lifecycle.stable(), var1);
+   }
+
+   private static <T> Registry<T> registerSimpleWithIntrusiveHolders(ResourceKey<? extends Registry<T>> var0, BuiltInRegistries.RegistryBootstrap<T> var1) {
+      return internalRegister(var0, new MappedRegistry<>(var0, Lifecycle.stable(), true), var1, Lifecycle.stable());
    }
 
    private static <T> DefaultedRegistry<T> registerDefaulted(ResourceKey<? extends Registry<T>> var0, String var1, BuiltInRegistries.RegistryBootstrap<T> var2) {

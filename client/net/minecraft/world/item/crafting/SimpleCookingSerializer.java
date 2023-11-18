@@ -1,48 +1,45 @@
 package net.minecraft.world.item.crafting;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 
 public class SimpleCookingSerializer<T extends AbstractCookingRecipe> implements RecipeSerializer<T> {
-   private final int defaultCookingTime;
    private final SimpleCookingSerializer.CookieBaker<T> factory;
+   private final Codec<T> codec;
 
    public SimpleCookingSerializer(SimpleCookingSerializer.CookieBaker<T> var1, int var2) {
       super();
-      this.defaultCookingTime = var2;
       this.factory = var1;
-   }
-
-   public T fromJson(ResourceLocation var1, JsonObject var2) {
-      String var3 = GsonHelper.getAsString(var2, "group", "");
-      CookingBookCategory var4 = CookingBookCategory.CODEC.byName(GsonHelper.getAsString(var2, "category", null), CookingBookCategory.MISC);
-      Object var5 = GsonHelper.isArrayNode(var2, "ingredient")
-         ? GsonHelper.getAsJsonArray(var2, "ingredient")
-         : GsonHelper.getAsJsonObject(var2, "ingredient");
-      Ingredient var6 = Ingredient.fromJson((JsonElement)var5, false);
-      String var7 = GsonHelper.getAsString(var2, "result");
-      ResourceLocation var8 = new ResourceLocation(var7);
-      ItemStack var9 = new ItemStack(
-         BuiltInRegistries.ITEM.getOptional(var8).orElseThrow(() -> new IllegalStateException("Item: " + var7 + " does not exist"))
+      this.codec = RecordCodecBuilder.create(
+         var2x -> var2x.group(
+                  ExtraCodecs.strictOptionalField(Codec.STRING, "group", "").forGetter(var0x -> var0x.group),
+                  CookingBookCategory.CODEC.fieldOf("category").orElse(CookingBookCategory.MISC).forGetter(var0x -> var0x.category),
+                  Ingredient.CODEC_NONEMPTY.fieldOf("ingredient").forGetter(var0x -> var0x.ingredient),
+                  BuiltInRegistries.ITEM.byNameCodec().xmap(ItemStack::new, ItemStack::getItem).fieldOf("result").forGetter(var0x -> var0x.result),
+                  Codec.FLOAT.fieldOf("experience").orElse(0.0F).forGetter(var0x -> var0x.experience),
+                  Codec.INT.fieldOf("cookingtime").orElse(var2).forGetter(var0x -> var0x.cookingTime)
+               )
+               .apply(var2x, var1::create)
       );
-      float var10 = GsonHelper.getAsFloat(var2, "experience", 0.0F);
-      int var11 = GsonHelper.getAsInt(var2, "cookingtime", this.defaultCookingTime);
-      return this.factory.create(var1, var3, var4, var6, var9, var10, var11);
    }
 
-   public T fromNetwork(ResourceLocation var1, FriendlyByteBuf var2) {
-      String var3 = var2.readUtf();
-      CookingBookCategory var4 = var2.readEnum(CookingBookCategory.class);
-      Ingredient var5 = Ingredient.fromNetwork(var2);
-      ItemStack var6 = var2.readItem();
-      float var7 = var2.readFloat();
-      int var8 = var2.readVarInt();
-      return this.factory.create(var1, var3, var4, var5, var6, var7, var8);
+   @Override
+   public Codec<T> codec() {
+      return this.codec;
+   }
+
+   public T fromNetwork(FriendlyByteBuf var1) {
+      String var2 = var1.readUtf();
+      CookingBookCategory var3 = var1.readEnum(CookingBookCategory.class);
+      Ingredient var4 = Ingredient.fromNetwork(var1);
+      ItemStack var5 = var1.readItem();
+      float var6 = var1.readFloat();
+      int var7 = var1.readVarInt();
+      return this.factory.create(var2, var3, var4, var5, var6, var7);
    }
 
    public void toNetwork(FriendlyByteBuf var1, T var2) {
@@ -55,6 +52,6 @@ public class SimpleCookingSerializer<T extends AbstractCookingRecipe> implements
    }
 
    interface CookieBaker<T extends AbstractCookingRecipe> {
-      T create(ResourceLocation var1, String var2, CookingBookCategory var3, Ingredient var4, ItemStack var5, float var6, int var7);
+      T create(String var1, CookingBookCategory var2, Ingredient var3, ItemStack var4, float var5, int var6);
    }
 }

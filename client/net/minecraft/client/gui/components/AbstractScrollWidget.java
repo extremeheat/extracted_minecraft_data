@@ -3,13 +3,16 @@ package net.minecraft.client.gui.components;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 
 public abstract class AbstractScrollWidget extends AbstractWidget implements Renderable, GuiEventListener {
-   private static final int BORDER_COLOR_FOCUSED = -1;
-   private static final int BORDER_COLOR = -6250336;
-   private static final int BACKGROUND_COLOR = -16777216;
+   private static final WidgetSprites BACKGROUND_SPRITES = new WidgetSprites(
+      new ResourceLocation("widget/text_field"), new ResourceLocation("widget/text_field_highlighted")
+   );
+   private static final ResourceLocation SCROLLER_SPRITE = new ResourceLocation("widget/scroller");
    private static final int INNER_PADDING = 4;
+   private static final int SCROLL_BAR_WIDTH = 8;
    private double scrollAmount;
    private boolean scrolling;
 
@@ -66,11 +69,11 @@ public abstract class AbstractScrollWidget extends AbstractWidget implements Ren
    }
 
    @Override
-   public boolean mouseScrolled(double var1, double var3, double var5) {
+   public boolean mouseScrolled(double var1, double var3, double var5, double var7) {
       if (!this.visible) {
          return false;
       } else {
-         this.setScrollAmount(this.scrollAmount - var5 * this.scrollRate());
+         this.setScrollAmount(this.scrollAmount - var7 * this.scrollRate());
          return true;
       }
    }
@@ -143,19 +146,15 @@ public abstract class AbstractScrollWidget extends AbstractWidget implements Ren
    }
 
    protected void renderBorder(GuiGraphics var1, int var2, int var3, int var4, int var5) {
-      int var6 = this.isFocused() ? -1 : -6250336;
-      var1.fill(var2, var3, var2 + var4, var3 + var5, var6);
-      var1.fill(var2 + 1, var3 + 1, var2 + var4 - 1, var3 + var5 - 1, -16777216);
+      ResourceLocation var6 = BACKGROUND_SPRITES.get(this.isActive(), this.isFocused());
+      var1.blitSprite(var6, var2, var3, var4, var5);
    }
 
    private void renderScrollBar(GuiGraphics var1) {
       int var2 = this.getScrollBarHeight();
       int var3 = this.getX() + this.width;
-      int var4 = this.getX() + this.width + 8;
-      int var5 = Math.max(this.getY(), (int)this.scrollAmount * (this.height - var2) / this.getMaxScrollAmount() + this.getY());
-      int var6 = var5 + var2;
-      var1.fill(var3, var5, var4, var6, -8355712);
-      var1.fill(var3, var5, var4 - 1, var6 - 1, -4144960);
+      int var4 = Math.max(this.getY(), (int)this.scrollAmount * (this.height - var2) / this.getMaxScrollAmount() + this.getY());
+      var1.blitSprite(SCROLLER_SPRITE, var3, var4, 8, var2);
    }
 
    protected boolean withinContentAreaTopBottom(int var1, int var2) {
@@ -171,6 +170,10 @@ public abstract class AbstractScrollWidget extends AbstractWidget implements Ren
 
    protected boolean scrollbarVisible() {
       return this.getInnerHeight() > this.getHeight();
+   }
+
+   public int scrollbarWidth() {
+      return 8;
    }
 
    protected abstract int getInnerHeight();

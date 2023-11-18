@@ -1,26 +1,30 @@
 package net.minecraft.world.item.crafting;
 
-import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
 
 public class SimpleCraftingRecipeSerializer<T extends CraftingRecipe> implements RecipeSerializer<T> {
    private final SimpleCraftingRecipeSerializer.Factory<T> constructor;
+   private final Codec<T> codec;
 
    public SimpleCraftingRecipeSerializer(SimpleCraftingRecipeSerializer.Factory<T> var1) {
       super();
       this.constructor = var1;
+      this.codec = RecordCodecBuilder.create(
+         var1x -> var1x.group(CraftingBookCategory.CODEC.fieldOf("category").orElse(CraftingBookCategory.MISC).forGetter(CraftingRecipe::category))
+               .apply(var1x, var1::create)
+      );
    }
 
-   public T fromJson(ResourceLocation var1, JsonObject var2) {
-      CraftingBookCategory var3 = CraftingBookCategory.CODEC.byName(GsonHelper.getAsString(var2, "category", null), CraftingBookCategory.MISC);
-      return this.constructor.create(var1, var3);
+   @Override
+   public Codec<T> codec() {
+      return this.codec;
    }
 
-   public T fromNetwork(ResourceLocation var1, FriendlyByteBuf var2) {
-      CraftingBookCategory var3 = var2.readEnum(CraftingBookCategory.class);
-      return this.constructor.create(var1, var3);
+   public T fromNetwork(FriendlyByteBuf var1) {
+      CraftingBookCategory var2 = var1.readEnum(CraftingBookCategory.class);
+      return this.constructor.create(var2);
    }
 
    public void toNetwork(FriendlyByteBuf var1, T var2) {
@@ -29,6 +33,6 @@ public class SimpleCraftingRecipeSerializer<T extends CraftingRecipe> implements
 
    @FunctionalInterface
    public interface Factory<T extends CraftingRecipe> {
-      T create(ResourceLocation var1, CraftingBookCategory var2);
+      T create(CraftingBookCategory var1);
    }
 }

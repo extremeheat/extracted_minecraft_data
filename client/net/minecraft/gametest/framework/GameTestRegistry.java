@@ -96,7 +96,7 @@ public class GameTestRegistry {
 
    public static TestFunction getTestFunction(String var0) {
       Optional var1 = findTestFunction(var0);
-      if (!var1.isPresent()) {
+      if (var1.isEmpty()) {
          throw new IllegalArgumentException("Can't find the test function for " + var0);
       } else {
          return (TestFunction)var1.get();

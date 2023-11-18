@@ -1,11 +1,13 @@
 package net.minecraft.server.packs.resources;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonObject;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import java.util.Optional;
 import net.minecraft.server.packs.metadata.MetadataSectionSerializer;
 import net.minecraft.util.GsonHelper;
@@ -36,4 +38,41 @@ public interface ResourceMetadata {
    }
 
    <T> Optional<T> getSection(MetadataSectionSerializer<T> var1);
+
+   default ResourceMetadata copySections(Collection<MetadataSectionSerializer<?>> var1) {
+      ResourceMetadata.Builder var2 = new ResourceMetadata.Builder();
+
+      for(MetadataSectionSerializer var4 : var1) {
+         this.copySection(var2, var4);
+      }
+
+      return var2.build();
+   }
+
+   private <T> void copySection(ResourceMetadata.Builder var1, MetadataSectionSerializer<T> var2) {
+      this.<Object>getSection(var2).ifPresent(var2x -> var1.put(var2, (T)var2x));
+   }
+
+   public static class Builder {
+      private final com.google.common.collect.ImmutableMap.Builder<MetadataSectionSerializer<?>, Object> map = ImmutableMap.builder();
+
+      public Builder() {
+         super();
+      }
+
+      public <T> ResourceMetadata.Builder put(MetadataSectionSerializer<T> var1, T var2) {
+         this.map.put(var1, var2);
+         return this;
+      }
+
+      public ResourceMetadata build() {
+         final ImmutableMap var1 = this.map.build();
+         return var1.isEmpty() ? ResourceMetadata.EMPTY : new ResourceMetadata() {
+            @Override
+            public <T> Optional<T> getSection(MetadataSectionSerializer<T> var1x) {
+               return Optional.ofNullable((T)var1.get(var1x));
+            }
+         };
+      }
+   }
 }

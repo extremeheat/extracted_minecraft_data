@@ -1,31 +1,27 @@
 package net.minecraft.network.protocol.handshake;
 
-import net.minecraft.SharedConstants;
 import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
 
-public class ClientIntentionPacket implements Packet<ServerHandshakePacketListener> {
-   private static final int MAX_HOST_LENGTH = 255;
+public record ClientIntentionPacket(int a, String b, int c, ClientIntent d) implements Packet<ServerHandshakePacketListener> {
    private final int protocolVersion;
    private final String hostName;
    private final int port;
-   private final ConnectionProtocol intention;
+   private final ClientIntent intention;
+   private static final int MAX_HOST_LENGTH = 255;
 
-   public ClientIntentionPacket(String var1, int var2, ConnectionProtocol var3) {
+   @Deprecated
+   public ClientIntentionPacket(int var1, String var2, int var3, ClientIntent var4) {
       super();
-      this.protocolVersion = SharedConstants.getCurrentVersion().getProtocolVersion();
-      this.hostName = var1;
-      this.port = var2;
-      this.intention = var3;
+      this.protocolVersion = var1;
+      this.hostName = var2;
+      this.port = var3;
+      this.intention = var4;
    }
 
    public ClientIntentionPacket(FriendlyByteBuf var1) {
-      super();
-      this.protocolVersion = var1.readVarInt();
-      this.hostName = var1.readUtf(255);
-      this.port = var1.readUnsignedShort();
-      this.intention = ConnectionProtocol.getById(var1.readVarInt());
+      this(var1.readVarInt(), var1.readUtf(255), var1.readUnsignedShort(), ClientIntent.byId(var1.readVarInt()));
    }
 
    @Override
@@ -33,26 +29,15 @@ public class ClientIntentionPacket implements Packet<ServerHandshakePacketListen
       var1.writeVarInt(this.protocolVersion);
       var1.writeUtf(this.hostName);
       var1.writeShort(this.port);
-      var1.writeVarInt(this.intention.getId());
+      var1.writeVarInt(this.intention.id());
    }
 
    public void handle(ServerHandshakePacketListener var1) {
       var1.handleIntention(this);
    }
 
-   public ConnectionProtocol getIntention() {
-      return this.intention;
-   }
-
-   public int getProtocolVersion() {
-      return this.protocolVersion;
-   }
-
-   public String getHostName() {
-      return this.hostName;
-   }
-
-   public int getPort() {
-      return this.port;
+   @Override
+   public ConnectionProtocol nextProtocol() {
+      return this.intention.protocol();
    }
 }

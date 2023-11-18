@@ -381,10 +381,12 @@ public abstract class FlowingFluid extends Fluid {
       return var5;
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private boolean canHoldFluid(BlockGetter var1, BlockPos var2, BlockState var3, Fluid var4) {
       Block var5 = var3.getBlock();
-      if (var5 instanceof LiquidBlockContainer) {
-         return ((LiquidBlockContainer)var5).canPlaceLiquid(var1, var2, var3, var4);
+      if (var5 instanceof LiquidBlockContainer var6) {
+         return var6.canPlaceLiquid(null, var1, var2, var3, var4);
       } else if (var5 instanceof DoorBlock
          || var3.is(BlockTags.SIGNS)
          || var3.is(Blocks.LADDER)

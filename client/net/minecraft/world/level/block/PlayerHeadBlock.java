@@ -32,7 +32,7 @@ public class PlayerHeadBlock extends SkullBlock {
             if (var9.contains("SkullOwner", 10)) {
                var8 = NbtUtils.readGameProfile(var9.getCompound("SkullOwner"));
             } else if (var9.contains("SkullOwner", 8) && !Util.isBlank(var9.getString("SkullOwner"))) {
-               var8 = new GameProfile(null, var9.getString("SkullOwner"));
+               var8 = new GameProfile(Util.NIL_UUID, var9.getString("SkullOwner"));
             }
          }
 

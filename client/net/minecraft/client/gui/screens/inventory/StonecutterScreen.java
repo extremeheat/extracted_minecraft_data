@@ -10,9 +10,15 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.StonecutterMenu;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.StonecutterRecipe;
 
 public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> {
+   private static final ResourceLocation SCROLLER_SPRITE = new ResourceLocation("container/stonecutter/scroller");
+   private static final ResourceLocation SCROLLER_DISABLED_SPRITE = new ResourceLocation("container/stonecutter/scroller_disabled");
+   private static final ResourceLocation RECIPE_SELECTED_SPRITE = new ResourceLocation("container/stonecutter/recipe_selected");
+   private static final ResourceLocation RECIPE_HIGHLIGHTED_SPRITE = new ResourceLocation("container/stonecutter/recipe_highlighted");
+   private static final ResourceLocation RECIPE_SPRITE = new ResourceLocation("container/stonecutter/recipe");
    private static final ResourceLocation BG_LOCATION = new ResourceLocation("textures/gui/container/stonecutter.png");
    private static final int SCROLLER_WIDTH = 12;
    private static final int SCROLLER_HEIGHT = 15;
@@ -42,17 +48,17 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
 
    @Override
    protected void renderBg(GuiGraphics var1, float var2, int var3, int var4) {
-      this.renderBackground(var1);
       int var5 = this.leftPos;
       int var6 = this.topPos;
       var1.blit(BG_LOCATION, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
       int var7 = (int)(41.0F * this.scrollOffs);
-      var1.blit(BG_LOCATION, var5 + 119, var6 + 15 + var7, 176 + (this.isScrollBarActive() ? 0 : 12), 0, 12, 15);
-      int var8 = this.leftPos + 52;
-      int var9 = this.topPos + 14;
-      int var10 = this.startIndex + 12;
-      this.renderButtons(var1, var3, var4, var8, var9, var10);
-      this.renderRecipes(var1, var8, var9, var10);
+      ResourceLocation var8 = this.isScrollBarActive() ? SCROLLER_SPRITE : SCROLLER_DISABLED_SPRITE;
+      var1.blitSprite(var8, var5 + 119, var6 + 15 + var7, 12, 15);
+      int var9 = this.leftPos + 52;
+      int var10 = this.topPos + 14;
+      int var11 = this.startIndex + 12;
+      this.renderButtons(var1, var3, var4, var9, var10, var11);
+      this.renderRecipes(var1, var9, var10, var11);
    }
 
    @Override
@@ -69,7 +75,9 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
             int var10 = var4 + var9 % 4 * 16;
             int var11 = var5 + var9 / 4 * 18 + 2;
             if (var2 >= var10 && var2 < var10 + 16 && var3 >= var11 && var3 < var11 + 18) {
-               var1.renderTooltip(this.font, ((StonecutterRecipe)var7.get(var8)).getResultItem(this.minecraft.level.registryAccess()), var2, var3);
+               var1.renderTooltip(
+                  this.font, ((StonecutterRecipe)((RecipeHolder)var7.get(var8)).value()).getResultItem(this.minecraft.level.registryAccess()), var2, var3
+               );
             }
          }
       }
@@ -81,14 +89,16 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
          int var9 = var4 + var8 % 4 * 16;
          int var10 = var8 / 4;
          int var11 = var5 + var10 * 18 + 2;
-         int var12 = this.imageHeight;
+         ResourceLocation var12;
          if (var7 == this.menu.getSelectedRecipeIndex()) {
-            var12 += 18;
+            var12 = RECIPE_SELECTED_SPRITE;
          } else if (var2 >= var9 && var3 >= var11 && var2 < var9 + 16 && var3 < var11 + 18) {
-            var12 += 36;
+            var12 = RECIPE_HIGHLIGHTED_SPRITE;
+         } else {
+            var12 = RECIPE_SPRITE;
          }
 
-         var1.blit(BG_LOCATION, var9, var11 - 1, 0, var12, 16, 18);
+         var1.blitSprite(var12, var9, var11 - 1, 16, 18);
       }
    }
 
@@ -100,7 +110,7 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
          int var8 = var2 + var7 % 4 * 16;
          int var9 = var7 / 4;
          int var10 = var3 + var9 * 18 + 2;
-         var1.renderItem(((StonecutterRecipe)var5.get(var6)).getResultItem(this.minecraft.level.registryAccess()), var8, var10);
+         var1.renderItem(((StonecutterRecipe)((RecipeHolder)var5.get(var6)).value()).getResultItem(this.minecraft.level.registryAccess()), var8, var10);
       }
    }
 
@@ -148,12 +158,12 @@ public class StonecutterScreen extends AbstractContainerScreen<StonecutterMenu> 
    }
 
    @Override
-   public boolean mouseScrolled(double var1, double var3, double var5) {
+   public boolean mouseScrolled(double var1, double var3, double var5, double var7) {
       if (this.isScrollBarActive()) {
-         int var7 = this.getOffscreenRows();
-         float var8 = (float)var5 / (float)var7;
-         this.scrollOffs = Mth.clamp(this.scrollOffs - var8, 0.0F, 1.0F);
-         this.startIndex = (int)((double)(this.scrollOffs * (float)var7) + 0.5) * 4;
+         int var9 = this.getOffscreenRows();
+         float var10 = (float)var7 / (float)var9;
+         this.scrollOffs = Mth.clamp(this.scrollOffs - var10, 0.0F, 1.0F);
+         this.startIndex = (int)((double)(this.scrollOffs * (float)var9) + 0.5) * 4;
       }
 
       return true;

@@ -24,6 +24,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
@@ -33,7 +34,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.StringUtil;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -66,18 +66,11 @@ public final class NbtUtils {
 
    @Nullable
    public static GameProfile readGameProfile(CompoundTag var0) {
-      String var1 = null;
-      UUID var2 = null;
-      if (var0.contains("Name", 8)) {
-         var1 = var0.getString("Name");
-      }
-
-      if (var0.hasUUID("Id")) {
-         var2 = var0.getUUID("Id");
-      }
+      UUID var1 = var0.hasUUID("Id") ? var0.getUUID("Id") : Util.NIL_UUID;
+      String var2 = var0.getString("Name");
 
       try {
-         GameProfile var3 = new GameProfile(var2, var1);
+         GameProfile var3 = new GameProfile(var1, var2);
          if (var0.contains("Properties", 10)) {
             CompoundTag var4 = var0.getCompound("Properties");
 
@@ -103,11 +96,11 @@ public final class NbtUtils {
    }
 
    public static CompoundTag writeGameProfile(CompoundTag var0, GameProfile var1) {
-      if (!StringUtil.isNullOrEmpty(var1.getName())) {
+      if (!var1.getName().isEmpty()) {
          var0.putString("Name", var1.getName());
       }
 
-      if (var1.getId() != null) {
+      if (!var1.getId().equals(Util.NIL_UUID)) {
          var0.putUUID("Id", var1.getId());
       }
 
@@ -119,9 +112,10 @@ public final class NbtUtils {
 
             for(Property var7 : var1.getProperties().get(var4)) {
                CompoundTag var8 = new CompoundTag();
-               var8.putString("Value", var7.getValue());
-               if (var7.hasSignature()) {
-                  var8.putString("Signature", var7.getSignature());
+               var8.putString("Value", var7.value());
+               String var9 = var7.signature();
+               if (var9 != null) {
+                  var8.putString("Signature", var9);
                }
 
                var5.add(var8);
@@ -148,41 +142,42 @@ public final class NbtUtils {
          return false;
       } else if (!var0.getClass().equals(var1.getClass())) {
          return false;
-      } else if (var0 instanceof CompoundTag var9) {
-         CompoundTag var10 = (CompoundTag)var1;
+      } else if (var0 instanceof CompoundTag var3) {
+         CompoundTag var11 = (CompoundTag)var1;
 
-         for(String var12 : var9.getAllKeys()) {
-            Tag var13 = var9.get(var12);
-            if (!compareNbt(var13, var10.get(var12), var2)) {
+         for(String var13 : var3.getAllKeys()) {
+            Tag var14 = var3.get(var13);
+            if (!compareNbt(var14, var11.get(var13), var2)) {
                return false;
             }
          }
 
          return true;
-      } else if (var0 instanceof ListTag var3 && var2) {
-         ListTag var4 = (ListTag)var1;
-         if (var3.isEmpty()) {
-            return var4.isEmpty();
-         } else {
-            for(int var5 = 0; var5 < var3.size(); ++var5) {
-               Tag var6 = var3.get(var5);
-               boolean var7 = false;
+      } else {
+         if (var0 instanceof ListTag var4 && var2) {
+            ListTag var5 = (ListTag)var1;
+            if (var4.isEmpty()) {
+               return var5.isEmpty();
+            }
 
-               for(int var8 = 0; var8 < var4.size(); ++var8) {
-                  if (compareNbt(var6, var4.get(var8), var2)) {
-                     var7 = true;
+            for(Tag var7 : var4) {
+               boolean var8 = false;
+
+               for(Tag var10 : var5) {
+                  if (compareNbt(var7, var10, var2)) {
+                     var8 = true;
                      break;
                   }
                }
 
-               if (!var7) {
+               if (!var8) {
                   return false;
                }
             }
 
             return true;
          }
-      } else {
+
          return var0.equals(var1);
       }
    }
@@ -251,7 +246,7 @@ public final class NbtUtils {
       if (var5.isPresent()) {
          return (S)var0.setValue(var1, (Comparable)var5.get());
       } else {
-         LOGGER.warn("Unable to read property: {} with value: {} for blockstate: {}", new Object[]{var2, var3.getString(var2), var4.toString()});
+         LOGGER.warn("Unable to read property: {} with value: {} for blockstate: {}", new Object[]{var2, var3.getString(var2), var4});
          return (S)var0;
       }
    }

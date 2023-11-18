@@ -84,10 +84,10 @@ public class CycleButton<T> extends AbstractButton {
    }
 
    @Override
-   public boolean mouseScrolled(double var1, double var3, double var5) {
-      if (var5 > 0.0) {
+   public boolean mouseScrolled(double var1, double var3, double var5, double var7) {
+      if (var7 > 0.0) {
          this.cycleValue(-1);
-      } else if (var5 < 0.0) {
+      } else if (var7 < 0.0) {
          this.cycleValue(1);
       }
 

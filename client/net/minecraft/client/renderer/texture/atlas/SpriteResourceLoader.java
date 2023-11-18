@@ -1,82 +1,57 @@
 package net.minecraft.client.renderer.texture.atlas;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
-import com.google.gson.JsonParser;
+import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.Dynamic;
-import com.mojang.serialization.JsonOps;
-import java.io.BufferedReader;
-import java.util.ArrayList;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
-import net.minecraft.client.renderer.texture.MissingTextureAtlasSprite;
+import javax.annotation.Nullable;
 import net.minecraft.client.renderer.texture.SpriteContents;
-import net.minecraft.resources.FileToIdConverter;
+import net.minecraft.client.resources.metadata.animation.AnimationMetadataSection;
+import net.minecraft.client.resources.metadata.animation.FrameSize;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.metadata.MetadataSectionSerializer;
 import net.minecraft.server.packs.resources.Resource;
-import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.ResourceMetadata;
+import net.minecraft.util.Mth;
 import org.slf4j.Logger;
 
-public class SpriteResourceLoader {
-   private static final Logger LOGGER = LogUtils.getLogger();
-   private static final FileToIdConverter ATLAS_INFO_CONVERTER = new FileToIdConverter("atlases", ".json");
-   private final List<SpriteSource> sources;
+@FunctionalInterface
+public interface SpriteResourceLoader {
+   Logger LOGGER = LogUtils.getLogger();
 
-   private SpriteResourceLoader(List<SpriteSource> var1) {
-      super();
-      this.sources = var1;
-   }
-
-   public List<Supplier<SpriteContents>> list(ResourceManager var1) {
-      final HashMap var2 = new HashMap();
-      SpriteSource.Output var3 = new SpriteSource.Output() {
-         @Override
-         public void add(ResourceLocation var1, SpriteSource.SpriteSupplier var2x) {
-            SpriteSource.SpriteSupplier var3 = var2.put(var1, var2x);
-            if (var3 != null) {
-               var3.discard();
-            }
+   static SpriteResourceLoader create(Collection<MetadataSectionSerializer<?>> var0) {
+      return (var1, var2) -> {
+         ResourceMetadata var3;
+         try {
+            var3 = var2.metadata().copySections(var0);
+         } catch (Exception var9) {
+            LOGGER.error("Unable to parse metadata from {}", var1, var9);
+            return null;
          }
 
-         @Override
-         public void removeAll(Predicate<ResourceLocation> var1) {
-            Iterator var2x = var2.entrySet().iterator();
+         NativeImage var4;
+         try (InputStream var5 = var2.open()) {
+            var4 = NativeImage.read(var5);
+         } catch (IOException var11) {
+            LOGGER.error("Using missing texture, unable to load {}", var1, var11);
+            return null;
+         }
 
-            while(var2x.hasNext()) {
-               Entry var3 = (Entry)var2x.next();
-               if (var1.test((ResourceLocation)var3.getKey())) {
-                  ((SpriteSource.SpriteSupplier)var3.getValue()).discard();
-                  var2x.remove();
-               }
-            }
+         AnimationMetadataSection var12 = var3.getSection(AnimationMetadataSection.SERIALIZER).orElse(AnimationMetadataSection.EMPTY);
+         FrameSize var6 = var12.calculateFrameSize(var4.getWidth(), var4.getHeight());
+         if (Mth.isMultipleOf(var4.getWidth(), var6.width()) && Mth.isMultipleOf(var4.getHeight(), var6.height())) {
+            return new SpriteContents(var1, var6, var4, var3);
+         } else {
+            LOGGER.error(
+               "Image {} size {},{} is not multiple of frame size {},{}", new Object[]{var1, var4.getWidth(), var4.getHeight(), var6.width(), var6.height()}
+            );
+            var4.close();
+            return null;
          }
       };
-      this.sources.forEach(var2x -> var2x.run(var1, var3));
-      Builder var4 = ImmutableList.builder();
-      var4.add(MissingTextureAtlasSprite::create);
-      var4.addAll(var2.values());
-      return var4.build();
    }
 
-   public static SpriteResourceLoader load(ResourceManager var0, ResourceLocation var1) {
-      ResourceLocation var2 = ATLAS_INFO_CONVERTER.idToFile(var1);
-      ArrayList var3 = new ArrayList();
-
-      for(Resource var5 : var0.getResourceStack(var2)) {
-         try (BufferedReader var6 = var5.openAsReader()) {
-            Dynamic var7 = new Dynamic(JsonOps.INSTANCE, JsonParser.parseReader(var6));
-            var3.addAll((Collection)SpriteSources.FILE_CODEC.parse(var7).getOrThrow(false, LOGGER::error));
-         } catch (Exception var11) {
-            LOGGER.warn("Failed to parse atlas definition {} in pack {}", new Object[]{var2, var5.sourcePackId(), var11});
-         }
-      }
-
-      return new SpriteResourceLoader(var3);
-   }
+   @Nullable
+   SpriteContents loadSprite(ResourceLocation var1, Resource var2);
 }

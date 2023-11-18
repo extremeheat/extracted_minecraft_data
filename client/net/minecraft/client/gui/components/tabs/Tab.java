@@ -11,7 +11,4 @@ public interface Tab {
    void visitChildren(Consumer<AbstractWidget> var1);
 
    void doLayout(ScreenRectangle var1);
-
-   default void tick() {
-   }
 }

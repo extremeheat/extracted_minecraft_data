@@ -16,6 +16,7 @@ import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.StateSwitchingButton;
 import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -33,9 +34,18 @@ import net.minecraft.world.inventory.RecipeBookType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 
 public class RecipeBookComponent implements PlaceRecipe<Ingredient>, Renderable, GuiEventListener, NarratableEntry, RecipeShownListener {
+   public static final WidgetSprites RECIPE_BUTTON_SPRITES = new WidgetSprites(
+      new ResourceLocation("recipe_book/button"), new ResourceLocation("recipe_book/button_highlighted")
+   );
+   private static final WidgetSprites FILTER_BUTTON_SPRITES = new WidgetSprites(
+      new ResourceLocation("recipe_book/filter_enabled"),
+      new ResourceLocation("recipe_book/filter_disabled"),
+      new ResourceLocation("recipe_book/filter_enabled_highlighted"),
+      new ResourceLocation("recipe_book/filter_disabled_highlighted")
+   );
    protected static final ResourceLocation RECIPE_BOOK_LOCATION = new ResourceLocation("textures/gui/recipe_book.png");
    private static final Component SEARCH_HINT = Component.translatable("gui.recipebook.search_hint")
       .withStyle(ChatFormatting.ITALIC)
@@ -93,7 +103,7 @@ public class RecipeBookComponent implements PlaceRecipe<Ingredient>, Renderable,
       this.minecraft.player.getInventory().fillStackedContents(this.stackedContents);
       this.menu.fillCraftSlotsStackedContents(this.stackedContents);
       String var3 = this.searchBox != null ? this.searchBox.getValue() : "";
-      this.searchBox = new EditBox(this.minecraft.font, var1 + 26, var2 + 14, 79, 9 + 3, Component.translatable("itemGroup.search"));
+      this.searchBox = new EditBox(this.minecraft.font, var1 + 25, var2 + 13, 81, 9 + 5, Component.translatable("itemGroup.search"));
       this.searchBox.setMaxLength(50);
       this.searchBox.setVisible(true);
       this.searchBox.setTextColor(16777215);
@@ -128,7 +138,7 @@ public class RecipeBookComponent implements PlaceRecipe<Ingredient>, Renderable,
    }
 
    protected void initFilterButtonTextures() {
-      this.filterButton.initTextureValues(152, 41, 28, 18, RECIPE_BOOK_LOCATION);
+      this.filterButton.initTextureValues(FILTER_BUTTON_SPRITES);
    }
 
    public int updateScreenPosition(int var1, int var2) {
@@ -227,8 +237,6 @@ public class RecipeBookComponent implements PlaceRecipe<Ingredient>, Renderable,
             this.updateStackedContents();
             this.timesInventoryChanged = this.minecraft.player.getInventory().getTimesChanged();
          }
-
-         this.searchBox.tick();
       }
    }
 
@@ -295,7 +303,7 @@ public class RecipeBookComponent implements PlaceRecipe<Ingredient>, Renderable,
    public boolean mouseClicked(double var1, double var3, int var5) {
       if (this.isVisible() && !this.minecraft.player.isSpectator()) {
          if (this.recipeBookPage.mouseClicked(var1, var3, var5, (this.width - 147) / 2 - this.xOffset, (this.height - 166) / 2, 147, 166)) {
-            Recipe var9 = this.recipeBookPage.getLastClickedRecipe();
+            RecipeHolder var9 = this.recipeBookPage.getLastClickedRecipe();
             RecipeCollection var10 = this.recipeBookPage.getLastClickedRecipeCollection();
             if (var9 != null && var10 != null) {
                if (!var10.isCraftable(var9) && this.ghostRecipe.getRecipe() == var9) {
@@ -457,17 +465,17 @@ public class RecipeBookComponent implements PlaceRecipe<Ingredient>, Renderable,
    }
 
    @Override
-   public void recipesShown(List<Recipe<?>> var1) {
-      for(Recipe var3 : var1) {
+   public void recipesShown(List<RecipeHolder<?>> var1) {
+      for(RecipeHolder var3 : var1) {
          this.minecraft.player.removeRecipeHighlight(var3);
       }
    }
 
-   public void setupGhostRecipe(Recipe<?> var1, List<Slot> var2) {
-      ItemStack var3 = var1.getResultItem(this.minecraft.level.registryAccess());
+   public void setupGhostRecipe(RecipeHolder<?> var1, List<Slot> var2) {
+      ItemStack var3 = var1.value().getResultItem(this.minecraft.level.registryAccess());
       this.ghostRecipe.setRecipe(var1);
       this.ghostRecipe.addIngredient(Ingredient.of(var3), ((Slot)var2.get(0)).x, ((Slot)var2.get(0)).y);
-      this.placeRecipe(this.menu.getGridWidth(), this.menu.getGridHeight(), this.menu.getResultSlotIndex(), var1, var1.getIngredients().iterator(), 0);
+      this.placeRecipe(this.menu.getGridWidth(), this.menu.getGridHeight(), this.menu.getResultSlotIndex(), var1, var1.value().getIngredients().iterator(), 0);
    }
 
    @Override

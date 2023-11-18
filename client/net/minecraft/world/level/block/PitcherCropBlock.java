@@ -42,15 +42,6 @@ public class PitcherCropBlock extends DoublePlantBlock implements BonemealableBl
       super(var1);
    }
 
-   private boolean isMaxAge(BlockState var1) {
-      return var1.getValue(AGE) >= 4;
-   }
-
-   @Override
-   public boolean isRandomlyTicking(BlockState var1) {
-      return var1.getValue(HALF) == DoubleBlockHalf.LOWER && !this.isMaxAge(var1);
-   }
-
    @Nullable
    @Override
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
@@ -58,8 +49,10 @@ public class PitcherCropBlock extends DoublePlantBlock implements BonemealableBl
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      return !var1.canSurvive(var4, var5) ? Blocks.AIR.defaultBlockState() : var1;
+   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+      return var1.getValue(HALF) == DoubleBlockHalf.UPPER
+         ? UPPER_SHAPE_BY_AGE[Math.min(Math.abs(4 - (var1.getValue(AGE) + 1)), UPPER_SHAPE_BY_AGE.length - 1)]
+         : LOWER_SHAPE_BY_AGE[var1.getValue(AGE)];
    }
 
    @Override
@@ -72,14 +65,17 @@ public class PitcherCropBlock extends DoublePlantBlock implements BonemealableBl
    }
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      if (!isLower(var1)) {
-         return super.canSurvive(var1, var2, var3);
+   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+      if (isDouble(var1.getValue(AGE))) {
+         return super.updateShape(var1, var2, var3, var4, var5, var6);
       } else {
-         return this.mayPlaceOn(var2.getBlockState(var3.below()), var2, var3.below())
-            && sufficientLight(var2, var3)
-            && (var1.getValue(AGE) < 3 || isUpper(var2.getBlockState(var3.above())));
+         return var1.canSurvive(var4, var5) ? var1 : Blocks.AIR.defaultBlockState();
       }
+   }
+
+   @Override
+   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+      return isLower(var1) && !sufficientLight(var2, var3) ? false : super.canSurvive(var1, var2, var3);
    }
 
    @Override
@@ -91,13 +87,6 @@ public class PitcherCropBlock extends DoublePlantBlock implements BonemealableBl
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(AGE);
       super.createBlockStateDefinition(var1);
-   }
-
-   @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
-      return var1.getValue(HALF) == DoubleBlockHalf.UPPER
-         ? UPPER_SHAPE_BY_AGE[Math.min(Math.abs(4 - (var1.getValue(AGE) + 1)), UPPER_SHAPE_BY_AGE.length - 1)]
-         : LOWER_SHAPE_BY_AGE[var1.getValue(AGE)];
    }
 
    @Override
@@ -119,6 +108,11 @@ public class PitcherCropBlock extends DoublePlantBlock implements BonemealableBl
    }
 
    @Override
+   public boolean isRandomlyTicking(BlockState var1) {
+      return var1.getValue(HALF) == DoubleBlockHalf.LOWER && !this.isMaxAge(var1);
+   }
+
+   @Override
    public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       float var5 = CropBlock.getGrowthSpeed(this, var2, var3);
       boolean var6 = var4.nextInt((int)(25.0F / var5) + 1) == 0;
@@ -130,12 +124,10 @@ public class PitcherCropBlock extends DoublePlantBlock implements BonemealableBl
    private void grow(ServerLevel var1, BlockState var2, BlockPos var3, int var4) {
       int var5 = Math.min(var2.getValue(AGE) + var4, 4);
       if (this.canGrow(var1, var3, var2, var5)) {
-         var1.setBlock(var3, var2.setValue(AGE, Integer.valueOf(var5)), 2);
-         if (var5 >= 3) {
-            BlockPos var6 = var3.above();
-            var1.setBlock(
-               var6, copyWaterloggedFrom(var1, var3, this.defaultBlockState().setValue(AGE, Integer.valueOf(var5)).setValue(HALF, DoubleBlockHalf.UPPER)), 3
-            );
+         BlockState var6 = var2.setValue(AGE, Integer.valueOf(var5));
+         var1.setBlock(var3, var6, 2);
+         if (isDouble(var5)) {
+            var1.setBlock(var3.above(), var6.setValue(HALF, DoubleBlockHalf.UPPER), 3);
          }
       }
    }
@@ -146,19 +138,23 @@ public class PitcherCropBlock extends DoublePlantBlock implements BonemealableBl
    }
 
    private static boolean sufficientLight(LevelReader var0, BlockPos var1) {
-      return var0.getRawBrightness(var1, 0) >= 8 || var0.canSeeSky(var1);
+      return CropBlock.hasSufficientLight(var0, var1);
    }
 
    private static boolean isLower(BlockState var0) {
       return var0.is(Blocks.PITCHER_CROP) && var0.getValue(HALF) == DoubleBlockHalf.LOWER;
    }
 
-   private static boolean isUpper(BlockState var0) {
-      return var0.is(Blocks.PITCHER_CROP) && var0.getValue(HALF) == DoubleBlockHalf.UPPER;
+   private static boolean isDouble(int var0) {
+      return var0 >= 3;
    }
 
    private boolean canGrow(LevelReader var1, BlockPos var2, BlockState var3, int var4) {
-      return !this.isMaxAge(var3) && sufficientLight(var1, var2) && (var4 < 3 || canGrowInto(var1, var2.above()));
+      return !this.isMaxAge(var3) && sufficientLight(var1, var2) && (!isDouble(var4) || canGrowInto(var1, var2.above()));
+   }
+
+   private boolean isMaxAge(BlockState var1) {
+      return var1.getValue(AGE) >= 4;
    }
 
    @Nullable
@@ -173,9 +169,9 @@ public class PitcherCropBlock extends DoublePlantBlock implements BonemealableBl
    }
 
    @Override
-   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
-      PitcherCropBlock.PosAndState var5 = this.getLowerHalf(var1, var2, var3);
-      return var5 == null ? false : this.canGrow(var1, var5.pos, var5.state, var5.state.getValue(AGE) + 1);
+   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
+      PitcherCropBlock.PosAndState var4 = this.getLowerHalf(var1, var2, var3);
+      return var4 == null ? false : this.canGrow(var1, var4.pos, var4.state, var4.state.getValue(AGE) + 1);
    }
 
    @Override

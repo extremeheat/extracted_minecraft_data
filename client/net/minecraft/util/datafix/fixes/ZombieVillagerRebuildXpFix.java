@@ -14,7 +14,7 @@ public class ZombieVillagerRebuildXpFix extends NamedEntityFix {
    protected Typed<?> fix(Typed<?> var1) {
       return var1.update(DSL.remainderFinder(), var0 -> {
          Optional var1x = var0.get("Xp").asNumber().result();
-         if (!var1x.isPresent()) {
+         if (var1x.isEmpty()) {
             int var2 = var0.get("VillagerData").get("level").asInt(1);
             return var0.set("Xp", var0.createInt(VillagerRebuildLevelAndXpFix.getMinXpPerLevel(var2)));
          } else {

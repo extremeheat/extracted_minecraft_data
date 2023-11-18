@@ -27,7 +27,8 @@ public class MouseHandler {
    private final SmoothDouble smoothTurnY = new SmoothDouble();
    private double accumulatedDX;
    private double accumulatedDY;
-   private double accumulatedScroll;
+   private double accumulatedScrollX;
+   private double accumulatedScrollY;
    private double lastMouseEventTime = 4.9E-324;
    private boolean mouseGrabbed;
 
@@ -117,34 +118,45 @@ public class MouseHandler {
 
    private void onScroll(long var1, double var3, double var5) {
       if (var1 == Minecraft.getInstance().getWindow().getWindow()) {
-         double var7 = (this.minecraft.options.discreteMouseScroll().get() ? Math.signum(var5) : var5) * this.minecraft.options.mouseWheelSensitivity().get();
+         boolean var7 = this.minecraft.options.discreteMouseScroll().get();
+         double var8 = this.minecraft.options.mouseWheelSensitivity().get();
+         double var10 = (var7 ? Math.signum(var3) : var3) * var8;
+         double var12 = (var7 ? Math.signum(var5) : var5) * var8;
          if (this.minecraft.getOverlay() == null) {
             if (this.minecraft.screen != null) {
-               double var9 = this.xpos * (double)this.minecraft.getWindow().getGuiScaledWidth() / (double)this.minecraft.getWindow().getScreenWidth();
-               double var11 = this.ypos * (double)this.minecraft.getWindow().getGuiScaledHeight() / (double)this.minecraft.getWindow().getScreenHeight();
-               this.minecraft.screen.mouseScrolled(var9, var11, var7);
+               double var14 = this.xpos * (double)this.minecraft.getWindow().getGuiScaledWidth() / (double)this.minecraft.getWindow().getScreenWidth();
+               double var16 = this.ypos * (double)this.minecraft.getWindow().getGuiScaledHeight() / (double)this.minecraft.getWindow().getScreenHeight();
+               this.minecraft.screen.mouseScrolled(var14, var16, var10, var12);
                this.minecraft.screen.afterMouseAction();
             } else if (this.minecraft.player != null) {
-               if (this.accumulatedScroll != 0.0 && Math.signum(var7) != Math.signum(this.accumulatedScroll)) {
-                  this.accumulatedScroll = 0.0;
+               if (this.accumulatedScrollX != 0.0 && Math.signum(var10) != Math.signum(this.accumulatedScrollX)) {
+                  this.accumulatedScrollX = 0.0;
                }
 
-               this.accumulatedScroll += var7;
-               int var13 = (int)this.accumulatedScroll;
-               if (var13 == 0) {
+               if (this.accumulatedScrollY != 0.0 && Math.signum(var12) != Math.signum(this.accumulatedScrollY)) {
+                  this.accumulatedScrollY = 0.0;
+               }
+
+               this.accumulatedScrollX += var10;
+               this.accumulatedScrollY += var12;
+               int var18 = (int)this.accumulatedScrollX;
+               int var15 = (int)this.accumulatedScrollY;
+               if (var18 == 0 && var15 == 0) {
                   return;
                }
 
-               this.accumulatedScroll -= (double)var13;
+               this.accumulatedScrollX -= (double)var18;
+               this.accumulatedScrollY -= (double)var15;
+               int var19 = var15 == 0 ? -var18 : var15;
                if (this.minecraft.player.isSpectator()) {
                   if (this.minecraft.gui.getSpectatorGui().isMenuActive()) {
-                     this.minecraft.gui.getSpectatorGui().onMouseScrolled(-var13);
+                     this.minecraft.gui.getSpectatorGui().onMouseScrolled(-var19);
                   } else {
-                     float var10 = Mth.clamp(this.minecraft.player.getAbilities().getFlyingSpeed() + (float)var13 * 0.005F, 0.0F, 0.2F);
-                     this.minecraft.player.getAbilities().setFlyingSpeed(var10);
+                     float var17 = Mth.clamp(this.minecraft.player.getAbilities().getFlyingSpeed() + (float)var15 * 0.005F, 0.0F, 0.2F);
+                     this.minecraft.player.getAbilities().setFlyingSpeed(var17);
                   }
                } else {
-                  this.minecraft.player.getInventory().swapPaint((double)var13);
+                  this.minecraft.player.getInventory().swapPaint((double)var19);
                }
             }
          }

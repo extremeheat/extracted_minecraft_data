@@ -1277,9 +1277,9 @@ public class CreativeModeTabs {
                   var1.accept(Items.MUSIC_DISC_11);
                   var1.accept(Items.MUSIC_DISC_WAIT);
                   var1.accept(Items.MUSIC_DISC_OTHERSIDE);
+                  var1.accept(Items.MUSIC_DISC_RELIC);
                   var1.accept(Items.MUSIC_DISC_5);
                   var1.accept(Items.MUSIC_DISC_PIGSTEP);
-                  var1.accept(Items.MUSIC_DISC_RELIC);
                }
             )
             .build()
@@ -1752,7 +1752,7 @@ public class CreativeModeTabs {
 
       for(SuspiciousEffectHolder var5 : var2) {
          ItemStack var6 = new ItemStack(Items.SUSPICIOUS_STEW);
-         SuspiciousStewItem.saveMobEffect(var6, var5.getSuspiciousEffect(), var5.getEffectDuration());
+         SuspiciousStewItem.saveMobEffects(var6, var5.getSuspiciousEffects());
          var3.add(var6);
       }
 

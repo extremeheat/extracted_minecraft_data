@@ -6,7 +6,6 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.BlockSource;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Position;
 import net.minecraft.core.particles.ParticleTypes;
@@ -16,7 +15,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
@@ -65,13 +63,13 @@ import net.minecraft.world.level.block.TntBlock;
 import net.minecraft.world.level.block.WitherSkullBlock;
 import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.DispenserBlockEntity;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.RotationSegment;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
 public interface DispenseItemBehavior {
@@ -179,18 +177,18 @@ public interface DispenseItemBehavior {
       DefaultDispenseItemBehavior var0 = new DefaultDispenseItemBehavior() {
          @Override
          public ItemStack execute(BlockSource var1, ItemStack var2) {
-            Direction var3 = var1.getBlockState().getValue(DispenserBlock.FACING);
+            Direction var3 = var1.state().getValue(DispenserBlock.FACING);
             EntityType var4 = ((SpawnEggItem)var2.getItem()).getType(var2.getTag());
 
             try {
-               var4.spawn(var1.getLevel(), var2, null, var1.getPos().relative(var3), MobSpawnType.DISPENSER, var3 != Direction.UP, false);
+               var4.spawn(var1.level(), var2, null, var1.pos().relative(var3), MobSpawnType.DISPENSER, var3 != Direction.UP, false);
             } catch (Exception var6) {
-               LOGGER.error("Error while dispensing spawn egg from dispenser at {}", var1.getPos(), var6);
+               LOGGER.error("Error while dispensing spawn egg from dispenser at {}", var1.pos(), var6);
                return ItemStack.EMPTY;
             }
 
             var2.shrink(1);
-            var1.getLevel().gameEvent(null, GameEvent.ENTITY_PLACE, var1.getPos());
+            var1.level().gameEvent(null, GameEvent.ENTITY_PLACE, var1.pos());
             return var2;
          }
       };
@@ -202,9 +200,9 @@ public interface DispenseItemBehavior {
       DispenserBlock.registerBehavior(Items.ARMOR_STAND, new DefaultDispenseItemBehavior() {
          @Override
          public ItemStack execute(BlockSource var1, ItemStack var2) {
-            Direction var3 = var1.getBlockState().getValue(DispenserBlock.FACING);
-            BlockPos var4 = var1.getPos().relative(var3);
-            ServerLevel var5 = var1.getLevel();
+            Direction var3 = var1.state().getValue(DispenserBlock.FACING);
+            BlockPos var4 = var1.pos().relative(var3);
+            ServerLevel var5 = var1.level();
             Consumer var6 = EntityType.appendDefaultStackConfig(var1x -> var1x.setYRot(var3.toYRot()), var5, var2, null);
             ArmorStand var7 = EntityType.ARMOR_STAND.spawn(var5, var2.getTag(), var6, var4, MobSpawnType.DISPENSER, false, false);
             if (var7 != null) {
@@ -217,8 +215,8 @@ public interface DispenseItemBehavior {
       DispenserBlock.registerBehavior(Items.SADDLE, new OptionalDispenseItemBehavior() {
          @Override
          public ItemStack execute(BlockSource var1, ItemStack var2) {
-            BlockPos var3 = var1.getPos().relative(var1.getBlockState().getValue(DispenserBlock.FACING));
-            List var4 = var1.getLevel().getEntitiesOfClass(LivingEntity.class, new AABB(var3), var0 -> {
+            BlockPos var3 = var1.pos().relative(var1.state().getValue(DispenserBlock.FACING));
+            List var4 = var1.level().getEntitiesOfClass(LivingEntity.class, new AABB(var3), var0 -> {
                if (!(var0 instanceof Saddleable)) {
                   return false;
                } else {
@@ -239,9 +237,9 @@ public interface DispenseItemBehavior {
       OptionalDispenseItemBehavior var8 = new OptionalDispenseItemBehavior() {
          @Override
          protected ItemStack execute(BlockSource var1, ItemStack var2) {
-            BlockPos var3 = var1.getPos().relative(var1.getBlockState().getValue(DispenserBlock.FACING));
+            BlockPos var3 = var1.pos().relative(var1.state().getValue(DispenserBlock.FACING));
 
-            for(AbstractHorse var6 : var1.getLevel().getEntitiesOfClass(AbstractHorse.class, new AABB(var3), var0 -> var0.isAlive() && var0.canWearArmor())) {
+            for(AbstractHorse var6 : var1.level().getEntitiesOfClass(AbstractHorse.class, new AABB(var3), var0 -> var0.isAlive() && var0.canWearArmor())) {
                if (var6.isArmor(var2) && !var6.isWearingArmor() && var6.isTamed()) {
                   var6.getSlot(401).set(var2.split(1));
                   this.setSuccess(true);
@@ -277,9 +275,9 @@ public interface DispenseItemBehavior {
          new OptionalDispenseItemBehavior() {
             @Override
             public ItemStack execute(BlockSource var1, ItemStack var2) {
-               BlockPos var3 = var1.getPos().relative(var1.getBlockState().getValue(DispenserBlock.FACING));
+               BlockPos var3 = var1.pos().relative(var1.state().getValue(DispenserBlock.FACING));
    
-               for(AbstractChestedHorse var6 : var1.getLevel()
+               for(AbstractChestedHorse var6 : var1.level()
                   .getEntitiesOfClass(AbstractChestedHorse.class, new AABB(var3), var0 -> var0.isAlive() && !var0.hasChest())) {
                   if (var6.isTamed() && var6.getSlot(499).set(var2)) {
                      var2.shrink(1);
@@ -295,29 +293,29 @@ public interface DispenseItemBehavior {
       DispenserBlock.registerBehavior(Items.FIREWORK_ROCKET, new DefaultDispenseItemBehavior() {
          @Override
          public ItemStack execute(BlockSource var1, ItemStack var2) {
-            Direction var3 = var1.getBlockState().getValue(DispenserBlock.FACING);
-            FireworkRocketEntity var4 = new FireworkRocketEntity(var1.getLevel(), var2, var1.x(), var1.y(), var1.x(), true);
-            DispenseItemBehavior.setEntityPokingOutOfBlock(var1, var4, var3);
-            var4.shoot((double)var3.getStepX(), (double)var3.getStepY(), (double)var3.getStepZ(), 0.5F, 1.0F);
-            var1.getLevel().addFreshEntity(var4);
+            Direction var3 = var1.state().getValue(DispenserBlock.FACING);
+            Vec3 var4 = DispenseItemBehavior.getEntityPokingOutOfBlockPos(var1, EntityType.FIREWORK_ROCKET, var3);
+            FireworkRocketEntity var5 = new FireworkRocketEntity(var1.level(), var2, var4.x(), var4.y(), var4.z(), true);
+            var5.shoot((double)var3.getStepX(), (double)var3.getStepY(), (double)var3.getStepZ(), 0.5F, 1.0F);
+            var1.level().addFreshEntity(var5);
             var2.shrink(1);
             return var2;
          }
 
          @Override
          protected void playSound(BlockSource var1) {
-            var1.getLevel().levelEvent(1004, var1.getPos(), 0);
+            var1.level().levelEvent(1004, var1.pos(), 0);
          }
       });
       DispenserBlock.registerBehavior(Items.FIRE_CHARGE, new DefaultDispenseItemBehavior() {
          @Override
          public ItemStack execute(BlockSource var1, ItemStack var2) {
-            Direction var3 = var1.getBlockState().getValue(DispenserBlock.FACING);
+            Direction var3 = var1.state().getValue(DispenserBlock.FACING);
             Position var4 = DispenserBlock.getDispensePosition(var1);
             double var5 = var4.x() + (double)((float)var3.getStepX() * 0.3F);
             double var7 = var4.y() + (double)((float)var3.getStepY() * 0.3F);
             double var9 = var4.z() + (double)((float)var3.getStepZ() * 0.3F);
-            ServerLevel var11 = var1.getLevel();
+            ServerLevel var11 = var1.level();
             RandomSource var12 = var11.random;
             double var13 = var12.triangle((double)var3.getStepX(), 0.11485000000000001);
             double var15 = var12.triangle((double)var3.getStepY(), 0.11485000000000001);
@@ -330,7 +328,7 @@ public interface DispenseItemBehavior {
 
          @Override
          protected void playSound(BlockSource var1) {
-            var1.getLevel().levelEvent(1018, var1.getPos(), 0);
+            var1.level().levelEvent(1018, var1.pos(), 0);
          }
       });
       DispenserBlock.registerBehavior(Items.OAK_BOAT, new BoatDispenseItemBehavior(Boat.Type.OAK));
@@ -357,8 +355,8 @@ public interface DispenseItemBehavior {
          @Override
          public ItemStack execute(BlockSource var1, ItemStack var2) {
             DispensibleContainerItem var3 = (DispensibleContainerItem)var2.getItem();
-            BlockPos var4 = var1.getPos().relative(var1.getBlockState().getValue(DispenserBlock.FACING));
-            ServerLevel var5 = var1.getLevel();
+            BlockPos var4 = var1.pos().relative(var1.state().getValue(DispenserBlock.FACING));
+            ServerLevel var5 = var1.level();
             if (var3.emptyContents(null, var5, var4, null)) {
                var3.checkExtraContent(null, var5, var2, var4);
                return new ItemStack(Items.BUCKET);
@@ -376,45 +374,50 @@ public interface DispenseItemBehavior {
       DispenserBlock.registerBehavior(Items.TROPICAL_FISH_BUCKET, var9);
       DispenserBlock.registerBehavior(Items.AXOLOTL_BUCKET, var9);
       DispenserBlock.registerBehavior(Items.TADPOLE_BUCKET, var9);
-      DispenserBlock.registerBehavior(Items.BUCKET, new DefaultDispenseItemBehavior() {
-         private final DefaultDispenseItemBehavior defaultDispenseItemBehavior = new DefaultDispenseItemBehavior();
-
-         @Override
-         public ItemStack execute(BlockSource var1, ItemStack var2) {
-            ServerLevel var3 = var1.getLevel();
-            BlockPos var4 = var1.getPos().relative(var1.getBlockState().getValue(DispenserBlock.FACING));
-            BlockState var5 = var3.getBlockState(var4);
-            Block var6 = var5.getBlock();
-            if (var6 instanceof BucketPickup) {
-               ItemStack var8 = ((BucketPickup)var6).pickupBlock(var3, var4, var5);
-               if (var8.isEmpty()) {
-                  return super.execute(var1, var2);
-               } else {
-                  var3.gameEvent(null, GameEvent.FLUID_PICKUP, var4);
-                  Item var7 = var8.getItem();
-                  var2.shrink(1);
-                  if (var2.isEmpty()) {
-                     return new ItemStack(var7);
+      DispenserBlock.registerBehavior(
+         Items.BUCKET,
+         new DefaultDispenseItemBehavior() {
+            private final DefaultDispenseItemBehavior defaultDispenseItemBehavior = new DefaultDispenseItemBehavior();
+   
+            // $QF: Could not properly define all variable types!
+            // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+            @Override
+            public ItemStack execute(BlockSource var1, ItemStack var2) {
+               ServerLevel var3 = var1.level();
+               BlockPos var4 = var1.pos().relative(var1.state().getValue(DispenserBlock.FACING));
+               BlockState var5 = var3.getBlockState(var4);
+               Block var6 = var5.getBlock();
+               if (var6 instanceof BucketPickup var8) {
+                  ItemStack var9 = var8.pickupBlock(null, var3, var4, var5);
+                  if (var9.isEmpty()) {
+                     return super.execute(var1, var2);
                   } else {
-                     if (var1.<DispenserBlockEntity>getEntity().addItem(new ItemStack(var7)) < 0) {
-                        this.defaultDispenseItemBehavior.dispense(var1, new ItemStack(var7));
+                     var3.gameEvent(null, GameEvent.FLUID_PICKUP, var4);
+                     Item var7 = var9.getItem();
+                     var2.shrink(1);
+                     if (var2.isEmpty()) {
+                        return new ItemStack(var7);
+                     } else {
+                        if (var1.blockEntity().addItem(new ItemStack(var7)) < 0) {
+                           this.defaultDispenseItemBehavior.dispense(var1, new ItemStack(var7));
+                        }
+   
+                        return var2;
                      }
-
-                     return var2;
                   }
+               } else {
+                  return super.execute(var1, var2);
                }
-            } else {
-               return super.execute(var1, var2);
             }
          }
-      });
+      );
       DispenserBlock.registerBehavior(Items.FLINT_AND_STEEL, new OptionalDispenseItemBehavior() {
          @Override
          protected ItemStack execute(BlockSource var1, ItemStack var2) {
-            ServerLevel var3 = var1.getLevel();
+            ServerLevel var3 = var1.level();
             this.setSuccess(true);
-            Direction var4 = var1.getBlockState().getValue(DispenserBlock.FACING);
-            BlockPos var5 = var1.getPos().relative(var4);
+            Direction var4 = var1.state().getValue(DispenserBlock.FACING);
+            BlockPos var5 = var1.pos().relative(var4);
             BlockState var6 = var3.getBlockState(var5);
             if (BaseFireBlock.canBePlacedAt(var3, var5, var4)) {
                var3.setBlockAndUpdate(var5, BaseFireBlock.getState(var3, var5));
@@ -440,8 +443,8 @@ public interface DispenseItemBehavior {
          @Override
          protected ItemStack execute(BlockSource var1, ItemStack var2) {
             this.setSuccess(true);
-            ServerLevel var3 = var1.getLevel();
-            BlockPos var4 = var1.getPos().relative(var1.getBlockState().getValue(DispenserBlock.FACING));
+            ServerLevel var3 = var1.level();
+            BlockPos var4 = var1.pos().relative(var1.state().getValue(DispenserBlock.FACING));
             if (!BoneMealItem.growCrop(var2, var3, var4) && !BoneMealItem.growWaterPlant(var2, var3, var4, null)) {
                this.setSuccess(false);
             } else if (!var3.isClientSide) {
@@ -454,8 +457,8 @@ public interface DispenseItemBehavior {
       DispenserBlock.registerBehavior(Blocks.TNT, new DefaultDispenseItemBehavior() {
          @Override
          protected ItemStack execute(BlockSource var1, ItemStack var2) {
-            ServerLevel var3 = var1.getLevel();
-            BlockPos var4 = var1.getPos().relative(var1.getBlockState().getValue(DispenserBlock.FACING));
+            ServerLevel var3 = var1.level();
+            BlockPos var4 = var1.pos().relative(var1.state().getValue(DispenserBlock.FACING));
             PrimedTnt var5 = new PrimedTnt(var3, (double)var4.getX() + 0.5, (double)var4.getY(), (double)var4.getZ() + 0.5, null);
             var3.addFreshEntity(var5);
             var3.playSound(null, var5.getX(), var5.getY(), var5.getZ(), SoundEvents.TNT_PRIMED, SoundSource.BLOCKS, 1.0F, 1.0F);
@@ -482,9 +485,9 @@ public interface DispenseItemBehavior {
          new OptionalDispenseItemBehavior() {
             @Override
             protected ItemStack execute(BlockSource var1, ItemStack var2) {
-               ServerLevel var3 = var1.getLevel();
-               Direction var4 = var1.getBlockState().getValue(DispenserBlock.FACING);
-               BlockPos var5 = var1.getPos().relative(var4);
+               ServerLevel var3 = var1.level();
+               Direction var4 = var1.state().getValue(DispenserBlock.FACING);
+               BlockPos var5 = var1.pos().relative(var4);
                if (var3.isEmptyBlock(var5) && WitherSkullBlock.canSpawnMob(var3, var5, var2)) {
                   var3.setBlock(
                      var5,
@@ -510,8 +513,8 @@ public interface DispenseItemBehavior {
       DispenserBlock.registerBehavior(Blocks.CARVED_PUMPKIN, new OptionalDispenseItemBehavior() {
          @Override
          protected ItemStack execute(BlockSource var1, ItemStack var2) {
-            ServerLevel var3 = var1.getLevel();
-            BlockPos var4 = var1.getPos().relative(var1.getBlockState().getValue(DispenserBlock.FACING));
+            ServerLevel var3 = var1.level();
+            BlockPos var4 = var1.pos().relative(var1.state().getValue(DispenserBlock.FACING));
             CarvedPumpkinBlock var5 = (CarvedPumpkinBlock)Blocks.CARVED_PUMPKIN;
             if (var3.isEmptyBlock(var4) && var5.canSpawnGolem(var3, var4)) {
                if (!var3.isClientSide) {
@@ -542,10 +545,10 @@ public interface DispenseItemBehavior {
             private ItemStack takeLiquid(BlockSource var1, ItemStack var2, ItemStack var3) {
                var2.shrink(1);
                if (var2.isEmpty()) {
-                  var1.getLevel().gameEvent(null, GameEvent.FLUID_PICKUP, var1.getPos());
+                  var1.level().gameEvent(null, GameEvent.FLUID_PICKUP, var1.pos());
                   return var3.copy();
                } else {
-                  if (var1.<DispenserBlockEntity>getEntity().addItem(var3.copy()) < 0) {
+                  if (var1.blockEntity().addItem(var3.copy()) < 0) {
                      this.defaultDispenseItemBehavior.dispense(var1, var3.copy());
                   }
    
@@ -556,8 +559,8 @@ public interface DispenseItemBehavior {
             @Override
             public ItemStack execute(BlockSource var1, ItemStack var2) {
                this.setSuccess(false);
-               ServerLevel var3 = var1.getLevel();
-               BlockPos var4 = var1.getPos().relative(var1.getBlockState().getValue(DispenserBlock.FACING));
+               ServerLevel var3 = var1.level();
+               BlockPos var4 = var1.pos().relative(var1.state().getValue(DispenserBlock.FACING));
                BlockState var5 = var3.getBlockState(var4);
                if (var5.is(BlockTags.BEEHIVES, var0 -> var0.hasProperty(BeehiveBlock.HONEY_LEVEL) && var0.getBlock() instanceof BeehiveBlock)
                   && var5.getValue(BeehiveBlock.HONEY_LEVEL) >= 5) {
@@ -576,9 +579,9 @@ public interface DispenseItemBehavior {
       DispenserBlock.registerBehavior(Items.GLOWSTONE, new OptionalDispenseItemBehavior() {
          @Override
          public ItemStack execute(BlockSource var1, ItemStack var2) {
-            Direction var3 = var1.getBlockState().getValue(DispenserBlock.FACING);
-            BlockPos var4 = var1.getPos().relative(var3);
-            ServerLevel var5 = var1.getLevel();
+            Direction var3 = var1.state().getValue(DispenserBlock.FACING);
+            BlockPos var4 = var1.pos().relative(var3);
+            ServerLevel var5 = var1.level();
             BlockState var6 = var5.getBlockState(var4);
             this.setSuccess(true);
             if (var6.is(Blocks.RESPAWN_ANCHOR)) {
@@ -599,8 +602,8 @@ public interface DispenseItemBehavior {
       DispenserBlock.registerBehavior(Items.HONEYCOMB, new OptionalDispenseItemBehavior() {
          @Override
          public ItemStack execute(BlockSource var1, ItemStack var2) {
-            BlockPos var3 = var1.getPos().relative(var1.getBlockState().getValue(DispenserBlock.FACING));
-            ServerLevel var4 = var1.getLevel();
+            BlockPos var3 = var1.pos().relative(var1.state().getValue(DispenserBlock.FACING));
+            ServerLevel var4 = var1.level();
             BlockState var5 = var4.getBlockState(var3);
             Optional var6 = HoneycombItem.getWaxed(var5);
             if (var6.isPresent()) {
@@ -624,9 +627,9 @@ public interface DispenseItemBehavior {
                if (PotionUtils.getPotion(var2) != Potions.WATER) {
                   return this.defaultDispenseItemBehavior.dispense(var1, var2);
                } else {
-                  ServerLevel var3 = var1.getLevel();
-                  BlockPos var4 = var1.getPos();
-                  BlockPos var5 = var1.getPos().relative(var1.getBlockState().getValue(DispenserBlock.FACING));
+                  ServerLevel var3 = var1.level();
+                  BlockPos var4 = var1.pos();
+                  BlockPos var5 = var1.pos().relative(var1.state().getValue(DispenserBlock.FACING));
                   if (!var3.getBlockState(var5).is(BlockTags.CONVERTABLE_TO_MUD)) {
                      return this.defaultDispenseItemBehavior.dispense(var1, var2);
                   } else {
@@ -657,11 +660,12 @@ public interface DispenseItemBehavior {
       );
    }
 
-   static void setEntityPokingOutOfBlock(BlockSource var0, Entity var1, Direction var2) {
-      var1.setPos(
-         var0.x() + (double)var2.getStepX() * (0.5000099999997474 - (double)var1.getBbWidth() / 2.0),
-         var0.y() + (double)var2.getStepY() * (0.5000099999997474 - (double)var1.getBbHeight() / 2.0) - (double)var1.getBbHeight() / 2.0,
-         var0.z() + (double)var2.getStepZ() * (0.5000099999997474 - (double)var1.getBbWidth() / 2.0)
-      );
+   static Vec3 getEntityPokingOutOfBlockPos(BlockSource var0, EntityType<?> var1, Direction var2) {
+      return var0.center()
+         .add(
+            (double)var2.getStepX() * (0.5000099999997474 - (double)var1.getWidth() / 2.0),
+            (double)var2.getStepY() * (0.5000099999997474 - (double)var1.getHeight() / 2.0) - (double)var1.getHeight() / 2.0,
+            (double)var2.getStepZ() * (0.5000099999997474 - (double)var1.getWidth() / 2.0)
+         );
    }
 }

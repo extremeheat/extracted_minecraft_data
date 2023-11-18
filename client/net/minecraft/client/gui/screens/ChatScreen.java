@@ -47,6 +47,7 @@ public class ChatScreen extends Screen {
       this.input.setCanLoseFocus(false);
       this.addWidget(this.input);
       this.commandSuggestions = new CommandSuggestions(this.minecraft, this, this.input, this.font, false, false, 1, 10, true, -805306368);
+      this.commandSuggestions.setAllowHiding(false);
       this.commandSuggestions.updateCommandInfo();
       this.setInitialFocus(this.input);
    }
@@ -62,11 +63,6 @@ public class ChatScreen extends Screen {
    @Override
    public void removed() {
       this.minecraft.gui.getChat().resetChatScroll();
-   }
-
-   @Override
-   public void tick() {
-      this.input.tick();
    }
 
    private void onEdited(String var1) {
@@ -108,16 +104,16 @@ public class ChatScreen extends Screen {
    }
 
    @Override
-   public boolean mouseScrolled(double var1, double var3, double var5) {
-      var5 = Mth.clamp(var5, -1.0, 1.0);
-      if (this.commandSuggestions.mouseScrolled(var5)) {
+   public boolean mouseScrolled(double var1, double var3, double var5, double var7) {
+      var7 = Mth.clamp(var7, -1.0, 1.0);
+      if (this.commandSuggestions.mouseScrolled(var7)) {
          return true;
       } else {
          if (!hasShiftDown()) {
-            var5 *= 7.0;
+            var7 *= 7.0;
          }
 
-         this.minecraft.gui.getChat().scrollChat((int)var5);
+         this.minecraft.gui.getChat().scrollChat((int)var7);
          return true;
       }
    }
@@ -188,6 +184,10 @@ public class ChatScreen extends Screen {
             var1.renderComponentHoverEffect(this.font, var6, var2, var3);
          }
       }
+   }
+
+   @Override
+   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
    }
 
    @Override

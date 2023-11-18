@@ -149,10 +149,10 @@ public class BambooStalkBlock extends Block implements BonemealableBlock {
    }
 
    @Override
-   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3, boolean var4) {
-      int var5 = this.getHeightAboveUpToMax(var1, var2);
-      int var6 = this.getHeightBelowUpToMax(var1, var2);
-      return var5 + var6 + 1 < 16 && var1.getBlockState(var2.above(var5)).getValue(STAGE) != 1;
+   public boolean isValidBonemealTarget(LevelReader var1, BlockPos var2, BlockState var3) {
+      int var4 = this.getHeightAboveUpToMax(var1, var2);
+      int var5 = this.getHeightBelowUpToMax(var1, var2);
+      return var4 + var5 + 1 < 16 && var1.getBlockState(var2.above(var4)).getValue(STAGE) != 1;
    }
 
    @Override

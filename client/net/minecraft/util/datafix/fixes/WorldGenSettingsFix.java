@@ -98,7 +98,7 @@ public class WorldGenSettingsFix extends DataFix {
       Dynamic var4;
       if (var5.equals(Optional.of("customized"))) {
          var4 = defaultOverworld(var0, var2);
-      } else if (!var5.isPresent()) {
+      } else if (var5.isEmpty()) {
          var4 = defaultOverworld(var0, var2);
       } else {
          String var8 = (String)var5.get();
@@ -278,7 +278,7 @@ public class WorldGenSettingsFix extends DataFix {
       MutableInt var4 = new MutableInt(128);
       MutableBoolean var5 = new MutableBoolean(false);
       HashMap var6 = Maps.newHashMap();
-      if (!var1.result().isPresent()) {
+      if (var1.result().isEmpty()) {
          var5.setTrue();
          var6.put("minecraft:village", (WorldGenSettingsFix.StructureFeatureConfiguration)DEFAULTS.get("minecraft:village"));
       }

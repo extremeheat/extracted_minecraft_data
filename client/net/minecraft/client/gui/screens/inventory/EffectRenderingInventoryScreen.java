@@ -10,6 +10,7 @@ import net.minecraft.client.resources.MobEffectTextureManager;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffectUtil;
@@ -17,6 +18,9 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 
 public abstract class EffectRenderingInventoryScreen<T extends AbstractContainerMenu> extends AbstractContainerScreen<T> {
+   private static final ResourceLocation EFFECT_BACKGROUND_LARGE_SPRITE = new ResourceLocation("container/inventory/effect_background_large");
+   private static final ResourceLocation EFFECT_BACKGROUND_SMALL_SPRITE = new ResourceLocation("container/inventory/effect_background_small");
+
    public EffectRenderingInventoryScreen(T var1, Inventory var2, Component var3) {
       super((T)var1, var2, var3);
    }
@@ -74,9 +78,9 @@ public abstract class EffectRenderingInventoryScreen<T extends AbstractContainer
 
       for(MobEffectInstance var8 : var4) {
          if (var5) {
-            var1.blit(INVENTORY_LOCATION, var2, var6, 0, 166, 120, 32);
+            var1.blitSprite(EFFECT_BACKGROUND_LARGE_SPRITE, var2, var6, 120, 32);
          } else {
-            var1.blit(INVENTORY_LOCATION, var2, var6, 0, 198, 32, 32);
+            var1.blitSprite(EFFECT_BACKGROUND_SMALL_SPRITE, var2, var6, 32, 32);
          }
 
          var6 += var3;

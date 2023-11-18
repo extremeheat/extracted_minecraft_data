@@ -16,7 +16,7 @@ import net.minecraft.nbt.StringTag;
 import net.minecraft.network.protocol.game.ClientboundRecipePacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import org.slf4j.Logger;
 
@@ -28,13 +28,13 @@ public class ServerRecipeBook extends RecipeBook {
       super();
    }
 
-   public int addRecipes(Collection<Recipe<?>> var1, ServerPlayer var2) {
+   public int addRecipes(Collection<RecipeHolder<?>> var1, ServerPlayer var2) {
       ArrayList var3 = Lists.newArrayList();
       int var4 = 0;
 
-      for(Recipe var6 : var1) {
-         ResourceLocation var7 = var6.getId();
-         if (!this.known.contains(var7) && !var6.isSpecial()) {
+      for(RecipeHolder var6 : var1) {
+         ResourceLocation var7 = var6.id();
+         if (!this.known.contains(var7) && !var6.value().isSpecial()) {
             this.add(var7);
             this.addHighlight(var7);
             var3.add(var7);
@@ -50,12 +50,12 @@ public class ServerRecipeBook extends RecipeBook {
       return var4;
    }
 
-   public int removeRecipes(Collection<Recipe<?>> var1, ServerPlayer var2) {
+   public int removeRecipes(Collection<RecipeHolder<?>> var1, ServerPlayer var2) {
       ArrayList var3 = Lists.newArrayList();
       int var4 = 0;
 
-      for(Recipe var6 : var1) {
-         ResourceLocation var7 = var6.getId();
+      for(RecipeHolder var6 : var1) {
+         ResourceLocation var7 = var6.id();
          if (this.known.contains(var7)) {
             this.remove(var7);
             var3.add(var7);
@@ -99,17 +99,17 @@ public class ServerRecipeBook extends RecipeBook {
       this.loadRecipes(var4, this::addHighlight, var2);
    }
 
-   private void loadRecipes(ListTag var1, Consumer<Recipe<?>> var2, RecipeManager var3) {
+   private void loadRecipes(ListTag var1, Consumer<RecipeHolder<?>> var2, RecipeManager var3) {
       for(int var4 = 0; var4 < var1.size(); ++var4) {
          String var5 = var1.getString(var4);
 
          try {
             ResourceLocation var6 = new ResourceLocation(var5);
             Optional var7 = var3.byKey(var6);
-            if (!var7.isPresent()) {
+            if (var7.isEmpty()) {
                LOGGER.error("Tried to load unrecognized recipe: {} removed now.", var6);
             } else {
-               var2.accept((Recipe)var7.get());
+               var2.accept((RecipeHolder)var7.get());
             }
          } catch (ResourceLocationException var8) {
             LOGGER.error("Tried to load improperly formatted recipe: {} removed now.", var5);

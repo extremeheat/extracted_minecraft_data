@@ -60,6 +60,16 @@ public interface CollisionGetter extends BlockGetter {
       }
    }
 
+   default boolean noBlockCollision(@Nullable Entity var1, AABB var2) {
+      for(VoxelShape var4 : this.getBlockCollisions(var1, var2)) {
+         if (!var4.isEmpty()) {
+            return false;
+         }
+      }
+
+      return true;
+   }
+
    List<VoxelShape> getEntityCollisions(@Nullable Entity var1, AABB var2);
 
    default Iterable<VoxelShape> getCollisions(@Nullable Entity var1, AABB var2) {

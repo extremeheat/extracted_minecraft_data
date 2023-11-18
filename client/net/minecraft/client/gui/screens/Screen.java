@@ -110,6 +110,8 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
+      this.renderBackground(var1, var2, var3, var4);
+
       for(Renderable var6 : this.renderables) {
          var6.render(var1, var2, var3, var4);
       }
@@ -326,12 +328,16 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    public void added() {
    }
 
-   public void renderBackground(GuiGraphics var1) {
+   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
       if (this.minecraft.level != null) {
-         var1.fillGradient(0, 0, this.width, this.height, -1072689136, -804253680);
+         this.renderTransparentBackground(var1);
       } else {
          this.renderDirtBackground(var1);
       }
+   }
+
+   public void renderTransparentBackground(GuiGraphics var1) {
+      var1.fillGradient(0, 0, this.width, this.height, -1072689136, -804253680);
    }
 
    public void renderDirtBackground(GuiGraphics var1) {
@@ -511,12 +517,16 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
          if (var2.size() > 1) {
             var1.add(NarratedElementType.POSITION, Component.translatable("narrator.position.screen", var3.index + 1, var2.size()));
             if (var3.priority == NarratableEntry.NarrationPriority.FOCUSED) {
-               var1.add(NarratedElementType.USAGE, Component.translatable("narration.component_list.usage"));
+               var1.add(NarratedElementType.USAGE, this.getUsageNarration());
             }
          }
 
          var3.entry.updateNarration(var1.nest());
       }
+   }
+
+   protected Component getUsageNarration() {
+      return Component.translatable("narration.component_list.usage");
    }
 
    @Nullable

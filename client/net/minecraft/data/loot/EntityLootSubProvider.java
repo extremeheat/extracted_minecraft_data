@@ -32,7 +32,7 @@ import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 
 public abstract class EntityLootSubProvider implements LootTableSubProvider {
    protected static final EntityPredicate.Builder ENTITY_ON_FIRE = EntityPredicate.Builder.entity()
-      .flags(EntityFlagsPredicate.Builder.flags().setOnFire(true).build());
+      .flags(EntityFlagsPredicate.Builder.flags().setOnFire(true));
    private static final Set<EntityType<?>> SPECIAL_LOOT_TABLE_TYPES = ImmutableSet.of(
       EntityType.PLAYER, EntityType.ARMOR_STAND, EntityType.IRON_GOLEM, EntityType.SNOW_GOLEM, EntityType.VILLAGER
    );

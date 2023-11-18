@@ -60,6 +60,10 @@ public final class NativeImage implements AutoCloseable {
          } else {
             this.pixels = MemoryUtil.nmemAlloc(this.size);
          }
+
+         if (this.pixels == 0L) {
+            throw new IllegalStateException("Unable to allocate texture of size " + var2 + "x" + var3 + " (" + var1.components() + " channels)");
+         }
       } else {
          throw new IllegalArgumentException("Invalid texture size: " + var2 + "x" + var3);
       }
@@ -604,34 +608,20 @@ public final class NativeImage implements AutoCloseable {
 
    public void flipY() {
       this.checkAllocated();
-      MemoryStack var1 = MemoryStack.stackPush();
+      int var1 = this.format.components();
+      int var2 = this.getWidth() * var1;
+      long var3 = MemoryUtil.nmemAlloc((long)var2);
 
       try {
-         int var2 = this.format.components();
-         int var3 = this.getWidth() * var2;
-         long var4 = var1.nmalloc(var3);
-
-         for(int var6 = 0; var6 < this.getHeight() / 2; ++var6) {
-            int var7 = var6 * this.getWidth() * var2;
-            int var8 = (this.getHeight() - 1 - var6) * this.getWidth() * var2;
-            MemoryUtil.memCopy(this.pixels + (long)var7, var4, (long)var3);
-            MemoryUtil.memCopy(this.pixels + (long)var8, this.pixels + (long)var7, (long)var3);
-            MemoryUtil.memCopy(var4, this.pixels + (long)var8, (long)var3);
+         for(int var5 = 0; var5 < this.getHeight() / 2; ++var5) {
+            int var6 = var5 * this.getWidth() * var1;
+            int var7 = (this.getHeight() - 1 - var5) * this.getWidth() * var1;
+            MemoryUtil.memCopy(this.pixels + (long)var6, var3, (long)var2);
+            MemoryUtil.memCopy(this.pixels + (long)var7, this.pixels + (long)var6, (long)var2);
+            MemoryUtil.memCopy(var3, this.pixels + (long)var7, (long)var2);
          }
-      } catch (Throwable var10) {
-         if (var1 != null) {
-            try {
-               var1.close();
-            } catch (Throwable var9) {
-               var10.addSuppressed(var9);
-            }
-         }
-
-         throw var10;
-      }
-
-      if (var1 != null) {
-         var1.close();
+      } finally {
+         MemoryUtil.nmemFree(var3);
       }
    }
 

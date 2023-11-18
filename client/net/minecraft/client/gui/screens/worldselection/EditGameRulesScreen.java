@@ -68,10 +68,10 @@ public class EditGameRulesScreen extends Screen {
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
+      super.render(var1, var2, var3, var4);
       this.tooltip = null;
       this.rules.render(var1, var2, var3, var4);
       var1.drawCenteredString(this.font, this.title, this.width / 2, 20, 16777215);
-      super.render(var1, var2, var3, var4);
    }
 
    private void updateDoneButton() {
@@ -182,7 +182,7 @@ public class EditGameRulesScreen extends Screen {
 
       public IntegerRuleEntry(Component var2, List<FormattedCharSequence> var3, String var4, GameRules.IntegerValue var5) {
          super(var3, var2);
-         this.input = new EditBox(EditGameRulesScreen.this.minecraft.font, 10, 5, 42, 20, var2.copy().append("\n").append(var4).append("\n"));
+         this.input = new EditBox(EditGameRulesScreen.this.minecraft.font, 10, 5, 44, 20, var2.copy().append("\n").append(var4).append("\n"));
          this.input.setValue(Integer.toString(var5.get()));
          this.input.setResponder(var2x -> {
             if (var5.tryDeserialize(var2x)) {
@@ -199,7 +199,7 @@ public class EditGameRulesScreen extends Screen {
       @Override
       public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
          this.renderLabel(var1, var3, var4);
-         this.input.setX(var4 + var5 - 44);
+         this.input.setX(var4 + var5 - 45);
          this.input.setY(var3);
          this.input.render(var1, var7, var8, var10);
       }

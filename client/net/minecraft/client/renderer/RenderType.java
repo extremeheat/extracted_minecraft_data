@@ -78,18 +78,7 @@ public abstract class RenderType extends RenderStateShard {
       translucentState(RENDERTYPE_TRANSLUCENT_NO_CRUMBLING_SHADER)
    );
    private static final Function<ResourceLocation, RenderType> ARMOR_CUTOUT_NO_CULL = Util.memoize(
-      var0 -> {
-         RenderType.CompositeState var1 = RenderType.CompositeState.builder()
-            .setShaderState(RENDERTYPE_ARMOR_CUTOUT_NO_CULL_SHADER)
-            .setTextureState(new RenderStateShard.TextureStateShard(var0, false, false))
-            .setTransparencyState(NO_TRANSPARENCY)
-            .setCullState(NO_CULL)
-            .setLightmapState(LIGHTMAP)
-            .setOverlayState(OVERLAY)
-            .setLayeringState(VIEW_OFFSET_Z_LAYERING)
-            .createCompositeState(true);
-         return create("armor_cutout_no_cull", DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, true, false, var1);
-      }
+      var0 -> createArmorCutoutNoCull("armor_cutout_no_cull", var0, false)
    );
    private static final Function<ResourceLocation, RenderType> ENTITY_SOLID = Util.memoize(
       var0 -> {
@@ -804,8 +793,26 @@ public abstract class RenderType extends RenderStateShard {
       return TRANSLUCENT_NO_CRUMBLING;
    }
 
+   private static RenderType.CompositeRenderType createArmorCutoutNoCull(String var0, ResourceLocation var1, boolean var2) {
+      RenderType.CompositeState var3 = RenderType.CompositeState.builder()
+         .setShaderState(RENDERTYPE_ARMOR_CUTOUT_NO_CULL_SHADER)
+         .setTextureState(new RenderStateShard.TextureStateShard(var1, false, false))
+         .setTransparencyState(NO_TRANSPARENCY)
+         .setCullState(NO_CULL)
+         .setLightmapState(LIGHTMAP)
+         .setOverlayState(OVERLAY)
+         .setLayeringState(VIEW_OFFSET_Z_LAYERING)
+         .setDepthTestState(var2 ? EQUAL_DEPTH_TEST : LEQUAL_DEPTH_TEST)
+         .createCompositeState(true);
+      return create(var0, DefaultVertexFormat.NEW_ENTITY, VertexFormat.Mode.QUADS, 256, true, false, var3);
+   }
+
    public static RenderType armorCutoutNoCull(ResourceLocation var0) {
       return ARMOR_CUTOUT_NO_CULL.apply(var0);
+   }
+
+   public static RenderType createArmorDecalCutoutNoCull(ResourceLocation var0) {
+      return createArmorCutoutNoCull("armor_decal_cutout_no_cull", var0, true);
    }
 
    public static RenderType entitySolid(ResourceLocation var0) {

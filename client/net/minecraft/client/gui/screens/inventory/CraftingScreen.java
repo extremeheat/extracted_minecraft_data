@@ -13,7 +13,6 @@ import net.minecraft.world.inventory.Slot;
 
 public class CraftingScreen extends AbstractContainerScreen<CraftingMenu> implements RecipeUpdateListener {
    private static final ResourceLocation CRAFTING_TABLE_LOCATION = new ResourceLocation("textures/gui/container/crafting_table.png");
-   private static final ResourceLocation RECIPE_BUTTON_LOCATION = new ResourceLocation("textures/gui/recipe_button.png");
    private final RecipeBookComponent recipeBookComponent = new RecipeBookComponent();
    private boolean widthTooNarrow;
 
@@ -27,7 +26,7 @@ public class CraftingScreen extends AbstractContainerScreen<CraftingMenu> implem
       this.widthTooNarrow = this.width < 379;
       this.recipeBookComponent.init(this.width, this.height, this.minecraft, this.widthTooNarrow, this.menu);
       this.leftPos = this.recipeBookComponent.updateScreenPosition(this.width, this.imageWidth);
-      this.addRenderableWidget(new ImageButton(this.leftPos + 5, this.height / 2 - 49, 20, 18, 0, 0, 19, RECIPE_BUTTON_LOCATION, var1 -> {
+      this.addRenderableWidget(new ImageButton(this.leftPos + 5, this.height / 2 - 49, 20, 18, RecipeBookComponent.RECIPE_BUTTON_SPRITES, var1 -> {
          this.recipeBookComponent.toggleVisibility();
          this.leftPos = this.recipeBookComponent.updateScreenPosition(this.width, this.imageWidth);
          var1.setPosition(this.leftPos + 5, this.height / 2 - 49);
@@ -45,13 +44,12 @@ public class CraftingScreen extends AbstractContainerScreen<CraftingMenu> implem
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
       if (this.recipeBookComponent.isVisible() && this.widthTooNarrow) {
-         this.renderBg(var1, var4, var2, var3);
+         this.renderBackground(var1, var2, var3, var4);
          this.recipeBookComponent.render(var1, var2, var3, var4);
       } else {
-         this.recipeBookComponent.render(var1, var2, var3, var4);
          super.render(var1, var2, var3, var4);
+         this.recipeBookComponent.render(var1, var2, var3, var4);
          this.recipeBookComponent.renderGhostRecipe(var1, this.leftPos, this.topPos, true, var4);
       }
 

@@ -214,7 +214,7 @@ public class LightningBolt extends Entity {
 
       for(int var4 = 0; var4 < var3; ++var4) {
          Optional var5 = randomStepCleaningCopper(var0, var2);
-         if (!var5.isPresent()) {
+         if (var5.isEmpty()) {
             break;
          }
 

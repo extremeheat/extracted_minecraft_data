@@ -63,7 +63,7 @@ public class GenericWaitingScreen extends Screen {
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
+      super.render(var1, var2, var3, var4);
       var1.drawCenteredString(this.font, this.title, this.width / 2, 80, 16777215);
       if (this.message == null) {
          String var5 = LoadingDotsText.get(Util.getMillis());
@@ -71,8 +71,6 @@ public class GenericWaitingScreen extends Screen {
       } else {
          this.message.renderCentered(var1, this.width / 2, 120);
       }
-
-      super.render(var1, var2, var3, var4);
    }
 
    @Override

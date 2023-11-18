@@ -128,8 +128,8 @@ public class EntitySelectorParser {
    public EntitySelector getSelector() {
       AABB var1;
       if (this.deltaX == null && this.deltaY == null && this.deltaZ == null) {
-         if (this.distance.getMax() != null) {
-            double var2 = this.distance.getMax();
+         if (this.distance.max().isPresent()) {
+            double var2 = this.distance.max().get();
             var1 = new AABB(-var2, -var2, -var2, var2 + 1.0, var2 + 1.0, var2 + 1.0);
          } else {
             var1 = null;
@@ -190,8 +190,8 @@ public class EntitySelectorParser {
    }
 
    private Predicate<Entity> createRotationPredicate(WrappedMinMaxBounds var1, ToDoubleFunction<Entity> var2) {
-      double var3 = (double)Mth.wrapDegrees(var1.getMin() == null ? 0.0F : var1.getMin());
-      double var5 = (double)Mth.wrapDegrees(var1.getMax() == null ? 359.0F : var1.getMax());
+      double var3 = (double)Mth.wrapDegrees(var1.min() == null ? 0.0F : var1.min());
+      double var5 = (double)Mth.wrapDegrees(var1.max() == null ? 359.0F : var1.max());
       return var5x -> {
          double var6 = Mth.wrapDegrees(var2.applyAsDouble(var5x));
          if (var3 > var5) {

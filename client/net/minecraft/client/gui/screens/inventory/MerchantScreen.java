@@ -17,7 +17,16 @@ import net.minecraft.world.item.trading.MerchantOffer;
 import net.minecraft.world.item.trading.MerchantOffers;
 
 public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
-   private static final ResourceLocation VILLAGER_LOCATION = new ResourceLocation("textures/gui/container/villager2.png");
+   private static final ResourceLocation OUT_OF_STOCK_SPRITE = new ResourceLocation("container/villager/out_of_stock");
+   private static final ResourceLocation EXPERIENCE_BAR_BACKGROUND_SPRITE = new ResourceLocation("container/villager/experience_bar_background");
+   private static final ResourceLocation EXPERIENCE_BAR_CURRENT_SPRITE = new ResourceLocation("container/villager/experience_bar_current");
+   private static final ResourceLocation EXPERIENCE_BAR_RESULT_SPRITE = new ResourceLocation("container/villager/experience_bar_result");
+   private static final ResourceLocation SCROLLER_SPRITE = new ResourceLocation("container/villager/scroller");
+   private static final ResourceLocation SCROLLER_DISABLED_SPRITE = new ResourceLocation("container/villager/scroller_disabled");
+   private static final ResourceLocation TRADE_ARROW_OUT_OF_STOCK_SPRITE = new ResourceLocation("container/villager/trade_arrow_out_of_stock");
+   private static final ResourceLocation TRADE_ARROW_SPRITE = new ResourceLocation("container/villager/trade_arrow");
+   private static final ResourceLocation DISCOUNT_STRIKETHRUOGH_SPRITE = new ResourceLocation("container/villager/discount_strikethrough");
+   private static final ResourceLocation VILLAGER_LOCATION = new ResourceLocation("textures/gui/container/villager.png");
    private static final int TEXTURE_WIDTH = 512;
    private static final int TEXTURE_HEIGHT = 256;
    private static final int MERCHANT_MENU_PART_X = 99;
@@ -37,7 +46,6 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
    private static final int SCROLL_BAR_TOP_POS_Y = 18;
    private static final int SCROLL_BAR_START_X = 94;
    private static final Component TRADES_LABEL = Component.translatable("merchant.trades");
-   private static final Component LEVEL_SEPARATOR = Component.literal(" - ");
    private static final Component DEPRECATED_TOOLTIP = Component.translatable("merchant.deprecated");
    private int shopItem;
    private final MerchantScreen.TradeOfferButton[] tradeOfferButtons = new MerchantScreen.TradeOfferButton[7];
@@ -78,7 +86,7 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
    protected void renderLabels(GuiGraphics var1, int var2, int var3) {
       int var4 = this.menu.getTraderLevel();
       if (var4 > 0 && var4 <= 5 && this.menu.showProgressBar()) {
-         MutableComponent var5 = this.title.copy().append(LEVEL_SEPARATOR).append(Component.translatable("merchant.level." + var4));
+         MutableComponent var5 = Component.translatable("merchant.title", this.title, Component.translatable("merchant.level." + var4));
          int var6 = this.font.width(var5);
          int var7 = 49 + this.imageWidth / 2 - var6 / 2;
          var1.drawString(this.font, var5, var7, 6, 4210752, false);
@@ -105,7 +113,7 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
 
          MerchantOffer var9 = var7.get(var8);
          if (var9.isOutOfStock()) {
-            var1.blit(VILLAGER_LOCATION, this.leftPos + 83 + 99, this.topPos + 35, 0, 311.0F, 0.0F, 28, 21, 512, 256);
+            var1.blitSprite(OUT_OF_STOCK_SPRITE, this.leftPos + 83 + 99, this.topPos + 35, 0, 28, 21);
          }
       }
    }
@@ -114,17 +122,17 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
       int var5 = this.menu.getTraderLevel();
       int var6 = this.menu.getTraderXp();
       if (var5 < 5) {
-         var1.blit(VILLAGER_LOCATION, var2 + 136, var3 + 16, 0, 0.0F, 186.0F, 102, 5, 512, 256);
+         var1.blitSprite(EXPERIENCE_BAR_BACKGROUND_SPRITE, var2 + 136, var3 + 16, 0, 102, 5);
          int var7 = VillagerData.getMinXpPerLevel(var5);
          if (var6 >= var7 && VillagerData.canLevelUp(var5)) {
             boolean var8 = true;
-            float var9 = 100.0F / (float)(VillagerData.getMaxXpPerLevel(var5) - var7);
-            int var10 = Math.min(Mth.floor(var9 * (float)(var6 - var7)), 100);
-            var1.blit(VILLAGER_LOCATION, var2 + 136, var3 + 16, 0, 0.0F, 191.0F, var10 + 1, 5, 512, 256);
+            float var9 = 102.0F / (float)(VillagerData.getMaxXpPerLevel(var5) - var7);
+            int var10 = Math.min(Mth.floor(var9 * (float)(var6 - var7)), 102);
+            var1.blitSprite(EXPERIENCE_BAR_CURRENT_SPRITE, 102, 5, 0, 0, var2 + 136, var3 + 16, 0, var10, 5);
             int var11 = this.menu.getFutureTraderXp();
             if (var11 > 0) {
-               int var12 = Math.min(Mth.floor((float)var11 * var9), 100 - var10);
-               var1.blit(VILLAGER_LOCATION, var2 + 136 + var10 + 1, var3 + 16 + 1, 0, 2.0F, 182.0F, var12, 3, 512, 256);
+               int var12 = Math.min(Mth.floor((float)var11 * var9), 102 - var10);
+               var1.blitSprite(EXPERIENCE_BAR_RESULT_SPRITE, 102, 5, var10, 0, var2 + 136 + var10, var3 + 16, 0, var12, 5);
             }
          }
       }
@@ -141,15 +149,14 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
             var9 = 113;
          }
 
-         var1.blit(VILLAGER_LOCATION, var2 + 94, var3 + 18 + var9, 0, 0.0F, 199.0F, 6, 27, 512, 256);
+         var1.blitSprite(SCROLLER_SPRITE, var2 + 94, var3 + 18 + var9, 0, 6, 27);
       } else {
-         var1.blit(VILLAGER_LOCATION, var2 + 94, var3 + 18, 0, 6.0F, 199.0F, 6, 27, 512, 256);
+         var1.blitSprite(SCROLLER_DISABLED_SPRITE, var2 + 94, var3 + 18, 0, 6, 27);
       }
    }
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
       super.render(var1, var2, var3, var4);
       MerchantOffers var5 = this.menu.getOffers();
       if (!var5.isEmpty()) {
@@ -213,9 +220,9 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
    private void renderButtonArrows(GuiGraphics var1, MerchantOffer var2, int var3, int var4) {
       RenderSystem.enableBlend();
       if (var2.isOutOfStock()) {
-         var1.blit(VILLAGER_LOCATION, var3 + 5 + 35 + 20, var4 + 3, 0, 25.0F, 171.0F, 10, 9, 512, 256);
+         var1.blitSprite(TRADE_ARROW_OUT_OF_STOCK_SPRITE, var3 + 5 + 35 + 20, var4 + 3, 0, 10, 9);
       } else {
-         var1.blit(VILLAGER_LOCATION, var3 + 5 + 35 + 20, var4 + 3, 0, 15.0F, 171.0F, 10, 9, 512, 256);
+         var1.blitSprite(TRADE_ARROW_SPRITE, var3 + 5 + 35 + 20, var4 + 3, 0, 10, 9);
       }
    }
 
@@ -228,7 +235,7 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
          var1.renderItemDecorations(this.font, var2, var4 + 14, var5, var2.getCount() == 1 ? "1" : null);
          var1.pose().pushPose();
          var1.pose().translate(0.0F, 0.0F, 300.0F);
-         var1.blit(VILLAGER_LOCATION, var4 + 7, var5 + 12, 0, 0.0F, 176.0F, 9, 2, 512, 256);
+         var1.blitSprite(DISCOUNT_STRIKETHRUOGH_SPRITE, var4 + 7, var5 + 12, 0, 9, 2);
          var1.pose().popPose();
       }
    }
@@ -238,11 +245,11 @@ public class MerchantScreen extends AbstractContainerScreen<MerchantMenu> {
    }
 
    @Override
-   public boolean mouseScrolled(double var1, double var3, double var5) {
-      int var7 = this.menu.getOffers().size();
-      if (this.canScroll(var7)) {
-         int var8 = var7 - 7;
-         this.scrollOff = Mth.clamp((int)((double)this.scrollOff - var5), 0, var8);
+   public boolean mouseScrolled(double var1, double var3, double var5, double var7) {
+      int var9 = this.menu.getOffers().size();
+      if (this.canScroll(var9)) {
+         int var10 = var9 - 7;
+         this.scrollOff = Mth.clamp((int)((double)this.scrollOff - var7), 0, var10);
       }
 
       return true;

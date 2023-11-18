@@ -75,7 +75,7 @@ public class DaylightDetectorBlock extends BaseEntityBlock {
             return InteractionResult.SUCCESS;
          } else {
             BlockState var7 = var1.cycle(INVERTED);
-            var2.setBlock(var3, var7, 4);
+            var2.setBlock(var3, var7, 2);
             var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var4, var7));
             updateSignalStrength(var7, var2, var3);
             return InteractionResult.CONSUME;

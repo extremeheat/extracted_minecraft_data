@@ -65,12 +65,12 @@ public class EntityEquipmentToArmorAndHandFix extends DataFix {
             if (var15.isPresent()) {
                Iterator var16 = Stream.concat((Stream)var15.get(), Stream.generate(() -> var14.createInt(0))).iterator();
                float var17 = ((Dynamic)var16.next()).asFloat(0.0F);
-               if (!var7.get("HandDropChances").result().isPresent()) {
+               if (var7.get("HandDropChances").result().isEmpty()) {
                   Dynamic var13 = var7.createList(Stream.of(var17, 0.0F).map(var7::createFloat));
                   var7 = var7.set("HandDropChances", var13);
                }
    
-               if (!var7.get("ArmorDropChances").result().isPresent()) {
+               if (var7.get("ArmorDropChances").result().isEmpty()) {
                   Dynamic var18 = var7.createList(
                      Stream.of(
                            ((Dynamic)var16.next()).asFloat(0.0F),

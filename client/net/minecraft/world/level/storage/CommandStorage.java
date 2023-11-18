@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.saveddata.SavedData;
 
 public class CommandStorage {
@@ -23,15 +24,19 @@ public class CommandStorage {
       return var2;
    }
 
+   private SavedData.Factory<CommandStorage.Container> factory(String var1) {
+      return new SavedData.Factory<>(() -> this.newStorage(var1), var2 -> this.newStorage(var1).load(var2), DataFixTypes.SAVED_DATA_COMMAND_STORAGE);
+   }
+
    public CompoundTag get(ResourceLocation var1) {
       String var2 = var1.getNamespace();
-      CommandStorage.Container var3 = this.storage.get(var2x -> this.newStorage(var2).load(var2x), createId(var2));
+      CommandStorage.Container var3 = this.storage.get(this.factory(var2), createId(var2));
       return var3 != null ? var3.get(var1.getPath()) : new CompoundTag();
    }
 
    public void set(ResourceLocation var1, CompoundTag var2) {
       String var3 = var1.getNamespace();
-      this.storage.computeIfAbsent(var2x -> this.newStorage(var3).load(var2x), () -> this.newStorage(var3), createId(var3)).put(var1.getPath(), var2);
+      this.storage.computeIfAbsent(this.factory(var3), createId(var3)).put(var1.getPath(), var2);
    }
 
    public Stream<ResourceLocation> keys() {

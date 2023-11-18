@@ -71,6 +71,10 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
             break;
          case OPENING:
             this.progress += 0.1F;
+            if (this.progressOld == 0.0F) {
+               doNeighborUpdates(var1, var2, var3);
+            }
+
             if (this.progress >= 1.0F) {
                this.animationStatus = ShulkerBoxBlockEntity.AnimationStatus.OPENED;
                this.progress = 1.0F;
@@ -81,6 +85,10 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
             break;
          case CLOSING:
             this.progress -= 0.1F;
+            if (this.progressOld == 1.0F) {
+               doNeighborUpdates(var1, var2, var3);
+            }
+
             if (this.progress <= 0.0F) {
                this.animationStatus = ShulkerBoxBlockEntity.AnimationStatus.CLOSED;
                this.progress = 0.0F;
@@ -106,8 +114,7 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
          AABB var5 = Shulker.getProgressDeltaAabb(var4, this.progressOld, this.progress).move(var2);
          List var6 = var1.getEntities(null, var5);
          if (!var6.isEmpty()) {
-            for(int var7 = 0; var7 < var6.size(); ++var7) {
-               Entity var8 = (Entity)var6.get(var7);
+            for(Entity var8 : var6) {
                if (var8.getPistonPushReaction() != PushReaction.IGNORE) {
                   var8.move(
                      MoverType.SHULKER_BOX,
@@ -134,12 +141,10 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
          this.openCount = var2;
          if (var2 == 0) {
             this.animationStatus = ShulkerBoxBlockEntity.AnimationStatus.CLOSING;
-            doNeighborUpdates(this.getLevel(), this.worldPosition, this.getBlockState());
          }
 
          if (var2 == 1) {
             this.animationStatus = ShulkerBoxBlockEntity.AnimationStatus.OPENING;
-            doNeighborUpdates(this.getLevel(), this.worldPosition, this.getBlockState());
          }
 
          return true;
@@ -150,6 +155,7 @@ public class ShulkerBoxBlockEntity extends RandomizableContainerBlockEntity impl
 
    private static void doNeighborUpdates(Level var0, BlockPos var1, BlockState var2) {
       var2.updateNeighbourShapes(var0, var1, 3);
+      var0.updateNeighborsAt(var1, var2.getBlock());
    }
 
    @Override

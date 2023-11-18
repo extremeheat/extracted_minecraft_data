@@ -3,8 +3,6 @@ package net.minecraft.realms;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.dto.RealmsServer;
 import java.net.InetSocketAddress;
-import java.util.Optional;
-import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
@@ -13,10 +11,8 @@ import net.minecraft.client.multiplayer.chat.report.ReportEnvironment;
 import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.client.quickplay.QuickPlayLog;
 import net.minecraft.network.Connection;
-import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.handshake.ClientIntentionPacket;
 import net.minecraft.network.protocol.login.ServerboundHelloPacket;
 import org.slf4j.Logger;
 
@@ -34,7 +30,6 @@ public class RealmsConnect {
 
    public void connect(final RealmsServer var1, ServerAddress var2) {
       final Minecraft var3 = Minecraft.getInstance();
-      var3.setConnectedToRealms(true);
       var3.prepareForMultiplayer();
       var3.getNarrator().sayNow(Component.translatable("mco.connect.success"));
       final String var4 = var2.getHost();
@@ -50,7 +45,9 @@ public class RealmsConnect {
                      return;
                   }
    
-                  RealmsConnect.this.connection = Connection.connectToServer(var1x, var3.options.useNativeTransport());
+                  RealmsConnect.this.connection = Connection.connectToServer(
+                     var1x, var3.options.useNativeTransport(), var3.getDebugOverlay().getBandwidthLogger()
+                  );
                   if (RealmsConnect.this.aborted) {
                      return;
                   }
@@ -63,19 +60,16 @@ public class RealmsConnect {
                      var2.setMinigameName(var1.minigameName);
                   }
    
-                  RealmsConnect.this.connection.setListener(var2);
                   if (RealmsConnect.this.aborted) {
                      return;
                   }
    
-                  RealmsConnect.this.connection.send(new ClientIntentionPacket(var4, var5, ConnectionProtocol.LOGIN));
+                  RealmsConnect.this.connection.initiateServerboundPlayConnection(var4, var5, var2);
                   if (RealmsConnect.this.aborted) {
                      return;
                   }
    
-                  String var6 = var3.getUser().getName();
-                  UUID var8 = var3.getUser().getProfileId();
-                  RealmsConnect.this.connection.send(new ServerboundHelloPacket(var6, Optional.ofNullable(var8)));
+                  RealmsConnect.this.connection.send(new ServerboundHelloPacket(var3.getUser().getName(), var3.getUser().getProfileId()));
                   var3.updateReportEnvironment(ReportEnvironment.realm(var1));
                   var3.quickPlayLog().setWorldData(QuickPlayLog.Type.REALMS, String.valueOf(var1.id), var1.name);
                } catch (Exception var5x) {
@@ -91,10 +85,10 @@ public class RealmsConnect {
                      var3x = var3x.replaceAll(var4x, "");
                   }
    
-                  DisconnectedRealmsScreen var7 = new DisconnectedRealmsScreen(
+                  DisconnectedRealmsScreen var6 = new DisconnectedRealmsScreen(
                      RealmsConnect.this.onlineScreen, CommonComponents.CONNECT_FAILED, Component.translatable("disconnect.genericReason", var3x)
                   );
-                  var3.execute(() -> var3.setScreen(var7));
+                  var3.execute(() -> var3.setScreen(var6));
                }
             }
          })

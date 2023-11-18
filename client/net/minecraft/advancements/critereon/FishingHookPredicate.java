@@ -1,43 +1,31 @@
 package net.minecraft.advancements.critereon;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.GsonHelper;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.phys.Vec3;
 
-public class FishingHookPredicate implements EntitySubPredicate {
-   public static final FishingHookPredicate ANY = new FishingHookPredicate(false);
-   private static final String IN_OPEN_WATER_KEY = "in_open_water";
-   private final boolean inOpenWater;
+public record FishingHookPredicate(Optional<Boolean> d) implements EntitySubPredicate {
+   private final Optional<Boolean> inOpenWater;
+   public static final FishingHookPredicate ANY = new FishingHookPredicate(Optional.empty());
+   public static final MapCodec<FishingHookPredicate> CODEC = RecordCodecBuilder.mapCodec(
+      var0 -> var0.group(ExtraCodecs.strictOptionalField(Codec.BOOL, "in_open_water").forGetter(FishingHookPredicate::inOpenWater))
+            .apply(var0, FishingHookPredicate::new)
+   );
 
-   private FishingHookPredicate(boolean var1) {
+   public FishingHookPredicate(Optional<Boolean> var1) {
       super();
       this.inOpenWater = var1;
    }
 
    public static FishingHookPredicate inOpenWater(boolean var0) {
-      return new FishingHookPredicate(var0);
-   }
-
-   public static FishingHookPredicate fromJson(JsonObject var0) {
-      JsonElement var1 = var0.get("in_open_water");
-      return var1 != null ? new FishingHookPredicate(GsonHelper.convertToBoolean(var1, "in_open_water")) : ANY;
-   }
-
-   @Override
-   public JsonObject serializeCustomData() {
-      if (this == ANY) {
-         return new JsonObject();
-      } else {
-         JsonObject var1 = new JsonObject();
-         var1.add("in_open_water", new JsonPrimitive(this.inOpenWater));
-         return var1;
-      }
+      return new FishingHookPredicate(Optional.of(var0));
    }
 
    @Override
@@ -45,15 +33,16 @@ public class FishingHookPredicate implements EntitySubPredicate {
       return EntitySubPredicate.Types.FISHING_HOOK;
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public boolean matches(Entity var1, ServerLevel var2, @Nullable Vec3 var3) {
-      if (this == ANY) {
+      if (this.inOpenWater.isEmpty()) {
          return true;
-      } else if (!(var1 instanceof FishingHook)) {
-         return false;
+      } else if (var1 instanceof FishingHook var4) {
+         return this.inOpenWater.get() == var4.isOpenWaterFishing();
       } else {
-         FishingHook var4 = (FishingHook)var1;
-         return this.inOpenWater == var4.isOpenWaterFishing();
+         return false;
       }
    }
 }

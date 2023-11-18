@@ -17,7 +17,9 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -40,11 +42,15 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import javax.annotation.Nullable;
+import net.minecraft.CrashReport;
+import net.minecraft.CrashReportCategory;
 import net.minecraft.FileUtil;
+import net.minecraft.ReportedException;
 import net.minecraft.Util;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.NbtUtils;
@@ -91,8 +97,9 @@ public class LevelStorageSource {
       "RandomSeed", "generatorName", "generatorOptions", "generatorVersion", "legacy_custom_options", "MapFeatures", "BonusChest"
    );
    private static final String TAG_DATA = "Data";
-   private static final PathAllowList NO_SYMLINKS_ALLOWED = new PathAllowList(List.of());
+   private static final PathMatcher NO_SYMLINKS_ALLOWED = var0 -> false;
    public static final String ALLOWED_SYMLINKS_CONFIG_NAME = "allowed_symlinks.txt";
+   private static final int SUMMARY_UNCOMPRESSED_NBT_QUOTA = 104857600;
    private final Path baseDir;
    private final Path backupDir;
    final DataFixer fixerUpper;
@@ -184,38 +191,39 @@ public class LevelStorageSource {
       ArrayList var2 = new ArrayList(var1.levels.size());
 
       for(LevelStorageSource.LevelDirectory var4 : var1.levels) {
-         var2.add(
-            CompletableFuture.supplyAsync(
-               () -> {
-                  boolean var2x;
-                  try {
-                     var2x = DirectoryLock.isLocked(var4.path());
-                  } catch (Exception var6) {
-                     LOGGER.warn("Failed to read {} lock", var4.path(), var6);
-                     return null;
-                  }
-      
-                  try {
-                     LevelSummary var3 = this.readLevelData(var4, this.levelSummaryReader(var4, var2x));
-                     return var3 != null ? var3 : null;
-                  } catch (OutOfMemoryError var4x) {
-                     MemoryReserve.release();
-                     System.gc();
-                     LOGGER.error(LogUtils.FATAL_MARKER, "Ran out of memory trying to read summary of {}", var4.directoryName());
-                     throw var4x;
-                  } catch (StackOverflowError var5) {
-                     LOGGER.error(
-                        LogUtils.FATAL_MARKER,
-                        "Ran out of stack trying to read summary of {}. Assuming corruption; attempting to restore from from level.dat_old.",
-                        var4.directoryName()
-                     );
-                     Util.safeReplaceOrMoveFile(var4.dataFile(), var4.oldDataFile(), var4.corruptedDataFile(LocalDateTime.now()), true);
-                     throw var5;
-                  }
-               },
-               Util.backgroundExecutor()
-            )
-         );
+         var2.add(CompletableFuture.supplyAsync(() -> {
+            boolean var2x;
+            try {
+               var2x = DirectoryLock.isLocked(var4.path());
+            } catch (Exception var13) {
+               LOGGER.warn("Failed to read {} lock", var4.path(), var13);
+               return null;
+            }
+
+            try {
+               LevelSummary var3 = this.readLevelData(var4, this.levelSummaryReader(var4, var2x));
+               return var3 != null ? var3 : null;
+            } catch (OutOfMemoryError var12) {
+               MemoryReserve.release();
+               System.gc();
+               String var4x = "Ran out of memory trying to read summary of world folder \"" + var4.directoryName() + "\"";
+               LOGGER.error(LogUtils.FATAL_MARKER, var4x);
+               OutOfMemoryError var5 = new OutOfMemoryError("Ran out of memory reading level data");
+               var5.initCause(var12);
+               CrashReport var6 = CrashReport.forThrowable(var5, var4x);
+               CrashReportCategory var7 = var6.addCategory("World details");
+               var7.setDetail("Folder Name", var4.directoryName());
+
+               try {
+                  long var8 = Files.size(var4.dataFile());
+                  var7.setDetail("level.dat size", var8);
+               } catch (IOException var11) {
+                  var7.setDetailError("level.dat size", var11);
+               }
+
+               throw new ReportedException(var6);
+            }
+         }, Util.backgroundExecutor()));
       }
 
       return Util.sequenceFailFastAndCancel(var2).thenApply(var0 -> var0.stream().filter(Objects::nonNull).sorted().toList());
@@ -293,10 +301,9 @@ public class LevelStorageSource {
       return (var3, var4) -> {
          try {
             if (Files.isSymbolicLink(var3)) {
-               ArrayList var5 = new ArrayList();
-               this.worldDirValidator.validateSymlink(var3, var5);
+               List var5 = this.worldDirValidator.validateSymlink(var3);
                if (!var5.isEmpty()) {
-                  LOGGER.warn(ContentValidationException.getMessage(var3, var5));
+                  LOGGER.warn("{}", ContentValidationException.getMessage(var3, var5));
                   return new LevelSummary.SymlinkLevelSummary(var1.directoryName(), var1.iconFile());
                }
             }
@@ -341,7 +348,7 @@ public class LevelStorageSource {
    @Nullable
    private static Tag readLightweightData(Path var0) throws IOException {
       SkipFields var1 = new SkipFields(new FieldSelector("Data", CompoundTag.TYPE, "Player"), new FieldSelector("Data", CompoundTag.TYPE, "WorldGenSettings"));
-      NbtIo.parseCompressed(var0.toFile(), var1);
+      NbtIo.parseCompressed(var0.toFile(), var1, NbtAccounter.create(104857600L));
       return var1.getResult();
    }
 
@@ -357,10 +364,14 @@ public class LevelStorageSource {
    }
 
    public boolean levelExists(String var1) {
-      return Files.isDirectory(this.getLevelPath(var1));
+      try {
+         return Files.isDirectory(this.getLevelPath(var1));
+      } catch (InvalidPathException var3) {
+         return false;
+      }
    }
 
-   private Path getLevelPath(String var1) {
+   public Path getLevelPath(String var1) {
       return this.baseDir.resolve(var1);
    }
 
@@ -374,7 +385,7 @@ public class LevelStorageSource {
 
    public LevelStorageSource.LevelStorageAccess validateAndCreateAccess(String var1) throws IOException, ContentValidationException {
       Path var2 = this.getLevelPath(var1);
-      List var3 = this.worldDirValidator.validateSave(var2, true);
+      List var3 = this.worldDirValidator.validateDirectory(var2, true);
       if (!var3.isEmpty()) {
          throw new ContentValidationException(var2, var3);
       } else {
@@ -457,6 +468,10 @@ public class LevelStorageSource {
          this.levelId = var2;
          this.levelDirectory = new LevelStorageSource.LevelDirectory(var3);
          this.lock = DirectoryLock.create(var3);
+      }
+
+      public LevelStorageSource parent() {
+         return LevelStorageSource.this;
       }
 
       public String getLevelId() {

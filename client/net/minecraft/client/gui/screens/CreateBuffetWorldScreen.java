@@ -65,11 +65,15 @@ public class CreateBuffetWorldScreen extends Screen {
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderDirtBackground(var1);
+      super.render(var1, var2, var3, var4);
       this.list.render(var1, var2, var3, var4);
       var1.drawCenteredString(this.font, this.title, this.width / 2, 8, 16777215);
       var1.drawCenteredString(this.font, BIOME_SELECT_INFO, this.width / 2, 28, 10526880);
-      super.render(var1, var2, var3, var4);
+   }
+
+   @Override
+   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
+      this.renderDirtBackground(var1);
    }
 
    class BiomeList extends ObjectSelectionList<CreateBuffetWorldScreen.BiomeList.Entry> {
@@ -127,12 +131,8 @@ public class CreateBuffetWorldScreen extends Screen {
 
          @Override
          public boolean mouseClicked(double var1, double var3, int var5) {
-            if (var5 == 0) {
-               BiomeList.this.setSelected(this);
-               return true;
-            } else {
-               return false;
-            }
+            BiomeList.this.setSelected(this);
+            return true;
          }
       }
    }

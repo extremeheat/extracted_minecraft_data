@@ -2,6 +2,7 @@ package net.minecraft.world.inventory;
 
 import java.util.Optional;
 import javax.annotation.Nullable;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -19,6 +20,7 @@ public class BeaconMenu extends AbstractContainerMenu {
    private static final int INV_SLOT_END = 28;
    private static final int USE_ROW_SLOT_START = 28;
    private static final int USE_ROW_SLOT_END = 37;
+   private static final int NO_EFFECT = 0;
    private final Container beacon = new SimpleContainer(1) {
       @Override
       public boolean canPlaceItem(int var1, ItemStack var2) {
@@ -131,20 +133,29 @@ public class BeaconMenu extends AbstractContainerMenu {
       return this.beaconData.get(0);
    }
 
+   public static int encodeEffect(@Nullable MobEffect var0) {
+      return var0 == null ? 0 : BuiltInRegistries.MOB_EFFECT.getId(var0) + 1;
+   }
+
+   @Nullable
+   public static MobEffect decodeEffect(int var0) {
+      return var0 == 0 ? null : BuiltInRegistries.MOB_EFFECT.byId(var0 - 1);
+   }
+
    @Nullable
    public MobEffect getPrimaryEffect() {
-      return MobEffect.byId(this.beaconData.get(1));
+      return decodeEffect(this.beaconData.get(1));
    }
 
    @Nullable
    public MobEffect getSecondaryEffect() {
-      return MobEffect.byId(this.beaconData.get(2));
+      return decodeEffect(this.beaconData.get(2));
    }
 
    public void updateEffects(Optional<MobEffect> var1, Optional<MobEffect> var2) {
       if (this.paymentSlot.hasItem()) {
-         this.beaconData.set(1, var1.map(MobEffect::getId).orElse(-1));
-         this.beaconData.set(2, var2.map(MobEffect::getId).orElse(-1));
+         this.beaconData.set(1, encodeEffect((MobEffect)var1.orElse(null)));
+         this.beaconData.set(2, encodeEffect((MobEffect)var2.orElse(null)));
          this.paymentSlot.remove(1);
          this.access.execute(Level::blockEntityChanged);
       }

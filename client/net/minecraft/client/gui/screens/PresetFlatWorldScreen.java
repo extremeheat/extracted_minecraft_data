@@ -43,8 +43,8 @@ import net.minecraft.world.level.levelgen.structure.StructureSet;
 import org.slf4j.Logger;
 
 public class PresetFlatWorldScreen extends Screen {
+   static final ResourceLocation SLOT_SPRITE = new ResourceLocation("container/slot");
    static final Logger LOGGER = LogUtils.getLogger();
-   private static final int SLOT_TEX_SIZE = 128;
    private static final int SLOT_BG_SIZE = 18;
    private static final int SLOT_STAT_HEIGHT = 20;
    private static final int SLOT_BG_X = 1;
@@ -204,8 +204,8 @@ public class PresetFlatWorldScreen extends Screen {
    }
 
    @Override
-   public boolean mouseScrolled(double var1, double var3, double var5) {
-      return this.list.mouseScrolled(var1, var3, var5);
+   public boolean mouseScrolled(double var1, double var3, double var5, double var7) {
+      return this.list.mouseScrolled(var1, var3, var5, var7);
    }
 
    @Override
@@ -222,22 +222,15 @@ public class PresetFlatWorldScreen extends Screen {
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderBackground(var1);
+      super.render(var1, var2, var3, var4);
       this.list.render(var1, var2, var3, var4);
       var1.pose().pushPose();
       var1.pose().translate(0.0F, 0.0F, 400.0F);
       var1.drawCenteredString(this.font, this.title, this.width / 2, 8, 16777215);
-      var1.drawString(this.font, this.shareText, 50, 30, 10526880);
-      var1.drawString(this.font, this.listText, 50, 70, 10526880);
+      var1.drawString(this.font, this.shareText, 51, 30, 10526880);
+      var1.drawString(this.font, this.listText, 51, 70, 10526880);
       var1.pose().popPose();
       this.export.render(var1, var2, var3, var4);
-      super.render(var1, var2, var3, var4);
-   }
-
-   @Override
-   public void tick() {
-      this.export.tick();
-      super.tick();
    }
 
    public void updateButtonValidity(boolean var1) {
@@ -315,18 +308,15 @@ public class PresetFlatWorldScreen extends Screen {
 
          @Override
          public boolean mouseClicked(double var1, double var3, int var5) {
-            if (var5 == 0) {
-               this.select();
-            }
-
-            return false;
+            this.select();
+            return true;
          }
 
          void select() {
             PresetsList.this.setSelected(this);
             PresetFlatWorldScreen.this.settings = this.preset.settings();
             PresetFlatWorldScreen.this.export.setValue(PresetFlatWorldScreen.save(PresetFlatWorldScreen.this.settings));
-            PresetFlatWorldScreen.this.export.moveCursorToStart();
+            PresetFlatWorldScreen.this.export.moveCursorToStart(false);
          }
 
          private void blitSlot(GuiGraphics var1, int var2, int var3, Item var4) {
@@ -335,7 +325,7 @@ public class PresetFlatWorldScreen extends Screen {
          }
 
          private void blitSlotBg(GuiGraphics var1, int var2, int var3) {
-            var1.blit(STATS_ICON_LOCATION, var2, var3, 0, 0.0F, 0.0F, 18, 18, 128, 128);
+            var1.blitSprite(PresetFlatWorldScreen.SLOT_SPRITE, var2, var3, 0, 18, 18);
          }
 
          @Override

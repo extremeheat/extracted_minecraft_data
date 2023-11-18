@@ -7,6 +7,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -263,6 +264,7 @@ public class BlockEntityType<T extends BlockEntity> {
    private final BlockEntityType.BlockEntitySupplier<? extends T> factory;
    private final Set<Block> validBlocks;
    private final Type<?> dataType;
+   private final Holder.Reference<BlockEntityType<?>> builtInRegistryHolder = BuiltInRegistries.BLOCK_ENTITY_TYPE.createIntrusiveHolder(this);
 
    @Nullable
    public static ResourceLocation getKey(BlockEntityType<?> var0) {
@@ -292,6 +294,11 @@ public class BlockEntityType<T extends BlockEntity> {
 
    public boolean isValid(BlockState var1) {
       return this.validBlocks.contains(var1.getBlock());
+   }
+
+   @Nullable
+   public Holder.Reference<BlockEntityType<?>> builtInRegistryHolder() {
+      return this.builtInRegistryHolder;
    }
 
    @Nullable

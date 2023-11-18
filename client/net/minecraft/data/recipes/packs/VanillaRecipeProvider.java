@@ -3,23 +3,22 @@ package net.minecraft.data.recipes.packs;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.advancements.Advancement;
-import net.minecraft.advancements.critereon.ContextAwarePredicate;
+import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.critereon.ImpossibleTrigger;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
-import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.advancements.critereon.MinMaxBounds;
 import net.minecraft.advancements.critereon.PlayerTrigger;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.PackOutput;
-import net.minecraft.data.recipes.FinishedRecipe;
 import net.minecraft.data.recipes.RecipeBuilder;
 import net.minecraft.data.recipes.RecipeCategory;
+import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
 import net.minecraft.data.recipes.ShapelessRecipeBuilder;
@@ -59,14 +58,15 @@ public class VanillaRecipeProvider extends RecipeProvider {
          super.run(var1),
          this.buildAdvancement(
             var1,
-            RecipeBuilder.ROOT_RECIPE_ADVANCEMENT,
-            Advancement.Builder.recipeAdvancement().addCriterion("impossible", new ImpossibleTrigger.TriggerInstance())
+            Advancement.Builder.recipeAdvancement()
+               .addCriterion("impossible", CriteriaTriggers.IMPOSSIBLE.createCriterion(new ImpossibleTrigger.TriggerInstance()))
+               .build(RecipeBuilder.ROOT_RECIPE_ADVANCEMENT)
          )
       );
    }
 
    @Override
-   protected void buildRecipes(Consumer<FinishedRecipe> var1) {
+   protected void buildRecipes(RecipeOutput var1) {
       generateForEnabledBlockFamilies(var1, FeatureFlagSet.of(FeatureFlags.VANILLA));
       planksFromLog(var1, Blocks.ACACIA_PLANKS, ItemTags.ACACIA_LOGS, 4);
       planksFromLogs(var1, Blocks.BIRCH_PLANKS, ItemTags.BIRCH_LOGS, 4);
@@ -555,9 +555,12 @@ public class VanillaRecipeProvider extends RecipeProvider {
          .pattern("###")
          .unlockedBy(
             "has_lots_of_items",
-            new InventoryChangeTrigger.TriggerInstance(
-               ContextAwarePredicate.ANY, MinMaxBounds.Ints.atLeast(10), MinMaxBounds.Ints.ANY, MinMaxBounds.Ints.ANY, new ItemPredicate[0]
-            )
+            CriteriaTriggers.INVENTORY_CHANGED
+               .createCriterion(
+                  new InventoryChangeTrigger.TriggerInstance(
+                     Optional.empty(), MinMaxBounds.Ints.atLeast(10), MinMaxBounds.Ints.ANY, MinMaxBounds.Ints.ANY, List.of()
+                  )
+               )
          )
          .save(var1);
       ShapelessRecipeBuilder.shapeless(RecipeCategory.TRANSPORTATION, Items.CHEST_MINECART)

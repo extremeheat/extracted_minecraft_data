@@ -6,15 +6,16 @@ import com.google.common.collect.Sets;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.advancements.AdvancementRequirements;
 import net.minecraft.advancements.AdvancementRewards;
-import net.minecraft.advancements.CriterionTriggerInstance;
-import net.minecraft.advancements.RequirementsStrategy;
+import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -31,7 +32,7 @@ public class ShapedRecipeBuilder extends CraftingRecipeBuilder implements Recipe
    private final int count;
    private final List<String> rows = Lists.newArrayList();
    private final Map<Character, Ingredient> key = Maps.newLinkedHashMap();
-   private final Advancement.Builder advancement = Advancement.Builder.recipeAdvancement();
+   private final Map<String, Criterion<?>> criteria = new LinkedHashMap<>();
    @Nullable
    private String group;
    private boolean showNotification = true;
@@ -79,8 +80,8 @@ public class ShapedRecipeBuilder extends CraftingRecipeBuilder implements Recipe
       }
    }
 
-   public ShapedRecipeBuilder unlockedBy(String var1, CriterionTriggerInstance var2) {
-      this.advancement.addCriterion(var1, var2);
+   public ShapedRecipeBuilder unlockedBy(String var1, Criterion<?> var2) {
+      this.criteria.put(var1, var2);
       return this;
    }
 
@@ -100,13 +101,13 @@ public class ShapedRecipeBuilder extends CraftingRecipeBuilder implements Recipe
    }
 
    @Override
-   public void save(Consumer<FinishedRecipe> var1, ResourceLocation var2) {
+   public void save(RecipeOutput var1, ResourceLocation var2) {
       this.ensureValid(var2);
-      this.advancement
-         .parent(ROOT_RECIPE_ADVANCEMENT)
+      Advancement.Builder var3 = var1.advancement()
          .addCriterion("has_the_recipe", RecipeUnlockedTrigger.unlocked(var2))
          .rewards(AdvancementRewards.Builder.recipe(var2))
-         .requirements(RequirementsStrategy.OR);
+         .requirements(AdvancementRequirements.Strategy.OR);
+      this.criteria.forEach(var3::addCriterion);
       var1.accept(
          new ShapedRecipeBuilder.Result(
             var2,
@@ -116,8 +117,7 @@ public class ShapedRecipeBuilder extends CraftingRecipeBuilder implements Recipe
             determineBookCategory(this.category),
             this.rows,
             this.key,
-            this.advancement,
-            var2.withPrefix("recipes/" + this.category.getFolderName() + "/"),
+            var3.build(var2.withPrefix("recipes/" + this.category.getFolderName() + "/")),
             this.showNotification
          )
       );
@@ -145,7 +145,7 @@ public class ShapedRecipeBuilder extends CraftingRecipeBuilder implements Recipe
             throw new IllegalStateException("Ingredients are defined but not used in pattern for recipe " + var1);
          } else if (this.rows.size() == 1 && this.rows.get(0).length() == 1) {
             throw new IllegalStateException("Shaped recipe " + var1 + " only takes in a single item - should it be a shapeless recipe instead?");
-         } else if (this.advancement.getCriteria().isEmpty()) {
+         } else if (this.criteria.isEmpty()) {
             throw new IllegalStateException("No way of obtaining recipe " + var1);
          }
       }
@@ -158,8 +158,7 @@ public class ShapedRecipeBuilder extends CraftingRecipeBuilder implements Recipe
       private final String group;
       private final List<String> pattern;
       private final Map<Character, Ingredient> key;
-      private final Advancement.Builder advancement;
-      private final ResourceLocation advancementId;
+      private final AdvancementHolder advancement;
       private final boolean showNotification;
 
       public Result(
@@ -170,9 +169,8 @@ public class ShapedRecipeBuilder extends CraftingRecipeBuilder implements Recipe
          CraftingBookCategory var5,
          List<String> var6,
          Map<Character, Ingredient> var7,
-         Advancement.Builder var8,
-         ResourceLocation var9,
-         boolean var10
+         AdvancementHolder var8,
+         boolean var9
       ) {
          super(var5);
          this.id = var1;
@@ -182,8 +180,7 @@ public class ShapedRecipeBuilder extends CraftingRecipeBuilder implements Recipe
          this.pattern = var6;
          this.key = var7;
          this.advancement = var8;
-         this.advancementId = var9;
-         this.showNotification = var10;
+         this.showNotification = var9;
       }
 
       @Override
@@ -203,7 +200,7 @@ public class ShapedRecipeBuilder extends CraftingRecipeBuilder implements Recipe
          JsonObject var6 = new JsonObject();
 
          for(Entry var5 : this.key.entrySet()) {
-            var6.add(String.valueOf(var5.getKey()), ((Ingredient)var5.getValue()).toJson());
+            var6.add(String.valueOf(var5.getKey()), ((Ingredient)var5.getValue()).toJson(false));
          }
 
          var1.add("key", var6);
@@ -218,25 +215,18 @@ public class ShapedRecipeBuilder extends CraftingRecipeBuilder implements Recipe
       }
 
       @Override
-      public RecipeSerializer<?> getType() {
+      public RecipeSerializer<?> type() {
          return RecipeSerializer.SHAPED_RECIPE;
       }
 
       @Override
-      public ResourceLocation getId() {
+      public ResourceLocation id() {
          return this.id;
       }
 
-      @Nullable
       @Override
-      public JsonObject serializeAdvancement() {
-         return this.advancement.serializeToJson();
-      }
-
-      @Nullable
-      @Override
-      public ResourceLocation getAdvancementId() {
-         return this.advancementId;
+      public AdvancementHolder advancement() {
+         return this.advancement;
       }
    }
 }

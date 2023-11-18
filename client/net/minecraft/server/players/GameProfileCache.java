@@ -10,7 +10,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.mojang.authlib.Agent;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.GameProfileRepository;
 import com.mojang.authlib.ProfileLookupCallback;
@@ -37,7 +36,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -69,15 +67,8 @@ public class GameProfileCache {
    private void safeAdd(GameProfileCache.GameProfileInfo var1) {
       GameProfile var2 = var1.getProfile();
       var1.setLastAccess(this.getNextOperation());
-      String var3 = var2.getName();
-      if (var3 != null) {
-         this.profilesByName.put(var3.toLowerCase(Locale.ROOT), var1);
-      }
-
-      UUID var4 = var2.getId();
-      if (var4 != null) {
-         this.profilesByUUID.put(var4, var1);
-      }
+      this.profilesByName.put(var2.getName().toLowerCase(Locale.ROOT), var1);
+      this.profilesByUUID.put(var2.getId(), var1);
    }
 
    private static Optional<GameProfile> lookupGameProfile(GameProfileRepository var0, String var1) {
@@ -87,14 +78,14 @@ public class GameProfileCache {
             var2.set(var1);
          }
 
-         public void onProfileLookupFailed(GameProfile var1, Exception var2x) {
+         public void onProfileLookupFailed(String var1, Exception var2x) {
             var2.set(null);
          }
       };
-      var0.findProfilesByNames(new String[]{var1}, Agent.MINECRAFT, var3);
+      var0.findProfilesByNames(new String[]{var1}, var3);
       GameProfile var4 = (GameProfile)var2.get();
       if (!usesAuthentication() && var4 == null) {
-         UUID var5 = UUIDUtil.getOrCreatePlayerUUID(new GameProfile(null, var1));
+         UUID var5 = UUIDUtil.createOfflinePlayerUUID(var1);
          return Optional.of(new GameProfile(var5, var1));
       } else {
          return Optional.ofNullable(var4);
@@ -153,21 +144,18 @@ public class GameProfileCache {
       return var5;
    }
 
-   public void getAsync(String var1, Consumer<Optional<GameProfile>> var2) {
+   public CompletableFuture<Optional<GameProfile>> getAsync(String var1) {
       if (this.executor == null) {
          throw new IllegalStateException("No executor");
       } else {
-         CompletableFuture var3 = this.requests.get(var1);
-         if (var3 != null) {
-            this.requests.put(var1, var3.whenCompleteAsync((var1x, var2x) -> var2.accept(var1x), this.executor));
+         CompletableFuture var2 = this.requests.get(var1);
+         if (var2 != null) {
+            return var2;
          } else {
-            this.requests
-               .put(
-                  var1,
-                  CompletableFuture.<Optional<GameProfile>>supplyAsync(() -> this.get(var1), Util.backgroundExecutor())
-                     .whenCompleteAsync((var2x, var3x) -> this.requests.remove(var1), this.executor)
-                     .whenCompleteAsync((var1x, var2x) -> var2.accept(var1x), this.executor)
-               );
+            CompletableFuture var3 = CompletableFuture.<Optional<GameProfile>>supplyAsync(() -> this.get(var1), Util.backgroundExecutor())
+               .whenCompleteAsync((var2x, var3x) -> this.requests.remove(var1), this.executor);
+            this.requests.put(var1, var3);
+            return var3;
          }
       }
    }
@@ -241,8 +229,7 @@ public class GameProfileCache {
    private static JsonElement writeGameProfile(GameProfileCache.GameProfileInfo var0, DateFormat var1) {
       JsonObject var2 = new JsonObject();
       var2.addProperty("name", var0.getProfile().getName());
-      UUID var3 = var0.getProfile().getId();
-      var2.addProperty("uuid", var3 == null ? "" : var3.toString());
+      var2.addProperty("uuid", var0.getProfile().getId().toString());
       var2.addProperty("expiresOn", var1.format(var0.getExpirationDate()));
       return var2;
    }

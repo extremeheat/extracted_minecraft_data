@@ -1,9 +1,8 @@
 package net.minecraft.client.renderer.texture.atlas;
 
+import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import net.minecraft.client.renderer.texture.SpriteContents;
-import net.minecraft.client.renderer.texture.SpriteLoader;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.Resource;
@@ -18,7 +17,7 @@ public interface SpriteSource {
 
    public interface Output {
       default void add(ResourceLocation var1, Resource var2) {
-         this.add(var1, () -> SpriteLoader.loadSprite(var1, var2));
+         this.add(var1, var2x -> var2x.loadSprite(var1, var2));
       }
 
       void add(ResourceLocation var1, SpriteSource.SpriteSupplier var2);
@@ -26,7 +25,7 @@ public interface SpriteSource {
       void removeAll(Predicate<ResourceLocation> var1);
    }
 
-   public interface SpriteSupplier extends Supplier<SpriteContents> {
+   public interface SpriteSupplier extends Function<SpriteResourceLoader, SpriteContents> {
       default void discard() {
       }
    }

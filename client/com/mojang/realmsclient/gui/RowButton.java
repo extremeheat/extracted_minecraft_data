@@ -49,19 +49,17 @@ public abstract class RowButton {
    public static void rowButtonMouseClicked(
       RealmsObjectSelectionList<?> var0, ObjectSelectionList.Entry<?> var1, List<RowButton> var2, int var3, double var4, double var6
    ) {
-      if (var3 == 0) {
-         int var8 = var0.children().indexOf(var1);
-         if (var8 > -1) {
-            var0.selectItem(var8);
-            int var9 = var0.getRowLeft();
-            int var10 = var0.getRowTop(var8);
-            int var11 = (int)(var4 - (double)var9);
-            int var12 = (int)(var6 - (double)var10);
+      int var8 = var0.children().indexOf(var1);
+      if (var8 > -1) {
+         var0.selectItem(var8);
+         int var9 = var0.getRowLeft();
+         int var10 = var0.getRowTop(var8);
+         int var11 = (int)(var4 - (double)var9);
+         int var12 = (int)(var6 - (double)var10);
 
-            for(RowButton var14 : var2) {
-               if (var11 >= var14.xOffset && var11 <= var14.getRight() && var12 >= var14.yOffset && var12 <= var14.getBottom()) {
-                  var14.onClick(var8);
-               }
+         for(RowButton var14 : var2) {
+            if (var11 >= var14.xOffset && var11 <= var14.getRight() && var12 >= var14.yOffset && var12 <= var14.getBottom()) {
+               var14.onClick(var8);
             }
          }
       }

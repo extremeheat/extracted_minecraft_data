@@ -1,21 +1,21 @@
 package net.minecraft.world.level.storage.loot.functions;
 
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSyntaxException;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.List;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.TagParser;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class SetNbtFunction extends LootItemConditionalFunction {
-   final CompoundTag tag;
+   public static final Codec<SetNbtFunction> CODEC = RecordCodecBuilder.create(
+      var0 -> commonFields(var0).and(TagParser.AS_CODEC.fieldOf("tag").forGetter(var0x -> var0x.tag)).apply(var0, SetNbtFunction::new)
+   );
+   private final CompoundTag tag;
 
-   SetNbtFunction(LootItemCondition[] var1, CompoundTag var2) {
+   private SetNbtFunction(List<LootItemCondition> var1, CompoundTag var2) {
       super(var1);
       this.tag = var2;
    }
@@ -34,25 +34,5 @@ public class SetNbtFunction extends LootItemConditionalFunction {
    @Deprecated
    public static LootItemConditionalFunction.Builder<?> setTag(CompoundTag var0) {
       return simpleBuilder(var1 -> new SetNbtFunction(var1, var0));
-   }
-
-   public static class Serializer extends LootItemConditionalFunction.Serializer<SetNbtFunction> {
-      public Serializer() {
-         super();
-      }
-
-      public void serialize(JsonObject var1, SetNbtFunction var2, JsonSerializationContext var3) {
-         super.serialize(var1, var2, var3);
-         var1.addProperty("tag", var2.tag.toString());
-      }
-
-      public SetNbtFunction deserialize(JsonObject var1, JsonDeserializationContext var2, LootItemCondition[] var3) {
-         try {
-            CompoundTag var4 = TagParser.parseTag(GsonHelper.getAsString(var1, "tag"));
-            return new SetNbtFunction(var3, var4);
-         } catch (CommandSyntaxException var5) {
-            throw new JsonSyntaxException(var5.getMessage());
-         }
-      }
    }
 }

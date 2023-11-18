@@ -107,7 +107,7 @@ public class QuickPlayLog {
       public static final MapCodec<QuickPlayLog.QuickPlayWorld> MAP_CODEC = RecordCodecBuilder.mapCodec(
          var0 -> var0.group(
                   QuickPlayLog.Type.CODEC.fieldOf("type").forGetter(QuickPlayLog.QuickPlayWorld::type),
-                  Codec.STRING.fieldOf("id").forGetter(QuickPlayLog.QuickPlayWorld::id),
+                  ExtraCodecs.ESCAPED_STRING.fieldOf("id").forGetter(QuickPlayLog.QuickPlayWorld::id),
                   Codec.STRING.fieldOf("name").forGetter(QuickPlayLog.QuickPlayWorld::name)
                )
                .apply(var0, QuickPlayLog.QuickPlayWorld::new)

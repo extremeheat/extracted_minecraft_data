@@ -2,12 +2,21 @@ package net.minecraft.world.level.storage.loot.parameters;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import java.util.Optional;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
 
 public class LootContextParamSets {
    private static final BiMap<ResourceLocation, LootContextParamSet> REGISTRY = HashBiMap.create();
+   public static final Codec<LootContextParamSet> CODEC = ResourceLocation.CODEC
+      .comapFlatMap(
+         var0 -> (DataResult)Optional.ofNullable((LootContextParamSet)REGISTRY.get(var0))
+               .map(DataResult::success)
+               .orElseGet(() -> DataResult.error(() -> "No parameter set exists with id: '" + var0 + "'")),
+         REGISTRY.inverse()::get
+      );
    public static final LootContextParamSet EMPTY = register("empty", var0 -> {
    });
    public static final LootContextParamSet CHEST = register("chest", var0 -> var0.required(LootContextParams.ORIGIN).optional(LootContextParams.THIS_ENTITY));
@@ -85,15 +94,5 @@ public class LootContextParamSets {
       } else {
          return var3;
       }
-   }
-
-   @Nullable
-   public static LootContextParamSet get(ResourceLocation var0) {
-      return (LootContextParamSet)REGISTRY.get(var0);
-   }
-
-   @Nullable
-   public static ResourceLocation getKey(LootContextParamSet var0) {
-      return (ResourceLocation)REGISTRY.inverse().get(var0);
    }
 }

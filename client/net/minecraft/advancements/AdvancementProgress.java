@@ -2,27 +2,46 @@ package net.minecraft.advancements;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
-import java.lang.reflect.Type;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.util.GsonHelper;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.ExtraCodecs;
 
 public class AdvancementProgress implements Comparable<AdvancementProgress> {
-   final Map<String, CriterionProgress> criteria;
-   private String[][] requirements = new String[0][];
+   private static final DateTimeFormatter OBTAINED_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss Z", Locale.ROOT);
+   private static final Codec<Instant> OBTAINED_TIME_CODEC = ExtraCodecs.temporalCodec(OBTAINED_TIME_FORMAT)
+      .xmap(Instant::from, var0 -> var0.atZone(ZoneId.systemDefault()));
+   private static final Codec<Map<String, CriterionProgress>> CRITERIA_CODEC = Codec.unboundedMap(Codec.STRING, OBTAINED_TIME_CODEC)
+      .xmap(
+         var0 -> var0.entrySet().stream().collect(Collectors.toMap(Entry::getKey, var0x -> new CriterionProgress((Instant)var0x.getValue()))),
+         var0 -> var0.entrySet()
+               .stream()
+               .filter(var0x -> ((CriterionProgress)var0x.getValue()).isDone())
+               .collect(Collectors.toMap(Entry::getKey, var0x -> Objects.requireNonNull(((CriterionProgress)var0x.getValue()).getObtained())))
+      );
+   public static final Codec<AdvancementProgress> CODEC = RecordCodecBuilder.create(
+      var0 -> var0.group(
+               ExtraCodecs.strictOptionalField(CRITERIA_CODEC, "criteria", Map.of()).forGetter(var0x -> var0x.criteria),
+               Codec.BOOL.fieldOf("done").orElse(true).forGetter(AdvancementProgress::isDone)
+            )
+            .apply(var0, (var0x, var1) -> new AdvancementProgress(new HashMap<>(var0x)))
+   );
+   private final Map<String, CriterionProgress> criteria;
+   private AdvancementRequirements requirements = AdvancementRequirements.EMPTY;
 
    private AdvancementProgress(Map<String, CriterionProgress> var1) {
       super();
@@ -34,41 +53,19 @@ public class AdvancementProgress implements Comparable<AdvancementProgress> {
       this.criteria = Maps.newHashMap();
    }
 
-   public void update(Map<String, Criterion> var1, String[][] var2) {
-      Set var3 = var1.keySet();
-      this.criteria.entrySet().removeIf(var1x -> !var3.contains(var1x.getKey()));
+   public void update(AdvancementRequirements var1) {
+      Set var2 = var1.names();
+      this.criteria.entrySet().removeIf(var1x -> !var2.contains(var1x.getKey()));
 
-      for(String var5 : var3) {
-         if (!this.criteria.containsKey(var5)) {
-            this.criteria.put(var5, new CriterionProgress());
-         }
+      for(String var4 : var2) {
+         this.criteria.putIfAbsent(var4, new CriterionProgress());
       }
 
-      this.requirements = var2;
+      this.requirements = var1;
    }
 
    public boolean isDone() {
-      if (this.requirements.length == 0) {
-         return false;
-      } else {
-         for(String[] var4 : this.requirements) {
-            boolean var5 = false;
-
-            for(String var9 : var4) {
-               CriterionProgress var10 = this.getCriterion(var9);
-               if (var10 != null && var10.isDone()) {
-                  var5 = true;
-                  break;
-               }
-            }
-
-            if (!var5) {
-               return false;
-            }
-         }
-
-         return true;
-      }
+      return this.requirements.test(this::isCriterionDone);
    }
 
    public boolean hasProgress() {
@@ -103,7 +100,7 @@ public class AdvancementProgress implements Comparable<AdvancementProgress> {
 
    @Override
    public String toString() {
-      return "AdvancementProgress{criteria=" + this.criteria + ", requirements=" + Arrays.deepToString(this.requirements) + "}";
+      return "AdvancementProgress{criteria=" + this.criteria + ", requirements=" + this.requirements + "}";
    }
 
    public void serializeToNetwork(FriendlyByteBuf var1) {
@@ -120,51 +117,38 @@ public class AdvancementProgress implements Comparable<AdvancementProgress> {
       return this.criteria.get(var1);
    }
 
+   private boolean isCriterionDone(String var1) {
+      CriterionProgress var2 = this.getCriterion(var1);
+      return var2 != null && var2.isDone();
+   }
+
    public float getPercent() {
       if (this.criteria.isEmpty()) {
          return 0.0F;
       } else {
-         float var1 = (float)this.requirements.length;
+         float var1 = (float)this.requirements.size();
          float var2 = (float)this.countCompletedRequirements();
          return var2 / var1;
       }
    }
 
    @Nullable
-   public String getProgressText() {
+   public Component getProgressText() {
       if (this.criteria.isEmpty()) {
          return null;
       } else {
-         int var1 = this.requirements.length;
+         int var1 = this.requirements.size();
          if (var1 <= 1) {
             return null;
          } else {
             int var2 = this.countCompletedRequirements();
-            return var2 + "/" + var1;
+            return Component.translatable("advancements.progress", var2, var1);
          }
       }
    }
 
    private int countCompletedRequirements() {
-      int var1 = 0;
-
-      for(String[] var5 : this.requirements) {
-         boolean var6 = false;
-
-         for(String var10 : var5) {
-            CriterionProgress var11 = this.getCriterion(var10);
-            if (var11 != null && var11.isDone()) {
-               var6 = true;
-               break;
-            }
-         }
-
-         if (var6) {
-            ++var1;
-         }
-      }
-
-      return var1;
+      return this.requirements.count(this::isCriterionDone);
    }
 
    public Iterable<String> getRemainingCriteria() {
@@ -192,65 +176,19 @@ public class AdvancementProgress implements Comparable<AdvancementProgress> {
    }
 
    @Nullable
-   public Date getFirstProgressDate() {
-      Date var1 = null;
-
-      for(CriterionProgress var3 : this.criteria.values()) {
-         if (var3.isDone() && (var1 == null || var3.getObtained().before(var1))) {
-            var1 = var3.getObtained();
-         }
-      }
-
-      return var1;
+   public Instant getFirstProgressDate() {
+      return this.criteria.values().stream().map(CriterionProgress::getObtained).filter(Objects::nonNull).min(Comparator.naturalOrder()).orElse(null);
    }
 
    public int compareTo(AdvancementProgress var1) {
-      Date var2 = this.getFirstProgressDate();
-      Date var3 = var1.getFirstProgressDate();
+      Instant var2 = this.getFirstProgressDate();
+      Instant var3 = var1.getFirstProgressDate();
       if (var2 == null && var3 != null) {
          return 1;
       } else if (var2 != null && var3 == null) {
          return -1;
       } else {
          return var2 == null && var3 == null ? 0 : var2.compareTo(var3);
-      }
-   }
-
-   public static class Serializer implements JsonDeserializer<AdvancementProgress>, JsonSerializer<AdvancementProgress> {
-      public Serializer() {
-         super();
-      }
-
-      public JsonElement serialize(AdvancementProgress var1, Type var2, JsonSerializationContext var3) {
-         JsonObject var4 = new JsonObject();
-         JsonObject var5 = new JsonObject();
-
-         for(Entry var7 : var1.criteria.entrySet()) {
-            CriterionProgress var8 = (CriterionProgress)var7.getValue();
-            if (var8.isDone()) {
-               var5.add((String)var7.getKey(), var8.serializeToJson());
-            }
-         }
-
-         if (!var5.entrySet().isEmpty()) {
-            var4.add("criteria", var5);
-         }
-
-         var4.addProperty("done", var1.isDone());
-         return var4;
-      }
-
-      public AdvancementProgress deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
-         JsonObject var4 = GsonHelper.convertToJsonObject(var1, "advancement");
-         JsonObject var5 = GsonHelper.getAsJsonObject(var4, "criteria", new JsonObject());
-         AdvancementProgress var6 = new AdvancementProgress();
-
-         for(Entry var8 : var5.entrySet()) {
-            String var9 = (String)var8.getKey();
-            var6.criteria.put(var9, CriterionProgress.fromJson(GsonHelper.convertToString((JsonElement)var8.getValue(), var9)));
-         }
-
-         return var6;
       }
    }
 }

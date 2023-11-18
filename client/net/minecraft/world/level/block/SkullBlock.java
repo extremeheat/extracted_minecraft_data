@@ -22,7 +22,7 @@ public class SkullBlock extends AbstractSkullBlock {
 
    protected SkullBlock(SkullBlock.Type var1, BlockBehaviour.Properties var2) {
       super(var1, var2);
-      this.registerDefaultState(this.stateDefinition.any().setValue(ROTATION, Integer.valueOf(0)));
+      this.registerDefaultState(this.defaultBlockState().setValue(ROTATION, Integer.valueOf(0)));
    }
 
    @Override
@@ -37,7 +37,7 @@ public class SkullBlock extends AbstractSkullBlock {
 
    @Override
    public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      return this.defaultBlockState().setValue(ROTATION, Integer.valueOf(RotationSegment.convertToSegment(var1.getRotation())));
+      return super.getStateForPlacement(var1).setValue(ROTATION, Integer.valueOf(RotationSegment.convertToSegment(var1.getRotation())));
    }
 
    @Override
@@ -52,6 +52,7 @@ public class SkullBlock extends AbstractSkullBlock {
 
    @Override
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
+      super.createBlockStateDefinition(var1);
       var1.add(ROTATION);
    }
 

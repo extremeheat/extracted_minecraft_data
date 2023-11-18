@@ -23,7 +23,10 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.Map.Entry;
 import javax.annotation.Nullable;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import org.apache.commons.lang3.StringUtils;
@@ -111,18 +114,18 @@ public class GsonHelper {
       return var0.has(var1) ? convertToString(var0.get(var1), var1) : var2;
    }
 
-   public static Item convertToItem(JsonElement var0, String var1) {
+   public static Holder<Item> convertToItem(JsonElement var0, String var1) {
       if (var0.isJsonPrimitive()) {
          String var2 = var0.getAsString();
          return BuiltInRegistries.ITEM
-            .getOptional(new ResourceLocation(var2))
+            .getHolder(ResourceKey.create(Registries.ITEM, new ResourceLocation(var2)))
             .orElseThrow(() -> new JsonSyntaxException("Expected " + var1 + " to be an item, was unknown string '" + var2 + "'"));
       } else {
          throw new JsonSyntaxException("Expected " + var1 + " to be an item, was " + getType(var0));
       }
    }
 
-   public static Item getAsItem(JsonObject var0, String var1) {
+   public static Holder<Item> getAsItem(JsonObject var0, String var1) {
       if (var0.has(var1)) {
          return convertToItem(var0.get(var1), var1);
       } else {
@@ -132,7 +135,7 @@ public class GsonHelper {
 
    @Nullable
    @Contract("_,_,!null->!null;_,_,null->_")
-   public static Item getAsItem(JsonObject var0, String var1, @Nullable Item var2) {
+   public static Holder<Item> getAsItem(JsonObject var0, String var1, @Nullable Holder<Item> var2) {
       return var0.has(var1) ? convertToItem(var0.get(var1), var1) : var2;
    }
 

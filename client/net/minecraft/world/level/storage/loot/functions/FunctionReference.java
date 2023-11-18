@@ -1,11 +1,10 @@
 package net.minecraft.world.level.storage.loot.functions;
 
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonSerializationContext;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.List;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootDataId;
@@ -16,9 +15,12 @@ import org.slf4j.Logger;
 
 public class FunctionReference extends LootItemConditionalFunction {
    private static final Logger LOGGER = LogUtils.getLogger();
-   final ResourceLocation name;
+   public static final Codec<FunctionReference> CODEC = RecordCodecBuilder.create(
+      var0 -> commonFields(var0).and(ResourceLocation.CODEC.fieldOf("name").forGetter(var0x -> var0x.name)).apply(var0, FunctionReference::new)
+   );
+   private final ResourceLocation name;
 
-   FunctionReference(LootItemCondition[] var1, ResourceLocation var2) {
+   private FunctionReference(List<LootItemCondition> var1, ResourceLocation var2) {
       super(var1);
       this.name = var2;
    }
@@ -69,20 +71,5 @@ public class FunctionReference extends LootItemConditionalFunction {
 
    public static LootItemConditionalFunction.Builder<?> functionReference(ResourceLocation var0) {
       return simpleBuilder(var1 -> new FunctionReference(var1, var0));
-   }
-
-   public static class Serializer extends LootItemConditionalFunction.Serializer<FunctionReference> {
-      public Serializer() {
-         super();
-      }
-
-      public void serialize(JsonObject var1, FunctionReference var2, JsonSerializationContext var3) {
-         var1.addProperty("name", var2.name.toString());
-      }
-
-      public FunctionReference deserialize(JsonObject var1, JsonDeserializationContext var2, LootItemCondition[] var3) {
-         ResourceLocation var4 = new ResourceLocation(GsonHelper.getAsString(var1, "name"));
-         return new FunctionReference(var3, var4);
-      }
    }
 }

@@ -3,17 +3,16 @@ package net.minecraft.server.players;
 import com.google.gson.JsonObject;
 import com.mojang.authlib.GameProfile;
 import java.util.Date;
-import java.util.Objects;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
 
 public class UserBanListEntry extends BanListEntry<GameProfile> {
-   public UserBanListEntry(GameProfile var1) {
+   public UserBanListEntry(@Nullable GameProfile var1) {
       this(var1, null, null, null, null);
    }
 
-   public UserBanListEntry(GameProfile var1, @Nullable Date var2, @Nullable String var3, @Nullable Date var4, @Nullable String var5) {
+   public UserBanListEntry(@Nullable GameProfile var1, @Nullable Date var2, @Nullable String var3, @Nullable Date var4, @Nullable String var5) {
       super(var1, var2, var3, var4, var5);
    }
 
@@ -24,7 +23,7 @@ public class UserBanListEntry extends BanListEntry<GameProfile> {
    @Override
    protected void serialize(JsonObject var1) {
       if (this.getUser() != null) {
-         var1.addProperty("uuid", this.getUser().getId() == null ? "" : this.getUser().getId().toString());
+         var1.addProperty("uuid", this.getUser().getId().toString());
          var1.addProperty("name", this.getUser().getName());
          super.serialize(var1);
       }
@@ -33,9 +32,10 @@ public class UserBanListEntry extends BanListEntry<GameProfile> {
    @Override
    public Component getDisplayName() {
       GameProfile var1 = this.getUser();
-      return Component.literal(var1.getName() != null ? var1.getName() : Objects.toString(var1.getId(), "(Unknown)"));
+      return var1 != null ? Component.literal(var1.getName()) : Component.translatable("commands.banlist.entry.unknown");
    }
 
+   @Nullable
    private static GameProfile createGameProfile(JsonObject var0) {
       if (var0.has("uuid") && var0.has("name")) {
          String var1 = var0.get("uuid").getAsString();
