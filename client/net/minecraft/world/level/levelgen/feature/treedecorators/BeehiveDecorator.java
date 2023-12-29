@@ -15,6 +15,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.block.BeehiveBlock;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
 public class BeehiveDecorator extends TreeDecorator {
@@ -58,12 +59,12 @@ public class BeehiveDecorator extends TreeDecorator {
             if (!var7.isEmpty()) {
                var1.setBlock((BlockPos)var7.get(), Blocks.BEE_NEST.defaultBlockState().setValue(BeehiveBlock.FACING, WORLDGEN_FACING));
                var1.level().getBlockEntity((BlockPos)var7.get(), BlockEntityType.BEEHIVE).ifPresent(var1x -> {
-                  int var2x = 2 + var2.nextInt(2);
+                  int var2xx = 2 + var2.nextInt(2);
 
-                  for(int var3x = 0; var3x < var2x; ++var3x) {
-                     CompoundTag var4x = new CompoundTag();
-                     var4x.putString("id", BuiltInRegistries.ENTITY_TYPE.getKey(EntityType.BEE).toString());
-                     var1x.storeBee(var4x, var2.nextInt(599), false);
+                  for(int var3xx = 0; var3xx < var2xx; ++var3xx) {
+                     CompoundTag var4xx = new CompoundTag();
+                     var4xx.putString("id", BuiltInRegistries.ENTITY_TYPE.getKey(EntityType.BEE).toString());
+                     var1x.storeBee(var4xx, var2.nextInt(599), false);
                   }
                });
             }

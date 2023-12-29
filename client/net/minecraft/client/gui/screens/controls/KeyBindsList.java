@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;

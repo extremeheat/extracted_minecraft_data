@@ -2,6 +2,7 @@ package net.minecraft.network.chat;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;

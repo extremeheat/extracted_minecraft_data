@@ -2,6 +2,7 @@ package net.minecraft.server.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import java.util.List;
@@ -34,13 +35,13 @@ public class TeamMsgCommand {
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
       LiteralCommandNode var1 = var0.register(
          (LiteralArgumentBuilder)Commands.literal("teammsg").then(Commands.argument("message", MessageArgument.message()).executes(var0x -> {
-            CommandSourceStack var1x = (CommandSourceStack)var0x.getSource();
-            Entity var2 = var1x.getEntityOrException();
+            CommandSourceStack var1xx = (CommandSourceStack)var0x.getSource();
+            Entity var2 = var1xx.getEntityOrException();
             PlayerTeam var3 = var2.getTeam();
             if (var3 == null) {
                throw ERROR_NOT_ON_TEAM.create();
             } else {
-               List var4 = var1x.getServer().getPlayerList().getPlayers().stream().filter(var2x -> var2x == var2 || var2x.getTeam() == var3).toList();
+               List var4 = var1xx.getServer().getPlayerList().getPlayers().stream().filter(var2x -> var2x == var2 || var2x.getTeam() == var3).toList();
                if (!var4.isEmpty()) {
                   MessageArgument.resolveChatMessage(var0x, "message", var4x -> sendMessage(var1x, var2, var3, var4, var4x));
                }

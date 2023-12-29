@@ -89,13 +89,13 @@ public class ChatListener {
       Component var6 = var3.decorate(var5.decoratedContent());
       Instant var7 = Instant.now();
       this.handleMessage(var1.signature(), () -> {
-         boolean var7x = this.showMessageToPlayer(var3, var1, var6, var2, var4, var7);
+         boolean var7xx = this.showMessageToPlayer(var3, var1, var6, var2, var4, var7);
          ClientPacketListener var8 = this.minecraft.getConnection();
          if (var8 != null) {
-            var8.markMessageAsProcessed(var1, var7x);
+            var8.markMessageAsProcessed(var1, var7xx);
          }
 
-         return var7x;
+         return var7xx;
       });
    }
 

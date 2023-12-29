@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -165,8 +166,8 @@ public class PistonBaseBlock extends DirectionalBlock {
       }
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public boolean triggerEvent(BlockState var1, Level var2, BlockPos var3, int var4, int var5) {
       Direction var6 = var1.getValue(FACING);

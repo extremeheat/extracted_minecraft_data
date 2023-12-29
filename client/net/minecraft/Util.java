@@ -146,7 +146,7 @@ public class Util {
       } else {
          AtomicInteger var3 = new AtomicInteger(1);
          var2 = new ForkJoinPool(var1, var2x -> {
-            ForkJoinWorkerThread var3x = new ForkJoinWorkerThread(var2x) {
+            ForkJoinWorkerThread var3xx = new ForkJoinWorkerThread(var2x) {
                @Override
                protected void onTermination(Throwable var1) {
                   if (var1 != null) {
@@ -158,8 +158,8 @@ public class Util {
                   super.onTermination(var1);
                }
             };
-            var3x.setName("Worker-" + var0 + "-" + var3.getAndIncrement());
-            return var3x;
+            var3xx.setName("Worker-" + var0 + "-" + var3.getAndIncrement());
+            return var3xx;
          }, Util::onThreadException, true);
       }
 
@@ -231,8 +231,8 @@ public class Util {
       throw var0 instanceof RuntimeException ? (RuntimeException)var0 : new RuntimeException(var0);
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private static void onThreadException(Thread var0, Throwable var1) {
       pauseInIde(var1);
       if (var1 instanceof CompletionException) {

@@ -375,17 +375,17 @@ public class GameRenderer implements AutoCloseable {
             Map var3 = var1.listResources(
                "shaders",
                var0 -> {
-                  String var1x = var0.getPath();
-                  return var1x.endsWith(".json")
-                     || var1x.endsWith(Program.Type.FRAGMENT.getExtension())
-                     || var1x.endsWith(Program.Type.VERTEX.getExtension())
-                     || var1x.endsWith(".glsl");
+                  String var1xx = var0.getPath();
+                  return var1xx.endsWith(".json")
+                     || var1xx.endsWith(Program.Type.FRAGMENT.getExtension())
+                     || var1xx.endsWith(Program.Type.VERTEX.getExtension())
+                     || var1xx.endsWith(".glsl");
                }
             );
             HashMap var4 = new HashMap();
             var3.forEach((var1x, var2x) -> {
-               try (InputStream var3x = var2x.open()) {
-                  byte[] var4x = var3x.readAllBytes();
+               try (InputStream var3xx = var2x.open()) {
+                  byte[] var4xx = var3xx.readAllBytes();
                   var4.put(var1x, new Resource(var2x.source(), () -> new ByteArrayInputStream(var4x)));
                } catch (Exception var8) {
                   GameRenderer.LOGGER.warn("Failed to read resource {}", var1x, var8);
@@ -789,9 +789,9 @@ public class GameRenderer implements AutoCloseable {
 
       this.shutdownShaders();
       var3.forEach(var1x -> {
-         ShaderInstance var2x = (ShaderInstance)var1x.getFirst();
-         this.shaders.put(var2x.getName(), var2x);
-         ((Consumer)var1x.getSecond()).accept(var2x);
+         ShaderInstance var2xx = (ShaderInstance)var1x.getFirst();
+         this.shaders.put(var2xx.getName(), var2xx);
+         ((Consumer)var1x.getSecond()).accept(var2xx);
       });
    }
 
@@ -885,8 +885,8 @@ public class GameRenderer implements AutoCloseable {
       }
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private void tickFov() {
       float var1 = 1.0F;
       Entity var3 = this.minecraft.getCameraEntity();
@@ -929,8 +929,8 @@ public class GameRenderer implements AutoCloseable {
       }
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private void bobHurt(PoseStack var1, float var2) {
       Entity var4 = this.minecraft.getCameraEntity();
       if (var4 instanceof LivingEntity var3) {
@@ -1210,20 +1210,20 @@ public class GameRenderer implements AutoCloseable {
       if (this.minecraft.levelRenderer.countRenderedSections() > 10 && this.minecraft.levelRenderer.hasRenderedAllSections()) {
          NativeImage var2 = Screenshot.takeScreenshot(this.minecraft.getMainRenderTarget());
          Util.ioPool().execute(() -> {
-            int var2x = var2.getWidth();
+            int var2xx = var2.getWidth();
             int var3 = var2.getHeight();
             int var4 = 0;
             int var5 = 0;
-            if (var2x > var3) {
-               var4 = (var2x - var3) / 2;
-               var2x = var3;
+            if (var2xx > var3) {
+               var4 = (var2xx - var3) / 2;
+               var2xx = var3;
             } else {
-               var5 = (var3 - var2x) / 2;
-               var3 = var2x;
+               var5 = (var3 - var2xx) / 2;
+               var3 = var2xx;
             }
 
             try (NativeImage var6 = new NativeImage(64, 64, false)) {
-               var2.resizeSubRectTo(var4, var5, var2x, var3, var6);
+               var2.resizeSubRectTo(var4, var5, var2xx, var3, var6);
                var6.writeToFile(var1);
             } catch (IOException var16) {
                LOGGER.warn("Couldn't save auto screenshot", var16);

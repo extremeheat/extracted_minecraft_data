@@ -3,6 +3,7 @@ package net.minecraft.world.level.storage.loot.providers.nbt;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.critereon.NbtPredicate;

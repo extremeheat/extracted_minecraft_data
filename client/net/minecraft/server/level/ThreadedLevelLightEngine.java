@@ -144,10 +144,10 @@ public class ThreadedLevelLightEngine extends LevelLightEngine implements AutoCl
    public CompletableFuture<ChunkAccess> initializeLight(ChunkAccess var1, boolean var2) {
       ChunkPos var3 = var1.getPos();
       this.addTask(var3.x, var3.z, ThreadedLevelLightEngine.TaskType.PRE_UPDATE, Util.name(() -> {
-         LevelChunkSection[] var3x = var1.getSections();
+         LevelChunkSection[] var3xx = var1.getSections();
 
          for(int var4 = 0; var4 < var1.getSectionsCount(); ++var4) {
-            LevelChunkSection var5 = var3x[var4];
+            LevelChunkSection var5 = var3xx[var4];
             if (!var5.hasOnlyAir()) {
                int var6 = this.levelHeightAccessor.getSectionYFromSectionIndex(var4);
                super.updateSectionStatus(SectionPos.of(var3, var6), false);

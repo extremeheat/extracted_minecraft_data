@@ -54,8 +54,8 @@ public class ChunkGeneratorStructureState {
 
    private static boolean hasBiomesForStructureSet(StructureSet var0, BiomeSource var1) {
       Stream var2 = var0.structures().stream().flatMap(var0x -> {
-         Structure var1x = var0x.structure().value();
-         return var1x.biomes().stream();
+         Structure var1xx = var0x.structure().value();
+         return var1xx.biomes().stream();
       });
       return var2.anyMatch(var1.possibleBiomes()::contains);
    }
@@ -120,7 +120,7 @@ public class ChunkGeneratorStructureState {
             var6.add(
                CompletableFuture.supplyAsync(
                   () -> {
-                     Pair var5x = this.biomeSource
+                     Pair var5xx = this.biomeSource
                         .findBiomeHorizontal(
                            SectionPos.sectionToBlockCoord(var17, 8),
                            0,
@@ -130,9 +130,9 @@ public class ChunkGeneratorStructureState {
                            var19,
                            this.randomState.sampler()
                         );
-                     if (var5x != null) {
-                        BlockPos var6x = (BlockPos)var5x.getFirst();
-                        return new ChunkPos(SectionPos.blockToSectionCoord(var6x.getX()), SectionPos.blockToSectionCoord(var6x.getZ()));
+                     if (var5xx != null) {
+                        BlockPos var6xx = (BlockPos)var5xx.getFirst();
+                        return new ChunkPos(SectionPos.blockToSectionCoord(var6xx.getX()), SectionPos.blockToSectionCoord(var6xx.getZ()));
                      } else {
                         return new ChunkPos(var17, var18);
                      }
@@ -151,8 +151,8 @@ public class ChunkGeneratorStructureState {
          }
 
          return Util.sequence(var6).thenApply((Function<? super List, ? extends List<ChunkPos>>)(var2x -> {
-            double var3x = (double)var3.stop().elapsed(TimeUnit.MILLISECONDS) / 1000.0;
-            LOGGER.debug("Calculation for {} took {}s", var1, var3x);
+            double var3xx = (double)var3.stop().elapsed(TimeUnit.MILLISECONDS) / 1000.0;
+            LOGGER.debug("Calculation for {} took {}s", var1, var3xx);
             return var2x;
          }));
       }

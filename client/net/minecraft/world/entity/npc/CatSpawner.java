@@ -2,6 +2,7 @@ package net.minecraft.world.entity.npc;
 
 import java.util.List;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.StructureTags;

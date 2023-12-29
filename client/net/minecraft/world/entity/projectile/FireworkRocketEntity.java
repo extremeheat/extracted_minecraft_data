@@ -100,9 +100,9 @@ public class FireworkRocketEntity extends Projectile implements ItemSupplier {
       if (this.isAttachedToEntity()) {
          if (this.attachedToEntity == null) {
             this.entityData.get(DATA_ATTACHED_TO_TARGET).ifPresent(var1x -> {
-               Entity var2x = this.level().getEntity(var1x);
-               if (var2x instanceof LivingEntity) {
-                  this.attachedToEntity = (LivingEntity)var2x;
+               Entity var2xx = this.level().getEntity(var1x);
+               if (var2xx instanceof LivingEntity) {
+                  this.attachedToEntity = (LivingEntity)var2xx;
                }
             });
          }

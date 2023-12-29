@@ -3,6 +3,7 @@ package net.minecraft.world.level.block;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.mojang.serialization.MapCodec;
+import java.util.EnumMap;
 import java.util.Map;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;

@@ -68,11 +68,11 @@ public class ChaseServer {
                   if (!var5.isClosed()) {
                      Util.ioPool().submit(() -> {
                         try {
-                           OutputStream var2x = var5.getOutputStream();
-                           var2x.write(var3);
-                           var2x.flush();
-                        } catch (IOException var3x) {
-                           LOGGER.info("Remote control client socket got an IO exception and will be closed", var3x);
+                           OutputStream var2xx = var5.getOutputStream();
+                           var2xx.write(var3);
+                           var2xx.flush();
+                        } catch (IOException var3xx) {
+                           LOGGER.info("Remote control client socket got an IO exception and will be closed", var3xx);
                            IOUtils.closeQuietly(var5);
                         }
                      });

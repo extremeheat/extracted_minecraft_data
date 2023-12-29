@@ -2,6 +2,7 @@ package net.minecraft.world.level.levelgen.structure.templatesystem;
 
 import com.google.common.collect.Maps;
 import com.mojang.serialization.Codec;
+import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;

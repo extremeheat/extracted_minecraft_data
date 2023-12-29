@@ -56,10 +56,10 @@ public class FontSet implements AutoCloseable {
 
       HashSet var5 = Sets.newHashSet();
       var2.forEach(var3 -> {
-         for(GlyphProvider var5x : var1) {
-            GlyphInfo var6 = var5x.getGlyph(var3);
+         for(GlyphProvider var5xx : var1) {
+            GlyphInfo var6 = var5xx.getGlyph(var3);
             if (var6 != null) {
-               var5.add(var5x);
+               var5.add(var5xx);
                if (var6 != SpecialGlyphs.MISSING) {
                   ((IntList)this.glyphsByWidth.computeIfAbsent(Mth.ceil(var6.getAdvance(false)), var0 -> new IntArrayList())).add(var3);
                }

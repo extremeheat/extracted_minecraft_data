@@ -46,8 +46,8 @@ public class ItemShulkerBoxColorFix extends DataFix {
          "ItemShulkerBoxColorFix",
          var1,
          var3x -> {
-            Optional var4x = var3x.getOptional(var2);
-            if (var4x.isPresent() && Objects.equals(((Pair)var4x.get()).getSecond(), "minecraft:shulker_box")) {
+            Optional var4xx = var3x.getOptional(var2);
+            if (var4xx.isPresent() && Objects.equals(((Pair)var4xx.get()).getSecond(), "minecraft:shulker_box")) {
                Optional var5 = var3x.getOptionalTyped(var3);
                if (var5.isPresent()) {
                   Typed var6 = (Typed)var5.get();

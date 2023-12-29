@@ -56,6 +56,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.MissingResourceException;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
@@ -105,6 +106,7 @@ import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.gui.screens.advancements.AdvancementsScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.gui.screens.recipebook.RecipeCollection;
 import net.minecraft.client.gui.screens.social.PlayerSocialManager;
 import net.minecraft.client.gui.screens.social.SocialInteractionsScreen;
 import net.minecraft.client.gui.screens.worldselection.WorldOpenFlows;
@@ -177,6 +179,7 @@ import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.contents.KeybindResolver;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
 import net.minecraft.network.protocol.login.ServerboundHelloPacket;
@@ -233,6 +236,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.PlayerHeadItem;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
@@ -428,8 +432,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.userPropertiesFuture = CompletableFuture.supplyAsync(() -> {
          try {
             return this.userApiService.fetchProperties();
-         } catch (AuthenticationException var2x) {
-            LOGGER.error("Failed to fetch user properties", var2x);
+         } catch (AuthenticationException var2xx) {
+            LOGGER.error("Failed to fetch user properties", var2xx);
             return UserApiService.OFFLINE_PROPERTIES;
          }
       }, Util.nonCriticalIoPool());
@@ -1395,8 +1399,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       } else {
          Consumer var2 = var2x -> {
             if (var2x != EmptyProfileResults.EMPTY) {
-               int var3x = var2x.getTickDuration();
-               double var4x = (double)var2x.getNanoDuration() / (double)TimeUtil.NANOSECONDS_PER_SECOND;
+               int var3xx = var2x.getTickDuration();
+               double var4xx = (double)var2x.getNanoDuration() / (double)TimeUtil.NANOSECONDS_PER_SECOND;
                this.execute(
                   () -> var1.accept(
                         Component.translatable(
@@ -1410,15 +1414,15 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             }
          };
          Consumer var3 = var2x -> {
-            MutableComponent var3x = Component.literal(var2x.toString())
+            MutableComponent var3xx = Component.literal(var2x.toString())
                .withStyle(ChatFormatting.UNDERLINE)
                .withStyle(var1xx -> var1xx.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, var2x.toFile().getParent())));
             this.execute(() -> var1.accept(Component.translatable("debug.profiling.stop", var3x)));
          };
          SystemReport var4 = fillSystemReport(new SystemReport(), this, this.languageManager, this.launchedVersion, this.options);
          Consumer var5 = var3x -> {
-            Path var4x = this.archiveProfilingReport(var4, var3x);
-            var3.accept(var4x);
+            Path var4xx = this.archiveProfilingReport(var4, var3x);
+            var3.accept(var4xx);
          };
          Consumer var6;
          if (this.singleplayerServer == null) {
@@ -1786,8 +1790,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       return this.musicManager;
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void tick() {
       ++this.clientTickCount;
       if (this.level != null && !this.pause) {
@@ -2059,9 +2063,9 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          SkullBlockEntity.setup(var6, this);
          GameProfileCache.setUsesAuthentication(false);
          this.singleplayerServer = MinecraftServer.spin(var5x -> new IntegratedServer(var5x, this, var1, var2, var3, var6, var1xx -> {
-               StoringChunkProgressListener var2xx = new StoringChunkProgressListener(var1xx + 0);
-               this.progressListener.set(var2xx);
-               return ProcessorChunkProgressListener.createStarted(var2xx, this.progressTasks::add);
+               StoringChunkProgressListener var2xxx = new StoringChunkProgressListener(var1xx + 0);
+               this.progressListener.set(var2xxx);
+               return ProcessorChunkProgressListener.createStarted(var2xxx, this.progressTasks::add);
             }));
          this.isLocalServer = true;
          this.updateReportEnvironment(ReportEnvironment.local());
@@ -2447,20 +2451,20 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          var0.setDetail("Graphics mode", var4.graphicsMode().get().toString());
          var0.setDetail("Render Distance", var4.getEffectiveRenderDistance() + "/" + var4.renderDistance().get() + " chunks");
          var0.setDetail("Resource Packs", () -> {
-            StringBuilder var1x = new StringBuilder();
+            StringBuilder var1xx = new StringBuilder();
 
-            for(String var3x : var4.resourcePacks) {
-               if (var1x.length() > 0) {
-                  var1x.append(", ");
+            for(String var3xx : var4.resourcePacks) {
+               if (var1xx.length() > 0) {
+                  var1xx.append(", ");
                }
 
-               var1x.append(var3x);
-               if (var4.incompatibleResourcePacks.contains(var3x)) {
-                  var1x.append(" (incompatible)");
+               var1xx.append(var3xx);
+               if (var4.incompatibleResourcePacks.contains(var3xx)) {
+                  var1xx.append(" (incompatible)");
                }
             }
 
-            return var1x.toString();
+            return var1xx.toString();
          });
       }
 

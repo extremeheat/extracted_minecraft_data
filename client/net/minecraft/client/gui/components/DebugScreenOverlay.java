@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.UnmodifiableIterator;
 import com.mojang.blaze3d.platform.GlUtil;
 import com.mojang.datafixers.DataFixUtils;
+import com.mojang.datafixers.util.Either;
 import it.unimi.dsi.fastutil.longs.LongSets;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import java.lang.management.GarbageCollectorMXBean;
@@ -42,9 +43,12 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.Connection;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.ServerTickRateManager;
+import net.minecraft.server.level.ChunkHolder;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.SampleLogger;
 import net.minecraft.world.DifficultyInstance;
@@ -60,6 +64,7 @@ import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
+import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -131,12 +136,12 @@ public class DebugScreenOverlay {
          this.drawGameInformation(var1);
          this.drawSystemInformation(var1);
          if (this.renderFpsCharts) {
-            int var2x = var1.guiWidth();
-            int var3 = var2x / 2;
+            int var2xx = var1.guiWidth();
+            int var3 = var2xx / 2;
             this.fpsChart.drawChart(var1, 0, this.fpsChart.getWidth(var3));
             if (this.minecraft.getSingleplayerServer() != null) {
                int var4 = this.tpsChart.getWidth(var3);
-               this.tpsChart.drawChart(var1, var2x - var4, var4);
+               this.tpsChart.drawChart(var1, var2xx - var4, var4);
             }
          }
 

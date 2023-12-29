@@ -140,10 +140,10 @@ public class PackSelectionScreen extends Screen {
       String var4 = var3 == null ? "" : var3.getPackId();
       var1.setSelected(null);
       var2.forEach(var3x -> {
-         TransferableSelectionList.PackEntry var4x = new TransferableSelectionList.PackEntry(this.minecraft, var1, var3x);
-         var1.children().add(var4x);
+         TransferableSelectionList.PackEntry var4xx = new TransferableSelectionList.PackEntry(this.minecraft, var1, var3x);
+         var1.children().add(var4xx);
          if (var3x.getId().equals(var4)) {
-            var1.setSelected(var4x);
+            var1.setSelected(var4xx);
          }
       });
    }
@@ -180,8 +180,8 @@ public class PackSelectionScreen extends Screen {
    protected static void copyPacks(Minecraft var0, List<Path> var1, Path var2) {
       MutableBoolean var3 = new MutableBoolean();
       var1.forEach(var2x -> {
-         try (Stream var3x = Files.walk(var2x)) {
-            var3x.forEach(var3xx -> {
+         try (Stream var3xx = Files.walk(var2x)) {
+            var3xx.forEach(var3xx -> {
                try {
                   Util.copyBetweenDirs(var2x.getParent(), var2, var3xx);
                } catch (IOException var5) {

@@ -46,7 +46,7 @@ public final class RandomState {
       class 1NoiseWiringHelper implements DensityFunction.Visitor {
          private final Map<DensityFunction, DensityFunction> wrapped = new HashMap<>();
 
-         _NoiseWiringHelper/* $QF was: 1NoiseWiringHelper*/() {
+         _NoiseWiringHelper/* $VF was: 1NoiseWiringHelper*/() {
             super();
          }
 
@@ -78,8 +78,8 @@ public final class RandomState {
             return new DensityFunction.NoiseHolder(var2, var3x);
          }
 
-         // $QF: Could not properly define all variable types!
-         // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+         // $VF: Could not properly define all variable types!
+         // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
          private DensityFunction wrapNew(DensityFunction var1) {
             if (var1 instanceof BlendedNoise var2) {
                RandomSource var3x = var5 ? this.newLegacyInstance(0L) : RandomState.this.random.fromHashOf(new ResourceLocation("terrain"));
@@ -99,8 +99,8 @@ public final class RandomState {
       DensityFunction.Visitor var6 = new DensityFunction.Visitor() {
          private final Map<DensityFunction, DensityFunction> wrapped = new HashMap<>();
 
-         // $QF: Could not properly define all variable types!
-         // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+         // $VF: Could not properly define all variable types!
+         // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
          private DensityFunction wrapNew(DensityFunction var1) {
             if (var1 instanceof DensityFunctions.HolderHolder var3) {
                return var3.function().value();

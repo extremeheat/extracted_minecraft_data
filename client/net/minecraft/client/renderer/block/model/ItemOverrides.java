@@ -49,8 +49,8 @@ public class ItemOverrides {
          ItemOverride var7 = (ItemOverride)var3.get(var6);
          BakedModel var8 = this.bakeModel(var1, var2, var7);
          ItemOverrides.PropertyMatcher[] var9 = var7.getPredicates().map(var1x -> {
-            int var2x = var4.getInt(var1x.getProperty());
-            return new ItemOverrides.PropertyMatcher(var2x, var1x.getValue());
+            int var2xx = var4.getInt(var1x.getProperty());
+            return new ItemOverrides.PropertyMatcher(var2xx, var1x.getValue());
          }).toArray(var0 -> new ItemOverrides.PropertyMatcher[var0]);
          var10.add(new ItemOverrides.BakedOverride(var9, var8));
       }

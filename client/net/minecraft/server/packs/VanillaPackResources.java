@@ -1,6 +1,7 @@
 package net.minecraft.server.packs;
 
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.DataResult.PartialResult;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;

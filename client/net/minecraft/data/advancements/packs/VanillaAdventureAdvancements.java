@@ -44,6 +44,7 @@ import net.minecraft.advancements.critereon.TradeTrigger;
 import net.minecraft.advancements.critereon.UsedTotemTrigger;
 import net.minecraft.advancements.critereon.UsingItemTrigger;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.advancements.AdvancementSubProvider;
@@ -712,8 +713,8 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
 
    private static Criterion<ItemUsedOnLocationTrigger.TriggerInstance> placedBlockReadByComparator(Block var0) {
       LootItemCondition.Builder[] var1 = ComparatorBlock.FACING.getPossibleValues().stream().map(var0x -> {
-         StatePropertiesPredicate.Builder var1x = StatePropertiesPredicate.Builder.properties().hasProperty(ComparatorBlock.FACING, var0x);
-         BlockPredicate.Builder var2 = BlockPredicate.Builder.block().of(Blocks.COMPARATOR).setProperties(var1x);
+         StatePropertiesPredicate.Builder var1xx = StatePropertiesPredicate.Builder.properties().hasProperty(ComparatorBlock.FACING, var0x);
+         BlockPredicate.Builder var2 = BlockPredicate.Builder.block().of(Blocks.COMPARATOR).setProperties(var1xx);
          return LocationCheck.checkLocation(LocationPredicate.Builder.location().setBlock(var2), new BlockPos(var0x.getOpposite().getNormal()));
       }).toArray(var0x -> new LootItemCondition.Builder[var0x]);
       return ItemUsedOnLocationTrigger.TriggerInstance.placedBlock(

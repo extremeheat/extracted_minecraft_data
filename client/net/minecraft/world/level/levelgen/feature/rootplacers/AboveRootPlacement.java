@@ -2,6 +2,7 @@ package net.minecraft.world.level.levelgen.feature.rootplacers;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 
 public record AboveRootPlacement(BlockStateProvider b, float c) {

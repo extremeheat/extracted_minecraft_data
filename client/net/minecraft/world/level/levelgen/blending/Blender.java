@@ -21,6 +21,7 @@ import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeResolver;
+import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.CarvingMask;
 import net.minecraft.world.level.chunk.ChunkAccess;
@@ -120,13 +121,13 @@ public class Blender {
             .forEach(
                (var5x, var6) -> var6.iterateHeights(
                      QuartPos.fromSection(ChunkPos.getX(var5x)), QuartPos.fromSection(ChunkPos.getZ(var5x)), (var5xx, var6x, var7x) -> {
-                        double var9x = Mth.length((double)(var3 - var5xx), (double)(var4 - var6x));
-                        if (!(var9x > (double)HEIGHT_BLENDING_RANGE_CELLS)) {
-                           if (var9x < var9.doubleValue()) {
-                              var9.setValue(var9x);
+                        double var9xx = Mth.length((double)(var3 - var5xx), (double)(var4 - var6x));
+                        if (!(var9xx > (double)HEIGHT_BLENDING_RANGE_CELLS)) {
+                           if (var9xx < var9.doubleValue()) {
+                              var9.setValue(var9xx);
                            }
          
-                           double var11 = 1.0 / (var9x * var9x * var9x * var9x);
+                           double var11 = 1.0 / (var9xx * var9xx * var9xx * var9xx);
                            var8.add(var7x * var11);
                            var7.add(var11);
                         }
@@ -170,13 +171,13 @@ public class Blender {
                      var5 - 1,
                      var5 + 1,
                      (var6xx, var7xx, var8, var9x) -> {
-                        double var11x = Mth.length((double)(var4 - var6xx), (double)((var5 - var7xx) * 2), (double)(var6 - var8));
-                        if (!(var11x > 2.0)) {
-                           if (var11x < var11.doubleValue()) {
-                              var11.setValue(var11x);
+                        double var11xx = Mth.length((double)(var4 - var6xx), (double)((var5 - var7xx) * 2), (double)(var6 - var8));
+                        if (!(var11xx > 2.0)) {
+                           if (var11xx < var11.doubleValue()) {
+                              var11.setValue(var11xx);
                            }
          
-                           double var13 = 1.0 / (var11x * var11x * var11x * var11x);
+                           double var13 = 1.0 / (var11xx * var11xx * var11xx * var11xx);
                            var10.add(var9x * var13);
                            var9.add(var13);
                         }
@@ -329,8 +330,8 @@ public class Blender {
          CarvingMask.Mask var13 = (var1x, var2x, var3x) -> {
             double var4 = (double)var1x + 0.5 + SHIFT_NOISE.getValue((double)var1x, (double)var2x, (double)var3x) * 4.0;
             double var6 = (double)var2x + 0.5 + SHIFT_NOISE.getValue((double)var2x, (double)var3x, (double)var1x) * 4.0;
-            double var8x = (double)var3x + 0.5 + SHIFT_NOISE.getValue((double)var3x, (double)var1x, (double)var2x) * 4.0;
-            return var12.getDistance(var4, var6, var8x) < 4.0;
+            double var8xx = (double)var3x + 0.5 + SHIFT_NOISE.getValue((double)var3x, (double)var1x, (double)var2x) * 4.0;
+            return var12.getDistance(var4, var6, var8xx) < 4.0;
          };
          Stream.of(GenerationStep.Carving.values()).map(var1::getOrCreateCarvingMask).forEach(var1x -> var1x.setAdditionalMask(var13));
       }

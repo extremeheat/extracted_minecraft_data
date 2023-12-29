@@ -57,8 +57,8 @@ public class BitStorageAlignFix extends DataFix {
          var2x -> var2x.updateTyped(
                var1,
                var1xx -> {
-                  int var2xx = var1xx.getOptional(var2).map(var0xxx -> Math.max(4, DataFixUtils.ceillog2(var0xxx.size()))).orElse(0);
-                  return var2xx != 0 && !Mth.isPowerOfTwo(var2xx)
+                  int var2xxx = var1xx.getOptional(var2).map(var0xxx -> Math.max(4, DataFixUtils.ceillog2(var0xxx.size()))).orElse(0);
+                  return var2xxx != 0 && !Mth.isPowerOfTwo(var2xxx)
                      ? var1xx.update(
                         DSL.remainderFinder(), var1xxx -> var1xxx.update("BlockStates", var2xxx -> updateBitStorage(var1xxx, var2xxx, 4096, var2xx))
                      )

@@ -17,8 +17,8 @@ public class ChorusFruitItem extends Item {
       super(var1);
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public ItemStack finishUsingItem(ItemStack var1, Level var2, LivingEntity var3) {
       ItemStack var4 = super.finishUsingItem(var1, var2, var3);

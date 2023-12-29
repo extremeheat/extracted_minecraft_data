@@ -20,6 +20,7 @@ import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.level.block.DoorBlock;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.Path;
@@ -159,9 +160,9 @@ public class InteractWithDoor {
          var1x.add(var4);
          return var1x;
       })).orElseGet(() -> {
-         HashSet var2x = Sets.newHashSet(new GlobalPos[]{var4});
-         var0.set(var2x);
-         return var2x;
+         HashSet var2xx = Sets.newHashSet(new GlobalPos[]{var4});
+         var0.set(var2xx);
+         return var2xx;
       }));
    }
 }

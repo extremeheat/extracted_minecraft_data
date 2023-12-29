@@ -7,6 +7,7 @@ import com.mojang.math.Axis;
 import com.mojang.realmsclient.client.Ping;
 import com.mojang.realmsclient.client.RealmsClient;
 import com.mojang.realmsclient.dto.PingResult;
+import com.mojang.realmsclient.dto.RealmsNews;
 import com.mojang.realmsclient.dto.RealmsNotification;
 import com.mojang.realmsclient.dto.RealmsServer;
 import com.mojang.realmsclient.exception.RealmsServiceException;
@@ -52,6 +53,7 @@ import net.minecraft.client.gui.components.PopupScreen;
 import net.minecraft.client.gui.components.SpriteIconButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.WidgetSprites;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.FrameLayout;
 import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
@@ -167,9 +169,9 @@ public class RealmsMainScreen extends RealmsScreen {
       );
       MutableComponent var2 = Component.translatable("mco.news");
       this.newsButton = new RealmsMainScreen.NotificationButton(var2, NEWS_SPRITE, var1x -> {
-         String var2x = this.newsLink;
-         if (var2x != null) {
-            ConfirmLinkScreen.confirmLinkNow(this, var2x);
+         String var2xx = this.newsLink;
+         if (var2xx != null) {
+            ConfirmLinkScreen.confirmLinkNow(this, var2xx);
             if (this.newsButton.notificationCount() != 0) {
                RealmsPersistence.RealmsPersistenceData var3 = RealmsPersistence.readFile();
                var3.hasUnreadNews = false;
@@ -199,11 +201,11 @@ public class RealmsMainScreen extends RealmsScreen {
       this.updateLayout(RealmsMainScreen.LayoutState.LOADING);
       this.updateButtonStates();
       this.availability.thenAcceptAsync(var1x -> {
-         Screen var2x = var1x.createErrorScreen(this.lastScreen);
-         if (var2x == null) {
+         Screen var2xx = var1x.createErrorScreen(this.lastScreen);
+         if (var2xx == null) {
             this.dataSubscription = this.initDataFetcher(this.minecraft.realmsDataFetcher());
          } else {
-            this.minecraft.setScreen(var2x);
+            this.minecraft.setScreen(var2xx);
          }
       }, this.screenExecutor);
    }
@@ -356,15 +358,15 @@ public class RealmsMainScreen extends RealmsScreen {
          this.serverList.updateServersList(var1x.serverList());
          this.availableSnapshotServers = var1x.availableSnapshotServers();
          this.refreshListAndLayout();
-         boolean var2x = false;
+         boolean var2xx = false;
 
          for(RealmsServer var4 : this.serverList) {
             if (this.isSelfOwnedNonExpiredServer(var4)) {
-               var2x = true;
+               var2xx = true;
             }
          }
 
-         if (!regionsPinged && var2x) {
+         if (!regionsPinged && var2xx) {
             regionsPinged = true;
             this.pingRegions();
          }
@@ -673,15 +675,15 @@ public class RealmsMainScreen extends RealmsScreen {
 
    private static void confirmToPlay(RealmsServer var0, Screen var1, Component var2, Component var3, Component var4) {
       Minecraft.getInstance().setScreen(new ConfirmScreen(var2x -> {
-         Object var3x;
+         Object var3xx;
          if (var2x) {
-            var3x = new RealmsLongRunningMcoTaskScreen(var1, new GetServerDetailsTask(var1, var0));
+            var3xx = new RealmsLongRunningMcoTaskScreen(var1, new GetServerDetailsTask(var1, var0));
             refreshServerList();
          } else {
-            var3x = var1;
+            var3xx = var1;
          }
 
-         Minecraft.getInstance().setScreen((Screen)var3x);
+         Minecraft.getInstance().setScreen((Screen)var3xx);
       }, var2, var3, var4, CommonComponents.GUI_CANCEL));
    }
 

@@ -266,8 +266,8 @@ public class BookViewScreen extends Screen {
       if (Minecraft.getInstance().isTextFilteringEnabled() && var0.contains("filtered_pages", 10)) {
          CompoundTag var4 = var0.getCompound("filtered_pages");
          var2 = var2x -> {
-            String var3x = String.valueOf(var2x);
-            return var4.contains(var3x) ? var4.getString(var3x) : var3.getString(var2x);
+            String var3xx = String.valueOf(var2x);
+            return var4.contains(var3xx) ? var4.getString(var3xx) : var3.getString(var2x);
          };
       } else {
          var2 = var3::getString;

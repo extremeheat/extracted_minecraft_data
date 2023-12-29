@@ -56,8 +56,8 @@ public interface BlockGetter extends LevelHeightAccessor {
                : null;
          },
          var0 -> {
-            Vec3 var1x = var0.getFrom().subtract(var0.getTo());
-            return BlockHitResult.miss(var0.getTo(), Direction.getNearest(var1x.x, var1x.y, var1x.z), BlockPos.containing(var0.getTo()));
+            Vec3 var1xx = var0.getFrom().subtract(var0.getTo());
+            return BlockHitResult.miss(var0.getTo(), Direction.getNearest(var1xx.x, var1xx.y, var1xx.z), BlockPos.containing(var0.getTo()));
          }
       );
    }
@@ -76,8 +76,8 @@ public interface BlockGetter extends LevelHeightAccessor {
          double var13 = var10 == null ? 1.7976931348623157E308 : var1x.getFrom().distanceToSqr(var10.getLocation());
          return var11 <= var13 ? var8 : var10;
       }, var0 -> {
-         Vec3 var1x = var0.getFrom().subtract(var0.getTo());
-         return BlockHitResult.miss(var0.getTo(), Direction.getNearest(var1x.x, var1x.y, var1x.z), BlockPos.containing(var0.getTo()));
+         Vec3 var1xx = var0.getFrom().subtract(var0.getTo());
+         return BlockHitResult.miss(var0.getTo(), Direction.getNearest(var1xx.x, var1xx.y, var1xx.z), BlockPos.containing(var0.getTo()));
       });
    }
 

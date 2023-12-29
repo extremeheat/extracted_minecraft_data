@@ -7,6 +7,7 @@ import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.entity.layers.ShulkerHeadLayer;
+import net.minecraft.client.resources.model.Material;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.monster.Shulker;
@@ -38,13 +39,13 @@ public class ShulkerRenderer extends MobRenderer<Shulker, ShulkerModel<Shulker>>
          : var1.getRenderPosition(0.0F)
             .filter(
                var2x -> {
-                  EntityType var3x = var1.getType();
-                  float var4 = var3x.getHeight() / 2.0F;
-                  float var5x = var3x.getWidth() / 2.0F;
+                  EntityType var3xx = var1.getType();
+                  float var4 = var3xx.getHeight() / 2.0F;
+                  float var5xx = var3xx.getWidth() / 2.0F;
                   Vec3 var6 = Vec3.atBottomCenterOf(var1.blockPosition());
                   return var2.isVisible(
                      new AABB(var2x.x, var2x.y + (double)var4, var2x.z, var6.x, var6.y + (double)var4, var6.z)
-                        .inflate((double)var5x, (double)var4, (double)var5x)
+                        .inflate((double)var5xx, (double)var4, (double)var5xx)
                   );
                }
             )

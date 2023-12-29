@@ -2,7 +2,9 @@ package net.minecraft.world.level.levelgen;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.DataResult.PartialResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.function.Function;
 import net.minecraft.core.QuartPos;
 import net.minecraft.world.level.LevelHeightAccessor;

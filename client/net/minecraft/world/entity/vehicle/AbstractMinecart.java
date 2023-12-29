@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.UnmodifiableIterator;
 import com.mojang.datafixers.util.Pair;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;

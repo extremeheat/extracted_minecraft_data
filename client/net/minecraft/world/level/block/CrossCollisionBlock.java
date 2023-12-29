@@ -5,6 +5,7 @@ import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -109,24 +110,24 @@ public abstract class CrossCollisionBlock extends Block implements SimpleWaterlo
 
    protected int getAABBIndex(BlockState var1) {
       return this.stateToIndex.computeIntIfAbsent(var1, var0 -> {
-         int var1x = 0;
+         int var1xx = 0;
          if (var0.getValue(NORTH)) {
-            var1x |= indexFor(Direction.NORTH);
+            var1xx |= indexFor(Direction.NORTH);
          }
 
          if (var0.getValue(EAST)) {
-            var1x |= indexFor(Direction.EAST);
+            var1xx |= indexFor(Direction.EAST);
          }
 
          if (var0.getValue(SOUTH)) {
-            var1x |= indexFor(Direction.SOUTH);
+            var1xx |= indexFor(Direction.SOUTH);
          }
 
          if (var0.getValue(WEST)) {
-            var1x |= indexFor(Direction.WEST);
+            var1xx |= indexFor(Direction.WEST);
          }
 
-         return var1x;
+         return var1xx;
       });
    }
 

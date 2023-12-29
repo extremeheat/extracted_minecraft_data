@@ -112,8 +112,8 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
       }
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private void updateArmorStandPreview(ItemStack var1) {
       if (this.armorStandPreview != null) {
          for(EquipmentSlot var5 : EquipmentSlot.values()) {
@@ -139,8 +139,8 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
       }
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private void renderOnboardingTooltips(GuiGraphics var1, int var2, int var3) {
       Optional var4 = Optional.empty();
       if (this.hasRecipeError() && this.isHovering(65, 46, 28, 21, (double)var2, (double)var3)) {

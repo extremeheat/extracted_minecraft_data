@@ -5,6 +5,7 @@ import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.CrafterBlock;
 
@@ -115,8 +116,8 @@ public class CrafterMenu extends AbstractContainerMenu implements ContainerListe
       return this.container.stillValid(var1);
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private void refreshRecipeResult() {
       Player var2 = this.player;
       if (var2 instanceof ServerPlayer var1) {

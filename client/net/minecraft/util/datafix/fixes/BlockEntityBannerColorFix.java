@@ -5,6 +5,7 @@ import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
+import java.util.stream.Stream;
 
 public class BlockEntityBannerColorFix extends NamedEntityFix {
    public BlockEntityBannerColorFix(Schema var1, boolean var2) {

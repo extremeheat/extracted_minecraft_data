@@ -4,7 +4,9 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 

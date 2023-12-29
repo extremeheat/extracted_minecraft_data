@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -1841,10 +1842,10 @@ public class CreativeModeTabs {
       CreativeModeTab.TabVisibility var3
    ) {
       var1.listElements().filter(var2).sorted(PAINTING_COMPARATOR).forEach(var2x -> {
-         ItemStack var3x = new ItemStack(Items.PAINTING);
-         CompoundTag var4 = var3x.getOrCreateTagElement("EntityTag");
+         ItemStack var3xx = new ItemStack(Items.PAINTING);
+         CompoundTag var4 = var3xx.getOrCreateTagElement("EntityTag");
          Painting.storeVariant(var4, var2x);
-         var0.accept(var3x, var3);
+         var0.accept(var3xx, var3);
       });
    }
 

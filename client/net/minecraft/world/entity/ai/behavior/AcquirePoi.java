@@ -2,6 +2,7 @@ package net.minecraft.world.entity.ai.behavior;
 
 import com.mojang.datafixers.util.Pair;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap.Entry;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -12,10 +13,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Holder;
 import net.minecraft.network.protocol.game.DebugPackets;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
+import net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiType;
@@ -57,13 +60,13 @@ public class AcquirePoi {
                            PoiManager var10 = var6xx.getPoiManager();
                            var8.long2ObjectEntrySet().removeIf(var2xxxx -> !((AcquirePoi.JitteredLinearRetry)var2xxxx.getValue()).isStillValid(var8x));
                            Predicate var11 = var3xxxx -> {
-                              AcquirePoi.JitteredLinearRetry var4xxxx = (AcquirePoi.JitteredLinearRetry)var8.get(var3xxxx.asLong());
-                              if (var4xxxx == null) {
+                              AcquirePoi.JitteredLinearRetry var4xxxxx = (AcquirePoi.JitteredLinearRetry)var8.get(var3xxxx.asLong());
+                              if (var4xxxxx == null) {
                                  return true;
-                              } else if (!var4xxxx.shouldRetry(var8x)) {
+                              } else if (!var4xxxxx.shouldRetry(var8x)) {
                                  return false;
                               } else {
-                                 var4xxxx.markAttempt(var8x);
+                                 var4xxxxx.markAttempt(var8x);
                                  return true;
                               }
                            };

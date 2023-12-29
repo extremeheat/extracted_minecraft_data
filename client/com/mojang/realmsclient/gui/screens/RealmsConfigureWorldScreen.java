@@ -172,25 +172,25 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
       int var2 = this.frame(var1);
       int var3 = row(5) + 5;
       RealmsWorldSlotButton var4 = new RealmsWorldSlotButton(var2, var3, 80, 80, var1, var2x -> {
-         RealmsWorldSlotButton.State var3x = ((RealmsWorldSlotButton)var2x).getState();
-         if (var3x != null) {
-            switch(var3x.action) {
+         RealmsWorldSlotButton.State var3xx = ((RealmsWorldSlotButton)var2x).getState();
+         if (var3xx != null) {
+            switch(var3xx.action) {
                case NOTHING:
                   break;
                case JOIN:
                   this.joinRealm(this.serverData);
                   break;
                case SWITCH_SLOT:
-                  if (var3x.minigame) {
+                  if (var3xx.minigame) {
                      this.switchToMinigame();
-                  } else if (var3x.empty) {
+                  } else if (var3xx.empty) {
                      this.switchToEmptySlot(var1, this.serverData);
                   } else {
                      this.switchToFullSlot(var1, this.serverData);
                   }
                   break;
                default:
-                  throw new IllegalStateException("Unknown action " + var3x.action);
+                  throw new IllegalStateException("Unknown action " + var3xx.action);
             }
          }
       });
@@ -267,8 +267,8 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
                   this.show(this.resetWorldButton);
                }
 
-               for(RealmsWorldSlotButton var3x : this.slotButtonList) {
-                  var3x.setServerData(var4);
+               for(RealmsWorldSlotButton var3xx : this.slotButtonList) {
+                  var3xx.setServerData(var4);
                }
             });
          } catch (RealmsServiceException var5) {
@@ -340,10 +340,10 @@ public class RealmsConfigureWorldScreen extends RealmsScreen {
                var3x -> {
                   if (var3x) {
                      this.stateChanged();
-                     RealmsResetWorldScreen var4x = RealmsResetWorldScreen.forEmptySlot(
+                     RealmsResetWorldScreen var4xx = RealmsResetWorldScreen.forEmptySlot(
                         this, var1, var2, () -> this.minecraft.execute(() -> this.minecraft.setScreen(this.getNewScreen()))
                      );
-                     this.minecraft.setScreen(var4x);
+                     this.minecraft.setScreen(var4xx);
                   } else {
                      this.minecraft.setScreen(this);
                   }

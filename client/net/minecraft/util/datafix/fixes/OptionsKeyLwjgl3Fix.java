@@ -4,11 +4,14 @@ import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.TypeRewriteRule;
+import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 public class OptionsKeyLwjgl3Fix extends DataFix {
@@ -139,9 +142,9 @@ public class OptionsKeyLwjgl3Fix extends DataFix {
          var0 -> var0.update(
                DSL.remainderFinder(), var0x -> (Dynamic)var0x.getMapValues().map(var1 -> var0x.createMap(var1.entrySet().stream().map(var0xxx -> {
                         if (((Dynamic)var0xxx.getKey()).asString("").startsWith("key_")) {
-                           int var1x = Integer.parseInt(((Dynamic)var0xxx.getValue()).asString(""));
-                           if (var1x < 0) {
-                              int var4 = var1x + 100;
+                           int var1xx = Integer.parseInt(((Dynamic)var0xxx.getValue()).asString(""));
+                           if (var1xx < 0) {
+                              int var4 = var1xx + 100;
                               String var3;
                               if (var4 == 0) {
                                  var3 = "key.mouse.left";
@@ -155,7 +158,7 @@ public class OptionsKeyLwjgl3Fix extends DataFix {
       
                               return Pair.of((Dynamic)var0xxx.getKey(), ((Dynamic)var0xxx.getValue()).createString(var3));
                            } else {
-                              String var2 = (String)MAP.getOrDefault(var1x, "key.unknown");
+                              String var2 = (String)MAP.getOrDefault(var1xx, "key.unknown");
                               return Pair.of((Dynamic)var0xxx.getKey(), ((Dynamic)var0xxx.getValue()).createString(var2));
                            }
                         } else {

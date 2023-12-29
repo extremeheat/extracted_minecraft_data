@@ -25,9 +25,9 @@ public class ItemWaterPotionFix extends DataFix {
          "ItemWaterPotionFix",
          var1,
          var2x -> {
-            Optional var3x = var2x.getOptional(var2);
-            if (var3x.isPresent()) {
-               String var4 = (String)((Pair)var3x.get()).getSecond();
+            Optional var3xx = var2x.getOptional(var2);
+            if (var3xx.isPresent()) {
+               String var4 = (String)((Pair)var3xx.get()).getSecond();
                if ("minecraft:potion".equals(var4)
                   || "minecraft:splash_potion".equals(var4)
                   || "minecraft:lingering_potion".equals(var4)

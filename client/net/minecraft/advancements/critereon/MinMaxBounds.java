@@ -7,6 +7,7 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -41,8 +42,8 @@ public interface MinMaxBounds<T extends Number> {
       );
       return Codec.either(var2, var0)
          .xmap(var1x -> (MinMaxBounds)var1x.map(var0xx -> var0xx, var1xx -> var1.create(Optional.of(var1xx), Optional.of(var1xx))), var0x -> {
-            Optional var1x = var0x.unwrapPoint();
-            return var1x.isPresent() ? Either.right((Number)var1x.get()) : Either.left(var0x);
+            Optional var1xx = var0x.unwrapPoint();
+            return var1xx.isPresent() ? Either.right((Number)var1xx.get()) : Either.left(var0x);
          });
    }
 

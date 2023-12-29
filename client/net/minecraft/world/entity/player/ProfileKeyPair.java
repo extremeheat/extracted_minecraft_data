@@ -2,6 +2,7 @@ package net.minecraft.world.entity.player;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.security.PrivateKey;
 import java.time.Instant;
 import net.minecraft.util.Crypt;

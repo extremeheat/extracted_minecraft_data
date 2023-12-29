@@ -34,6 +34,7 @@ import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.CriterionProgress;
 import net.minecraft.advancements.CriterionTrigger;
 import net.minecraft.advancements.CriterionTriggerInstance;
+import net.minecraft.advancements.DisplayInfo;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.protocol.game.ClientboundSelectAdvancementsTabPacket;
 import net.minecraft.network.protocol.game.ClientboundUpdateAdvancementsPacket;

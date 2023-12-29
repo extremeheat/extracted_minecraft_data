@@ -6,6 +6,7 @@ import com.google.common.collect.Sets;
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.ParseResults;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import java.time.Instant;
@@ -43,6 +44,7 @@ import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.HorseInventoryScreen;
 import net.minecraft.client.gui.screens.multiplayer.ServerReconfigScreen;
 import net.minecraft.client.gui.screens.recipebook.RecipeBookComponent;
+import net.minecraft.client.gui.screens.recipebook.RecipeCollection;
 import net.minecraft.client.gui.screens.recipebook.RecipeUpdateListener;
 import net.minecraft.client.particle.ItemPickupParticle;
 import net.minecraft.client.player.KeyboardInput;
@@ -276,6 +278,7 @@ import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.MapItem;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Explosion;
@@ -685,9 +688,9 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       ClientboundLightUpdatePacketData var4 = var1.getLightData();
       this.level.queueLightUpdate(() -> {
          this.applyLightData(var2, var3, var4);
-         LevelChunk var4x = this.level.getChunkSource().getChunk(var2, var3, false);
-         if (var4x != null) {
-            this.enableChunkLight(var4x, var2, var3);
+         LevelChunk var4xx = this.level.getChunkSource().getChunk(var2, var3, false);
+         if (var4xx != null) {
+            this.enableChunkLight(var4xx, var2, var3);
          }
       });
    }
@@ -742,17 +745,17 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    private void queueLightRemoval(ClientboundForgetLevelChunkPacket var1) {
       ChunkPos var2 = var1.pos();
       this.level.queueLightUpdate(() -> {
-         LevelLightEngine var2x = this.level.getLightEngine();
-         var2x.setLightEnabled(var2, false);
+         LevelLightEngine var2xx = this.level.getLightEngine();
+         var2xx.setLightEnabled(var2, false);
 
-         for(int var3 = var2x.getMinLightSection(); var3 < var2x.getMaxLightSection(); ++var3) {
+         for(int var3 = var2xx.getMinLightSection(); var3 < var2xx.getMaxLightSection(); ++var3) {
             SectionPos var4 = SectionPos.of(var2, var3);
-            var2x.queueSectionData(LightLayer.BLOCK, var4, null);
-            var2x.queueSectionData(LightLayer.SKY, var4, null);
+            var2xx.queueSectionData(LightLayer.BLOCK, var4, null);
+            var2xx.queueSectionData(LightLayer.SKY, var4, null);
          }
 
          for(int var5 = this.level.getMinSection(); var5 < this.level.getMaxSection(); ++var5) {
-            var2x.updateSectionStatus(SectionPos.of(var2, var5), true);
+            var2xx.updateSectionStatus(SectionPos.of(var2, var5), true);
          }
       });
    }
@@ -788,8 +791,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       this.send(new ServerboundConfigurationAcknowledgedPacket());
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void handleTakeItemEntity(ClientboundTakeItemEntityPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
@@ -1176,8 +1179,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       MenuScreens.create(var1.getType(), this.minecraft, var1.getContainerId(), var1.getTitle());
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void handleContainerSetSlot(ClientboundContainerSetSlotPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
@@ -1865,8 +1868,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       }
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void handleCustomPayload(CustomPacketPayload var1) {
       if (var1 instanceof PathfindingDebugPayload var2) {
@@ -2007,14 +2010,14 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          var3.setDisplayName(var1x.getDisplayName());
          var3.setColor(var1x.getColor());
          var3.unpackOptions(var1x.getOptions());
-         Team.Visibility var2x = Team.Visibility.byName(var1x.getNametagVisibility());
-         if (var2x != null) {
-            var3.setNameTagVisibility(var2x);
+         Team.Visibility var2xx = Team.Visibility.byName(var1x.getNametagVisibility());
+         if (var2xx != null) {
+            var3.setNameTagVisibility(var2xx);
          }
 
-         Team.CollisionRule var3x = Team.CollisionRule.byName(var1x.getCollisionRule());
-         if (var3x != null) {
-            var3.setCollisionRule(var3x);
+         Team.CollisionRule var3xx = Team.CollisionRule.byName(var1x.getCollisionRule());
+         if (var3xx != null) {
+            var3.setCollisionRule(var3xx);
          }
 
          var3.setPlayerPrefix(var1x.getPlayerPrefix());
@@ -2132,8 +2135,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       var4.setLightEnabled(new ChunkPos(var1, var2), true);
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void handleMerchantOffers(ClientboundMerchantOffersPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
@@ -2308,8 +2311,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       long var3 = Crypt.SaltSupplier.getLong();
       LastSeenMessagesTracker.Update var5 = this.lastSeenMessages.generateAndApplyUpdate();
       ArgumentSignatures var6 = ArgumentSignatures.signCommand(SignableCommand.of(this.parseCommand(var1)), var5x -> {
-         SignedMessageBody var6x = new SignedMessageBody(var5x, var2, var3, var5.lastSeen());
-         return this.signedMessageEncoder.pack(var6x);
+         SignedMessageBody var6xx = new SignedMessageBody(var5x, var2, var3, var5.lastSeen());
+         return this.signedMessageEncoder.pack(var6xx);
       });
       this.send(new ServerboundChatCommandPacket(var1, var2, var3, var6, var5.update()));
    }

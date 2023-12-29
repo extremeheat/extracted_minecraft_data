@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -64,10 +65,10 @@ public class LootPool {
 
       for(LootPoolEntryContainer var7 : this.entries) {
          var7.expand(var2, var3x -> {
-            int var4x = var3x.getWeight(var2.getLuck());
-            if (var4x > 0) {
+            int var4xx = var3x.getWeight(var2.getLuck());
+            if (var4xx > 0) {
                var4.add(var3x);
-               var5.add(var4x);
+               var5.add(var4xx);
             }
          });
       }

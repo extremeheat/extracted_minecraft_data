@@ -51,12 +51,12 @@ public class SkinManager {
                   if (var2 == null) {
                      return MinecraftProfileTextures.EMPTY;
                   } else {
-                     MinecraftProfileTextures var3x = var3.unpackTextures(var2);
-                     if (var3x.signatureState() == SignatureState.INVALID) {
+                     MinecraftProfileTextures var3xx = var3.unpackTextures(var2);
+                     if (var3xx.signatureState() == SignatureState.INVALID) {
                         SkinManager.LOGGER.warn("Profile contained invalid signature for textures property (profile id: {})", var1.profileId());
                      }
    
-                     return var3x;
+                     return var3xx;
                   }
                }, Util.backgroundExecutor()).thenComposeAsync(var2 -> SkinManager.this.registerTextures(var1.profileId(), var2), var4);
             }

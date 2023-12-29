@@ -91,8 +91,8 @@ public class PowderSnowBlock extends Block implements BucketPickup {
       }
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void fallOn(Level var1, BlockState var2, BlockPos var3, Entity var4, float var5) {
       if (!((double)var5 < 4.0) && var4 instanceof LivingEntity var6) {
@@ -102,8 +102,8 @@ public class PowderSnowBlock extends Block implements BucketPickup {
       }
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       if (var4 instanceof EntityCollisionContext var5) {

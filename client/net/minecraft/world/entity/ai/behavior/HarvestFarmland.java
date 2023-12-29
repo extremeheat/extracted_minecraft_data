@@ -100,8 +100,8 @@ public class HarvestFarmland extends Behavior<Villager> {
       this.nextOkStartTime = var3 + 40L;
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    protected void tick(ServerLevel var1, Villager var2, long var3) {
       if (this.aboveFarmlandPos == null || this.aboveFarmlandPos.closerToCenterThan(var2.position(), 1.0)) {
          if (this.aboveFarmlandPos != null && var3 > this.nextOkStartTime) {

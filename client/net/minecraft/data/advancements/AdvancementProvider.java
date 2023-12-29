@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
@@ -33,8 +34,8 @@ public class AdvancementProvider implements DataProvider {
             if (!var3.add(var4x.id())) {
                throw new IllegalStateException("Duplicate advancement " + var4x.id());
             } else {
-               Path var5x = this.pathProvider.json(var4x.id());
-               var4.add(DataProvider.saveStable(var1, Advancement.CODEC, var4x.value(), var5x));
+               Path var5xx = this.pathProvider.json(var4x.id());
+               var4.add(DataProvider.saveStable(var1, Advancement.CODEC, var4x.value(), var5xx));
             }
          };
 

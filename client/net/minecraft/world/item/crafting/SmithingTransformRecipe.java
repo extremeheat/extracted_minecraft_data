@@ -2,6 +2,7 @@ package net.minecraft.world.item.crafting;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.stream.Stream;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;

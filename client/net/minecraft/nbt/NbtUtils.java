@@ -130,8 +130,8 @@ public final class NbtUtils {
       return var0;
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @VisibleForTesting
    public static boolean compareNbt(@Nullable Tag var0, @Nullable Tag var1, boolean var2) {
       if (var0 == var1) {
@@ -525,13 +525,13 @@ public final class NbtUtils {
          ListTag var4 = new ListTag();
          ListTag var5 = var0.getList("palettes", 9);
          var5.stream().map(ListTag.class::cast).forEach(var2x -> {
-            CompoundTag var3x = new CompoundTag();
+            CompoundTag var3xx = new CompoundTag();
 
-            for(int var4x = 0; var4x < var2x.size(); ++var4x) {
-               var3x.putString(var3.getString(var4x), packBlockState(var2x.getCompound(var4x)));
+            for(int var4xx = 0; var4xx < var2x.size(); ++var4xx) {
+               var3xx.putString(var3.getString(var4xx), packBlockState(var2x.getCompound(var4xx)));
             }
 
-            var4.add(var3x);
+            var4.add(var3xx);
          });
          var0.put("palettes", var4);
       }
@@ -628,9 +628,9 @@ public final class NbtUtils {
          if (var2 + 2 <= var0.length()) {
             String var5 = var0.substring(var2 + 1, var0.indexOf(125, var2));
             COMMA_SPLITTER.split(var5).forEach(var2x -> {
-               List var3x = COLON_SPLITTER.splitToList(var2x);
-               if (var3x.size() == 2) {
-                  var4.putString((String)var3x.get(0), (String)var3x.get(1));
+               List var3xx = COLON_SPLITTER.splitToList(var2x);
+               if (var3xx.size() == 2) {
+                  var4.putString((String)var3xx.get(0), (String)var3xx.get(1));
                } else {
                   LOGGER.error("Something went wrong parsing: '{}' -- incorrect gamedata!", var0);
                }

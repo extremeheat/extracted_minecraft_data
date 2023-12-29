@@ -11,6 +11,7 @@ import net.minecraft.client.gui.components.CommonButtons;
 import net.minecraft.client.gui.components.FocusableTextWidget;
 import net.minecraft.client.gui.components.LogoRenderer;
 import net.minecraft.client.gui.layouts.FrameLayout;
+import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.renderer.PanoramaRenderer;
 import net.minecraft.network.chat.CommonComponents;

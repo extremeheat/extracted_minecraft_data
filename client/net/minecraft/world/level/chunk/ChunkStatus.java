@@ -83,12 +83,12 @@ public class ChunkStatus {
          WorldGenRegion var9 = new WorldGenRegion(var2, var7, var0, 0);
          return var3.fillFromNoise(var1, Blender.of(var9), var2.getChunkSource().randomState(), var2.structureManager().forWorldGenRegion(var9), var8)
             .thenApply(var0x -> {
-               if (var0x instanceof ProtoChunk var1x) {
-                  BelowZeroRetrogen var2x = ((ProtoChunk)var1x).getBelowZeroRetrogen();
-                  if (var2x != null) {
-                     BelowZeroRetrogen.replaceOldBedrock((ProtoChunk)var1x);
-                     if (var2x.hasBedrockHoles()) {
-                        var2x.applyBedrockMask((ProtoChunk)var1x);
+               if (var0x instanceof ProtoChunk var1xx) {
+                  BelowZeroRetrogen var2xx = ((ProtoChunk)var1xx).getBelowZeroRetrogen();
+                  if (var2xx != null) {
+                     BelowZeroRetrogen.replaceOldBedrock((ProtoChunk)var1xx);
+                     if (var2xx.hasBedrockHoles()) {
+                        var2xx.applyBedrockMask((ProtoChunk)var1xx);
                      }
                   }
                }
@@ -325,8 +325,8 @@ public class ChunkStatus {
       ProfiledDuration var9 = JvmProfiler.INSTANCE.onChunkGenerate(var8.getPos(), var2.dimension(), this.toString());
       return this.generationTask.doWork(this, var1, var2, var3, var4, var5, var6, var7, var8).thenApply(var2x -> {
          var2x.ifLeft(var1xx -> {
-            if (var1xx instanceof ProtoChunk var2xx && !var2xx.getStatus().isOrAfter(this)) {
-               var2xx.setStatus(this);
+            if (var1xx instanceof ProtoChunk var2xxx && !var2xxx.getStatus().isOrAfter(this)) {
+               var2xxx.setStatus(this);
             }
          });
          if (var9 != null) {

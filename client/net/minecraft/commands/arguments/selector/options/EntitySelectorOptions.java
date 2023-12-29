@@ -14,8 +14,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Map.Entry;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.advancements.CriterionProgress;
 import net.minecraft.advancements.critereon.MinMaxBounds;
 import net.minecraft.advancements.critereon.WrappedMinMaxBounds;
@@ -36,6 +38,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -201,25 +204,25 @@ public class EntitySelectorOptions {
          }, var0 -> !var0.isCurrentEntity() && !var0.isSorted(), Component.translatable("argument.entity.options.sort.description"));
          register("gamemode", var0 -> {
             var0.setSuggestions((var1x, var2x) -> {
-               String var3x = var1x.getRemaining().toLowerCase(Locale.ROOT);
-               boolean var4x = !var0.hasGamemodeNotEquals();
+               String var3xx = var1x.getRemaining().toLowerCase(Locale.ROOT);
+               boolean var4xx = !var0.hasGamemodeNotEquals();
                boolean var5 = true;
-               if (!var3x.isEmpty()) {
-                  if (var3x.charAt(0) == '!') {
-                     var4x = false;
-                     var3x = var3x.substring(1);
+               if (!var3xx.isEmpty()) {
+                  if (var3xx.charAt(0) == '!') {
+                     var4xx = false;
+                     var3xx = var3xx.substring(1);
                   } else {
                      var5 = false;
                   }
                }
 
                for(GameType var9 : GameType.values()) {
-                  if (var9.getName().toLowerCase(Locale.ROOT).startsWith(var3x)) {
+                  if (var9.getName().toLowerCase(Locale.ROOT).startsWith(var3xx)) {
                      if (var5) {
                         var1x.suggest("!" + var9.getName());
                      }
 
-                     if (var4x) {
+                     if (var4xx) {
                         var1x.suggest(var9.getName());
                      }
                   }
@@ -244,8 +247,8 @@ public class EntitySelectorOptions {
                      if (!(var2x instanceof ServerPlayer)) {
                         return false;
                      } else {
-                        GameType var3x = ((ServerPlayer)var2x).gameMode.getGameModeForPlayer();
-                        return var2 ? var3x != var4 : var3x == var4;
+                        GameType var3xx = ((ServerPlayer)var2x).gameMode.getGameModeForPlayer();
+                        return var2 ? var3xx != var4 : var3xx == var4;
                      }
                   });
                   if (var2) {
@@ -364,20 +367,20 @@ public class EntitySelectorOptions {
             var1.expect('}');
             if (!var2.isEmpty()) {
                var0.addPredicate(var1x -> {
-                  ServerScoreboard var2x = var1x.getServer().getScoreboard();
+                  ServerScoreboard var2xx = var1x.getServer().getScoreboard();
 
-                  for(Entry var4x : var2.entrySet()) {
-                     Objective var5 = var2x.getObjective((String)var4x.getKey());
+                  for(Entry var4xx : var2.entrySet()) {
+                     Objective var5 = var2xx.getObjective((String)var4xx.getKey());
                      if (var5 == null) {
                         return false;
                      }
 
-                     ReadOnlyScoreInfo var6 = var2x.getPlayerScoreInfo(var1x, var5);
+                     ReadOnlyScoreInfo var6 = var2xx.getPlayerScoreInfo(var1x, var5);
                      if (var6 == null) {
                         return false;
                      }
 
-                     if (!((MinMaxBounds.Ints)var4x.getValue()).matches(var6.value())) {
+                     if (!((MinMaxBounds.Ints)var4xx.getValue()).matches(var6.value())) {
                         return false;
                      }
                   }
@@ -424,9 +427,9 @@ public class EntitySelectorOptions {
                   var1.expect('}');
                   var1.skipWhitespace();
                   var2.put(var3, var1x -> {
-                     for(Entry var3x : var7.entrySet()) {
-                        CriterionProgress var4x = var1x.getCriterion((String)var3x.getKey());
-                        if (var4x == null || !((Predicate)var3x.getValue()).test(var4x)) {
+                     for(Entry var3xx : var7.entrySet()) {
+                        CriterionProgress var4xx = var1x.getCriterion((String)var3xx.getKey());
+                        if (var4xx == null || !((Predicate)var3xx.getValue()).test(var4xx)) {
                            return false;
                         }
                      }
@@ -450,13 +453,13 @@ public class EntitySelectorOptions {
                   if (!(var1x instanceof ServerPlayer)) {
                      return false;
                   } else {
-                     ServerPlayer var2x = (ServerPlayer)var1x;
-                     PlayerAdvancements var3x = var2x.getAdvancements();
-                     ServerAdvancementManager var4x = var2x.getServer().getAdvancements();
+                     ServerPlayer var2xx = (ServerPlayer)var1x;
+                     PlayerAdvancements var3xx = var2xx.getAdvancements();
+                     ServerAdvancementManager var4xx = var2xx.getServer().getAdvancements();
 
-                     for(Entry var6x : var2.entrySet()) {
-                        AdvancementHolder var7x = var4x.get((ResourceLocation)var6x.getKey());
-                        if (var7x == null || !((Predicate)var6x.getValue()).test(var3x.getOrStartProgress(var7x))) {
+                     for(Entry var6xx : var2.entrySet()) {
+                        AdvancementHolder var7xx = var4xx.get((ResourceLocation)var6xx.getKey());
+                        if (var7xx == null || !((Predicate)var6xx.getValue()).test(var3xx.getOrStartProgress(var7xx))) {
                            return false;
                         }
                      }

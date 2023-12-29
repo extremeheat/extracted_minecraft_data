@@ -3,6 +3,7 @@ package net.minecraft.network.chat;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -414,7 +415,7 @@ public class Style {
       class 1Collector {
          private boolean isNotFirst;
 
-         _Collector/* $QF was: 1Collector*/() {
+         _Collector/* $VF was: 1Collector*/() {
             super();
          }
 

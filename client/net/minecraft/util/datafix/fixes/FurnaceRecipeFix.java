@@ -58,8 +58,8 @@ public class FurnaceRecipeFix extends DataFix {
          int var11 = var4.get(var9).asInt(0);
          if (var11 > 0) {
             var10.ifPresent(var3x -> {
-               Optional var4x = var1.read(var3x).result();
-               var4x.ifPresent(var2xx -> var6.add(Pair.of(var2xx.getFirst(), var11)));
+               Optional var4xx = var1.read(var3x).result();
+               var4xx.ifPresent(var2xx -> var6.add(Pair.of(var2xx.getFirst(), var11)));
             });
          }
 

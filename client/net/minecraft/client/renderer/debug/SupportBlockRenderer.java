@@ -17,7 +17,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 
 public class SupportBlockRenderer implements DebugRenderer.SimpleDebugRenderer {
    private final Minecraft minecraft;
-   private double lastUpdateTime = 4.9E-324;
+   private double lastUpdateTime = 5.0E-324;
    private List<Entity> surroundEntities = Collections.emptyList();
 
    public SupportBlockRenderer(Minecraft var1) {

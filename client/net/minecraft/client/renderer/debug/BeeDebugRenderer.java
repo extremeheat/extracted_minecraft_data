@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.client.Camera;
@@ -23,6 +24,7 @@ import net.minecraft.core.Position;
 import net.minecraft.network.protocol.common.custom.BeeDebugPayload;
 import net.minecraft.network.protocol.common.custom.HiveDebugPayload;
 import net.minecraft.network.protocol.game.DebugEntityNameGenerator;
+import net.minecraft.world.entity.Entity;
 
 public class BeeDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    private static final boolean SHOW_GOAL_FOR_ALL_BEES = true;
@@ -118,8 +120,8 @@ public class BeeDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       Map var6 = this.createHiveBlacklistMap();
       this.hives.values().forEach(var5x -> {
          if (var3.closerThan(var5x.info.pos(), 30.0)) {
-            Set var6x = (Set)var6.get(var5x.info.pos());
-            this.renderHiveInfo(var1, var2, var5x.info, (Collection<UUID>)(var6x == null ? Sets.newHashSet() : var6x));
+            Set var6xx = (Set)var6.get(var5x.info.pos());
+            this.renderHiveInfo(var1, var2, var5x.info, (Collection<UUID>)(var6xx == null ? Sets.newHashSet() : var6xx));
          }
       });
       this.getGhostHives().forEach((var4, var5x) -> {

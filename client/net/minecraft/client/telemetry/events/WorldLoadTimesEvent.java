@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 import net.minecraft.client.telemetry.TelemetryEventSender;
 import net.minecraft.client.telemetry.TelemetryEventType;
 import net.minecraft.client.telemetry.TelemetryProperty;
+import net.minecraft.client.telemetry.TelemetryPropertyMap;
 
 public class WorldLoadTimesEvent {
    private final boolean newWorld;

@@ -19,9 +19,9 @@ public class AtlasSet implements AutoCloseable {
    public AtlasSet(Map<ResourceLocation, ResourceLocation> var1, TextureManager var2) {
       super();
       this.atlases = var1.entrySet().stream().collect(Collectors.toMap(Entry::getKey, var1x -> {
-         TextureAtlas var2x = new TextureAtlas((ResourceLocation)var1x.getKey());
-         var2.register((ResourceLocation)var1x.getKey(), var2x);
-         return new AtlasSet.AtlasEntry(var2x, (ResourceLocation)var1x.getValue());
+         TextureAtlas var2xx = new TextureAtlas((ResourceLocation)var1x.getKey());
+         var2.register((ResourceLocation)var1x.getKey(), var2xx);
+         return new AtlasSet.AtlasEntry(var2xx, (ResourceLocation)var1x.getValue());
       }));
    }
 

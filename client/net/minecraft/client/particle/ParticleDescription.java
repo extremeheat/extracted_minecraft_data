@@ -3,6 +3,7 @@ package net.minecraft.client.particle;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Streams;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import java.util.List;
 import net.minecraft.resources.ResourceLocation;

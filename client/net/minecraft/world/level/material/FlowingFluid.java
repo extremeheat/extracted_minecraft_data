@@ -276,16 +276,16 @@ public abstract class FlowingFluid extends Fluid {
             BlockPos var12 = var2.relative(var11);
             short var13 = getCacheKey(var6, var12);
             Pair var14 = (Pair)var7.computeIfAbsent(var13, var2x -> {
-               BlockState var3x = var1.getBlockState(var12);
-               return Pair.of(var3x, var3x.getFluidState());
+               BlockState var3xx = var1.getBlockState(var12);
+               return Pair.of(var3xx, var3xx.getFluidState());
             });
             BlockState var15 = (BlockState)var14.getFirst();
             FluidState var16 = (FluidState)var14.getSecond();
             if (this.canPassThrough(var1, this.getFlowing(), var2, var5, var11, var12, var15, var16)) {
                boolean var17 = var8.computeIfAbsent(var13, var4x -> {
-                  BlockPos var5x = var12.below();
-                  BlockState var6x = var1.getBlockState(var5x);
-                  return this.isWaterHole(var1, this.getFlowing(), var12, var15, var5x, var6x);
+                  BlockPos var5xx = var12.below();
+                  BlockState var6xx = var1.getBlockState(var5xx);
+                  return this.isWaterHole(var1, this.getFlowing(), var12, var15, var5xx, var6xx);
                });
                if (var17) {
                   return var3;
@@ -348,8 +348,8 @@ public abstract class FlowingFluid extends Fluid {
          BlockPos var10 = var2.relative(var9);
          short var11 = getCacheKey(var2, var10);
          Pair var12 = (Pair)var6.computeIfAbsent(var11, var2x -> {
-            BlockState var3x = var1.getBlockState(var10);
-            return Pair.of(var3x, var3x.getFluidState());
+            BlockState var3xx = var1.getBlockState(var10);
+            return Pair.of(var3xx, var3xx.getFluidState());
          });
          BlockState var13 = (BlockState)var12.getFirst();
          FluidState var14 = (FluidState)var12.getSecond();
@@ -357,8 +357,8 @@ public abstract class FlowingFluid extends Fluid {
          if (this.canPassThrough(var1, var15.getType(), var2, var3, var9, var10, var13, var14)) {
             BlockPos var17 = var10.below();
             boolean var18 = var7.computeIfAbsent(var11, var5x -> {
-               BlockState var6x = var1.getBlockState(var17);
-               return this.isWaterHole(var1, this.getFlowing(), var10, var13, var17, var6x);
+               BlockState var6xx = var1.getBlockState(var17);
+               return this.isWaterHole(var1, this.getFlowing(), var10, var13, var17, var6xx);
             });
             int var16;
             if (var18) {
@@ -381,8 +381,8 @@ public abstract class FlowingFluid extends Fluid {
       return var5;
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private boolean canHoldFluid(BlockGetter var1, BlockPos var2, BlockState var3, Fluid var4) {
       Block var5 = var3.getBlock();
       if (var5 instanceof LiquidBlockContainer var6) {

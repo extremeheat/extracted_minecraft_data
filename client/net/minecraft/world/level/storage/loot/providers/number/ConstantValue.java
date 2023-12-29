@@ -2,6 +2,7 @@ package net.minecraft.world.level.storage.loot.providers.number;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.world.level.storage.loot.LootContext;
 
 public record ConstantValue(float c) implements NumberProvider {

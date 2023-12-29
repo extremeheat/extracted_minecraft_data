@@ -333,8 +333,8 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       this.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(4.0);
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
@@ -505,8 +505,8 @@ public class Wolf extends TamableAnimal implements NeutralMob {
       return this.entityData.get(DATA_INTERESTED_ID);
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public boolean wantsToAttack(LivingEntity var1, LivingEntity var2) {
       if (var1 instanceof Creeper || var1 instanceof Ghast) {

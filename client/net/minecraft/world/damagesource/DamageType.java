@@ -2,6 +2,7 @@ package net.minecraft.world.damagesource;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 
 public record DamageType(String b, DamageScaling c, float d, DamageEffects e, DeathMessageType f) {
    private final String msgId;

@@ -6,6 +6,7 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.logging.LogUtils;
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
 import javax.annotation.Nullable;
@@ -23,6 +24,7 @@ import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.ModCheck;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraft.world.entity.player.ProfileKeyPair;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import org.slf4j.Logger;
@@ -176,9 +178,9 @@ public class IntegratedServer extends MinecraftServer {
       try {
          this.minecraft.prepareForMultiplayer();
          this.minecraft.getProfileKeyPairManager().prepareKeyPair().thenAcceptAsync(var1x -> var1x.ifPresent(var1xx -> {
-               ClientPacketListener var2x = this.minecraft.getConnection();
-               if (var2x != null) {
-                  var2x.setKeyPair(var1xx);
+               ClientPacketListener var2xx = this.minecraft.getConnection();
+               if (var2xx != null) {
+                  var2xx.setKeyPair(var1xx);
                }
             }), this.minecraft);
          this.getConnection().startTcpServerListener(null, var3);

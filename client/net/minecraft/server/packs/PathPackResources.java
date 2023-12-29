@@ -3,6 +3,7 @@ package net.minecraft.server.packs;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.DataResult.PartialResult;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.DirectoryStream;
@@ -10,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -81,12 +83,12 @@ public class PathPackResources extends AbstractPackResources {
 
       try (Stream var5 = Files.find(var4, 2147483647, (var0x, var1x) -> var1x.isRegularFile())) {
          var5.forEach(var3x -> {
-            String var4x = PATH_JOINER.join(var1.relativize(var3x));
-            ResourceLocation var5x = ResourceLocation.tryBuild(var0, var4x);
-            if (var5x == null) {
-               Util.logAndPauseIfInIde(String.format(Locale.ROOT, "Invalid path in pack: %s:%s, ignoring", var0, var4x));
+            String var4xx = PATH_JOINER.join(var1.relativize(var3x));
+            ResourceLocation var5xx = ResourceLocation.tryBuild(var0, var4xx);
+            if (var5xx == null) {
+               Util.logAndPauseIfInIde(String.format(Locale.ROOT, "Invalid path in pack: %s:%s, ignoring", var0, var4xx));
             } else {
-               var3.accept(var5x, IoSupplier.create(var3x));
+               var3.accept(var5xx, IoSupplier.create(var3x));
             }
          });
       } catch (NotDirectoryException | NoSuchFileException var10) {

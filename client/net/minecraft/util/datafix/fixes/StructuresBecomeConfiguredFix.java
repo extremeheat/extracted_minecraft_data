@@ -191,9 +191,9 @@ public class StructuresBecomeConfiguredFix extends DataFix {
    private Optional<String> guessConfiguration(Dynamic<?> var1, StructuresBecomeConfiguredFix.Conversion var2) {
       Object2IntArrayMap var3 = new Object2IntArrayMap();
       var1.get("sections").asList(Function.identity()).forEach(var2x -> var2x.get("biomes").get("palette").asList(Function.identity()).forEach(var2xx -> {
-            String var3x = var2.biomeMapping().get(var2xx.asString(""));
-            if (var3x != null) {
-               var3.mergeInt(var3x, 1, Integer::sum);
+            String var3xx = var2.biomeMapping().get(var2xx.asString(""));
+            if (var3xx != null) {
+               var3.mergeInt(var3xx, 1, Integer::sum);
             }
          }));
       return var3.object2IntEntrySet().stream().max(Comparator.comparingInt(Entry::getIntValue)).map(java.util.Map.Entry::getKey);

@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import com.mojang.serialization.MapCodec;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Objects;

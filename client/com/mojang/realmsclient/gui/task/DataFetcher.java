@@ -164,21 +164,21 @@ public class DataFetcher {
                this.lastResult = new DataFetcher.SuccessfulComputationResult<>((T)var3x, var4);
                this.nextUpdate = var4 + this.period * this.repeatStrategy.delayCyclesAfterSuccess();
             }).ifRight(var3x -> {
-               long var4x = this.repeatStrategy.delayCyclesAfterFailure();
-               DataFetcher.LOGGER.warn("Failed to process task {}, will repeat after {} cycles", new Object[]{this.id, var4x, var3x});
-               this.nextUpdate = var4 + this.period * var4x;
+               long var4xx = this.repeatStrategy.delayCyclesAfterFailure();
+               DataFetcher.LOGGER.warn("Failed to process task {}, will repeat after {} cycles", new Object[]{this.id, var4xx, var3x});
+               this.nextUpdate = var4 + this.period * var4xx;
             });
          }
 
          if (this.nextUpdate <= var1) {
             this.pendingTask = CompletableFuture.supplyAsync(() -> {
                try {
-                  Object var1x = this.updater.call();
+                  Object var1xx = this.updater.call();
                   long var5 = DataFetcher.this.timeSource.get(DataFetcher.this.resolution);
-                  return new DataFetcher.ComputationResult<>(Either.left(var1x), var5);
-               } catch (Exception var4x) {
+                  return new DataFetcher.ComputationResult<>(Either.left(var1xx), var5);
+               } catch (Exception var4xx) {
                   long var2 = DataFetcher.this.timeSource.get(DataFetcher.this.resolution);
-                  return new DataFetcher.ComputationResult<>(Either.right(var4x), var2);
+                  return new DataFetcher.ComputationResult<>(Either.right(var4xx), var2);
                }
             }, DataFetcher.this.executor);
          }

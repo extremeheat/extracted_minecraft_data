@@ -8,6 +8,9 @@ import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.UnboundedMapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
+import java.util.List;
+import java.util.Map;
 import net.minecraft.resources.HolderSetCodec;
 import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.resources.RegistryFixedCodec;
@@ -39,22 +42,22 @@ public class RegistryCodecs {
 
          return var3;
       }, var0x -> {
-         Builder var1x = ImmutableList.builder();
+         Builder var1xx = ImmutableList.builder();
 
          for(Object var3 : var0x) {
-            var1x.add(new RegistryCodecs.RegistryEntry<>(var0x.getResourceKey(var3).get(), var0x.getId(var3), var3));
+            var1xx.add(new RegistryCodecs.RegistryEntry<>(var0x.getResourceKey(var3).get(), var0x.getId(var3), var3));
          }
 
-         return var1x.build();
+         return var1xx.build();
       });
    }
 
    public static <E> Codec<Registry<E>> fullCodec(ResourceKey<? extends Registry<E>> var0, Lifecycle var1, Codec<E> var2) {
       UnboundedMapCodec var3 = Codec.unboundedMap(ResourceKey.codec(var0), var2);
       return var3.xmap(var2x -> {
-         MappedRegistry var3x = new MappedRegistry(var0, var1);
+         MappedRegistry var3xx = new MappedRegistry(var0, var1);
          var2x.forEach((var2xx, var3xx) -> var3x.register(var2xx, var3xx, var1));
-         return var3x.freeze();
+         return var3xx.freeze();
       }, var0x -> ImmutableMap.copyOf(var0x.entrySet()));
    }
 

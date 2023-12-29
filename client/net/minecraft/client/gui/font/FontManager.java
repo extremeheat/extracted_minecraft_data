@@ -13,6 +13,7 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import java.io.BufferedReader;
 import java.util.ArrayList;
@@ -79,38 +80,38 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
       for(Entry var5 : FONT_DEFINITIONS.listMatchingResourceStacks(var1).entrySet()) {
          ResourceLocation var6 = FONT_DEFINITIONS.fileToId((ResourceLocation)var5.getKey());
          var3.add(CompletableFuture.supplyAsync(() -> {
-            List var5x = loadResourceStack((List<Resource>)var5.getValue(), var6);
-            FontManager.UnresolvedBuilderBundle var6x = new FontManager.UnresolvedBuilderBundle(var6);
+            List var5xx = loadResourceStack((List<Resource>)var5.getValue(), var6);
+            FontManager.UnresolvedBuilderBundle var6xx = new FontManager.UnresolvedBuilderBundle(var6);
 
-            for(Pair var8 : var5x) {
+            for(Pair var8 : var5xx) {
                FontManager.BuilderId var9 = (FontManager.BuilderId)var8.getFirst();
                ((GlyphProviderDefinition)var8.getSecond()).unpack().ifLeft(var5xx -> {
-                  CompletableFuture var6xx = this.safeLoad(var9, var5xx, var1, var2);
-                  var6x.add(var9, var6xx);
+                  CompletableFuture var6xxx = this.safeLoad(var9, var5xx, var1, var2);
+                  var6x.add(var9, var6xxx);
                }).ifRight(var2xx -> var6x.add(var9, var2xx));
             }
 
-            return var6x;
+            return var6xx;
          }, var2));
       }
 
       return Util.sequence(var3)
          .thenCompose(
             var2x -> {
-               List var3x = var2x.stream().flatMap(FontManager.UnresolvedBuilderBundle::listBuilders).collect(Collectors.toCollection(ArrayList::new));
+               List var3xx = var2x.stream().flatMap(FontManager.UnresolvedBuilderBundle::listBuilders).collect(Collectors.toCollection(ArrayList::new));
                AllMissingGlyphProvider var4 = new AllMissingGlyphProvider();
-               var3x.add(CompletableFuture.completedFuture(Optional.of(var4)));
-               return Util.sequence(var3x)
+               var3xx.add(CompletableFuture.completedFuture(Optional.of(var4)));
+               return Util.sequence(var3xx)
                   .thenCompose(
                      var4x -> {
-                        Map var5x = this.resolveProviders(var2x);
-                        CompletableFuture[] var6x = var5x.values()
+                        Map var5xx = this.resolveProviders(var2x);
+                        CompletableFuture[] var6xx = var5xx.values()
                            .stream()
                            .map(var3xxx -> CompletableFuture.runAsync(() -> this.finalizeProviderLoading(var3xxx, var4), var2))
                            .toArray(var0 -> new CompletableFuture[var0]);
-                        return CompletableFuture.allOf(var6x).thenApply(var2xxx -> {
-                           List var3xxx = var4x.stream().flatMap(Optional::stream).toList();
-                           return new FontManager.Preparation(var5x, var3xxx);
+                        return CompletableFuture.allOf(var6xx).thenApply(var2xxx -> {
+                           List var3xxxx = var4x.stream().flatMap(Optional::stream).toList();
+                           return new FontManager.Preparation(var5x, var3xxxx);
                         });
                      }
                   );
@@ -124,8 +125,8 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
       return CompletableFuture.supplyAsync(() -> {
          try {
             return Optional.of(var2.load(var3));
-         } catch (Exception var4x) {
-            LOGGER.warn("Failed to load builder {}, rejecting", var1, var4x);
+         } catch (Exception var4xx) {
+            LOGGER.warn("Failed to load builder {}, rejecting", var1, var4xx);
             return Optional.empty();
          }
       }, var4);
@@ -149,8 +150,8 @@ public class FontManager implements PreparableReloadListener, AutoCloseable {
 
       var3.forEach(var1x -> {
          if (var1x != 32) {
-            for(GlyphProvider var3x : Lists.reverse(var1)) {
-               if (var3x.getGlyph(var1x) != null) {
+            for(GlyphProvider var3xx : Lists.reverse(var1)) {
+               if (var3xx.getGlyph(var1x) != null) {
                   break;
                }
             }

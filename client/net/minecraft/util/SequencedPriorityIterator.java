@@ -4,10 +4,10 @@ import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.Queues;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap.Entry;
 import java.util.Comparator;
 import java.util.Deque;
 import java.util.Optional;
-import java.util.Map.Entry;
 import javax.annotation.Nullable;
 
 public final class SequencedPriorityIterator<T> extends AbstractIterator<T> {
@@ -27,8 +27,8 @@ public final class SequencedPriorityIterator<T> extends AbstractIterator<T> {
          .int2ObjectEntrySet()
          .stream()
          .filter(var0 -> !((Deque)var0.getValue()).isEmpty())
-         .max(Comparator.comparingInt(Entry::getKey))
-         .map(Entry::getValue);
+         .max(Comparator.comparingInt(java.util.Map.Entry::getKey))
+         .map(java.util.Map.Entry::getValue);
       return var1.map(Deque::removeFirst).orElseGet(() -> (T)this.endOfData());
    }
 }

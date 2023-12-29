@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
@@ -56,19 +57,19 @@ public class StateDefinition<O, S extends StateHolder<O, S>> {
       for(UnmodifiableIterator var11 = this.propertiesByName.values().iterator();
          var11.hasNext();
          var10 = var10.flatMap(var1x -> var12.getPossibleValues().stream().map(var2x -> {
-               ArrayList var3x = Lists.newArrayList(var1x);
-               var3x.add(Pair.of(var12, var2x));
-               return var3x;
+               ArrayList var3xx = Lists.newArrayList(var1x);
+               var3xx.add(Pair.of(var12, var2x));
+               return var3xx;
             }))
       ) {
          var12 = (Property)var11.next();
       }
 
       var10.forEach(var5x -> {
-         ImmutableMap var6x = var5x.stream().collect(ImmutableMap.toImmutableMap(Pair::getFirst, Pair::getSecond));
-         StateHolder var7x = (StateHolder)var3.create((O)var2, var6x, var13);
-         var14.put(var6x, var7x);
-         var9.add(var7x);
+         ImmutableMap var6xx = var5x.stream().collect(ImmutableMap.toImmutableMap(Pair::getFirst, Pair::getSecond));
+         StateHolder var7xx = (StateHolder)var3.create((O)var2, var6xx, var13);
+         var14.put(var6xx, var7xx);
+         var9.add(var7xx);
       });
 
       for(StateHolder var16 : var9) {

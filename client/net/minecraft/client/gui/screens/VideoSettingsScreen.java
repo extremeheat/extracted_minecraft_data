@@ -90,15 +90,15 @@ public class VideoSettingsScreen extends OptionsSubScreen {
             } else if (var2x == -1) {
                return Options.genericValueLabel(var1x, Component.translatable("options.fullscreen.current"));
             } else {
-               VideoMode var3x = var3.getMode(var2x);
+               VideoMode var3xx = var3.getMode(var2x);
                return Options.genericValueLabel(
                   var1x,
                   Component.translatable(
                      "options.fullscreen.entry",
-                     var3x.getWidth(),
-                     var3x.getHeight(),
-                     var3x.getRefreshRate(),
-                     var3x.getRedBits() + var3x.getGreenBits() + var3x.getBlueBits()
+                     var3xx.getWidth(),
+                     var3xx.getHeight(),
+                     var3xx.getRefreshRate(),
+                     var3xx.getRedBits() + var3xx.getGreenBits() + var3xx.getBlueBits()
                   )
                );
             }

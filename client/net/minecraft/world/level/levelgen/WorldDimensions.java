@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -141,8 +142,8 @@ public record WorldDimensions(Registry<LevelStem> b) {
       }
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private static boolean isStableNether(LevelStem var0) {
       if (var0.type().is(BuiltinDimensionTypes.NETHER)) {
          ChunkGenerator var3 = var0.generator();
@@ -184,7 +185,7 @@ public record WorldDimensions(Registry<LevelStem> b) {
          final ResourceKey<LevelStem> key;
          final LevelStem value;
 
-         _Entry/* $QF was: 1Entry*/(ResourceKey<LevelStem> var1, LevelStem var2) {
+         _Entry/* $VF was: 1Entry*/(ResourceKey<LevelStem> var1, LevelStem var2) {
             super();
             this.key = var1;
             this.value = var2;

@@ -49,8 +49,8 @@ public class JukeboxBlock extends BaseEntityBlock {
       }
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
       if (var1.getValue(HAS_RECORD)) {
@@ -64,8 +64,8 @@ public class JukeboxBlock extends BaseEntityBlock {
       return InteractionResult.PASS;
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var1.is(var4.getBlock())) {
@@ -103,8 +103,8 @@ public class JukeboxBlock extends BaseEntityBlock {
       return true;
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
       BlockEntity var6 = var2.getBlockEntity(var3);

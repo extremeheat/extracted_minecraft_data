@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap.Builder;
 import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.Util;

@@ -3,6 +3,7 @@ package net.minecraft.world.level.storage.loot.functions;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -52,13 +53,13 @@ public class EnchantRandomlyFunction extends LootItemConditionalFunction {
          .<Holder<Enchantment>>flatMap(var1x -> var1x.getRandomElement(var3))
          .or(
             () -> {
-               boolean var2x = var1.is(Items.BOOK);
-               List var3x = BuiltInRegistries.ENCHANTMENT
+               boolean var2xx = var1.is(Items.BOOK);
+               List var3xx = BuiltInRegistries.ENCHANTMENT
                   .holders()
                   .filter(var0x -> var0x.value().isDiscoverable())
                   .filter(var2xx -> var2x || var2xx.value().canEnchant(var1))
                   .toList();
-               return Util.getRandomSafe(var3x, var3);
+               return Util.getRandomSafe(var3xx, var3);
             }
          );
       if (var4.isEmpty()) {

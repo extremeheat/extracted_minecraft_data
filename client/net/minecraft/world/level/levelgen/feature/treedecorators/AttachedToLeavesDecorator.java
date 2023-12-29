@@ -2,6 +2,7 @@ package net.minecraft.world.level.levelgen.feature.treedecorators;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.HashSet;
 import java.util.List;
 import net.minecraft.Util;

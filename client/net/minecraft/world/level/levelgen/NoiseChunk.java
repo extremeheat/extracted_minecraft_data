@@ -345,8 +345,8 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
       return this.wrapped.computeIfAbsent(var1, this::wrapNew);
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private DensityFunction wrapNew(DensityFunction var1) {
       if (var1 instanceof DensityFunctions.Marker var3) {
          return (DensityFunction)(switch(var3.type()) {

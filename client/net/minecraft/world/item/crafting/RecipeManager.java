@@ -147,9 +147,9 @@ public class RecipeManager extends SimpleJsonResourceReloadListener {
       HashMap var2 = Maps.newHashMap();
       Builder var3 = ImmutableMap.builder();
       var1.forEach(var2x -> {
-         Map var3x = var2.computeIfAbsent(var2x.value().getType(), var0x -> Maps.newHashMap());
+         Map var3xx = var2.computeIfAbsent(var2x.value().getType(), var0x -> Maps.newHashMap());
          ResourceLocation var4 = var2x.id();
-         RecipeHolder var5 = var3x.put(var4, var2x);
+         RecipeHolder var5 = var3xx.put(var4, var2x);
          var3.put(var4, var2x);
          if (var5 != null) {
             throw new IllegalStateException("Duplicate recipe ignored with ID " + var4);

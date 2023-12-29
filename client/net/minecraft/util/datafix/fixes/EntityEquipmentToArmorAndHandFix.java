@@ -5,6 +5,7 @@ import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.TypeRewriteRule;
+import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Either;
@@ -35,7 +36,7 @@ public class EntityEquipmentToArmorAndHandFix extends DataFix {
          this.getInputSchema().getType(References.ENTITY),
          this.getOutputSchema().getType(References.ENTITY),
          var4x -> {
-            Either var5x = Either.right(DSL.unit());
+            Either var5xx = Either.right(DSL.unit());
             Either var6 = Either.right(DSL.unit());
             Dynamic var7 = (Dynamic)var4x.getOrCreate(DSL.remainderFinder());
             Optional var8 = var4x.getOptional(var5);
@@ -46,7 +47,7 @@ public class EntityEquipmentToArmorAndHandFix extends DataFix {
                      .orElseThrow(() -> new IllegalStateException("Could not parse newly created empty itemstack.")))
                   .getFirst();
                if (!var9.isEmpty()) {
-                  var5x = Either.left(Lists.newArrayList(new Object[]{var9.get(0), var10}));
+                  var5xx = Either.left(Lists.newArrayList(new Object[]{var9.get(0), var10}));
                }
    
                if (var9.size() > 1) {
@@ -86,7 +87,7 @@ public class EntityEquipmentToArmorAndHandFix extends DataFix {
                var7 = var7.remove("DropChances");
             }
    
-            return var4x.set(var4, var3, Pair.of(var5x, Pair.of(var6, var7)));
+            return var4x.set(var4, var3, Pair.of(var5xx, Pair.of(var6, var7)));
          }
       );
    }

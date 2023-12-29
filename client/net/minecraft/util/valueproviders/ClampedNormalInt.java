@@ -3,6 +3,7 @@ package net.minecraft.util.valueproviders;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.function.Function;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;

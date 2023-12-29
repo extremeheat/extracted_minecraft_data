@@ -109,8 +109,8 @@ public class FallbackResourceManager implements ResourceManager {
                   var10 = ResourceMetadata.EMPTY_SUPPLIER;
                } else {
                   var10 = () -> {
-                     IoSupplier var3x = var8.getResource(this.type, var2);
-                     return var3x != null ? parseMetadata(var3x) : ResourceMetadata.EMPTY;
+                     IoSupplier var3xx = var8.getResource(this.type, var2);
+                     return var3xx != null ? parseMetadata(var3xx) : ResourceMetadata.EMPTY;
                   };
                }
 
@@ -175,16 +175,16 @@ public class FallbackResourceManager implements ResourceManager {
 
       TreeMap var10 = Maps.newTreeMap();
       var3.forEach((var2x, var3x) -> {
-         ResourceLocation var5x = getMetadataLocation(var2x);
-         1ResourceWithSourceAndIndex var6x = (1ResourceWithSourceAndIndex)var4.get(var5x);
-         IoSupplier var4x;
-         if (var6x != null && var6x.packIndex >= var3x.packIndex) {
-            var4x = convertToMetadata(var6x.resource);
+         ResourceLocation var5xx = getMetadataLocation(var2x);
+         1ResourceWithSourceAndIndex var6xx = (1ResourceWithSourceAndIndex)var4.get(var5xx);
+         IoSupplier var4xx;
+         if (var6xx != null && var6xx.packIndex >= var3x.packIndex) {
+            var4xx = convertToMetadata(var6xx.resource);
          } else {
-            var4x = ResourceMetadata.EMPTY_SUPPLIER;
+            var4xx = ResourceMetadata.EMPTY_SUPPLIER;
          }
 
-         var10.put(var2x, createResource(var3x.packResources, var2x, var3x.resource, var4x));
+         var10.put(var2x, createResource(var3x.packResources, var2x, var3x.resource, var4xx));
       });
       return var10;
 
@@ -193,7 +193,7 @@ public class FallbackResourceManager implements ResourceManager {
          final IoSupplier<InputStream> resource;
          final int packIndex;
 
-         _ResourceWithSourceAndIndex/* $QF was: 1ResourceWithSourceAndIndex*/(PackResources var1, IoSupplier<InputStream> var2, int var3) {
+         _ResourceWithSourceAndIndex/* $VF was: 1ResourceWithSourceAndIndex*/(PackResources var1, IoSupplier<InputStream> var2, int var3) {
             super();
             this.packResources = var1;
             this.resource = var2;
@@ -262,12 +262,12 @@ public class FallbackResourceManager implements ResourceManager {
             var2,
             (var3x, var4x) -> {
                if (isMetadata(var3x)) {
-                  ResourceLocation var5x = getResourceLocationFromMetadata(var3x);
-                  if (!var3.test(var5x)) {
+                  ResourceLocation var5xx = getResourceLocationFromMetadata(var3x);
+                  if (!var3.test(var5xx)) {
                      return;
                   }
    
-                  var4.computeIfAbsent(var5x, FallbackResourceManager.EntryStack::new).metaSources.put(var5, var4x);
+                  var4.computeIfAbsent(var5xx, FallbackResourceManager.EntryStack::new).metaSources.put(var5, var4x);
                } else {
                   if (!var3.test(var3x)) {
                      return;
@@ -347,9 +347,9 @@ public class FallbackResourceManager implements ResourceManager {
          super(var1);
          Exception var4 = new Exception("Stacktrace");
          this.message = () -> {
-            StringWriter var3x = new StringWriter();
-            var4.printStackTrace(new PrintWriter(var3x));
-            return "Leaked resource: '" + var2 + "' loaded from pack: '" + var3 + "'\n" + var3x;
+            StringWriter var3xx = new StringWriter();
+            var4.printStackTrace(new PrintWriter(var3xx));
+            return "Leaked resource: '" + var2 + "' loaded from pack: '" + var3 + "'\n" + var3xx;
          };
       }
 

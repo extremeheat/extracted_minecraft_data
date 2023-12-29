@@ -20,8 +20,8 @@ public class LandRandomPos {
    public static Vec3 getPos(PathfinderMob var0, int var1, int var2, ToDoubleFunction<BlockPos> var3) {
       boolean var4 = GoalUtils.mobRestricted(var0, var1);
       return RandomPos.generateRandomPos(() -> {
-         BlockPos var4x = RandomPos.generateRandomDirection(var0.getRandom(), var1, var2);
-         BlockPos var5 = generateRandomPosTowardDirection(var0, var1, var4, var4x);
+         BlockPos var4xx = RandomPos.generateRandomDirection(var0.getRandom(), var1, var2);
+         BlockPos var5 = generateRandomPosTowardDirection(var0, var1, var4, var4xx);
          return var5 == null ? null : movePosUpOutOfSolid(var0, var5);
       }, var3);
    }

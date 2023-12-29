@@ -42,24 +42,24 @@ public class ItemColors {
             return -1;
          } else {
             CompoundTag var2 = var0x.getTagElement("Explosion");
-            int[] var3x = var2 != null && var2.contains("Colors", 11) ? var2.getIntArray("Colors") : null;
-            if (var3x != null && var3x.length != 0) {
-               if (var3x.length == 1) {
-                  return var3x[0];
+            int[] var3xx = var2 != null && var2.contains("Colors", 11) ? var2.getIntArray("Colors") : null;
+            if (var3xx != null && var3xx.length != 0) {
+               if (var3xx.length == 1) {
+                  return var3xx[0];
                } else {
                   int var4 = 0;
                   int var5 = 0;
                   int var6 = 0;
 
-                  for(int var10 : var3x) {
+                  for(int var10 : var3xx) {
                      var4 += (var10 & 0xFF0000) >> 16;
                      var5 += (var10 & 0xFF00) >> 8;
                      var6 += (var10 & 0xFF) >> 0;
                   }
 
-                  var4 /= var3x.length;
-                  var5 /= var3x.length;
-                  var6 /= var3x.length;
+                  var4 /= var3xx.length;
+                  var5 /= var3xx.length;
+                  var6 /= var3xx.length;
                   return var4 << 16 | var5 << 8 | var6;
                }
             } else {
@@ -75,8 +75,8 @@ public class ItemColors {
 
       var1.register(
          (var1x, var2) -> {
-            BlockState var3x = ((BlockItem)var1x.getItem()).getBlock().defaultBlockState();
-            return var0.getColor(var3x, null, null, var2);
+            BlockState var3xx = ((BlockItem)var1x.getItem()).getBlock().defaultBlockState();
+            return var0.getColor(var3xx, null, null, var2);
          },
          Blocks.GRASS_BLOCK,
          Blocks.SHORT_GRASS,

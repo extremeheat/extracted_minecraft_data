@@ -107,8 +107,8 @@ public class BrushableBlockEntity extends BlockEntity {
       }
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private void brushingCompleted(Player var1) {
       if (this.level != null && this.level.getServer() != null) {
          this.dropContent(var1);

@@ -2,6 +2,7 @@ package net.minecraft.world.entity.monster.warden;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;

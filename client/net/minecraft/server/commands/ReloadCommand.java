@@ -3,6 +3,7 @@ package net.minecraft.server.commands;
 import com.google.common.collect.Lists;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
 import java.util.Collection;

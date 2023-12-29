@@ -1,9 +1,11 @@
 package net.minecraft.world.entity.ai.behavior;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
+import net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 
 public class GoToTargetLocation {

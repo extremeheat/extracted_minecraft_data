@@ -20,6 +20,7 @@ import java.util.regex.Pattern;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.util.FormattedCharSink;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.StringDecomposer;
 import org.slf4j.Logger;

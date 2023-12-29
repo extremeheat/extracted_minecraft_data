@@ -1,9 +1,11 @@
 package net.minecraft.world.level.block.entity;
 
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.DataResult.PartialResult;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;

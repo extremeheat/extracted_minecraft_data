@@ -1,6 +1,7 @@
 package net.minecraft.world.inventory;
 
 import java.util.Optional;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ClientboundContainerSetSlotPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;

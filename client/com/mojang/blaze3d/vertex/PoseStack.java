@@ -1,6 +1,7 @@
 package com.mojang.blaze3d.vertex;
 
 import com.google.common.collect.Queues;
+import java.util.ArrayDeque;
 import java.util.Deque;
 import net.minecraft.Util;
 import net.minecraft.util.Mth;

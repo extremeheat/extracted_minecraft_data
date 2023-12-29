@@ -68,8 +68,8 @@ public class HttpTexture extends SimpleTexture {
          if (!this.uploaded) {
             try {
                super.load(var1);
-            } catch (IOException var3x) {
-               LOGGER.warn("Failed to load texture: {}", this.location, var3x);
+            } catch (IOException var3xx) {
+               LOGGER.warn("Failed to load texture: {}", this.location, var3xx);
             }
 
             this.uploaded = true;
@@ -89,27 +89,27 @@ public class HttpTexture extends SimpleTexture {
             this.loadCallback(var2);
          } else {
             this.future = CompletableFuture.runAsync(() -> {
-               HttpURLConnection var1x = null;
+               HttpURLConnection var1xx = null;
                LOGGER.debug("Downloading http texture from {} to {}", this.urlString, this.file);
 
                try {
-                  var1x = (HttpURLConnection)new URL(this.urlString).openConnection(Minecraft.getInstance().getProxy());
-                  var1x.setDoInput(true);
-                  var1x.setDoOutput(false);
-                  var1x.connect();
-                  if (var1x.getResponseCode() / 100 == 2) {
-                     Object var2x;
+                  var1xx = (HttpURLConnection)new URL(this.urlString).openConnection(Minecraft.getInstance().getProxy());
+                  var1xx.setDoInput(true);
+                  var1xx.setDoOutput(false);
+                  var1xx.connect();
+                  if (var1xx.getResponseCode() / 100 == 2) {
+                     Object var2xx;
                      if (this.file != null) {
-                        FileUtils.copyInputStreamToFile(var1x.getInputStream(), this.file);
-                        var2x = new FileInputStream(this.file);
+                        FileUtils.copyInputStreamToFile(var1xx.getInputStream(), this.file);
+                        var2xx = new FileInputStream(this.file);
                      } else {
-                        var2x = var1x.getInputStream();
+                        var2xx = var1xx.getInputStream();
                      }
 
                      Minecraft.getInstance().execute(() -> {
-                        NativeImage var2xx = this.load(var2x);
-                        if (var2xx != null) {
-                           this.loadCallback(var2xx);
+                        NativeImage var2xxx = this.load(var2x);
+                        if (var2xxx != null) {
+                           this.loadCallback(var2xxx);
                         }
                      });
                      return;
@@ -118,8 +118,8 @@ public class HttpTexture extends SimpleTexture {
                   LOGGER.error("Couldn't download http texture", var6);
                   return;
                } finally {
-                  if (var1x != null) {
-                     var1x.disconnect();
+                  if (var1xx != null) {
+                     var1xx.disconnect();
                   }
                }
             }, Util.backgroundExecutor());

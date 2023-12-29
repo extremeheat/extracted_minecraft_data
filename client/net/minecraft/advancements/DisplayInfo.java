@@ -2,6 +2,7 @@ package net.minecraft.advancements;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;

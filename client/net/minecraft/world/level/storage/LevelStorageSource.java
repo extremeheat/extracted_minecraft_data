@@ -207,11 +207,11 @@ public class LevelStorageSource {
             } catch (OutOfMemoryError var12) {
                MemoryReserve.release();
                System.gc();
-               String var4x = "Ran out of memory trying to read summary of world folder \"" + var4.directoryName() + "\"";
-               LOGGER.error(LogUtils.FATAL_MARKER, var4x);
+               String var4xx = "Ran out of memory trying to read summary of world folder \"" + var4.directoryName() + "\"";
+               LOGGER.error(LogUtils.FATAL_MARKER, var4xx);
                OutOfMemoryError var5 = new OutOfMemoryError("Ran out of memory reading level data");
                var5.initCause(var12);
-               CrashReport var6 = CrashReport.forThrowable(var5, var4x);
+               CrashReport var6 = CrashReport.forThrowable(var5, var4xx);
                CrashReportCategory var7 = var6.addCategory("World details");
                var7.setDetail("Folder Name", var4.directoryName());
 
@@ -251,8 +251,8 @@ public class LevelStorageSource {
       return var5.set("WorldGenSettings", var9);
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private LevelSummary readLevelSummary(LevelStorageSource.LevelDirectory var1, boolean var2) {
       Path var3 = var1.dataFile();
       if (Files.exists(var3)) {

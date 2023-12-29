@@ -10,7 +10,7 @@ public class Vec2 {
    public static final Vec2 UNIT_Y = new Vec2(0.0F, 1.0F);
    public static final Vec2 NEG_UNIT_Y = new Vec2(0.0F, -1.0F);
    public static final Vec2 MAX = new Vec2(3.4028235E38F, 3.4028235E38F);
-   public static final Vec2 MIN = new Vec2(1.4E-45F, 1.4E-45F);
+   public static final Vec2 MIN = new Vec2(1.0E-45F, 1.0E-45F);
    public final float x;
    public final float y;
 

@@ -2,6 +2,7 @@ package net.minecraft.server.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
@@ -16,10 +17,10 @@ public class SeedCommand {
    public static void register(CommandDispatcher<CommandSourceStack> var0, boolean var1) {
       var0.register(
          (LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("seed").requires(var1x -> !var1 || var1x.hasPermission(2))).executes(var0x -> {
-            long var1x = ((CommandSourceStack)var0x.getSource()).getLevel().getSeed();
-            MutableComponent var3 = ComponentUtils.copyOnClickText(String.valueOf(var1x));
+            long var1xx = ((CommandSourceStack)var0x.getSource()).getLevel().getSeed();
+            MutableComponent var3 = ComponentUtils.copyOnClickText(String.valueOf(var1xx));
             ((CommandSourceStack)var0x.getSource()).sendSuccess(() -> Component.translatable("commands.seed.success", var3), false);
-            return (int)var1x;
+            return (int)var1xx;
          })
       );
    }

@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.TypeRewriteRule;
+import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Pair;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -111,12 +113,12 @@ public class LevelDataGeneratorOptionsFix extends DataFix {
       Type var1 = this.getOutputSchema().getType(References.LEVEL);
       return this.fixTypeEverywhereTyped(
          "LevelDataGeneratorOptionsFix", this.getInputSchema().getType(References.LEVEL), var1, var1x -> Util.writeAndReadTypedOrThrow(var1x, var1, var0x -> {
-               Optional var1xx = var0x.get("generatorOptions").asString().result();
+               Optional var1xxx = var0x.get("generatorOptions").asString().result();
                if ("flat".equalsIgnoreCase(var0x.get("generatorName").asString(""))) {
-                  String var3 = var1xx.orElse("");
+                  String var3 = var1xxx.orElse("");
                   return var0x.set("generatorOptions", convert(var3, var0x.getOps()));
-               } else if ("buffet".equalsIgnoreCase(var0x.get("generatorName").asString("")) && var1xx.isPresent()) {
-                  Dynamic var2 = new Dynamic(JsonOps.INSTANCE, GsonHelper.parse((String)var1xx.get(), true));
+               } else if ("buffet".equalsIgnoreCase(var0x.get("generatorName").asString("")) && var1xxx.isPresent()) {
+                  Dynamic var2 = new Dynamic(JsonOps.INSTANCE, GsonHelper.parse((String)var1xxx.get(), true));
                   return var0x.set("generatorOptions", var2.convert(var0x.getOps()));
                } else {
                   return var0x;

@@ -87,8 +87,8 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
       this.send(new ServerboundPongPacket(var1.getId()));
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void handleCustomPayload(ClientboundCustomPayloadPacket var1) {
       CustomPacketPayload var2 = var1.payload();
@@ -255,15 +255,15 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
          super(
             var5x -> {
                var2.setScreen(var3);
-               DownloadedPackSource var6x = var2.getDownloadedPackSource();
+               DownloadedPackSource var6xx = var2.getDownloadedPackSource();
                if (var5x) {
                   if (ClientCommonPacketListenerImpl.this.serverData != null) {
                      ClientCommonPacketListenerImpl.this.serverData.setResourcePackStatus(ServerData.ServerPackStatus.ENABLED);
                   }
    
-                  var6x.allowServerPacks();
+                  var6xx.allowServerPacks();
                } else {
-                  var6x.rejectServerPacks();
+                  var6xx.rejectServerPacks();
                   if (var5) {
                      ClientCommonPacketListenerImpl.this.connection.disconnect(Component.translatable("multiplayer.requiredTexturePrompt.disconnect"));
                   } else if (ClientCommonPacketListenerImpl.this.serverData != null) {
@@ -272,7 +272,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
                }
    
                for(ClientCommonPacketListenerImpl.PackConfirmScreen.PendingRequest var8 : var4) {
-                  var6x.pushPack(var8.id, var8.url, var8.hash);
+                  var6xx.pushPack(var8.id, var8.url, var8.hash);
                }
    
                if (ClientCommonPacketListenerImpl.this.serverData != null) {

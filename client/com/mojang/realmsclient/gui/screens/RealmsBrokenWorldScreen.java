@@ -82,15 +82,15 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
             var5.active = !this.serverData.slots.get(var3).empty;
          } else {
             var5 = Button.builder(Component.translatable("mco.brokenworld.download"), var2x -> {
-               MutableComponent var3x = Component.translatable("mco.configure.world.restore.download.question.line1");
-               MutableComponent var4x = Component.translatable("mco.configure.world.restore.download.question.line2");
+               MutableComponent var3xx = Component.translatable("mco.configure.world.restore.download.question.line1");
+               MutableComponent var4xx = Component.translatable("mco.configure.world.restore.download.question.line2");
                this.minecraft.setScreen(new RealmsLongConfirmationScreen(var2xx -> {
                   if (var2xx) {
                      this.downloadWorld(var3);
                   } else {
                      this.minecraft.setScreen(this);
                   }
-               }, RealmsLongConfirmationScreen.Type.INFO, var3x, var4x, true));
+               }, RealmsLongConfirmationScreen.Type.INFO, var3xx, var4xx, true));
             }).bounds(this.getFramePositionX(var3), row(8), 80, 20).build();
          }
 

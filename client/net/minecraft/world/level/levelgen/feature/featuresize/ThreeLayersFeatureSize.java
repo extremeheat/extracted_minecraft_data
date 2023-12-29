@@ -2,6 +2,7 @@ package net.minecraft.world.level.levelgen.feature.featuresize;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.OptionalInt;
 
 public class ThreeLayersFeatureSize extends FeatureSize {

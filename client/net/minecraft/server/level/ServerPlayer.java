@@ -30,6 +30,7 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.PacketSendListener;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.CommonComponents;
@@ -38,6 +39,7 @@ import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.OutgoingChatMessage;
 import net.minecraft.network.chat.RemoteChatSession;
+import net.minecraft.network.chat.Style;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -164,7 +166,7 @@ public class ServerPlayer extends Player {
    public final ServerPlayerGameMode gameMode;
    private final PlayerAdvancements advancements;
    private final ServerStatsCounter stats;
-   private float lastRecordedHealthAndAbsorption = 1.4E-45F;
+   private float lastRecordedHealthAndAbsorption = 1.0E-45F;
    private int lastRecordedFoodLevel = -2147483648;
    private int lastRecordedAirLevel = -2147483648;
    private int lastRecordedArmor = -2147483648;
@@ -600,14 +602,14 @@ public class ServerPlayer extends Player {
                new ClientboundPlayerCombatKillPacket(this.getId(), var3),
                PacketSendListener.exceptionallySend(
                   () -> {
-                     boolean var2x = true;
-                     String var3x = var3.getString(256);
-                     MutableComponent var4x = Component.translatable(
-                        "death.attack.message_too_long", Component.literal(var3x).withStyle(ChatFormatting.YELLOW)
+                     boolean var2xx = true;
+                     String var3xx = var3.getString(256);
+                     MutableComponent var4xx = Component.translatable(
+                        "death.attack.message_too_long", Component.literal(var3xx).withStyle(ChatFormatting.YELLOW)
                      );
-                     MutableComponent var5x = Component.translatable("death.attack.even_more_magic", this.getDisplayName())
+                     MutableComponent var5xx = Component.translatable("death.attack.even_more_magic", this.getDisplayName())
                         .withStyle(var1xx -> var1xx.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, var4x)));
-                     return new ClientboundPlayerCombatKillPacket(this.getId(), var5x);
+                     return new ClientboundPlayerCombatKillPacket(this.getId(), var5xx);
                   }
                )
             );
@@ -689,8 +691,8 @@ public class ServerPlayer extends Player {
       }
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public boolean hurt(DamageSource var1, float var2) {
       if (this.isInvulnerableTo(var1)) {
@@ -1396,7 +1398,7 @@ public class ServerPlayer extends Player {
       if (this.acceptsSystemMessages(var2)) {
          this.connection.send(new ClientboundSystemChatPacket(var1, var2), PacketSendListener.exceptionallySend(() -> {
             if (this.acceptsSystemMessages(false)) {
-               boolean var2x = true;
+               boolean var2xx = true;
                String var3 = var1.getString(256);
                MutableComponent var4 = Component.literal(var3).withStyle(ChatFormatting.YELLOW);
                return new ClientboundSystemChatPacket(Component.translatable("multiplayer.message_not_delivered", var4).withStyle(ChatFormatting.RED), false);

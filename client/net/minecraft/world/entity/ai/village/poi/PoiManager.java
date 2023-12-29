@@ -65,8 +65,8 @@ public class PoiManager extends SectionStorage<PoiSection> {
    public Stream<PoiRecord> getInSquare(Predicate<Holder<PoiType>> var1, BlockPos var2, int var3, PoiManager.Occupancy var4) {
       int var5 = Math.floorDiv(var3, 16) + 1;
       return ChunkPos.rangeClosed(new ChunkPos(var2), var5).flatMap(var3x -> this.getInChunk(var1, var3x, var4)).filter(var2x -> {
-         BlockPos var3x = var2x.getPos();
-         return Math.abs(var3x.getX() - var2.getX()) <= var3 && Math.abs(var3x.getZ() - var2.getZ()) <= var3;
+         BlockPos var3xx = var2x.getPos();
+         return Math.abs(var3xx.getX() - var2.getX()) <= var3 && Math.abs(var3xx.getZ() - var2.getZ()) <= var3;
       });
    }
 
@@ -206,10 +206,10 @@ public class PoiManager extends SectionStorage<PoiSection> {
       var2.blocksInside()
          .forEach(
             var2x -> {
-               BlockState var3x = var1.getBlockState(
+               BlockState var3xx = var1.getBlockState(
                   SectionPos.sectionRelative(var2x.getX()), SectionPos.sectionRelative(var2x.getY()), SectionPos.sectionRelative(var2x.getZ())
                );
-               PoiTypes.forState(var3x).ifPresent(var2xx -> var3.accept(var2x, var2xx));
+               PoiTypes.forState(var3xx).ifPresent(var2xx -> var3.accept(var2x, var2xx));
             }
          );
    }

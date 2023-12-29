@@ -2,6 +2,9 @@ package net.minecraft.world.entity.animal;
 
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -305,8 +308,8 @@ public class Cat extends TamableAnimal implements VariantHolder<CatVariant> {
       return Mth.lerp(var1, this.relaxStateOneAmountO, this.relaxStateOneAmount);
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Nullable
    public Cat getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       Cat var3 = EntityType.CAT.create(var1);

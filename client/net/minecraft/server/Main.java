@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
+import java.util.concurrent.Executor;
 import java.util.function.BooleanSupplier;
 import javax.annotation.Nullable;
 import joptsimple.AbstractOptionSpec;
@@ -180,34 +181,40 @@ public class Main {
                   var6x -> WorldLoader.load(
                         var33,
                         var5xx -> {
-                           Registry var6xx = var5xx.datapackDimensions().registryOrThrow(Registries.LEVEL_STEM);
+                           Registry var6xxx = var5xx.datapackDimensions().registryOrThrow(Registries.LEVEL_STEM);
                            if (var41 != null) {
-                              LevelDataAndDimensions var12x = LevelStorageSource.getLevelDataAndDimensions(
-                                 var41, var5xx.dataConfiguration(), var6xx, var5xx.datapackWorldgen()
+                              LevelDataAndDimensions var12xx = LevelStorageSource.getLevelDataAndDimensions(
+                                 var41, var5xx.dataConfiguration(), var6xxx, var5xx.datapackWorldgen()
                               );
-                              return new WorldLoader.DataLoadOutput<>(var12x.worldData(), var12x.dimensions().dimensionsRegistryAccess());
+                              return new WorldLoader.DataLoadOutput<>(var12xx.worldData(), var12xx.dimensions().dimensionsRegistryAccess());
                            } else {
                               LOGGER.info("No existing world data, creating new world");
-                              LevelSettings var7x;
-                              WorldOptions var8x;
-                              WorldDimensions var9x;
+                              LevelSettings var7xx;
+                              WorldOptions var8xx;
+                              WorldDimensions var9xx;
                               if (var17.has(var4)) {
-                                 var7x = MinecraftServer.DEMO_SETTINGS;
-                                 var8x = WorldOptions.DEMO_OPTIONS;
-                                 var9x = WorldPresets.createNormalWorldDimensions(var5xx.datapackWorldgen());
+                                 var7xx = MinecraftServer.DEMO_SETTINGS;
+                                 var8xx = WorldOptions.DEMO_OPTIONS;
+                                 var9xx = WorldPresets.createNormalWorldDimensions(var5xx.datapackWorldgen());
                               } else {
-                                 DedicatedServerProperties var10x = var20.getProperties();
-                                 var7x = new LevelSettings(
-                                    var10x.levelName, var10x.gamemode, var10x.hardcore, var10x.difficulty, false, new GameRules(), var5xx.dataConfiguration()
+                                 DedicatedServerProperties var10xx = var20.getProperties();
+                                 var7xx = new LevelSettings(
+                                    var10xx.levelName,
+                                    var10xx.gamemode,
+                                    var10xx.hardcore,
+                                    var10xx.difficulty,
+                                    false,
+                                    new GameRules(),
+                                    var5xx.dataConfiguration()
                                  );
-                                 var8x = var17.has(var5) ? var10x.worldOptions.withBonusChest(true) : var10x.worldOptions;
-                                 var9x = var10x.createDimensions(var5xx.datapackWorldgen());
+                                 var8xx = var17.has(var5) ? var10xx.worldOptions.withBonusChest(true) : var10xx.worldOptions;
+                                 var9xx = var10xx.createDimensions(var5xx.datapackWorldgen());
                               }
          
-                              WorldDimensions.Complete var13x = var9x.bake(var6xx);
-                              Lifecycle var11x = var13x.lifecycle().add(var5xx.datapackWorldgen().allRegistriesLifecycle());
+                              WorldDimensions.Complete var13xx = var9xx.bake(var6xxx);
+                              Lifecycle var11xx = var13xx.lifecycle().add(var5xx.datapackWorldgen().allRegistriesLifecycle());
                               return new WorldLoader.DataLoadOutput<>(
-                                 new PrimaryLevelData(var7x, var8x, var13x.specialWorldProperty(), var11x), var13x.dimensionsRegistryAccess()
+                                 new PrimaryLevelData(var7xx, var8xx, var13xx.specialWorldProperty(), var11xx), var13xx.dimensionsRegistryAccess()
                               );
                            }
                         },
@@ -233,18 +240,18 @@ public class Main {
          var27.saveDataTag(var43, var34);
          final DedicatedServer var35 = MinecraftServer.spin(
             var11x -> {
-               DedicatedServer var12x = new DedicatedServer(
+               DedicatedServer var12xx = new DedicatedServer(
                   var11x, var27, var42, var32, var20, DataFixers.getDataFixer(), var24, LoggerChunkProgressListener::new
                );
-               var12x.setPort(var17.valueOf(var12));
-               var12x.setDemo(var17.has(var4));
-               var12x.setId((String)var17.valueOf(var13));
-               boolean var13x = !var17.has(var2) && !var17.valuesOf(var16).contains("nogui");
-               if (var13x && !GraphicsEnvironment.isHeadless()) {
-                  var12x.showGui();
+               var12xx.setPort(var17.valueOf(var12));
+               var12xx.setDemo(var17.has(var4));
+               var12xx.setId((String)var17.valueOf(var13));
+               boolean var13xx = !var17.has(var2) && !var17.valuesOf(var16).contains("nogui");
+               if (var13xx && !GraphicsEnvironment.isHeadless()) {
+                  var12xx.showGui();
                }
    
-               return var12x;
+               return var12xx;
             }
          );
          Thread var36 = new Thread("Server Shutdown Thread") {

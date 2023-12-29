@@ -5,6 +5,7 @@ import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.TypeRewriteRule;
+import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.serialization.Dynamic;
@@ -35,10 +36,10 @@ public class ChunkStatusFix2 extends DataFix {
       OpticFinder var3 = DSL.fieldFinder("Level", var2);
       return this.fixTypeEverywhereTyped(
          "ChunkStatusFix2", var1, this.getOutputSchema().getType(References.CHUNK), var1x -> var1x.updateTyped(var3, var0x -> {
-               Dynamic var1xx = (Dynamic)var0x.get(DSL.remainderFinder());
-               String var2x = var1xx.get("Status").asString("empty");
-               String var3x = RENAMES_AND_DOWNGRADES.getOrDefault(var2x, "empty");
-               return Objects.equals(var2x, var3x) ? var0x : var0x.set(DSL.remainderFinder(), var1xx.set("Status", var1xx.createString(var3x)));
+               Dynamic var1xxx = (Dynamic)var0x.get(DSL.remainderFinder());
+               String var2xx = var1xxx.get("Status").asString("empty");
+               String var3xx = RENAMES_AND_DOWNGRADES.getOrDefault(var2xx, "empty");
+               return Objects.equals(var2xx, var3xx) ? var0x : var0x.set(DSL.remainderFinder(), var1xxx.set("Status", var1xxx.createString(var3xx)));
             })
       );
    }

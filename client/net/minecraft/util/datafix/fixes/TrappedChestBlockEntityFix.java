@@ -9,6 +9,7 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.types.templates.List.ListType;
 import com.mojang.datafixers.types.templates.TaggedChoice.TaggedChoiceType;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
@@ -54,22 +55,22 @@ public class TrappedChestBlockEntityFix extends DataFix {
                   var5x -> var5x.updateTyped(
                         var7,
                         var4xx -> {
-                           Optional var5xx = var4xx.getOptionalTyped(var8);
-                           if (var5xx.isEmpty()) {
+                           Optional var5xxx = var4xx.getOptionalTyped(var8);
+                           if (var5xxx.isEmpty()) {
                               return var4xx;
                            } else {
-                              List var6x = ((Typed)var5xx.get()).getAllTyped(var11);
-                              IntOpenHashSet var7x = new IntOpenHashSet();
+                              List var6xx = ((Typed)var5xxx.get()).getAllTyped(var11);
+                              IntOpenHashSet var7xx = new IntOpenHashSet();
          
-                              for(Typed var9x : var6x) {
-                                 TrappedChestBlockEntityFix.TrappedChestSection var10x = new TrappedChestBlockEntityFix.TrappedChestSection(
-                                    var9x, this.getInputSchema()
+                              for(Typed var9xx : var6xx) {
+                                 TrappedChestBlockEntityFix.TrappedChestSection var10xx = new TrappedChestBlockEntityFix.TrappedChestSection(
+                                    var9xx, this.getInputSchema()
                                  );
-                                 if (!var10x.isSkippable()) {
-                                    for(int var11x = 0; var11x < 4096; ++var11x) {
-                                       int var12 = var10x.getBlock(var11x);
-                                       if (var10x.isTrappedChest(var12)) {
-                                          var7x.add(var10x.getIndex() << 12 | var11x);
+                                 if (!var10xx.isSkippable()) {
+                                    for(int var11xx = 0; var11xx < 4096; ++var11xx) {
+                                       int var12 = var10xx.getBlock(var11xx);
+                                       if (var10xx.isTrappedChest(var12)) {
+                                          var7xx.add(var10xx.getIndex() << 12 | var11xx);
                                        }
                                     }
                                  }
@@ -84,11 +85,11 @@ public class TrappedChestBlockEntityFix extends DataFix {
                                  var4xxx -> var4xxx.updateTyped(
                                        var16.finder(),
                                        var4xxxx -> {
-                                          Dynamic var5xxx = (Dynamic)var4xxxx.getOrCreate(DSL.remainderFinder());
-                                          int var6xx = var5xxx.get("x").asInt(0) - (var14 << 4);
-                                          int var7xx = var5xxx.get("y").asInt(0);
-                                          int var8x = var5xxx.get("z").asInt(0) - (var15 << 4);
-                                          return var7x.contains(LeavesFix.getIndex(var6xx, var7xx, var8x))
+                                          Dynamic var5xxxx = (Dynamic)var4xxxx.getOrCreate(DSL.remainderFinder());
+                                          int var6xxx = var5xxxx.get("x").asInt(0) - (var14 << 4);
+                                          int var7xxx = var5xxxx.get("y").asInt(0);
+                                          int var8xx = var5xxxx.get("z").asInt(0) - (var15 << 4);
+                                          return var7x.contains(LeavesFix.getIndex(var6xxx, var7xxx, var8xx))
                                              ? var4xxxx.update(var16.finder(), var0xx -> var0xx.mapFirst(var0xxx -> {
                                                    if (!Objects.equals(var0xxx, "minecraft:chest")) {
                                                       LOGGER.warn("Block Entity was expected to be a chest");

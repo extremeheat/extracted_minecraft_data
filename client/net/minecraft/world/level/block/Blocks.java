@@ -44,7 +44,7 @@ import net.minecraft.world.level.material.PushReaction;
 public class Blocks {
    private static final BlockBehaviour.StatePredicate NOT_CLOSED_SHULKER = (var0, var1x, var2x) -> {
       BlockEntity var4 = var1x.getBlockEntity(var2x);
-      return var4 instanceof ShulkerBoxBlockEntity var3x ? var3x.isClosed() : true;
+      return var4 instanceof ShulkerBoxBlockEntity var3xx ? var3xx.isClosed() : true;
    };
    public static final Block AIR = register("air", new AirBlock(BlockBehaviour.Properties.of().replaceable().noCollission().noLootTable().air()));
    public static final Block STONE = register(

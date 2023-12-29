@@ -28,10 +28,10 @@ public class EndGatewayFeature extends Feature<EndGatewayConfiguration> {
             BlockPos var11 = var6.immutable();
             this.setBlock(var3, var11, Blocks.END_GATEWAY.defaultBlockState());
             var4.getExit().ifPresent(var3x -> {
-               BlockEntity var4x = var3.getBlockEntity(var11);
-               if (var4x instanceof TheEndGatewayBlockEntity var5) {
+               BlockEntity var4xx = var3.getBlockEntity(var11);
+               if (var4xx instanceof TheEndGatewayBlockEntity var5) {
                   var5.setExitPosition(var3x, var4.isExitExact());
-                  var4x.setChanged();
+                  var4xx.setChanged();
                }
             });
          } else if (var8) {

@@ -5,7 +5,9 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Streams;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import net.minecraft.core.BlockPos;
@@ -53,9 +55,9 @@ public class GameTestRunner {
          .stream()
          .flatMap(
             var0x -> {
-               String var1x = (String)var0x.getKey();
-               Consumer var2 = GameTestRegistry.getBeforeBatchFunction(var1x);
-               Consumer var3 = GameTestRegistry.getAfterBatchFunction(var1x);
+               String var1xx = (String)var0x.getKey();
+               Consumer var2 = GameTestRegistry.getBeforeBatchFunction(var1xx);
+               Consumer var3 = GameTestRegistry.getAfterBatchFunction(var1xx);
                MutableInt var4 = new MutableInt();
                Collection var5 = (Collection)var0x.getValue();
                return Streams.stream(Iterables.partition(var5, 50))
@@ -70,9 +72,9 @@ public class GameTestRunner {
       BlockPos var4 = var1.offset(-var3, 0, -var3);
       BlockPos var5 = var1.offset(var3, 0, var3);
       BlockPos.betweenClosedStream(var4, var5).filter(var1x -> var0.getBlockState(var1x).is(Blocks.STRUCTURE_BLOCK)).forEach(var1x -> {
-         StructureBlockEntity var2x = (StructureBlockEntity)var0.getBlockEntity(var1x);
-         BoundingBox var3x = StructureUtils.getStructureBoundingBox(var2x);
-         StructureUtils.clearSpaceForStructure(var3x, var0);
+         StructureBlockEntity var2xx = (StructureBlockEntity)var0.getBlockEntity(var1x);
+         BoundingBox var3xx = StructureUtils.getStructureBoundingBox(var2xx);
+         StructureUtils.clearSpaceForStructure(var3xx, var0);
       });
    }
 

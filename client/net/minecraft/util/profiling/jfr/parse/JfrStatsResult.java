@@ -6,6 +6,7 @@ import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.util.profiling.jfr.serialize.JfrResultJsonSerializer;

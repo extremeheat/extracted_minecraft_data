@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import net.minecraft.nbt.CompoundTag;
@@ -92,9 +93,9 @@ public class EntityStorage implements EntityPersistentStorage<Entity> {
       } else {
          ListTag var3 = new ListTag();
          var1.getEntities().forEach(var1x -> {
-            CompoundTag var2x = new CompoundTag();
-            if (var1x.save(var2x)) {
-               var3.add(var2x);
+            CompoundTag var2xx = new CompoundTag();
+            if (var1x.save(var2xx)) {
+               var3.add(var2xx);
             }
          });
          CompoundTag var4 = NbtUtils.addCurrentDataVersion(new CompoundTag());

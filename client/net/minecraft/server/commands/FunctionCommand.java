@@ -2,6 +2,7 @@ package net.minecraft.server.commands;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -10,6 +11,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.datafixers.util.Pair;
 import java.util.Collection;
 import javax.annotation.Nullable;
@@ -24,7 +26,9 @@ import net.minecraft.commands.arguments.NbtPathArgument;
 import net.minecraft.commands.arguments.item.FunctionArgument;
 import net.minecraft.commands.execution.ChainModifiers;
 import net.minecraft.commands.execution.CustomCommandExecutor;
+import net.minecraft.commands.execution.ExecutionContext;
 import net.minecraft.commands.execution.ExecutionControl;
+import net.minecraft.commands.execution.Frame;
 import net.minecraft.commands.execution.tasks.CallFunction;
 import net.minecraft.commands.execution.tasks.FallthroughTask;
 import net.minecraft.commands.functions.CommandFunction;
@@ -201,7 +205,7 @@ public class FunctionCommand {
                boolean anyResult;
                int sum;
 
-               _Accumulator/* $QF was: 1Accumulator*/() {
+               _Accumulator/* $VF was: 1Accumulator*/() {
                   super();
                }
 

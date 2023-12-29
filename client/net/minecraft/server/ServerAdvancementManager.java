@@ -11,6 +11,7 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.JsonOps;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -43,11 +44,11 @@ public class ServerAdvancementManager extends SimpleJsonResourceReloadListener {
       Builder var4 = ImmutableMap.builder();
       var1.forEach((var2x, var3x) -> {
          try {
-            Advancement var4x = Util.getOrThrow(Advancement.CODEC.parse(JsonOps.INSTANCE, var3x), JsonParseException::new);
-            this.validate(var2x, var4x);
-            var4.put(var2x, new AdvancementHolder(var2x, var4x));
-         } catch (Exception var5x) {
-            LOGGER.error("Parsing error loading custom advancement {}: {}", var2x, var5x.getMessage());
+            Advancement var4xx = Util.getOrThrow(Advancement.CODEC.parse(JsonOps.INSTANCE, var3x), JsonParseException::new);
+            this.validate(var2x, var4xx);
+            var4.put(var2x, new AdvancementHolder(var2x, var4xx));
+         } catch (Exception var5xx) {
+            LOGGER.error("Parsing error loading custom advancement {}: {}", var2x, var5xx.getMessage());
          }
       });
       this.advancements = var4.buildOrThrow();

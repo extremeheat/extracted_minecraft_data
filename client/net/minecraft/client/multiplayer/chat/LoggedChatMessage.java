@@ -3,6 +3,7 @@ package net.minecraft.client.multiplayer.chat;
 import com.mojang.authlib.GameProfile;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;

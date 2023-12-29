@@ -41,12 +41,12 @@ public class SpawnerDataFix extends DataFix {
       DynamicOps var3 = var2.getOps();
       List var4 = (List)var2.getValue();
       List var5 = var4.stream().map(var1x -> {
-         Pair var2x = (Pair)var1x;
-         int var3x = ((Dynamic)var2x.getSecond()).get("Weight").asNumber().result().orElse(1).intValue();
-         Dynamic var4x = new Dynamic(var3);
-         var4x = var4x.set("weight", var4x.createInt(var3x));
-         Dynamic var5x = ((Dynamic)var2x.getSecond()).remove("Weight").remove("Entity");
-         return Pair.of(Pair.of(var2x.getFirst(), var5x), var4x);
+         Pair var2xx = (Pair)var1x;
+         int var3xx = ((Dynamic)var2xx.getSecond()).get("Weight").asNumber().result().orElse(1).intValue();
+         Dynamic var4xx = new Dynamic(var3);
+         var4xx = var4xx.set("weight", var4xx.createInt(var3xx));
+         Dynamic var5xx = ((Dynamic)var2xx.getSecond()).remove("Weight").remove("Entity");
+         return Pair.of(Pair.of(var2xx.getFirst(), var5xx), var4xx);
       }).toList();
       return new Typed(var1, var3, var5);
    }

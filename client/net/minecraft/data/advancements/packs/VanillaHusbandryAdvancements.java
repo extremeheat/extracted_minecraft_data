@@ -32,6 +32,7 @@ import net.minecraft.advancements.critereon.PickedUpItemTrigger;
 import net.minecraft.advancements.critereon.PlayerInteractTrigger;
 import net.minecraft.advancements.critereon.StartRidingTrigger;
 import net.minecraft.advancements.critereon.TameAnimalTrigger;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.advancements.AdvancementSubProvider;

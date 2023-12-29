@@ -5,6 +5,7 @@ import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.TypeRewriteRule;
+import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
 import java.util.Set;
@@ -54,10 +55,10 @@ public class WallPropertyFix extends DataFix {
    private static <T> Dynamic<T> upgradeBlockStateTag(Dynamic<T> var0) {
       boolean var1 = var0.get("Name").asString().result().filter(WALL_BLOCKS::contains).isPresent();
       return !var1 ? var0 : var0.update("Properties", var0x -> {
-         Dynamic var1x = fixWallProperty(var0x, "east");
-         var1x = fixWallProperty(var1x, "west");
-         var1x = fixWallProperty(var1x, "north");
-         return fixWallProperty(var1x, "south");
+         Dynamic var1xx = fixWallProperty(var0x, "east");
+         var1xx = fixWallProperty(var1xx, "west");
+         var1xx = fixWallProperty(var1xx, "north");
+         return fixWallProperty(var1xx, "south");
       });
    }
 }

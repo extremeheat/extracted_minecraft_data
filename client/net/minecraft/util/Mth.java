@@ -29,8 +29,8 @@ public class Mth {
    public static final Vector3f X_AXIS = new Vector3f(1.0F, 0.0F, 0.0F);
    public static final Vector3f Z_AXIS = new Vector3f(0.0F, 0.0F, 1.0F);
    private static final float[] SIN = Util.make(new float[65536], var0x -> {
-      for(int var1x = 0; var1x < var0x.length; ++var1x) {
-         var0x[var1x] = (float)Math.sin((double)var1x * 3.141592653589793 * 2.0 / 65536.0);
+      for(int var1xx = 0; var1xx < var0x.length; ++var1xx) {
+         var0x[var1xx] = (float)Math.sin((double)var1xx * 3.141592653589793 * 2.0 / 65536.0);
       }
    });
    private static final RandomSource RANDOM = RandomSource.createThreadSafe();

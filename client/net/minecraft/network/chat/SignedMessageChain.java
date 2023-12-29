@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
 import javax.annotation.Nullable;
+import net.minecraft.util.SignatureUpdater;
 import net.minecraft.util.SignatureValidator;
 import net.minecraft.util.Signer;
 import net.minecraft.world.entity.player.ProfilePublicKey;

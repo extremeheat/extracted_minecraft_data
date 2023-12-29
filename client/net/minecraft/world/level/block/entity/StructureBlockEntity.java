@@ -263,12 +263,12 @@ public class StructureBlockEntity extends BlockEntity {
          BlockPos var4 = new BlockPos(var1.getX() + 80, this.level.getMaxBuildHeight() - 1, var1.getZ() + 80);
          Stream var5 = this.getRelatedCorners(var3, var4);
          return calculateEnclosingBoundingBox(var1, var5).filter(var2x -> {
-            int var3x = var2x.maxX() - var2x.minX();
-            int var4x = var2x.maxY() - var2x.minY();
-            int var5x = var2x.maxZ() - var2x.minZ();
-            if (var3x > 1 && var4x > 1 && var5x > 1) {
+            int var3xx = var2x.maxX() - var2x.minX();
+            int var4xx = var2x.maxY() - var2x.minY();
+            int var5xx = var2x.maxZ() - var2x.minZ();
+            if (var3xx > 1 && var4xx > 1 && var5xx > 1) {
                this.structurePos = new BlockPos(var2x.minX() - var1.getX() + 1, var2x.minY() - var1.getY() + 1, var2x.minZ() - var1.getZ() + 1);
-               this.structureSize = new Vec3i(var3x - 1, var4x - 1, var5x - 1);
+               this.structureSize = new Vec3i(var3xx - 1, var4xx - 1, var5xx - 1);
                this.setChanged();
                BlockState var6 = this.level.getBlockState(var1);
                this.level.sendBlockUpdated(var1, var6, var6, 3);

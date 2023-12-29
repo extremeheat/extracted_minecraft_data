@@ -200,11 +200,11 @@ public class DataCommands {
          var3.wrap(
             var1,
             var2 -> {
-               RequiredArgumentBuilder var3x = Commands.argument("targetPath", NbtPathArgument.nbtPath());
+               RequiredArgumentBuilder var3xx = Commands.argument("targetPath", NbtPathArgument.nbtPath());
    
                for(DataCommands.DataProvider var5 : SOURCE_PROVIDERS) {
                   var0.accept(
-                     var3x,
+                     var3xx,
                      var2x -> var5.wrap(
                            Commands.literal("from"),
                            var3xx -> var3xx.executes(var3xxx -> manipulateData(var3xxx, var3, var2x, getSingletonSource(var3xxx, var5)))
@@ -215,7 +215,7 @@ public class DataCommands {
                         )
                   );
                   var0.accept(
-                     var3x,
+                     var3xx,
                      var2x -> var5.wrap(
                            Commands.literal("string"),
                            var3xx -> var3xx.executes(
@@ -267,11 +267,11 @@ public class DataCommands {
                   );
                }
    
-               var0.accept(var3x, var1xx -> Commands.literal("value").then(Commands.argument("value", NbtTagArgument.nbtTag()).executes(var2x -> {
-                     List var3xx = Collections.singletonList(NbtTagArgument.getNbtTag(var2x, "value"));
-                     return manipulateData(var2x, var3, var1xx, var3xx);
+               var0.accept(var3xx, var1xx -> Commands.literal("value").then(Commands.argument("value", NbtTagArgument.nbtTag()).executes(var2x -> {
+                     List var3xxx = Collections.singletonList(NbtTagArgument.getNbtTag(var2x, "value"));
+                     return manipulateData(var2x, var3, var1xx, var3xxx);
                   })));
-               return var2.then(var3x);
+               return var2.then(var3xx);
             }
          );
       }

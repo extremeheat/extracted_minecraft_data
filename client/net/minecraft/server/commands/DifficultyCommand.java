@@ -2,6 +2,7 @@ package net.minecraft.server.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import net.minecraft.commands.CommandSourceStack;
@@ -27,9 +28,9 @@ public class DifficultyCommand {
       }
 
       var0.register((LiteralArgumentBuilder)((LiteralArgumentBuilder)var1.requires(var0x -> var0x.hasPermission(2))).executes(var0x -> {
-         Difficulty var1x = ((CommandSourceStack)var0x.getSource()).getLevel().getDifficulty();
+         Difficulty var1xx = ((CommandSourceStack)var0x.getSource()).getLevel().getDifficulty();
          ((CommandSourceStack)var0x.getSource()).sendSuccess(() -> Component.translatable("commands.difficulty.query", var1x.getDisplayName()), false);
-         return var1x.getId();
+         return var1xx.getId();
       }));
    }
 

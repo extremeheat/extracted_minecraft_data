@@ -41,6 +41,7 @@ import net.minecraft.client.renderer.block.BlockModelShaper;
 import net.minecraft.client.renderer.block.model.BlockModel;
 import net.minecraft.client.renderer.block.model.BlockModelDefinition;
 import net.minecraft.client.renderer.block.model.ItemModelGenerator;
+import net.minecraft.client.renderer.block.model.MultiVariant;
 import net.minecraft.client.renderer.block.model.multipart.MultiPart;
 import net.minecraft.client.renderer.block.model.multipart.Selector;
 import net.minecraft.client.renderer.entity.ItemRenderer;
@@ -199,8 +200,8 @@ public class ModelBakery {
       Block var10 = (Block)var0.getOwner();
       return var2x -> {
          if (var2x != null && var2x.is(var10)) {
-            for(Entry var4x : var2.entrySet()) {
-               if (!Objects.equals(var2x.getValue((Property)var4x.getKey()), var4x.getValue())) {
+            for(Entry var4xx : var2.entrySet()) {
+               if (!Objects.equals(var2x.getValue((Property)var4xx.getKey()), var4xx.getValue())) {
                   return false;
                }
             }
@@ -281,14 +282,14 @@ public class ModelBakery {
                      var2x -> {
                         try {
                            return Pair.of(var2x.source, BlockModelDefinition.fromJsonElement(this.context, var2x.data));
-                        } catch (Exception var4x) {
+                        } catch (Exception var4xx) {
                            throw new ModelBakery.BlockStateDefinitionException(
                               String.format(
                                  Locale.ROOT,
                                  "Exception loading blockstate definition: '%s' in resourcepack: '%s': %s",
                                  var9,
                                  var2x.source,
-                                 var4x.getMessage()
+                                 var4xx.getMessage()
                               )
                            );
                         }
@@ -317,11 +318,11 @@ public class ModelBakery {
                                  .filter(predicate(var28, var9x))
                                  .forEach(
                                     var6xx -> {
-                                       Pair var7xx = (Pair)var17.put(
+                                       Pair var7xxx = (Pair)var17.put(
                                           var6xx,
                                           Pair.of(var10x, (Supplier<ModelBakery.ModelGroupKey>)() -> ModelBakery.ModelGroupKey.create(var6xx, var10x, var5))
                                        );
-                                       if (var7xx != null && var7xx.getFirst() != var18) {
+                                       if (var7xxx != null && var7xxx.getFirst() != var18) {
                                           var17.put(var6xx, var12);
                                           throw new RuntimeException(
                                              "Overlapping definition with: "
@@ -336,10 +337,10 @@ public class ModelBakery {
                                        }
                                     }
                                  );
-                           } catch (Exception var12x) {
+                           } catch (Exception var12xx) {
                               LOGGER.warn(
                                  "Exception loading blockstate definition: '{}' in resourcepack: '{}' for variant: '{}': {}",
-                                 new Object[]{var9, var15.getFirst(), var9x, var12x.getMessage()}
+                                 new Object[]{var9, var15.getFirst(), var9x, var12xx.getMessage()}
                               );
                            }
                         }
@@ -355,29 +356,29 @@ public class ModelBakery {
             } finally {
                HashMap var20 = Maps.newHashMap();
                var7.forEach((var5x, var6x) -> {
-                  Pair var7x = (Pair)var8.get(var6x);
-                  if (var7x == null) {
+                  Pair var7xx = (Pair)var8.get(var6x);
+                  if (var7xx == null) {
                      LOGGER.warn("Exception loading blockstate definition: '{}' missing model for variant: '{}'", var9, var5x);
-                     var7x = var12;
+                     var7xx = var12;
                   }
 
-                  this.cacheAndQueueDependencies(var5x, (UnbakedModel)var7x.getFirst());
+                  this.cacheAndQueueDependencies(var5x, (UnbakedModel)var7xx.getFirst());
 
                   try {
-                     ModelBakery.ModelGroupKey var8x = (ModelBakery.ModelGroupKey)((Supplier)var7x.getSecond()).get();
-                     var20.computeIfAbsent(var8x, var0 -> Sets.newIdentityHashSet()).add(var6x);
-                  } catch (Exception var9x) {
-                     LOGGER.warn("Exception evaluating model definition: '{}'", var5x, var9x);
+                     ModelBakery.ModelGroupKey var8xx = (ModelBakery.ModelGroupKey)((Supplier)var7xx.getSecond()).get();
+                     var20.computeIfAbsent(var8xx, var0 -> Sets.newIdentityHashSet()).add(var6x);
+                  } catch (Exception var9xx) {
+                     LOGGER.warn("Exception evaluating model definition: '{}'", var5x, var9xx);
                   }
                });
                var20.forEach((var1x, var2x) -> {
-                  Iterator var3x = var2x.iterator();
+                  Iterator var3xx = var2x.iterator();
 
-                  while(var3x.hasNext()) {
-                     BlockState var4x = (BlockState)var3x.next();
-                     if (var4x.getRenderShape() != RenderShape.MODEL) {
-                        var3x.remove();
-                        this.modelGroups.put(var4x, 0);
+                  while(var3xx.hasNext()) {
+                     BlockState var4xx = (BlockState)var3xx.next();
+                     if (var4xx.getRenderShape() != RenderShape.MODEL) {
+                        var3xx.remove();
+                        this.modelGroups.put(var4xx, 0);
                      }
                   }
 

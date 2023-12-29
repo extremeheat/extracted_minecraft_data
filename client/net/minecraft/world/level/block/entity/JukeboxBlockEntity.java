@@ -159,8 +159,8 @@ public class JukeboxBlockEntity extends BlockEntity implements Clearable, Contai
       return var1.hasAnyMatching(ItemStack::isEmpty);
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private void spawnMusicParticles(Level var1, BlockPos var2) {
       if (var1 instanceof ServerLevel var3) {
          Vec3 var4 = Vec3.atBottomCenterOf(var2).add(0.0, 1.2000000476837158, 0.0);

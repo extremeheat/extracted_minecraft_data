@@ -2,11 +2,13 @@ package net.minecraft.client.quickplay;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -68,8 +70,8 @@ public class QuickPlayLog {
                         try {
                            Files.createDirectories(this.path.getParent());
                            Files.writeString(this.path, GSON.toJson(var1xx));
-                        } catch (IOException var3x) {
-                           LOGGER.error("Failed to write to quickplay log file {}", this.path, var3x);
+                        } catch (IOException var3xx) {
+                           LOGGER.error("Failed to write to quickplay log file {}", this.path, var3xx);
                         }
                      });
                }

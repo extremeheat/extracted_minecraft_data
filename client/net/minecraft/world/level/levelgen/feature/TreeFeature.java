@@ -25,6 +25,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
+import net.minecraft.world.level.levelgen.feature.rootplacers.RootPlacer;
 import net.minecraft.world.level.levelgen.feature.treedecorators.TreeDecorator;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
@@ -155,8 +156,8 @@ public class TreeFeature extends Feature<TreeConfiguration> {
          }
 
          return BoundingBox.encapsulatingPositions(Iterables.concat(var6, var7, var8, var9)).map(var4x -> {
-            DiscreteVoxelShape var5x = updateLeaves(var2, var4x, var7, var9, var6);
-            StructureTemplate.updateShapeAtEdge(var2, 3, var5x, var4x.minX(), var4x.minY(), var4x.minZ());
+            DiscreteVoxelShape var5xx = updateLeaves(var2, var4x, var7, var9, var6);
+            StructureTemplate.updateShapeAtEdge(var2, 3, var5xx, var4x.minX(), var4x.minY(), var4x.minZ());
             return true;
          }).orElse(false);
       } else {

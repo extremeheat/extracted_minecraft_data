@@ -16,6 +16,7 @@ import net.minecraft.client.resources.metadata.animation.VillagerMetaDataSection
 import net.minecraft.core.DefaultedRegistry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
@@ -78,7 +79,7 @@ public class VillagerProfessionLayer<T extends LivingEntity & VillagerDataHolder
          var4, var4x -> this.resourceManager.getResource(this.getResourceLocation(var2, var3.getKey(var4))).flatMap(var0 -> {
                try {
                   return var0.metadata().getSection(VillagerMetaDataSection.SERIALIZER).map(VillagerMetaDataSection::getHat);
-               } catch (IOException var2xx) {
+               } catch (IOException var2xxx) {
                   return Optional.empty();
                }
             }).orElse(VillagerMetaDataSection.Hat.NONE)

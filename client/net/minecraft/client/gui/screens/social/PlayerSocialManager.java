@@ -69,8 +69,8 @@ public class PlayerSocialManager {
       return this.discoveredNamesToUUID.getOrDefault(var1, Util.NIL_UUID);
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void addPlayer(PlayerInfo var1) {
       GameProfile var2 = var1.getProfile();
       this.discoveredNamesToUUID.put(var2.getName(), var2.getId());
@@ -80,8 +80,8 @@ public class PlayerSocialManager {
       }
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void removePlayer(UUID var1) {
       Screen var3 = this.minecraft.screen;
       if (var3 instanceof SocialInteractionsScreen var2) {

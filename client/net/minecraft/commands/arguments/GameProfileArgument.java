@@ -57,8 +57,8 @@ public class GameProfileArgument implements ArgumentType<GameProfileArgument.Res
 
          String var3 = var1.getString().substring(var2, var1.getCursor());
          return var1x -> {
-            Optional var2x = var1x.getServer().getProfileCache().get(var3);
-            return Collections.singleton((GameProfile)var2x.orElseThrow(ERROR_UNKNOWN_PLAYER::create));
+            Optional var2xx = var1x.getServer().getProfileCache().get(var3);
+            return Collections.singleton((GameProfile)var2xx.orElseThrow(ERROR_UNKNOWN_PLAYER::create));
          };
       }
    }

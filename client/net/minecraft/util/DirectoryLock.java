@@ -20,8 +20,9 @@ public class DirectoryLock implements AutoCloseable {
    public static DirectoryLock create(Path var0) throws IOException {
       Path var1 = var0.resolve("session.lock");
       FileUtil.createDirectoriesSafe(var0);
+      FileChannel var2 = FileChannel.open(var1, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 
-      try (FileChannel var2 = FileChannel.open(var1, StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
+      try {
          var2.write(DUMMY.duplicate());
          var2.force(true);
          FileLock var3 = var2.tryLock();
@@ -30,6 +31,14 @@ public class DirectoryLock implements AutoCloseable {
          } else {
             return new DirectoryLock(var2, var3);
          }
+      } catch (IOException var6) {
+         try {
+            var2.close();
+         } catch (IOException var5) {
+            var6.addSuppressed(var5);
+         }
+
+         throw var6;
       }
    }
 

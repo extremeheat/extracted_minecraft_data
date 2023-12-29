@@ -42,8 +42,8 @@ public class PlayerInfo {
       boolean var4 = !var1.isLocalPlayer(var0.getId());
       PlayerSkin var5 = DefaultPlayerSkin.get(var0);
       return () -> {
-         PlayerSkin var3x = var3.getNow(var5);
-         return var4 && !var3x.secure() ? var5 : var3x;
+         PlayerSkin var3xx = var3.getNow(var5);
+         return var4 && !var3xx.secure() ? var5 : var3xx;
       };
    }
 

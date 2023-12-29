@@ -1,8 +1,10 @@
 package net.minecraft.world.entity.ai.behavior;
 
 import com.mojang.datafixers.util.Function3;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
+import net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 
 public class BecomePassiveIfMemoryPresent {

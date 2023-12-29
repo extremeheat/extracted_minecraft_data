@@ -18,6 +18,7 @@ import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.screens.FaviconTexture;
 import net.minecraft.client.gui.screens.LoadingDotsText;
@@ -262,10 +263,10 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
             ServerSelectionList.THREAD_POOL.submit(() -> {
                try {
                   this.screen.getPinger().pingServer(this.serverData, () -> this.minecraft.execute(this::updateServerList));
-               } catch (UnknownHostException var2x) {
+               } catch (UnknownHostException var2xx) {
                   this.serverData.ping = -1L;
                   this.serverData.motd = ServerSelectionList.CANT_RESOLVE_TEXT;
-               } catch (Exception var3x) {
+               } catch (Exception var3xx) {
                   this.serverData.ping = -1L;
                   this.serverData.motd = ServerSelectionList.CANT_CONNECT_TEXT;
                }

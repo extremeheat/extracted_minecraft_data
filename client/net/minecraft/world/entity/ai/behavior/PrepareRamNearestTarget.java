@@ -18,6 +18,7 @@ import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
+import net.minecraft.world.entity.ai.memory.NearestVisibleLivingEntities;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
@@ -138,8 +139,8 @@ public class PrepareRamNearestTarget<E extends PathfinderMob> extends Behavior<E
 
          PathNavigation var9 = var1.getNavigation();
          return var4.stream().sorted(Comparator.comparingDouble(var1.blockPosition()::distSqr)).filter(var1x -> {
-            Path var2x = var9.createPath(var1x, 0);
-            return var2x != null && var2x.canReach();
+            Path var2xx = var9.createPath(var1x, 0);
+            return var2xx != null && var2xx.canReach();
          }).findFirst();
       }
    }

@@ -1,5 +1,6 @@
 package net.minecraft.network.chat;
 
+import com.google.gson.JsonElement;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -11,6 +12,7 @@ import com.mojang.serialization.MapEncoder;
 import com.mojang.serialization.MapLike;
 import com.mojang.serialization.RecordBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -71,8 +73,8 @@ public class ComponentSerialization {
          .xmap(
             var0x -> (Component)var0x.map(var0xx -> (Component)var0xx.map(Component::literal, ComponentSerialization::createFromList), var0xx -> var0xx),
             var0x -> {
-               String var1x = var0x.tryCollapseToString();
-               return var1x != null ? Either.left(Either.left(var1x)) : Either.right(var0x);
+               String var1xx = var0x.tryCollapseToString();
+               return var1xx != null ? Either.left(Either.left(var1xx)) : Either.right(var0x);
             }
          );
    }

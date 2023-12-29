@@ -2,6 +2,7 @@ package net.minecraft.util.random;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 
 public interface WeightedEntry {
    Weight getWeight();

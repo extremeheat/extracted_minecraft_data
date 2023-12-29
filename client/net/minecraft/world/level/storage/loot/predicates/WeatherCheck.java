@@ -2,6 +2,7 @@ package net.minecraft.world.level.storage.loot.predicates;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.ExtraCodecs;

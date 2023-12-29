@@ -42,8 +42,8 @@ public class DropInvalidSignDataFix extends NamedEntityFix {
             Dynamic var3 = ComponentDataFixUtils.createEmptyComponent(var0.getOps());
             List var4 = var0.get("messages").asStreamOpt().result().orElse(Stream.of((T[])())).toList();
             List var5 = Streams.mapWithIndex((Stream)var2.get(), (var2x, var3x) -> {
-               Dynamic var5x = var3x < (long)var4.size() ? (Dynamic)var4.get((int)var3x) : var3;
-               return var2x.equals(var3) ? var5x : var2x;
+               Dynamic var5xx = var3x < (long)var4.size() ? (Dynamic)var4.get((int)var3x) : var3;
+               return var2x.equals(var3) ? var5xx : var2x;
             }).toList();
             return var5.stream().allMatch(var1x -> var1x.equals(var3))
                ? var0.remove("filtered_messages")

@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Map;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;

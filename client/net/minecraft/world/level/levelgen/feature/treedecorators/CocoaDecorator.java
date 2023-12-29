@@ -35,14 +35,14 @@ public class CocoaDecorator extends TreeDecorator {
             .filter(var1x -> var1x.getY() - var4 <= 2)
             .forEach(
                var2x -> {
-                  for(Direction var4x : Direction.Plane.HORIZONTAL) {
+                  for(Direction var4xx : Direction.Plane.HORIZONTAL) {
                      if (var2.nextFloat() <= 0.25F) {
-                        Direction var5 = var4x.getOpposite();
+                        Direction var5 = var4xx.getOpposite();
                         BlockPos var6 = var2x.offset(var5.getStepX(), 0, var5.getStepZ());
                         if (var1.isAir(var6)) {
                            var1.setBlock(
                               var6,
-                              Blocks.COCOA.defaultBlockState().setValue(CocoaBlock.AGE, Integer.valueOf(var2.nextInt(3))).setValue(CocoaBlock.FACING, var4x)
+                              Blocks.COCOA.defaultBlockState().setValue(CocoaBlock.AGE, Integer.valueOf(var2.nextInt(3))).setValue(CocoaBlock.FACING, var4xx)
                            );
                         }
                      }

@@ -5,6 +5,7 @@ import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.TypeRewriteRule;
+import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.serialization.Dynamic;
@@ -31,9 +32,9 @@ public class WorldGenSettingsHeightAndBiomeFix extends DataFix {
          var1,
          var3,
          var2x -> {
-            OptionalDynamic var3x = ((Dynamic)var2x.get(DSL.remainderFinder())).get("has_increased_height_already");
-            boolean var4x = var3x.result().isEmpty();
-            boolean var5 = var3x.asBoolean(true);
+            OptionalDynamic var3xx = ((Dynamic)var2x.get(DSL.remainderFinder())).get("has_increased_height_already");
+            boolean var4xx = var3xx.result().isEmpty();
+            boolean var5 = var3xx.asBoolean(true);
             return var2x.update(DSL.remainderFinder(), var0x -> var0x.remove("has_increased_height_already"))
                .updateTyped(
                   var2,
@@ -46,14 +47,14 @@ public class WorldGenSettingsHeightAndBiomeFix extends DataFix {
                               var2xxxx -> var2xxxx.update(
                                     "generator",
                                     var2xxxxx -> {
-                                       String var3xxx = var2xxxxx.get("type").asString("");
-                                       if ("minecraft:noise".equals(var3xxx)) {
-                                          MutableBoolean var4xx = new MutableBoolean();
+                                       String var3xxxx = var2xxxxx.get("type").asString("");
+                                       if ("minecraft:noise".equals(var3xxxx)) {
+                                          MutableBoolean var4xxx = new MutableBoolean();
                                           var2xxxxx = var2xxxxx.update(
                                              "biome_source",
                                              var2xxxxxx -> {
-                                                String var3xxxx = var2xxxxxx.get("type").asString("");
-                                                if ("minecraft:vanilla_layered".equals(var3xxxx) || var4x && "minecraft:multi_noise".equals(var3xxxx)) {
+                                                String var3xxxxx = var2xxxxxx.get("type").asString("");
+                                                if ("minecraft:vanilla_layered".equals(var3xxxxx) || var4x && "minecraft:multi_noise".equals(var3xxxxx)) {
                                                    if (var2xxxxxx.get("large_biomes").asBoolean(false)) {
                                                       var4xx.setTrue();
                                                    }
@@ -71,7 +72,7 @@ public class WorldGenSettingsHeightAndBiomeFix extends DataFix {
                                                 }
                                              }
                                           );
-                                          return var4xx.booleanValue()
+                                          return var4xxx.booleanValue()
                                              ? var2xxxxx.update(
                                                 "settings",
                                                 var0xxxxx -> "minecraft:overworld".equals(var0xxxxx.asString(""))
@@ -79,7 +80,7 @@ public class WorldGenSettingsHeightAndBiomeFix extends DataFix {
                                                       : var0xxxxx
                                              )
                                              : var2xxxxx;
-                                       } else if ("minecraft:flat".equals(var3xxx)) {
+                                       } else if ("minecraft:flat".equals(var3xxxx)) {
                                           return var5
                                              ? var2xxxxx
                                              : var2xxxxx.update(

@@ -3,6 +3,7 @@ package net.minecraft.world.level.block;
 import com.google.common.collect.Maps;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Map;
 import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
@@ -74,13 +75,13 @@ public class InfestedBlock extends Block {
 
    private static BlockState getNewStateWithProperties(Map<BlockState, BlockState> var0, BlockState var1, Supplier<BlockState> var2) {
       return var0.computeIfAbsent(var1, var1x -> {
-         BlockState var2x = (BlockState)var2.get();
+         BlockState var2xx = (BlockState)var2.get();
 
          for(Property var4 : var1x.getProperties()) {
-            var2x = var2x.hasProperty(var4) ? var2x.setValue(var4, var1x.getValue(var4)) : var2x;
+            var2xx = var2xx.hasProperty(var4) ? var2xx.setValue(var4, var1x.getValue(var4)) : var2xx;
          }
 
-         return var2x;
+         return var2xx;
       });
    }
 }

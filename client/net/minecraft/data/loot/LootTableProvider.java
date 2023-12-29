@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
@@ -46,9 +47,9 @@ public class LootTableProvider implements DataProvider {
       final HashMap var2 = Maps.newHashMap();
       Object2ObjectOpenHashMap var3 = new Object2ObjectOpenHashMap();
       this.subProviders.forEach(var2x -> var2x.provider().get().generate((var3x, var4x) -> {
-            ResourceLocation var5x = var3.put(RandomSequence.seedForKey(var3x), var3x);
-            if (var5x != null) {
-               Util.logAndPauseIfInIde("Loot table random sequence seed collision on " + var5x + " and " + var3x);
+            ResourceLocation var5xx = var3.put(RandomSequence.seedForKey(var3x), var3x);
+            if (var5xx != null) {
+               Util.logAndPauseIfInIde("Loot table random sequence seed collision on " + var5xx + " and " + var3x);
             }
 
             var4x.setRandomSequence(var3x);
@@ -78,10 +79,10 @@ public class LootTableProvider implements DataProvider {
          throw new IllegalStateException("Failed to validate loot tables, see logs");
       } else {
          return CompletableFuture.allOf(var2.entrySet().stream().map(var2x -> {
-            ResourceLocation var3x = (ResourceLocation)var2x.getKey();
-            LootTable var4x = (LootTable)var2x.getValue();
-            Path var5x = this.pathProvider.json(var3x);
-            return DataProvider.saveStable(var1, LootTable.CODEC, var4x, var5x);
+            ResourceLocation var3xx = (ResourceLocation)var2x.getKey();
+            LootTable var4xx = (LootTable)var2x.getValue();
+            Path var5xx = this.pathProvider.json(var3xx);
+            return DataProvider.saveStable(var1, LootTable.CODEC, var4xx, var5xx);
          }).toArray(var0 -> new CompletableFuture[var0]));
       }
    }

@@ -319,8 +319,8 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
       return var0.is(Items.CARROT) || var0.is(Items.GOLDEN_CARROT) || var0.is(Blocks.DANDELION.asItem());
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Nullable
    public Rabbit getBreedOffspring(ServerLevel var1, AgeableMob var2) {
       Rabbit var3 = EntityType.RABBIT.create(var1);

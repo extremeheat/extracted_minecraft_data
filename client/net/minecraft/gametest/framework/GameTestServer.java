@@ -10,6 +10,7 @@ import java.net.Proxy;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 import javax.annotation.Nullable;
@@ -82,15 +83,15 @@ public class GameTestServer extends MinecraftServer {
                   var2x -> WorldLoader.load(
                         var8,
                         var1xx -> {
-                           Registry var2xx = new MappedRegistry<>(Registries.LEVEL_STEM, Lifecycle.stable()).freeze();
-                           WorldDimensions.Complete var3x = var1xx.datapackWorldgen()
+                           Registry var2xxx = new MappedRegistry<>(Registries.LEVEL_STEM, Lifecycle.stable()).freeze();
+                           WorldDimensions.Complete var3xx = var1xx.datapackWorldgen()
                               .<WorldPreset>registryOrThrow(Registries.WORLD_PRESET)
                               .getHolderOrThrow(WorldPresets.FLAT)
                               .value()
                               .createWorldDimensions()
-                              .bake(var2xx);
+                              .bake(var2xxx);
                            return new WorldLoader.DataLoadOutput<>(
-                              new PrimaryLevelData(var6, WORLD_OPTIONS, var3x.specialWorldProperty(), var3x.lifecycle()), var3x.dimensionsRegistryAccess()
+                              new PrimaryLevelData(var6, WORLD_OPTIONS, var3xx.specialWorldProperty(), var3xx.lifecycle()), var3xx.dimensionsRegistryAccess()
                            );
                         },
                         WorldStem::new,

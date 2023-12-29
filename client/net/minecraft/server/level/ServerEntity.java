@@ -78,15 +78,15 @@ public class ServerEntity {
       this.trackedDataValues = var2.getEntityData().getNonDefaultValues();
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void sendChanges() {
       List var1 = this.entity.getPassengers();
       if (!var1.equals(this.lastPassengers)) {
          this.broadcast.accept(new ClientboundSetPassengersPacket(this.entity));
          removedPassengers(var1, this.lastPassengers).forEach(var0 -> {
-            if (var0 instanceof ServerPlayer var1x) {
-               var1x.connection.teleport(var1x.getX(), var1x.getY(), var1x.getZ(), var1x.getYRot(), var1x.getXRot());
+            if (var0 instanceof ServerPlayer var1xx) {
+               var1xx.connection.teleport(var1xx.getX(), var1xx.getY(), var1xx.getZ(), var1xx.getYRot(), var1xx.getXRot());
             }
          });
          this.lastPassengers = var1;

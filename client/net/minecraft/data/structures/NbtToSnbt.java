@@ -45,9 +45,9 @@ public class NbtToSnbt implements DataProvider {
                   () -> {
                      try {
                         CompletableFuture var4;
-                        try (Stream var3x = Files.walk(var5)) {
+                        try (Stream var3xx = Files.walk(var5)) {
                            var4 = CompletableFuture.allOf(
-                              var3x.filter(var0x -> var0x.toString().endsWith(".nbt"))
+                              var3xx.filter(var0x -> var0x.toString().endsWith(".nbt"))
                                  .map(var3xx -> CompletableFuture.runAsync(() -> convertStructure(var1, var3xx, getName(var5, var3xx), var2), Util.ioPool()))
                                  .toArray(var0x -> new CompletableFuture[var0x])
                            );

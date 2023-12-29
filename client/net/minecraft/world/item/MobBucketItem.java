@@ -44,8 +44,8 @@ public class MobBucketItem extends BucketItem {
       var2.playSound(var1, var3, this.emptySound, SoundSource.NEUTRAL, 1.0F, 1.0F);
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private void spawn(ServerLevel var1, ItemStack var2, BlockPos var3) {
       Entity var4 = this.type.spawn(var1, var2, null, var3, MobSpawnType.BUCKET, true, false);
       if (var4 instanceof Bucketable var5) {

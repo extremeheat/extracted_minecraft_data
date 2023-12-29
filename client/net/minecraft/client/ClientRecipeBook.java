@@ -81,8 +81,8 @@ public class ClientRecipeBook extends RecipeBook {
       return var1;
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private static RecipeBookCategories getCategory(RecipeHolder<?> var0) {
       Recipe var1 = var0.value();
       if (var1 instanceof CraftingRecipe var5) {

@@ -47,12 +47,12 @@ public class AlterGroundDecorator extends TreeDecorator {
             this.placeCircle(var1, var2x.west().south(2));
             this.placeCircle(var1, var2x.east(2).south(2));
 
-            for(int var3x = 0; var3x < 5; ++var3x) {
-               int var4x = var1.random().nextInt(64);
-               int var5x = var4x % 8;
-               int var6 = var4x / 8;
-               if (var5x == 0 || var5x == 7 || var6 == 0 || var6 == 7) {
-                  this.placeCircle(var1, var2x.offset(-3 + var5x, 0, -3 + var6));
+            for(int var3xx = 0; var3xx < 5; ++var3xx) {
+               int var4xx = var1.random().nextInt(64);
+               int var5xx = var4xx % 8;
+               int var6 = var4xx / 8;
+               if (var5xx == 0 || var5xx == 7 || var6 == 0 || var6 == 7) {
+                  this.placeCircle(var1, var2x.offset(-3 + var5xx, 0, -3 + var6));
                }
             }
          });

@@ -50,13 +50,13 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
          CrashReport var3 = CrashReport.forThrowable(var6, "Generating mipmaps for frame");
          CrashReportCategory var4 = var3.addCategory("Sprite being mipmapped");
          var4.setDetail("First frame", () -> {
-            StringBuilder var1x = new StringBuilder();
-            if (var1x.length() > 0) {
-               var1x.append(", ");
+            StringBuilder var1xx = new StringBuilder();
+            if (var1xx.length() > 0) {
+               var1xx.append(", ");
             }
 
-            var1x.append(this.originalImage.getWidth()).append("x").append(this.originalImage.getHeight());
-            return var1x.toString();
+            var1xx.append(this.originalImage.getWidth()).append("x").append(this.originalImage.getHeight());
+            return var1xx.toString();
          });
          CrashReportCategory var5 = var3.addCategory("Frame being iterated");
          var5.setDetail("Sprite name", this.name);

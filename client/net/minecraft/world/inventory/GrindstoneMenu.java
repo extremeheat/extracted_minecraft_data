@@ -3,6 +3,7 @@ package net.minecraft.world.inventory;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;

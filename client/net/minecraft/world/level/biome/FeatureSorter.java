@@ -36,7 +36,7 @@ public class FeatureSorter {
          private final int step;
          private final PlacedFeature feature;
 
-         _FeatureData/* $QF was: 1FeatureData*/(int var1, int var2, PlacedFeature var3) {
+         _FeatureData/* $VF was: 1FeatureData*/(int var1, int var2, PlacedFeature var3) {
             super();
             this.featureIndex = var1;
             this.step = var2;

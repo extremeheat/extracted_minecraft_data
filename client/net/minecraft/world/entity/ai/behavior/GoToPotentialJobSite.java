@@ -3,6 +3,8 @@ package net.minecraft.world.entity.ai.behavior;
 import com.google.common.collect.ImmutableMap;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.GlobalPos;
+import net.minecraft.core.Holder;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
@@ -35,15 +37,15 @@ public class GoToPotentialJobSite extends Behavior<Villager> {
    protected void stop(ServerLevel var1, Villager var2, long var3) {
       Optional var5 = var2.getBrain().getMemory(MemoryModuleType.POTENTIAL_JOB_SITE);
       var5.ifPresent(var1x -> {
-         BlockPos var2x = var1x.pos();
-         ServerLevel var3x = var1.getServer().getLevel(var1x.dimension());
-         if (var3x != null) {
-            PoiManager var4 = var3x.getPoiManager();
-            if (var4.exists(var2x, var0x -> true)) {
-               var4.release(var2x);
+         BlockPos var2xx = var1x.pos();
+         ServerLevel var3xx = var1.getServer().getLevel(var1x.dimension());
+         if (var3xx != null) {
+            PoiManager var4 = var3xx.getPoiManager();
+            if (var4.exists(var2xx, var0x -> true)) {
+               var4.release(var2xx);
             }
 
-            DebugPackets.sendPoiTicketCountPacket(var1, var2x);
+            DebugPackets.sendPoiTicketCountPacket(var1, var2xx);
          }
       });
       var2.getBrain().eraseMemory(MemoryModuleType.POTENTIAL_JOB_SITE);

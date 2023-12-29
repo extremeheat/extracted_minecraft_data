@@ -5,6 +5,7 @@ import com.google.common.primitives.Longs;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.nio.charset.StandardCharsets;
 import java.security.SignatureException;
 import java.time.Instant;

@@ -138,18 +138,18 @@ public class RegistrySetBuilder {
          HashMap var8 = new HashMap();
          HolderLookup.RegistryLookup var9 = var4.lookupOrThrow(var3);
          var9.listElements().forEach(var5x -> {
-            ResourceKey var6x = var5x.key();
-            RegistrySetBuilder.LazyHolder var7x = new RegistrySetBuilder.LazyHolder(var1, var6x);
-            var7x.supplier = () -> (T)var7.clone(var5x.value(), var4, (HolderLookup.Provider)var6.getValue());
-            var8.put(var6x, var7x);
+            ResourceKey var6xx = var5x.key();
+            RegistrySetBuilder.LazyHolder var7xx = new RegistrySetBuilder.LazyHolder(var1, var6xx);
+            var7xx.supplier = () -> (T)var7.clone(var5x.value(), var4, (HolderLookup.Provider)var6.getValue());
+            var8.put(var6xx, var7xx);
          });
          HolderLookup.RegistryLookup var10 = var5.lookupOrThrow(var3);
          var10.listElements().forEach(var5x -> {
-            ResourceKey var6x = var5x.key();
-            var8.computeIfAbsent(var6x, var6xx -> {
-               RegistrySetBuilder.LazyHolder var7x = new RegistrySetBuilder.LazyHolder(var1, var6x);
-               var7x.supplier = () -> (T)var7.clone(var5x.value(), var5, (HolderLookup.Provider)var6.getValue());
-               return var7x;
+            ResourceKey var6xx = var5x.key();
+            var8.computeIfAbsent(var6xx, var6xx -> {
+               RegistrySetBuilder.LazyHolder var7xx = new RegistrySetBuilder.LazyHolder(var1, var6x);
+               var7xx.supplier = () -> (T)var7.clone(var5x.value(), var5, (HolderLookup.Provider)var6.getValue());
+               return var7xx;
             });
          });
          Lifecycle var11 = var9.registryLifecycle().add(var10.registryLifecycle());
@@ -353,10 +353,10 @@ public class RegistrySetBuilder {
 
       public HolderLookup.RegistryLookup<T> buildAsLookup(RegistrySetBuilder.CompositeOwner var1) {
          Map var2 = this.values.entrySet().stream().collect(Collectors.toUnmodifiableMap(Entry::getKey, var1x -> {
-            RegistrySetBuilder.ValueAndHolder var2x = (RegistrySetBuilder.ValueAndHolder)var1x.getValue();
-            Holder.Reference var3x = var2x.holder().orElseGet(() -> Holder.Reference.createStandAlone(var1.cast(), (ResourceKey<T>)var1x.getKey()));
-            var3x.bindValue((T)var2x.value().value());
-            return var3x;
+            RegistrySetBuilder.ValueAndHolder var2xx = (RegistrySetBuilder.ValueAndHolder)var1x.getValue();
+            Holder.Reference var3xx = var2xx.holder().orElseGet(() -> Holder.Reference.createStandAlone(var1.cast(), (ResourceKey<T>)var1x.getKey()));
+            var3xx.bindValue((T)var2xx.value().value());
+            return var3xx;
          }));
          HolderLookup.RegistryLookup var3 = RegistrySetBuilder.lookupFromMap(this.key, this.lifecycle, var2);
          var1.add(var3);

@@ -80,8 +80,8 @@ public class BlockEntityWithoutLevelRenderer implements ResourceManagerReloadLis
       this.skullModels = SkullBlockRenderer.createSkullRenderers(this.entityModelSet);
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void renderByItem(ItemStack var1, ItemDisplayContext var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
       Item var7 = var1.getItem();
       if (var7 instanceof BlockItem) {

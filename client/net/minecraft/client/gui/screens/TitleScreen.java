@@ -171,8 +171,8 @@ public class TitleScreen extends Screen {
       boolean var4 = var3 == null;
       Tooltip var5 = var3 != null ? Tooltip.create(var3) : null;
       this.addRenderableWidget(Button.builder(Component.translatable("menu.multiplayer"), var1x -> {
-         Object var2x = this.minecraft.options.skipMultiplayerWarning ? new JoinMultiplayerScreen(this) : new SafetyScreen(this);
-         this.minecraft.setScreen((Screen)var2x);
+         Object var2xx = this.minecraft.options.skipMultiplayerWarning ? new JoinMultiplayerScreen(this) : new SafetyScreen(this);
+         this.minecraft.setScreen((Screen)var2xx);
       }).bounds(this.width / 2 - 100, var1 + var2 * 1, 200, 20).tooltip(var5).build()).active = var4;
       this.addRenderableWidget(
             Button.builder(Component.translatable("menu.online"), var1x -> this.realmsButtonClicked())
@@ -225,10 +225,10 @@ public class TitleScreen extends Screen {
          Button.builder(
                Component.translatable("menu.resetdemo"),
                var1x -> {
-                  LevelStorageSource var2x = this.minecraft.getLevelSource();
+                  LevelStorageSource var2xx = this.minecraft.getLevelSource();
          
-                  try (LevelStorageSource.LevelStorageAccess var3x = var2x.createAccess("Demo_World")) {
-                     if (var3x.hasWorldData()) {
+                  try (LevelStorageSource.LevelStorageAccess var3xx = var2xx.createAccess("Demo_World")) {
+                     if (var3xx.hasWorldData()) {
                         this.minecraft
                            .setScreen(
                               new ConfirmScreen(

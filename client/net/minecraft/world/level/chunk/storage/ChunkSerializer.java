@@ -62,6 +62,7 @@ import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
 import net.minecraft.world.level.lighting.LevelLightEngine;
+import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.ticks.LevelChunkTicks;
 import net.minecraft.world.ticks.ProtoChunkTicks;
 import org.slf4j.Logger;
@@ -475,9 +476,9 @@ public class ChunkSerializer {
             long[] var10 = var5.getLongArray(var7);
             if (var10.length != 0) {
                var3.put(var9, new LongOpenHashSet(Arrays.stream(var10).filter(var2x -> {
-                  ChunkPos var4x = new ChunkPos(var2x);
-                  if (var4x.getChessboardDistance(var1) > 8) {
-                     LOGGER.warn("Found invalid structure reference [ {} @ {} ] for chunk {}.", new Object[]{var8, var4x, var1});
+                  ChunkPos var4xx = new ChunkPos(var2x);
+                  if (var4xx.getChessboardDistance(var1) > 8) {
+                     LOGGER.warn("Found invalid structure reference [ {} @ {} ] for chunk {}.", new Object[]{var8, var4xx, var1});
                      return false;
                   } else {
                      return true;

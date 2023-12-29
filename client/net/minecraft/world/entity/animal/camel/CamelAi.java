@@ -9,6 +9,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.AnimalMakeLove;
@@ -140,8 +141,8 @@ public class CamelAi {
          super(var1);
       }
 
-      // $QF: Could not properly define all variable types!
-      // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+      // $VF: Could not properly define all variable types!
+      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       protected void start(ServerLevel var1, PathfinderMob var2, long var3) {
          if (var2 instanceof Camel var5) {

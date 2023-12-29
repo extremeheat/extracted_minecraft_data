@@ -49,7 +49,7 @@ public interface NeighborUpdater {
                   return String.format(
                      Locale.ROOT, "ID #%s (%s // %s)", BuiltInRegistries.BLOCK.getKey(var3), var3.getDescriptionId(), var3.getClass().getCanonicalName()
                   );
-               } catch (Throwable var2x) {
+               } catch (Throwable var2xx) {
                   return "ID #" + BuiltInRegistries.BLOCK.getKey(var3);
                }
             }

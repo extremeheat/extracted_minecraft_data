@@ -10,6 +10,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -22,6 +23,7 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagBuilder;
+import net.minecraft.tags.TagEntry;
 import net.minecraft.tags.TagFile;
 import net.minecraft.tags.TagKey;
 import net.minecraft.tags.TagManager;
@@ -79,7 +81,7 @@ public abstract class TagsProvider<T> implements DataProvider {
                      .stream()
                      .map(
                         var4x -> {
-                           ResourceLocation var5x = var4x.getKey();
+                           ResourceLocation var5xx = var4x.getKey();
                            TagBuilder var6 = var4x.getValue();
                            List var7 = var6.build();
                            List var8 = var7.stream().filter(var2xx -> !var2xx.verifyIfPresent(var4, var5)).toList();
@@ -88,7 +90,7 @@ public abstract class TagsProvider<T> implements DataProvider {
                                  String.format(
                                     Locale.ROOT,
                                     "Couldn't define tag %s as it is missing following references: %s",
-                                    var5x,
+                                    var5xx,
                                     var8.stream().map(Objects::toString).collect(Collectors.joining(","))
                                  )
                               );
@@ -96,7 +98,7 @@ public abstract class TagsProvider<T> implements DataProvider {
                               JsonElement var9 = (JsonElement)TagFile.CODEC
                                  .encodeStart(JsonOps.INSTANCE, new TagFile(var7, false))
                                  .getOrThrow(false, LOGGER::error);
-                              Path var10 = this.pathProvider.json(var5x);
+                              Path var10 = this.pathProvider.json(var5xx);
                               return DataProvider.saveStable(var1, var9, var10);
                            }
                         }
@@ -110,7 +112,7 @@ public abstract class TagsProvider<T> implements DataProvider {
          final HolderLookup.Provider contents;
          final TagsProvider.TagLookup<T> parent;
 
-         _CombinedData/* $QF was: 1CombinedData*/(HolderLookup.Provider var1, TagsProvider.TagLookup<T> var2) {
+         _CombinedData/* $VF was: 1CombinedData*/(HolderLookup.Provider var1, TagsProvider.TagLookup<T> var2) {
             super();
             this.contents = var1;
             this.parent = var2;

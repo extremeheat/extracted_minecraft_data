@@ -2,6 +2,7 @@ package net.minecraft.world.level.block;
 
 import com.mojang.serialization.MapCodec;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
@@ -94,8 +95,8 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
          .setValue(CRACKED, Boolean.valueOf(false));
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
       BlockEntity var8 = var2.getBlockEntity(var3);
@@ -125,7 +126,7 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
                   );
                }
 
-               var2.updateNeighbourForOutputSignal(var3, this);
+               var7.setChanged();
             } else {
                var2.playSound(null, var3, SoundEvents.DECORATED_POT_INSERT_FAIL, SoundSource.BLOCKS, 1.0F, 1.0F);
                var7.wobble(DecoratedPotBlockEntity.WobbleStyle.NEGATIVE);

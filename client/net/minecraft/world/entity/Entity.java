@@ -46,6 +46,7 @@ import net.minecraft.nbt.StringTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
@@ -2527,21 +2528,21 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource, S
             return this.getExitPortal(var1, var8, var9, var5)
                .map(
                   var2x -> {
-                     BlockState var5x = this.level().getBlockState(this.portalEntrancePos);
-                     Direction.Axis var3x;
-                     Vec3 var4x;
-                     if (var5x.hasProperty(BlockStateProperties.HORIZONTAL_AXIS)) {
-                        var3x = var5x.getValue(BlockStateProperties.HORIZONTAL_AXIS);
-                        BlockUtil.FoundRectangle var6x = BlockUtil.getLargestRectangleAround(
-                           this.portalEntrancePos, var3x, 21, Direction.Axis.Y, 21, var2xx -> this.level().getBlockState(var2xx) == var5x
+                     BlockState var5xx = this.level().getBlockState(this.portalEntrancePos);
+                     Direction.Axis var3xx;
+                     Vec3 var4xx;
+                     if (var5xx.hasProperty(BlockStateProperties.HORIZONTAL_AXIS)) {
+                        var3xx = var5xx.getValue(BlockStateProperties.HORIZONTAL_AXIS);
+                        BlockUtil.FoundRectangle var6xx = BlockUtil.getLargestRectangleAround(
+                           this.portalEntrancePos, var3xx, 21, Direction.Axis.Y, 21, var2xx -> this.level().getBlockState(var2xx) == var5x
                         );
-                        var4x = this.getRelativePortalPosition(var3x, var6x);
+                        var4xx = this.getRelativePortalPosition(var3xx, var6xx);
                      } else {
-                        var3x = Direction.Axis.X;
-                        var4x = new Vec3(0.5, 0.0, 0.0);
+                        var3xx = Direction.Axis.X;
+                        var4xx = new Vec3(0.5, 0.0, 0.0);
                      }
       
-                     return PortalShape.createPortalInfo(var1, var2x, var3x, var4x, this, this.getDeltaMovement(), this.getYRot(), this.getXRot());
+                     return PortalShape.createPortalInfo(var1, var2x, var3xx, var4xx, this, this.getDeltaMovement(), this.getYRot(), this.getXRot());
                   }
                )
                .orElse(null);

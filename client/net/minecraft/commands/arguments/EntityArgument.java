@@ -128,9 +128,9 @@ public class EntityArgument implements ArgumentType<EntitySelector> {
          }
 
          return var5.fillSuggestions(var2, var2x -> {
-            Collection var3x = var3.getOnlinePlayerNames();
-            Object var4x = this.playersOnly ? var3x : Iterables.concat(var3x, var3.getSelectedEntities());
-            SharedSuggestionProvider.suggest((Iterable<String>)var4x, var2x);
+            Collection var3xx = var3.getOnlinePlayerNames();
+            Object var4xx = this.playersOnly ? var3xx : Iterables.concat(var3xx, var3.getSelectedEntities());
+            SharedSuggestionProvider.suggest((Iterable<String>)var4xx, var2x);
          });
       } else {
          return Suggestions.empty();

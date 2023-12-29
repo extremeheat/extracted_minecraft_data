@@ -2,6 +2,7 @@ package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;

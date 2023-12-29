@@ -7,6 +7,7 @@ import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.TypeRewriteRule;
+import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Pair;
@@ -118,57 +119,57 @@ public class ChunkHeightAndBiomeFix extends DataFix {
                var2,
                var6,
                var4xx -> {
-                  Dynamic var5xx = (Dynamic)var4xx.get(DSL.remainderFinder());
-                  OptionalDynamic var6x = ((Dynamic)var5x.get(DSL.remainderFinder())).get("__context");
-                  String var7x = var6x.get("dimension").asString().result().orElse("");
-                  String var8 = var6x.get("generator").asString().result().orElse("");
-                  boolean var9 = "minecraft:overworld".equals(var7x);
+                  Dynamic var5xxx = (Dynamic)var4xx.get(DSL.remainderFinder());
+                  OptionalDynamic var6xx = ((Dynamic)var5x.get(DSL.remainderFinder())).get("__context");
+                  String var7xx = var6xx.get("dimension").asString().result().orElse("");
+                  String var8 = var6xx.get("generator").asString().result().orElse("");
+                  boolean var9 = "minecraft:overworld".equals(var7xx);
                   MutableBoolean var10 = new MutableBoolean();
                   int var11 = var9 ? -4 : 0;
-                  Dynamic[] var12 = getBiomeContainers(var5xx, var9, var11, var10);
+                  Dynamic[] var12 = getBiomeContainers(var5xxx, var9, var11, var10);
                   Dynamic var13 = makePalettedContainer(
-                     var5xx.createList(Stream.of(var5xx.createMap(ImmutableMap.of(var5xx.createString("Name"), var5xx.createString("minecraft:air")))))
+                     var5xxx.createList(Stream.of(var5xxx.createMap(ImmutableMap.of(var5xxx.createString("Name"), var5xxx.createString("minecraft:air")))))
                   );
                   HashSet var14 = Sets.newHashSet();
                   MutableObject var15 = new MutableObject((Supplier<ChunkProtoTickListFix.PoorMansPalettedContainer>)() -> null);
                   var4xx = var4xx.updateTyped(var3, var7, var7xx -> {
-                     IntOpenHashSet var8x = new IntOpenHashSet();
-                     Dynamic var9x = (Dynamic)var7xx.write().result().orElseThrow(() -> new IllegalStateException("Malformed Chunk.Level.Sections"));
-                     List var10x = var9x.asStream().map(var6xxx -> {
-                        int var7xxx = var6xxx.get("Y").asInt(0);
-                        Dynamic var8xx = (Dynamic)DataFixUtils.orElse(var6xxx.get("Palette").result().flatMap(var2xxxxx -> {
+                     IntOpenHashSet var8xx = new IntOpenHashSet();
+                     Dynamic var9xx = (Dynamic)var7xx.write().result().orElseThrow(() -> new IllegalStateException("Malformed Chunk.Level.Sections"));
+                     List var10xx = var9xx.asStream().map(var6xxx -> {
+                        int var7xxxx = var6xxx.get("Y").asInt(0);
+                        Dynamic var8xxx = (Dynamic)DataFixUtils.orElse(var6xxx.get("Palette").result().flatMap(var2xxxxx -> {
                            var2xxxxx.asStream().map(var0xxx -> var0xxx.get("Name").asString("minecraft:air")).forEach(var14::add);
                            return var6xxx.get("BlockStates").result().map(var1xxxxxx -> makeOptimizedPalettedContainer(var2xxxxx, var1xxxxxx));
                         }), var13);
-                        Dynamic var9xx = var6xxx;
-                        int var10xx = var7xxx - var11;
-                        if (var10xx >= 0 && var10xx < var12.length) {
-                           var9xx = var6xxx.set("biomes", var12[var10xx]);
+                        Dynamic var9xxx = var6xxx;
+                        int var10xxx = var7xxxx - var11;
+                        if (var10xxx >= 0 && var10xxx < var12.length) {
+                           var9xxx = var6xxx.set("biomes", var12[var10xxx]);
                         }
       
-                        var8x.add(var7xxx);
+                        var8x.add(var7xxxx);
                         if (var6xxx.get("Y").asInt(2147483647) == 0) {
                            var15.setValue((Supplier<ChunkProtoTickListFix.PoorMansPalettedContainer>)() -> {
-                              List var1xxxxx = var8xx.get("palette").asList(Function.identity());
-                              long[] var2xxxxx = var8xx.get("data").asLongStream().toArray();
-                              return new ChunkProtoTickListFix.PoorMansPalettedContainer(var1xxxxx, var2xxxxx);
+                              List var1xxxxxx = var8xx.get("palette").asList(Function.identity());
+                              long[] var2xxxxxx = var8xx.get("data").asLongStream().toArray();
+                              return new ChunkProtoTickListFix.PoorMansPalettedContainer(var1xxxxxx, var2xxxxxx);
                            });
                         }
       
-                        return var9xx.set("block_states", var8xx).remove("Palette").remove("BlockStates");
+                        return var9xxx.set("block_states", var8xxx).remove("Palette").remove("BlockStates");
                      }).collect(Collectors.toCollection(ArrayList::new));
       
-                     for(int var11x = 0; var11x < var12.length; ++var11x) {
-                        int var12x = var11x + var11;
-                        if (var8x.add(var12x)) {
-                           Dynamic var13x = var5xx.createMap(Map.of(var5xx.createString("Y"), var5xx.createInt(var12x)));
-                           var13x = var13x.set("block_states", var13);
-                           var13x = var13x.set("biomes", var12[var11x]);
-                           var10x.add(var13x);
+                     for(int var11xx = 0; var11xx < var12.length; ++var11xx) {
+                        int var12xx = var11xx + var11;
+                        if (var8xx.add(var12xx)) {
+                           Dynamic var13xx = var5xx.createMap(Map.of(var5xx.createString("Y"), var5xx.createInt(var12xx)));
+                           var13xx = var13xx.set("block_states", var13);
+                           var13xx = var13xx.set("biomes", var12[var11xx]);
+                           var10xx.add(var13xx);
                         }
                      }
       
-                     return Util.readTypedOrThrow(var7, var5xx.createList(var10x.stream()));
+                     return Util.readTypedOrThrow(var7, var5xx.createList(var10xx.stream()));
                   });
                   return var4xx.update(
                      DSL.remainderFinder(),
@@ -193,8 +194,8 @@ public class ChunkHeightAndBiomeFix extends DataFix {
 
    private Dynamic<?> predictChunkStatusBeforeSurface(Dynamic<?> var1, Set<String> var2) {
       return var1.update("Status", var1x -> {
-         String var2x = var1x.asString("empty");
-         if (STATUS_IS_OR_AFTER_SURFACE.contains(var2x)) {
+         String var2xx = var1x.asString("empty");
+         if (STATUS_IS_OR_AFTER_SURFACE.contains(var2xx)) {
             return var1x;
          } else {
             var2.remove("minecraft:air");
@@ -203,10 +204,10 @@ public class ChunkHeightAndBiomeFix extends DataFix {
             boolean var4 = !var2.isEmpty();
             if (var4) {
                return var1x.createString("liquid_carvers");
-            } else if ("noise".equals(var2x) || var3) {
+            } else if ("noise".equals(var2xx) || var3) {
                return var1x.createString("noise");
             } else {
-               return "biomes".equals(var2x) ? var1x.createString("structure_references") : var1x;
+               return "biomes".equals(var2xx) ? var1x.createString("structure_references") : var1x;
             }
          }
       });
@@ -328,8 +329,8 @@ public class ChunkHeightAndBiomeFix extends DataFix {
          var0x.getMapValues().result().ifPresent(var1x -> var1x.forEach((var1xx, var2) -> {
                try {
                   var1xx.asString().result().map(Integer::parseInt).ifPresent(var3 -> {
-                     int var4x = var3 - -4;
-                     var1.put(var1xx.createString(Integer.toString(var4x)), var2);
+                     int var4xx = var3 - -4;
+                     var1.put(var1xx.createString(Integer.toString(var4xx)), var2);
                   });
                } catch (NumberFormatException var4) {
                }
@@ -341,9 +342,9 @@ public class ChunkHeightAndBiomeFix extends DataFix {
    private static Dynamic<?> updateCarvingMasks(Dynamic<?> var0, int var1, int var2) {
       Dynamic var3 = var0.get("CarvingMasks").orElseEmptyMap();
       var3 = var3.updateMapValues(var3x -> {
-         long[] var4x = BitSet.valueOf(((Dynamic)var3x.getSecond()).asByteBuffer().array()).toLongArray();
+         long[] var4xx = BitSet.valueOf(((Dynamic)var3x.getSecond()).asByteBuffer().array()).toLongArray();
          long[] var5 = new long[64 * var1];
-         System.arraycopy(var4x, 0, var5, 64 * var2, var4x.length);
+         System.arraycopy(var4xx, 0, var5, 64 * var2, var4xx.length);
          return Pair.of((Dynamic)var3x.getFirst(), var0.createLongList(LongStream.of(var5)));
       });
       return var0.set("CarvingMasks", var3);

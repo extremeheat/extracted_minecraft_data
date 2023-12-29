@@ -10,6 +10,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Difficulty;
 import org.apache.commons.compress.utils.Lists;
@@ -25,7 +26,7 @@ public class OnlineOptionsScreen extends SimpleOptionsSubScreen {
       OptionInstance var4 = Optionull.map(
          var0.level,
          var0x -> {
-            Difficulty var1x = var0x.getDifficulty();
+            Difficulty var1xx = var0x.getDifficulty();
             return new OptionInstance(
                "options.difficulty.online",
                OptionInstance.noTooltip(),

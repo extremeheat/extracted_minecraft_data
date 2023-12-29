@@ -220,8 +220,8 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
       return var2;
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public static ItemStack addItem(@Nullable Container var0, Container var1, ItemStack var2, @Nullable Direction var3) {
       if (var1 instanceof WorldlyContainer var4 && var3 != null) {
          int[] var7 = var4.getSlotsForFace(var3);
@@ -266,8 +266,8 @@ public class HopperBlockEntity extends RandomizableContainerBlockEntity implemen
       }
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private static ItemStack tryMoveInItem(@Nullable Container var0, Container var1, ItemStack var2, int var3, @Nullable Direction var4) {
       ItemStack var5 = var1.getItem(var3);
       if (canPlaceItemInContainer(var1, var2, var3, var4)) {

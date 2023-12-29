@@ -54,11 +54,11 @@ public class ResourceOrTagArgument<T> implements ArgumentType<ResourceOrTagArgum
       ResourceOrTagArgument.Result var3 = (ResourceOrTagArgument.Result)var0.getArgument(var1, ResourceOrTagArgument.Result.class);
       Optional var4 = var3.cast(var2);
       return (ResourceOrTagArgument.Result<T>)var4.orElseThrow(() -> (CommandSyntaxException)var3.unwrap().map(var1xx -> {
-            ResourceKey var2x = var1xx.key();
-            return ResourceArgument.ERROR_INVALID_RESOURCE_TYPE.create(var2x.location(), var2x.registry(), var2.location());
+            ResourceKey var2xx = var1xx.key();
+            return ResourceArgument.ERROR_INVALID_RESOURCE_TYPE.create(var2xx.location(), var2xx.registry(), var2.location());
          }, var1xx -> {
-            TagKey var2x = var1xx.key();
-            return ERROR_INVALID_TAG_TYPE.create(var2x.location(), var2x.registry(), var2.location());
+            TagKey var2xx = var1xx.key();
+            return ERROR_INVALID_TAG_TYPE.create(var2xx.location(), var2xx.registry(), var2.location());
          }));
    }
 

@@ -2,6 +2,7 @@ package net.minecraft.core;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Objects;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;

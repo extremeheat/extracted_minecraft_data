@@ -2,6 +2,7 @@ package net.minecraft.client.resources.metadata.gui;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.server.packs.metadata.MetadataSectionType;
 import net.minecraft.util.ExtraCodecs;
 

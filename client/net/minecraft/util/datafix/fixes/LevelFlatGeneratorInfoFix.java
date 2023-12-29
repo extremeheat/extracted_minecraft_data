@@ -6,6 +6,7 @@ import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.TypeRewriteRule;
+import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
 import java.util.Iterator;
@@ -63,24 +64,24 @@ public class LevelFlatGeneratorInfoFix extends DataFix {
             StringBuilder var6 = new StringBuilder();
             Splitter var7 = var4 < 3 ? OLD_AMOUNT_SPLITTER : AMOUNT_SPLITTER;
             var6.append(StreamSupport.<String>stream(LAYER_SPLITTER.split(var5).spliterator(), false).map(var2x -> {
-               List var5x = var7.splitToList(var2x);
-               int var3x;
-               String var4x;
-               if (var5x.size() == 2) {
-                  var3x = NumberUtils.toInt((String)var5x.get(0));
-                  var4x = (String)var5x.get(1);
+               List var5xx = var7.splitToList(var2x);
+               int var3xx;
+               String var4xx;
+               if (var5xx.size() == 2) {
+                  var3xx = NumberUtils.toInt((String)var5xx.get(0));
+                  var4xx = (String)var5xx.get(1);
                } else {
-                  var3x = 1;
-                  var4x = (String)var5x.get(0);
+                  var3xx = 1;
+                  var4xx = (String)var5xx.get(0);
                }
 
-               List var6x = BLOCK_SPLITTER.splitToList(var4x);
-               int var7x = ((String)var6x.get(0)).equals("minecraft") ? 1 : 0;
-               String var8 = (String)var6x.get(var7x);
+               List var6xx = BLOCK_SPLITTER.splitToList(var4xx);
+               int var7xx = ((String)var6xx.get(0)).equals("minecraft") ? 1 : 0;
+               String var8 = (String)var6xx.get(var7xx);
                int var9 = var4 == 3 ? EntityBlockStateFix.getBlockId("minecraft:" + var8) : NumberUtils.toInt(var8, 0);
-               int var10 = var7x + 1;
-               int var11 = var6x.size() > var10 ? NumberUtils.toInt((String)var6x.get(var10), 0) : 0;
-               return (var3x == 1 ? "" : var3x + "*") + BlockStateData.getTag(var9 << 4 | var11).get("Name").asString("");
+               int var10 = var7xx + 1;
+               int var11 = var6xx.size() > var10 ? NumberUtils.toInt((String)var6xx.get(var10), 0) : 0;
+               return (var3xx == 1 ? "" : var3xx + "*") + BlockStateData.getTag(var9 << 4 | var11).get("Name").asString("");
             }).collect(Collectors.joining(",")));
 
             while(var2.hasNext()) {

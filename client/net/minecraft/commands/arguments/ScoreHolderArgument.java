@@ -7,6 +7,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -99,11 +100,11 @@ public class ScoreHolderArgument implements ArgumentType<ScoreHolderArgument.Res
          String var3 = var1.getString().substring(var2, var1.getCursor());
          if (var3.equals("*")) {
             return (var0, var1x) -> {
-               Collection var2x = var1x.get();
-               if (var2x.isEmpty()) {
+               Collection var2xx = var1x.get();
+               if (var2xx.isEmpty()) {
                   throw ERROR_NO_RESULTS.create();
                } else {
-                  return var2x;
+                  return var2xx;
                }
             };
          } else {
@@ -114,37 +115,37 @@ public class ScoreHolderArgument implements ArgumentType<ScoreHolderArgument.Res
                try {
                   UUID var5 = UUID.fromString(var3);
                   return (var2x, var3x) -> {
-                     MinecraftServer var4x = var2x.getServer();
-                     Entity var5x = null;
-                     ArrayList var6x = null;
+                     MinecraftServer var4xx = var2x.getServer();
+                     Entity var5xx = null;
+                     ArrayList var6xx = null;
 
-                     for(ServerLevel var8x : var4x.getAllLevels()) {
-                        Entity var9 = var8x.getEntity(var5);
+                     for(ServerLevel var8xx : var4xx.getAllLevels()) {
+                        Entity var9 = var8xx.getEntity(var5);
                         if (var9 != null) {
-                           if (var5x == null) {
-                              var5x = var9;
+                           if (var5xx == null) {
+                              var5xx = var9;
                            } else {
-                              if (var6x == null) {
-                                 var6x = new ArrayList();
-                                 var6x.add(var5x);
+                              if (var6xx == null) {
+                                 var6xx = new ArrayList();
+                                 var6xx.add(var5xx);
                               }
 
-                              var6x.add(var9);
+                              var6xx.add(var9);
                            }
                         }
                      }
 
-                     if (var6x != null) {
-                        return var6x;
+                     if (var6xx != null) {
+                        return var6xx;
                      } else {
-                        return var5x != null ? List.of(var5x) : var4;
+                        return var5xx != null ? List.of(var5xx) : var4;
                      }
                   };
                } catch (IllegalArgumentException var6) {
                   return (var2x, var3x) -> {
-                     MinecraftServer var4x = var2x.getServer();
-                     ServerPlayer var5x = var4x.getPlayerList().getPlayerByName(var3);
-                     return var5x != null ? List.of(var5x) : var4;
+                     MinecraftServer var4xx = var2x.getServer();
+                     ServerPlayer var5xx = var4xx.getPlayerList().getPlayerByName(var3);
+                     return var5xx != null ? List.of(var5xx) : var4;
                   };
                }
             }

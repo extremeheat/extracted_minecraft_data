@@ -3,6 +3,8 @@ package net.minecraft.server.commands;
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import java.util.HashSet;
 import java.util.UUID;
 import net.minecraft.commands.CommandSourceStack;
@@ -45,8 +47,8 @@ public class DebugConfigCommand {
       );
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private static Iterable<String> getUuidsInConfig(MinecraftServer var0) {
       HashSet var1 = new HashSet();
 
@@ -67,8 +69,8 @@ public class DebugConfigCommand {
       return 1;
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private static int unconfig(CommandSourceStack var0, UUID var1) {
       for(Connection var3 : var0.getServer().getConnection().getConnections()) {
          PacketListener var5 = var3.getPacketListener();

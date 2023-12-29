@@ -4,6 +4,7 @@ import java.util.Set;
 import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 
 public class UpdateOneTwentyOneBlockLoot extends BlockLootSubProvider {

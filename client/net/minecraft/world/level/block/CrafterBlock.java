@@ -97,8 +97,8 @@ public class CrafterBlock extends BaseEntityBlock {
       return var1.isClientSide ? null : createTickerHelper(var3, BlockEntityType.CRAFTER, CrafterBlockEntity::serverTick);
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private void setBlockEntityTriggered(@Nullable BlockEntity var1, boolean var2) {
       if (var1 instanceof CrafterBlockEntity var3) {
          var3.setTriggered(var2);
@@ -126,8 +126,8 @@ public class CrafterBlock extends BaseEntityBlock {
          .setValue(TRIGGERED, Boolean.valueOf(var1.getLevel().hasNeighborSignal(var1.getClickedPos())));
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, LivingEntity var4, ItemStack var5) {
       if (var5.hasCustomHoverName()) {

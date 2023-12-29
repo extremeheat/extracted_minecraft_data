@@ -3,9 +3,12 @@ package net.minecraft.world.level.block;
 import com.google.common.collect.Maps;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
+import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
@@ -144,8 +147,8 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
       var1.add(FACING);
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
       BlockEntity var5 = var1.getBlockEntity(var2);
@@ -173,8 +176,8 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
       BlockEntity var3 = var2.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
       if (var3 instanceof ShulkerBoxBlockEntity var4) {
          var2 = var2.withDynamicDrop(CONTENTS, var1x -> {
-            for(int var2x = 0; var2x < var4.getContainerSize(); ++var2x) {
-               var1x.accept(var4.getItem(var2x));
+            for(int var2xx = 0; var2xx < var4.getContainerSize(); ++var2xx) {
+               var1x.accept(var4.getItem(var2xx));
             }
          });
       }

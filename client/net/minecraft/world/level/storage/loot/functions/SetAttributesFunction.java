@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;

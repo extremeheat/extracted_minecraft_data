@@ -31,8 +31,8 @@ public final class RegistryFileCodec<E> implements Codec<Holder<E>> {
       this.allowInline = var3;
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public <T> DataResult<T> encode(Holder<E> var1, DynamicOps<T> var2, T var3) {
       if (var2 instanceof RegistryOps var4) {
          Optional var5 = var4.owner(this.registryKey);
@@ -49,8 +49,8 @@ public final class RegistryFileCodec<E> implements Codec<Holder<E>> {
       return this.elementCodec.encode(var1.value(), var2, var3);
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public <T> DataResult<Pair<Holder<E>, T>> decode(DynamicOps<T> var1, T var2) {
       if (var1 instanceof RegistryOps var3) {
          Optional var4 = var3.getter(this.registryKey);

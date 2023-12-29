@@ -10,6 +10,7 @@ import net.minecraft.nbt.StringTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
@@ -100,8 +101,8 @@ class ReportGameListener implements GameTestListener {
       visualizeFailedTest(var0, var1);
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    protected static void visualizeFailedTest(GameTestInfo var0, Throwable var1) {
       String var2 = var1.getMessage() + (var1.getCause() == null ? "" : " cause: " + Util.describeError(var1.getCause()));
       String var3 = (var0.isRequired() ? "" : "(optional) ") + var0.getTestName() + " failed! " + var2;

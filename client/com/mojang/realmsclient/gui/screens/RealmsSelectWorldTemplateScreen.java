@@ -25,6 +25,7 @@ import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.WidgetSprites;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
@@ -165,13 +166,13 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
             
                               return null;
                            } else {
-                              WorldTemplatePaginatedList var2x = (WorldTemplatePaginatedList)var3.left().get();
+                              WorldTemplatePaginatedList var2xx = (WorldTemplatePaginatedList)var3.left().get();
             
-                              for(WorldTemplate var4 : var2x.templates) {
+                              for(WorldTemplate var4 : var2xx.templates) {
                                  RealmsSelectWorldTemplateScreen.this.worldTemplateList.addEntry(var4);
                               }
             
-                              if (var2x.templates.isEmpty()) {
+                              if (var2xx.templates.isEmpty()) {
                                  if (RealmsSelectWorldTemplateScreen.this.worldTemplateList.isEmpty()) {
                                     String var5 = I18n.get("mco.template.select.none", "%link");
                                     TextRenderingUtils.LineSegment var6 = TextRenderingUtils.LineSegment.link(
@@ -182,7 +183,7 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
             
                                  return null;
                               } else {
-                                 return var2x;
+                                 return var2xx;
                               }
                            }
                         }

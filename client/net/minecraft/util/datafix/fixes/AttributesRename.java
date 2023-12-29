@@ -11,6 +11,7 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.serialization.Dynamic;
 import java.util.Map;
+import java.util.stream.Stream;
 
 public class AttributesRename extends DataFix {
    private static final Map<String, String> RENAMES = ImmutableMap.builder()
