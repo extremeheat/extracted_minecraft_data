@@ -20,6 +20,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -65,18 +66,23 @@ public abstract class AbstractArrow extends Projectile {
    private IntOpenHashSet piercingIgnoreEntityIds;
    @Nullable
    private List<Entity> piercedAndKilledEntities;
+   private ItemStack pickupItemStack;
 
-   protected AbstractArrow(EntityType<? extends AbstractArrow> var1, Level var2) {
+   protected AbstractArrow(EntityType<? extends AbstractArrow> var1, Level var2, ItemStack var3) {
       super(var1, var2);
+      this.pickupItemStack = var3.copy();
+      if (var3.hasCustomHoverName()) {
+         this.setCustomName(var3.getHoverName());
+      }
    }
 
-   protected AbstractArrow(EntityType<? extends AbstractArrow> var1, double var2, double var4, double var6, Level var8) {
-      this(var1, var8);
+   protected AbstractArrow(EntityType<? extends AbstractArrow> var1, double var2, double var4, double var6, Level var8, ItemStack var9) {
+      this(var1, var8, var9);
       this.setPos(var2, var4, var6);
    }
 
-   protected AbstractArrow(EntityType<? extends AbstractArrow> var1, LivingEntity var2, Level var3) {
-      this(var1, var2.getX(), var2.getEyeY() - 0.10000000149011612, var2.getZ(), var3);
+   protected AbstractArrow(EntityType<? extends AbstractArrow> var1, LivingEntity var2, Level var3, ItemStack var4) {
+      this(var1, var2.getX(), var2.getEyeY() - 0.10000000149011612, var2.getZ(), var3, var4);
       this.setOwner(var2);
       if (var2 instanceof Player) {
          this.pickup = AbstractArrow.Pickup.ALLOWED;
@@ -324,11 +330,11 @@ public abstract class AbstractArrow extends Projectile {
       }
 
       Entity var6 = this.getOwner();
-      DamageSource var13;
+      DamageSource var14;
       if (var6 == null) {
-         var13 = this.damageSources().arrow(this, this);
+         var14 = this.damageSources().arrow(this, this);
       } else {
-         var13 = this.damageSources().arrow(this, var6);
+         var14 = this.damageSources().arrow(this, var6);
          if (var6 instanceof LivingEntity) {
             ((LivingEntity)var6).setLastHurtMob(var2);
          }
@@ -336,47 +342,48 @@ public abstract class AbstractArrow extends Projectile {
 
       boolean var7 = var2.getType() == EntityType.ENDERMAN;
       int var8 = var2.getRemainingFireTicks();
-      if (this.isOnFire() && !var7) {
+      boolean var9 = var2.getType().is(EntityTypeTags.DEFLECTS_ARROWS);
+      if (this.isOnFire() && !var7 && !var9) {
          var2.setSecondsOnFire(5);
       }
 
-      if (var2.hurt(var13, (float)var4)) {
+      if (var2.hurt(var14, (float)var4)) {
          if (var7) {
             return;
          }
 
-         if (var2 instanceof LivingEntity var9) {
+         if (var2 instanceof LivingEntity var10) {
             if (!this.level().isClientSide && this.getPierceLevel() <= 0) {
-               ((LivingEntity)var9).setArrowCount(((LivingEntity)var9).getArrowCount() + 1);
+               ((LivingEntity)var10).setArrowCount(((LivingEntity)var10).getArrowCount() + 1);
             }
 
             if (this.knockback > 0) {
-               double var10 = Math.max(0.0, 1.0 - ((LivingEntity)var9).getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
-               Vec3 var12 = this.getDeltaMovement().multiply(1.0, 0.0, 1.0).normalize().scale((double)this.knockback * 0.6 * var10);
-               if (var12.lengthSqr() > 0.0) {
-                  ((LivingEntity)var9).push(var12.x, 0.1, var12.z);
+               double var11 = Math.max(0.0, 1.0 - ((LivingEntity)var10).getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
+               Vec3 var13 = this.getDeltaMovement().multiply(1.0, 0.0, 1.0).normalize().scale((double)this.knockback * 0.6 * var11);
+               if (var13.lengthSqr() > 0.0) {
+                  ((LivingEntity)var10).push(var13.x, 0.1, var13.z);
                }
             }
 
             if (!this.level().isClientSide && var6 instanceof LivingEntity) {
-               EnchantmentHelper.doPostHurtEffects((LivingEntity)var9, var6);
-               EnchantmentHelper.doPostDamageEffects((LivingEntity)var6, (Entity)var9);
+               EnchantmentHelper.doPostHurtEffects((LivingEntity)var10, var6);
+               EnchantmentHelper.doPostDamageEffects((LivingEntity)var6, (Entity)var10);
             }
 
-            this.doPostHurtEffects((LivingEntity)var9);
-            if (var6 != null && var9 != var6 && var9 instanceof Player && var6 instanceof ServerPlayer && !this.isSilent()) {
+            this.doPostHurtEffects((LivingEntity)var10);
+            if (var6 != null && var10 != var6 && var10 instanceof Player && var6 instanceof ServerPlayer && !this.isSilent()) {
                ((ServerPlayer)var6).connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.ARROW_HIT_PLAYER, 0.0F));
             }
 
             if (!var2.isAlive() && this.piercedAndKilledEntities != null) {
-               this.piercedAndKilledEntities.add((Entity)var9);
+               this.piercedAndKilledEntities.add((Entity)var10);
             }
 
-            if (!this.level().isClientSide && var6 instanceof ServerPlayer var14) {
+            if (!this.level().isClientSide && var6 instanceof ServerPlayer var15) {
                if (this.piercedAndKilledEntities != null && this.shotFromCrossbow()) {
-                  CriteriaTriggers.KILLED_BY_CROSSBOW.trigger((ServerPlayer)var14, this.piercedAndKilledEntities);
+                  CriteriaTriggers.KILLED_BY_CROSSBOW.trigger((ServerPlayer)var15, this.piercedAndKilledEntities);
                } else if (!var2.isAlive() && this.shotFromCrossbow()) {
-                  CriteriaTriggers.KILLED_BY_CROSSBOW.trigger((ServerPlayer)var14, Arrays.asList(var2));
+                  CriteriaTriggers.KILLED_BY_CROSSBOW.trigger((ServerPlayer)var15, Arrays.asList(var2));
                }
             }
          }
@@ -385,6 +392,8 @@ public abstract class AbstractArrow extends Projectile {
          if (this.getPierceLevel() <= 0) {
             this.discard();
          }
+      } else if (var9) {
+         this.deflect();
       } else {
          var2.setRemainingFireTicks(var8);
          this.setDeltaMovement(this.getDeltaMovement().scale(-0.1));
@@ -398,6 +407,13 @@ public abstract class AbstractArrow extends Projectile {
             this.discard();
          }
       }
+   }
+
+   public void deflect() {
+      float var1 = this.random.nextFloat() * 360.0F;
+      this.setDeltaMovement(this.getDeltaMovement().yRot(var1 * 0.017453292F).scale(0.5));
+      this.setYRot(this.getYRot() + var1);
+      this.yRotO += var1;
    }
 
    @Override
@@ -457,6 +473,7 @@ public abstract class AbstractArrow extends Projectile {
       var1.putByte("PierceLevel", this.getPierceLevel());
       var1.putString("SoundEvent", BuiltInRegistries.SOUND_EVENT.getKey(this.soundEvent).toString());
       var1.putBoolean("ShotFromCrossbow", this.shotFromCrossbow());
+      var1.put("item", this.pickupItemStack.save(new CompoundTag()));
    }
 
    @Override
@@ -483,6 +500,9 @@ public abstract class AbstractArrow extends Projectile {
       }
 
       this.setShotFromCrossbow(var1.getBoolean("ShotFromCrossbow"));
+      if (var1.contains("item", 10)) {
+         this.pickupItemStack = ItemStack.of(var1.getCompound("item"));
+      }
    }
 
    @Override
@@ -514,11 +534,17 @@ public abstract class AbstractArrow extends Projectile {
       }
    }
 
-   protected abstract ItemStack getPickupItem();
+   protected ItemStack getPickupItem() {
+      return this.pickupItemStack.copy();
+   }
 
    @Override
    protected Entity.MovementEmission getMovementEmission() {
       return Entity.MovementEmission.NONE;
+   }
+
+   public ItemStack getPickupItemStackOrigin() {
+      return this.pickupItemStack;
    }
 
    public void setBaseDamage(double var1) {

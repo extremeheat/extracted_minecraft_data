@@ -31,7 +31,7 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
 public class FillCommand {
    private static final Dynamic2CommandExceptionType ERROR_AREA_TOO_LARGE = new Dynamic2CommandExceptionType(
-      (var0, var1) -> Component.translatable("commands.fill.toobig", var0, var1)
+      (var0, var1) -> Component.translatableEscape("commands.fill.toobig", var0, var1)
    );
    static final BlockInput HOLLOW_CORE = new BlockInput(Blocks.AIR.defaultBlockState(), Collections.emptySet(), null);
    private static final SimpleCommandExceptionType ERROR_FAILED = new SimpleCommandExceptionType(Component.translatable("commands.fill.failed"));

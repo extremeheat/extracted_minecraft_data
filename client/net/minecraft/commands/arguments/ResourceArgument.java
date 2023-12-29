@@ -35,13 +35,13 @@ import net.minecraft.world.level.levelgen.structure.Structure;
 public class ResourceArgument<T> implements ArgumentType<Holder.Reference<T>> {
    private static final Collection<String> EXAMPLES = Arrays.asList("foo", "foo:bar", "012");
    private static final DynamicCommandExceptionType ERROR_NOT_SUMMONABLE_ENTITY = new DynamicCommandExceptionType(
-      var0 -> Component.translatable("entity.not_summonable", var0)
+      var0 -> Component.translatableEscape("entity.not_summonable", var0)
    );
    public static final Dynamic2CommandExceptionType ERROR_UNKNOWN_RESOURCE = new Dynamic2CommandExceptionType(
-      (var0, var1) -> Component.translatable("argument.resource.not_found", var0, var1)
+      (var0, var1) -> Component.translatableEscape("argument.resource.not_found", var0, var1)
    );
    public static final Dynamic3CommandExceptionType ERROR_INVALID_RESOURCE_TYPE = new Dynamic3CommandExceptionType(
-      (var0, var1, var2) -> Component.translatable("argument.resource.invalid_type", var0, var1, var2)
+      (var0, var1, var2) -> Component.translatableEscape("argument.resource.invalid_type", var0, var1, var2)
    );
    final ResourceKey<? extends Registry<T>> registryKey;
    private final HolderLookup<T> registryLookup;

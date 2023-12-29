@@ -240,4 +240,8 @@ public class SimpleContainer implements Container, StackedContentsCompatible {
 
       return var1;
    }
+
+   public NonNullList<ItemStack> getItems() {
+      return this.items;
+   }
 }

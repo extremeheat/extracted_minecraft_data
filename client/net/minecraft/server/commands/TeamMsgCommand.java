@@ -36,7 +36,7 @@ public class TeamMsgCommand {
          (LiteralArgumentBuilder)Commands.literal("teammsg").then(Commands.argument("message", MessageArgument.message()).executes(var0x -> {
             CommandSourceStack var1x = (CommandSourceStack)var0x.getSource();
             Entity var2 = var1x.getEntityOrException();
-            PlayerTeam var3 = (PlayerTeam)var2.getTeam();
+            PlayerTeam var3 = var2.getTeam();
             if (var3 == null) {
                throw ERROR_NOT_ON_TEAM.create();
             } else {

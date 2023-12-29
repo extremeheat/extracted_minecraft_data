@@ -26,6 +26,7 @@ public class ClientTelemetryManager implements AutoCloseable {
       var1.setName("Telemetry-Sender-#" + THREAD_COUNT.getAndIncrement());
       return var1;
    });
+   private final Minecraft minecraft;
    private final UserApiService userApiService;
    private final TelemetryPropertyMap deviceSessionProperties;
    private final Path logDirectory;
@@ -34,6 +35,7 @@ public class ClientTelemetryManager implements AutoCloseable {
 
    public ClientTelemetryManager(Minecraft var1, UserApiService var2, User var3) {
       super();
+      this.minecraft = var1;
       this.userApiService = var2;
       TelemetryPropertyMap.Builder var4 = TelemetryPropertyMap.builder();
       var3.getXuid().ifPresent(var1x -> var4.put(TelemetryProperty.USER_ID, var1x));
@@ -43,7 +45,7 @@ public class ClientTelemetryManager implements AutoCloseable {
       var4.put(TelemetryProperty.OPERATING_SYSTEM, Util.getPlatform().telemetryName());
       var4.put(TelemetryProperty.PLATFORM, System.getProperty("os.name"));
       var4.put(TelemetryProperty.CLIENT_MODDED, Minecraft.checkModStatus().shouldReportAsModified());
-      var4.putIfNotNull(TelemetryProperty.LAUNCHER_NAME, System.getProperty("minecraft.launcher.brand"));
+      var4.putIfNotNull(TelemetryProperty.LAUNCHER_NAME, Minecraft.getLauncherBrand());
       this.deviceSessionProperties = var4.build();
       this.logDirectory = var1.gameDirectory.toPath().resolve("logs/telemetry");
       this.logManager = TelemetryLogManager.open(this.logDirectory);
@@ -58,7 +60,7 @@ public class ClientTelemetryManager implements AutoCloseable {
    }
 
    private TelemetryEventSender createEventSender() {
-      if (SharedConstants.IS_RUNNING_IN_IDE) {
+      if (!this.minecraft.allowsTelemetry()) {
          return TelemetryEventSender.DISABLED;
       } else {
          TelemetrySession var1 = this.userApiService.newTelemetrySession(EXECUTOR);

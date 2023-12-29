@@ -1,5 +1,6 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.features.CaveFeatures;
@@ -11,6 +12,13 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class MossBlock extends Block implements BonemealableBlock {
+   public static final MapCodec<MossBlock> CODEC = simpleCodec(MossBlock::new);
+
+   @Override
+   public MapCodec<MossBlock> codec() {
+      return CODEC;
+   }
+
    public MossBlock(BlockBehaviour.Properties var1) {
       super(var1);
    }

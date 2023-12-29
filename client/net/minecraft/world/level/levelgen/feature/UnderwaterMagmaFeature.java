@@ -14,7 +14,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Column;
 import net.minecraft.world.level.levelgen.feature.configurations.UnderwaterMagmaConfiguration;
-import net.minecraft.world.phys.AABB;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
 public class UnderwaterMagmaFeature extends Feature<UnderwaterMagmaConfiguration> {
    public UnderwaterMagmaFeature(Codec<UnderwaterMagmaConfiguration> var1) {
@@ -33,7 +33,7 @@ public class UnderwaterMagmaFeature extends Feature<UnderwaterMagmaConfiguration
       } else {
          BlockPos var7 = var3.atY(var6.getAsInt());
          Vec3i var8 = new Vec3i(var4.placementRadiusAroundFloor, var4.placementRadiusAroundFloor, var4.placementRadiusAroundFloor);
-         AABB var9 = new AABB(var7.subtract(var8), var7.offset(var8));
+         BoundingBox var9 = BoundingBox.fromCorners(var7.subtract(var8), var7.offset(var8));
          return BlockPos.betweenClosedStream(var9)
                .filter(var2x -> var5.nextFloat() < var4.placementProbabilityPerValidPosition)
                .filter(var2x -> this.isValidPlacement(var2, var2x))

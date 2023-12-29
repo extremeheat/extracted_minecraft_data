@@ -1,12 +1,16 @@
 package net.minecraft.world.level.block.entity;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.minecraft.MinecraftSessionService;
 import com.mojang.authlib.yggdrasil.ProfileResult;
+import java.time.Duration;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import java.util.function.Function;
+import java.util.function.BooleanSupplier;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
@@ -15,8 +19,8 @@ import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.Services;
-import net.minecraft.server.players.GameProfileCache;
 import net.minecraft.util.StringUtil;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.SkullBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -25,11 +29,9 @@ public class SkullBlockEntity extends BlockEntity {
    public static final String TAG_SKULL_OWNER = "SkullOwner";
    public static final String TAG_NOTE_BLOCK_SOUND = "note_block_sound";
    @Nullable
-   private static GameProfileCache profileCache;
-   @Nullable
-   private static MinecraftSessionService sessionService;
-   @Nullable
    private static Executor mainThreadExecutor;
+   @Nullable
+   private static LoadingCache<String, CompletableFuture<Optional<GameProfile>>> profileCache;
    private static final Executor CHECKED_MAIN_THREAD_EXECUTOR = var0 -> {
       Executor var1 = mainThreadExecutor;
       if (var1 != null) {
@@ -47,16 +49,34 @@ public class SkullBlockEntity extends BlockEntity {
       super(BlockEntityType.SKULL, var1, var2);
    }
 
-   public static void setup(Services var0, Executor var1) {
-      profileCache = var0.profileCache();
-      sessionService = var0.sessionService();
+   public static void setup(final Services var0, Executor var1) {
       mainThreadExecutor = var1;
+      final BooleanSupplier var2 = () -> profileCache == null;
+      profileCache = CacheBuilder.newBuilder()
+         .expireAfterAccess(Duration.ofMinutes(10L))
+         .maximumSize(256L)
+         .build(new CacheLoader<String, CompletableFuture<Optional<GameProfile>>>() {
+            public CompletableFuture<Optional<GameProfile>> load(String var1) {
+               return var2.getAsBoolean() ? CompletableFuture.completedFuture(Optional.empty()) : SkullBlockEntity.loadProfile(var1, var0, var2);
+            }
+         });
    }
 
    public static void clear() {
-      profileCache = null;
-      sessionService = null;
       mainThreadExecutor = null;
+      profileCache = null;
+   }
+
+   static CompletableFuture<Optional<GameProfile>> loadProfile(String var0, Services var1, BooleanSupplier var2) {
+      return var1.profileCache().getAsync(var0).thenApplyAsync(var2x -> {
+         if (var2x.isPresent() && !var2.getAsBoolean()) {
+            UUID var3 = ((GameProfile)var2x.get()).getId();
+            ProfileResult var4 = var1.sessionService().fetchProfile(var3, true);
+            return var4 != null ? Optional.ofNullable(var4.profile()) : var2x;
+         } else {
+            return Optional.empty();
+         }
+      }, Util.backgroundExecutor());
    }
 
    @Override
@@ -173,32 +193,8 @@ public class SkullBlockEntity extends BlockEntity {
    }
 
    private static CompletableFuture<Optional<GameProfile>> fetchGameProfile(String var0) {
-      GameProfileCache var1 = profileCache;
-      return var1 == null
-         ? CompletableFuture.completedFuture(Optional.empty())
-         : var1.getAsync(var0)
-            .thenCompose(var0x -> var0x.isPresent() ? fillProfileTextures((GameProfile)var0x.get()) : CompletableFuture.completedFuture(Optional.empty()))
-            .thenApplyAsync((Function<? super Optional, ? extends Optional<GameProfile>>)(var0x -> {
-               GameProfileCache var1x = profileCache;
-               if (var1x != null) {
-                  var0x.ifPresent(var1x::add);
-                  return var0x;
-               } else {
-                  return Optional.empty();
-               }
-            }), CHECKED_MAIN_THREAD_EXECUTOR);
-   }
-
-   private static CompletableFuture<Optional<GameProfile>> fillProfileTextures(GameProfile var0) {
-      return hasTextures(var0) ? CompletableFuture.completedFuture(Optional.of(var0)) : CompletableFuture.supplyAsync(() -> {
-         MinecraftSessionService var1 = sessionService;
-         if (var1 != null) {
-            ProfileResult var2 = var1.fetchProfile(var0.getId(), true);
-            return var2 == null ? Optional.of(var0) : Optional.of(var2.profile());
-         } else {
-            return Optional.empty();
-         }
-      }, Util.backgroundExecutor());
+      LoadingCache var1 = profileCache;
+      return var1 != null && Player.isValidUsername(var0) ? (CompletableFuture)var1.getUnchecked(var0) : CompletableFuture.completedFuture(Optional.empty());
    }
 
    private static boolean hasTextures(GameProfile var0) {

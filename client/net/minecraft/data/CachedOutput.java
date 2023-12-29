@@ -4,10 +4,11 @@ import com.google.common.hash.HashCode;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import net.minecraft.FileUtil;
 
 public interface CachedOutput {
    CachedOutput NO_CACHE = (var0, var1, var2) -> {
-      Files.createDirectories(var0.getParent());
+      FileUtil.createDirectoriesSafe(var0.getParent());
       Files.write(var0, var1);
    };
 

@@ -221,22 +221,22 @@ public class ServerPlayerGameMode {
    }
 
    public boolean destroyBlock(BlockPos var1) {
-      BlockState var2 = this.level.getBlockState(var1);
-      if (!this.player.getMainHandItem().getItem().canAttackBlock(var2, this.level, var1, this.player)) {
+      BlockState var5 = this.level.getBlockState(var1);
+      if (!this.player.getMainHandItem().getItem().canAttackBlock(var5, this.level, var1, this.player)) {
          return false;
       } else {
-         BlockEntity var3 = this.level.getBlockEntity(var1);
-         Block var4 = var2.getBlock();
-         if (var4 instanceof GameMasterBlock && !this.player.canUseGameMasterBlocks()) {
-            this.level.sendBlockUpdated(var1, var2, var2, 3);
+         BlockEntity var2 = this.level.getBlockEntity(var1);
+         Block var3 = var5.getBlock();
+         if (var3 instanceof GameMasterBlock && !this.player.canUseGameMasterBlocks()) {
+            this.level.sendBlockUpdated(var1, var5, var5, 3);
             return false;
          } else if (this.player.blockActionRestricted(this.level, var1, this.gameModeForPlayer)) {
             return false;
          } else {
-            var4.playerWillDestroy(this.level, var1, var2, this.player);
-            boolean var5 = this.level.removeBlock(var1, false);
-            if (var5) {
-               var4.destroy(this.level, var1, var2);
+            BlockState var4 = var3.playerWillDestroy(this.level, var1, var5, this.player);
+            boolean var9 = this.level.removeBlock(var1, false);
+            if (var9) {
+               var3.destroy(this.level, var1, var4);
             }
 
             if (this.isCreative()) {
@@ -244,10 +244,10 @@ public class ServerPlayerGameMode {
             } else {
                ItemStack var6 = this.player.getMainHandItem();
                ItemStack var7 = var6.copy();
-               boolean var8 = this.player.hasCorrectToolForDrops(var2);
-               var6.mineBlock(this.level, var2, var1, this.player);
-               if (var5 && var8) {
-                  var4.playerDestroy(this.level, this.player, var1, var2, var3, var7);
+               boolean var8 = this.player.hasCorrectToolForDrops(var4);
+               var6.mineBlock(this.level, var4, var1, this.player);
+               if (var9 && var8) {
+                  var3.playerDestroy(this.level, this.player, var1, var4, var2, var7);
                }
 
                return true;

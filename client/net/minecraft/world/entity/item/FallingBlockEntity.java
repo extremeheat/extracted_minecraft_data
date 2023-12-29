@@ -281,7 +281,7 @@ public class FallingBlockEntity extends Entity {
       }
 
       if (var1.contains("TileEntityData", 10)) {
-         this.blockData = var1.getCompound("TileEntityData");
+         this.blockData = var1.getCompound("TileEntityData").copy();
       }
 
       this.cancelDrop = var1.getBoolean("CancelDrop");

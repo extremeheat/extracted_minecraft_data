@@ -8,7 +8,6 @@ import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.item.PrimedTnt;
-import net.minecraft.world.level.block.Blocks;
 
 public class TntRenderer extends EntityRenderer<PrimedTnt> {
    private final BlockRenderDispatcher blockRenderer;
@@ -35,7 +34,7 @@ public class TntRenderer extends EntityRenderer<PrimedTnt> {
       var4.mulPose(Axis.YP.rotationDegrees(-90.0F));
       var4.translate(-0.5F, -0.5F, 0.5F);
       var4.mulPose(Axis.YP.rotationDegrees(90.0F));
-      TntMinecartRenderer.renderWhiteSolidBlock(this.blockRenderer, Blocks.TNT.defaultBlockState(), var4, var5, var6, var7 / 5 % 2 == 0);
+      TntMinecartRenderer.renderWhiteSolidBlock(this.blockRenderer, var1.getBlockState(), var4, var5, var6, var7 / 5 % 2 == 0);
       var4.popPose();
       super.render(var1, var2, var3, var4, var5, var6);
    }

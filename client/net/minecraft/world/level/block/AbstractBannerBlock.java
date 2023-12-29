@@ -1,12 +1,13 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.entity.BannerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -20,6 +21,9 @@ public abstract class AbstractBannerBlock extends BaseEntityBlock {
       super(var2);
       this.color = var1;
    }
+
+   @Override
+   protected abstract MapCodec<? extends AbstractBannerBlock> codec();
 
    @Override
    public boolean isPossibleToRespawnInThis(BlockState var1) {
@@ -41,7 +45,7 @@ public abstract class AbstractBannerBlock extends BaseEntityBlock {
    }
 
    @Override
-   public ItemStack getCloneItemStack(BlockGetter var1, BlockPos var2, BlockState var3) {
+   public ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
       BlockEntity var4 = var1.getBlockEntity(var2);
       return var4 instanceof BannerBlockEntity ? ((BannerBlockEntity)var4).getItem() : super.getCloneItemStack(var1, var2, var3);
    }

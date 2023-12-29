@@ -97,7 +97,6 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.DisplaySlot;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.PlayerTeam;
-import net.minecraft.world.scores.Team;
 import org.slf4j.Logger;
 
 public abstract class PlayerList {
@@ -537,7 +536,7 @@ public abstract class PlayerList {
    }
 
    public void broadcastSystemToTeam(Player var1, Component var2) {
-      Team var3 = var1.getTeam();
+      PlayerTeam var3 = var1.getTeam();
       if (var3 != null) {
          for(String var6 : var3.getPlayers()) {
             ServerPlayer var7 = this.getPlayerByName(var6);
@@ -549,7 +548,7 @@ public abstract class PlayerList {
    }
 
    public void broadcastSystemToAllExceptTeam(Player var1, Component var2) {
-      Team var3 = var1.getTeam();
+      PlayerTeam var3 = var1.getTeam();
       if (var3 == null) {
          this.broadcastSystemMessage(var2, false);
       } else {
@@ -625,9 +624,12 @@ public abstract class PlayerList {
 
    @Nullable
    public ServerPlayer getPlayerByName(String var1) {
-      for(ServerPlayer var3 : this.players) {
-         if (var3.getGameProfile().getName().equalsIgnoreCase(var1)) {
-            return var3;
+      int var2 = this.players.size();
+
+      for(int var3 = 0; var3 < var2; ++var3) {
+         ServerPlayer var4 = this.players.get(var3);
+         if (var4.getGameProfile().getName().equalsIgnoreCase(var1)) {
+            return var4;
          }
       }
 
@@ -683,6 +685,9 @@ public abstract class PlayerList {
          var1.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.RAIN_LEVEL_CHANGE, var2.getRainLevel(1.0F)));
          var1.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.THUNDER_LEVEL_CHANGE, var2.getThunderLevel(1.0F)));
       }
+
+      var1.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.LEVEL_CHUNKS_LOAD_START, 0.0F));
+      this.server.tickRateManager().updateJoiningPlayer(var1);
    }
 
    public void sendAllPlayerInfo(ServerPlayer var1) {

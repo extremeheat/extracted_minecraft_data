@@ -2,7 +2,6 @@ package net.minecraft.client.gui.screens.advancements;
 
 import com.google.common.collect.Maps;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.AdvancementHolder;
@@ -88,7 +87,7 @@ public class AdvancementTab {
       var1.enableScissor(var2, var3, var2 + 234, var3 + 113);
       var1.pose().pushPose();
       var1.pose().translate((float)var2, (float)var3, 0.0F);
-      ResourceLocation var4 = Objects.requireNonNullElse(this.display.getBackground(), TextureManager.INTENTIONAL_MISSING_TEXTURE);
+      ResourceLocation var4 = this.display.getBackground().orElse(TextureManager.INTENTIONAL_MISSING_TEXTURE);
       int var5 = Mth.floor(this.scrollX);
       int var6 = Mth.floor(this.scrollY);
       int var7 = var5 % 16;

@@ -8,10 +8,10 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.RandomizableContainer;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
@@ -42,7 +42,7 @@ public class BonusChestFeature extends Feature<NoneFeatureConfiguration> {
             BlockPos var12 = var3.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, var7);
             if (var3.isEmptyBlock(var12) || var3.getBlockState(var12).getCollisionShape(var3, var12).isEmpty()) {
                var3.setBlock(var12, Blocks.CHEST.defaultBlockState(), 2);
-               RandomizableContainerBlockEntity.setLootTable(var3, var2, var12, BuiltInLootTables.SPAWN_BONUS_CHEST);
+               RandomizableContainer.setBlockEntityLootTable(var3, var2, var12, BuiltInLootTables.SPAWN_BONUS_CHEST);
                BlockState var13 = Blocks.TORCH.defaultBlockState();
 
                for(Direction var15 : Direction.Plane.HORIZONTAL) {

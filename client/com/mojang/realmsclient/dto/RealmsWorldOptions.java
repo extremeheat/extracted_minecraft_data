@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import com.mojang.realmsclient.util.JsonUtils;
 import java.util.Objects;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.client.resources.language.I18n;
 
 public class RealmsWorldOptions extends ValueObject {
@@ -16,8 +17,9 @@ public class RealmsWorldOptions extends ValueObject {
    public final boolean forceGameMode;
    public final int difficulty;
    public final int gameMode;
-   @Nullable
    private final String slotName;
+   public final String version;
+   public final RealmsServer.Compatibility compatibility;
    public long templateId;
    @Nullable
    public String templateImage;
@@ -32,11 +34,24 @@ public class RealmsWorldOptions extends ValueObject {
    private static final int DEFAULT_DIFFICULTY = 2;
    private static final int DEFAULT_GAME_MODE = 0;
    private static final String DEFAULT_SLOT_NAME = "";
+   private static final String DEFAULT_VERSION = "";
+   private static final RealmsServer.Compatibility DEFAULT_COMPATIBILITY = RealmsServer.Compatibility.UNVERIFIABLE;
    private static final long DEFAULT_TEMPLATE_ID = -1L;
    private static final String DEFAULT_TEMPLATE_IMAGE = null;
 
    public RealmsWorldOptions(
-      boolean var1, boolean var2, boolean var3, boolean var4, int var5, boolean var6, int var7, int var8, boolean var9, @Nullable String var10
+      boolean var1,
+      boolean var2,
+      boolean var3,
+      boolean var4,
+      int var5,
+      boolean var6,
+      int var7,
+      int var8,
+      boolean var9,
+      String var10,
+      String var11,
+      RealmsServer.Compatibility var12
    ) {
       super();
       this.pvp = var1;
@@ -49,10 +64,12 @@ public class RealmsWorldOptions extends ValueObject {
       this.gameMode = var8;
       this.forceGameMode = var9;
       this.slotName = var10;
+      this.version = var11;
+      this.compatibility = var12;
    }
 
    public static RealmsWorldOptions createDefaults() {
-      return new RealmsWorldOptions(true, true, true, true, 0, false, 2, 0, false, "");
+      return new RealmsWorldOptions(true, true, true, true, 0, false, 2, 0, false, "", "", DEFAULT_COMPATIBILITY);
    }
 
    public static RealmsWorldOptions createEmptyDefaults() {
@@ -76,7 +93,9 @@ public class RealmsWorldOptions extends ValueObject {
          JsonUtils.getIntOr("difficulty", var0, 2),
          JsonUtils.getIntOr("gameMode", var0, 0),
          JsonUtils.getBooleanOr("forceGameMode", var0, false),
-         JsonUtils.getStringOr("slotName", var0, "")
+         JsonUtils.getRequiredStringOr("slotName", var0, ""),
+         JsonUtils.getRequiredStringOr("version", var0, ""),
+         RealmsServer.getCompatibility(JsonUtils.getRequiredStringOr("compatibility", var0, RealmsServer.Compatibility.UNVERIFIABLE.name()))
       );
       var1.templateId = JsonUtils.getLongOr("worldTemplateId", var0, -1L);
       var1.templateImage = JsonUtils.getStringOr("worldTemplateImage", var0, DEFAULT_TEMPLATE_IMAGE);
@@ -84,10 +103,10 @@ public class RealmsWorldOptions extends ValueObject {
    }
 
    public String getSlotName(int var1) {
-      if (this.slotName != null && !this.slotName.isEmpty()) {
-         return this.slotName;
-      } else {
+      if (Util.isBlank(this.slotName)) {
          return this.empty ? I18n.get("mco.configure.world.slot.empty") : this.getDefaultSlotName(var1);
+      } else {
+         return this.slotName;
       }
    }
 
@@ -137,6 +156,14 @@ public class RealmsWorldOptions extends ValueObject {
          var1.addProperty("slotName", this.slotName);
       }
 
+      if (!Objects.equals(this.version, "")) {
+         var1.addProperty("version", this.version);
+      }
+
+      if (this.compatibility != DEFAULT_COMPATIBILITY) {
+         var1.addProperty("compatibility", this.compatibility.name());
+      }
+
       return var1.toString();
    }
 
@@ -151,7 +178,9 @@ public class RealmsWorldOptions extends ValueObject {
          this.difficulty,
          this.gameMode,
          this.forceGameMode,
-         this.slotName
+         this.slotName,
+         this.version,
+         this.compatibility
       );
    }
 }

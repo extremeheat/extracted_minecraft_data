@@ -118,6 +118,13 @@ public class Vec3 implements Position {
       return var7 * var7 + var9 * var9 + var11 * var11;
    }
 
+   public boolean closerThan(Vec3 var1, double var2, double var4) {
+      double var6 = var1.x() - this.x;
+      double var8 = var1.y() - this.y;
+      double var10 = var1.z() - this.z;
+      return Mth.lengthSquared(var6, var10) < Mth.square(var2) && Math.abs(var8) < var4;
+   }
+
    public Vec3 scale(double var1) {
       return this.multiply(var1, var1, var1);
    }

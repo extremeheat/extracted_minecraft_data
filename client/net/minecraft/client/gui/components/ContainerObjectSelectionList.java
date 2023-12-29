@@ -17,8 +17,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
 public abstract class ContainerObjectSelectionList<E extends ContainerObjectSelectionList.Entry<E>> extends AbstractSelectionList<E> {
-   public ContainerObjectSelectionList(Minecraft var1, int var2, int var3, int var4, int var5, int var6) {
-      super(var1, var2, var3, var4, var5, var6);
+   public ContainerObjectSelectionList(Minecraft var1, int var2, int var3, int var4, int var5) {
+      super(var1, var2, var3, var4, var5);
    }
 
    @Nullable
@@ -91,7 +91,7 @@ public abstract class ContainerObjectSelectionList<E extends ContainerObjectSele
    }
 
    @Override
-   public void updateNarration(NarrationElementOutput var1) {
+   public void updateWidgetNarration(NarrationElementOutput var1) {
       ContainerObjectSelectionList.Entry var2 = this.getHovered();
       if (var2 != null) {
          var2.updateNarration(var1.nest());

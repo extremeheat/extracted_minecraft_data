@@ -49,6 +49,7 @@ public class BoatDispenseItemBehavior extends DefaultDispenseItemBehavior {
       }
 
       Object var17 = this.isChestBoat ? new ChestBoat(var4, var8, var10 + var15, var12) : new Boat(var4, var8, var10 + var15, var12);
+      EntityType.createDefaultStackConfig(var4, var2, null).accept(var17);
       ((Boat)var17).setVariant(this.type);
       ((Boat)var17).setYRot(var3.toYRot());
       var4.addFreshEntity((Entity)var17);

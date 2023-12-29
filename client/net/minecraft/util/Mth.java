@@ -9,6 +9,8 @@ import net.minecraft.core.Vec3i;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 public class Mth {
    private static final long UUID_VERSION = 61440L;
@@ -23,6 +25,9 @@ public class Mth {
    public static final float EPSILON = 1.0E-5F;
    public static final float SQRT_OF_TWO = sqrt(2.0F);
    private static final float SIN_SCALE = 10430.378F;
+   public static final Vector3f Y_AXIS = new Vector3f(0.0F, 1.0F, 0.0F);
+   public static final Vector3f X_AXIS = new Vector3f(1.0F, 0.0F, 0.0F);
+   public static final Vector3f Z_AXIS = new Vector3f(0.0F, 0.0F, 1.0F);
    private static final float[] SIN = Util.make(new float[65536], var0x -> {
       for(int var1x = 0; var1x < var0x.length; ++var1x) {
          var0x[var1x] = (float)Math.sin((double)var1x * 3.141592653589793 * 2.0 / 65536.0);
@@ -657,6 +662,11 @@ public class Mth {
             return var0 + var6 + var3;
          }) : IntStream.empty();
       }
+   }
+
+   public static Quaternionf rotationAroundAxis(Vector3f var0, Quaternionf var1, Quaternionf var2) {
+      float var3 = var0.dot(var1.x, var1.y, var1.z);
+      return var2.set(var0.x * var3, var0.y * var3, var0.z * var3, var1.w).normalize();
    }
 
    static {

@@ -61,6 +61,9 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
       this.pendingInvites.thenAcceptAsync(var1 -> {
          List var2 = var1.stream().map(var1x -> new RealmsPendingInvitesScreen.Entry(var1x)).toList();
          this.pendingInvitationSelectionList.replaceEntries(var2);
+         if (var2.isEmpty()) {
+            this.minecraft.getNarrator().say(NO_PENDING_INVITES_TEXT);
+         }
       }, this.screenExecutor);
       this.addRenderableWidget(this.pendingInvitationSelectionList);
       this.acceptButton = this.addRenderableWidget(Button.builder(ACCEPT_INVITE, var1 -> {
@@ -219,7 +222,7 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
 
    class PendingInvitationSelectionList extends RealmsObjectSelectionList<RealmsPendingInvitesScreen.Entry> {
       public PendingInvitationSelectionList() {
-         super(RealmsPendingInvitesScreen.this.width, RealmsPendingInvitesScreen.this.height, 32, RealmsPendingInvitesScreen.this.height - 40, 36);
+         super(RealmsPendingInvitesScreen.this.width, RealmsPendingInvitesScreen.this.height - 72, 32, 36);
       }
 
       public void removeAtIndex(int var1) {

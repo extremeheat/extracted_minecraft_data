@@ -17,9 +17,9 @@ import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
-import net.minecraft.commands.CommandFunction;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.functions.CommandFunction;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
@@ -35,21 +35,21 @@ import org.slf4j.Logger;
 public class ServerFunctionLibrary implements PreparableReloadListener {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final FileToIdConverter LISTER = new FileToIdConverter("functions", ".mcfunction");
-   private volatile Map<ResourceLocation, CommandFunction> functions = ImmutableMap.of();
-   private final TagLoader<CommandFunction> tagsLoader = new TagLoader<>(this::getFunction, "tags/functions");
-   private volatile Map<ResourceLocation, Collection<CommandFunction>> tags = Map.of();
+   private volatile Map<ResourceLocation, CommandFunction<CommandSourceStack>> functions = ImmutableMap.of();
+   private final TagLoader<CommandFunction<CommandSourceStack>> tagsLoader = new TagLoader<>(this::getFunction, "tags/functions");
+   private volatile Map<ResourceLocation, Collection<CommandFunction<CommandSourceStack>>> tags = Map.of();
    private final int functionCompilationLevel;
    private final CommandDispatcher<CommandSourceStack> dispatcher;
 
-   public Optional<CommandFunction> getFunction(ResourceLocation var1) {
+   public Optional<CommandFunction<CommandSourceStack>> getFunction(ResourceLocation var1) {
       return Optional.ofNullable(this.functions.get(var1));
    }
 
-   public Map<ResourceLocation, CommandFunction> getFunctions() {
+   public Map<ResourceLocation, CommandFunction<CommandSourceStack>> getFunctions() {
       return this.functions;
    }
 
-   public Collection<CommandFunction> getTag(ResourceLocation var1) {
+   public Collection<CommandFunction<CommandSourceStack>> getTag(ResourceLocation var1) {
       return this.tags.getOrDefault(var1, List.of());
    }
 

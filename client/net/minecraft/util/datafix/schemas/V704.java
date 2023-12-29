@@ -136,6 +136,7 @@ public class V704 extends Schema {
       var0.put("minecraft:beehive", "minecraft:beehive");
       var0.put("minecraft:sculk_sensor", "minecraft:sculk_sensor");
       var0.put("minecraft:decorated_pot", "minecraft:decorated_pot");
+      var0.put("minecraft:crafter", "minecraft:crafter");
       return ImmutableMap.copyOf(var0);
    });
    protected static final HookFunction ADD_NAMES = new HookFunction() {

@@ -24,10 +24,31 @@ public class JsonUtils {
       }
    }
 
+   @Nullable
+   public static <T> T getOptional(String var0, JsonObject var1, Function<JsonObject, T> var2) {
+      JsonElement var3 = var1.get(var0);
+      if (var3 == null || var3.isJsonNull()) {
+         return null;
+      } else if (!var3.isJsonObject()) {
+         throw new IllegalStateException("Required property " + var0 + " was not a JsonObject as espected");
+      } else {
+         return (T)var2.apply((T)var3.getAsJsonObject());
+      }
+   }
+
    public static String getRequiredString(String var0, JsonObject var1) {
       String var2 = getStringOr(var0, var1, null);
       if (var2 == null) {
          throw new IllegalStateException("Missing required property: " + var0);
+      } else {
+         return var2;
+      }
+   }
+
+   public static String getRequiredStringOr(String var0, JsonObject var1, String var2) {
+      JsonElement var3 = var1.get(var0);
+      if (var3 != null) {
+         return var3.isJsonNull() ? var2 : var3.getAsString();
       } else {
          return var2;
       }

@@ -1,6 +1,6 @@
 package net.minecraft.world.level.timers;
 
-import net.minecraft.commands.CommandFunction;
+import net.minecraft.commands.functions.CommandFunction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;

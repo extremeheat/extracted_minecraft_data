@@ -20,6 +20,7 @@ import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.client.multiplayer.resolver.ServerNameResolver;
 import net.minecraft.client.quickplay.QuickPlay;
 import net.minecraft.client.quickplay.QuickPlayLog;
+import net.minecraft.client.resources.server.ServerPackManager;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -109,6 +110,10 @@ public class ConnectScreen extends Screen {
                   }
 
                   ConnectScreen.this.connection = var10;
+                  var1.getDownloadedPackSource()
+                     .configureForServerControl(
+                        var10, var3 != null ? convertPackStatus(var3.getResourcePackStatus()) : ServerPackManager.PackPromptStatus.PENDING
+                     );
                }
 
                ConnectScreen.this.connection
@@ -145,6 +150,14 @@ public class ConnectScreen extends Screen {
                      )
                );
             }
+         }
+
+         private static ServerPackManager.PackPromptStatus convertPackStatus(ServerData.ServerPackStatus var0) {
+            return switch(var0) {
+               case ENABLED -> ServerPackManager.PackPromptStatus.ALLOWED;
+               case DISABLED -> ServerPackManager.PackPromptStatus.DECLINED;
+               case PROMPT -> ServerPackManager.PackPromptStatus.PENDING;
+            };
          }
       };
       var4.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));

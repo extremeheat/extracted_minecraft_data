@@ -9,6 +9,7 @@ import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContextBuilder;
+import com.mojang.brigadier.context.ContextChain;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.RootCommandNode;
@@ -17,6 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
@@ -24,6 +26,7 @@ import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
+import net.minecraft.commands.execution.ExecutionContext;
 import net.minecraft.commands.synchronization.ArgumentTypeInfos;
 import net.minecraft.commands.synchronization.ArgumentUtils;
 import net.minecraft.commands.synchronization.SuggestionProviders;
@@ -40,6 +43,7 @@ import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.game.ClientboundCommandsPacket;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.commands.AdvancementCommands;
 import net.minecraft.server.commands.AttributeCommand;
 import net.minecraft.server.commands.BanIpCommands;
@@ -53,6 +57,8 @@ import net.minecraft.server.commands.DataPackCommand;
 import net.minecraft.server.commands.DeOpCommands;
 import net.minecraft.server.commands.DebugCommand;
 import net.minecraft.server.commands.DebugConfigCommand;
+import net.minecraft.server.commands.DebugMobSpawningCommand;
+import net.minecraft.server.commands.DebugPathCommand;
 import net.minecraft.server.commands.DefaultGameModeCommands;
 import net.minecraft.server.commands.DifficultyCommand;
 import net.minecraft.server.commands.EffectCommands;
@@ -84,9 +90,11 @@ import net.minecraft.server.commands.PerfCommand;
 import net.minecraft.server.commands.PlaceCommand;
 import net.minecraft.server.commands.PlaySoundCommand;
 import net.minecraft.server.commands.PublishCommand;
+import net.minecraft.server.commands.RaidCommand;
 import net.minecraft.server.commands.RandomCommand;
 import net.minecraft.server.commands.RecipeCommand;
 import net.minecraft.server.commands.ReloadCommand;
+import net.minecraft.server.commands.ResetChunksCommand;
 import net.minecraft.server.commands.ReturnCommand;
 import net.minecraft.server.commands.RideCommand;
 import net.minecraft.server.commands.SaveAllCommand;
@@ -96,6 +104,7 @@ import net.minecraft.server.commands.SayCommand;
 import net.minecraft.server.commands.ScheduleCommand;
 import net.minecraft.server.commands.ScoreboardCommand;
 import net.minecraft.server.commands.SeedCommand;
+import net.minecraft.server.commands.ServerPackCommand;
 import net.minecraft.server.commands.SetBlockCommand;
 import net.minecraft.server.commands.SetPlayerIdleTimeoutCommand;
 import net.minecraft.server.commands.SetSpawnCommand;
@@ -111,9 +120,11 @@ import net.minecraft.server.commands.TeamCommand;
 import net.minecraft.server.commands.TeamMsgCommand;
 import net.minecraft.server.commands.TeleportCommand;
 import net.minecraft.server.commands.TellRawCommand;
+import net.minecraft.server.commands.TickCommand;
 import net.minecraft.server.commands.TimeCommand;
 import net.minecraft.server.commands.TitleCommand;
 import net.minecraft.server.commands.TriggerCommand;
+import net.minecraft.server.commands.WardenSpawnTrackerCommand;
 import net.minecraft.server.commands.WeatherCommand;
 import net.minecraft.server.commands.WhitelistCommand;
 import net.minecraft.server.commands.WorldBorderCommand;
@@ -121,9 +132,11 @@ import net.minecraft.server.commands.data.DataCommands;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.profiling.jfr.JvmProfiler;
+import net.minecraft.world.level.GameRules;
 import org.slf4j.Logger;
 
 public class Commands {
+   private static final ThreadLocal<ExecutionContext<CommandSourceStack>> CURRENT_EXECUTION_CONTEXT = new ThreadLocal<>();
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final int LEVEL_ALL = 0;
    public static final int LEVEL_MODERATORS = 1;
@@ -189,6 +202,7 @@ public class Commands {
       TeamMsgCommand.register(this.dispatcher);
       TeleportCommand.register(this.dispatcher);
       TellRawCommand.register(this.dispatcher);
+      TickCommand.register(this.dispatcher);
       TimeCommand.register(this.dispatcher);
       TitleCommand.register(this.dispatcher);
       TriggerCommand.register(this.dispatcher);
@@ -200,7 +214,13 @@ public class Commands {
 
       if (SharedConstants.IS_RUNNING_IN_IDE) {
          TestCommand.register(this.dispatcher);
+         ResetChunksCommand.register(this.dispatcher);
+         RaidCommand.register(this.dispatcher);
+         DebugPathCommand.register(this.dispatcher);
+         DebugMobSpawningCommand.register(this.dispatcher);
+         WardenSpawnTrackerCommand.register(this.dispatcher);
          SpawnArmorTrimsCommand.register(this.dispatcher);
+         ServerPackCommand.register(this.dispatcher);
          if (var1.includeDedicated) {
             DebugConfigCommand.register(this.dispatcher);
          }
@@ -227,7 +247,7 @@ public class Commands {
          PublishCommand.register(this.dispatcher);
       }
 
-      this.dispatcher.setConsumer((var0, var1x, var2x) -> ((CommandSourceStack)var0.getSource()).onCommandComplete(var0, var1x, var2x));
+      this.dispatcher.setConsumer(ExecutionCommandSource.resultConsumer());
    }
 
    public static <S> ParseResults<S> mapSource(ParseResults<S> var0, UnaryOperator<S> var1) {
@@ -236,75 +256,95 @@ public class Commands {
       return new ParseResults(var3, var0.getReader(), var0.getExceptions());
    }
 
-   public int performPrefixedCommand(CommandSourceStack var1, String var2) {
+   public void performPrefixedCommand(CommandSourceStack var1, String var2) {
       var2 = var2.startsWith("/") ? var2.substring(1) : var2;
-      return this.performCommand(this.dispatcher.parse(var2, var1), var2);
+      this.performCommand(this.dispatcher.parse(var2, var1), var2);
    }
 
-   public int performCommand(ParseResults<CommandSourceStack> var1, String var2) {
+   public void performCommand(ParseResults<CommandSourceStack> var1, String var2) {
       CommandSourceStack var3 = (CommandSourceStack)var1.getContext().getSource();
       var3.getServer().getProfiler().push(() -> "/" + var2);
+      ContextChain var4 = finishParsing(var1, var2, var3);
 
-      int var18;
       try {
-         try {
-            return this.dispatcher.execute(var1);
-         } catch (CommandRuntimeException var13) {
-            var3.sendFailure(var13.getComponent());
-            return 0;
-         } catch (CommandSyntaxException var14) {
-            var3.sendFailure(ComponentUtils.fromMessage(var14.getRawMessage()));
-            if (var14.getInput() != null && var14.getCursor() >= 0) {
-               var18 = Math.min(var14.getInput().length(), var14.getCursor());
-               MutableComponent var21 = Component.empty()
-                  .withStyle(ChatFormatting.GRAY)
-                  .withStyle(var1x -> var1x.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/" + var2)));
-               if (var18 > 10) {
-                  var21.append(CommonComponents.ELLIPSIS);
-               }
+         if (var4 != null) {
+            executeCommandInContext(var3, var3x -> ExecutionContext.queueInitialCommandExecution(var3x, var2, var4, var3, CommandResultCallback.EMPTY));
+         }
+      } catch (Exception var12) {
+         MutableComponent var6 = Component.literal(var12.getMessage() == null ? var12.getClass().getName() : var12.getMessage());
+         if (LOGGER.isDebugEnabled()) {
+            LOGGER.error("Command exception: /{}", var2, var12);
+            StackTraceElement[] var7 = var12.getStackTrace();
 
-               var21.append(var14.getInput().substring(Math.max(0, var18 - 10), var18));
-               if (var18 < var14.getInput().length()) {
-                  MutableComponent var22 = Component.literal(var14.getInput().substring(var18)).withStyle(ChatFormatting.RED, ChatFormatting.UNDERLINE);
-                  var21.append(var22);
-               }
-
-               var21.append(Component.translatable("command.context.here").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC));
-               var3.sendFailure(var21);
+            for(int var8 = 0; var8 < Math.min(var7.length, 3); ++var8) {
+               var6.append("\n\n")
+                  .append(var7[var8].getMethodName())
+                  .append("\n ")
+                  .append(var7[var8].getFileName())
+                  .append(":")
+                  .append(String.valueOf(var7[var8].getLineNumber()));
             }
-         } catch (Exception var15) {
-            MutableComponent var5 = Component.literal(var15.getMessage() == null ? var15.getClass().getName() : var15.getMessage());
-            if (LOGGER.isDebugEnabled()) {
-               LOGGER.error("Command exception: /{}", var2, var15);
-               StackTraceElement[] var6 = var15.getStackTrace();
-
-               for(int var7 = 0; var7 < Math.min(var6.length, 3); ++var7) {
-                  var5.append("\n\n")
-                     .append(var6[var7].getMethodName())
-                     .append("\n ")
-                     .append(var6[var7].getFileName())
-                     .append(":")
-                     .append(String.valueOf(var6[var7].getLineNumber()));
-               }
-            }
-
-            var3.sendFailure(
-               Component.translatable("command.failed").withStyle(var1x -> var1x.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, var5)))
-            );
-            if (SharedConstants.IS_RUNNING_IN_IDE) {
-               var3.sendFailure(Component.literal(Util.describeError(var15)));
-               LOGGER.error("'/{}' threw an exception", var2, var15);
-            }
-
-            return 0;
          }
 
-         var18 = 0;
+         var3.sendFailure(Component.translatable("command.failed").withStyle(var1x -> var1x.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, var6))));
+         if (SharedConstants.IS_RUNNING_IN_IDE) {
+            var3.sendFailure(Component.literal(Util.describeError(var12)));
+            LOGGER.error("'/{}' threw an exception", var2, var12);
+         }
       } finally {
          var3.getServer().getProfiler().pop();
       }
+   }
 
-      return var18;
+   @Nullable
+   private static ContextChain<CommandSourceStack> finishParsing(ParseResults<CommandSourceStack> var0, String var1, CommandSourceStack var2) {
+      try {
+         validateParseResults(var0);
+         return (ContextChain<CommandSourceStack>)ContextChain.tryFlatten(var0.getContext().build(var1))
+            .orElseThrow(() -> CommandSyntaxException.BUILT_IN_EXCEPTIONS.dispatcherUnknownCommand().createWithContext(var0.getReader()));
+      } catch (CommandSyntaxException var7) {
+         var2.sendFailure(ComponentUtils.fromMessage(var7.getRawMessage()));
+         if (var7.getInput() != null && var7.getCursor() >= 0) {
+            int var4 = Math.min(var7.getInput().length(), var7.getCursor());
+            MutableComponent var5 = Component.empty()
+               .withStyle(ChatFormatting.GRAY)
+               .withStyle(var1x -> var1x.withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/" + var1)));
+            if (var4 > 10) {
+               var5.append(CommonComponents.ELLIPSIS);
+            }
+
+            var5.append(var7.getInput().substring(Math.max(0, var4 - 10), var4));
+            if (var4 < var7.getInput().length()) {
+               MutableComponent var6 = Component.literal(var7.getInput().substring(var4)).withStyle(ChatFormatting.RED, ChatFormatting.UNDERLINE);
+               var5.append(var6);
+            }
+
+            var5.append(Component.translatable("command.context.here").withStyle(ChatFormatting.RED, ChatFormatting.ITALIC));
+            var2.sendFailure(var5);
+         }
+
+         return null;
+      }
+   }
+
+   public static void executeCommandInContext(CommandSourceStack var0, Consumer<ExecutionContext<CommandSourceStack>> var1) {
+      MinecraftServer var2 = var0.getServer();
+      ExecutionContext var3 = CURRENT_EXECUTION_CONTEXT.get();
+      boolean var4 = var3 == null;
+      if (var4) {
+         int var5 = Math.max(1, var2.getGameRules().getInt(GameRules.RULE_MAX_COMMAND_CHAIN_LENGTH));
+         int var6 = var2.getGameRules().getInt(GameRules.RULE_MAX_COMMAND_FORK_COUNT);
+
+         try (ExecutionContext var7 = new ExecutionContext(var5, var6, var2.getProfiler())) {
+            CURRENT_EXECUTION_CONTEXT.set(var7);
+            var1.accept(var7);
+            var7.runCommandQueue();
+         } finally {
+            CURRENT_EXECUTION_CONTEXT.set(null);
+         }
+      } else {
+         var1.accept(var3);
+      }
    }
 
    public void sendCommands(ServerPlayer var1) {
@@ -370,6 +410,13 @@ public class Commands {
 
    public CommandDispatcher<CommandSourceStack> getDispatcher() {
       return this.dispatcher;
+   }
+
+   public static <S> void validateParseResults(ParseResults<S> var0) throws CommandSyntaxException {
+      CommandSyntaxException var1 = getParseException(var0);
+      if (var1 != null) {
+         throw var1;
+      }
    }
 
    @Nullable

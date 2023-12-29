@@ -10,6 +10,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.projectile.Arrow;
+import net.minecraft.world.item.ItemStack;
 
 public class ArrowLayer<T extends LivingEntity, M extends PlayerModel<T>> extends StuckInBodyLayer<T, M> {
    private final EntityRenderDispatcher dispatcher;
@@ -27,7 +28,7 @@ public class ArrowLayer<T extends LivingEntity, M extends PlayerModel<T>> extend
    @Override
    protected void renderStuckItem(PoseStack var1, MultiBufferSource var2, int var3, Entity var4, float var5, float var6, float var7, float var8) {
       float var9 = Mth.sqrt(var5 * var5 + var7 * var7);
-      Arrow var10 = new Arrow(var4.level(), var4.getX(), var4.getY(), var4.getZ());
+      Arrow var10 = new Arrow(var4.level(), var4.getX(), var4.getY(), var4.getZ(), ItemStack.EMPTY);
       var10.setYRot((float)(Math.atan2((double)var5, (double)var7) * 57.2957763671875));
       var10.setXRot((float)(Math.atan2((double)var6, (double)var9) * 57.2957763671875));
       var10.yRotO = var10.getYRot();

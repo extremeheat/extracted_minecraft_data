@@ -7,10 +7,10 @@ import com.google.common.collect.Sets.SetView;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Lifecycle;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenCustomHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectList;
+import it.unimi.dsi.fastutil.objects.Reference2IntMap;
+import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -28,7 +28,6 @@ import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.Bootstrap;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
 import org.apache.commons.lang3.Validate;
@@ -38,7 +37,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
    private static final Logger LOGGER = LogUtils.getLogger();
    final ResourceKey<? extends Registry<T>> key;
    private final ObjectList<Holder.Reference<T>> byId = new ObjectArrayList(256);
-   private final Object2IntMap<T> toId = Util.make(new Object2IntOpenCustomHashMap(Util.identityStrategy()), var0 -> var0.defaultReturnValue(-1));
+   private final Reference2IntMap<T> toId = Util.make(new Reference2IntOpenHashMap(), var0 -> var0.defaultReturnValue(-1));
    private final Map<ResourceLocation, Holder.Reference<T>> byLocation = new HashMap<>();
    private final Map<ResourceKey<T>, Holder.Reference<T>> byKey = new HashMap<>();
    private final Map<T, Holder.Reference<T>> byValue = new IdentityHashMap<>();
@@ -89,7 +88,6 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
 
    public MappedRegistry(ResourceKey<? extends Registry<T>> var1, Lifecycle var2, boolean var3) {
       super();
-      Bootstrap.checkBootstrapCalled(() -> "registry " + var1);
       this.key = var1;
       this.registryLifecycle = var2;
       if (var3) {

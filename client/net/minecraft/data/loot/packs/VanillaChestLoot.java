@@ -549,7 +549,7 @@ public class VanillaChestLoot implements LootTableSubProvider {
                LootPool.lootPool()
                   .setRolls(UniformGenerator.between(3.0F, 8.0F))
                   .add(LootItem.lootTableItem(Items.GOLD_NUGGET).setWeight(1).apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 3.0F))))
-                  .add(LootItem.lootTableItem(Items.GRASS).setWeight(5))
+                  .add(LootItem.lootTableItem(Items.SHORT_GRASS).setWeight(5))
                   .add(LootItem.lootTableItem(Items.TALL_GRASS).setWeight(5))
                   .add(LootItem.lootTableItem(Items.BREAD).setWeight(10).apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 4.0F))))
                   .add(LootItem.lootTableItem(Items.WHEAT_SEEDS).setWeight(10).apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 5.0F))))
@@ -632,6 +632,22 @@ public class VanillaChestLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Items.GOLD_BLOCK).setWeight(1).apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 2.0F))))
             )
       );
+      var1.accept(BuiltInLootTables.TRIAL_CHAMBERS_REWARD, LootTable.lootTable());
+      var1.accept(BuiltInLootTables.TRIAL_CHAMBERS_SUPPLY, LootTable.lootTable());
+      var1.accept(BuiltInLootTables.TRIAL_CHAMBERS_CORRIDOR, LootTable.lootTable());
+      var1.accept(BuiltInLootTables.TRIAL_CHAMBERS_ENTRANCE, LootTable.lootTable());
+      var1.accept(BuiltInLootTables.TRIAL_CHAMBERS_INTERSECTION, LootTable.lootTable());
+      var1.accept(BuiltInLootTables.TRIAL_CHAMBERS_INTERSECTION_BARREL, LootTable.lootTable());
+      var1.accept(BuiltInLootTables.TRIAL_CHAMBERS_CHAMBER_DISPENSER, LootTable.lootTable());
+      var1.accept(BuiltInLootTables.TRIAL_CHAMBERS_CORRIDOR_DISPENSER, LootTable.lootTable());
+      var1.accept(BuiltInLootTables.TRIAL_CHAMBERS_WATER_DISPENSER, LootTable.lootTable());
+      var1.accept(BuiltInLootTables.TRIAL_CHAMBERS_CORRIDOR_POT, LootTable.lootTable());
+      spawnerLootTables(var1);
+   }
+
+   public static void spawnerLootTables(BiConsumer<ResourceLocation, LootTable.Builder> var0) {
+      var0.accept(BuiltInLootTables.SPAWNER_TRIAL_CHAMBER_KEY, LootTable.lootTable());
+      var0.accept(BuiltInLootTables.SPAWNER_TRIAL_CHAMBER_CONSUMABLES, LootTable.lootTable());
    }
 
    public static LootTable.Builder shipwreckSupplyLootTable() {

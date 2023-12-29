@@ -2,11 +2,13 @@ package net.minecraft.world.item;
 
 import java.util.List;
 import java.util.function.Predicate;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.entity.vehicle.ChestBoat;
@@ -51,7 +53,7 @@ public class BoatItem extends Item {
          }
 
          if (var5.getType() == HitResult.Type.BLOCK) {
-            Boat var14 = this.getBoat(var1, var5);
+            Boat var14 = this.getBoat(var1, var5, var4, var2);
             var14.setVariant(this.type);
             var14.setYRot(var2.getYRot());
             if (!var1.noCollision(var14, var14.getBoundingBox())) {
@@ -74,9 +76,13 @@ public class BoatItem extends Item {
       }
    }
 
-   private Boat getBoat(Level var1, HitResult var2) {
-      return (Boat)(this.hasChest
-         ? new ChestBoat(var1, var2.getLocation().x, var2.getLocation().y, var2.getLocation().z)
-         : new Boat(var1, var2.getLocation().x, var2.getLocation().y, var2.getLocation().z));
+   private Boat getBoat(Level var1, HitResult var2, ItemStack var3, Player var4) {
+      Vec3 var5 = var2.getLocation();
+      Object var6 = this.hasChest ? new ChestBoat(var1, var5.x, var5.y, var5.z) : new Boat(var1, var5.x, var5.y, var5.z);
+      if (var1 instanceof ServerLevel var7) {
+         EntityType.createDefaultStackConfig((ServerLevel)var7, var3, var4).accept(var6);
+      }
+
+      return (Boat)var6;
    }
 }

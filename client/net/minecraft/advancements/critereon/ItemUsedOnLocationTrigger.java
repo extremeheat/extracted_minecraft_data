@@ -1,7 +1,7 @@
 package net.minecraft.advancements.critereon;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Arrays;
 import java.util.Optional;
 import net.minecraft.advancements.CriteriaTriggers;
@@ -9,6 +9,7 @@ import net.minecraft.advancements.Criterion;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -26,13 +27,9 @@ public class ItemUsedOnLocationTrigger extends SimpleCriterionTrigger<ItemUsedOn
       super();
    }
 
-   public ItemUsedOnLocationTrigger.TriggerInstance createInstance(JsonObject var1, Optional<ContextAwarePredicate> var2, DeserializationContext var3) {
-      Optional var4 = ContextAwarePredicate.fromElement("location", var3, var1.get("location"), LootContextParamSets.ADVANCEMENT_LOCATION);
-      if (var4.isEmpty()) {
-         throw new JsonParseException("Failed to parse 'location' field");
-      } else {
-         return new ItemUsedOnLocationTrigger.TriggerInstance(var2, (Optional<ContextAwarePredicate>)var4.get());
-      }
+   @Override
+   public Codec<ItemUsedOnLocationTrigger.TriggerInstance> codec() {
+      return ItemUsedOnLocationTrigger.TriggerInstance.CODEC;
    }
 
    public void trigger(ServerPlayer var1, BlockPos var2, ItemStack var3) {
@@ -48,11 +45,20 @@ public class ItemUsedOnLocationTrigger extends SimpleCriterionTrigger<ItemUsedOn
       this.trigger(var1, var1x -> var1x.matches(var7));
    }
 
-   public static class TriggerInstance extends AbstractCriterionTriggerInstance {
+   public static record TriggerInstance(Optional<ContextAwarePredicate> b, Optional<ContextAwarePredicate> c) implements SimpleCriterionTrigger.SimpleInstance {
+      private final Optional<ContextAwarePredicate> player;
       private final Optional<ContextAwarePredicate> location;
+      public static final Codec<ItemUsedOnLocationTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
+         var0 -> var0.group(
+                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player").forGetter(ItemUsedOnLocationTrigger.TriggerInstance::player),
+                  ExtraCodecs.strictOptionalField(ContextAwarePredicate.CODEC, "location").forGetter(ItemUsedOnLocationTrigger.TriggerInstance::location)
+               )
+               .apply(var0, ItemUsedOnLocationTrigger.TriggerInstance::new)
+      );
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ContextAwarePredicate> var2) {
-         super(var1);
+         super();
+         this.player = var1;
          this.location = var2;
       }
 
@@ -86,10 +92,9 @@ public class ItemUsedOnLocationTrigger extends SimpleCriterionTrigger<ItemUsedOn
       }
 
       @Override
-      public JsonObject serializeToJson() {
-         JsonObject var1 = super.serializeToJson();
-         this.location.ifPresent(var1x -> var1.add("location", var1x.toJson()));
-         return var1;
+      public void validate(CriterionValidator var1) {
+         SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
+         this.location.ifPresent(var1x -> var1.validate(var1x, LootContextParamSets.ADVANCEMENT_LOCATION, ".location"));
       }
    }
 }

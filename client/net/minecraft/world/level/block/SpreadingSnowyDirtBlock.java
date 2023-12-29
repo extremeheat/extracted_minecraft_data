@@ -1,5 +1,6 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -27,6 +28,9 @@ public abstract class SpreadingSnowyDirtBlock extends SnowyDirtBlock {
          return var5 < var1.getMaxLightLevel();
       }
    }
+
+   @Override
+   protected abstract MapCodec<? extends SpreadingSnowyDirtBlock> codec();
 
    private static boolean canPropagate(BlockState var0, LevelReader var1, BlockPos var2) {
       BlockPos var3 = var2.above();

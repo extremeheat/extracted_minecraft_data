@@ -1,10 +1,12 @@
 package net.minecraft.advancements.critereon;
 
-import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -14,8 +16,9 @@ public class KilledTrigger extends SimpleCriterionTrigger<KilledTrigger.TriggerI
       super();
    }
 
-   public KilledTrigger.TriggerInstance createInstance(JsonObject var1, Optional<ContextAwarePredicate> var2, DeserializationContext var3) {
-      return new KilledTrigger.TriggerInstance(var2, EntityPredicate.fromJson(var1, "entity", var3), DamageSourcePredicate.fromJson(var1.get("killing_blow")));
+   @Override
+   public Codec<KilledTrigger.TriggerInstance> codec() {
+      return KilledTrigger.TriggerInstance.CODEC;
    }
 
    public void trigger(ServerPlayer var1, Entity var2, DamageSource var3) {
@@ -23,12 +26,23 @@ public class KilledTrigger extends SimpleCriterionTrigger<KilledTrigger.TriggerI
       this.trigger(var1, var3x -> var3x.matches(var1, var4, var3));
    }
 
-   public static class TriggerInstance extends AbstractCriterionTriggerInstance {
+   public static record TriggerInstance(Optional<ContextAwarePredicate> b, Optional<ContextAwarePredicate> c, Optional<DamageSourcePredicate> d)
+      implements SimpleCriterionTrigger.SimpleInstance {
+      private final Optional<ContextAwarePredicate> player;
       private final Optional<ContextAwarePredicate> entityPredicate;
       private final Optional<DamageSourcePredicate> killingBlow;
+      public static final Codec<KilledTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
+         var0 -> var0.group(
+                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player").forGetter(KilledTrigger.TriggerInstance::player),
+                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "entity").forGetter(KilledTrigger.TriggerInstance::entityPredicate),
+                  ExtraCodecs.strictOptionalField(DamageSourcePredicate.CODEC, "killing_blow").forGetter(KilledTrigger.TriggerInstance::killingBlow)
+               )
+               .apply(var0, KilledTrigger.TriggerInstance::new)
+      );
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ContextAwarePredicate> var2, Optional<DamageSourcePredicate> var3) {
-         super(var1);
+         super();
+         this.player = var1;
          this.entityPredicate = var2;
          this.killingBlow = var3;
       }
@@ -113,11 +127,9 @@ public class KilledTrigger extends SimpleCriterionTrigger<KilledTrigger.TriggerI
       }
 
       @Override
-      public JsonObject serializeToJson() {
-         JsonObject var1 = super.serializeToJson();
-         this.entityPredicate.ifPresent(var1x -> var1.add("entity", var1x.toJson()));
-         this.killingBlow.ifPresent(var1x -> var1.add("killing_blow", var1x.serializeToJson()));
-         return var1;
+      public void validate(CriterionValidator var1) {
+         SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
+         var1.validateEntity(this.entityPredicate, ".entity");
       }
    }
 }

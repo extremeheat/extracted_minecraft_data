@@ -1,5 +1,6 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -30,10 +31,16 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class BrewingStandBlock extends BaseEntityBlock {
+   public static final MapCodec<BrewingStandBlock> CODEC = simpleCodec(BrewingStandBlock::new);
    public static final BooleanProperty[] HAS_BOTTLE = new BooleanProperty[]{
       BlockStateProperties.HAS_BOTTLE_0, BlockStateProperties.HAS_BOTTLE_1, BlockStateProperties.HAS_BOTTLE_2
    };
    protected static final VoxelShape SHAPE = Shapes.or(Block.box(1.0, 0.0, 1.0, 15.0, 2.0, 15.0), Block.box(7.0, 0.0, 7.0, 9.0, 14.0, 9.0));
+
+   @Override
+   public MapCodec<BrewingStandBlock> codec() {
+      return CODEC;
+   }
 
    public BrewingStandBlock(BlockBehaviour.Properties var1) {
       super(var1);
@@ -102,14 +109,8 @@ public class BrewingStandBlock extends BaseEntityBlock {
 
    @Override
    public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var1.is(var4.getBlock())) {
-         BlockEntity var6 = var2.getBlockEntity(var3);
-         if (var6 instanceof BrewingStandBlockEntity) {
-            Containers.dropContents(var2, var3, (BrewingStandBlockEntity)var6);
-         }
-
-         super.onRemove(var1, var2, var3, var4, var5);
-      }
+      Containers.dropContentsOnDestroy(var1, var4, var2, var3);
+      super.onRemove(var1, var2, var3, var4, var5);
    }
 
    @Override

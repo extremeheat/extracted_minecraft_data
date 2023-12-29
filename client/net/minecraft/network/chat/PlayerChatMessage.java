@@ -11,7 +11,6 @@ import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.SignatureUpdater;
 import net.minecraft.util.SignatureValidator;
 
@@ -28,7 +27,7 @@ public record PlayerChatMessage(SignedMessageLink d, @Nullable MessageSignature 
                SignedMessageLink.CODEC.fieldOf("link").forGetter(PlayerChatMessage::link),
                MessageSignature.CODEC.optionalFieldOf("signature").forGetter(var0x -> Optional.ofNullable(var0x.signature)),
                SignedMessageBody.MAP_CODEC.forGetter(PlayerChatMessage::signedBody),
-               ExtraCodecs.COMPONENT.optionalFieldOf("unsigned_content").forGetter(var0x -> Optional.ofNullable(var0x.unsignedContent)),
+               ComponentSerialization.CODEC.optionalFieldOf("unsigned_content").forGetter(var0x -> Optional.ofNullable(var0x.unsignedContent)),
                FilterMask.CODEC.optionalFieldOf("filter_mask", FilterMask.PASS_THROUGH).forGetter(PlayerChatMessage::filterMask)
             )
             .apply(
@@ -74,6 +73,12 @@ public record PlayerChatMessage(SignedMessageLink d, @Nullable MessageSignature 
 
    public PlayerChatMessage filter(boolean var1) {
       return this.filter(var1 ? this.filterMask : FilterMask.PASS_THROUGH);
+   }
+
+   public PlayerChatMessage removeSignature() {
+      SignedMessageBody var1 = SignedMessageBody.unsigned(this.signedContent());
+      SignedMessageLink var2 = SignedMessageLink.unsigned(this.sender());
+      return new PlayerChatMessage(var2, null, var1, this.unsignedContent, this.filterMask);
    }
 
    public static void updateSignature(SignatureUpdater.Output var0, SignedMessageLink var1, SignedMessageBody var2) throws SignatureException {

@@ -1,11 +1,14 @@
 package net.minecraft.client.gui.components;
 
+import javax.annotation.Nullable;
 import net.minecraft.Util;
+import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.screens.LoadingDotsText;
+import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
 
 public class LoadingDotsWidget extends AbstractWidget {
@@ -28,6 +31,20 @@ public class LoadingDotsWidget extends AbstractWidget {
 
    @Override
    protected void updateWidgetNarration(NarrationElementOutput var1) {
-      var1.add(NarratedElementType.TITLE, this.getMessage());
+   }
+
+   @Override
+   public void playDownSound(SoundManager var1) {
+   }
+
+   @Override
+   public boolean isActive() {
+      return false;
+   }
+
+   @Nullable
+   @Override
+   public ComponentPath nextFocusPath(FocusNavigationEvent var1) {
+      return null;
    }
 }

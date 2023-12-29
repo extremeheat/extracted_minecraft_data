@@ -881,7 +881,7 @@ public class VanillaBlockTagsProvider extends IntrinsicHolderTagsProvider<Block>
             Blocks.FERN,
             Blocks.FLETCHING_TABLE,
             Blocks.GLOW_LICHEN,
-            Blocks.GRASS,
+            Blocks.SHORT_GRASS,
             Blocks.HANGING_ROOTS,
             Blocks.JACK_O_LANTERN,
             Blocks.JUKEBOX,
@@ -1326,7 +1326,7 @@ public class VanillaBlockTagsProvider extends IntrinsicHolderTagsProvider<Block>
          .addTag(BlockTags.SMALL_FLOWERS)
          .addTag(BlockTags.CROPS)
          .add(
-            Blocks.GRASS,
+            Blocks.SHORT_GRASS,
             Blocks.FERN,
             Blocks.DEAD_BUSH,
             Blocks.VINE,
@@ -1559,7 +1559,7 @@ public class VanillaBlockTagsProvider extends IntrinsicHolderTagsProvider<Block>
       this.tag(BlockTags.REPLACEABLE_BY_TREES)
          .addTag(BlockTags.LEAVES)
          .add(
-            Blocks.GRASS,
+            Blocks.SHORT_GRASS,
             Blocks.FERN,
             Blocks.DEAD_BUSH,
             Blocks.VINE,

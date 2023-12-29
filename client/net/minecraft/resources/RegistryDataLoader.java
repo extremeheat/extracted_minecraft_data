@@ -18,6 +18,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Map.Entry;
+import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import net.minecraft.core.MappedRegistry;
 import net.minecraft.core.Registry;
@@ -193,6 +194,10 @@ public class RegistryDataLoader {
          MappedRegistry var3 = new MappedRegistry<>(this.key, var1);
          RegistryDataLoader.Loader var4 = (var3x, var4x) -> RegistryDataLoader.loadRegistryContents(var4x, var3x, this.key, var3, this.elementCodec, var2);
          return Pair.of(var3, var4);
+      }
+
+      public void runWithArguments(BiConsumer<ResourceKey<? extends Registry<T>>, Codec<T>> var1) {
+         var1.accept(this.key, this.elementCodec);
       }
    }
 }

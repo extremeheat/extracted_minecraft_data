@@ -2,6 +2,9 @@ package net.minecraft.network.chat.contents;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
@@ -12,10 +15,14 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
-public record BlockDataSource(String a, @Nullable Coordinates b) implements DataSource {
+public record BlockDataSource(String d, @Nullable Coordinates e) implements DataSource {
    private final String posPattern;
    @Nullable
    private final Coordinates compiledPos;
+   public static final MapCodec<BlockDataSource> SUB_CODEC = RecordCodecBuilder.mapCodec(
+      var0 -> var0.group(Codec.STRING.fieldOf("block").forGetter(BlockDataSource::posPattern)).apply(var0, BlockDataSource::new)
+   );
+   public static final DataSource.Type<BlockDataSource> TYPE = new DataSource.Type<>(SUB_CODEC, "block");
 
    public BlockDataSource(String var1) {
       this(var1, compilePos(var1));
@@ -50,6 +57,11 @@ public record BlockDataSource(String a, @Nullable Coordinates b) implements Data
       }
 
       return Stream.empty();
+   }
+
+   @Override
+   public DataSource.Type<?> type() {
+      return TYPE;
    }
 
    @Override

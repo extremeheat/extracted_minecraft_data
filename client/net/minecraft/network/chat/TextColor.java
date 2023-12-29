@@ -3,6 +3,7 @@ package net.minecraft.network.chat;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.Lifecycle;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -13,10 +14,7 @@ import net.minecraft.ChatFormatting;
 
 public final class TextColor {
    private static final String CUSTOM_COLOR_PREFIX = "#";
-   public static final Codec<TextColor> CODEC = Codec.STRING.comapFlatMap(var0 -> {
-      TextColor var1 = parseColor(var0);
-      return var1 != null ? DataResult.success(var1) : DataResult.error(() -> "String is not a valid color name or hex color code");
-   }, TextColor::serialize);
+   public static final Codec<TextColor> CODEC = Codec.STRING.comapFlatMap(TextColor::parseColor, TextColor::serialize);
    private static final Map<ChatFormatting, TextColor> LEGACY_FORMAT_TO_COLOR = Stream.of(ChatFormatting.values())
       .filter(ChatFormatting::isColor)
       .collect(ImmutableMap.toImmutableMap(Function.identity(), var0 -> new TextColor(var0.getColor(), var0.getName())));
@@ -29,13 +27,13 @@ public final class TextColor {
 
    private TextColor(int var1, String var2) {
       super();
-      this.value = var1;
+      this.value = var1 & 16777215;
       this.name = var2;
    }
 
    private TextColor(int var1) {
       super();
-      this.value = var1;
+      this.value = var1 & 16777215;
       this.name = null;
    }
 
@@ -70,7 +68,7 @@ public final class TextColor {
 
    @Override
    public String toString() {
-      return this.name != null ? this.name : this.formatValue();
+      return this.serialize();
    }
 
    @Nullable
@@ -82,17 +80,19 @@ public final class TextColor {
       return new TextColor(var0);
    }
 
-   @Nullable
-   public static TextColor parseColor(String var0) {
+   public static DataResult<TextColor> parseColor(String var0) {
       if (var0.startsWith("#")) {
          try {
-            int var1 = Integer.parseInt(var0.substring(1), 16);
-            return fromRgb(var1);
+            int var3 = Integer.parseInt(var0.substring(1), 16);
+            return var3 >= 0 && var3 <= 16777215
+               ? DataResult.success(fromRgb(var3), Lifecycle.stable())
+               : DataResult.error(() -> "Color value out of range: " + var0);
          } catch (NumberFormatException var2) {
-            return null;
+            return DataResult.error(() -> "Invalid color value: " + var0);
          }
       } else {
-         return NAMED_COLORS.get(var0);
+         TextColor var1 = NAMED_COLORS.get(var0);
+         return var1 == null ? DataResult.error(() -> "Invalid color name: " + var0) : DataResult.success(var1, Lifecycle.stable());
       }
    }
 }

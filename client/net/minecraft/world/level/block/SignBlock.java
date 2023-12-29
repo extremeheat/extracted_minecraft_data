@@ -1,13 +1,13 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.MapCodec;
 import java.util.Arrays;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.CommonComponents;
-import net.minecraft.network.chat.contents.LiteralContents;
-import net.minecraft.sounds.SoundEvents;
+import net.minecraft.network.chat.contents.PlainTextContents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
@@ -43,10 +43,13 @@ public abstract class SignBlock extends BaseEntityBlock implements SimpleWaterlo
    protected static final VoxelShape SHAPE = Block.box(4.0, 0.0, 4.0, 12.0, 16.0, 12.0);
    private final WoodType type;
 
-   protected SignBlock(BlockBehaviour.Properties var1, WoodType var2) {
-      super(var1);
-      this.type = var2;
+   protected SignBlock(WoodType var1, BlockBehaviour.Properties var2) {
+      super(var2);
+      this.type = var1;
    }
+
+   @Override
+   protected abstract MapCodec<? extends SignBlock> codec();
 
    @Override
    public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
@@ -86,7 +89,7 @@ public abstract class SignBlock extends BaseEntityBlock implements SimpleWaterlo
             SignText var13 = ((SignBlockEntity)var16).getText(var17);
             boolean var14 = ((SignBlockEntity)var16).executeClickCommandsIfPresent(var4, var2, var3, var17);
             if (((SignBlockEntity)var16).isWaxed()) {
-               var2.playSound(null, ((SignBlockEntity)var16).getBlockPos(), SoundEvents.WAXED_SIGN_INTERACT_FAIL, SoundSource.BLOCKS);
+               var2.playSound(null, ((SignBlockEntity)var16).getBlockPos(), ((SignBlockEntity)var16).getSignInteractionFailedSoundEvent(), SoundSource.BLOCKS);
                return this.getInteractionResult(var15);
             } else if (var15
                && !this.otherPlayerIsEditingSign(var4, (SignBlockEntity)var16)
@@ -126,7 +129,7 @@ public abstract class SignBlock extends BaseEntityBlock implements SimpleWaterlo
    private boolean hasEditableText(Player var1, SignBlockEntity var2, boolean var3) {
       SignText var4 = var2.getText(var3);
       return Arrays.stream(var4.getMessages(var1.isTextFilteringEnabled()))
-         .allMatch(var0 -> var0.equals(CommonComponents.EMPTY) || var0.getContents() instanceof LiteralContents);
+         .allMatch(var0 -> var0.equals(CommonComponents.EMPTY) || var0.getContents() instanceof PlainTextContents);
    }
 
    public abstract float getYRotationDegrees(BlockState var1);

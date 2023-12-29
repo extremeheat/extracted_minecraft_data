@@ -1,28 +1,23 @@
 package com.mojang.blaze3d.audio;
 
 import net.minecraft.world.phys.Vec3;
-import org.joml.Vector3f;
 import org.lwjgl.openal.AL10;
 
 public class Listener {
    private float gain = 1.0F;
-   private Vec3 position = Vec3.ZERO;
+   private ListenerTransform transform = ListenerTransform.INITIAL;
 
    public Listener() {
       super();
    }
 
-   public void setListenerPosition(Vec3 var1) {
-      this.position = var1;
-      AL10.alListener3f(4100, (float)var1.x, (float)var1.y, (float)var1.z);
-   }
-
-   public Vec3 getListenerPosition() {
-      return this.position;
-   }
-
-   public void setListenerOrientation(Vector3f var1, Vector3f var2) {
-      AL10.alListenerfv(4111, new float[]{var1.x(), var1.y(), var1.z(), var2.x(), var2.y(), var2.z()});
+   public void setTransform(ListenerTransform var1) {
+      this.transform = var1;
+      Vec3 var2 = var1.position();
+      Vec3 var3 = var1.forward();
+      Vec3 var4 = var1.up();
+      AL10.alListener3f(4100, (float)var2.x, (float)var2.y, (float)var2.z);
+      AL10.alListenerfv(4111, new float[]{(float)var3.x, (float)var3.y, (float)var3.z, (float)var4.x(), (float)var4.y(), (float)var4.z()});
    }
 
    public void setGain(float var1) {
@@ -35,7 +30,10 @@ public class Listener {
    }
 
    public void reset() {
-      this.setListenerPosition(Vec3.ZERO);
-      this.setListenerOrientation(new Vector3f(0.0F, 0.0F, -1.0F), new Vector3f(0.0F, 1.0F, 0.0F));
+      this.setTransform(ListenerTransform.INITIAL);
+   }
+
+   public ListenerTransform getTransform() {
+      return this.transform;
    }
 }

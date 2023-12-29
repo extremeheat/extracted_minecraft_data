@@ -54,9 +54,8 @@ public class RealmsPlayerScreen extends RealmsScreen {
       this.column1X = this.width / 2 - 160;
       this.columnWidth = 150;
       int var1 = this.width / 2 + 12;
-      this.invitedObjectSelectionList = new RealmsPlayerScreen.InvitedObjectSelectionList();
-      this.invitedObjectSelectionList.setLeftPos(this.column1X);
-      this.addWidget(this.invitedObjectSelectionList);
+      this.invitedObjectSelectionList = this.addRenderableWidget(new RealmsPlayerScreen.InvitedObjectSelectionList());
+      this.invitedObjectSelectionList.setX(this.column1X);
 
       for(PlayerInfo var3 : this.serverData.players) {
          this.invitedObjectSelectionList.addEntry(var3);
@@ -180,14 +179,13 @@ public class RealmsPlayerScreen extends RealmsScreen {
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      this.invitedObjectSelectionList.render(var1, var2, var3, var4);
       var1.drawCenteredString(this.font, this.title, this.width / 2, 17, -1);
       int var5 = row(12) + 20;
       var1.setColor(0.25F, 0.25F, 0.25F, 1.0F);
       var1.blit(OPTIONS_BACKGROUND, 0, var5, 0.0F, 0.0F, this.width, this.height - var5, 32, 32);
       var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
       String var6 = this.serverData.players != null ? Integer.toString(this.serverData.players.size()) : "0";
-      var1.drawString(this.font, Component.translatable("mco.configure.world.invited.number", var6), this.column1X, row(0), -6250336, false);
+      var1.drawString(this.font, Component.translatable("mco.configure.world.invited.number", var6), this.column1X, row(0), -1, false);
    }
 
    class Entry extends ObjectSelectionList.Entry<RealmsPlayerScreen.Entry> {
@@ -271,7 +269,7 @@ public class RealmsPlayerScreen extends RealmsScreen {
 
    class InvitedObjectSelectionList extends RealmsObjectSelectionList<RealmsPlayerScreen.Entry> {
       public InvitedObjectSelectionList() {
-         super(RealmsPlayerScreen.this.columnWidth + 10, RealmsPlayerScreen.row(12) + 20, RealmsPlayerScreen.row(1), RealmsPlayerScreen.row(12) + 20, 13);
+         super(RealmsPlayerScreen.this.columnWidth + 10, RealmsPlayerScreen.row(12) + 20, RealmsPlayerScreen.row(1), 13);
       }
 
       public void updateButtons() {
@@ -308,7 +306,7 @@ public class RealmsPlayerScreen extends RealmsScreen {
 
       @Override
       public int getScrollbarPosition() {
-         return RealmsPlayerScreen.this.column1X + this.width - 5;
+         return RealmsPlayerScreen.this.column1X + this.width;
       }
 
       @Override

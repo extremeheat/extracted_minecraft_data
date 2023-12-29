@@ -61,7 +61,7 @@ public class OpenAlUtil {
    static boolean checkALCError(long var0, String var2) {
       int var3 = ALC10.alcGetError(var0);
       if (var3 != 0) {
-         LOGGER.error("{}{}: {}", new Object[]{var2, var0, alcErrorToString(var3)});
+         LOGGER.error("{} ({}): {}", new Object[]{var2, var0, alcErrorToString(var3)});
          return true;
       } else {
          return false;

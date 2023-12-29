@@ -6,6 +6,8 @@ import com.google.common.collect.Multimap;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
@@ -34,6 +36,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -45,6 +48,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -80,9 +84,33 @@ import org.slf4j.Logger;
 public final class ItemStack {
    public static final Codec<ItemStack> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               BuiltInRegistries.ITEM.byNameCodec().fieldOf("id").forGetter(ItemStack::getItem),
+               BuiltInRegistries.ITEM.holderByNameCodec().fieldOf("id").forGetter(ItemStack::getItemHolder),
                Codec.INT.fieldOf("Count").forGetter(ItemStack::getCount),
                CompoundTag.CODEC.optionalFieldOf("tag").forGetter(var0x -> Optional.ofNullable(var0x.getTag()))
+            )
+            .apply(var0, ItemStack::new)
+   );
+   private static final Codec<Item> ITEM_NON_AIR_CODEC = ExtraCodecs.validate(
+      BuiltInRegistries.ITEM.byNameCodec(), var0 -> var0 == Items.AIR ? DataResult.error(() -> "Item must not be minecraft:air") : DataResult.success(var0)
+   );
+   public static final Codec<ItemStack> ADVANCEMENT_ICON_CODEC = RecordCodecBuilder.create(
+      var0 -> var0.group(
+               BuiltInRegistries.ITEM.holderByNameCodec().fieldOf("item").forGetter(ItemStack::getItemHolder),
+               ExtraCodecs.strictOptionalField(TagParser.AS_CODEC, "nbt").forGetter(var0x -> Optional.ofNullable(var0x.getTag()))
+            )
+            .apply(var0, (var0x, var1) -> new ItemStack(var0x, 1, var1))
+   );
+   public static final Codec<ItemStack> ITEM_WITH_COUNT_CODEC = RecordCodecBuilder.create(
+      var0 -> var0.group(
+               ITEM_NON_AIR_CODEC.fieldOf("item").forGetter(ItemStack::getItem),
+               ExtraCodecs.strictOptionalField(ExtraCodecs.POSITIVE_INT, "count", 1).forGetter(ItemStack::getCount)
+            )
+            .apply(var0, ItemStack::new)
+   );
+   public static final Codec<ItemStack> SINGLE_ITEM_CODEC = ITEM_NON_AIR_CODEC.xmap(ItemStack::new, ItemStack::getItem);
+   public static final MapCodec<ItemStack> RESULT_CODEC = RecordCodecBuilder.mapCodec(
+      var0 -> var0.group(
+               BuiltInRegistries.ITEM.byNameCodec().fieldOf("result").forGetter(ItemStack::getItem), Codec.INT.fieldOf("count").forGetter(ItemStack::getCount)
             )
             .apply(var0, ItemStack::new)
    );
@@ -131,7 +159,7 @@ public final class ItemStack {
       this((ItemLike)var1.value(), 1);
    }
 
-   private ItemStack(ItemLike var1, int var2, Optional<CompoundTag> var3) {
+   public ItemStack(Holder<Item> var1, int var2, Optional<CompoundTag> var3) {
       this(var1, var2);
       var3.ifPresent(this::setTag);
    }
@@ -159,7 +187,7 @@ public final class ItemStack {
       this.item = BuiltInRegistries.ITEM.get(new ResourceLocation(var1.getString("id")));
       this.count = var1.getByte("Count");
       if (var1.contains("tag", 10)) {
-         this.tag = var1.getCompound("tag");
+         this.tag = var1.getCompound("tag").copy();
          this.getItem().verifyTagAfterLoad(this.tag);
       }
 
@@ -464,6 +492,10 @@ public final class ItemStack {
    public void onCraftedBy(Level var1, Player var2, int var3) {
       var2.awardStat(Stats.ITEM_CRAFTED.get(this.getItem()), var3);
       this.getItem().onCraftedBy(this, var1, var2);
+   }
+
+   public void onCraftedBySystem(Level var1) {
+      this.getItem().onCraftedPostProcess(this, var1);
    }
 
    public int getUseDuration() {

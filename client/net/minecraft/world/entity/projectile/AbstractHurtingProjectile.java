@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.projectile;
 
+import javax.annotation.Nullable;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -11,6 +12,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -22,6 +24,11 @@ public abstract class AbstractHurtingProjectile extends Projectile {
 
    protected AbstractHurtingProjectile(EntityType<? extends AbstractHurtingProjectile> var1, Level var2) {
       super(var1, var2);
+   }
+
+   protected AbstractHurtingProjectile(EntityType<? extends AbstractHurtingProjectile> var1, double var2, double var4, double var6, Level var8) {
+      this(var1, var8);
+      this.setPos(var2, var4, var6);
    }
 
    public AbstractHurtingProjectile(
@@ -59,6 +66,10 @@ public abstract class AbstractHurtingProjectile extends Projectile {
       return var1 < var3 * var3;
    }
 
+   protected ClipContext.Block getClipType() {
+      return ClipContext.Block.COLLIDER;
+   }
+
    @Override
    public void tick() {
       Entity var1 = this.getOwner();
@@ -68,7 +79,7 @@ public abstract class AbstractHurtingProjectile extends Projectile {
             this.setSecondsOnFire(1);
          }
 
-         HitResult var2 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity);
+         HitResult var2 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity, this.getClipType());
          if (var2.getType() != HitResult.Type.MISS) {
             this.onHit(var2);
          }
@@ -79,18 +90,24 @@ public abstract class AbstractHurtingProjectile extends Projectile {
          double var6 = this.getY() + var3.y;
          double var8 = this.getZ() + var3.z;
          ProjectileUtil.rotateTowardsMovement(this, 0.2F);
-         float var10 = this.getInertia();
+         float var10;
          if (this.isInWater()) {
             for(int var11 = 0; var11 < 4; ++var11) {
                float var12 = 0.25F;
                this.level().addParticle(ParticleTypes.BUBBLE, var4 - var3.x * 0.25, var6 - var3.y * 0.25, var8 - var3.z * 0.25, var3.x, var3.y, var3.z);
             }
 
-            var10 = 0.8F;
+            var10 = this.getLiquidInertia();
+         } else {
+            var10 = this.getInertia();
          }
 
          this.setDeltaMovement(var3.add(this.xPower, this.yPower, this.zPower).scale((double)var10));
-         this.level().addParticle(this.getTrailParticle(), var4, var6 + 0.5, var8, 0.0, 0.0, 0.0);
+         ParticleOptions var13 = this.getTrailParticle();
+         if (var13 != null) {
+            this.level().addParticle(var13, var4, var6 + 0.5, var8, 0.0, 0.0, 0.0);
+         }
+
          this.setPos(var4, var6, var8);
       } else {
          this.discard();
@@ -106,12 +123,17 @@ public abstract class AbstractHurtingProjectile extends Projectile {
       return true;
    }
 
+   @Nullable
    protected ParticleOptions getTrailParticle() {
       return ParticleTypes.SMOKE;
    }
 
    protected float getInertia() {
       return 0.95F;
+   }
+
+   protected float getLiquidInertia() {
+      return 0.8F;
    }
 
    @Override

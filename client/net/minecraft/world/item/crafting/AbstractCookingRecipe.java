@@ -74,4 +74,8 @@ public abstract class AbstractCookingRecipe implements Recipe<Container> {
    public CookingBookCategory category() {
       return this.category;
    }
+
+   public interface Factory<T extends AbstractCookingRecipe> {
+      T create(String var1, CookingBookCategory var2, Ingredient var3, ItemStack var4, float var5, int var6);
+   }
 }

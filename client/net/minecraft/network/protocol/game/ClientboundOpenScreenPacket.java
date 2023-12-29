@@ -23,7 +23,7 @@ public class ClientboundOpenScreenPacket implements Packet<ClientGamePacketListe
       super();
       this.containerId = var1.readVarInt();
       this.type = var1.readById(BuiltInRegistries.MENU);
-      this.title = var1.readComponent();
+      this.title = var1.readComponentTrusted();
    }
 
    @Override

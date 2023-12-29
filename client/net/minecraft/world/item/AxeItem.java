@@ -4,6 +4,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import java.util.Map;
 import java.util.Optional;
+import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
@@ -55,40 +56,47 @@ public class AxeItem extends DiggerItem {
       Level var2 = var1.getLevel();
       BlockPos var3 = var1.getClickedPos();
       Player var4 = var1.getPlayer();
-      BlockState var5 = var2.getBlockState(var3);
-      Optional var6 = this.getStripped(var5);
-      Optional var7 = WeatheringCopper.getPrevious(var5);
-      Optional var8 = Optional.ofNullable((Block)((BiMap)HoneycombItem.WAX_OFF_BY_BLOCK.get()).get(var5.getBlock()))
-         .map(var1x -> ((Block)var1x).withPropertiesOf(var5));
-      ItemStack var9 = var1.getItemInHand();
-      Optional var10 = Optional.empty();
-      if (var6.isPresent()) {
-         var2.playSound(var4, var3, SoundEvents.AXE_STRIP, SoundSource.BLOCKS, 1.0F, 1.0F);
-         var10 = var6;
-      } else if (var7.isPresent()) {
-         var2.playSound(var4, var3, SoundEvents.AXE_SCRAPE, SoundSource.BLOCKS, 1.0F, 1.0F);
-         var2.levelEvent(var4, 3005, var3, 0);
-         var10 = var7;
-      } else if (var8.isPresent()) {
-         var2.playSound(var4, var3, SoundEvents.AXE_WAX_OFF, SoundSource.BLOCKS, 1.0F, 1.0F);
-         var2.levelEvent(var4, 3004, var3, 0);
-         var10 = var8;
-      }
-
-      if (var10.isPresent()) {
+      Optional var5 = this.evaluateNewBlockState(var2, var3, var4, var2.getBlockState(var3));
+      if (var5.isEmpty()) {
+         return InteractionResult.PASS;
+      } else {
+         ItemStack var6 = var1.getItemInHand();
          if (var4 instanceof ServerPlayer) {
-            CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger((ServerPlayer)var4, var3, var9);
+            CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger((ServerPlayer)var4, var3, var6);
          }
 
-         var2.setBlock(var3, (BlockState)var10.get(), 11);
-         var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var4, (BlockState)var10.get()));
+         var2.setBlock(var3, (BlockState)var5.get(), 11);
+         var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var4, (BlockState)var5.get()));
          if (var4 != null) {
-            var9.hurtAndBreak(1, var4, var1x -> var1x.broadcastBreakEvent(var1.getHand()));
+            var6.hurtAndBreak(1, var4, var1x -> var1x.broadcastBreakEvent(var1.getHand()));
          }
 
          return InteractionResult.sidedSuccess(var2.isClientSide);
+      }
+   }
+
+   private Optional<BlockState> evaluateNewBlockState(Level var1, BlockPos var2, @Nullable Player var3, BlockState var4) {
+      Optional var5 = this.getStripped(var4);
+      if (var5.isPresent()) {
+         var1.playSound(var3, var2, SoundEvents.AXE_STRIP, SoundSource.BLOCKS, 1.0F, 1.0F);
+         return var5;
       } else {
-         return InteractionResult.PASS;
+         Optional var6 = WeatheringCopper.getPrevious(var4);
+         if (var6.isPresent()) {
+            var1.playSound(var3, var2, SoundEvents.AXE_SCRAPE, SoundSource.BLOCKS, 1.0F, 1.0F);
+            var1.levelEvent(var3, 3005, var2, 0);
+            return var6;
+         } else {
+            Optional var7 = Optional.ofNullable((Block)((BiMap)HoneycombItem.WAX_OFF_BY_BLOCK.get()).get(var4.getBlock()))
+               .map(var1x -> ((Block)var1x).withPropertiesOf(var4));
+            if (var7.isPresent()) {
+               var1.playSound(var3, var2, SoundEvents.AXE_WAX_OFF, SoundSource.BLOCKS, 1.0F, 1.0F);
+               var1.levelEvent(var3, 3004, var2, 0);
+               return var7;
+            } else {
+               return Optional.empty();
+            }
+         }
       }
    }
 

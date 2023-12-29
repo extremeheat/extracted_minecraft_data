@@ -35,16 +35,15 @@ public class MessageSignatureCache {
       return this.entries[var1];
    }
 
-   public void push(PlayerChatMessage var1) {
-      List var2 = var1.signedBody().lastSeen().entries();
-      ArrayDeque var3 = new ArrayDeque(var2.size() + 1);
-      var3.addAll(var2);
-      MessageSignature var4 = var1.signature();
-      if (var4 != null) {
-         var3.add(var4);
+   public void push(SignedMessageBody var1, @Nullable MessageSignature var2) {
+      List var3 = var1.lastSeen().entries();
+      ArrayDeque var4 = new ArrayDeque(var3.size() + 1);
+      var4.addAll(var3);
+      if (var2 != null) {
+         var4.add(var2);
       }
 
-      this.push(var3);
+      this.push(var4);
    }
 
    @VisibleForTesting

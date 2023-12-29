@@ -114,6 +114,8 @@ public interface ClientGamePacketListener extends ClientPongPacketListener, Clie
 
    void handleSetScore(ClientboundSetScorePacket var1);
 
+   void handleResetScore(ClientboundResetScorePacket var1);
+
    void handleSetSpawn(ClientboundSetDefaultSpawnPositionPacket var1);
 
    void handleSetTime(ClientboundSetTimePacket var1);
@@ -125,6 +127,10 @@ public interface ClientGamePacketListener extends ClientPongPacketListener, Clie
    void handleTakeItemEntity(ClientboundTakeItemEntityPacket var1);
 
    void handleTeleportEntity(ClientboundTeleportEntityPacket var1);
+
+   void handleTickingState(ClientboundTickingStatePacket var1);
+
+   void handleTickingStep(ClientboundTickingStepPacket var1);
 
    void handleUpdateAttributes(ClientboundUpdateAttributesPacket var1);
 

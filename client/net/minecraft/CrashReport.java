@@ -13,6 +13,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CompletionException;
+import javax.annotation.Nullable;
 import net.minecraft.util.MemoryReserve;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -24,6 +25,7 @@ public class CrashReport {
    private final String title;
    private final Throwable exception;
    private final List<CrashReportCategory> details = Lists.newArrayList();
+   @Nullable
    private File saveFile;
    private boolean trackingStackTrace = true;
    private StackTraceElement[] uncategorizedStackTrace = new StackTraceElement[0];
@@ -129,6 +131,7 @@ public class CrashReport {
       return var1.toString();
    }
 
+   @Nullable
    public File getSaveFile() {
       return this.saveFile;
    }
@@ -177,7 +180,7 @@ public class CrashReport {
          StackTraceElement var7 = null;
          int var8 = var5.length - var4;
          if (var8 < 0) {
-            LOGGER.error("Negative index in crash report handler ({}/{})", new Object[]{var5.length, var4, ")"});
+            LOGGER.error("Negative index in crash report handler ({}/{})", var5.length, var4);
          }
 
          if (var5 != null && 0 <= var8 && var8 < var5.length) {
@@ -245,14 +248,16 @@ public class CrashReport {
       }
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public static CrashReport forThrowable(Throwable var0, String var1) {
       while(var0 instanceof CompletionException && var0.getCause() != null) {
          var0 = var0.getCause();
       }
 
       CrashReport var2;
-      if (var0 instanceof ReportedException) {
-         var2 = ((ReportedException)var0).getReport();
+      if (var0 instanceof ReportedException var3) {
+         var2 = var3.getReport();
       } else {
          var2 = new CrashReport(var1, var0);
       }

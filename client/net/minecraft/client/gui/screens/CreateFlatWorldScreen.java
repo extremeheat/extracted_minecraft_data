@@ -54,8 +54,7 @@ public class CreateFlatWorldScreen extends Screen {
    protected void init() {
       this.columnType = Component.translatable("createWorld.customize.flat.tile");
       this.columnHeight = Component.translatable("createWorld.customize.flat.height");
-      this.list = new CreateFlatWorldScreen.DetailsList();
-      this.addWidget(this.list);
+      this.list = this.addRenderableWidget(new CreateFlatWorldScreen.DetailsList());
       this.deleteLayerButton = this.addRenderableWidget(Button.builder(Component.translatable("createWorld.customize.flat.removeLayer"), var1 -> {
          if (this.hasValidSelection()) {
             List var2 = this.generator.getLayersInfo();
@@ -102,7 +101,6 @@ public class CreateFlatWorldScreen extends Screen {
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      this.list.render(var1, var2, var3, var4);
       var1.drawCenteredString(this.font, this.title, this.width / 2, 8, 16777215);
       int var5 = this.width / 2 - 92 - 16;
       var1.drawString(this.font, this.columnType, var5, 32, 16777215);
@@ -110,17 +108,8 @@ public class CreateFlatWorldScreen extends Screen {
    }
 
    class DetailsList extends ObjectSelectionList<CreateFlatWorldScreen.DetailsList.Entry> {
-      private static final ResourceLocation STATS_ICON_LOCATION = new ResourceLocation("textures/gui/container/stats_icons.png");
-
       public DetailsList() {
-         super(
-            CreateFlatWorldScreen.this.minecraft,
-            CreateFlatWorldScreen.this.width,
-            CreateFlatWorldScreen.this.height,
-            43,
-            CreateFlatWorldScreen.this.height - 60,
-            24
-         );
+         super(CreateFlatWorldScreen.this.minecraft, CreateFlatWorldScreen.this.width, CreateFlatWorldScreen.this.height - 103, 43, 24);
 
          for(int var2 = 0; var2 < CreateFlatWorldScreen.this.generator.getLayersInfo().size(); ++var2) {
             this.addEntry(new CreateFlatWorldScreen.DetailsList.Entry());

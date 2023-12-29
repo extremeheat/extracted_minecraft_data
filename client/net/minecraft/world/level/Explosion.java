@@ -5,6 +5,7 @@ import com.google.common.collect.Sets;
 import com.mojang.datafixers.util.Pair;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -12,8 +13,9 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
@@ -29,13 +31,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.ProtectionEnchantment;
 import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.level.storage.loot.LootParams;
-import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -55,11 +53,31 @@ public class Explosion {
    private final float radius;
    private final DamageSource damageSource;
    private final ExplosionDamageCalculator damageCalculator;
+   private final ParticleOptions smallExplosionParticles;
+   private final ParticleOptions largeExplosionParticles;
+   private final SoundEvent explosionSound;
    private final ObjectArrayList<BlockPos> toBlow = new ObjectArrayList();
    private final Map<Player, Vec3> hitPlayers = Maps.newHashMap();
 
-   public Explosion(Level var1, @Nullable Entity var2, double var3, double var5, double var7, float var9, List<BlockPos> var10) {
-      this(var1, var2, var3, var5, var7, var9, false, Explosion.BlockInteraction.DESTROY_WITH_DECAY, var10);
+   public static DamageSource getDefaultDamageSource(Level var0, @Nullable Entity var1) {
+      return var0.damageSources().explosion(var1, getIndirectSourceEntityInternal(var1));
+   }
+
+   public Explosion(
+      Level var1,
+      @Nullable Entity var2,
+      double var3,
+      double var5,
+      double var7,
+      float var9,
+      List<BlockPos> var10,
+      Explosion.BlockInteraction var11,
+      ParticleOptions var12,
+      ParticleOptions var13,
+      SoundEvent var14
+   ) {
+      this(var1, var2, getDefaultDamageSource(var1, var2), null, var3, var5, var7, var9, false, var11, var12, var13, var14);
+      this.toBlow.addAll(var10);
    }
 
    public Explosion(
@@ -78,7 +96,21 @@ public class Explosion {
    }
 
    public Explosion(Level var1, @Nullable Entity var2, double var3, double var5, double var7, float var9, boolean var10, Explosion.BlockInteraction var11) {
-      this(var1, var2, null, null, var3, var5, var7, var9, var10, var11);
+      this(
+         var1,
+         var2,
+         getDefaultDamageSource(var1, var2),
+         null,
+         var3,
+         var5,
+         var7,
+         var9,
+         var10,
+         var11,
+         ParticleTypes.EXPLOSION,
+         ParticleTypes.EXPLOSION_EMITTER,
+         SoundEvents.GENERIC_EXPLODE
+      );
    }
 
    public Explosion(
@@ -91,7 +123,10 @@ public class Explosion {
       double var9,
       float var11,
       boolean var12,
-      Explosion.BlockInteraction var13
+      Explosion.BlockInteraction var13,
+      ParticleOptions var14,
+      ParticleOptions var15,
+      SoundEvent var16
    ) {
       super();
       this.level = var1;
@@ -104,6 +139,9 @@ public class Explosion {
       this.blockInteraction = var13;
       this.damageSource = var3 == null ? var1.damageSources().explosion(this) : var3;
       this.damageCalculator = var4 == null ? this.makeDamageCalculator(var2) : var4;
+      this.smallExplosionParticles = var14;
+      this.largeExplosionParticles = var15;
+      this.explosionSound = var16;
    }
 
    private ExplosionDamageCalculator makeDamageCalculator(@Nullable Entity var1) {
@@ -142,6 +180,14 @@ public class Explosion {
       } else {
          return 0.0F;
       }
+   }
+
+   public float radius() {
+      return this.radius;
+   }
+
+   public Vec3 center() {
+      return new Vec3(this.x, this.y, this.z);
    }
 
    public void explode() {
@@ -192,47 +238,49 @@ public class Explosion {
       }
 
       this.toBlow.addAll(var1);
-      float var32 = this.radius * 2.0F;
-      int var33 = Mth.floor(this.x - (double)var32 - 1.0);
-      int var34 = Mth.floor(this.x + (double)var32 + 1.0);
-      int var36 = Mth.floor(this.y - (double)var32 - 1.0);
-      int var7 = Mth.floor(this.y + (double)var32 + 1.0);
-      int var38 = Mth.floor(this.z - (double)var32 - 1.0);
-      int var9 = Mth.floor(this.z + (double)var32 + 1.0);
-      List var40 = this.level.getEntities(this.source, new AABB((double)var33, (double)var36, (double)var38, (double)var34, (double)var7, (double)var9));
+      float var30 = this.radius * 2.0F;
+      int var31 = Mth.floor(this.x - (double)var30 - 1.0);
+      int var32 = Mth.floor(this.x + (double)var30 + 1.0);
+      int var34 = Mth.floor(this.y - (double)var30 - 1.0);
+      int var7 = Mth.floor(this.y + (double)var30 + 1.0);
+      int var36 = Mth.floor(this.z - (double)var30 - 1.0);
+      int var9 = Mth.floor(this.z + (double)var30 + 1.0);
+      List var38 = this.level.getEntities(this.source, new AABB((double)var31, (double)var34, (double)var36, (double)var32, (double)var7, (double)var9));
       Vec3 var11 = new Vec3(this.x, this.y, this.z);
 
-      for(Entity var13 : var40) {
-         if (!var13.ignoreExplosion()) {
-            double var42 = Math.sqrt(var13.distanceToSqr(var11)) / (double)var32;
-            if (var42 <= 1.0) {
+      for(Entity var13 : var38) {
+         if (!var13.ignoreExplosion(this)) {
+            double var40 = Math.sqrt(var13.distanceToSqr(var11)) / (double)var30;
+            if (var40 <= 1.0) {
                double var16 = var13.getX() - this.x;
                double var18 = (var13 instanceof PrimedTnt ? var13.getY() : var13.getEyeY()) - this.y;
                double var20 = var13.getZ() - this.z;
-               double var49 = Math.sqrt(var16 * var16 + var18 * var18 + var20 * var20);
-               if (var49 != 0.0) {
-                  var16 /= var49;
-                  var18 /= var49;
-                  var20 /= var49;
-                  double var50 = (double)getSeenPercent(var11, var13);
-                  double var26 = (1.0 - var42) * var50;
-                  var13.hurt(this.getDamageSource(), (float)((int)((var26 * var26 + var26) / 2.0 * 7.0 * (double)var32 + 1.0)));
-                  double var28;
-                  if (var13 instanceof LivingEntity var30) {
-                     var28 = ProtectionEnchantment.getExplosionKnockbackAfterDampener((LivingEntity)var30, var26);
-                  } else {
-                     var28 = var26;
+               double var47 = Math.sqrt(var16 * var16 + var18 * var18 + var20 * var20);
+               if (var47 != 0.0) {
+                  var16 /= var47;
+                  var18 /= var47;
+                  var20 /= var47;
+                  if (this.damageCalculator.shouldDamageEntity(this, var13)) {
+                     var13.hurt(this.damageSource, this.damageCalculator.getEntityDamageAmount(this, var13));
                   }
 
-                  var16 *= var28;
-                  var18 *= var28;
-                  var20 *= var28;
-                  Vec3 var51 = new Vec3(var16, var18, var20);
-                  var13.setDeltaMovement(var13.getDeltaMovement().add(var51));
-                  if (var13 instanceof Player var31
-                     && !((Player)var31).isSpectator()
-                     && (!((Player)var31).isCreative() || !((Player)var31).getAbilities().flying)) {
-                     this.hitPlayers.put((Player)var31, var51);
+                  double var48 = (1.0 - var40) * (double)getSeenPercent(var11, var13);
+                  double var26;
+                  if (var13 instanceof LivingEntity var28) {
+                     var26 = ProtectionEnchantment.getExplosionKnockbackAfterDampener((LivingEntity)var28, var48);
+                  } else {
+                     var26 = var48;
+                  }
+
+                  var16 *= var26;
+                  var18 *= var26;
+                  var20 *= var26;
+                  Vec3 var49 = new Vec3(var16, var18, var20);
+                  var13.setDeltaMovement(var13.getDeltaMovement().add(var49));
+                  if (var13 instanceof Player var29
+                     && !((Player)var29).isSpectator()
+                     && (!((Player)var29).isCreative() || !((Player)var29).getAbilities().flying)) {
+                     this.hitPlayers.put((Player)var29, var49);
                   }
                }
             }
@@ -247,7 +295,7 @@ public class Explosion {
                this.x,
                this.y,
                this.z,
-               SoundEvents.GENERIC_EXPLODE,
+               this.explosionSound,
                SoundSource.BLOCKS,
                4.0F,
                (1.0F + (this.level.random.nextFloat() - this.level.random.nextFloat()) * 0.2F) * 0.7F,
@@ -257,85 +305,54 @@ public class Explosion {
 
       boolean var2 = this.interactsWithBlocks();
       if (var1) {
+         ParticleOptions var3;
          if (!(this.radius < 2.0F) && var2) {
-            this.level.addParticle(ParticleTypes.EXPLOSION_EMITTER, this.x, this.y, this.z, 1.0, 0.0, 0.0);
+            var3 = this.largeExplosionParticles;
          } else {
-            this.level.addParticle(ParticleTypes.EXPLOSION, this.x, this.y, this.z, 1.0, 0.0, 0.0);
+            var3 = this.smallExplosionParticles;
          }
+
+         this.level.addParticle(var3, this.x, this.y, this.z, 1.0, 0.0, 0.0);
       }
 
       if (var2) {
-         ObjectArrayList var3 = new ObjectArrayList();
-         boolean var4 = this.getIndirectSourceEntity() instanceof Player;
+         this.level.getProfiler().push("explosion_blocks");
+         ArrayList var6 = new ArrayList();
          Util.shuffle(this.toBlow, this.level.random);
-         ObjectListIterator var5 = this.toBlow.iterator();
+         ObjectListIterator var4 = this.toBlow.iterator();
 
-         while(var5.hasNext()) {
-            BlockPos var6 = (BlockPos)var5.next();
-            BlockState var7 = this.level.getBlockState(var6);
-            Block var8 = var7.getBlock();
-            if (!var7.isAir()) {
-               BlockPos var9 = var6.immutable();
-               this.level.getProfiler().push("explosion_blocks");
-               if (var8.dropFromExplosion(this)) {
-                  Level var11 = this.level;
-                  if (var11 instanceof ServerLevel var10) {
-                     BlockEntity var17 = var7.hasBlockEntity() ? this.level.getBlockEntity(var6) : null;
-                     LootParams.Builder var12 = new LootParams.Builder((ServerLevel)var10)
-                        .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(var6))
-                        .withParameter(LootContextParams.TOOL, ItemStack.EMPTY)
-                        .withOptionalParameter(LootContextParams.BLOCK_ENTITY, var17)
-                        .withOptionalParameter(LootContextParams.THIS_ENTITY, this.source);
-                     if (this.blockInteraction == Explosion.BlockInteraction.DESTROY_WITH_DECAY) {
-                        var12.withParameter(LootContextParams.EXPLOSION_RADIUS, this.radius);
-                     }
-
-                     var7.spawnAfterBreak((ServerLevel)var10, var6, ItemStack.EMPTY, var4);
-                     var7.getDrops(var12).forEach(var2x -> addBlockDrops(var3, var2x, var9));
-                  }
-               }
-
-               this.level.setBlock(var6, Blocks.AIR.defaultBlockState(), 3);
-               var8.wasExploded(this.level, var6, this);
-               this.level.getProfiler().pop();
-            }
+         while(var4.hasNext()) {
+            BlockPos var5 = (BlockPos)var4.next();
+            this.level.getBlockState(var5).onExplosionHit(this.level, var5, this, (var1x, var2x) -> addOrAppendStack(var6, var1x, var2x));
          }
 
-         var5 = var3.iterator();
-
-         while(var5.hasNext()) {
-            Pair var16 = (Pair)var5.next();
-            Block.popResource(this.level, (BlockPos)var16.getSecond(), (ItemStack)var16.getFirst());
+         for(Pair var10 : var6) {
+            Block.popResource(this.level, (BlockPos)var10.getSecond(), (ItemStack)var10.getFirst());
          }
+
+         this.level.getProfiler().pop();
       }
 
       if (this.fire) {
-         ObjectListIterator var13 = this.toBlow.iterator();
+         ObjectListIterator var7 = this.toBlow.iterator();
 
-         while(var13.hasNext()) {
-            BlockPos var14 = (BlockPos)var13.next();
+         while(var7.hasNext()) {
+            BlockPos var9 = (BlockPos)var7.next();
             if (this.random.nextInt(3) == 0
-               && this.level.getBlockState(var14).isAir()
-               && this.level.getBlockState(var14.below()).isSolidRender(this.level, var14.below())) {
-               this.level.setBlockAndUpdate(var14, BaseFireBlock.getState(this.level, var14));
+               && this.level.getBlockState(var9).isAir()
+               && this.level.getBlockState(var9.below()).isSolidRender(this.level, var9.below())) {
+               this.level.setBlockAndUpdate(var9, BaseFireBlock.getState(this.level, var9));
             }
          }
       }
    }
 
-   public boolean interactsWithBlocks() {
-      return this.blockInteraction != Explosion.BlockInteraction.KEEP;
-   }
-
-   private static void addBlockDrops(ObjectArrayList<Pair<ItemStack, BlockPos>> var0, ItemStack var1, BlockPos var2) {
-      int var3 = var0.size();
-
-      for(int var4 = 0; var4 < var3; ++var4) {
-         Pair var5 = (Pair)var0.get(var4);
-         ItemStack var6 = (ItemStack)var5.getFirst();
-         if (ItemEntity.areMergable(var6, var1)) {
-            ItemStack var7 = ItemEntity.merge(var6, var1, 16);
-            var0.set(var4, Pair.of(var7, (BlockPos)var5.getSecond()));
+   private static void addOrAppendStack(List<Pair<ItemStack, BlockPos>> var0, ItemStack var1, BlockPos var2) {
+      for(int var3 = 0; var3 < var0.size(); ++var3) {
+         Pair var4 = (Pair)var0.get(var3);
+         ItemStack var5 = (ItemStack)var4.getFirst();
+         if (ItemEntity.areMergable(var5, var1)) {
+            var0.set(var3, Pair.of(ItemEntity.merge(var5, var1, 16), (BlockPos)var4.getSecond()));
             if (var1.isEmpty()) {
                return;
             }
@@ -345,8 +362,8 @@ public class Explosion {
       var0.add(Pair.of(var1, var2));
    }
 
-   public DamageSource getDamageSource() {
-      return this.damageSource;
+   public boolean interactsWithBlocks() {
+      return this.blockInteraction != Explosion.BlockInteraction.KEEP;
    }
 
    public Map<Player, Vec3> getHitPlayers() {
@@ -356,30 +373,28 @@ public class Explosion {
    // $QF: Could not properly define all variable types!
    // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Nullable
-   public LivingEntity getIndirectSourceEntity() {
-      if (this.source == null) {
+   private static LivingEntity getIndirectSourceEntityInternal(@Nullable Entity var0) {
+      if (var0 == null) {
          return null;
+      } else if (var0 instanceof PrimedTnt var4) {
+         return var4.getOwner();
+      } else if (var0 instanceof LivingEntity) {
+         return (LivingEntity)var0;
       } else {
-         Entity var2 = this.source;
-         if (var2 instanceof PrimedTnt var4) {
-            return var4.getOwner();
-         } else {
-            var2 = this.source;
+         if (var0 instanceof Projectile var1) {
+            Entity var2 = var1.getOwner();
             if (var2 instanceof LivingEntity) {
                return (LivingEntity)var2;
-            } else {
-               var2 = this.source;
-               if (var2 instanceof Projectile var1) {
-                  var2 = var1.getOwner();
-                  if (var2 instanceof LivingEntity) {
-                     return (LivingEntity)var2;
-                  }
-               }
-
-               return null;
             }
          }
+
+         return null;
       }
+   }
+
+   @Nullable
+   public LivingEntity getIndirectSourceEntity() {
+      return getIndirectSourceEntityInternal(this.source);
    }
 
    @Nullable
@@ -395,10 +410,27 @@ public class Explosion {
       return this.toBlow;
    }
 
+   public Explosion.BlockInteraction getBlockInteraction() {
+      return this.blockInteraction;
+   }
+
+   public ParticleOptions getSmallExplosionParticles() {
+      return this.smallExplosionParticles;
+   }
+
+   public ParticleOptions getLargeExplosionParticles() {
+      return this.largeExplosionParticles;
+   }
+
+   public SoundEvent getExplosionSound() {
+      return this.explosionSound;
+   }
+
    public static enum BlockInteraction {
       KEEP,
       DESTROY,
-      DESTROY_WITH_DECAY;
+      DESTROY_WITH_DECAY,
+      TRIGGER_BLOCK;
 
       private BlockInteraction() {
       }

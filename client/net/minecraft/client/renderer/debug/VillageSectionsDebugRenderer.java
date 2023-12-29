@@ -39,10 +39,6 @@ public class VillageSectionsDebugRenderer implements DebugRenderer.SimpleDebugRe
    }
 
    private static void highlightVillageSection(PoseStack var0, MultiBufferSource var1, SectionPos var2) {
-      boolean var3 = true;
-      BlockPos var4 = var2.center();
-      BlockPos var5 = var4.offset(-1, -1, -1);
-      BlockPos var6 = var4.offset(1, 1, 1);
-      DebugRenderer.renderFilledBox(var0, var1, var5, var6, 0.2F, 1.0F, 0.2F, 0.15F);
+      DebugRenderer.renderFilledUnitCube(var0, var1, var2.center(), 0.2F, 1.0F, 0.2F, 0.15F);
    }
 }

@@ -17,39 +17,45 @@ public class ChorusFruitItem extends Item {
       super(var1);
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public ItemStack finishUsingItem(ItemStack var1, Level var2, LivingEntity var3) {
       ItemStack var4 = super.finishUsingItem(var1, var2, var3);
       if (!var2.isClientSide) {
-         double var5 = var3.getX();
-         double var7 = var3.getY();
-         double var9 = var3.getZ();
-
-         for(int var11 = 0; var11 < 16; ++var11) {
-            double var12 = var3.getX() + (var3.getRandom().nextDouble() - 0.5) * 16.0;
-            double var14 = Mth.clamp(
+         for(int var5 = 0; var5 < 16; ++var5) {
+            double var6 = var3.getX() + (var3.getRandom().nextDouble() - 0.5) * 16.0;
+            double var8 = Mth.clamp(
                var3.getY() + (double)(var3.getRandom().nextInt(16) - 8),
                (double)var2.getMinBuildHeight(),
                (double)(var2.getMinBuildHeight() + ((ServerLevel)var2).getLogicalHeight() - 1)
             );
-            double var16 = var3.getZ() + (var3.getRandom().nextDouble() - 0.5) * 16.0;
+            double var10 = var3.getZ() + (var3.getRandom().nextDouble() - 0.5) * 16.0;
             if (var3.isPassenger()) {
                var3.stopRiding();
             }
 
-            Vec3 var18 = var3.position();
-            if (var3.randomTeleport(var12, var14, var16, true)) {
-               var2.gameEvent(GameEvent.TELEPORT, var18, GameEvent.Context.of(var3));
-               SoundEvent var19 = var3 instanceof Fox ? SoundEvents.FOX_TELEPORT : SoundEvents.CHORUS_FRUIT_TELEPORT;
-               var2.playSound(null, var5, var7, var9, var19, SoundSource.PLAYERS, 1.0F, 1.0F);
-               var3.playSound(var19, 1.0F, 1.0F);
+            Vec3 var12 = var3.position();
+            if (var3.randomTeleport(var6, var8, var10, true)) {
+               var2.gameEvent(GameEvent.TELEPORT, var12, GameEvent.Context.of(var3));
+               SoundSource var13;
+               SoundEvent var14;
+               if (var3 instanceof Fox) {
+                  var14 = SoundEvents.FOX_TELEPORT;
+                  var13 = SoundSource.NEUTRAL;
+               } else {
+                  var14 = SoundEvents.CHORUS_FRUIT_TELEPORT;
+                  var13 = SoundSource.PLAYERS;
+               }
+
+               var2.playSound(null, var3.getX(), var3.getY(), var3.getZ(), var14, var13);
                var3.resetFallDistance();
                break;
             }
          }
 
-         if (var3 instanceof Player) {
-            ((Player)var3).getCooldowns().addCooldown(this, 20);
+         if (var3 instanceof Player var15) {
+            var15.getCooldowns().addCooldown(this, 20);
          }
       }
 

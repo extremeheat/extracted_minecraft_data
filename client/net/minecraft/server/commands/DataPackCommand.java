@@ -26,16 +26,16 @@ import net.minecraft.world.flag.FeatureFlags;
 
 public class DataPackCommand {
    private static final DynamicCommandExceptionType ERROR_UNKNOWN_PACK = new DynamicCommandExceptionType(
-      var0 -> Component.translatable("commands.datapack.unknown", var0)
+      var0 -> Component.translatableEscape("commands.datapack.unknown", var0)
    );
    private static final DynamicCommandExceptionType ERROR_PACK_ALREADY_ENABLED = new DynamicCommandExceptionType(
-      var0 -> Component.translatable("commands.datapack.enable.failed", var0)
+      var0 -> Component.translatableEscape("commands.datapack.enable.failed", var0)
    );
    private static final DynamicCommandExceptionType ERROR_PACK_ALREADY_DISABLED = new DynamicCommandExceptionType(
-      var0 -> Component.translatable("commands.datapack.disable.failed", var0)
+      var0 -> Component.translatableEscape("commands.datapack.disable.failed", var0)
    );
    private static final Dynamic2CommandExceptionType ERROR_PACK_FEATURES_NOT_ENABLED = new Dynamic2CommandExceptionType(
-      (var0, var1) -> Component.translatable("commands.datapack.enable.failed.no_flags", var0, var1)
+      (var0, var1) -> Component.translatableEscape("commands.datapack.enable.failed.no_flags", var0, var1)
    );
    private static final SuggestionProvider<CommandSourceStack> SELECTED_PACKS = (var0, var1) -> SharedSuggestionProvider.suggest(
          ((CommandSourceStack)var0.getSource()).getServer().getPackRepository().getSelectedIds().stream().map(StringArgumentType::escapeIfRequired), var1

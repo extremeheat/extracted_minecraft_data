@@ -69,6 +69,6 @@ public class EntityDataAccessor implements DataAccessor {
 
    @Override
    public Component getPrintSuccess(NbtPathArgument.NbtPath var1, double var2, int var4) {
-      return Component.translatable("commands.data.entity.get", var1, this.entity.getDisplayName(), String.format(Locale.ROOT, "%.2f", var2), var4);
+      return Component.translatable("commands.data.entity.get", var1.asString(), this.entity.getDisplayName(), String.format(Locale.ROOT, "%.2f", var2), var4);
    }
 }

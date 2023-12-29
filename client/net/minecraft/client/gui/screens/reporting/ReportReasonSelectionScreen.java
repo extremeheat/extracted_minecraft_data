@@ -3,7 +3,6 @@ package net.minecraft.client.gui.screens.reporting;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.Optionull;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -40,18 +39,15 @@ public class ReportReasonSelectionScreen extends Screen {
 
    @Override
    protected void init() {
-      this.reasonSelectionList = new ReportReasonSelectionScreen.ReasonSelectionList(this.minecraft);
-      this.addWidget(this.reasonSelectionList);
+      this.reasonSelectionList = this.addRenderableWidget(new ReportReasonSelectionScreen.ReasonSelectionList(this.minecraft));
       ReportReasonSelectionScreen.ReasonSelectionList.Entry var1 = Optionull.map(this.currentlySelectedReason, this.reasonSelectionList::findEntry);
       this.reasonSelectionList.setSelected(var1);
       int var2 = this.width / 2 - 150 - 5;
-      this.addRenderableWidget(Button.builder(READ_INFO_LABEL, var1x -> this.minecraft.setScreen(new ConfirmLinkScreen(var1xx -> {
-            if (var1xx) {
-               Util.getPlatform().openUri("https://aka.ms/aboutjavareporting");
-            }
-
-            this.minecraft.setScreen(this);
-         }, "https://aka.ms/aboutjavareporting", true))).bounds(var2, this.buttonTop(), 150, 20).build());
+      this.addRenderableWidget(
+         Button.builder(READ_INFO_LABEL, ConfirmLinkScreen.confirmLink(this, "https://aka.ms/aboutjavareporting"))
+            .bounds(var2, this.buttonTop(), 150, 20)
+            .build()
+      );
       int var3 = this.width / 2 + 5;
       this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, var1x -> {
          ReportReasonSelectionScreen.ReasonSelectionList.Entry var2x = this.reasonSelectionList.getSelected();
@@ -67,7 +63,6 @@ public class ReportReasonSelectionScreen extends Screen {
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      this.reasonSelectionList.render(var1, var2, var3, var4);
       var1.drawCenteredString(this.font, this.title, this.width / 2, 16, 16777215);
       var1.fill(this.contentLeft(), this.descriptionTop(), this.contentRight(), this.descriptionBottom(), 2130706432);
       var1.drawString(this.font, REASON_DESCRIPTION, this.contentLeft() + 4, this.descriptionTop() + 4, -8421505);
@@ -116,7 +111,7 @@ public class ReportReasonSelectionScreen extends Screen {
 
    public class ReasonSelectionList extends ObjectSelectionList<ReportReasonSelectionScreen.ReasonSelectionList.Entry> {
       public ReasonSelectionList(Minecraft var2) {
-         super(var2, ReportReasonSelectionScreen.this.width, ReportReasonSelectionScreen.this.height, 40, ReportReasonSelectionScreen.this.height - 95, 18);
+         super(var2, ReportReasonSelectionScreen.this.width, ReportReasonSelectionScreen.this.height - 95 - 40, 40, 18);
 
          for(ReportReason var6 : ReportReason.values()) {
             this.addEntry(new ReportReasonSelectionScreen.ReasonSelectionList.Entry(var6));

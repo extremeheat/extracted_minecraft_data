@@ -2,6 +2,9 @@ package net.minecraft.network.chat.contents;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
@@ -11,14 +14,23 @@ import net.minecraft.commands.arguments.selector.EntitySelectorParser;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentContents;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.numbers.StyledFormat;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerScoreboard;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.scores.Objective;
-import net.minecraft.world.scores.Score;
+import net.minecraft.world.scores.ReadOnlyScoreInfo;
+import net.minecraft.world.scores.ScoreHolder;
 
 public class ScoreContents implements ComponentContents {
-   private static final String SCORER_PLACEHOLDER = "*";
+   public static final MapCodec<ScoreContents> INNER_CODEC = RecordCodecBuilder.mapCodec(
+      var0 -> var0.group(
+               Codec.STRING.fieldOf("name").forGetter(ScoreContents::getName), Codec.STRING.fieldOf("objective").forGetter(ScoreContents::getObjective)
+            )
+            .apply(var0, ScoreContents::new)
+   );
+   public static final MapCodec<ScoreContents> CODEC = INNER_CODEC.fieldOf("score");
+   public static final ComponentContents.Type<ScoreContents> TYPE = new ComponentContents.Type<>(CODEC, "score");
    private final String name;
    @Nullable
    private final EntitySelector selector;
@@ -40,6 +52,11 @@ public class ScoreContents implements ComponentContents {
       this.objective = var2;
    }
 
+   @Override
+   public ComponentContents.Type<?> type() {
+      return TYPE;
+   }
+
    public String getName() {
       return this.name;
    }
@@ -53,7 +70,7 @@ public class ScoreContents implements ComponentContents {
       return this.objective;
    }
 
-   private String findTargetName(CommandSourceStack var1) throws CommandSyntaxException {
+   private ScoreHolder findTargetName(CommandSourceStack var1) throws CommandSyntaxException {
       if (this.selector != null) {
          List var2 = this.selector.findEntities(var1);
          if (!var2.isEmpty()) {
@@ -61,25 +78,27 @@ public class ScoreContents implements ComponentContents {
                throw EntityArgument.ERROR_NOT_SINGLE_ENTITY.create();
             }
 
-            return ((Entity)var2.get(0)).getScoreboardName();
+            return (ScoreHolder)var2.get(0);
          }
       }
 
-      return this.name;
+      return ScoreHolder.forNameOnly(this.name);
    }
 
-   private String getScore(String var1, CommandSourceStack var2) {
+   private MutableComponent getScore(ScoreHolder var1, CommandSourceStack var2) {
       MinecraftServer var3 = var2.getServer();
       if (var3 != null) {
          ServerScoreboard var4 = var3.getScoreboard();
          Objective var5 = var4.getObjective(this.objective);
-         if (var5 != null && var4.hasPlayerScore(var1, var5)) {
-            Score var6 = var4.getOrCreatePlayerScore(var1, var5);
-            return Integer.toString(var6.getScore());
+         if (var5 != null) {
+            ReadOnlyScoreInfo var6 = var4.getPlayerScoreInfo(var1, var5);
+            if (var6 != null) {
+               return var6.formatValue(var5.numberFormatOrDefault(StyledFormat.NO_STYLE));
+            }
          }
       }
 
-      return "";
+      return Component.empty();
    }
 
    @Override
@@ -87,9 +106,9 @@ public class ScoreContents implements ComponentContents {
       if (var1 == null) {
          return Component.empty();
       } else {
-         String var4 = this.findTargetName(var1);
-         String var5 = var2 != null && var4.equals("*") ? var2.getScoreboardName() : var4;
-         return Component.literal(this.getScore(var5, var1));
+         ScoreHolder var4 = this.findTargetName(var1);
+         Object var5 = var2 != null && var4.equals(ScoreHolder.WILDCARD) ? var2 : var4;
+         return this.getScore((ScoreHolder)var5, var1);
       }
    }
 

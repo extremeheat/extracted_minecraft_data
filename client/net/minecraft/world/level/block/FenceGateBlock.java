@@ -1,5 +1,8 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.function.BiConsumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundSource;
@@ -7,8 +10,10 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -25,6 +30,9 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class FenceGateBlock extends HorizontalDirectionalBlock {
+   public static final MapCodec<FenceGateBlock> CODEC = RecordCodecBuilder.mapCodec(
+      var0 -> var0.group(WoodType.CODEC.fieldOf("wood_type").forGetter(var0x -> var0x.type), propertiesCodec()).apply(var0, FenceGateBlock::new)
+   );
    public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
    public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
    public static final BooleanProperty IN_WALL = BlockStateProperties.IN_WALL;
@@ -42,9 +50,14 @@ public class FenceGateBlock extends HorizontalDirectionalBlock {
    protected static final VoxelShape X_OCCLUSION_SHAPE_LOW = Shapes.or(Block.box(7.0, 2.0, 0.0, 9.0, 13.0, 2.0), Block.box(7.0, 2.0, 14.0, 9.0, 13.0, 16.0));
    private final WoodType type;
 
-   public FenceGateBlock(BlockBehaviour.Properties var1, WoodType var2) {
-      super(var1.sound(var2.soundType()));
-      this.type = var2;
+   @Override
+   public MapCodec<FenceGateBlock> codec() {
+      return CODEC;
+   }
+
+   public FenceGateBlock(WoodType var1, BlockBehaviour.Properties var2) {
+      super(var2.sound(var1.soundType()));
+      this.type = var1;
       this.registerDefaultState(
          this.stateDefinition.any().setValue(OPEN, Boolean.valueOf(false)).setValue(POWERED, Boolean.valueOf(false)).setValue(IN_WALL, Boolean.valueOf(false))
       );
@@ -152,6 +165,20 @@ public class FenceGateBlock extends HorizontalDirectionalBlock {
       );
       var2.gameEvent(var4, var9 ? GameEvent.BLOCK_OPEN : GameEvent.BLOCK_CLOSE, var3);
       return InteractionResult.sidedSuccess(var2.isClientSide);
+   }
+
+   @Override
+   public void onExplosionHit(BlockState var1, Level var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
+      if (var4.getBlockInteraction() == Explosion.BlockInteraction.TRIGGER_BLOCK && !var2.isClientSide() && !var1.getValue(POWERED)) {
+         boolean var6 = var1.getValue(OPEN);
+         var2.setBlockAndUpdate(var3, var1.setValue(OPEN, Boolean.valueOf(!var6)));
+         var2.playSound(
+            null, var3, var6 ? this.type.fenceGateClose() : this.type.fenceGateOpen(), SoundSource.BLOCKS, 1.0F, var2.getRandom().nextFloat() * 0.1F + 0.9F
+         );
+         var2.gameEvent(var6 ? GameEvent.BLOCK_CLOSE : GameEvent.BLOCK_OPEN, var3, GameEvent.Context.of(var1));
+      }
+
+      super.onExplosionHit(var1, var2, var3, var4, var5);
    }
 
    @Override

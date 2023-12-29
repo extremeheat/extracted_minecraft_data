@@ -59,9 +59,7 @@ public class OldUsersConverter {
          var0.getProfileRepository().findProfilesByNames(var3, var2);
       } else {
          for(String var7 : var3) {
-            UUID var8 = UUIDUtil.createOfflinePlayerUUID(var7);
-            GameProfile var9 = new GameProfile(var8, var7);
-            var2.onProfileLookupSucceeded(var9);
+            var2.onProfileLookupSucceeded(UUIDUtil.createOfflineProfile(var7));
          }
       }
    }

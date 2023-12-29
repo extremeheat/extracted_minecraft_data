@@ -18,9 +18,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.random.WeightedEntry;
 import net.minecraft.util.random.WeightedRandom;
 import net.minecraft.util.valueproviders.UniformInt;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
@@ -184,81 +182,13 @@ public class LongJumpToRandomPos<E extends Mob> extends Behavior<E> {
       Collections.shuffle(var3);
 
       for(int var5 : var3) {
-         Vec3 var6 = this.calculateJumpVectorForAngle(var1, var2, var5);
-         if (var6 != null) {
-            return var6;
+         Optional var6 = LongJumpUtil.calculateJumpVectorForAngle(var1, var2, this.maxJumpVelocity, var5, true);
+         if (var6.isPresent()) {
+            return (Vec3)var6.get();
          }
       }
 
       return null;
-   }
-
-   @Nullable
-   private Vec3 calculateJumpVectorForAngle(Mob var1, Vec3 var2, int var3) {
-      Vec3 var4 = var1.position();
-      Vec3 var5 = new Vec3(var2.x - var4.x, 0.0, var2.z - var4.z).normalize().scale(0.5);
-      var2 = var2.subtract(var5);
-      Vec3 var6 = var2.subtract(var4);
-      float var7 = (float)var3 * 3.1415927F / 180.0F;
-      double var8 = Math.atan2(var6.z, var6.x);
-      double var10 = var6.subtract(0.0, var6.y, 0.0).lengthSqr();
-      double var12 = Math.sqrt(var10);
-      double var14 = var6.y;
-      double var16 = Math.sin((double)(2.0F * var7));
-      double var18 = 0.08;
-      double var20 = Math.pow(Math.cos((double)var7), 2.0);
-      double var22 = Math.sin((double)var7);
-      double var24 = Math.cos((double)var7);
-      double var26 = Math.sin(var8);
-      double var28 = Math.cos(var8);
-      double var30 = var10 * 0.08 / (var12 * var16 - 2.0 * var14 * var20);
-      if (var30 < 0.0) {
-         return null;
-      } else {
-         double var32 = Math.sqrt(var30);
-         if (var32 > (double)this.maxJumpVelocity) {
-            return null;
-         } else {
-            double var34 = var32 * var24;
-            double var36 = var32 * var22;
-            int var38 = Mth.ceil(var12 / var34) * 2;
-            double var39 = 0.0;
-            Vec3 var41 = null;
-            EntityDimensions var42 = var1.getDimensions(Pose.LONG_JUMPING);
-
-            for(int var43 = 0; var43 < var38 - 1; ++var43) {
-               var39 += var12 / (double)var38;
-               double var44 = var22 / var24 * var39 - Math.pow(var39, 2.0) * 0.08 / (2.0 * var30 * Math.pow(var24, 2.0));
-               double var46 = var39 * var28;
-               double var48 = var39 * var26;
-               Vec3 var50 = new Vec3(var4.x + var46, var4.y + var44, var4.z + var48);
-               if (var41 != null && !this.isClearTransition(var1, var42, var41, var50)) {
-                  return null;
-               }
-
-               var41 = var50;
-            }
-
-            return new Vec3(var34 * var28, var36, var34 * var26).scale(0.949999988079071);
-         }
-      }
-   }
-
-   private boolean isClearTransition(Mob var1, EntityDimensions var2, Vec3 var3, Vec3 var4) {
-      Vec3 var5 = var4.subtract(var3);
-      double var6 = (double)Math.min(var2.width, var2.height);
-      int var8 = Mth.ceil(var5.length() / var6);
-      Vec3 var9 = var5.normalize();
-      Vec3 var10 = var3;
-
-      for(int var11 = 0; var11 < var8; ++var11) {
-         var10 = var11 == var8 - 1 ? var4 : var10.add(var9.scale(var6 * 0.8999999761581421));
-         if (!var1.level().noCollision(var1, var2.makeBoundingBox(var10))) {
-            return false;
-         }
-      }
-
-      return true;
    }
 
    public static class PossibleJump extends WeightedEntry.IntrusiveBase {

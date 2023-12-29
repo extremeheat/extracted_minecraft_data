@@ -1,29 +1,34 @@
 package net.minecraft.advancements;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonSyntaxException;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import javax.annotation.Nullable;
-import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.TagParser;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Optional;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.GsonHelper;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 
 public class DisplayInfo {
+   public static final Codec<DisplayInfo> CODEC = RecordCodecBuilder.create(
+      var0 -> var0.group(
+               ItemStack.ADVANCEMENT_ICON_CODEC.fieldOf("icon").forGetter(DisplayInfo::getIcon),
+               ComponentSerialization.CODEC.fieldOf("title").forGetter(DisplayInfo::getTitle),
+               ComponentSerialization.CODEC.fieldOf("description").forGetter(DisplayInfo::getDescription),
+               ExtraCodecs.strictOptionalField(ResourceLocation.CODEC, "background").forGetter(DisplayInfo::getBackground),
+               ExtraCodecs.strictOptionalField(AdvancementType.CODEC, "frame", AdvancementType.TASK).forGetter(DisplayInfo::getType),
+               ExtraCodecs.strictOptionalField(Codec.BOOL, "show_toast", true).forGetter(DisplayInfo::shouldShowToast),
+               ExtraCodecs.strictOptionalField(Codec.BOOL, "announce_to_chat", true).forGetter(DisplayInfo::shouldAnnounceChat),
+               ExtraCodecs.strictOptionalField(Codec.BOOL, "hidden", false).forGetter(DisplayInfo::isHidden)
+            )
+            .apply(var0, DisplayInfo::new)
+   );
    private final Component title;
    private final Component description;
    private final ItemStack icon;
-   @Nullable
-   private final ResourceLocation background;
-   private final FrameType frame;
+   private final Optional<ResourceLocation> background;
+   private final AdvancementType type;
    private final boolean showToast;
    private final boolean announceChat;
    private final boolean hidden;
@@ -31,14 +36,14 @@ public class DisplayInfo {
    private float y;
 
    public DisplayInfo(
-      ItemStack var1, Component var2, Component var3, @Nullable ResourceLocation var4, FrameType var5, boolean var6, boolean var7, boolean var8
+      ItemStack var1, Component var2, Component var3, Optional<ResourceLocation> var4, AdvancementType var5, boolean var6, boolean var7, boolean var8
    ) {
       super();
       this.title = var2;
       this.description = var3;
       this.icon = var1;
       this.background = var4;
-      this.frame = var5;
+      this.type = var5;
       this.showToast = var6;
       this.announceChat = var7;
       this.hidden = var8;
@@ -61,13 +66,12 @@ public class DisplayInfo {
       return this.icon;
    }
 
-   @Nullable
-   public ResourceLocation getBackground() {
+   public Optional<ResourceLocation> getBackground() {
       return this.background;
    }
 
-   public FrameType getFrame() {
-      return this.frame;
+   public AdvancementType getType() {
+      return this.type;
    }
 
    public float getX() {
@@ -90,52 +94,13 @@ public class DisplayInfo {
       return this.hidden;
    }
 
-   public static DisplayInfo fromJson(JsonObject var0) {
-      MutableComponent var1 = Component.Serializer.fromJson(var0.get("title"));
-      MutableComponent var2 = Component.Serializer.fromJson(var0.get("description"));
-      if (var1 != null && var2 != null) {
-         ItemStack var3 = getIcon(GsonHelper.getAsJsonObject(var0, "icon"));
-         ResourceLocation var4 = var0.has("background") ? new ResourceLocation(GsonHelper.getAsString(var0, "background")) : null;
-         FrameType var5 = var0.has("frame") ? FrameType.byName(GsonHelper.getAsString(var0, "frame")) : FrameType.TASK;
-         boolean var6 = GsonHelper.getAsBoolean(var0, "show_toast", true);
-         boolean var7 = GsonHelper.getAsBoolean(var0, "announce_to_chat", true);
-         boolean var8 = GsonHelper.getAsBoolean(var0, "hidden", false);
-         return new DisplayInfo(var3, var1, var2, var4, var5, var6, var7, var8);
-      } else {
-         throw new JsonSyntaxException("Both title and description must be set");
-      }
-   }
-
-   private static ItemStack getIcon(JsonObject var0) {
-      if (!var0.has("item")) {
-         throw new JsonSyntaxException("Unsupported icon type, currently only items are supported (add 'item' key)");
-      } else {
-         Holder var1 = GsonHelper.getAsItem(var0, "item");
-         if (var0.has("data")) {
-            throw new JsonParseException("Disallowed data tag found");
-         } else {
-            ItemStack var2 = new ItemStack(var1);
-            if (var0.has("nbt")) {
-               try {
-                  CompoundTag var3 = TagParser.parseTag(GsonHelper.convertToString(var0.get("nbt"), "nbt"));
-                  var2.setTag(var3);
-               } catch (CommandSyntaxException var4) {
-                  throw new JsonSyntaxException("Invalid nbt tag: " + var4.getMessage());
-               }
-            }
-
-            return var2;
-         }
-      }
-   }
-
    public void serializeToNetwork(FriendlyByteBuf var1) {
       var1.writeComponent(this.title);
       var1.writeComponent(this.description);
       var1.writeItem(this.icon);
-      var1.writeEnum(this.frame);
+      var1.writeEnum(this.type);
       int var2 = 0;
-      if (this.background != null) {
+      if (this.background.isPresent()) {
          var2 |= 1;
       }
 
@@ -148,51 +113,22 @@ public class DisplayInfo {
       }
 
       var1.writeInt(var2);
-      if (this.background != null) {
-         var1.writeResourceLocation(this.background);
-      }
-
+      this.background.ifPresent(var1::writeResourceLocation);
       var1.writeFloat(this.x);
       var1.writeFloat(this.y);
    }
 
    public static DisplayInfo fromNetwork(FriendlyByteBuf var0) {
-      Component var1 = var0.readComponent();
-      Component var2 = var0.readComponent();
+      Component var1 = var0.readComponentTrusted();
+      Component var2 = var0.readComponentTrusted();
       ItemStack var3 = var0.readItem();
-      FrameType var4 = var0.readEnum(FrameType.class);
+      AdvancementType var4 = var0.readEnum(AdvancementType.class);
       int var5 = var0.readInt();
-      ResourceLocation var6 = (var5 & 1) != 0 ? var0.readResourceLocation() : null;
+      Optional var6 = (var5 & 1) != 0 ? Optional.of(var0.readResourceLocation()) : Optional.empty();
       boolean var7 = (var5 & 2) != 0;
       boolean var8 = (var5 & 4) != 0;
       DisplayInfo var9 = new DisplayInfo(var3, var1, var2, var6, var4, var7, false, var8);
       var9.setLocation(var0.readFloat(), var0.readFloat());
       return var9;
-   }
-
-   public JsonElement serializeToJson() {
-      JsonObject var1 = new JsonObject();
-      var1.add("icon", this.serializeIcon());
-      var1.add("title", Component.Serializer.toJsonTree(this.title));
-      var1.add("description", Component.Serializer.toJsonTree(this.description));
-      var1.addProperty("frame", this.frame.getName());
-      var1.addProperty("show_toast", this.showToast);
-      var1.addProperty("announce_to_chat", this.announceChat);
-      var1.addProperty("hidden", this.hidden);
-      if (this.background != null) {
-         var1.addProperty("background", this.background.toString());
-      }
-
-      return var1;
-   }
-
-   private JsonObject serializeIcon() {
-      JsonObject var1 = new JsonObject();
-      var1.addProperty("item", BuiltInRegistries.ITEM.getKey(this.icon.getItem()).toString());
-      if (this.icon.hasTag()) {
-         var1.addProperty("nbt", this.icon.getTag().toString());
-      }
-
-      return var1;
    }
 }

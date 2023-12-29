@@ -21,10 +21,16 @@ import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 
 public class CompoundTag implements Tag {
-   public static final Codec<CompoundTag> CODEC = Codec.PASSTHROUGH.comapFlatMap(var0 -> {
-      Tag var1 = (Tag)var0.convert(NbtOps.INSTANCE).getValue();
-      return var1 instanceof CompoundTag ? DataResult.success((CompoundTag)var1) : DataResult.error(() -> "Not a compound tag: " + var1);
-   }, var0 -> new Dynamic(NbtOps.INSTANCE, var0));
+   public static final Codec<CompoundTag> CODEC = Codec.PASSTHROUGH
+      .comapFlatMap(
+         var0 -> {
+            Tag var1 = (Tag)var0.convert(NbtOps.INSTANCE).getValue();
+            return var1 instanceof CompoundTag var2
+               ? DataResult.success(var2 == var0.getValue() ? var2.copy() : var2)
+               : DataResult.error(() -> "Not a compound tag: " + var1);
+         },
+         var0 -> new Dynamic(NbtOps.INSTANCE, var0.copy())
+      );
    private static final int SELF_SIZE_IN_BYTES = 48;
    private static final int MAP_ENTRY_SIZE_IN_BYTES = 32;
    public static final TagType<CompoundTag> TYPE = new TagType.VariableSize<CompoundTag>() {
@@ -507,7 +513,7 @@ public class CompoundTag implements Tag {
          CrashReportCategory var6 = var5.addCategory("NBT Tag");
          var6.setDetail("Tag name", var1);
          var6.setDetail("Tag type", var0.getName());
-         throw new ReportedException(var5);
+         throw new ReportedNbtException(var5);
       }
    }
 

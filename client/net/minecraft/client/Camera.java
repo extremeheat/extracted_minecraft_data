@@ -34,6 +34,7 @@ public class Camera {
    private boolean detached;
    private float eyeHeight;
    private float eyeHeightOld;
+   private float partialTickTime;
    public static final float FOG_DISTANCE_SCALE = 0.083333336F;
 
    public Camera() {
@@ -45,6 +46,7 @@ public class Camera {
       this.level = var1;
       this.entity = var2;
       this.detached = var3;
+      this.partialTickTime = var5;
       this.setRotation(var2.getViewYRot(var5), var2.getViewXRot(var5));
       this.setPosition(
          Mth.lerp((double)var5, var2.xo, var2.getX()),
@@ -212,6 +214,10 @@ public class Camera {
       this.level = null;
       this.entity = null;
       this.initialized = false;
+   }
+
+   public float getPartialTickTime() {
+      return this.partialTickTime;
    }
 
    public static class NearPlane {

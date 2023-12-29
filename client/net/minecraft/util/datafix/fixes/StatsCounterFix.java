@@ -7,10 +7,8 @@ import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.TypeRewriteRule;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
-import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import java.util.HashMap;
 import java.util.Map;
@@ -18,6 +16,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.Map.Entry;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.util.datafix.schemas.V1451_6;
 import org.apache.commons.lang3.StringUtils;
 
@@ -237,34 +236,26 @@ public class StatsCounterFix extends DataFix {
    private TypeRewriteRule makeStatFixer() {
       Type var1 = this.getInputSchema().getType(References.STATS);
       Type var2 = this.getOutputSchema().getType(References.STATS);
-      return this.fixTypeEverywhereTyped(
-         "StatsCounterFix",
-         var1,
-         var2,
-         var1x -> {
-            Dynamic var2x = (Dynamic)var1x.get(DSL.remainderFinder());
-            HashMap var3 = Maps.newHashMap();
-            Optional var4 = var2x.getMapValues().result();
-            if (var4.isPresent()) {
-               for(Entry var6 : ((Map)var4.get()).entrySet()) {
-                  if (((Dynamic)var6.getValue()).asNumber().result().isPresent()) {
-                     String var7 = ((Dynamic)var6.getKey()).asString("");
-                     StatsCounterFix.StatType var8 = unpackLegacyKey(var7);
-                     if (var8 != null) {
-                        Dynamic var9 = var2x.createString(var8.type());
-                        Dynamic var10 = (Dynamic)var3.computeIfAbsent(var9, var1xx -> var2x.emptyMap());
-                        var3.put(var9, var10.set(var8.typeKey(), (Dynamic)var6.getValue()));
-                     }
+      return this.fixTypeEverywhereTyped("StatsCounterFix", var1, var2, var1x -> {
+         Dynamic var2x = (Dynamic)var1x.get(DSL.remainderFinder());
+         HashMap var3 = Maps.newHashMap();
+         Optional var4 = var2x.getMapValues().result();
+         if (var4.isPresent()) {
+            for(Entry var6 : ((Map)var4.get()).entrySet()) {
+               if (((Dynamic)var6.getValue()).asNumber().result().isPresent()) {
+                  String var7 = ((Dynamic)var6.getKey()).asString("");
+                  StatsCounterFix.StatType var8 = unpackLegacyKey(var7);
+                  if (var8 != null) {
+                     Dynamic var9 = var2x.createString(var8.type());
+                     Dynamic var10 = (Dynamic)var3.computeIfAbsent(var9, var1xx -> var2x.emptyMap());
+                     var3.put(var9, var10.set(var8.typeKey(), (Dynamic)var6.getValue()));
                   }
                }
             }
-   
-            return (Typed)((Pair)var2.readTyped(var2x.emptyMap().set("stats", var2x.createMap(var3)))
-                  .result()
-                  .orElseThrow(() -> new IllegalStateException("Could not parse new stats object.")))
-               .getFirst();
          }
-      );
+
+         return Util.readTypedOrThrow(var2, var2x.emptyMap().set("stats", var2x.createMap(var3)));
+      });
    }
 
    private TypeRewriteRule makeObjectiveFixer() {
@@ -280,7 +271,7 @@ public class StatsCounterFix extends DataFix {
                   return var1xx == null ? "dummy" : V1451_6.packNamespacedWithDot(var1xx.type) + ":" + V1451_6.packNamespacedWithDot(var1xx.typeKey);
                }
             }).map(var0x::createString), var0x));
-         return (Typed)((Pair)var2.readTyped(var3).result().orElseThrow(() -> new IllegalStateException("Could not parse new objective object."))).getFirst();
+         return Util.readTypedOrThrow(var2, var3);
       });
    }
 

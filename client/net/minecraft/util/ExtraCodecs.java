@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import com.mojang.authlib.properties.PropertyMap;
@@ -55,7 +56,6 @@ import java.util.stream.Stream;
 import net.minecraft.Util;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.UUIDUtil;
-import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.mutable.MutableObject;
@@ -65,18 +65,17 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class ExtraCodecs {
-   public static final Codec<JsonElement> JSON = Codec.PASSTHROUGH
-      .xmap(var0 -> (JsonElement)var0.convert(JsonOps.INSTANCE).getValue(), var0 -> new Dynamic(JsonOps.INSTANCE, var0));
-   public static final Codec<Component> COMPONENT = adaptJsonSerializer(Component.Serializer::fromJson, Component.Serializer::toJsonTree);
-   public static final Codec<Component> FLAT_COMPONENT = Codec.STRING.flatXmap(var0 -> {
+   public static final Codec<JsonElement> JSON = converter(JsonOps.INSTANCE);
+   public static final Codec<Object> JAVA = converter(JavaOps.INSTANCE);
+   public static final Codec<JsonElement> FLAT_JSON = Codec.STRING.flatXmap(var0 -> {
       try {
-         return DataResult.success(Component.Serializer.fromJson(var0));
+         return DataResult.success(JsonParser.parseString(var0));
       } catch (JsonParseException var2) {
          return DataResult.error(var2::getMessage);
       }
    }, var0 -> {
       try {
-         return DataResult.success(Component.Serializer.toJson(var0));
+         return DataResult.success(GsonHelper.toStableString(var0));
       } catch (IllegalArgumentException var2) {
          return DataResult.error(var2::getMessage);
       }
@@ -202,21 +201,8 @@ public class ExtraCodecs {
       super();
    }
 
-   @Deprecated
-   public static <T> Codec<T> adaptJsonSerializer(Function<JsonElement, T> var0, Function<T, JsonElement> var1) {
-      return JSON.flatXmap(var1x -> {
-         try {
-            return DataResult.success(var0.apply((T)var1x));
-         } catch (JsonParseException var3) {
-            return DataResult.error(var3::getMessage);
-         }
-      }, var1x -> {
-         try {
-            return DataResult.success((JsonElement)var1.apply(var1x));
-         } catch (IllegalArgumentException var3) {
-            return DataResult.error(var3::getMessage);
-         }
-      });
+   public static <T> Codec<T> converter(DynamicOps<T> var0) {
+      return Codec.PASSTHROUGH.xmap(var1 -> var1.convert(var0).getValue(), var1 -> new Dynamic(var0, var1));
    }
 
    public static <F, S> Codec<Either<F, S>> xor(Codec<F> var0, Codec<S> var1) {
@@ -305,6 +291,26 @@ public class ExtraCodecs {
       };
    }
 
+   public static <E> MapCodec<E> orCompressed(final MapCodec<E> var0, final MapCodec<E> var1) {
+      return new MapCodec<E>() {
+         public <T> RecordBuilder<T> encode(E var1x, DynamicOps<T> var2, RecordBuilder<T> var3) {
+            return var2.compressMaps() ? var1.encode(var1x, var2, var3) : var0.encode(var1x, var2, var3);
+         }
+
+         public <T> DataResult<E> decode(DynamicOps<T> var1x, MapLike<T> var2) {
+            return var1x.compressMaps() ? var1.decode(var1x, var2) : var0.decode(var1x, var2);
+         }
+
+         public <T> Stream<T> keys(DynamicOps<T> var1x) {
+            return var1.keys(var1x);
+         }
+
+         public String toString() {
+            return var0 + " orCompressed " + var1;
+         }
+      };
+   }
+
    public static <E> Codec<E> overrideLifecycle(Codec<E> var0, final Function<E, Lifecycle> var1, final Function<E, Lifecycle> var2) {
       return var0.mapResult(new ResultFunction<E>() {
          public <T> DataResult<Pair<E, T>> apply(DynamicOps<T> var1x, T var2x, DataResult<Pair<E, T>> var3) {
@@ -367,12 +373,12 @@ public class ExtraCodecs {
       );
    }
 
-   public static <T> Codec<T> recursive(Function<Codec<T>, Codec<T>> var0) {
-      return new ExtraCodecs.RecursiveCodec<>(var0);
+   public static <T> Codec<T> recursive(String var0, Function<Codec<T>, Codec<T>> var1) {
+      return new ExtraCodecs.RecursiveCodec<>(var0, var1);
    }
 
    public static <A> Codec<A> lazyInitializedCodec(Supplier<Codec<A>> var0) {
-      return new ExtraCodecs.RecursiveCodec<>(var1 -> (Codec<A>)var0.get());
+      return new ExtraCodecs.RecursiveCodec<>(var0.toString(), var1 -> (Codec<A>)var0.get());
    }
 
    public static <A> MapCodec<Optional<A>> strictOptionalField(Codec<A> var0, String var1) {
@@ -482,6 +488,44 @@ public class ExtraCodecs {
       return Codec.unboundedMap(var0, Codec.BOOL).xmap(Object2BooleanOpenHashMap::new, Object2ObjectOpenHashMap::new);
    }
 
+   @Deprecated
+   public static <K, V> MapCodec<V> dispatchOptionalValue(
+      final String var0,
+      final String var1,
+      final Codec<K> var2,
+      final Function<? super V, ? extends K> var3,
+      final Function<? super K, ? extends Codec<? extends V>> var4
+   ) {
+      return new MapCodec<V>() {
+         public <T> Stream<T> keys(DynamicOps<T> var1x) {
+            return Stream.of((T[])(var1x.createString(var0), var1x.createString(var1)));
+         }
+
+         public <T> DataResult<V> decode(DynamicOps<T> var1x, MapLike<T> var2x) {
+            Object var3x = var2x.get(var0);
+            return var3x == null ? DataResult.error(() -> "Missing \"" + var0 + "\" in: " + var2x) : var2.decode(var1x, var3x).flatMap(var4xx -> {
+               Object var5 = Objects.requireNonNullElseGet(var2x.get(var1), var1x::emptyMap);
+               return ((Codec)var4.apply(var4xx.getFirst())).decode(var1x, var5).map(Pair::getFirst);
+            });
+         }
+
+         public <T> RecordBuilder<T> encode(V var1x, DynamicOps<T> var2x, RecordBuilder<T> var3x) {
+            Object var4x = var3.apply(var1x);
+            var3x.add(var0, var2.encodeStart(var2x, var4x));
+            DataResult var5 = this.encode((Codec)var4.apply(var4x), (V)var1x, var2x);
+            if (var5.result().isEmpty() || !Objects.equals(var5.result().get(), var2x.emptyMap())) {
+               var3x.add(var1, var5);
+            }
+
+            return var3x;
+         }
+
+         private <T, V2 extends V> DataResult<T> encode(Codec<V2> var1x, V var2x, DynamicOps<T> var3x) {
+            return var1x.encodeStart(var3x, var2x);
+         }
+      };
+   }
+
    public static final class EitherCodec<F, S> implements Codec<Either<F, S>> {
       private final Codec<F> first;
       private final Codec<S> second;
@@ -530,11 +574,13 @@ public class ExtraCodecs {
    }
 
    static class RecursiveCodec<T> implements Codec<T> {
+      private final String name;
       private final Supplier<Codec<T>> wrapped;
 
-      RecursiveCodec(Function<Codec<T>, Codec<T>> var1) {
+      RecursiveCodec(String var1, Function<Codec<T>, Codec<T>> var2) {
          super();
-         this.wrapped = Suppliers.memoize(() -> (Codec)var1.apply(this));
+         this.name = var1;
+         this.wrapped = Suppliers.memoize(() -> (Codec)var2.apply(this));
       }
 
       public <S> DataResult<Pair<T, S>> decode(DynamicOps<S> var1, S var2) {
@@ -547,7 +593,7 @@ public class ExtraCodecs {
 
       @Override
       public String toString() {
-         return "RecursiveCodec[" + this.wrapped + "]";
+         return "RecursiveCodec[" + this.name + "]";
       }
    }
 

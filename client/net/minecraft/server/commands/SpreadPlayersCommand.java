@@ -32,18 +32,18 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec2;
-import net.minecraft.world.scores.Team;
+import net.minecraft.world.scores.PlayerTeam;
 
 public class SpreadPlayersCommand {
    private static final int MAX_ITERATION_COUNT = 10000;
    private static final Dynamic4CommandExceptionType ERROR_FAILED_TO_SPREAD_TEAMS = new Dynamic4CommandExceptionType(
-      (var0, var1, var2, var3) -> Component.translatable("commands.spreadplayers.failed.teams", var0, var1, var2, var3)
+      (var0, var1, var2, var3) -> Component.translatableEscape("commands.spreadplayers.failed.teams", var0, var1, var2, var3)
    );
    private static final Dynamic4CommandExceptionType ERROR_FAILED_TO_SPREAD_ENTITIES = new Dynamic4CommandExceptionType(
-      (var0, var1, var2, var3) -> Component.translatable("commands.spreadplayers.failed.entities", var0, var1, var2, var3)
+      (var0, var1, var2, var3) -> Component.translatableEscape("commands.spreadplayers.failed.entities", var0, var1, var2, var3)
    );
    private static final Dynamic2CommandExceptionType ERROR_INVALID_MAX_HEIGHT = new Dynamic2CommandExceptionType(
-      (var0, var1) -> Component.translatable("commands.spreadplayers.failed.invalid.height", var0, var1)
+      (var0, var1) -> Component.translatableEscape("commands.spreadplayers.failed.invalid.height", var0, var1)
    );
 
    public SpreadPlayersCommand() {
@@ -232,7 +232,7 @@ public class SpreadPlayersCommand {
       for(Entity var10 : var0) {
          SpreadPlayersCommand.Position var11;
          if (var4) {
-            Team var12 = var10 instanceof Player ? var10.getTeam() : null;
+            PlayerTeam var12 = var10 instanceof Player ? var10.getTeam() : null;
             if (!var8.containsKey(var12)) {
                var8.put(var12, var2[var7++]);
             }

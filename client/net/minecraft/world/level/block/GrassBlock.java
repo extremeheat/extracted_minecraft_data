@@ -1,5 +1,6 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.MapCodec;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
@@ -17,6 +18,13 @@ import net.minecraft.world.level.levelgen.feature.configurations.RandomPatchConf
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 public class GrassBlock extends SpreadingSnowyDirtBlock implements BonemealableBlock {
+   public static final MapCodec<GrassBlock> CODEC = simpleCodec(GrassBlock::new);
+
+   @Override
+   public MapCodec<GrassBlock> codec() {
+      return CODEC;
+   }
+
    public GrassBlock(BlockBehaviour.Properties var1) {
       super(var1);
    }
@@ -34,7 +42,7 @@ public class GrassBlock extends SpreadingSnowyDirtBlock implements BonemealableB
    @Override
    public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
       BlockPos var5 = var3.above();
-      BlockState var6 = Blocks.GRASS.defaultBlockState();
+      BlockState var6 = Blocks.SHORT_GRASS.defaultBlockState();
       Optional var7 = var1.registryAccess().registryOrThrow(Registries.PLACED_FEATURE).getHolder(VegetationPlacements.GRASS_BONEMEAL);
 
       label49:

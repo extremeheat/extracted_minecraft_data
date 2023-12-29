@@ -25,7 +25,7 @@ public class RealmsSelectFileToUploadScreen extends RealmsScreen {
    public static final Component TITLE = Component.translatable("mco.upload.select.world.title");
    private static final Component UNABLE_TO_LOAD_WORLD = Component.translatable("selectWorld.unable_to_load");
    static final Component WORLD_TEXT = Component.translatable("selectWorld.world");
-   static final Component HARDCORE_TEXT = Component.translatable("mco.upload.hardcore").withStyle(var0 -> var0.withColor(-65536));
+   static final Component HARDCORE_TEXT = Component.translatable("mco.upload.hardcore").withColor(-65536);
    static final Component CHEATS_TEXT = Component.translatable("selectWorld.cheats");
    private static final DateFormat DATE_FORMAT = new SimpleDateFormat();
    private final RealmsResetWorldScreen lastScreen;
@@ -60,7 +60,7 @@ public class RealmsSelectFileToUploadScreen extends RealmsScreen {
 
    @Override
    public void init() {
-      this.worldSelectionList = new RealmsSelectFileToUploadScreen.WorldSelectionList();
+      this.worldSelectionList = this.addRenderableWidget(new RealmsSelectFileToUploadScreen.WorldSelectionList());
 
       try {
          this.loadLevelList();
@@ -70,7 +70,6 @@ public class RealmsSelectFileToUploadScreen extends RealmsScreen {
          return;
       }
 
-      this.addWidget(this.worldSelectionList);
       this.uploadButton = this.addRenderableWidget(
          Button.builder(Component.translatable("mco.upload.button.name"), var1 -> this.upload())
             .bounds(this.width / 2 - 154, this.height - 32, 153, 20)
@@ -103,7 +102,6 @@ public class RealmsSelectFileToUploadScreen extends RealmsScreen {
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      this.worldSelectionList.render(var1, var2, var3, var4);
       var1.drawCenteredString(this.font, this.title, this.width / 2, 13, -1);
    }
 
@@ -189,9 +187,8 @@ public class RealmsSelectFileToUploadScreen extends RealmsScreen {
       public WorldSelectionList() {
          super(
             RealmsSelectFileToUploadScreen.this.width,
-            RealmsSelectFileToUploadScreen.this.height,
+            RealmsSelectFileToUploadScreen.this.height - 40 - RealmsSelectFileToUploadScreen.row(0),
             RealmsSelectFileToUploadScreen.row(0),
-            RealmsSelectFileToUploadScreen.this.height - 40,
             36
          );
       }

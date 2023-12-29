@@ -1,5 +1,6 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -11,6 +12,9 @@ public abstract class HorizontalDirectionalBlock extends Block {
    protected HorizontalDirectionalBlock(BlockBehaviour.Properties var1) {
       super(var1);
    }
+
+   @Override
+   protected abstract MapCodec<? extends HorizontalDirectionalBlock> codec();
 
    @Override
    public BlockState rotate(BlockState var1, Rotation var2) {

@@ -33,13 +33,13 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
    public static final SimpleCommandExceptionType ERROR_INVALID_NODE = new SimpleCommandExceptionType(Component.translatable("arguments.nbtpath.node.invalid"));
    public static final SimpleCommandExceptionType ERROR_DATA_TOO_DEEP = new SimpleCommandExceptionType(Component.translatable("arguments.nbtpath.too_deep"));
    public static final DynamicCommandExceptionType ERROR_NOTHING_FOUND = new DynamicCommandExceptionType(
-      var0 -> Component.translatable("arguments.nbtpath.nothing_found", var0)
+      var0 -> Component.translatableEscape("arguments.nbtpath.nothing_found", var0)
    );
    static final DynamicCommandExceptionType ERROR_EXPECTED_LIST = new DynamicCommandExceptionType(
-      var0 -> Component.translatable("commands.data.modify.expected_list", var0)
+      var0 -> Component.translatableEscape("commands.data.modify.expected_list", var0)
    );
    static final DynamicCommandExceptionType ERROR_INVALID_INDEX = new DynamicCommandExceptionType(
-      var0 -> Component.translatable("commands.data.modify.invalid_index", var0)
+      var0 -> Component.translatableEscape("commands.data.modify.invalid_index", var0)
    );
    private static final char INDEX_MATCH_START = '[';
    private static final char INDEX_MATCH_END = ']';
@@ -744,6 +744,10 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
 
       @Override
       public String toString() {
+         return this.original;
+      }
+
+      public String asString() {
          return this.original;
       }
    }

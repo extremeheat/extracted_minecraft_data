@@ -1,5 +1,7 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -41,6 +43,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.apache.commons.lang3.ArrayUtils;
 
 public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock {
+   public static final MapCodec<BedBlock> CODEC = RecordCodecBuilder.mapCodec(
+      var0 -> var0.group(DyeColor.CODEC.fieldOf("color").forGetter(BedBlock::getColor), propertiesCodec()).apply(var0, BedBlock::new)
+   );
    public static final EnumProperty<BedPart> PART = BlockStateProperties.BED_PART;
    public static final BooleanProperty OCCUPIED = BlockStateProperties.OCCUPIED;
    protected static final int HEIGHT = 9;
@@ -55,6 +60,11 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
    protected static final VoxelShape WEST_SHAPE = Shapes.or(BASE, LEG_NORTH_WEST, LEG_SOUTH_WEST);
    protected static final VoxelShape EAST_SHAPE = Shapes.or(BASE, LEG_NORTH_EAST, LEG_SOUTH_EAST);
    private final DyeColor color;
+
+   @Override
+   public MapCodec<BedBlock> codec() {
+      return CODEC;
+   }
 
    public BedBlock(DyeColor var1, BlockBehaviour.Properties var2) {
       super(var2);
@@ -160,7 +170,7 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
    }
 
    @Override
-   public void playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
+   public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
       if (!var1.isClientSide && var4.isCreative()) {
          BedPart var5 = var3.getValue(PART);
          if (var5 == BedPart.FOOT) {
@@ -173,7 +183,7 @@ public class BedBlock extends HorizontalDirectionalBlock implements EntityBlock 
          }
       }
 
-      super.playerWillDestroy(var1, var2, var3, var4);
+      return super.playerWillDestroy(var1, var2, var3, var4);
    }
 
    @Nullable

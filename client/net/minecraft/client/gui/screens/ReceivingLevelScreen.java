@@ -1,19 +1,20 @@
 package net.minecraft.client.gui.screens;
 
+import java.util.function.BooleanSupplier;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 
 public class ReceivingLevelScreen extends Screen {
    private static final Component DOWNLOADING_TERRAIN_TEXT = Component.translatable("multiplayer.downloadingTerrain");
    private static final long CHUNK_LOADING_START_WAIT_LIMIT_MS = 30000L;
-   private boolean loadingPacketsReceived = false;
-   private boolean oneTickSkipped = false;
-   private final long createdAt = System.currentTimeMillis();
+   private final long createdAt;
+   private final BooleanSupplier levelReceived;
 
-   public ReceivingLevelScreen() {
+   public ReceivingLevelScreen(BooleanSupplier var1) {
       super(GameNarrator.NO_TITLE);
+      this.levelReceived = var1;
+      this.createdAt = System.currentTimeMillis();
    }
 
    @Override
@@ -39,22 +40,8 @@ public class ReceivingLevelScreen extends Screen {
 
    @Override
    public void tick() {
-      if (System.currentTimeMillis() > this.createdAt + 30000L) {
+      if (this.levelReceived.getAsBoolean() || System.currentTimeMillis() > this.createdAt + 30000L) {
          this.onClose();
-      } else {
-         if (this.oneTickSkipped) {
-            if (this.minecraft.player == null) {
-               return;
-            }
-
-            BlockPos var1 = this.minecraft.player.blockPosition();
-            boolean var2 = this.minecraft.level != null && this.minecraft.level.isOutsideBuildHeight(var1.getY());
-            if (var2 || this.minecraft.levelRenderer.isSectionCompiled(var1) || this.minecraft.player.isSpectator() || !this.minecraft.player.isAlive()) {
-               this.onClose();
-            }
-         } else {
-            this.oneTickSkipped = this.loadingPacketsReceived;
-         }
       }
    }
 
@@ -62,10 +49,6 @@ public class ReceivingLevelScreen extends Screen {
    public void onClose() {
       this.minecraft.getNarrator().sayNow(Component.translatable("narrator.ready_to_play"));
       super.onClose();
-   }
-
-   public void loadingPacketsReceived() {
-      this.loadingPacketsReceived = true;
    }
 
    @Override

@@ -1,5 +1,7 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -12,13 +14,19 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 
 public class PressurePlateBlock extends BasePressurePlateBlock {
+   public static final MapCodec<PressurePlateBlock> CODEC = RecordCodecBuilder.mapCodec(
+      var0 -> var0.group(BlockSetType.CODEC.fieldOf("block_set_type").forGetter(var0x -> var0x.type), propertiesCodec()).apply(var0, PressurePlateBlock::new)
+   );
    public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
-   private final PressurePlateBlock.Sensitivity sensitivity;
 
-   protected PressurePlateBlock(PressurePlateBlock.Sensitivity var1, BlockBehaviour.Properties var2, BlockSetType var3) {
-      super(var2, var3);
+   @Override
+   public MapCodec<PressurePlateBlock> codec() {
+      return CODEC;
+   }
+
+   protected PressurePlateBlock(BlockSetType var1, BlockBehaviour.Properties var2) {
+      super(var2, var1);
       this.registerDefaultState(this.stateDefinition.any().setValue(POWERED, Boolean.valueOf(false)));
-      this.sensitivity = var1;
    }
 
    @Override
@@ -33,7 +41,7 @@ public class PressurePlateBlock extends BasePressurePlateBlock {
 
    @Override
    protected int getSignalStrength(Level var1, BlockPos var2) {
-      Class<Entity> var3 = switch(this.sensitivity) {
+      Class<Entity> var3 = switch(this.type.pressurePlateSensitivity()) {
          case EVERYTHING -> Entity.class;
          case MOBS -> LivingEntity.class;
       };
@@ -43,13 +51,5 @@ public class PressurePlateBlock extends BasePressurePlateBlock {
    @Override
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(POWERED);
-   }
-
-   public static enum Sensitivity {
-      EVERYTHING,
-      MOBS;
-
-      private Sensitivity() {
-      }
    }
 }

@@ -11,14 +11,22 @@ import net.minecraft.server.packs.resources.IoSupplier;
 import org.lwjgl.glfw.GLFWNativeCocoa;
 
 public class MacosUtil {
+   private static final int NS_RESIZABLE_WINDOW_MASK = 8;
    private static final int NS_FULL_SCREEN_WINDOW_MASK = 16384;
 
    public MacosUtil() {
       super();
    }
 
-   public static void toggleFullscreen(long var0) {
-      getNsWindow(var0).filter(MacosUtil::isInKioskMode).ifPresent(MacosUtil::toggleFullscreen);
+   public static void exitNativeFullscreen(long var0) {
+      getNsWindow(var0).filter(MacosUtil::isInNativeFullscreen).ifPresent(MacosUtil::toggleNativeFullscreen);
+   }
+
+   public static void clearResizableBit(long var0) {
+      getNsWindow(var0).ifPresent(var0x -> {
+         long var1 = getStyleMask(var0x);
+         var0x.send("setStyleMask:", new Object[]{var1 & -9L});
+      });
    }
 
    private static Optional<NSObject> getNsWindow(long var0) {
@@ -26,11 +34,15 @@ public class MacosUtil {
       return var2 != 0L ? Optional.of(new NSObject(new Pointer(var2))) : Optional.empty();
    }
 
-   private static boolean isInKioskMode(NSObject var0) {
-      return (var0.sendRaw("styleMask", new Object[0]) & 16384L) == 16384L;
+   private static boolean isInNativeFullscreen(NSObject var0) {
+      return (getStyleMask(var0) & 16384L) != 0L;
    }
 
-   private static void toggleFullscreen(NSObject var0) {
+   private static long getStyleMask(NSObject var0) {
+      return var0.sendRaw("styleMask", new Object[0]);
+   }
+
+   private static void toggleNativeFullscreen(NSObject var0) {
       var0.send("toggleFullScreen:", new Object[]{Pointer.NULL});
    }
 

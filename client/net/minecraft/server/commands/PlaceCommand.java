@@ -51,7 +51,7 @@ public class PlaceCommand {
       Component.translatable("commands.place.structure.failed")
    );
    private static final DynamicCommandExceptionType ERROR_TEMPLATE_INVALID = new DynamicCommandExceptionType(
-      var0 -> Component.translatable("commands.place.template.invalid", var0)
+      var0 -> Component.translatableEscape("commands.place.template.invalid", var0)
    );
    private static final SimpleCommandExceptionType ERROR_TEMPLATE_FAILED = new SimpleCommandExceptionType(
       Component.translatable("commands.place.template.failed")
@@ -335,7 +335,9 @@ public class PlaceCommand {
          if (!var12) {
             throw ERROR_TEMPLATE_FAILED.create();
          } else {
-            var0.sendSuccess(() -> Component.translatable("commands.place.template.success", var1, var2.getX(), var2.getY(), var2.getZ()), true);
+            var0.sendSuccess(
+               () -> Component.translatable("commands.place.template.success", Component.translationArg(var1), var2.getX(), var2.getY(), var2.getZ()), true
+            );
             return 1;
          }
       }

@@ -8,12 +8,10 @@ import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.ComponentPath;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
-import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.sounds.SoundManager;
@@ -118,19 +116,25 @@ public class EditBox extends AbstractWidget implements Renderable {
       int var2 = Math.min(this.cursorPos, this.highlightPos);
       int var3 = Math.max(this.cursorPos, this.highlightPos);
       int var4 = this.maxLength - this.value.length() - (var2 - var3);
-      String var5 = SharedConstants.filterText(var1);
-      int var6 = var5.length();
-      if (var4 < var6) {
-         var5 = var5.substring(0, var4);
-         var6 = var4;
-      }
+      if (var4 > 0) {
+         String var5 = SharedConstants.filterText(var1);
+         int var6 = var5.length();
+         if (var4 < var6) {
+            if (Character.isHighSurrogate(var5.charAt(var4 - 1))) {
+               --var4;
+            }
 
-      String var7 = new StringBuilder(this.value).replace(var2, var3, var5).toString();
-      if (this.filter.test(var7)) {
-         this.value = var7;
-         this.setCursorPosition(var2 + var6);
-         this.setHighlightPos(this.cursorPos);
-         this.onValueChange(this.value);
+            var5 = var5.substring(0, var4);
+            var6 = var4;
+         }
+
+         String var7 = new StringBuilder(this.value).replace(var2, var3, var5).toString();
+         if (this.filter.test(var7)) {
+            this.value = var7;
+            this.setCursorPosition(var2 + var6);
+            this.setHighlightPos(this.cursorPos);
+            this.onValueChange(this.value);
+         }
       }
    }
 
@@ -153,24 +157,27 @@ public class EditBox extends AbstractWidget implements Renderable {
          if (this.highlightPos != this.cursorPos) {
             this.insertText("");
          } else {
-            this.deleteChars(this.getWordPosition(var1) - this.cursorPos);
+            this.deleteCharsToPos(this.getWordPosition(var1));
          }
       }
    }
 
    public void deleteChars(int var1) {
+      this.deleteCharsToPos(this.getCursorPos(var1));
+   }
+
+   public void deleteCharsToPos(int var1) {
       if (!this.value.isEmpty()) {
          if (this.highlightPos != this.cursorPos) {
             this.insertText("");
          } else {
-            int var2 = this.getCursorPos(var1);
-            int var3 = Math.min(var2, this.cursorPos);
-            int var4 = Math.max(var2, this.cursorPos);
-            if (var3 != var4) {
-               String var5 = new StringBuilder(this.value).delete(var3, var4).toString();
-               if (this.filter.test(var5)) {
-                  this.value = var5;
-                  this.moveCursorTo(var3, false);
+            int var2 = Math.min(var1, this.cursorPos);
+            int var3 = Math.max(var1, this.cursorPos);
+            if (var2 != var3) {
+               String var4 = new StringBuilder(this.value).delete(var2, var3).toString();
+               if (this.filter.test(var4)) {
+                  this.value = var4;
+                  this.moveCursorTo(var2, false);
                }
             }
          }
@@ -247,29 +254,7 @@ public class EditBox extends AbstractWidget implements Renderable {
 
    @Override
    public boolean keyPressed(int var1, int var2, int var3) {
-      if (!this.canConsumeInput()) {
-         return false;
-      } else if (Screen.isSelectAll(var1)) {
-         this.moveCursorToEnd(false);
-         this.setHighlightPos(0);
-         return true;
-      } else if (Screen.isCopy(var1)) {
-         Minecraft.getInstance().keyboardHandler.setClipboard(this.getHighlighted());
-         return true;
-      } else if (Screen.isPaste(var1)) {
-         if (this.isEditable) {
-            this.insertText(Minecraft.getInstance().keyboardHandler.getClipboard());
-         }
-
-         return true;
-      } else if (Screen.isCut(var1)) {
-         Minecraft.getInstance().keyboardHandler.setClipboard(this.getHighlighted());
-         if (this.isEditable) {
-            this.insertText("");
-         }
-
-         return true;
-      } else {
+      if (this.isActive() && this.isFocused()) {
          switch(var1) {
             case 259:
                if (this.isEditable) {
@@ -283,7 +268,31 @@ public class EditBox extends AbstractWidget implements Renderable {
             case 266:
             case 267:
             default:
-               return false;
+               if (Screen.isSelectAll(var1)) {
+                  this.moveCursorToEnd(false);
+                  this.setHighlightPos(0);
+                  return true;
+               } else if (Screen.isCopy(var1)) {
+                  Minecraft.getInstance().keyboardHandler.setClipboard(this.getHighlighted());
+                  return true;
+               } else if (Screen.isPaste(var1)) {
+                  if (this.isEditable()) {
+                     this.insertText(Minecraft.getInstance().keyboardHandler.getClipboard());
+                  }
+
+                  return true;
+               } else {
+                  if (Screen.isCut(var1)) {
+                     Minecraft.getInstance().keyboardHandler.setClipboard(this.getHighlighted());
+                     if (this.isEditable()) {
+                        this.insertText("");
+                     }
+
+                     return true;
+                  }
+
+                  return false;
+               }
             case 261:
                if (this.isEditable) {
                   this.deleteText(1);
@@ -313,11 +322,13 @@ public class EditBox extends AbstractWidget implements Renderable {
                this.moveCursorToEnd(Screen.hasShiftDown());
                return true;
          }
+      } else {
+         return false;
       }
    }
 
    public boolean canConsumeInput() {
-      return this.isVisible() && this.isFocused() && this.isEditable();
+      return this.isActive() && this.isFocused() && this.isEditable();
    }
 
    @Override
@@ -462,21 +473,6 @@ public class EditBox extends AbstractWidget implements Renderable {
 
    public void setTextColorUneditable(int var1) {
       this.textColorUneditable = var1;
-   }
-
-   @Nullable
-   @Override
-   public ComponentPath nextFocusPath(FocusNavigationEvent var1) {
-      return this.visible && this.isEditable ? super.nextFocusPath(var1) : null;
-   }
-
-   @Override
-   public boolean isMouseOver(double var1, double var3) {
-      return this.visible
-         && var1 >= (double)this.getX()
-         && var1 < (double)(this.getX() + this.width)
-         && var3 >= (double)this.getY()
-         && var3 < (double)(this.getY() + this.height);
    }
 
    @Override

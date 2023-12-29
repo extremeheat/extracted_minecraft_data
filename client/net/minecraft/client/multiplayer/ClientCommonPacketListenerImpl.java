@@ -1,5 +1,6 @@
 package net.minecraft.client.multiplayer;
 
+import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.logging.LogUtils;
 import java.net.MalformedURLException;
@@ -10,10 +11,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
+import java.util.UUID;
 import java.util.function.BooleanSupplier;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
+import net.minecraft.CrashReportCategory;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ConfirmScreen;
@@ -21,6 +23,7 @@ import net.minecraft.client.gui.screens.DisconnectedScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
+import net.minecraft.client.resources.server.DownloadedPackSource;
 import net.minecraft.client.telemetry.WorldSessionTelemetryManager;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
@@ -35,7 +38,8 @@ import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.ClientboundDisconnectPacket;
 import net.minecraft.network.protocol.common.ClientboundKeepAlivePacket;
 import net.minecraft.network.protocol.common.ClientboundPingPacket;
-import net.minecraft.network.protocol.common.ClientboundResourcePackPacket;
+import net.minecraft.network.protocol.common.ClientboundResourcePackPopPacket;
+import net.minecraft.network.protocol.common.ClientboundResourcePackPushPacket;
 import net.minecraft.network.protocol.common.ClientboundUpdateTagsPacket;
 import net.minecraft.network.protocol.common.ServerboundKeepAlivePacket;
 import net.minecraft.network.protocol.common.ServerboundPongPacket;
@@ -104,70 +108,31 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    protected abstract RegistryAccess.Frozen registryAccess();
 
    @Override
-   public void handleResourcePack(ClientboundResourcePackPacket var1) {
-      URL var2 = parseResourcePackUrl(var1.getUrl());
-      if (var2 == null) {
-         this.send(ServerboundResourcePackPacket.Action.FAILED_DOWNLOAD);
+   public void handleResourcePackPush(ClientboundResourcePackPushPacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
+      UUID var2 = var1.id();
+      URL var3 = parseResourcePackUrl(var1.url());
+      if (var3 == null) {
+         this.connection.send(new ServerboundResourcePackPacket(var2, ServerboundResourcePackPacket.Action.INVALID_URL));
       } else {
-         String var3 = var1.getHash();
-         boolean var4 = var1.isRequired();
-         if (this.serverData != null && this.serverData.getResourcePackStatus() == ServerData.ServerPackStatus.ENABLED) {
-            this.send(ServerboundResourcePackPacket.Action.ACCEPTED);
-            this.packApplicationCallback(this.minecraft.getDownloadedPackSource().downloadAndSelectResourcePack(var2, var3, true));
-         } else if (this.serverData != null
-            && this.serverData.getResourcePackStatus() != ServerData.ServerPackStatus.PROMPT
-            && (!var4 || this.serverData.getResourcePackStatus() != ServerData.ServerPackStatus.DISABLED)) {
-            this.send(ServerboundResourcePackPacket.Action.DECLINED);
-            if (var4) {
-               this.connection.disconnect(Component.translatable("multiplayer.requiredTexturePrompt.disconnect"));
-            }
+         String var4 = var1.hash();
+         boolean var5 = var1.required();
+         ServerData.ServerPackStatus var6 = this.serverData != null ? this.serverData.getResourcePackStatus() : ServerData.ServerPackStatus.PROMPT;
+         if (var6 != ServerData.ServerPackStatus.PROMPT && (!var5 || var6 != ServerData.ServerPackStatus.DISABLED)) {
+            this.minecraft.getDownloadedPackSource().pushPack(var2, var3, var4);
          } else {
-            this.minecraft.execute(() -> this.showServerPackPrompt(var2, var3, var4, var1.getPrompt()));
+            this.minecraft.setScreen(this.addOrUpdatePackPrompt(var2, var3, var4, var5, var1.prompt()));
          }
       }
    }
 
-   private void showServerPackPrompt(URL var1, String var2, boolean var3, @Nullable Component var4) {
-      Screen var5 = this.minecraft.screen;
-      this.minecraft
-         .setScreen(
-            new ConfirmScreen(
-               var5x -> {
-                  this.minecraft.setScreen(var5);
-                  if (var5x) {
-                     if (this.serverData != null) {
-                        this.serverData.setResourcePackStatus(ServerData.ServerPackStatus.ENABLED);
-                     }
-         
-                     this.send(ServerboundResourcePackPacket.Action.ACCEPTED);
-                     this.packApplicationCallback(this.minecraft.getDownloadedPackSource().downloadAndSelectResourcePack(var1, var2, true));
-                  } else {
-                     this.send(ServerboundResourcePackPacket.Action.DECLINED);
-                     if (var3) {
-                        this.connection.disconnect(Component.translatable("multiplayer.requiredTexturePrompt.disconnect"));
-                     } else if (this.serverData != null) {
-                        this.serverData.setResourcePackStatus(ServerData.ServerPackStatus.DISABLED);
-                     }
-                  }
-         
-                  if (this.serverData != null) {
-                     ServerList.saveSingleServer(this.serverData);
-                  }
-               },
-               var3 ? Component.translatable("multiplayer.requiredTexturePrompt.line1") : Component.translatable("multiplayer.texturePrompt.line1"),
-               preparePackPrompt(
-                  var3
-                     ? Component.translatable("multiplayer.requiredTexturePrompt.line2").withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD)
-                     : Component.translatable("multiplayer.texturePrompt.line2"),
-                  var4
-               ),
-               var3 ? CommonComponents.GUI_PROCEED : CommonComponents.GUI_YES,
-               (Component)(var3 ? Component.translatable("menu.disconnect") : CommonComponents.GUI_NO)
-            )
-         );
+   @Override
+   public void handleResourcePackPop(ClientboundResourcePackPopPacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
+      var1.id().ifPresentOrElse(var1x -> this.minecraft.getDownloadedPackSource().popPack(var1x), () -> this.minecraft.getDownloadedPackSource().popAll());
    }
 
-   private static Component preparePackPrompt(Component var0, @Nullable Component var1) {
+   static Component preparePackPrompt(Component var0, @Nullable Component var1) {
       return (Component)(var1 == null ? var0 : Component.translatable("multiplayer.texturePrompt.serverPrompt", var0, var1));
    }
 
@@ -180,13 +145,6 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
       } catch (MalformedURLException var3) {
          return null;
       }
-   }
-
-   private void packApplicationCallback(CompletableFuture<?> var1) {
-      var1.thenRun(() -> this.send(ServerboundResourcePackPacket.Action.SUCCESSFULLY_LOADED)).exceptionally(var1x -> {
-         this.send(ServerboundResourcePackPacket.Action.FAILED_DOWNLOAD);
-         return null;
-      });
    }
 
    @Override
@@ -202,10 +160,6 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
          TagNetworkSerialization.deserializeTagsFromNetwork(var1, var3, var2, var5::put);
          var3.bindTags(var5);
       }
-   }
-
-   private void send(ServerboundResourcePackPacket.Action var1) {
-      this.connection.send(new ServerboundResourcePackPacket(var1));
    }
 
    @Override
@@ -238,6 +192,12 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
       LOGGER.warn("Client disconnected with reason: {}", var1.getString());
    }
 
+   @Override
+   public void fillListenerSpecificCrashDetails(CrashReportCategory var1) {
+      var1.setDetail("Server type", () -> this.serverData != null ? this.serverData.type().toString() : "<none>");
+      var1.setDetail("Server brand", () -> this.serverBrand);
+   }
+
    protected Screen createDisconnectScreen(Component var1) {
       Screen var2 = Objects.requireNonNullElseGet(this.postDisconnectScreen, () -> new JoinMultiplayerScreen(new TitleScreen()));
       return (Screen)(this.serverData != null && this.serverData.isRealm()
@@ -258,6 +218,15 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
       }
    }
 
+   private Screen addOrUpdatePackPrompt(UUID var1, URL var2, String var3, boolean var4, @Nullable Component var5) {
+      Screen var6 = this.minecraft.screen;
+      return var6 instanceof ClientCommonPacketListenerImpl.PackConfirmScreen var7
+         ? var7.update(this.minecraft, var1, var2, var3, var4, var5)
+         : new ClientCommonPacketListenerImpl.PackConfirmScreen(
+            this.minecraft, var6, List.of(new ClientCommonPacketListenerImpl.PackConfirmScreen.PendingRequest(var1, var2, var3)), var4, var5
+         );
+   }
+
    static record DeferredPacket(Packet<? extends ServerboundPacketListener> a, BooleanSupplier b, long c) {
       final Packet<? extends ServerboundPacketListener> packet;
       private final BooleanSupplier sendCondition;
@@ -268,6 +237,81 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
          this.packet = var1;
          this.sendCondition = var2;
          this.expirationTime = var3;
+      }
+   }
+
+   class PackConfirmScreen extends ConfirmScreen {
+      private final List<ClientCommonPacketListenerImpl.PackConfirmScreen.PendingRequest> requests;
+      @Nullable
+      private final Screen parentScreen;
+
+      PackConfirmScreen(
+         Minecraft var2,
+         @Nullable Screen var3,
+         List<ClientCommonPacketListenerImpl.PackConfirmScreen.PendingRequest> var4,
+         boolean var5,
+         @Nullable Component var6
+      ) {
+         super(
+            var5x -> {
+               var2.setScreen(var3);
+               DownloadedPackSource var6x = var2.getDownloadedPackSource();
+               if (var5x) {
+                  if (ClientCommonPacketListenerImpl.this.serverData != null) {
+                     ClientCommonPacketListenerImpl.this.serverData.setResourcePackStatus(ServerData.ServerPackStatus.ENABLED);
+                  }
+   
+                  var6x.allowServerPacks();
+               } else {
+                  var6x.rejectServerPacks();
+                  if (var5) {
+                     ClientCommonPacketListenerImpl.this.connection.disconnect(Component.translatable("multiplayer.requiredTexturePrompt.disconnect"));
+                  } else if (ClientCommonPacketListenerImpl.this.serverData != null) {
+                     ClientCommonPacketListenerImpl.this.serverData.setResourcePackStatus(ServerData.ServerPackStatus.DISABLED);
+                  }
+               }
+   
+               for(ClientCommonPacketListenerImpl.PackConfirmScreen.PendingRequest var8 : var4) {
+                  var6x.pushPack(var8.id, var8.url, var8.hash);
+               }
+   
+               if (ClientCommonPacketListenerImpl.this.serverData != null) {
+                  ServerList.saveSingleServer(ClientCommonPacketListenerImpl.this.serverData);
+               }
+            },
+            var5 ? Component.translatable("multiplayer.requiredTexturePrompt.line1") : Component.translatable("multiplayer.texturePrompt.line1"),
+            ClientCommonPacketListenerImpl.preparePackPrompt(
+               var5
+                  ? Component.translatable("multiplayer.requiredTexturePrompt.line2").withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD)
+                  : Component.translatable("multiplayer.texturePrompt.line2"),
+               var6
+            ),
+            var5 ? CommonComponents.GUI_PROCEED : CommonComponents.GUI_YES,
+            var5 ? CommonComponents.GUI_DISCONNECT : CommonComponents.GUI_NO
+         );
+         this.requests = var4;
+         this.parentScreen = var3;
+      }
+
+      public ClientCommonPacketListenerImpl.PackConfirmScreen update(Minecraft var1, UUID var2, URL var3, String var4, boolean var5, @Nullable Component var6) {
+         ImmutableList var7 = ImmutableList.builderWithExpectedSize(this.requests.size() + 1)
+            .addAll(this.requests)
+            .add(new ClientCommonPacketListenerImpl.PackConfirmScreen.PendingRequest(var2, var3, var4))
+            .build();
+         return ClientCommonPacketListenerImpl.this.new PackConfirmScreen(var1, this.parentScreen, var7, var5, var6);
+      }
+
+      static record PendingRequest(UUID a, URL b, String c) {
+         final UUID id;
+         final URL url;
+         final String hash;
+
+         PendingRequest(UUID var1, URL var2, String var3) {
+            super();
+            this.id = var1;
+            this.url = var2;
+            this.hash = var3;
+         }
       }
    }
 }

@@ -1,77 +1,92 @@
 package net.minecraft.world.scores;
 
-import java.util.Comparator;
+import javax.annotation.Nullable;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.numbers.NumberFormat;
+import net.minecraft.network.chat.numbers.NumberFormatTypes;
 
-public class Score {
-   public static final Comparator<Score> SCORE_COMPARATOR = (var0, var1) -> {
-      if (var0.getScore() > var1.getScore()) {
-         return 1;
-      } else {
-         return var0.getScore() < var1.getScore() ? -1 : var1.getOwner().compareToIgnoreCase(var0.getOwner());
-      }
-   };
-   private final Scoreboard scoreboard;
-   private final Objective objective;
-   private final String owner;
-   private int count;
-   private boolean locked;
-   private boolean forceUpdate;
+public class Score implements ReadOnlyScoreInfo {
+   private static final String TAG_SCORE = "Score";
+   private static final String TAG_LOCKED = "Locked";
+   private static final String TAG_DISPLAY = "display";
+   private static final String TAG_FORMAT = "format";
+   private int value;
+   private boolean locked = true;
+   @Nullable
+   private Component display;
+   @Nullable
+   private NumberFormat numberFormat;
 
-   public Score(Scoreboard var1, Objective var2, String var3) {
+   public Score() {
       super();
-      this.scoreboard = var1;
-      this.objective = var2;
-      this.owner = var3;
-      this.locked = true;
-      this.forceUpdate = true;
    }
 
-   public void add(int var1) {
-      if (this.objective.getCriteria().isReadOnly()) {
-         throw new IllegalStateException("Cannot modify read-only score");
-      } else {
-         this.setScore(this.getScore() + var1);
-      }
+   @Override
+   public int value() {
+      return this.value;
    }
 
-   public void increment() {
-      this.add(1);
+   public void value(int var1) {
+      this.value = var1;
    }
 
-   public int getScore() {
-      return this.count;
-   }
-
-   public void reset() {
-      this.setScore(0);
-   }
-
-   public void setScore(int var1) {
-      int var2 = this.count;
-      this.count = var1;
-      if (var2 != var1 || this.forceUpdate) {
-         this.forceUpdate = false;
-         this.getScoreboard().onScoreChanged(this);
-      }
-   }
-
-   public Objective getObjective() {
-      return this.objective;
-   }
-
-   public String getOwner() {
-      return this.owner;
-   }
-
-   public Scoreboard getScoreboard() {
-      return this.scoreboard;
-   }
-
+   @Override
    public boolean isLocked() {
       return this.locked;
    }
 
    public void setLocked(boolean var1) {
       this.locked = var1;
+   }
+
+   @Nullable
+   public Component display() {
+      return this.display;
+   }
+
+   public void display(@Nullable Component var1) {
+      this.display = var1;
+   }
+
+   @Nullable
+   @Override
+   public NumberFormat numberFormat() {
+      return this.numberFormat;
+   }
+
+   public void numberFormat(@Nullable NumberFormat var1) {
+      this.numberFormat = var1;
+   }
+
+   public CompoundTag write() {
+      CompoundTag var1 = new CompoundTag();
+      var1.putInt("Score", this.value);
+      var1.putBoolean("Locked", this.locked);
+      if (this.display != null) {
+         var1.putString("display", Component.Serializer.toJson(this.display));
+      }
+
+      if (this.numberFormat != null) {
+         NumberFormatTypes.CODEC.encodeStart(NbtOps.INSTANCE, this.numberFormat).result().ifPresent(var1x -> var1.put("format", var1x));
+      }
+
+      return var1;
+   }
+
+   public static Score read(CompoundTag var0) {
+      Score var1 = new Score();
+      var1.value = var0.getInt("Score");
+      var1.locked = var0.getBoolean("Locked");
+      if (var0.contains("display", 8)) {
+         var1.display = Component.Serializer.fromJson(var0.getString("display"));
+      }
+
+      if (var0.contains("format", 10)) {
+         NumberFormatTypes.CODEC.parse(NbtOps.INSTANCE, var0.get("format")).result().ifPresent(var1x -> var1.numberFormat = var1x);
+      }
+
+      return var1;
    }
 }

@@ -188,8 +188,7 @@ public class PresetFlatWorldScreen extends Screen {
       this.export.setValue(save(this.parent.settings()));
       this.settings = this.parent.settings();
       this.addWidget(this.export);
-      this.list = new PresetFlatWorldScreen.PresetsList(var2, var3);
-      this.addWidget(this.list);
+      this.list = this.addRenderableWidget(new PresetFlatWorldScreen.PresetsList(var2, var3));
       this.selectButton = this.addRenderableWidget(Button.builder(Component.translatable("createWorld.customize.presets.select"), var5x -> {
          FlatLevelGeneratorSettings var6x = fromString(var7, var4, var5, var6, this.export.getValue(), this.settings);
          this.parent.setConfig(var6x);
@@ -223,7 +222,6 @@ public class PresetFlatWorldScreen extends Screen {
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      this.list.render(var1, var2, var3, var4);
       var1.pose().pushPose();
       var1.pose().translate(0.0F, 0.0F, 400.0F);
       var1.drawCenteredString(this.font, this.title, this.width / 2, 8, 16777215);
@@ -239,14 +237,7 @@ public class PresetFlatWorldScreen extends Screen {
 
    class PresetsList extends ObjectSelectionList<PresetFlatWorldScreen.PresetsList.Entry> {
       public PresetsList(RegistryAccess var2, FeatureFlagSet var3) {
-         super(
-            PresetFlatWorldScreen.this.minecraft,
-            PresetFlatWorldScreen.this.width,
-            PresetFlatWorldScreen.this.height,
-            80,
-            PresetFlatWorldScreen.this.height - 37,
-            24
-         );
+         super(PresetFlatWorldScreen.this.minecraft, PresetFlatWorldScreen.this.width, PresetFlatWorldScreen.this.height - 117, 80, 24);
 
          for(Holder var5 : var2.registryOrThrow(Registries.FLAT_LEVEL_GENERATOR_PRESET).getTagOrEmpty(FlatLevelGeneratorPresetTags.VISIBLE)) {
             Set var6 = ((FlatLevelGeneratorPreset)var5.value())

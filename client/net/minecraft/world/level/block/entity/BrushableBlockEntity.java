@@ -65,7 +65,7 @@ public class BrushableBlockEntity extends BlockEntity {
             this.brushingCompleted(var3);
             return true;
          } else {
-            this.level.scheduleTick(this.getBlockPos(), this.getBlockState().getBlock(), 40);
+            this.level.scheduleTick(this.getBlockPos(), this.getBlockState().getBlock(), 2);
             int var6 = this.getCompletionState();
             if (var5 != var6) {
                BlockState var7 = this.getBlockState();
@@ -165,7 +165,7 @@ public class BrushableBlockEntity extends BlockEntity {
             this.brushCountResetsAtTick = 0L;
             this.coolDownEndsAtTick = 0L;
          } else {
-            this.level.scheduleTick(this.getBlockPos(), this.getBlockState().getBlock(), (int)(this.brushCountResetsAtTick - this.level.getGameTime()));
+            this.level.scheduleTick(this.getBlockPos(), this.getBlockState().getBlock(), 2);
          }
       }
    }

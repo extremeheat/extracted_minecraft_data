@@ -1,15 +1,14 @@
 package net.minecraft.advancements.critereon;
 
-import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.GsonHelper;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.Level;
 
 public class ChangeDimensionTrigger extends SimpleCriterionTrigger<ChangeDimensionTrigger.TriggerInstance> {
@@ -17,64 +16,62 @@ public class ChangeDimensionTrigger extends SimpleCriterionTrigger<ChangeDimensi
       super();
    }
 
-   public ChangeDimensionTrigger.TriggerInstance createInstance(JsonObject var1, Optional<ContextAwarePredicate> var2, DeserializationContext var3) {
-      ResourceKey var4 = var1.has("from") ? ResourceKey.create(Registries.DIMENSION, new ResourceLocation(GsonHelper.getAsString(var1, "from"))) : null;
-      ResourceKey var5 = var1.has("to") ? ResourceKey.create(Registries.DIMENSION, new ResourceLocation(GsonHelper.getAsString(var1, "to"))) : null;
-      return new ChangeDimensionTrigger.TriggerInstance(var2, var4, var5);
+   @Override
+   public Codec<ChangeDimensionTrigger.TriggerInstance> codec() {
+      return ChangeDimensionTrigger.TriggerInstance.CODEC;
    }
 
    public void trigger(ServerPlayer var1, ResourceKey<Level> var2, ResourceKey<Level> var3) {
       this.trigger(var1, var2x -> var2x.matches(var2, var3));
    }
 
-   public static class TriggerInstance extends AbstractCriterionTriggerInstance {
-      @Nullable
-      private final ResourceKey<Level> from;
-      @Nullable
-      private final ResourceKey<Level> to;
+   public static record TriggerInstance(Optional<ContextAwarePredicate> b, Optional<ResourceKey<Level>> c, Optional<ResourceKey<Level>> d)
+      implements SimpleCriterionTrigger.SimpleInstance {
+      private final Optional<ContextAwarePredicate> player;
+      private final Optional<ResourceKey<Level>> from;
+      private final Optional<ResourceKey<Level>> to;
+      public static final Codec<ChangeDimensionTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
+         var0 -> var0.group(
+                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player").forGetter(ChangeDimensionTrigger.TriggerInstance::player),
+                  ExtraCodecs.strictOptionalField(ResourceKey.codec(Registries.DIMENSION), "from").forGetter(ChangeDimensionTrigger.TriggerInstance::from),
+                  ExtraCodecs.strictOptionalField(ResourceKey.codec(Registries.DIMENSION), "to").forGetter(ChangeDimensionTrigger.TriggerInstance::to)
+               )
+               .apply(var0, ChangeDimensionTrigger.TriggerInstance::new)
+      );
 
-      public TriggerInstance(Optional<ContextAwarePredicate> var1, @Nullable ResourceKey<Level> var2, @Nullable ResourceKey<Level> var3) {
-         super(var1);
+      public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ResourceKey<Level>> var2, Optional<ResourceKey<Level>> var3) {
+         super();
+         this.player = var1;
          this.from = var2;
          this.to = var3;
       }
 
       public static Criterion<ChangeDimensionTrigger.TriggerInstance> changedDimension() {
-         return CriteriaTriggers.CHANGED_DIMENSION.createCriterion(new ChangeDimensionTrigger.TriggerInstance(Optional.empty(), null, null));
+         return CriteriaTriggers.CHANGED_DIMENSION
+            .createCriterion(new ChangeDimensionTrigger.TriggerInstance(Optional.empty(), Optional.empty(), Optional.empty()));
       }
 
       public static Criterion<ChangeDimensionTrigger.TriggerInstance> changedDimension(ResourceKey<Level> var0, ResourceKey<Level> var1) {
-         return CriteriaTriggers.CHANGED_DIMENSION.createCriterion(new ChangeDimensionTrigger.TriggerInstance(Optional.empty(), var0, var1));
+         return CriteriaTriggers.CHANGED_DIMENSION
+            .createCriterion(new ChangeDimensionTrigger.TriggerInstance(Optional.empty(), Optional.of(var0), Optional.of(var1)));
       }
 
       public static Criterion<ChangeDimensionTrigger.TriggerInstance> changedDimensionTo(ResourceKey<Level> var0) {
-         return CriteriaTriggers.CHANGED_DIMENSION.createCriterion(new ChangeDimensionTrigger.TriggerInstance(Optional.empty(), null, var0));
+         return CriteriaTriggers.CHANGED_DIMENSION
+            .createCriterion(new ChangeDimensionTrigger.TriggerInstance(Optional.empty(), Optional.empty(), Optional.of(var0)));
       }
 
       public static Criterion<ChangeDimensionTrigger.TriggerInstance> changedDimensionFrom(ResourceKey<Level> var0) {
-         return CriteriaTriggers.CHANGED_DIMENSION.createCriterion(new ChangeDimensionTrigger.TriggerInstance(Optional.empty(), var0, null));
+         return CriteriaTriggers.CHANGED_DIMENSION
+            .createCriterion(new ChangeDimensionTrigger.TriggerInstance(Optional.empty(), Optional.of(var0), Optional.empty()));
       }
 
       public boolean matches(ResourceKey<Level> var1, ResourceKey<Level> var2) {
-         if (this.from != null && this.from != var1) {
+         if (this.from.isPresent() && this.from.get() != var1) {
             return false;
          } else {
-            return this.to == null || this.to == var2;
+            return !this.to.isPresent() || this.to.get() == var2;
          }
-      }
-
-      @Override
-      public JsonObject serializeToJson() {
-         JsonObject var1 = super.serializeToJson();
-         if (this.from != null) {
-            var1.addProperty("from", this.from.location().toString());
-         }
-
-         if (this.to != null) {
-            var1.addProperty("to", this.to.location().toString());
-         }
-
-         return var1;
       }
    }
 }

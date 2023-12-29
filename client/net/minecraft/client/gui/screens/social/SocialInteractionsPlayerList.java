@@ -27,15 +27,15 @@ public class SocialInteractionsPlayerList extends ContainerObjectSelectionList<P
    @Nullable
    private String filter;
 
-   public SocialInteractionsPlayerList(SocialInteractionsScreen var1, Minecraft var2, int var3, int var4, int var5, int var6, int var7) {
-      super(var2, var3, var4, var5, var6, var7);
+   public SocialInteractionsPlayerList(SocialInteractionsScreen var1, Minecraft var2, int var3, int var4, int var5, int var6) {
+      super(var2, var3, var4, var5, var6);
       this.socialInteractionsScreen = var1;
       this.setRenderBackground(false);
    }
 
    @Override
    protected void enableScissor(GuiGraphics var1) {
-      var1.enableScissor(this.x0, this.y0 + 4, this.x1, this.y1);
+      var1.enableScissor(this.getX(), this.getY() + 4, this.getRight(), this.getBottom());
    }
 
    public void updatePlayerList(Collection<UUID> var1, double var2, boolean var4) {

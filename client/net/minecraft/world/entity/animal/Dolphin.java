@@ -88,11 +88,6 @@ public class Dolphin extends WaterAnimal {
    }
 
    @Override
-   public boolean canBreatheUnderwater() {
-      return false;
-   }
-
-   @Override
    protected void handleAirSupply(int var1) {
    }
 
@@ -580,7 +575,7 @@ public class Dolphin extends WaterAnimal {
             double var2 = Dolphin.this.getEyeY() - 0.30000001192092896;
             ItemEntity var4 = new ItemEntity(Dolphin.this.level(), Dolphin.this.getX(), var2, Dolphin.this.getZ(), var1);
             var4.setPickUpDelay(40);
-            var4.setThrower(Dolphin.this.getUUID());
+            var4.setThrower(Dolphin.this);
             float var5 = 0.3F;
             float var6 = Dolphin.this.random.nextFloat() * 6.2831855F;
             float var7 = 0.02F * Dolphin.this.random.nextFloat();

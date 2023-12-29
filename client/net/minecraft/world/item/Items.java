@@ -11,6 +11,7 @@ import net.minecraft.tags.InstrumentTags;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.Boat;
+import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.food.Foods;
 import net.minecraft.world.item.armortrim.TrimPatterns;
 import net.minecraft.world.level.block.Block;
@@ -31,6 +32,19 @@ public class Items {
    public static final Item POLISHED_DEEPSLATE = registerBlock(Blocks.POLISHED_DEEPSLATE);
    public static final Item CALCITE = registerBlock(Blocks.CALCITE);
    public static final Item TUFF = registerBlock(Blocks.TUFF);
+   public static final Item TUFF_SLAB = registerBlock(Blocks.TUFF_SLAB);
+   public static final Item TUFF_STAIRS = registerBlock(Blocks.TUFF_STAIRS);
+   public static final Item TUFF_WALL = registerBlock(Blocks.TUFF_WALL);
+   public static final Item CHISELED_TUFF = registerBlock(Blocks.CHISELED_TUFF);
+   public static final Item POLISHED_TUFF = registerBlock(Blocks.POLISHED_TUFF);
+   public static final Item POLISHED_TUFF_SLAB = registerBlock(Blocks.POLISHED_TUFF_SLAB);
+   public static final Item POLISHED_TUFF_STAIRS = registerBlock(Blocks.POLISHED_TUFF_STAIRS);
+   public static final Item POLISHED_TUFF_WALL = registerBlock(Blocks.POLISHED_TUFF_WALL);
+   public static final Item TUFF_BRICKS = registerBlock(Blocks.TUFF_BRICKS);
+   public static final Item TUFF_BRICK_SLAB = registerBlock(Blocks.TUFF_BRICK_SLAB);
+   public static final Item TUFF_BRICK_STAIRS = registerBlock(Blocks.TUFF_BRICK_STAIRS);
+   public static final Item TUFF_BRICK_WALL = registerBlock(Blocks.TUFF_BRICK_WALL);
+   public static final Item CHISELED_TUFF_BRICKS = registerBlock(Blocks.CHISELED_TUFF_BRICKS);
    public static final Item DRIPSTONE_BLOCK = registerBlock(Blocks.DRIPSTONE_BLOCK);
    public static final Item GRASS_BLOCK = registerBlock(Blocks.GRASS_BLOCK);
    public static final Item DIRT = registerBlock(Blocks.DIRT);
@@ -100,6 +114,10 @@ public class Items {
    public static final Item EXPOSED_COPPER = registerBlock(Blocks.EXPOSED_COPPER);
    public static final Item WEATHERED_COPPER = registerBlock(Blocks.WEATHERED_COPPER);
    public static final Item OXIDIZED_COPPER = registerBlock(Blocks.OXIDIZED_COPPER);
+   public static final Item CHISELED_COPPER = registerBlock(Blocks.CHISELED_COPPER);
+   public static final Item EXPOSED_CHISELED_COPPER = registerBlock(Blocks.EXPOSED_CHISELED_COPPER);
+   public static final Item WEATHERED_CHISELED_COPPER = registerBlock(Blocks.WEATHERED_CHISELED_COPPER);
+   public static final Item OXIDIZED_CHISELED_COPPER = registerBlock(Blocks.OXIDIZED_CHISELED_COPPER);
    public static final Item CUT_COPPER = registerBlock(Blocks.CUT_COPPER);
    public static final Item EXPOSED_CUT_COPPER = registerBlock(Blocks.EXPOSED_CUT_COPPER);
    public static final Item WEATHERED_CUT_COPPER = registerBlock(Blocks.WEATHERED_CUT_COPPER);
@@ -116,6 +134,10 @@ public class Items {
    public static final Item WAXED_EXPOSED_COPPER = registerBlock(Blocks.WAXED_EXPOSED_COPPER);
    public static final Item WAXED_WEATHERED_COPPER = registerBlock(Blocks.WAXED_WEATHERED_COPPER);
    public static final Item WAXED_OXIDIZED_COPPER = registerBlock(Blocks.WAXED_OXIDIZED_COPPER);
+   public static final Item WAXED_CHISELED_COPPER = registerBlock(Blocks.WAXED_CHISELED_COPPER);
+   public static final Item WAXED_EXPOSED_CHISELED_COPPER = registerBlock(Blocks.WAXED_EXPOSED_CHISELED_COPPER);
+   public static final Item WAXED_WEATHERED_CHISELED_COPPER = registerBlock(Blocks.WAXED_WEATHERED_CHISELED_COPPER);
+   public static final Item WAXED_OXIDIZED_CHISELED_COPPER = registerBlock(Blocks.WAXED_OXIDIZED_CHISELED_COPPER);
    public static final Item WAXED_CUT_COPPER = registerBlock(Blocks.WAXED_CUT_COPPER);
    public static final Item WAXED_EXPOSED_CUT_COPPER = registerBlock(Blocks.WAXED_EXPOSED_CUT_COPPER);
    public static final Item WAXED_WEATHERED_CUT_COPPER = registerBlock(Blocks.WAXED_WEATHERED_CUT_COPPER);
@@ -191,7 +213,7 @@ public class Items {
    public static final Item CHISELED_SANDSTONE = registerBlock(Blocks.CHISELED_SANDSTONE);
    public static final Item CUT_SANDSTONE = registerBlock(Blocks.CUT_SANDSTONE);
    public static final Item COBWEB = registerBlock(Blocks.COBWEB);
-   public static final Item GRASS = registerBlock(Blocks.GRASS);
+   public static final Item SHORT_GRASS = registerBlock(Blocks.SHORT_GRASS);
    public static final Item FERN = registerBlock(Blocks.FERN);
    public static final Item AZALEA = registerBlock(Blocks.AZALEA);
    public static final Item FLOWERING_AZALEA = registerBlock(Blocks.FLOWERING_AZALEA);
@@ -284,7 +306,7 @@ public class Items {
    public static final Item BRICKS = registerBlock(Blocks.BRICKS);
    public static final Item BOOKSHELF = registerBlock(Blocks.BOOKSHELF);
    public static final Item CHISELED_BOOKSHELF = registerBlock(Blocks.CHISELED_BOOKSHELF);
-   public static final Item DECORATED_POT = registerBlock(new BlockItem(Blocks.DECORATED_POT, new Item.Properties().stacksTo(1)));
+   public static final Item DECORATED_POT = registerBlock(Blocks.DECORATED_POT);
    public static final Item MOSSY_COBBLESTONE = registerBlock(Blocks.MOSSY_COBBLESTONE);
    public static final Item OBSIDIAN = registerBlock(Blocks.OBSIDIAN);
    public static final Item TORCH = registerBlock(new StandingAndWallBlockItem(Blocks.TORCH, Blocks.WALL_TORCH, new Item.Properties(), Direction.DOWN));
@@ -744,6 +766,14 @@ public class Items {
    public static final Item BAMBOO_DOOR = registerBlock(new DoubleHighBlockItem(Blocks.BAMBOO_DOOR, new Item.Properties()));
    public static final Item CRIMSON_DOOR = registerBlock(new DoubleHighBlockItem(Blocks.CRIMSON_DOOR, new Item.Properties()));
    public static final Item WARPED_DOOR = registerBlock(new DoubleHighBlockItem(Blocks.WARPED_DOOR, new Item.Properties()));
+   public static final Item COPPER_DOOR = registerBlock(new DoubleHighBlockItem(Blocks.COPPER_DOOR, new Item.Properties()));
+   public static final Item EXPOSED_COPPER_DOOR = registerBlock(new DoubleHighBlockItem(Blocks.EXPOSED_COPPER_DOOR, new Item.Properties()));
+   public static final Item WEATHERED_COPPER_DOOR = registerBlock(new DoubleHighBlockItem(Blocks.WEATHERED_COPPER_DOOR, new Item.Properties()));
+   public static final Item OXIDIZED_COPPER_DOOR = registerBlock(new DoubleHighBlockItem(Blocks.OXIDIZED_COPPER_DOOR, new Item.Properties()));
+   public static final Item WAXED_COPPER_DOOR = registerBlock(new DoubleHighBlockItem(Blocks.WAXED_COPPER_DOOR, new Item.Properties()));
+   public static final Item WAXED_EXPOSED_COPPER_DOOR = registerBlock(new DoubleHighBlockItem(Blocks.WAXED_EXPOSED_COPPER_DOOR, new Item.Properties()));
+   public static final Item WAXED_WEATHERED_COPPER_DOOR = registerBlock(new DoubleHighBlockItem(Blocks.WAXED_WEATHERED_COPPER_DOOR, new Item.Properties()));
+   public static final Item WAXED_OXIDIZED_COPPER_DOOR = registerBlock(new DoubleHighBlockItem(Blocks.WAXED_OXIDIZED_COPPER_DOOR, new Item.Properties()));
    public static final Item IRON_TRAPDOOR = registerBlock(Blocks.IRON_TRAPDOOR);
    public static final Item OAK_TRAPDOOR = registerBlock(Blocks.OAK_TRAPDOOR);
    public static final Item SPRUCE_TRAPDOOR = registerBlock(Blocks.SPRUCE_TRAPDOOR);
@@ -756,6 +786,14 @@ public class Items {
    public static final Item BAMBOO_TRAPDOOR = registerBlock(Blocks.BAMBOO_TRAPDOOR);
    public static final Item CRIMSON_TRAPDOOR = registerBlock(Blocks.CRIMSON_TRAPDOOR);
    public static final Item WARPED_TRAPDOOR = registerBlock(Blocks.WARPED_TRAPDOOR);
+   public static final Item COPPER_TRAPDOOR = registerBlock(Blocks.COPPER_TRAPDOOR);
+   public static final Item EXPOSED_COPPER_TRAPDOOR = registerBlock(Blocks.EXPOSED_COPPER_TRAPDOOR);
+   public static final Item WEATHERED_COPPER_TRAPDOOR = registerBlock(Blocks.WEATHERED_COPPER_TRAPDOOR);
+   public static final Item OXIDIZED_COPPER_TRAPDOOR = registerBlock(Blocks.OXIDIZED_COPPER_TRAPDOOR);
+   public static final Item WAXED_COPPER_TRAPDOOR = registerBlock(Blocks.WAXED_COPPER_TRAPDOOR);
+   public static final Item WAXED_EXPOSED_COPPER_TRAPDOOR = registerBlock(Blocks.WAXED_EXPOSED_COPPER_TRAPDOOR);
+   public static final Item WAXED_WEATHERED_COPPER_TRAPDOOR = registerBlock(Blocks.WAXED_WEATHERED_COPPER_TRAPDOOR);
+   public static final Item WAXED_OXIDIZED_COPPER_TRAPDOOR = registerBlock(Blocks.WAXED_OXIDIZED_COPPER_TRAPDOOR);
    public static final Item OAK_FENCE_GATE = registerBlock(Blocks.OAK_FENCE_GATE);
    public static final Item SPRUCE_FENCE_GATE = registerBlock(Blocks.SPRUCE_FENCE_GATE);
    public static final Item BIRCH_FENCE_GATE = registerBlock(Blocks.BIRCH_FENCE_GATE);
@@ -1093,12 +1131,17 @@ public class Items {
    public static final Item RED_BED = registerBlock(new BedItem(Blocks.RED_BED, new Item.Properties().stacksTo(1)));
    public static final Item BLACK_BED = registerBlock(new BedItem(Blocks.BLACK_BED, new Item.Properties().stacksTo(1)));
    public static final Item COOKIE = registerItem("cookie", new Item(new Item.Properties().food(Foods.COOKIE)));
+   public static final Item CRAFTER = registerBlock(new BlockItem(Blocks.CRAFTER, new Item.Properties()));
    public static final Item FILLED_MAP = registerItem("filled_map", new MapItem(new Item.Properties()));
    public static final Item SHEARS = registerItem("shears", new ShearsItem(new Item.Properties().durability(238)));
    public static final Item MELON_SLICE = registerItem("melon_slice", new Item(new Item.Properties().food(Foods.MELON_SLICE)));
    public static final Item DRIED_KELP = registerItem("dried_kelp", new Item(new Item.Properties().food(Foods.DRIED_KELP)));
-   public static final Item PUMPKIN_SEEDS = registerItem("pumpkin_seeds", new ItemNameBlockItem(Blocks.PUMPKIN_STEM, new Item.Properties()));
-   public static final Item MELON_SEEDS = registerItem("melon_seeds", new ItemNameBlockItem(Blocks.MELON_STEM, new Item.Properties()));
+   public static final Item PUMPKIN_SEEDS = registerItem(
+      net.minecraft.references.Items.PUMPKIN_SEEDS, new ItemNameBlockItem(Blocks.PUMPKIN_STEM, new Item.Properties())
+   );
+   public static final Item MELON_SEEDS = registerItem(
+      net.minecraft.references.Items.MELON_SEEDS, new ItemNameBlockItem(Blocks.MELON_STEM, new Item.Properties())
+   );
    public static final Item BEEF = registerItem("beef", new Item(new Item.Properties().food(Foods.BEEF)));
    public static final Item COOKED_BEEF = registerItem("cooked_beef", new Item(new Item.Properties().food(Foods.COOKED_BEEF)));
    public static final Item CHICKEN = registerItem("chicken", new Item(new Item.Properties().food(Foods.CHICKEN)));
@@ -1126,6 +1169,7 @@ public class Items {
    public static final Item BAT_SPAWN_EGG = registerItem("bat_spawn_egg", new SpawnEggItem(EntityType.BAT, 4996656, 986895, new Item.Properties()));
    public static final Item BEE_SPAWN_EGG = registerItem("bee_spawn_egg", new SpawnEggItem(EntityType.BEE, 15582019, 4400155, new Item.Properties()));
    public static final Item BLAZE_SPAWN_EGG = registerItem("blaze_spawn_egg", new SpawnEggItem(EntityType.BLAZE, 16167425, 16775294, new Item.Properties()));
+   public static final Item BREEZE_SPAWN_EGG = registerItem("breeze_spawn_egg", new SpawnEggItem(EntityType.BREEZE, 11506911, 9529055, new Item.Properties()));
    public static final Item CAT_SPAWN_EGG = registerItem("cat_spawn_egg", new SpawnEggItem(EntityType.CAT, 15714446, 9794134, new Item.Properties()));
    public static final Item CAMEL_SPAWN_EGG = registerItem("camel_spawn_egg", new SpawnEggItem(EntityType.CAMEL, 16565097, 13341495, new Item.Properties()));
    public static final Item CAVE_SPIDER_SPAWN_EGG = registerItem(
@@ -1617,6 +1661,24 @@ public class Items {
    public static final Item SHELTER_POTTERY_SHERD = registerItem("shelter_pottery_sherd", new Item(new Item.Properties()));
    public static final Item SKULL_POTTERY_SHERD = registerItem("skull_pottery_sherd", new Item(new Item.Properties()));
    public static final Item SNORT_POTTERY_SHERD = registerItem("snort_pottery_sherd", new Item(new Item.Properties()));
+   public static final Item COPPER_GRATE = registerBlock(Blocks.COPPER_GRATE);
+   public static final Item EXPOSED_COPPER_GRATE = registerBlock(Blocks.EXPOSED_COPPER_GRATE);
+   public static final Item WEATHERED_COPPER_GRATE = registerBlock(Blocks.WEATHERED_COPPER_GRATE);
+   public static final Item OXIDIZED_COPPER_GRATE = registerBlock(Blocks.OXIDIZED_COPPER_GRATE);
+   public static final Item WAXED_COPPER_GRATE = registerBlock(Blocks.WAXED_COPPER_GRATE);
+   public static final Item WAXED_EXPOSED_COPPER_GRATE = registerBlock(Blocks.WAXED_EXPOSED_COPPER_GRATE);
+   public static final Item WAXED_WEATHERED_COPPER_GRATE = registerBlock(Blocks.WAXED_WEATHERED_COPPER_GRATE);
+   public static final Item WAXED_OXIDIZED_COPPER_GRATE = registerBlock(Blocks.WAXED_OXIDIZED_COPPER_GRATE);
+   public static final Item COPPER_BULB = registerBlock(Blocks.COPPER_BULB);
+   public static final Item EXPOSED_COPPER_BULB = registerBlock(Blocks.EXPOSED_COPPER_BULB);
+   public static final Item WEATHERED_COPPER_BULB = registerBlock(Blocks.WEATHERED_COPPER_BULB);
+   public static final Item OXIDIZED_COPPER_BULB = registerBlock(Blocks.OXIDIZED_COPPER_BULB);
+   public static final Item WAXED_COPPER_BULB = registerBlock(Blocks.WAXED_COPPER_BULB);
+   public static final Item WAXED_EXPOSED_COPPER_BULB = registerBlock(Blocks.WAXED_EXPOSED_COPPER_BULB);
+   public static final Item WAXED_WEATHERED_COPPER_BULB = registerBlock(Blocks.WAXED_WEATHERED_COPPER_BULB);
+   public static final Item WAXED_OXIDIZED_COPPER_BULB = registerBlock(Blocks.WAXED_OXIDIZED_COPPER_BULB);
+   public static final Item TRIAL_SPAWNER = registerBlock(Blocks.TRIAL_SPAWNER);
+   public static final Item TRIAL_KEY = registerItem("trial_key", new Item(new Item.Properties().requiredFeatures(FeatureFlags.UPDATE_1_21)));
 
    public Items() {
       super();

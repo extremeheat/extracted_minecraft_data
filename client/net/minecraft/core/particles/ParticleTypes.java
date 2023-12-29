@@ -10,7 +10,7 @@ public class ParticleTypes {
    public static final SimpleParticleType ANGRY_VILLAGER = register("angry_villager", false);
    public static final ParticleType<BlockParticleOption> BLOCK = register("block", false, BlockParticleOption.DESERIALIZER, BlockParticleOption::codec);
    public static final ParticleType<BlockParticleOption> BLOCK_MARKER = register(
-      "block_marker", false, BlockParticleOption.DESERIALIZER, BlockParticleOption::codec
+      "block_marker", true, BlockParticleOption.DESERIALIZER, BlockParticleOption::codec
    );
    public static final SimpleParticleType BUBBLE = register("bubble", false);
    public static final SimpleParticleType CLOUD = register("cloud", false);
@@ -34,6 +34,8 @@ public class ParticleTypes {
    public static final SimpleParticleType ENTITY_EFFECT = register("entity_effect", false);
    public static final SimpleParticleType EXPLOSION_EMITTER = register("explosion_emitter", true);
    public static final SimpleParticleType EXPLOSION = register("explosion", true);
+   public static final SimpleParticleType GUST = register("gust", true);
+   public static final SimpleParticleType GUST_EMITTER = register("gust_emitter", true);
    public static final SimpleParticleType SONIC_BOOM = register("sonic_boom", true);
    public static final ParticleType<BlockParticleOption> FALLING_DUST = register(
       "falling_dust", false, BlockParticleOption.DESERIALIZER, BlockParticleOption::codec
@@ -68,6 +70,7 @@ public class ParticleTypes {
    public static final SimpleParticleType PORTAL = register("portal", false);
    public static final SimpleParticleType RAIN = register("rain", false);
    public static final SimpleParticleType SMOKE = register("smoke", false);
+   public static final SimpleParticleType WHITE_SMOKE = register("white_smoke", false);
    public static final SimpleParticleType SNEEZE = register("sneeze", false);
    public static final SimpleParticleType SPIT = register("spit", true);
    public static final SimpleParticleType SQUID_INK = register("squid_ink", true);
@@ -113,6 +116,9 @@ public class ParticleTypes {
       "shriek", false, ShriekParticleOption.DESERIALIZER, var0 -> ShriekParticleOption.CODEC
    );
    public static final SimpleParticleType EGG_CRACK = register("egg_crack", false);
+   public static final SimpleParticleType DUST_PLUME = register("dust_plume", false);
+   public static final SimpleParticleType GUST_DUST = register("gust_dust", false);
+   public static final SimpleParticleType TRIAL_SPAWNER_DETECTION = register("trial_spawner_detection", true);
    public static final Codec<ParticleOptions> CODEC = BuiltInRegistries.PARTICLE_TYPE
       .byNameCodec()
       .dispatch("type", ParticleOptions::getType, ParticleType::codec);

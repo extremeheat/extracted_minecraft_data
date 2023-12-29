@@ -115,9 +115,6 @@ public abstract class RenderStateShard {
    protected static final RenderStateShard.ShaderStateShard RENDERTYPE_TRANSLUCENT_MOVING_BLOCK_SHADER = new RenderStateShard.ShaderStateShard(
       GameRenderer::getRendertypeTranslucentMovingBlockShader
    );
-   protected static final RenderStateShard.ShaderStateShard RENDERTYPE_TRANSLUCENT_NO_CRUMBLING_SHADER = new RenderStateShard.ShaderStateShard(
-      GameRenderer::getRendertypeTranslucentNoCrumblingShader
-   );
    protected static final RenderStateShard.ShaderStateShard RENDERTYPE_ARMOR_CUTOUT_NO_CULL_SHADER = new RenderStateShard.ShaderStateShard(
       GameRenderer::getRendertypeArmorCutoutNoCullShader
    );
@@ -244,6 +241,9 @@ public abstract class RenderStateShard {
    );
    protected static final RenderStateShard.ShaderStateShard RENDERTYPE_GUI_GHOST_RECIPE_OVERLAY_SHADER = new RenderStateShard.ShaderStateShard(
       GameRenderer::getRendertypeGuiGhostRecipeOverlayShader
+   );
+   protected static final RenderStateShard.ShaderStateShard RENDERTYPE_BREEZE_WIND_SHADER = new RenderStateShard.ShaderStateShard(
+      GameRenderer::getRendertypeBreezeWindShader
    );
    protected static final RenderStateShard.TextureStateShard BLOCK_SHEET_MIPPED = new RenderStateShard.TextureStateShard(
       TextureAtlas.LOCATION_BLOCKS, false, true

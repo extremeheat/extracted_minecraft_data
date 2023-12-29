@@ -1,5 +1,6 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
@@ -37,6 +38,9 @@ public abstract class BaseRailBlock extends Block implements SimpleWaterloggedBl
       super(var2);
       this.isStraight = var1;
    }
+
+   @Override
+   protected abstract MapCodec<? extends BaseRailBlock> codec();
 
    public boolean isStraight() {
       return this.isStraight;

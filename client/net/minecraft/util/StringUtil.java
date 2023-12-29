@@ -15,13 +15,13 @@ public class StringUtil {
       super();
    }
 
-   public static String formatTickDuration(int var0) {
-      int var1 = var0 / 20;
-      int var2 = var1 / 60;
-      var1 %= 60;
+   public static String formatTickDuration(int var0, float var1) {
+      int var2 = Mth.floor((float)var0 / var1);
       int var3 = var2 / 60;
       var2 %= 60;
-      return var3 > 0 ? String.format(Locale.ROOT, "%02d:%02d:%02d", var3, var2, var1) : String.format(Locale.ROOT, "%02d:%02d", var2, var1);
+      int var4 = var3 / 60;
+      var3 %= 60;
+      return var4 > 0 ? String.format(Locale.ROOT, "%02d:%02d:%02d", var4, var3, var2) : String.format(Locale.ROOT, "%02d:%02d", var3, var2);
    }
 
    public static String stripColor(String var0) {

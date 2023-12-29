@@ -69,7 +69,7 @@ public class VideoSettingsScreen extends OptionsSubScreen {
 
    @Override
    protected void init() {
-      this.list = new OptionsList(this.minecraft, this.width, this.height, 32, this.height - 32, 25);
+      this.list = this.addRenderableWidget(new OptionsList(this.minecraft, this.width, this.height - 64, 32, 25));
       boolean var1 = true;
       Window var2 = this.minecraft.getWindow();
       Monitor var3 = var2.findBestMonitor();
@@ -114,7 +114,6 @@ public class VideoSettingsScreen extends OptionsSubScreen {
       this.list.addBig(var6);
       this.list.addBig(this.options.biomeBlendRadius());
       this.list.addSmall(options(this.options));
-      this.addWidget(this.list);
       this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, var2x -> {
          this.minecraft.options.save();
          var2.changeFullscreenVideoMode();
@@ -160,15 +159,20 @@ public class VideoSettingsScreen extends OptionsSubScreen {
                var7.add(Component.translatable("options.graphics.warning.version", var10).withStyle(ChatFormatting.GRAY));
             }
 
-            this.minecraft.setScreen(new PopupScreen(WARNING_TITLE, var7, ImmutableList.of(new PopupScreen.ButtonOption(BUTTON_ACCEPT, var1x -> {
-               this.options.graphicsMode().set(GraphicsStatus.FABULOUS);
-               Minecraft.getInstance().levelRenderer.allChanged();
-               this.gpuWarnlistManager.dismissWarning();
-               this.minecraft.setScreen(this);
-            }), new PopupScreen.ButtonOption(BUTTON_CANCEL, var1x -> {
-               this.gpuWarnlistManager.dismissWarningAndSkipFabulous();
-               this.minecraft.setScreen(this);
-            }))));
+            this.minecraft
+               .setScreen(
+                  new UnsupportedGraphicsWarningScreen(
+                     WARNING_TITLE, var7, ImmutableList.of(new UnsupportedGraphicsWarningScreen.ButtonOption(BUTTON_ACCEPT, var1x -> {
+                        this.options.graphicsMode().set(GraphicsStatus.FABULOUS);
+                        Minecraft.getInstance().levelRenderer.allChanged();
+                        this.gpuWarnlistManager.dismissWarning();
+                        this.minecraft.setScreen(this);
+                     }), new UnsupportedGraphicsWarningScreen.ButtonOption(BUTTON_CANCEL, var1x -> {
+                        this.gpuWarnlistManager.dismissWarningAndSkipFabulous();
+                        this.minecraft.setScreen(this);
+                     }))
+                  )
+               );
          }
 
          return true;
@@ -198,7 +202,8 @@ public class VideoSettingsScreen extends OptionsSubScreen {
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.basicListRender(var1, this.list, var2, var3, var4);
+      super.render(var1, var2, var3, var4);
+      var1.drawCenteredString(this.font, this.title, this.width / 2, 20, 16777215);
    }
 
    @Override

@@ -11,7 +11,9 @@ public interface ClientCommonPacketListener extends ClientboundPacketListener {
 
    void handleDisconnect(ClientboundDisconnectPacket var1);
 
-   void handleResourcePack(ClientboundResourcePackPacket var1);
+   void handleResourcePackPush(ClientboundResourcePackPushPacket var1);
+
+   void handleResourcePackPop(ClientboundResourcePackPopPacket var1);
 
    void handleUpdateTags(ClientboundUpdateTagsPacket var1);
 }

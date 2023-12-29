@@ -45,8 +45,7 @@ public class CreateBuffetWorldScreen extends Screen {
 
    @Override
    protected void init() {
-      this.list = new CreateBuffetWorldScreen.BiomeList();
-      this.addWidget(this.list);
+      this.list = this.addRenderableWidget(new CreateBuffetWorldScreen.BiomeList());
       this.doneButton = this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, var1 -> {
          this.applySettings.accept(this.biome);
          this.minecraft.setScreen(this.parent);
@@ -66,7 +65,6 @@ public class CreateBuffetWorldScreen extends Screen {
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      this.list.render(var1, var2, var3, var4);
       var1.drawCenteredString(this.font, this.title, this.width / 2, 8, 16777215);
       var1.drawCenteredString(this.font, BIOME_SELECT_INFO, this.width / 2, 28, 10526880);
    }
@@ -78,14 +76,7 @@ public class CreateBuffetWorldScreen extends Screen {
 
    class BiomeList extends ObjectSelectionList<CreateBuffetWorldScreen.BiomeList.Entry> {
       BiomeList() {
-         super(
-            CreateBuffetWorldScreen.this.minecraft,
-            CreateBuffetWorldScreen.this.width,
-            CreateBuffetWorldScreen.this.height,
-            40,
-            CreateBuffetWorldScreen.this.height - 37,
-            16
-         );
+         super(CreateBuffetWorldScreen.this.minecraft, CreateBuffetWorldScreen.this.width, CreateBuffetWorldScreen.this.height - 77, 40, 16);
          Collator var2 = Collator.getInstance(Locale.getDefault());
          CreateBuffetWorldScreen.this.biomes
             .holders()

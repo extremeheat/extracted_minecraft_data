@@ -9,7 +9,7 @@ public record ClientboundSystemChatPacket(Component a, boolean b) implements Pac
    private final boolean overlay;
 
    public ClientboundSystemChatPacket(FriendlyByteBuf var1) {
-      this(var1.readComponent(), var1.readBoolean());
+      this(var1.readComponentTrusted(), var1.readBoolean());
    }
 
    public ClientboundSystemChatPacket(Component var1, boolean var2) {

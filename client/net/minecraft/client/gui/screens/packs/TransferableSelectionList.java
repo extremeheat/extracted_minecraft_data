@@ -30,7 +30,7 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
    final PackSelectionScreen screen;
 
    public TransferableSelectionList(Minecraft var1, PackSelectionScreen var2, int var3, int var4, Component var5) {
-      super(var1, var3, var4, 32, var4 - 55 + 4, 36);
+      super(var1, var3, var4 - 83, 32, 36);
       this.screen = var2;
       this.title = var5;
       this.centerListVertically = false;
@@ -40,7 +40,7 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
    @Override
    protected void renderHeader(GuiGraphics var1, int var2, int var3) {
       MutableComponent var4 = Component.empty().append(this.title).withStyle(ChatFormatting.UNDERLINE, ChatFormatting.BOLD);
-      var1.drawString(this.minecraft.font, var4, var2 + this.width / 2 - this.minecraft.font.width(var4) / 2, Math.min(this.y0 + 3, var3), 16777215, false);
+      var1.drawString(this.minecraft.font, var4, var2 + this.width / 2 - this.minecraft.font.width(var4) / 2, Math.min(this.getY() + 3, var3), 16777215, false);
    }
 
    @Override
@@ -50,7 +50,7 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
 
    @Override
    protected int getScrollbarPosition() {
-      return this.x1 - 6;
+      return this.getRight() - 6;
    }
 
    @Override

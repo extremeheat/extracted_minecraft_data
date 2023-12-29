@@ -1,5 +1,7 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.MapCodec;
+import java.util.function.BiConsumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustParticleOptions;
@@ -9,7 +11,9 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -24,6 +28,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
+   public static final MapCodec<LeverBlock> CODEC = simpleCodec(LeverBlock::new);
    public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
    protected static final int DEPTH = 6;
    protected static final int WIDTH = 6;
@@ -36,6 +41,11 @@ public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
    protected static final VoxelShape UP_AABB_X = Block.box(4.0, 0.0, 5.0, 12.0, 6.0, 11.0);
    protected static final VoxelShape DOWN_AABB_Z = Block.box(5.0, 10.0, 4.0, 11.0, 16.0, 12.0);
    protected static final VoxelShape DOWN_AABB_X = Block.box(4.0, 10.0, 5.0, 12.0, 16.0, 11.0);
+
+   @Override
+   public MapCodec<LeverBlock> codec() {
+      return CODEC;
+   }
 
    protected LeverBlock(BlockBehaviour.Properties var1) {
       super(var1);
@@ -95,6 +105,15 @@ public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
          var2.gameEvent(var4, var7.getValue(POWERED) ? GameEvent.BLOCK_ACTIVATE : GameEvent.BLOCK_DEACTIVATE, var3);
          return InteractionResult.CONSUME;
       }
+   }
+
+   @Override
+   public void onExplosionHit(BlockState var1, Level var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
+      if (var4.getBlockInteraction() == Explosion.BlockInteraction.TRIGGER_BLOCK && !var2.isClientSide()) {
+         this.pull(var1, var2, var3);
+      }
+
+      super.onExplosionHit(var1, var2, var3, var4, var5);
    }
 
    public BlockState pull(BlockState var1, Level var2, BlockPos var3) {

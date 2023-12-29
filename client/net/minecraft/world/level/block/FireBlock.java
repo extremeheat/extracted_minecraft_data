@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block;
 
 import com.google.common.collect.ImmutableMap;
+import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.Map;
@@ -29,6 +30,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class FireBlock extends BaseFireBlock {
+   public static final MapCodec<FireBlock> CODEC = simpleCodec(FireBlock::new);
    public static final int MAX_AGE = 15;
    public static final IntegerProperty AGE = BlockStateProperties.AGE_15;
    public static final BooleanProperty NORTH = PipeBlock.NORTH;
@@ -57,6 +59,11 @@ public class FireBlock extends BaseFireBlock {
    private static final int BURN_HARD = 5;
    private final Object2IntMap<Block> igniteOdds = new Object2IntOpenHashMap();
    private final Object2IntMap<Block> burnOdds = new Object2IntOpenHashMap();
+
+   @Override
+   public MapCodec<FireBlock> codec() {
+      return CODEC;
+   }
 
    public FireBlock(BlockBehaviour.Properties var1) {
       super(var1, 1.0F);
@@ -306,7 +313,7 @@ public class FireBlock extends BaseFireBlock {
       var1.add(AGE, NORTH, EAST, SOUTH, WEST, UP);
    }
 
-   private void setFlammable(Block var1, int var2, int var3) {
+   public void setFlammable(Block var1, int var2, int var3) {
       this.igniteOdds.put(var1, var2);
       this.burnOdds.put(var1, var3);
    }
@@ -406,7 +413,7 @@ public class FireBlock extends BaseFireBlock {
       var0.setFlammable(Blocks.MANGROVE_LEAVES, 30, 60);
       var0.setFlammable(Blocks.BOOKSHELF, 30, 20);
       var0.setFlammable(Blocks.TNT, 15, 100);
-      var0.setFlammable(Blocks.GRASS, 60, 100);
+      var0.setFlammable(Blocks.SHORT_GRASS, 60, 100);
       var0.setFlammable(Blocks.FERN, 60, 100);
       var0.setFlammable(Blocks.DEAD_BUSH, 60, 100);
       var0.setFlammable(Blocks.SUNFLOWER, 60, 100);

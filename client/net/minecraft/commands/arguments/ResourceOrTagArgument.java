@@ -32,10 +32,10 @@ import net.minecraft.tags.TagKey;
 public class ResourceOrTagArgument<T> implements ArgumentType<ResourceOrTagArgument.Result<T>> {
    private static final Collection<String> EXAMPLES = Arrays.asList("foo", "foo:bar", "012", "#skeletons", "#minecraft:skeletons");
    private static final Dynamic2CommandExceptionType ERROR_UNKNOWN_TAG = new Dynamic2CommandExceptionType(
-      (var0, var1) -> Component.translatable("argument.resource_tag.not_found", var0, var1)
+      (var0, var1) -> Component.translatableEscape("argument.resource_tag.not_found", var0, var1)
    );
    private static final Dynamic3CommandExceptionType ERROR_INVALID_TAG_TYPE = new Dynamic3CommandExceptionType(
-      (var0, var1, var2) -> Component.translatable("argument.resource_tag.invalid_type", var0, var1, var2)
+      (var0, var1, var2) -> Component.translatableEscape("argument.resource_tag.invalid_type", var0, var1, var2)
    );
    private final HolderLookup<T> registryLookup;
    final ResourceKey<? extends Registry<T>> registryKey;

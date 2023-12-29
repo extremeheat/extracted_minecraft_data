@@ -18,6 +18,8 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
+import net.minecraft.CrashReportCategory;
+import net.minecraft.Util;
 import net.minecraft.client.ClientBrandRetriever;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.DisconnectedScreen;
@@ -40,7 +42,6 @@ import net.minecraft.network.protocol.login.ServerboundKeyPacket;
 import net.minecraft.network.protocol.login.ServerboundLoginAcknowledgedPacket;
 import net.minecraft.realms.DisconnectedRealmsScreen;
 import net.minecraft.util.Crypt;
-import net.minecraft.util.HttpUtil;
 import net.minecraft.world.flag.FeatureFlags;
 import org.slf4j.Logger;
 
@@ -104,7 +105,7 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
          throw new IllegalStateException("Protocol error", var9);
       }
 
-      HttpUtil.DOWNLOAD_EXECUTOR.submit(() -> {
+      Util.ioPool().submit(() -> {
          Component var5x = this.authenticateServer(var4);
          if (var5x != null) {
             if (this.serverData == null || !this.serverData.isLan()) {
@@ -201,6 +202,12 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
 
    public void setMinigameName(String var1) {
       this.minigameName = var1;
+   }
+
+   @Override
+   public void fillListenerSpecificCrashDetails(CrashReportCategory var1) {
+      var1.setDetail("Server type", () -> this.serverData != null ? this.serverData.type().toString() : "<unknown>");
+      var1.setDetail("Login phase", () -> this.state.get().toString());
    }
 
    static enum State {

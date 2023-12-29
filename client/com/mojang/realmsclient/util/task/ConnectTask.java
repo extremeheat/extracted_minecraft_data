@@ -30,7 +30,7 @@ public class ConnectTask extends LongRunningTask {
    public void abortTask() {
       super.abortTask();
       this.realmsConnect.abort();
-      Minecraft.getInstance().getDownloadedPackSource().clearServerPack();
+      Minecraft.getInstance().getDownloadedPackSource().cleanupAfterDisconnect();
    }
 
    @Override

@@ -1,9 +1,12 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Map;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -23,6 +26,10 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class TripWireBlock extends Block {
+   public static final MapCodec<TripWireBlock> CODEC = RecordCodecBuilder.mapCodec(
+      var0 -> var0.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("hook").forGetter(var0x -> var0x.hook), propertiesCodec())
+            .apply(var0, TripWireBlock::new)
+   );
    public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
    public static final BooleanProperty ATTACHED = BlockStateProperties.ATTACHED;
    public static final BooleanProperty DISARMED = BlockStateProperties.DISARMED;
@@ -34,9 +41,14 @@ public class TripWireBlock extends Block {
    protected static final VoxelShape AABB = Block.box(0.0, 1.0, 0.0, 16.0, 2.5, 16.0);
    protected static final VoxelShape NOT_ATTACHED_AABB = Block.box(0.0, 0.0, 0.0, 16.0, 8.0, 16.0);
    private static final int RECHECK_PERIOD = 10;
-   private final TripWireHookBlock hook;
+   private final Block hook;
 
-   public TripWireBlock(TripWireHookBlock var1, BlockBehaviour.Properties var2) {
+   @Override
+   public MapCodec<TripWireBlock> codec() {
+      return CODEC;
+   }
+
+   public TripWireBlock(Block var1, BlockBehaviour.Properties var2) {
       super(var2);
       this.registerDefaultState(
          this.stateDefinition
@@ -90,13 +102,13 @@ public class TripWireBlock extends Block {
    }
 
    @Override
-   public void playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
+   public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
       if (!var1.isClientSide && !var4.getMainHandItem().isEmpty() && var4.getMainHandItem().is(Items.SHEARS)) {
          var1.setBlock(var2, var3.setValue(DISARMED, Boolean.valueOf(true)), 4);
          var1.gameEvent(var4, GameEvent.SHEAR, var2);
       }
 
-      super.playerWillDestroy(var1, var2, var3, var4);
+      return super.playerWillDestroy(var1, var2, var3, var4);
    }
 
    private void updateSource(Level var1, BlockPos var2, BlockState var3) {
@@ -106,7 +118,7 @@ public class TripWireBlock extends Block {
             BlockState var10 = var1.getBlockState(var9);
             if (var10.is(this.hook)) {
                if (var10.getValue(TripWireHookBlock.FACING) == var7.getOpposite()) {
-                  this.hook.calculateState(var1, var9, var10, false, true, var8, var3);
+                  TripWireHookBlock.calculateState(var1, var9, var10, false, true, var8, var3);
                }
                break;
             }

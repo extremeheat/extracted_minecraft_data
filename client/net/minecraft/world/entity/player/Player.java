@@ -70,16 +70,12 @@ import net.minecraft.world.entity.TamableAnimal;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Parrot;
-import net.minecraft.world.entity.animal.Pig;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.boss.EnderDragonPart;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.monster.Strider;
 import net.minecraft.world.entity.monster.warden.WardenSpawnTracker;
 import net.minecraft.world.entity.projectile.FishingHook;
-import net.minecraft.world.entity.vehicle.AbstractMinecart;
-import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.food.FoodData;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickAction;
@@ -112,7 +108,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Scoreboard;
-import net.minecraft.world.scores.Team;
 import org.slf4j.Logger;
 
 public abstract class Player extends LivingEntity {
@@ -138,7 +133,6 @@ public abstract class Player extends LivingEntity {
       .put(Pose.CROUCHING, EntityDimensions.scalable(0.6F, 1.5F))
       .put(Pose.DYING, EntityDimensions.fixed(0.2F, 0.2F))
       .build();
-   private static final int FLY_ACHIEVEMENT_SPEED = 25;
    private static final EntityDataAccessor<Float> DATA_PLAYER_ABSORPTION_ID = SynchedEntityData.defineId(Player.class, EntityDataSerializers.FLOAT);
    private static final EntityDataAccessor<Integer> DATA_SCORE_ID = SynchedEntityData.defineId(Player.class, EntityDataSerializers.INT);
    protected static final EntityDataAccessor<Byte> DATA_PLAYER_MODE_CUSTOMISATION = SynchedEntityData.defineId(Player.class, EntityDataSerializers.BYTE);
@@ -296,6 +290,11 @@ public abstract class Player extends LivingEntity {
       this.updatePlayerPose();
    }
 
+   @Override
+   protected float getMaxHeadRotationRelativeToBody() {
+      return this.isBlocking() ? 15.0F : super.getMaxHeadRotationRelativeToBody();
+   }
+
    public boolean isSecondaryUseActive() {
       return this.isShiftKeyDown();
    }
@@ -403,7 +402,12 @@ public abstract class Player extends LivingEntity {
 
    @Override
    public int getPortalWaitTime() {
-      return this.abilities.invulnerable ? 1 : 80;
+      return Math.max(
+         1,
+         this.level()
+            .getGameRules()
+            .getInt(this.abilities.invulnerable ? GameRules.RULE_PLAYERS_NETHER_PORTAL_CREATIVE_DELAY : GameRules.RULE_PLAYERS_NETHER_PORTAL_DEFAULT_DELAY)
+      );
    }
 
    @Override
@@ -481,13 +485,9 @@ public abstract class Player extends LivingEntity {
          this.stopRiding();
          this.setShiftKeyDown(false);
       } else {
-         double var1 = this.getX();
-         double var3 = this.getY();
-         double var5 = this.getZ();
          super.rideTick();
          this.oBob = this.bob;
          this.bob = 0.0F;
-         this.checkRidingStatistics(this.getX() - var1, this.getY() - var3, this.getZ() - var5);
       }
    }
 
@@ -679,7 +679,7 @@ public abstract class Player extends LivingEntity {
          ItemEntity var6 = new ItemEntity(this.level(), this.getX(), var4, this.getZ(), var1);
          var6.setPickUpDelay(40);
          if (var3) {
-            var6.setThrower(this.getUUID());
+            var6.setThrower(this);
          }
 
          if (var2) {
@@ -873,8 +873,8 @@ public abstract class Player extends LivingEntity {
    }
 
    public boolean canHarmPlayer(Player var1) {
-      Team var2 = this.getTeam();
-      Team var3 = var1.getTeam();
+      PlayerTeam var2 = this.getTeam();
+      PlayerTeam var3 = var1.getTeam();
       if (var2 == null) {
          return true;
       } else {
@@ -1416,7 +1416,7 @@ public abstract class Player extends LivingEntity {
    public void triggerRecipeCrafted(RecipeHolder<?> var1, List<ItemStack> var2) {
    }
 
-   public void awardRecipesByKey(ResourceLocation[] var1) {
+   public void awardRecipesByKey(List<ResourceLocation> var1) {
    }
 
    public int resetRecipes(Collection<RecipeHolder<?>> var1) {
@@ -1436,32 +1436,27 @@ public abstract class Player extends LivingEntity {
 
    @Override
    public void travel(Vec3 var1) {
-      double var2 = this.getX();
-      double var4 = this.getY();
-      double var6 = this.getZ();
       if (this.isSwimming() && !this.isPassenger()) {
-         double var8 = this.getLookAngle().y;
-         double var10 = var8 < -0.2 ? 0.085 : 0.06;
-         if (var8 <= 0.0
+         double var2 = this.getLookAngle().y;
+         double var4 = var2 < -0.2 ? 0.085 : 0.06;
+         if (var2 <= 0.0
             || this.jumping
             || !this.level().getBlockState(BlockPos.containing(this.getX(), this.getY() + 1.0 - 0.1, this.getZ())).getFluidState().isEmpty()) {
-            Vec3 var12 = this.getDeltaMovement();
-            this.setDeltaMovement(var12.add(0.0, (var8 - var12.y) * var10, 0.0));
+            Vec3 var6 = this.getDeltaMovement();
+            this.setDeltaMovement(var6.add(0.0, (var2 - var6.y) * var4, 0.0));
          }
       }
 
       if (this.abilities.flying && !this.isPassenger()) {
-         double var13 = this.getDeltaMovement().y;
+         double var7 = this.getDeltaMovement().y;
          super.travel(var1);
-         Vec3 var14 = this.getDeltaMovement();
-         this.setDeltaMovement(var14.x, var13 * 0.6, var14.z);
+         Vec3 var8 = this.getDeltaMovement();
+         this.setDeltaMovement(var8.x, var7 * 0.6, var8.z);
          this.resetFallDistance();
          this.setSharedFlag(7, false);
       } else {
          super.travel(var1);
       }
-
-      this.checkMovementStatistics(this.getX() - var2, this.getY() - var4, this.getZ() - var6);
    }
 
    @Override
@@ -1480,76 +1475,6 @@ public abstract class Player extends LivingEntity {
    @Override
    public float getSpeed() {
       return (float)this.getAttributeValue(Attributes.MOVEMENT_SPEED);
-   }
-
-   public void checkMovementStatistics(double var1, double var3, double var5) {
-      if (!this.isPassenger()) {
-         if (this.isSwimming()) {
-            int var7 = Math.round((float)Math.sqrt(var1 * var1 + var3 * var3 + var5 * var5) * 100.0F);
-            if (var7 > 0) {
-               this.awardStat(Stats.SWIM_ONE_CM, var7);
-               this.causeFoodExhaustion(0.01F * (float)var7 * 0.01F);
-            }
-         } else if (this.isEyeInFluid(FluidTags.WATER)) {
-            int var8 = Math.round((float)Math.sqrt(var1 * var1 + var3 * var3 + var5 * var5) * 100.0F);
-            if (var8 > 0) {
-               this.awardStat(Stats.WALK_UNDER_WATER_ONE_CM, var8);
-               this.causeFoodExhaustion(0.01F * (float)var8 * 0.01F);
-            }
-         } else if (this.isInWater()) {
-            int var9 = Math.round((float)Math.sqrt(var1 * var1 + var5 * var5) * 100.0F);
-            if (var9 > 0) {
-               this.awardStat(Stats.WALK_ON_WATER_ONE_CM, var9);
-               this.causeFoodExhaustion(0.01F * (float)var9 * 0.01F);
-            }
-         } else if (this.onClimbable()) {
-            if (var3 > 0.0) {
-               this.awardStat(Stats.CLIMB_ONE_CM, (int)Math.round(var3 * 100.0));
-            }
-         } else if (this.onGround()) {
-            int var10 = Math.round((float)Math.sqrt(var1 * var1 + var5 * var5) * 100.0F);
-            if (var10 > 0) {
-               if (this.isSprinting()) {
-                  this.awardStat(Stats.SPRINT_ONE_CM, var10);
-                  this.causeFoodExhaustion(0.1F * (float)var10 * 0.01F);
-               } else if (this.isCrouching()) {
-                  this.awardStat(Stats.CROUCH_ONE_CM, var10);
-                  this.causeFoodExhaustion(0.0F * (float)var10 * 0.01F);
-               } else {
-                  this.awardStat(Stats.WALK_ONE_CM, var10);
-                  this.causeFoodExhaustion(0.0F * (float)var10 * 0.01F);
-               }
-            }
-         } else if (this.isFallFlying()) {
-            int var11 = Math.round((float)Math.sqrt(var1 * var1 + var3 * var3 + var5 * var5) * 100.0F);
-            this.awardStat(Stats.AVIATE_ONE_CM, var11);
-         } else {
-            int var12 = Math.round((float)Math.sqrt(var1 * var1 + var5 * var5) * 100.0F);
-            if (var12 > 25) {
-               this.awardStat(Stats.FLY_ONE_CM, var12);
-            }
-         }
-      }
-   }
-
-   private void checkRidingStatistics(double var1, double var3, double var5) {
-      if (this.isPassenger()) {
-         int var7 = Math.round((float)Math.sqrt(var1 * var1 + var3 * var3 + var5 * var5) * 100.0F);
-         if (var7 > 0) {
-            Entity var8 = this.getVehicle();
-            if (var8 instanceof AbstractMinecart) {
-               this.awardStat(Stats.MINECART_ONE_CM, var7);
-            } else if (var8 instanceof Boat) {
-               this.awardStat(Stats.BOAT_ONE_CM, var7);
-            } else if (var8 instanceof Pig) {
-               this.awardStat(Stats.PIG_ONE_CM, var7);
-            } else if (var8 instanceof AbstractHorse) {
-               this.awardStat(Stats.HORSE_ONE_CM, var7);
-            } else if (var8 instanceof Strider) {
-               this.awardStat(Stats.STRIDER_ONE_CM, var7);
-            }
-         }
-      }
    }
 
    @Override
@@ -2129,6 +2054,14 @@ public abstract class Player extends LivingEntity {
       } else {
          return this.isSprinting() ? 0.025999999F : 0.02F;
       }
+   }
+
+   public static boolean isValidUsername(String var0) {
+      return var0.length() > 16 ? false : var0.chars().filter(var0x -> var0x <= 32 || var0x >= 127).findAny().isEmpty();
+   }
+
+   public static float getPickRange(boolean var0) {
+      return var0 ? 5.0F : 4.5F;
    }
 
    public static enum BedSleepingProblem {

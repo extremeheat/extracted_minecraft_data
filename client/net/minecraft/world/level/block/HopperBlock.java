@@ -1,5 +1,6 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -34,6 +35,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class HopperBlock extends BaseEntityBlock {
+   public static final MapCodec<HopperBlock> CODEC = simpleCodec(HopperBlock::new);
    public static final DirectionProperty FACING = BlockStateProperties.FACING_HOPPER;
    public static final BooleanProperty ENABLED = BlockStateProperties.ENABLED;
    private static final VoxelShape TOP = Block.box(0.0, 10.0, 0.0, 16.0, 16.0, 16.0);
@@ -50,6 +52,11 @@ public class HopperBlock extends BaseEntityBlock {
    private static final VoxelShape NORTH_INTERACTION_SHAPE = Shapes.or(Hopper.INSIDE, Block.box(6.0, 8.0, 0.0, 10.0, 10.0, 4.0));
    private static final VoxelShape SOUTH_INTERACTION_SHAPE = Shapes.or(Hopper.INSIDE, Block.box(6.0, 8.0, 12.0, 10.0, 10.0, 16.0));
    private static final VoxelShape WEST_INTERACTION_SHAPE = Shapes.or(Hopper.INSIDE, Block.box(0.0, 8.0, 6.0, 4.0, 10.0, 10.0));
+
+   @Override
+   public MapCodec<HopperBlock> codec() {
+      return CODEC;
+   }
 
    public HopperBlock(BlockBehaviour.Properties var1) {
       super(var1);
@@ -155,15 +162,8 @@ public class HopperBlock extends BaseEntityBlock {
 
    @Override
    public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var1.is(var4.getBlock())) {
-         BlockEntity var6 = var2.getBlockEntity(var3);
-         if (var6 instanceof HopperBlockEntity) {
-            Containers.dropContents(var2, var3, (HopperBlockEntity)var6);
-            var2.updateNeighbourForOutputSignal(var3, this);
-         }
-
-         super.onRemove(var1, var2, var3, var4, var5);
-      }
+      Containers.dropContentsOnDestroy(var1, var4, var2, var3);
+      super.onRemove(var1, var2, var3, var4, var5);
    }
 
    @Override

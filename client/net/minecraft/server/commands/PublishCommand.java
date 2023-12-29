@@ -21,7 +21,7 @@ import net.minecraft.world.level.GameType;
 public class PublishCommand {
    private static final SimpleCommandExceptionType ERROR_FAILED = new SimpleCommandExceptionType(Component.translatable("commands.publish.failed"));
    private static final DynamicCommandExceptionType ERROR_ALREADY_PUBLISHED = new DynamicCommandExceptionType(
-      var0 -> Component.translatable("commands.publish.alreadyPublished", var0)
+      var0 -> Component.translatableEscape("commands.publish.alreadyPublished", var0)
    );
 
    public PublishCommand() {

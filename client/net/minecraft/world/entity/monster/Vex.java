@@ -125,6 +125,16 @@ public class Vex extends Monster implements TraceableEntity {
       }
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   @Override
+   public void restoreFrom(Entity var1) {
+      super.restoreFrom(var1);
+      if (var1 instanceof Vex var2) {
+         this.owner = var2.getOwner();
+      }
+   }
+
    @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);

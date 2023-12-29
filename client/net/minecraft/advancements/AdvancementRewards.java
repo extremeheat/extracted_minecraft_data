@@ -1,47 +1,46 @@
 package net.minecraft.advancements;
 
-import com.google.common.collect.Lists;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
+import com.google.common.collect.ImmutableList;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
-import java.util.Arrays;
 import java.util.List;
-import javax.annotation.Nullable;
-import net.minecraft.commands.CommandFunction;
+import java.util.Optional;
+import net.minecraft.commands.CacheableFunction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.GsonHelper;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
-public class AdvancementRewards {
-   public static final AdvancementRewards EMPTY = new AdvancementRewards(
-      0, new ResourceLocation[0], new ResourceLocation[0], CommandFunction.CacheableFunction.NONE
-   );
+public record AdvancementRewards(int c, List<ResourceLocation> d, List<ResourceLocation> e, Optional<CacheableFunction> f) {
    private final int experience;
-   private final ResourceLocation[] loot;
-   private final ResourceLocation[] recipes;
-   private final CommandFunction.CacheableFunction function;
+   private final List<ResourceLocation> loot;
+   private final List<ResourceLocation> recipes;
+   private final Optional<CacheableFunction> function;
+   public static final Codec<AdvancementRewards> CODEC = RecordCodecBuilder.create(
+      var0 -> var0.group(
+               ExtraCodecs.strictOptionalField(Codec.INT, "experience", 0).forGetter(AdvancementRewards::experience),
+               ExtraCodecs.strictOptionalField(ResourceLocation.CODEC.listOf(), "loot", List.of()).forGetter(AdvancementRewards::loot),
+               ExtraCodecs.strictOptionalField(ResourceLocation.CODEC.listOf(), "recipes", List.of()).forGetter(AdvancementRewards::recipes),
+               ExtraCodecs.strictOptionalField(CacheableFunction.CODEC, "function").forGetter(AdvancementRewards::function)
+            )
+            .apply(var0, AdvancementRewards::new)
+   );
+   public static final AdvancementRewards EMPTY = new AdvancementRewards(0, List.of(), List.of(), Optional.empty());
 
-   public AdvancementRewards(int var1, ResourceLocation[] var2, ResourceLocation[] var3, CommandFunction.CacheableFunction var4) {
+   public AdvancementRewards(int var1, List<ResourceLocation> var2, List<ResourceLocation> var3, Optional<CacheableFunction> var4) {
       super();
       this.experience = var1;
       this.loot = var2;
       this.recipes = var3;
       this.function = var4;
-   }
-
-   public ResourceLocation[] getRecipes() {
-      return this.recipes;
    }
 
    public void grant(ServerPlayer var1) {
@@ -52,12 +51,12 @@ public class AdvancementRewards {
          .create(LootContextParamSets.ADVANCEMENT_REWARD);
       boolean var3 = false;
 
-      for(ResourceLocation var7 : this.loot) {
-         ObjectListIterator var8 = var1.server.getLootData().getLootTable(var7).getRandomItems(var2).iterator();
+      for(ResourceLocation var5 : this.loot) {
+         ObjectListIterator var6 = var1.server.getLootData().getLootTable(var5).getRandomItems(var2).iterator();
 
-         while(var8.hasNext()) {
-            ItemStack var9 = (ItemStack)var8.next();
-            if (var1.addItem(var9)) {
+         while(var6.hasNext()) {
+            ItemStack var7 = (ItemStack)var6.next();
+            if (var1.addItem(var7)) {
                var1.level()
                   .playSound(
                      null,
@@ -71,10 +70,10 @@ public class AdvancementRewards {
                   );
                var3 = true;
             } else {
-               ItemEntity var10 = var1.drop(var9, false);
-               if (var10 != null) {
-                  var10.setNoPickUpDelay();
-                  var10.setTarget(var1.getUUID());
+               ItemEntity var8 = var1.drop(var7, false);
+               if (var8 != null) {
+                  var8.setNoPickUpDelay();
+                  var8.setTarget(var1.getUUID());
                }
             }
          }
@@ -84,98 +83,21 @@ public class AdvancementRewards {
          var1.containerMenu.broadcastChanges();
       }
 
-      if (this.recipes.length > 0) {
+      if (!this.recipes.isEmpty()) {
          var1.awardRecipesByKey(this.recipes);
       }
 
-      MinecraftServer var11 = var1.server;
+      MinecraftServer var9 = var1.server;
       this.function
-         .get(var11.getFunctions())
-         .ifPresent(var2x -> var11.getFunctions().execute(var2x, var1.createCommandSourceStack().withSuppressedOutput().withPermission(2)));
-   }
-
-   @Override
-   public String toString() {
-      return "AdvancementRewards{experience="
-         + this.experience
-         + ", loot="
-         + Arrays.toString((Object[])this.loot)
-         + ", recipes="
-         + Arrays.toString((Object[])this.recipes)
-         + ", function="
-         + this.function
-         + "}";
-   }
-
-   public JsonElement serializeToJson() {
-      if (this == EMPTY) {
-         return JsonNull.INSTANCE;
-      } else {
-         JsonObject var1 = new JsonObject();
-         if (this.experience != 0) {
-            var1.addProperty("experience", this.experience);
-         }
-
-         if (this.loot.length > 0) {
-            JsonArray var2 = new JsonArray();
-
-            for(ResourceLocation var6 : this.loot) {
-               var2.add(var6.toString());
-            }
-
-            var1.add("loot", var2);
-         }
-
-         if (this.recipes.length > 0) {
-            JsonArray var7 = new JsonArray();
-
-            for(ResourceLocation var11 : this.recipes) {
-               var7.add(var11.toString());
-            }
-
-            var1.add("recipes", var7);
-         }
-
-         if (this.function.getId() != null) {
-            var1.addProperty("function", this.function.getId().toString());
-         }
-
-         return var1;
-      }
-   }
-
-   public static AdvancementRewards deserialize(JsonObject var0) throws JsonParseException {
-      int var1 = GsonHelper.getAsInt(var0, "experience", 0);
-      JsonArray var2 = GsonHelper.getAsJsonArray(var0, "loot", new JsonArray());
-      ResourceLocation[] var3 = new ResourceLocation[var2.size()];
-
-      for(int var4 = 0; var4 < var3.length; ++var4) {
-         var3[var4] = new ResourceLocation(GsonHelper.convertToString(var2.get(var4), "loot[" + var4 + "]"));
-      }
-
-      JsonArray var7 = GsonHelper.getAsJsonArray(var0, "recipes", new JsonArray());
-      ResourceLocation[] var5 = new ResourceLocation[var7.size()];
-
-      for(int var6 = 0; var6 < var5.length; ++var6) {
-         var5[var6] = new ResourceLocation(GsonHelper.convertToString(var7.get(var6), "recipes[" + var6 + "]"));
-      }
-
-      CommandFunction.CacheableFunction var8;
-      if (var0.has("function")) {
-         var8 = new CommandFunction.CacheableFunction(new ResourceLocation(GsonHelper.getAsString(var0, "function")));
-      } else {
-         var8 = CommandFunction.CacheableFunction.NONE;
-      }
-
-      return new AdvancementRewards(var1, var3, var5, var8);
+         .flatMap(var1x -> var1x.get(var9.getFunctions()))
+         .ifPresent(var2x -> var9.getFunctions().execute(var2x, var1.createCommandSourceStack().withSuppressedOutput().withPermission(2)));
    }
 
    public static class Builder {
       private int experience;
-      private final List<ResourceLocation> loot = Lists.newArrayList();
-      private final List<ResourceLocation> recipes = Lists.newArrayList();
-      @Nullable
-      private ResourceLocation function;
+      private final com.google.common.collect.ImmutableList.Builder<ResourceLocation> loot = ImmutableList.builder();
+      private final com.google.common.collect.ImmutableList.Builder<ResourceLocation> recipes = ImmutableList.builder();
+      private Optional<ResourceLocation> function = Optional.empty();
 
       public Builder() {
          super();
@@ -213,17 +135,12 @@ public class AdvancementRewards {
       }
 
       public AdvancementRewards.Builder runs(ResourceLocation var1) {
-         this.function = var1;
+         this.function = Optional.of(var1);
          return this;
       }
 
       public AdvancementRewards build() {
-         return new AdvancementRewards(
-            this.experience,
-            this.loot.toArray(new ResourceLocation[0]),
-            this.recipes.toArray(new ResourceLocation[0]),
-            this.function == null ? CommandFunction.CacheableFunction.NONE : new CommandFunction.CacheableFunction(this.function)
-         );
+         return new AdvancementRewards(this.experience, this.loot.build(), this.recipes.build(), this.function.map(CacheableFunction::new));
       }
    }
 }

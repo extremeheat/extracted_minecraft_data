@@ -89,20 +89,20 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
          this.addRenderableWidget(
             Button.builder(CommonComponents.GUI_BACK, var1 -> this.onClose()).bounds(this.width / 2 - 100, this.height / 4 + 120 + 24, 200, 20).build()
          );
-         this.packList = new ConfirmExperimentalFeaturesScreen.DetailsScreen.PackList(this.minecraft, ConfirmExperimentalFeaturesScreen.this.enabledPacks);
-         this.addWidget(this.packList);
+         this.packList = this.addRenderableWidget(
+            new ConfirmExperimentalFeaturesScreen.DetailsScreen.PackList(this.minecraft, ConfirmExperimentalFeaturesScreen.this.enabledPacks)
+         );
       }
 
       @Override
       public void render(GuiGraphics var1, int var2, int var3, float var4) {
          super.render(var1, var2, var3, var4);
-         this.packList.render(var1, var2, var3, var4);
          var1.drawCenteredString(this.font, this.title, this.width / 2, 10, 16777215);
       }
 
       class PackList extends ObjectSelectionList<ConfirmExperimentalFeaturesScreen.DetailsScreen.PackListEntry> {
          public PackList(Minecraft var2, Collection<Pack> var3) {
-            super(var2, DetailsScreen.this.width, DetailsScreen.this.height, 32, DetailsScreen.this.height - 64, (9 + 2) * 3);
+            super(var2, DetailsScreen.this.width, DetailsScreen.this.height - 96, 32, (9 + 2) * 3);
 
             for(Pack var5 : var3) {
                String var6 = FeatureFlags.printMissingFlags(FeatureFlags.VANILLA_SET, var5.getRequestedFeatures());

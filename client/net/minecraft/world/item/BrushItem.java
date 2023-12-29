@@ -4,7 +4,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -30,7 +29,6 @@ import net.minecraft.world.phys.Vec3;
 public class BrushItem extends Item {
    public static final int ANIMATION_DURATION = 10;
    private static final int USE_DURATION = 200;
-   private static final double MAX_BRUSH_DISTANCE = Math.sqrt(ServerGamePacketListenerImpl.MAX_INTERACTION_DISTANCE) - 1.0;
 
    public BrushItem(Item.Properties var1) {
       super(var1);
@@ -61,7 +59,7 @@ public class BrushItem extends Item {
    @Override
    public void onUseTick(Level var1, LivingEntity var2, ItemStack var3, int var4) {
       if (var4 >= 0 && var2 instanceof Player var5) {
-         HitResult var6 = this.calculateHitResult(var2);
+         HitResult var6 = this.calculateHitResult((Player)var5);
          if (var6 instanceof BlockHitResult var7 && var6.getType() == HitResult.Type.BLOCK) {
             int var8 = this.getUseDuration(var3) - var4 + 1;
             boolean var9 = var8 % 10 == 5;
@@ -107,8 +105,8 @@ public class BrushItem extends Item {
       }
    }
 
-   private HitResult calculateHitResult(LivingEntity var1) {
-      return ProjectileUtil.getHitResultOnViewVector(var1, var0 -> !var0.isSpectator() && var0.isPickable(), MAX_BRUSH_DISTANCE);
+   private HitResult calculateHitResult(Player var1) {
+      return ProjectileUtil.getHitResultOnViewVector(var1, var0 -> !var0.isSpectator() && var0.isPickable(), (double)Player.getPickRange(var1.isCreative()));
    }
 
    private void spawnDustParticles(Level var1, BlockHitResult var2, BlockState var3, Vec3 var4, HumanoidArm var5) {

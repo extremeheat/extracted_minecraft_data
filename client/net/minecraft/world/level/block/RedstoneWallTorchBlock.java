@@ -1,8 +1,10 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -18,8 +20,14 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class RedstoneWallTorchBlock extends RedstoneTorchBlock {
+   public static final MapCodec<RedstoneWallTorchBlock> CODEC = simpleCodec(RedstoneWallTorchBlock::new);
    public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
    public static final BooleanProperty LIT = RedstoneTorchBlock.LIT;
+
+   @Override
+   public MapCodec<RedstoneWallTorchBlock> codec() {
+      return CODEC;
+   }
 
    protected RedstoneWallTorchBlock(BlockBehaviour.Properties var1) {
       super(var1);
@@ -61,7 +69,7 @@ public class RedstoneWallTorchBlock extends RedstoneTorchBlock {
          double var8 = (double)var3.getX() + 0.5 + (var4.nextDouble() - 0.5) * 0.2 + 0.27 * (double)var5.getStepX();
          double var10 = (double)var3.getY() + 0.7 + (var4.nextDouble() - 0.5) * 0.2 + 0.22;
          double var12 = (double)var3.getZ() + 0.5 + (var4.nextDouble() - 0.5) * 0.2 + 0.27 * (double)var5.getStepZ();
-         var2.addParticle(this.flameParticle, var8, var10, var12, 0.0, 0.0, 0.0);
+         var2.addParticle(DustParticleOptions.REDSTONE, var8, var10, var12, 0.0, 0.0, 0.0);
       }
    }
 

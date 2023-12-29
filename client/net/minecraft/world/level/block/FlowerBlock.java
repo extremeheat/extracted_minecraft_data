@@ -1,5 +1,7 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.effect.MobEffect;
@@ -11,20 +13,38 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class FlowerBlock extends BushBlock implements SuspiciousEffectHolder {
+   protected static final MapCodec<List<SuspiciousEffectHolder.EffectEntry>> EFFECTS_FIELD = SuspiciousEffectHolder.EffectEntry.LIST_CODEC
+      .fieldOf("suspicious_stew_effects");
+   public static final MapCodec<FlowerBlock> CODEC = RecordCodecBuilder.mapCodec(
+      var0 -> var0.group(EFFECTS_FIELD.forGetter(FlowerBlock::getSuspiciousEffects), propertiesCodec()).apply(var0, FlowerBlock::new)
+   );
    protected static final float AABB_OFFSET = 3.0F;
    protected static final VoxelShape SHAPE = Block.box(5.0, 0.0, 5.0, 11.0, 10.0, 11.0);
    private final List<SuspiciousEffectHolder.EffectEntry> suspiciousStewEffects;
 
+   @Override
+   public MapCodec<? extends FlowerBlock> codec() {
+      return CODEC;
+   }
+
    public FlowerBlock(MobEffect var1, int var2, BlockBehaviour.Properties var3) {
-      super(var3);
-      int var4;
-      if (var1.isInstantenous()) {
-         var4 = var2;
+      this(makeEffectList(var1, var2), var3);
+   }
+
+   public FlowerBlock(List<SuspiciousEffectHolder.EffectEntry> var1, BlockBehaviour.Properties var2) {
+      super(var2);
+      this.suspiciousStewEffects = var1;
+   }
+
+   protected static List<SuspiciousEffectHolder.EffectEntry> makeEffectList(MobEffect var0, int var1) {
+      int var2;
+      if (var0.isInstantenous()) {
+         var2 = var1;
       } else {
-         var4 = var2 * 20;
+         var2 = var1 * 20;
       }
 
-      this.suspiciousStewEffects = List.of(new SuspiciousEffectHolder.EffectEntry(var1, var4));
+      return List.of(new SuspiciousEffectHolder.EffectEntry(var0, var2));
    }
 
    @Override

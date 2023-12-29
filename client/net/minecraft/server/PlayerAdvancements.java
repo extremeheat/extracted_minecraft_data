@@ -30,12 +30,11 @@ import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementNode;
 import net.minecraft.advancements.AdvancementProgress;
 import net.minecraft.advancements.AdvancementTree;
-import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.CriterionProgress;
 import net.minecraft.advancements.CriterionTrigger;
 import net.minecraft.advancements.CriterionTriggerInstance;
-import net.minecraft.network.chat.Component;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.protocol.game.ClientboundSelectAdvancementsTabPacket;
 import net.minecraft.network.protocol.game.ClientboundUpdateAdvancementsPacket;
 import net.minecraft.resources.ResourceLocation;
@@ -78,7 +77,7 @@ public class PlayerAdvancements {
    }
 
    public void stopListening() {
-      for(CriterionTrigger var2 : CriteriaTriggers.all()) {
+      for(CriterionTrigger var2 : BuiltInRegistries.TRIGGER_TYPES) {
          var2.removePlayerListeners(this);
       }
    }
@@ -190,21 +189,11 @@ public class PlayerAdvancements {
          var3 = true;
          if (!var5 && var4.isDone()) {
             var1.value().rewards().grant(this.player);
-            var1.value()
-               .display()
-               .ifPresent(
-                  var2x -> {
-                     if (var2x.shouldAnnounceChat() && this.player.level().getGameRules().getBoolean(GameRules.RULE_ANNOUNCE_ADVANCEMENTS)) {
-                        this.playerList
-                           .broadcastSystemMessage(
-                              Component.translatable(
-                                 "chat.type.advancement." + var2x.getFrame().getName(), this.player.getDisplayName(), Advancement.name(var1)
-                              ),
-                              false
-                           );
-                     }
-                  }
-               );
+            var1.value().display().ifPresent(var2x -> {
+               if (var2x.shouldAnnounceChat() && this.player.level().getGameRules().getBoolean(GameRules.RULE_ANNOUNCE_ADVANCEMENTS)) {
+                  this.playerList.broadcastSystemMessage(var2x.getType().createAnnouncement(var1, this.player), false);
+               }
+            });
          }
       }
 

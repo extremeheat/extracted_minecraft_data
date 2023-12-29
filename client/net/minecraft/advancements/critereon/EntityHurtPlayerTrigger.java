@@ -1,10 +1,12 @@
 package net.minecraft.advancements.critereon;
 
-import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.damagesource.DamageSource;
 
 public class EntityHurtPlayerTrigger extends SimpleCriterionTrigger<EntityHurtPlayerTrigger.TriggerInstance> {
@@ -12,20 +14,29 @@ public class EntityHurtPlayerTrigger extends SimpleCriterionTrigger<EntityHurtPl
       super();
    }
 
-   public EntityHurtPlayerTrigger.TriggerInstance createInstance(JsonObject var1, Optional<ContextAwarePredicate> var2, DeserializationContext var3) {
-      Optional var4 = DamagePredicate.fromJson(var1.get("damage"));
-      return new EntityHurtPlayerTrigger.TriggerInstance(var2, var4);
+   @Override
+   public Codec<EntityHurtPlayerTrigger.TriggerInstance> codec() {
+      return EntityHurtPlayerTrigger.TriggerInstance.CODEC;
    }
 
    public void trigger(ServerPlayer var1, DamageSource var2, float var3, float var4, boolean var5) {
       this.trigger(var1, var5x -> var5x.matches(var1, var2, var3, var4, var5));
    }
 
-   public static class TriggerInstance extends AbstractCriterionTriggerInstance {
+   public static record TriggerInstance(Optional<ContextAwarePredicate> b, Optional<DamagePredicate> c) implements SimpleCriterionTrigger.SimpleInstance {
+      private final Optional<ContextAwarePredicate> player;
       private final Optional<DamagePredicate> damage;
+      public static final Codec<EntityHurtPlayerTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
+         var0 -> var0.group(
+                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player").forGetter(EntityHurtPlayerTrigger.TriggerInstance::player),
+                  ExtraCodecs.strictOptionalField(DamagePredicate.CODEC, "damage").forGetter(EntityHurtPlayerTrigger.TriggerInstance::damage)
+               )
+               .apply(var0, EntityHurtPlayerTrigger.TriggerInstance::new)
+      );
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<DamagePredicate> var2) {
-         super(var1);
+         super();
+         this.player = var1;
          this.damage = var2;
       }
 
@@ -43,13 +54,6 @@ public class EntityHurtPlayerTrigger extends SimpleCriterionTrigger<EntityHurtPl
 
       public boolean matches(ServerPlayer var1, DamageSource var2, float var3, float var4, boolean var5) {
          return !this.damage.isPresent() || this.damage.get().matches(var1, var2, var3, var4, var5);
-      }
-
-      @Override
-      public JsonObject serializeToJson() {
-         JsonObject var1 = super.serializeToJson();
-         this.damage.ifPresent(var1x -> var1.add("damage", var1x.serializeToJson()));
-         return var1;
       }
    }
 }

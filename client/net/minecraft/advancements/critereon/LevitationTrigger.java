@@ -1,10 +1,12 @@
 package net.minecraft.advancements.critereon;
 
-import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.phys.Vec3;
 
 public class LevitationTrigger extends SimpleCriterionTrigger<LevitationTrigger.TriggerInstance> {
@@ -12,22 +14,33 @@ public class LevitationTrigger extends SimpleCriterionTrigger<LevitationTrigger.
       super();
    }
 
-   public LevitationTrigger.TriggerInstance createInstance(JsonObject var1, Optional<ContextAwarePredicate> var2, DeserializationContext var3) {
-      Optional var4 = DistancePredicate.fromJson(var1.get("distance"));
-      MinMaxBounds.Ints var5 = MinMaxBounds.Ints.fromJson(var1.get("duration"));
-      return new LevitationTrigger.TriggerInstance(var2, var4, var5);
+   @Override
+   public Codec<LevitationTrigger.TriggerInstance> codec() {
+      return LevitationTrigger.TriggerInstance.CODEC;
    }
 
    public void trigger(ServerPlayer var1, Vec3 var2, int var3) {
       this.trigger(var1, var3x -> var3x.matches(var1, var2, var3));
    }
 
-   public static class TriggerInstance extends AbstractCriterionTriggerInstance {
+   public static record TriggerInstance(Optional<ContextAwarePredicate> b, Optional<DistancePredicate> c, MinMaxBounds.Ints d)
+      implements SimpleCriterionTrigger.SimpleInstance {
+      private final Optional<ContextAwarePredicate> player;
       private final Optional<DistancePredicate> distance;
       private final MinMaxBounds.Ints duration;
+      public static final Codec<LevitationTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
+         var0 -> var0.group(
+                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player").forGetter(LevitationTrigger.TriggerInstance::player),
+                  ExtraCodecs.strictOptionalField(DistancePredicate.CODEC, "distance").forGetter(LevitationTrigger.TriggerInstance::distance),
+                  ExtraCodecs.strictOptionalField(MinMaxBounds.Ints.CODEC, "duration", MinMaxBounds.Ints.ANY)
+                     .forGetter(LevitationTrigger.TriggerInstance::duration)
+               )
+               .apply(var0, LevitationTrigger.TriggerInstance::new)
+      );
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<DistancePredicate> var2, MinMaxBounds.Ints var3) {
-         super(var1);
+         super();
+         this.player = var1;
          this.distance = var2;
          this.duration = var3;
       }
@@ -42,14 +55,6 @@ public class LevitationTrigger extends SimpleCriterionTrigger<LevitationTrigger.
          } else {
             return this.duration.matches(var3);
          }
-      }
-
-      @Override
-      public JsonObject serializeToJson() {
-         JsonObject var1 = super.serializeToJson();
-         this.distance.ifPresent(var1x -> var1.add("distance", var1x.serializeToJson()));
-         var1.add("duration", this.duration.serializeToJson());
-         return var1;
       }
    }
 }

@@ -90,6 +90,7 @@ import net.minecraft.network.protocol.PacketUtils;
 import net.minecraft.network.protocol.common.ClientboundUpdateTagsPacket;
 import net.minecraft.network.protocol.common.custom.BeeDebugPayload;
 import net.minecraft.network.protocol.common.custom.BrainDebugPayload;
+import net.minecraft.network.protocol.common.custom.BreezeDebugPayload;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.protocol.common.custom.GameEventDebugPayload;
 import net.minecraft.network.protocol.common.custom.GameEventListenerDebugPayload;
@@ -168,6 +169,7 @@ import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
 import net.minecraft.network.protocol.game.ClientboundRecipePacket;
 import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket;
 import net.minecraft.network.protocol.game.ClientboundRemoveMobEffectPacket;
+import net.minecraft.network.protocol.game.ClientboundResetScorePacket;
 import net.minecraft.network.protocol.game.ClientboundRespawnPacket;
 import net.minecraft.network.protocol.game.ClientboundRotateHeadPacket;
 import net.minecraft.network.protocol.game.ClientboundSectionBlocksUpdatePacket;
@@ -209,6 +211,8 @@ import net.minecraft.network.protocol.game.ClientboundTabListPacket;
 import net.minecraft.network.protocol.game.ClientboundTagQueryPacket;
 import net.minecraft.network.protocol.game.ClientboundTakeItemEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundTeleportEntityPacket;
+import net.minecraft.network.protocol.game.ClientboundTickingStatePacket;
+import net.minecraft.network.protocol.game.ClientboundTickingStepPacket;
 import net.minecraft.network.protocol.game.ClientboundUpdateAdvancementsPacket;
 import net.minecraft.network.protocol.game.ClientboundUpdateAttributesPacket;
 import net.minecraft.network.protocol.game.ClientboundUpdateMobEffectPacket;
@@ -239,6 +243,7 @@ import net.minecraft.util.SignatureValidator;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.TickRateManager;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
@@ -292,7 +297,8 @@ import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Objective;
 import net.minecraft.world.scores.PlayerTeam;
-import net.minecraft.world.scores.Score;
+import net.minecraft.world.scores.ScoreAccess;
+import net.minecraft.world.scores.ScoreHolder;
 import net.minecraft.world.scores.Scoreboard;
 import net.minecraft.world.scores.Team;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
@@ -330,6 +336,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    private MessageSignatureCache messageSignatureCache = MessageSignatureCache.createDefault();
    private final ChunkBatchSizeCalculator chunkBatchSizeCalculator = new ChunkBatchSizeCalculator();
    private final PingDebugMonitor pingDebugMonitor;
+   @Nullable
+   private LevelLoadStatusManager levelLoadStatusManager;
    private boolean seenInsecureChatWarning = false;
    private volatile boolean closed;
 
@@ -349,8 +357,13 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public void close() {
       this.closed = true;
-      this.level = null;
+      this.clearLevel();
       this.telemetryManager.onDisconnect();
+   }
+
+   public void clearLevel() {
+      this.level = null;
+      this.levelLoadStatusManager = null;
    }
 
    public RecipeManager getRecipeManager() {
@@ -402,7 +415,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       this.minecraft.player.input = new KeyboardInput(this.minecraft.options);
       this.minecraft.gameMode.adjustPlayer(this.minecraft.player);
       this.minecraft.cameraEntity = this.minecraft.player;
-      this.minecraft.setScreen(new ReceivingLevelScreen());
+      this.startWaitingForNewLevel(this.minecraft.player, this.level);
       this.minecraft.player.setReducedDebugInfo(var1.reducedDebugInfo());
       this.minecraft.player.setShowDeathScreen(var1.showDeathScreen());
       this.minecraft.player.setDoLimitedCrafting(var1.doLimitedCrafting());
@@ -513,6 +526,25 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
             var2.lerpTo(var3, var5, var7, var9, var10, 3);
             var2.setOnGround(var1.isOnGround());
          }
+      }
+   }
+
+   @Override
+   public void handleTickingState(ClientboundTickingStatePacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
+      if (this.minecraft.level != null) {
+         TickRateManager var2 = this.minecraft.level.tickRateManager();
+         var2.setTickRate(var1.tickRate());
+         var2.setFrozen(var1.isFrozen());
+      }
+   }
+
+   @Override
+   public void handleTickingStep(ClientboundTickingStepPacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
+      if (this.minecraft.level != null) {
+         TickRateManager var2 = this.minecraft.level.tickRateManager();
+         var2.setFrozenTicksToRun(var1.tickSteps());
       }
    }
 
@@ -824,11 +856,12 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       Optional var2 = var1.body().unpack(this.messageSignatureCache);
       Optional var3 = var1.chatType().resolve(this.registryAccess);
       if (!var2.isEmpty() && !var3.isEmpty()) {
+         this.messageSignatureCache.push((SignedMessageBody)var2.get(), var1.signature());
          UUID var4 = var1.sender();
          PlayerInfo var5 = this.getPlayerInfo(var4);
          if (var5 == null) {
             LOGGER.error("Received player chat packet for unknown player with ID: {}", var4);
-            this.connection.disconnect(CHAT_VALIDATION_FAILED_ERROR);
+            this.minecraft.getChatListener().handleChatMessageError(var4, (ChatType.Bound)var3.get());
          } else {
             RemoteChatSession var6 = var5.getChatSession();
             SignedMessageLink var7;
@@ -839,11 +872,11 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
             }
 
             PlayerChatMessage var8 = new PlayerChatMessage(var7, var1.signature(), (SignedMessageBody)var2.get(), var1.unsignedContent(), var1.filterMask());
-            if (!var5.getMessageValidator().updateAndValidate(var8)) {
-               this.minecraft.getChatListener().handleChatMessageError(var4, (ChatType.Bound)var3.get());
-            } else {
+            var8 = var5.getMessageValidator().updateAndValidate(var8);
+            if (var8 != null) {
                this.minecraft.getChatListener().handlePlayerChatMessage(var8, var5.getProfile(), (ChatType.Bound)var3.get());
-               this.messageSignatureCache.push(var8);
+            } else {
+               this.minecraft.getChatListener().handleChatMessageError(var4, (ChatType.Bound)var3.get());
             }
          }
       } else {
@@ -915,16 +948,10 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       this.telemetryManager.setTime(var1.getGameTime());
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void handleSetSpawn(ClientboundSetDefaultSpawnPositionPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
       this.minecraft.level.setDefaultSpawnPos(var1.getPos(), var1.getAngle());
-      Screen var3 = this.minecraft.screen;
-      if (var3 instanceof ReceivingLevelScreen var2) {
-         var2.loadingPacketsReceived();
-      }
    }
 
    @Override
@@ -1055,7 +1082,6 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          this.level.setScoreboard(var6);
          this.level.addMapData(var7);
          this.minecraft.setLevel(this.level);
-         this.minecraft.setScreen(new ReceivingLevelScreen());
       }
 
       this.minecraft.cameraEntity = null;
@@ -1070,6 +1096,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          var11 = this.minecraft.gameMode.createPlayer(this.level, var5.getStats(), var5.getRecipeBook());
       }
 
+      this.startWaitingForNewLevel(var11, this.level);
       var11.setId(var5.getId());
       this.minecraft.player = var11;
       if (var3 != var5.level().dimension()) {
@@ -1109,7 +1136,19 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    @Override
    public void handleExplosion(ClientboundExplodePacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
-      Explosion var2 = new Explosion(this.minecraft.level, null, var1.getX(), var1.getY(), var1.getZ(), var1.getPower(), var1.getToBlow());
+      Explosion var2 = new Explosion(
+         this.minecraft.level,
+         null,
+         var1.getX(),
+         var1.getY(),
+         var1.getZ(),
+         var1.getPower(),
+         var1.getToBlow(),
+         var1.getBlockInteraction(),
+         var1.getSmallExplosionParticles(),
+         var1.getLargeExplosionParticles(),
+         var1.getExplosionSound()
+      );
       var2.finalizeExplosion(true);
       this.minecraft
          .player
@@ -1272,7 +1311,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       } else if (var3 == ClientboundGameEventPacket.WIN_GAME) {
          if (var5 == 0) {
             this.minecraft.player.connection.send(new ServerboundClientCommandPacket(ServerboundClientCommandPacket.Action.PERFORM_RESPAWN));
-            this.minecraft.setScreen(new ReceivingLevelScreen());
+            this.minecraft.setScreen(new ReceivingLevelScreen(() -> false));
          } else if (var5 == 1) {
             this.minecraft.setScreen(new WinScreen(true, () -> {
                this.minecraft.player.connection.send(new ServerboundClientCommandPacket(ServerboundClientCommandPacket.Action.PERFORM_RESPAWN));
@@ -1320,7 +1359,14 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          this.minecraft.player.setShowDeathScreen(var4 == 0.0F);
       } else if (var3 == ClientboundGameEventPacket.LIMITED_CRAFTING) {
          this.minecraft.player.setDoLimitedCrafting(var4 == 1.0F);
+      } else if (var3 == ClientboundGameEventPacket.LEVEL_CHUNKS_LOAD_START && this.levelLoadStatusManager != null) {
+         this.levelLoadStatusManager.loadingPacketsReceived();
       }
+   }
+
+   private void startWaitingForNewLevel(LocalPlayer var1, ClientLevel var2) {
+      this.levelLoadStatusManager = new LevelLoadStatusManager(var1, var2, this.minecraft.levelRenderer);
+      this.minecraft.setScreen(new ReceivingLevelScreen(this.levelLoadStatusManager::levelReady));
    }
 
    @Override
@@ -1602,9 +1648,9 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          var1.getIconBytes().map(ServerData::validateIcon).ifPresent(this.serverData::setIconBytes);
          this.serverData.setEnforcesSecureChat(var1.enforcesSecureChat());
          ServerList.saveSingleServer(this.serverData);
-         if (!this.seenInsecureChatWarning && !var1.enforcesSecureChat()) {
+         if (!this.seenInsecureChatWarning && !this.enforcesSecureChat()) {
             SystemToast var2 = SystemToast.multiline(
-               this.minecraft, SystemToast.SystemToastIds.UNSECURE_SERVER_WARNING, UNSECURE_SERVER_TOAST_TITLE, UNSERURE_SERVER_TOAST
+               this.minecraft, SystemToast.SystemToastId.UNSECURE_SERVER_WARNING, UNSECURE_SERVER_TOAST_TITLE, UNSERURE_SERVER_TOAST
             );
             this.minecraft.getToasts().addToast(var2);
             this.seenInsecureChatWarning = true;
@@ -1685,7 +1731,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       for(ClientboundPlayerInfoUpdatePacket.Entry var8 : var1.entries()) {
          PlayerInfo var9 = this.playerInfoMap.get(var8.profileId());
          if (var9 == null) {
-            LOGGER.warn("Ignoring player info update for unknown player {}", var8.profileId());
+            LOGGER.warn("Ignoring player info update for unknown player {} ({})", var8.profileId(), var1.actions());
          } else {
             for(ClientboundPlayerInfoUpdatePacket.Action var6 : var1.actions()) {
                this.applyPlayerInfoUpdate(var6, var8, var9);
@@ -1744,7 +1790,11 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    }
 
    private boolean enforcesSecureChat() {
-      return this.serverData != null && this.serverData.enforcesSecureChat();
+      if (!this.minecraft.canValidateProfileKeys()) {
+         return false;
+      } else {
+         return this.serverData != null && this.serverData.enforcesSecureChat();
+      }
    }
 
    @Override
@@ -1831,14 +1881,14 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       } else if (var1 instanceof PoiTicketCountDebugPayload var6) {
          this.minecraft.debugRenderer.brainDebugRenderer.setFreeTicketCount(var6.pos(), var6.freeTicketCount());
       } else if (var1 instanceof PoiAddedDebugPayload var7) {
-         BrainDebugRenderer.PoiInfo var18 = new BrainDebugRenderer.PoiInfo(var7.pos(), var7.type(), var7.freeTicketCount());
-         this.minecraft.debugRenderer.brainDebugRenderer.addPoi(var18);
+         BrainDebugRenderer.PoiInfo var19 = new BrainDebugRenderer.PoiInfo(var7.pos(), var7.type(), var7.freeTicketCount());
+         this.minecraft.debugRenderer.brainDebugRenderer.addPoi(var19);
       } else if (var1 instanceof PoiRemovedDebugPayload var8) {
          this.minecraft.debugRenderer.brainDebugRenderer.removePoi(var8.pos());
       } else if (var1 instanceof VillageSectionsDebugPayload var9) {
-         VillageSectionsDebugRenderer var19 = this.minecraft.debugRenderer.villageSectionsDebugRenderer;
-         var9.villageChunks().forEach(var19::setVillageSection);
-         var9.notVillageChunks().forEach(var19::setNotVillageSection);
+         VillageSectionsDebugRenderer var20 = this.minecraft.debugRenderer.villageSectionsDebugRenderer;
+         var9.villageChunks().forEach(var20::setVillageSection);
+         var9.notVillageChunks().forEach(var20::setNotVillageSection);
       } else if (var1 instanceof GoalDebugPayload var10) {
          this.minecraft.debugRenderer.goalSelectorRenderer.addGoalSelector(var10.entityId(), var10.pos(), var10.goals());
       } else if (var1 instanceof BrainDebugPayload var11) {
@@ -1857,6 +1907,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          this.minecraft.debugRenderer.gameEventListenerRenderer.trackGameEvent(var16.type(), var16.pos());
       } else if (var1 instanceof GameEventListenerDebugPayload var17) {
          this.minecraft.debugRenderer.gameEventListenerRenderer.trackListener(var17.listenerPos(), var17.listenerRange());
+      } else if (var1 instanceof BreezeDebugPayload var18) {
+         this.minecraft.debugRenderer.breezeDebugRenderer.add(var18.breezeInfo());
       } else {
          this.handleUnknownCustomPayload(var1);
       }
@@ -1872,7 +1924,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       Scoreboard var2 = this.level.getScoreboard();
       String var3 = var1.getObjectiveName();
       if (var1.getMethod() == 0) {
-         var2.addObjective(var3, ObjectiveCriteria.DUMMY, var1.getDisplayName(), var1.getRenderType());
+         var2.addObjective(var3, ObjectiveCriteria.DUMMY, var1.getDisplayName(), var1.getRenderType(), false, var1.getNumberFormat());
       } else {
          Objective var4 = var2.getObjective(var3);
          if (var4 != null) {
@@ -1881,6 +1933,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
             } else if (var1.getMethod() == 2) {
                var4.setRenderType(var1.getRenderType());
                var4.setDisplayName(var1.getDisplayName());
+               var4.setNumberFormat(var1.getNumberFormat());
             }
          }
       }
@@ -1890,19 +1943,34 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    public void handleSetScore(ClientboundSetScorePacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
       Scoreboard var2 = this.level.getScoreboard();
-      String var3 = var1.getObjectiveName();
-      switch(var1.getMethod()) {
-         case CHANGE:
-            Objective var4 = var2.getObjective(var3);
-            if (var4 != null) {
-               Score var5 = var2.getOrCreatePlayerScore(var1.getOwner(), var4);
-               var5.setScore(var1.getScore());
-            } else {
-               LOGGER.warn("Received packet for unknown scoreboard: {}", var3);
-            }
-            break;
-         case REMOVE:
-            var2.resetPlayerScore(var1.getOwner(), var2.getObjective(var3));
+      String var3 = var1.objectiveName();
+      ScoreHolder var4 = ScoreHolder.forNameOnly(var1.owner());
+      Objective var5 = var2.getObjective(var3);
+      if (var5 != null) {
+         ScoreAccess var6 = var2.getOrCreatePlayerScore(var4, var5, true);
+         var6.set(var1.score());
+         var6.display(var1.display());
+         var6.numberFormatOverride(var1.numberFormat());
+      } else {
+         LOGGER.warn("Received packet for unknown scoreboard objective: {}", var3);
+      }
+   }
+
+   @Override
+   public void handleResetScore(ClientboundResetScorePacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
+      Scoreboard var2 = this.level.getScoreboard();
+      String var3 = var1.objectiveName();
+      ScoreHolder var4 = ScoreHolder.forNameOnly(var1.owner());
+      if (var3 == null) {
+         var2.resetAllPlayerScores(var4);
+      } else {
+         Objective var5 = var2.getObjective(var3);
+         if (var5 != null) {
+            var2.resetSinglePlayerScore(var4, var5);
+         } else {
+            LOGGER.warn("Received packet for unknown scoreboard objective: {}", var3);
+         }
       }
    }
 
@@ -2275,6 +2343,9 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       }
 
       this.telemetryManager.tick();
+      if (this.levelLoadStatusManager != null) {
+         this.levelLoadStatusManager.tick();
+      }
    }
 
    public void setKeyPair(ProfileKeyPair var1) {

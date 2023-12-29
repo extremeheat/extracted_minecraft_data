@@ -1,7 +1,7 @@
 package net.minecraft.client.resources.model;
 
 import com.google.common.collect.Lists;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenCustomHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
@@ -27,7 +26,7 @@ public class MultiPartBakedModel implements BakedModel {
    protected final TextureAtlasSprite particleIcon;
    protected final ItemTransforms transforms;
    protected final ItemOverrides overrides;
-   private final Map<BlockState, BitSet> selectorCache = new Object2ObjectOpenCustomHashMap(Util.identityStrategy());
+   private final Map<BlockState, BitSet> selectorCache = new Reference2ObjectOpenHashMap();
 
    public MultiPartBakedModel(List<Pair<Predicate<BlockState>, BakedModel>> var1) {
       super();

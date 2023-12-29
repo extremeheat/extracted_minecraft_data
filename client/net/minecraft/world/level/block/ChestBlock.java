@@ -1,5 +1,6 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.floats.Float2FloatFunction;
 import java.util.List;
 import java.util.Optional;
@@ -54,6 +55,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements SimpleWaterloggedBlock {
+   public static final MapCodec<ChestBlock> CODEC = simpleCodec(var0 -> new ChestBlock(var0, () -> BlockEntityType.CHEST));
    public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
    public static final EnumProperty<ChestType> TYPE = BlockStateProperties.CHEST_TYPE;
    public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
@@ -117,6 +119,11 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
          return Optional.empty();
       }
    };
+
+   @Override
+   public MapCodec<? extends ChestBlock> codec() {
+      return CODEC;
+   }
 
    protected ChestBlock(BlockBehaviour.Properties var1, Supplier<BlockEntityType<? extends ChestBlockEntity>> var2) {
       super(var1, var2);
@@ -233,15 +240,8 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
 
    @Override
    public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var1.is(var4.getBlock())) {
-         BlockEntity var6 = var2.getBlockEntity(var3);
-         if (var6 instanceof Container) {
-            Containers.dropContents(var2, var3, (Container)var6);
-            var2.updateNeighbourForOutputSignal(var3, this);
-         }
-
-         super.onRemove(var1, var2, var3, var4, var5);
-      }
+      Containers.dropContentsOnDestroy(var1, var4, var2, var3);
+      super.onRemove(var1, var2, var3, var4, var5);
    }
 
    @Override

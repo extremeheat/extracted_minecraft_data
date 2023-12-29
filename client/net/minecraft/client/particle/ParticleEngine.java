@@ -129,6 +129,8 @@ public class ParticleEngine implements PreparableReloadListener {
       this.register(ParticleTypes.EXPLOSION, HugeExplosionParticle.Provider::new);
       this.register(ParticleTypes.SONIC_BOOM, SonicBoomParticle.Provider::new);
       this.register(ParticleTypes.FALLING_DUST, FallingDustParticle.Provider::new);
+      this.register(ParticleTypes.GUST, GustParticle.Provider::new);
+      this.register(ParticleTypes.GUST_EMITTER, new GustSeedParticle.Provider());
       this.register(ParticleTypes.FIREWORK, FireworkParticles.SparkProvider::new);
       this.register(ParticleTypes.FISHING, WakeParticle.Provider::new);
       this.register(ParticleTypes.FLAME, FlameParticle.Provider::new);
@@ -153,6 +155,7 @@ public class ParticleEngine implements PreparableReloadListener {
       this.register(ParticleTypes.PORTAL, PortalParticle.Provider::new);
       this.register(ParticleTypes.RAIN, WaterDropParticle.Provider::new);
       this.register(ParticleTypes.SMOKE, SmokeParticle.Provider::new);
+      this.register(ParticleTypes.WHITE_SMOKE, WhiteSmokeParticle.Provider::new);
       this.register(ParticleTypes.SNEEZE, PlayerCloudParticle.SneezeProvider::new);
       this.register(ParticleTypes.SNOWFLAKE, SnowflakeParticle.Provider::new);
       this.register(ParticleTypes.SPIT, SpitParticle.Provider::new);
@@ -193,6 +196,9 @@ public class ParticleEngine implements PreparableReloadListener {
       this.register(ParticleTypes.SCRAPE, GlowParticle.ScrapeProvider::new);
       this.register(ParticleTypes.SHRIEK, ShriekParticle.Provider::new);
       this.register(ParticleTypes.EGG_CRACK, SuspendedTownParticle.EggCrackProvider::new);
+      this.register(ParticleTypes.DUST_PLUME, DustPlumeParticle.Provider::new);
+      this.register(ParticleTypes.GUST_DUST, GustDustParticle.GustDustParticleProvider::new);
+      this.register(ParticleTypes.TRIAL_SPAWNER_DETECTION, TrialSpawnerDetectionParticle.Provider::new);
    }
 
    private <T extends ParticleOptions> void register(ParticleType<T> var1, ParticleProvider<T> var2) {

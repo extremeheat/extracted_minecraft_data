@@ -1,5 +1,8 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -7,8 +10,10 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -28,6 +33,9 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class TrapDoorBlock extends HorizontalDirectionalBlock implements SimpleWaterloggedBlock {
+   public static final MapCodec<TrapDoorBlock> CODEC = RecordCodecBuilder.mapCodec(
+      var0 -> var0.group(BlockSetType.CODEC.fieldOf("block_set_type").forGetter(var0x -> var0x.type), propertiesCodec()).apply(var0, TrapDoorBlock::new)
+   );
    public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
    public static final EnumProperty<Half> HALF = BlockStateProperties.HALF;
    public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
@@ -41,9 +49,14 @@ public class TrapDoorBlock extends HorizontalDirectionalBlock implements SimpleW
    protected static final VoxelShape TOP_AABB = Block.box(0.0, 13.0, 0.0, 16.0, 16.0, 16.0);
    private final BlockSetType type;
 
-   protected TrapDoorBlock(BlockBehaviour.Properties var1, BlockSetType var2) {
-      super(var1.sound(var2.soundType()));
-      this.type = var2;
+   @Override
+   public MapCodec<? extends TrapDoorBlock> codec() {
+      return CODEC;
+   }
+
+   protected TrapDoorBlock(BlockSetType var1, BlockBehaviour.Properties var2) {
+      super(var2.sound(var1.soundType()));
+      this.type = var1;
       this.registerDefaultState(
          this.stateDefinition
             .any()
@@ -93,15 +106,31 @@ public class TrapDoorBlock extends HorizontalDirectionalBlock implements SimpleW
       if (!this.type.canOpenByHand()) {
          return InteractionResult.PASS;
       } else {
-         var1 = var1.cycle(OPEN);
-         var2.setBlock(var3, var1, 2);
-         if (var1.getValue(WATERLOGGED)) {
-            var2.scheduleTick(var3, Fluids.WATER, Fluids.WATER.getTickDelay(var2));
-         }
-
-         this.playSound(var4, var2, var3, var1.getValue(OPEN));
+         this.toggle(var1, var2, var3, var4);
          return InteractionResult.sidedSuccess(var2.isClientSide);
       }
+   }
+
+   @Override
+   public void onExplosionHit(BlockState var1, Level var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
+      if (var4.getBlockInteraction() == Explosion.BlockInteraction.TRIGGER_BLOCK
+         && !var2.isClientSide()
+         && this.type.canOpenByWindCharge()
+         && !var1.getValue(POWERED)) {
+         this.toggle(var1, var2, var3, null);
+      }
+
+      super.onExplosionHit(var1, var2, var3, var4, var5);
+   }
+
+   private void toggle(BlockState var1, Level var2, BlockPos var3, @Nullable Player var4) {
+      BlockState var5 = var1.cycle(OPEN);
+      var2.setBlock(var3, var5, 2);
+      if (var5.getValue(WATERLOGGED)) {
+         var2.scheduleTick(var3, Fluids.WATER, Fluids.WATER.getTickDelay(var2));
+      }
+
+      this.playSound(var4, var2, var3, var5.getValue(OPEN));
    }
 
    protected void playSound(@Nullable Player var1, Level var2, BlockPos var3, boolean var4) {
@@ -164,5 +193,9 @@ public class TrapDoorBlock extends HorizontalDirectionalBlock implements SimpleW
       }
 
       return super.updateShape(var1, var2, var3, var4, var5, var6);
+   }
+
+   protected BlockSetType getType() {
+      return this.type;
    }
 }

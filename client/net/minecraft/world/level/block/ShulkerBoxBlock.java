@@ -1,8 +1,11 @@
 package net.minecraft.world.level.block;
 
 import com.google.common.collect.Maps;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
@@ -31,6 +34,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -48,6 +52,10 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class ShulkerBoxBlock extends BaseEntityBlock {
+   public static final MapCodec<ShulkerBoxBlock> CODEC = RecordCodecBuilder.mapCodec(
+      var0 -> var0.group(DyeColor.CODEC.optionalFieldOf("color").forGetter(var0x -> Optional.ofNullable(var0x.color)), propertiesCodec())
+            .apply(var0, (var0x, var1) -> new ShulkerBoxBlock((DyeColor)var0x.orElse(null), var1))
+   );
    private static final float OPEN_AABB_SIZE = 1.0F;
    private static final VoxelShape UP_OPEN_AABB = Block.box(0.0, 15.0, 0.0, 16.0, 16.0, 16.0);
    private static final VoxelShape DOWN_OPEN_AABB = Block.box(0.0, 0.0, 0.0, 16.0, 1.0, 16.0);
@@ -67,6 +75,11 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
    public static final ResourceLocation CONTENTS = new ResourceLocation("contents");
    @Nullable
    private final DyeColor color;
+
+   @Override
+   public MapCodec<ShulkerBoxBlock> codec() {
+      return CODEC;
+   }
 
    public ShulkerBoxBlock(@Nullable DyeColor var1, BlockBehaviour.Properties var2) {
       super(var2);
@@ -134,7 +147,7 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
    // $QF: Could not properly define all variable types!
    // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
-   public void playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
+   public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
       BlockEntity var5 = var1.getBlockEntity(var2);
       if (var5 instanceof ShulkerBoxBlockEntity var6) {
          if (!var1.isClientSide && var4.isCreative() && !var6.isEmpty()) {
@@ -152,7 +165,7 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
          }
       }
 
-      super.playerWillDestroy(var1, var2, var3, var4);
+      return super.playerWillDestroy(var1, var2, var3, var4);
    }
 
    @Override
@@ -250,7 +263,7 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
    }
 
    @Override
-   public ItemStack getCloneItemStack(BlockGetter var1, BlockPos var2, BlockState var3) {
+   public ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
       ItemStack var4 = super.getCloneItemStack(var1, var2, var3);
       var1.getBlockEntity(var2, BlockEntityType.SHULKER_BOX).ifPresent(var1x -> var1x.saveToItem(var4));
       return var4;

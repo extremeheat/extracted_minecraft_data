@@ -117,8 +117,8 @@ public abstract class BaseCommandBlock implements CommandSource {
          if (var2.isCommandBlockEnabled() && !StringUtil.isNullOrEmpty(this.command)) {
             try {
                this.lastOutput = null;
-               CommandSourceStack var3 = this.createCommandSourceStack().withCallback((var1x, var2x, var3x) -> {
-                  if (var2x) {
+               CommandSourceStack var3 = this.createCommandSourceStack().withCallback((var1x, var2x) -> {
+                  if (var1x) {
                      ++this.successCount;
                   }
                });

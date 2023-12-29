@@ -1,10 +1,12 @@
 package net.minecraft.advancements.critereon;
 
-import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -14,10 +16,9 @@ public class PlayerInteractTrigger extends SimpleCriterionTrigger<PlayerInteract
       super();
    }
 
-   protected PlayerInteractTrigger.TriggerInstance createInstance(JsonObject var1, Optional<ContextAwarePredicate> var2, DeserializationContext var3) {
-      Optional var4 = ItemPredicate.fromJson(var1.get("item"));
-      Optional var5 = EntityPredicate.fromJson(var1, "entity", var3);
-      return new PlayerInteractTrigger.TriggerInstance(var2, var4, var5);
+   @Override
+   public Codec<PlayerInteractTrigger.TriggerInstance> codec() {
+      return PlayerInteractTrigger.TriggerInstance.CODEC;
    }
 
    public void trigger(ServerPlayer var1, ItemStack var2, Entity var3) {
@@ -25,12 +26,23 @@ public class PlayerInteractTrigger extends SimpleCriterionTrigger<PlayerInteract
       this.trigger(var1, var2x -> var2x.matches(var2, var4));
    }
 
-   public static class TriggerInstance extends AbstractCriterionTriggerInstance {
+   public static record TriggerInstance(Optional<ContextAwarePredicate> b, Optional<ItemPredicate> c, Optional<ContextAwarePredicate> d)
+      implements SimpleCriterionTrigger.SimpleInstance {
+      private final Optional<ContextAwarePredicate> player;
       private final Optional<ItemPredicate> item;
       private final Optional<ContextAwarePredicate> entity;
+      public static final Codec<PlayerInteractTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
+         var0 -> var0.group(
+                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player").forGetter(PlayerInteractTrigger.TriggerInstance::player),
+                  ExtraCodecs.strictOptionalField(ItemPredicate.CODEC, "item").forGetter(PlayerInteractTrigger.TriggerInstance::item),
+                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "entity").forGetter(PlayerInteractTrigger.TriggerInstance::entity)
+               )
+               .apply(var0, PlayerInteractTrigger.TriggerInstance::new)
+      );
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ItemPredicate> var2, Optional<ContextAwarePredicate> var3) {
-         super(var1);
+         super();
+         this.player = var1;
          this.item = var2;
          this.entity = var3;
       }
@@ -55,11 +67,9 @@ public class PlayerInteractTrigger extends SimpleCriterionTrigger<PlayerInteract
       }
 
       @Override
-      public JsonObject serializeToJson() {
-         JsonObject var1 = super.serializeToJson();
-         this.item.ifPresent(var1x -> var1.add("item", var1x.serializeToJson()));
-         this.entity.ifPresent(var1x -> var1.add("entity", var1x.toJson()));
-         return var1;
+      public void validate(CriterionValidator var1) {
+         SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
+         var1.validateEntity(this.entity, ".entity");
       }
    }
 }

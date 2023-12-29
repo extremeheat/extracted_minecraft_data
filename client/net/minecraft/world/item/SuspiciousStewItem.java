@@ -47,7 +47,7 @@ public class SuspiciousStewItem extends Item {
       if (var4.isCreative()) {
          ArrayList var5 = new ArrayList();
          listPotionEffects(var1, var1x -> var5.add(var1x.createEffectInstance()));
-         PotionUtils.addPotionTooltip(var5, var3, 1.0F);
+         PotionUtils.addPotionTooltip(var5, var3, 1.0F, var2 == null ? 20.0F : var2.tickRateManager().tickrate());
       }
    }
 

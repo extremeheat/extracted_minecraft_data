@@ -13,6 +13,7 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.util.datafix.DataFixTypes;
@@ -47,7 +48,7 @@ public class DimensionDataStorage {
    }
 
    @Nullable
-   public <T extends SavedData> T get(SavedData.Factory var1, String var2) {
+   public <T extends SavedData> T get(SavedData.Factory<T> var1, String var2) {
       SavedData var3 = this.cache.get(var2);
       if (var3 == null && !this.cache.containsKey(var2)) {
          var3 = this.readSavedData(var1.deserializer(), var1.type(), var2);
@@ -86,7 +87,7 @@ public class DimensionDataStorage {
       ) {
          CompoundTag var7;
          if (this.isGzip(var6)) {
-            var7 = NbtIo.readCompressed(var6);
+            var7 = NbtIo.readCompressed(var6, NbtAccounter.unlimitedHeap());
          } else {
             try (DataInputStream var8 = new DataInputStream(var6)) {
                var7 = NbtIo.read(var8);

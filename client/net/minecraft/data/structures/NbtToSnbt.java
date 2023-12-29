@@ -18,6 +18,7 @@ import net.minecraft.Util;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
+import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtUtils;
 import org.slf4j.Logger;
@@ -83,7 +84,7 @@ public class NbtToSnbt implements DataProvider {
          Path var6;
          try (InputStream var4 = Files.newInputStream(var1)) {
             Path var5 = var3.resolve(var2 + ".snbt");
-            writeSnbt(var0, var5, NbtUtils.structureToSnbt(NbtIo.readCompressed(var4)));
+            writeSnbt(var0, var5, NbtUtils.structureToSnbt(NbtIo.readCompressed(var4, NbtAccounter.unlimitedHeap())));
             LOGGER.info("Converted {} from NBT to SNBT", var2);
             var6 = var5;
          }

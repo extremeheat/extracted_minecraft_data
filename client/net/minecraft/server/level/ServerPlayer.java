@@ -1,6 +1,5 @@
 package net.minecraft.server.level;
 
-import com.google.common.collect.Lists;
 import com.google.common.net.InetAddresses;
 import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Either;
@@ -8,12 +7,12 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.BlockUtil;
 import net.minecraft.ChatFormatting;
@@ -87,6 +86,7 @@ import net.minecraft.stats.ServerStatsCounter;
 import net.minecraft.stats.Stat;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Unit;
@@ -103,14 +103,18 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.RelativeMovement;
+import net.minecraft.world.entity.animal.Pig;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.monster.Strider;
 import net.minecraft.world.entity.monster.warden.WardenSpawnTracker;
 import net.minecraft.world.entity.player.ChatVisiblity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.vehicle.AbstractMinecart;
+import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerListener;
 import net.minecraft.world.inventory.ContainerSynchronizer;
@@ -144,7 +148,8 @@ import net.minecraft.world.level.storage.LevelData;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.PlayerTeam;
-import net.minecraft.world.scores.Score;
+import net.minecraft.world.scores.ScoreAccess;
+import net.minecraft.world.scores.ScoreHolder;
 import net.minecraft.world.scores.Team;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 import org.slf4j.Logger;
@@ -153,6 +158,7 @@ public class ServerPlayer extends Player {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int NEUTRAL_MOB_DEATH_NOTIFICATION_RADII_XZ = 32;
    private static final int NEUTRAL_MOB_DEATH_NOTIFICATION_RADII_Y = 10;
+   private static final int FLY_STAT_RECORDING_SPEED = 25;
    public ServerGamePacketListenerImpl connection;
    public final MinecraftServer server;
    public final ServerPlayerGameMode gameMode;
@@ -580,7 +586,7 @@ public class ServerPlayer extends Player {
    }
 
    private void updateScoreForCriteria(ObjectiveCriteria var1, int var2) {
-      this.getScoreboard().forAllObjectives(var1, this.getScoreboardName(), var1x -> var1x.setScore(var2));
+      this.getScoreboard().forAllObjectives(var1, this, var1x -> var1x.set(var2));
    }
 
    @Override
@@ -605,7 +611,7 @@ public class ServerPlayer extends Player {
                   }
                )
             );
-         Team var4 = this.getTeam();
+         PlayerTeam var4 = this.getTeam();
          if (var4 == null || var4.getDeathMessageVisibility() == Team.Visibility.ALWAYS) {
             this.server.getPlayerList().broadcastSystemMessage(var3, false);
          } else if (var4.getDeathMessageVisibility() == Team.Visibility.HIDE_FOR_OTHER_TEAMS) {
@@ -626,7 +632,7 @@ public class ServerPlayer extends Player {
          this.dropAllDeathLoot(var1);
       }
 
-      this.getScoreboard().forAllObjectives(ObjectiveCriteria.DEATH_COUNT, this.getScoreboardName(), Score::increment);
+      this.getScoreboard().forAllObjectives(ObjectiveCriteria.DEATH_COUNT, this, ScoreAccess::increment);
       LivingEntity var5 = this.getKillCredit();
       if (var5 != null) {
          this.awardStat(Stats.ENTITY_KILLED_BY.get(var5.getType()));
@@ -659,28 +665,26 @@ public class ServerPlayer extends Player {
       if (var1 != this) {
          super.awardKillScore(var1, var2, var3);
          this.increaseScore(var2);
-         String var4 = this.getScoreboardName();
-         String var5 = var1.getScoreboardName();
-         this.getScoreboard().forAllObjectives(ObjectiveCriteria.KILL_COUNT_ALL, var4, Score::increment);
+         this.getScoreboard().forAllObjectives(ObjectiveCriteria.KILL_COUNT_ALL, this, ScoreAccess::increment);
          if (var1 instanceof Player) {
             this.awardStat(Stats.PLAYER_KILLS);
-            this.getScoreboard().forAllObjectives(ObjectiveCriteria.KILL_COUNT_PLAYERS, var4, Score::increment);
+            this.getScoreboard().forAllObjectives(ObjectiveCriteria.KILL_COUNT_PLAYERS, this, ScoreAccess::increment);
          } else {
             this.awardStat(Stats.MOB_KILLS);
          }
 
-         this.handleTeamKill(var4, var5, ObjectiveCriteria.TEAM_KILL);
-         this.handleTeamKill(var5, var4, ObjectiveCriteria.KILLED_BY_TEAM);
+         this.handleTeamKill(this, var1, ObjectiveCriteria.TEAM_KILL);
+         this.handleTeamKill(var1, this, ObjectiveCriteria.KILLED_BY_TEAM);
          CriteriaTriggers.PLAYER_KILLED_ENTITY.trigger(this, var1, var3);
       }
    }
 
-   private void handleTeamKill(String var1, String var2, ObjectiveCriteria[] var3) {
-      PlayerTeam var4 = this.getScoreboard().getPlayersTeam(var2);
+   private void handleTeamKill(ScoreHolder var1, ScoreHolder var2, ObjectiveCriteria[] var3) {
+      PlayerTeam var4 = this.getScoreboard().getPlayersTeam(var2.getScoreboardName());
       if (var4 != null) {
          int var5 = var4.getColor().getId();
          if (var5 >= 0 && var5 < var3.length) {
-            this.getScoreboard().forAllObjectives(var3[var5], var1, Score::increment);
+            this.getScoreboard().forAllObjectives(var3[var5], var1, ScoreAccess::increment);
          }
       }
    }
@@ -958,6 +962,13 @@ public class ServerPlayer extends Player {
    }
 
    @Override
+   protected void pushEntities() {
+      if (this.level().tickRateManager().runsNormally()) {
+         super.pushEntities();
+      }
+   }
+
+   @Override
    public void openTextEdit(SignBlockEntity var1, boolean var2) {
       this.connection.send(new ClientboundBlockUpdatePacket(this.level(), var1.getBlockPos()));
       this.connection.send(new ClientboundOpenSignEditorPacket(var1.getBlockPos(), var2));
@@ -1055,15 +1066,105 @@ public class ServerPlayer extends Player {
    }
 
    @Override
+   public void travel(Vec3 var1) {
+      double var2 = this.getX();
+      double var4 = this.getY();
+      double var6 = this.getZ();
+      super.travel(var1);
+      this.checkMovementStatistics(this.getX() - var2, this.getY() - var4, this.getZ() - var6);
+   }
+
+   @Override
+   public void rideTick() {
+      double var1 = this.getX();
+      double var3 = this.getY();
+      double var5 = this.getZ();
+      super.rideTick();
+      this.checkRidingStatistics(this.getX() - var1, this.getY() - var3, this.getZ() - var5);
+   }
+
+   public void checkMovementStatistics(double var1, double var3, double var5) {
+      if (!this.isPassenger() && !didNotMove(var1, var3, var5)) {
+         if (this.isSwimming()) {
+            int var7 = Math.round((float)Math.sqrt(var1 * var1 + var3 * var3 + var5 * var5) * 100.0F);
+            if (var7 > 0) {
+               this.awardStat(Stats.SWIM_ONE_CM, var7);
+               this.causeFoodExhaustion(0.01F * (float)var7 * 0.01F);
+            }
+         } else if (this.isEyeInFluid(FluidTags.WATER)) {
+            int var8 = Math.round((float)Math.sqrt(var1 * var1 + var3 * var3 + var5 * var5) * 100.0F);
+            if (var8 > 0) {
+               this.awardStat(Stats.WALK_UNDER_WATER_ONE_CM, var8);
+               this.causeFoodExhaustion(0.01F * (float)var8 * 0.01F);
+            }
+         } else if (this.isInWater()) {
+            int var9 = Math.round((float)Math.sqrt(var1 * var1 + var5 * var5) * 100.0F);
+            if (var9 > 0) {
+               this.awardStat(Stats.WALK_ON_WATER_ONE_CM, var9);
+               this.causeFoodExhaustion(0.01F * (float)var9 * 0.01F);
+            }
+         } else if (this.onClimbable()) {
+            if (var3 > 0.0) {
+               this.awardStat(Stats.CLIMB_ONE_CM, (int)Math.round(var3 * 100.0));
+            }
+         } else if (this.onGround()) {
+            int var10 = Math.round((float)Math.sqrt(var1 * var1 + var5 * var5) * 100.0F);
+            if (var10 > 0) {
+               if (this.isSprinting()) {
+                  this.awardStat(Stats.SPRINT_ONE_CM, var10);
+                  this.causeFoodExhaustion(0.1F * (float)var10 * 0.01F);
+               } else if (this.isCrouching()) {
+                  this.awardStat(Stats.CROUCH_ONE_CM, var10);
+                  this.causeFoodExhaustion(0.0F * (float)var10 * 0.01F);
+               } else {
+                  this.awardStat(Stats.WALK_ONE_CM, var10);
+                  this.causeFoodExhaustion(0.0F * (float)var10 * 0.01F);
+               }
+            }
+         } else if (this.isFallFlying()) {
+            int var11 = Math.round((float)Math.sqrt(var1 * var1 + var3 * var3 + var5 * var5) * 100.0F);
+            this.awardStat(Stats.AVIATE_ONE_CM, var11);
+         } else {
+            int var12 = Math.round((float)Math.sqrt(var1 * var1 + var5 * var5) * 100.0F);
+            if (var12 > 25) {
+               this.awardStat(Stats.FLY_ONE_CM, var12);
+            }
+         }
+      }
+   }
+
+   private void checkRidingStatistics(double var1, double var3, double var5) {
+      if (this.isPassenger() && !didNotMove(var1, var3, var5)) {
+         int var7 = Math.round((float)Math.sqrt(var1 * var1 + var3 * var3 + var5 * var5) * 100.0F);
+         Entity var8 = this.getVehicle();
+         if (var8 instanceof AbstractMinecart) {
+            this.awardStat(Stats.MINECART_ONE_CM, var7);
+         } else if (var8 instanceof Boat) {
+            this.awardStat(Stats.BOAT_ONE_CM, var7);
+         } else if (var8 instanceof Pig) {
+            this.awardStat(Stats.PIG_ONE_CM, var7);
+         } else if (var8 instanceof AbstractHorse) {
+            this.awardStat(Stats.HORSE_ONE_CM, var7);
+         } else if (var8 instanceof Strider) {
+            this.awardStat(Stats.STRIDER_ONE_CM, var7);
+         }
+      }
+   }
+
+   private static boolean didNotMove(double var0, double var2, double var4) {
+      return var0 == 0.0 && var2 == 0.0 && var4 == 0.0;
+   }
+
+   @Override
    public void awardStat(Stat<?> var1, int var2) {
       this.stats.increment(this, var1, var2);
-      this.getScoreboard().forAllObjectives(var1, this.getScoreboardName(), var1x -> var1x.add(var2));
+      this.getScoreboard().forAllObjectives(var1, this, var1x -> var1x.add(var2));
    }
 
    @Override
    public void resetStat(Stat<?> var1) {
       this.stats.setValue(this, var1, 0);
-      this.getScoreboard().forAllObjectives(var1, this.getScoreboardName(), Score::reset);
+      this.getScoreboard().forAllObjectives(var1, this, ScoreAccess::reset);
    }
 
    @Override
@@ -1077,13 +1178,8 @@ public class ServerPlayer extends Player {
    }
 
    @Override
-   public void awardRecipesByKey(ResourceLocation[] var1) {
-      ArrayList var2 = Lists.newArrayList();
-
-      for(ResourceLocation var6 : var1) {
-         this.server.getRecipeManager().byKey(var6).ifPresent(var2::add);
-      }
-
+   public void awardRecipesByKey(List<ResourceLocation> var1) {
+      List var2 = var1.stream().flatMap(var1x -> this.server.getRecipeManager().byKey(var1x).stream()).collect(Collectors.toList());
       this.awardRecipes(var2);
    }
 

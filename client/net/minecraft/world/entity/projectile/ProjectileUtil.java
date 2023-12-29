@@ -19,6 +19,8 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 public final class ProjectileUtil {
+   private static final float DEFAULT_ENTITY_HIT_RESULT_MARGIN = 0.3F;
+
    public ProjectileUtil() {
       super();
    }
@@ -27,29 +29,36 @@ public final class ProjectileUtil {
       Vec3 var2 = var0.getDeltaMovement();
       Level var3 = var0.level();
       Vec3 var4 = var0.position();
-      return getHitResult(var4, var0, var1, var2, var3);
+      return getHitResult(var4, var0, var1, var2, var3, 0.3F, ClipContext.Block.COLLIDER);
+   }
+
+   public static HitResult getHitResultOnMoveVector(Entity var0, Predicate<Entity> var1, ClipContext.Block var2) {
+      Vec3 var3 = var0.getDeltaMovement();
+      Level var4 = var0.level();
+      Vec3 var5 = var0.position();
+      return getHitResult(var5, var0, var1, var3, var4, 0.3F, var2);
    }
 
    public static HitResult getHitResultOnViewVector(Entity var0, Predicate<Entity> var1, double var2) {
       Vec3 var4 = var0.getViewVector(0.0F).scale(var2);
       Level var5 = var0.level();
       Vec3 var6 = var0.getEyePosition();
-      return getHitResult(var6, var0, var1, var4, var5);
+      return getHitResult(var6, var0, var1, var4, var5, 0.0F, ClipContext.Block.COLLIDER);
    }
 
-   private static HitResult getHitResult(Vec3 var0, Entity var1, Predicate<Entity> var2, Vec3 var3, Level var4) {
-      Vec3 var5 = var0.add(var3);
-      Object var6 = var4.clip(new ClipContext(var0, var5, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, var1));
-      if (((HitResult)var6).getType() != HitResult.Type.MISS) {
-         var5 = ((HitResult)var6).getLocation();
+   private static HitResult getHitResult(Vec3 var0, Entity var1, Predicate<Entity> var2, Vec3 var3, Level var4, float var5, ClipContext.Block var6) {
+      Vec3 var7 = var0.add(var3);
+      Object var8 = var4.clip(new ClipContext(var0, var7, var6, ClipContext.Fluid.NONE, var1));
+      if (((HitResult)var8).getType() != HitResult.Type.MISS) {
+         var7 = ((HitResult)var8).getLocation();
       }
 
-      EntityHitResult var7 = getEntityHitResult(var4, var1, var0, var5, var1.getBoundingBox().expandTowards(var3).inflate(1.0), var2);
-      if (var7 != null) {
-         var6 = var7;
+      EntityHitResult var9 = getEntityHitResult(var4, var1, var0, var7, var1.getBoundingBox().expandTowards(var3).inflate(1.0), var2, var5);
+      if (var9 != null) {
+         var8 = var9;
       }
 
-      return (HitResult)var6;
+      return (HitResult)var8;
    }
 
    @Nullable

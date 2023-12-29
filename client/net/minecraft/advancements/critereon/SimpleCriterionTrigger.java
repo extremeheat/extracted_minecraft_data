@@ -3,7 +3,6 @@ package net.minecraft.advancements.critereon;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.google.gson.JsonObject;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
@@ -43,13 +42,6 @@ public abstract class SimpleCriterionTrigger<T extends SimpleCriterionTrigger.Si
       this.players.remove(var1);
    }
 
-   protected abstract T createInstance(JsonObject var1, Optional<ContextAwarePredicate> var2, DeserializationContext var3);
-
-   public final T createInstance(JsonObject var1, DeserializationContext var2) {
-      Optional var3 = EntityPredicate.fromJson(var1, "player", var2);
-      return this.createInstance(var1, var3, var2);
-   }
-
    protected void trigger(ServerPlayer var1, Predicate<T> var2) {
       PlayerAdvancements var3 = var1.getAdvancements();
       Set var4 = this.players.get(var3);
@@ -60,7 +52,7 @@ public abstract class SimpleCriterionTrigger<T extends SimpleCriterionTrigger.Si
          for(CriterionTrigger.Listener var8 : var4) {
             SimpleCriterionTrigger.SimpleInstance var9 = (SimpleCriterionTrigger.SimpleInstance)var8.trigger();
             if (var2.test(var9)) {
-               Optional var10 = var9.playerPredicate();
+               Optional var10 = var9.player();
                if (var10.isEmpty() || ((ContextAwarePredicate)var10.get()).matches(var5)) {
                   if (var6 == null) {
                      var6 = Lists.newArrayList();
@@ -80,6 +72,11 @@ public abstract class SimpleCriterionTrigger<T extends SimpleCriterionTrigger.Si
    }
 
    public interface SimpleInstance extends CriterionTriggerInstance {
-      Optional<ContextAwarePredicate> playerPredicate();
+      @Override
+      default void validate(CriterionValidator var1) {
+         var1.validateEntity(this.player(), ".player");
+      }
+
+      Optional<ContextAwarePredicate> player();
    }
 }

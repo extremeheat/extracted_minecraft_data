@@ -565,7 +565,11 @@ public class GuiGraphics {
    }
 
    public void renderFakeItem(ItemStack var1, int var2, int var3) {
-      this.renderItem(null, this.minecraft.level, var1, var2, var3, 0);
+      this.renderFakeItem(var1, var2, var3, 0);
+   }
+
+   public void renderFakeItem(ItemStack var1, int var2, int var3, int var4) {
+      this.renderItem(null, this.minecraft.level, var1, var2, var3, var4);
    }
 
    public void renderItem(LivingEntity var1, ItemStack var2, int var3, int var4, int var5) {

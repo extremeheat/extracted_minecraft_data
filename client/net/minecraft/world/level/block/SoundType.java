@@ -328,6 +328,24 @@ public class SoundType {
    public static final SoundType TUFF = new SoundType(
       1.0F, 1.0F, SoundEvents.TUFF_BREAK, SoundEvents.TUFF_STEP, SoundEvents.TUFF_PLACE, SoundEvents.TUFF_HIT, SoundEvents.TUFF_FALL
    );
+   public static final SoundType TUFF_BRICKS = new SoundType(
+      1.0F,
+      1.0F,
+      SoundEvents.TUFF_BRICKS_BREAK,
+      SoundEvents.TUFF_BRICKS_STEP,
+      SoundEvents.TUFF_BRICKS_PLACE,
+      SoundEvents.TUFF_BRICKS_HIT,
+      SoundEvents.TUFF_BRICKS_FALL
+   );
+   public static final SoundType POLISHED_TUFF = new SoundType(
+      1.0F,
+      1.0F,
+      SoundEvents.POLISHED_TUFF_BREAK,
+      SoundEvents.POLISHED_TUFF_STEP,
+      SoundEvents.POLISHED_TUFF_PLACE,
+      SoundEvents.POLISHED_TUFF_HIT,
+      SoundEvents.POLISHED_TUFF_FALL
+   );
    public static final SoundType CALCITE = new SoundType(
       1.0F, 1.0F, SoundEvents.CALCITE_BREAK, SoundEvents.CALCITE_STEP, SoundEvents.CALCITE_PLACE, SoundEvents.CALCITE_HIT, SoundEvents.CALCITE_FALL
    );
@@ -351,6 +369,24 @@ public class SoundType {
    );
    public static final SoundType COPPER = new SoundType(
       1.0F, 1.0F, SoundEvents.COPPER_BREAK, SoundEvents.COPPER_STEP, SoundEvents.COPPER_PLACE, SoundEvents.COPPER_HIT, SoundEvents.COPPER_FALL
+   );
+   public static final SoundType COPPER_BULB = new SoundType(
+      1.0F,
+      1.0F,
+      SoundEvents.COPPER_BULB_BREAK,
+      SoundEvents.COPPER_BULB_STEP,
+      SoundEvents.COPPER_BULB_PLACE,
+      SoundEvents.COPPER_BULB_HIT,
+      SoundEvents.COPPER_BULB_FALL
+   );
+   public static final SoundType COPPER_GRATE = new SoundType(
+      1.0F,
+      1.0F,
+      SoundEvents.COPPER_GRATE_BREAK,
+      SoundEvents.COPPER_GRATE_STEP,
+      SoundEvents.COPPER_GRATE_PLACE,
+      SoundEvents.COPPER_GRATE_HIT,
+      SoundEvents.COPPER_GRATE_FALL
    );
    public static final SoundType CAVE_VINES = new SoundType(
       1.0F,
@@ -696,6 +732,15 @@ public class SoundType {
       SoundEvents.DECORATED_POT_PLACE,
       SoundEvents.DECORATED_POT_HIT,
       SoundEvents.DECORATED_POT_FALL
+   );
+   public static final SoundType TRIAL_SPAWNER = new SoundType(
+      1.0F,
+      1.0F,
+      SoundEvents.TRIAL_SPAWNER_BREAK,
+      SoundEvents.TRIAL_SPAWNER_STEP,
+      SoundEvents.TRIAL_SPAWNER_PLACE,
+      SoundEvents.TRIAL_SPAWNER_HIT,
+      SoundEvents.TRIAL_SPAWNER_FALL
    );
    public static final SoundType SPONGE = new SoundType(
       1.0F, 1.0F, SoundEvents.SPONGE_BREAK, SoundEvents.SPONGE_STEP, SoundEvents.SPONGE_PLACE, SoundEvents.SPONGE_HIT, SoundEvents.SPONGE_FALL

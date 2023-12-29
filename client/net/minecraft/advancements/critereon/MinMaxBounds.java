@@ -1,21 +1,15 @@
 package net.minecraft.advancements.critereon;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
-import com.google.gson.JsonParseException;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.ExtraCodecs;
 
@@ -196,14 +190,6 @@ public interface MinMaxBounds<T extends Number> {
          }
       }
 
-      public static MinMaxBounds.Doubles fromJson(@Nullable JsonElement var0) {
-         return var0 != null && !var0.isJsonNull() ? Util.getOrThrow(CODEC.parse(JsonOps.INSTANCE, var0), JsonParseException::new) : ANY;
-      }
-
-      public JsonElement serializeToJson() {
-         return (JsonElement)(this.isAny() ? JsonNull.INSTANCE : Util.getOrThrow(CODEC.encodeStart(JsonOps.INSTANCE, this), IllegalStateException::new));
-      }
-
       public static MinMaxBounds.Doubles fromReader(StringReader var0) throws CommandSyntaxException {
          return fromReader(var0, var0x -> var0x);
       }
@@ -277,14 +263,6 @@ public interface MinMaxBounds<T extends Number> {
          } else {
             return this.maxSq.isEmpty() || this.maxSq.get() >= var1;
          }
-      }
-
-      public static MinMaxBounds.Ints fromJson(@Nullable JsonElement var0) {
-         return var0 != null && !var0.isJsonNull() ? Util.getOrThrow(CODEC.parse(JsonOps.INSTANCE, var0), JsonParseException::new) : ANY;
-      }
-
-      public JsonElement serializeToJson() {
-         return (JsonElement)(this.isAny() ? JsonNull.INSTANCE : Util.getOrThrow(CODEC.encodeStart(JsonOps.INSTANCE, this), IllegalStateException::new));
       }
 
       public static MinMaxBounds.Ints fromReader(StringReader var0) throws CommandSyntaxException {

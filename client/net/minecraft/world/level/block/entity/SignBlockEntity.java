@@ -18,6 +18,8 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.network.FilteredText;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -64,10 +66,6 @@ public class SignBlockEntity extends BlockEntity {
       } else {
          return false;
       }
-   }
-
-   public SignText getTextFacingPlayer(Player var1) {
-      return this.getText(this.isFacingFrontText(var1));
    }
 
    public SignText getText(boolean var1) {
@@ -277,5 +275,9 @@ public class SignBlockEntity extends BlockEntity {
       if (var1.playerIsTooFarAwayToEdit(var3)) {
          var1.setAllowedPlayerEditor(null);
       }
+   }
+
+   public SoundEvent getSignInteractionFailedSoundEvent() {
+      return SoundEvents.WAXED_SIGN_INTERACT_FAIL;
    }
 }

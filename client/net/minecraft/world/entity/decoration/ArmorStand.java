@@ -29,10 +29,10 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.Block;
@@ -400,7 +400,7 @@ public class ArmorStand extends LivingEntity {
          this.causeDamage(var1, 4.0F);
          return false;
       } else {
-         boolean var3 = "player".equals(var1.getMsgId());
+         boolean var3 = var1.is(DamageTypeTags.CAN_BREAK_ARMOR_STAND);
          boolean var4 = var1.is(DamageTypeTags.ALWAYS_KILLS_ARMOR_STANDS);
          if (!var3 && !var4) {
             return false;
@@ -414,12 +414,7 @@ public class ArmorStand extends LivingEntity {
                this.playBrokenSound();
                this.showBreakingParticles();
                this.kill();
-               var6 = var1.getDirectEntity();
-               if (var6 instanceof AbstractArrow var8 && var8.getPierceLevel() > 0) {
-                  return true;
-               }
-
-               return false;
+               return true;
             } else {
                long var7 = this.level().getGameTime();
                if (var7 - this.lastHit > 5L && !var4) {
@@ -613,7 +608,7 @@ public class ArmorStand extends LivingEntity {
    }
 
    @Override
-   public boolean ignoreExplosion() {
+   public boolean ignoreExplosion(Explosion var1) {
       return this.isInvisible();
    }
 

@@ -1,5 +1,6 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.MapCodec;
 import java.util.Optional;
 import net.minecraft.BlockUtil;
 import net.minecraft.core.BlockPos;
@@ -21,6 +22,9 @@ public abstract class GrowingPlantBodyBlock extends GrowingPlantBlock implements
    protected GrowingPlantBodyBlock(BlockBehaviour.Properties var1, Direction var2, VoxelShape var3, boolean var4) {
       super(var1, var2, var3, var4);
    }
+
+   @Override
+   protected abstract MapCodec<? extends GrowingPlantBodyBlock> codec();
 
    protected BlockState updateHeadAfterConvertedFromBody(BlockState var1, BlockState var2) {
       return var2;
@@ -45,7 +49,7 @@ public abstract class GrowingPlantBodyBlock extends GrowingPlantBlock implements
    }
 
    @Override
-   public ItemStack getCloneItemStack(BlockGetter var1, BlockPos var2, BlockState var3) {
+   public ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
       return new ItemStack(this.getHeadBlock());
    }
 

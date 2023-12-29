@@ -8,7 +8,7 @@ import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.Path;
-import net.minecraft.world.scores.Team;
+import net.minecraft.world.scores.PlayerTeam;
 
 public abstract class TargetGoal extends Goal {
    private static final int EMPTY_REACH_CACHE = 0;
@@ -47,8 +47,8 @@ public abstract class TargetGoal extends Goal {
       } else if (!this.mob.canAttack(var1)) {
          return false;
       } else {
-         Team var2 = this.mob.getTeam();
-         Team var3 = var1.getTeam();
+         PlayerTeam var2 = this.mob.getTeam();
+         PlayerTeam var3 = var1.getTeam();
          if (var2 != null && var3 == var2) {
             return false;
          } else {

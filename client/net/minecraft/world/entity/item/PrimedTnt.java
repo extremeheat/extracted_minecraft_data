@@ -2,7 +2,9 @@ package net.minecraft.world.entity.item;
 
 import javax.annotation.Nullable;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -14,10 +16,15 @@ import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.TraceableEntity;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class PrimedTnt extends Entity implements TraceableEntity {
    private static final EntityDataAccessor<Integer> DATA_FUSE_ID = SynchedEntityData.defineId(PrimedTnt.class, EntityDataSerializers.INT);
+   private static final EntityDataAccessor<BlockState> DATA_BLOCK_STATE_ID = SynchedEntityData.defineId(PrimedTnt.class, EntityDataSerializers.BLOCK_STATE);
    private static final int DEFAULT_FUSE_TIME = 80;
+   private static final String TAG_BLOCK_STATE = "block_state";
+   public static final String TAG_FUSE = "fuse";
    @Nullable
    private LivingEntity owner;
 
@@ -41,6 +48,7 @@ public class PrimedTnt extends Entity implements TraceableEntity {
    @Override
    protected void defineSynchedData() {
       this.entityData.define(DATA_FUSE_ID, 80);
+      this.entityData.define(DATA_BLOCK_STATE_ID, Blocks.TNT.defaultBlockState());
    }
 
    @Override
@@ -87,17 +95,31 @@ public class PrimedTnt extends Entity implements TraceableEntity {
 
    @Override
    protected void addAdditionalSaveData(CompoundTag var1) {
-      var1.putShort("Fuse", (short)this.getFuse());
+      var1.putShort("fuse", (short)this.getFuse());
+      var1.put("block_state", NbtUtils.writeBlockState(this.getBlockState()));
    }
 
    @Override
    protected void readAdditionalSaveData(CompoundTag var1) {
-      this.setFuse(var1.getShort("Fuse"));
+      this.setFuse(var1.getShort("fuse"));
+      if (var1.contains("block_state", 10)) {
+         this.setBlockState(NbtUtils.readBlockState(this.level().holderLookup(Registries.BLOCK), var1.getCompound("block_state")));
+      }
    }
 
    @Nullable
    public LivingEntity getOwner() {
       return this.owner;
+   }
+
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   @Override
+   public void restoreFrom(Entity var1) {
+      super.restoreFrom(var1);
+      if (var1 instanceof PrimedTnt var2) {
+         this.owner = var2.owner;
+      }
    }
 
    @Override
@@ -111,5 +133,13 @@ public class PrimedTnt extends Entity implements TraceableEntity {
 
    public int getFuse() {
       return this.entityData.get(DATA_FUSE_ID);
+   }
+
+   public void setBlockState(BlockState var1) {
+      this.entityData.set(DATA_BLOCK_STATE_ID, var1);
+   }
+
+   public BlockState getBlockState() {
+      return this.entityData.get(DATA_BLOCK_STATE_ID);
    }
 }

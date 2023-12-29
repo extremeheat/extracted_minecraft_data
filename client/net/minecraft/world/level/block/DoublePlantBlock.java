@@ -1,5 +1,6 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -21,7 +22,13 @@ import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.material.Fluids;
 
 public class DoublePlantBlock extends BushBlock {
+   public static final MapCodec<DoublePlantBlock> CODEC = simpleCodec(DoublePlantBlock::new);
    public static final EnumProperty<DoubleBlockHalf> HALF = BlockStateProperties.DOUBLE_BLOCK_HALF;
+
+   @Override
+   public MapCodec<? extends DoublePlantBlock> codec() {
+      return CODEC;
+   }
 
    public DoublePlantBlock(BlockBehaviour.Properties var1) {
       super(var1);
@@ -77,16 +84,16 @@ public class DoublePlantBlock extends BushBlock {
    }
 
    @Override
-   public void playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
+   public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
       if (!var1.isClientSide) {
          if (var4.isCreative()) {
-            preventCreativeDropFromBottomPart(var1, var2, var3, var4);
+            preventDropFromBottomPart(var1, var2, var3, var4);
          } else {
             dropResources(var3, var1, var2, null, var4, var4.getMainHandItem());
          }
       }
 
-      super.playerWillDestroy(var1, var2, var3, var4);
+      return super.playerWillDestroy(var1, var2, var3, var4);
    }
 
    @Override
@@ -94,7 +101,7 @@ public class DoublePlantBlock extends BushBlock {
       super.playerDestroy(var1, var2, var3, Blocks.AIR.defaultBlockState(), var5, var6);
    }
 
-   protected static void preventCreativeDropFromBottomPart(Level var0, BlockPos var1, BlockState var2, Player var3) {
+   protected static void preventDropFromBottomPart(Level var0, BlockPos var1, BlockState var2, Player var3) {
       DoubleBlockHalf var4 = var2.getValue(HALF);
       if (var4 == DoubleBlockHalf.UPPER) {
          BlockPos var5 = var1.below();

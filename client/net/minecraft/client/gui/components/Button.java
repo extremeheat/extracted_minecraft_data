@@ -10,6 +10,7 @@ public class Button extends AbstractButton {
    public static final int SMALL_WIDTH = 120;
    public static final int DEFAULT_WIDTH = 150;
    public static final int DEFAULT_HEIGHT = 20;
+   public static final int DEFAULT_SPACING = 8;
    protected static final Button.CreateNarration DEFAULT_NARRATION = var0 -> var0.get();
    protected final Button.OnPress onPress;
    protected final Button.CreateNarration createNarration;

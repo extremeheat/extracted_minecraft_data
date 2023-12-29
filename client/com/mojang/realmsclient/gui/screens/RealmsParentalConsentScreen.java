@@ -1,10 +1,12 @@
 package com.mojang.realmsclient.gui.screens;
 
-import net.minecraft.Util;
+import javax.annotation.Nullable;
 import net.minecraft.client.GameNarrator;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.MultiLineLabel;
+import net.minecraft.client.gui.components.MultiLineTextWidget;
+import net.minecraft.client.gui.layouts.FrameLayout;
+import net.minecraft.client.gui.layouts.LinearLayout;
+import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -12,42 +14,49 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.realms.RealmsScreen;
 
 public class RealmsParentalConsentScreen extends RealmsScreen {
-   private static final Component MESSAGE = Component.translatable("mco.account.privacyinfo");
-   private final Screen nextScreen;
-   private MultiLineLabel messageLines = MultiLineLabel.EMPTY;
+   private static final Component MESSAGE = Component.translatable("mco.account.privacy.information");
+   private static final int SPACING = 15;
+   private final LinearLayout layout = LinearLayout.vertical();
+   private final Screen lastScreen;
+   @Nullable
+   private MultiLineTextWidget textWidget;
 
    public RealmsParentalConsentScreen(Screen var1) {
       super(GameNarrator.NO_TITLE);
-      this.nextScreen = var1;
+      this.lastScreen = var1;
    }
 
    @Override
    public void init() {
-      MutableComponent var1 = Component.translatable("mco.account.update");
-      Component var2 = CommonComponents.GUI_BACK;
-      int var3 = Math.max(this.font.width(var1), this.font.width(var2)) + 30;
-      MutableComponent var4 = Component.translatable("mco.account.privacy.info");
-      int var5 = (int)((double)this.font.width(var4) * 1.2);
-      this.addRenderableWidget(
-         Button.builder(var4, var0 -> Util.getPlatform().openUri("https://aka.ms/MinecraftGDPR")).bounds(this.width / 2 - var5 / 2, row(11), var5, 20).build()
-      );
-      this.addRenderableWidget(
-         Button.builder(var1, var0 -> Util.getPlatform().openUri("https://aka.ms/UpdateMojangAccount"))
-            .bounds(this.width / 2 - (var3 + 5), row(13), var3, 20)
-            .build()
-      );
-      this.addRenderableWidget(Button.builder(var2, var1x -> this.minecraft.setScreen(this.nextScreen)).bounds(this.width / 2 + 5, row(13), var3, 20).build());
-      this.messageLines = MultiLineLabel.create(this.font, MESSAGE, (int)Math.round((double)this.width * 0.9));
+      this.layout.spacing(15).defaultCellSetting().alignHorizontallyCenter();
+      this.textWidget = new MultiLineTextWidget(MESSAGE, this.font).setCentered(true);
+      this.layout.addChild(this.textWidget);
+      LinearLayout var1 = this.layout.addChild(LinearLayout.horizontal().spacing(8));
+      MutableComponent var2 = Component.translatable("mco.account.privacy.info.button");
+      var1.addChild(Button.builder(var2, ConfirmLinkScreen.confirmLink(this, "https://aka.ms/MinecraftGDPR")).build());
+      var1.addChild(Button.builder(CommonComponents.GUI_BACK, var1x -> this.onClose()).build());
+      this.layout.visitWidgets(var1x -> {
+      });
+      this.repositionElements();
+   }
+
+   @Override
+   public void onClose() {
+      this.minecraft.setScreen(this.lastScreen);
+   }
+
+   @Override
+   protected void repositionElements() {
+      if (this.textWidget != null) {
+         this.textWidget.setMaxWidth(this.width - 15);
+      }
+
+      this.layout.arrangeElements();
+      FrameLayout.centerInRectangle(this.layout, this.getRectangle());
    }
 
    @Override
    public Component getNarrationMessage() {
       return MESSAGE;
-   }
-
-   @Override
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      this.messageLines.renderCentered(var1, this.width / 2, 15, 15, 16777215);
    }
 }

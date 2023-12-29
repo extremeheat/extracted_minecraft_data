@@ -3,7 +3,6 @@ package net.minecraft.world.level.biome;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.ImmutableList.Builder;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenCustomHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -125,7 +124,7 @@ public class FeatureSorter {
       private final ToIntFunction<PlacedFeature> indexMapping;
 
       StepFeatureData(List<PlacedFeature> var1) {
-         this(var1, Util.createIndexLookup(var1, var0 -> new Object2IntOpenCustomHashMap(var0, Util.identityStrategy())));
+         this(var1, Util.createIndexIdentityLookup(var1));
       }
 
       public StepFeatureData(List<PlacedFeature> var1, ToIntFunction<PlacedFeature> var2) {

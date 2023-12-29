@@ -8,34 +8,38 @@ import net.minecraft.client.resources.model.ModelBakery;
 
 public class RenderBuffers {
    private final SectionBufferBuilderPack fixedBufferPack = new SectionBufferBuilderPack();
-   private final SortedMap<RenderType, BufferBuilder> fixedBuffers = Util.make(new Object2ObjectLinkedOpenHashMap(), var1 -> {
-      var1.put(Sheets.solidBlockSheet(), this.fixedBufferPack.builder(RenderType.solid()));
-      var1.put(Sheets.cutoutBlockSheet(), this.fixedBufferPack.builder(RenderType.cutout()));
-      var1.put(Sheets.bannerSheet(), this.fixedBufferPack.builder(RenderType.cutoutMipped()));
-      var1.put(Sheets.translucentCullBlockSheet(), this.fixedBufferPack.builder(RenderType.translucent()));
-      put(var1, Sheets.shieldSheet());
-      put(var1, Sheets.bedSheet());
-      put(var1, Sheets.shulkerBoxSheet());
-      put(var1, Sheets.signSheet());
-      put(var1, Sheets.hangingSignSheet());
-      put(var1, Sheets.chestSheet());
-      put(var1, RenderType.translucentNoCrumbling());
-      put(var1, RenderType.armorGlint());
-      put(var1, RenderType.armorEntityGlint());
-      put(var1, RenderType.glint());
-      put(var1, RenderType.glintDirect());
-      put(var1, RenderType.glintTranslucent());
-      put(var1, RenderType.entityGlint());
-      put(var1, RenderType.entityGlintDirect());
-      put(var1, RenderType.waterMask());
-      ModelBakery.DESTROY_TYPES.forEach(var1x -> put(var1, var1x));
-   });
-   private final MultiBufferSource.BufferSource bufferSource = MultiBufferSource.immediateWithBuffers(this.fixedBuffers, new BufferBuilder(256));
-   private final MultiBufferSource.BufferSource crumblingBufferSource = MultiBufferSource.immediate(new BufferBuilder(256));
-   private final OutlineBufferSource outlineBufferSource = new OutlineBufferSource(this.bufferSource);
+   private final SectionBufferBuilderPool sectionBufferPool;
+   private final MultiBufferSource.BufferSource bufferSource;
+   private final MultiBufferSource.BufferSource crumblingBufferSource;
+   private final OutlineBufferSource outlineBufferSource;
 
-   public RenderBuffers() {
+   public RenderBuffers(int var1) {
       super();
+      this.sectionBufferPool = SectionBufferBuilderPool.allocate(var1);
+      SortedMap var2 = Util.make(new Object2ObjectLinkedOpenHashMap(), var1x -> {
+         var1x.put(Sheets.solidBlockSheet(), this.fixedBufferPack.builder(RenderType.solid()));
+         var1x.put(Sheets.cutoutBlockSheet(), this.fixedBufferPack.builder(RenderType.cutout()));
+         var1x.put(Sheets.bannerSheet(), this.fixedBufferPack.builder(RenderType.cutoutMipped()));
+         var1x.put(Sheets.translucentCullBlockSheet(), this.fixedBufferPack.builder(RenderType.translucent()));
+         put(var1x, Sheets.shieldSheet());
+         put(var1x, Sheets.bedSheet());
+         put(var1x, Sheets.shulkerBoxSheet());
+         put(var1x, Sheets.signSheet());
+         put(var1x, Sheets.hangingSignSheet());
+         var1x.put(Sheets.chestSheet(), new BufferBuilder(786432));
+         put(var1x, RenderType.armorGlint());
+         put(var1x, RenderType.armorEntityGlint());
+         put(var1x, RenderType.glint());
+         put(var1x, RenderType.glintDirect());
+         put(var1x, RenderType.glintTranslucent());
+         put(var1x, RenderType.entityGlint());
+         put(var1x, RenderType.entityGlintDirect());
+         put(var1x, RenderType.waterMask());
+         ModelBakery.DESTROY_TYPES.forEach(var1xx -> put(var1x, var1xx));
+      });
+      this.crumblingBufferSource = MultiBufferSource.immediate(new BufferBuilder(1536));
+      this.bufferSource = MultiBufferSource.immediateWithBuffers(var2, new BufferBuilder(786432));
+      this.outlineBufferSource = new OutlineBufferSource(this.bufferSource);
    }
 
    private static void put(Object2ObjectLinkedOpenHashMap<RenderType, BufferBuilder> var0, RenderType var1) {
@@ -44,6 +48,10 @@ public class RenderBuffers {
 
    public SectionBufferBuilderPack fixedBufferPack() {
       return this.fixedBufferPack;
+   }
+
+   public SectionBufferBuilderPool sectionBufferPool() {
+      return this.sectionBufferPool;
    }
 
    public MultiBufferSource.BufferSource bufferSource() {

@@ -1,18 +1,20 @@
 package net.minecraft.advancements.critereon;
 
-import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.ExtraCodecs;
 
 public class UsedEnderEyeTrigger extends SimpleCriterionTrigger<UsedEnderEyeTrigger.TriggerInstance> {
    public UsedEnderEyeTrigger() {
       super();
    }
 
-   public UsedEnderEyeTrigger.TriggerInstance createInstance(JsonObject var1, Optional<ContextAwarePredicate> var2, DeserializationContext var3) {
-      MinMaxBounds.Doubles var4 = MinMaxBounds.Doubles.fromJson(var1.get("distance"));
-      return new UsedEnderEyeTrigger.TriggerInstance(var2, var4);
+   @Override
+   public Codec<UsedEnderEyeTrigger.TriggerInstance> codec() {
+      return UsedEnderEyeTrigger.TriggerInstance.CODEC;
    }
 
    public void trigger(ServerPlayer var1, BlockPos var2) {
@@ -22,16 +24,26 @@ public class UsedEnderEyeTrigger extends SimpleCriterionTrigger<UsedEnderEyeTrig
       this.trigger(var1, var2x -> var2x.matches(var7));
    }
 
-   public static class TriggerInstance extends AbstractCriterionTriggerInstance {
-      private final MinMaxBounds.Doubles level;
+   public static record TriggerInstance(Optional<ContextAwarePredicate> b, MinMaxBounds.Doubles c) implements SimpleCriterionTrigger.SimpleInstance {
+      private final Optional<ContextAwarePredicate> player;
+      private final MinMaxBounds.Doubles distance;
+      public static final Codec<UsedEnderEyeTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
+         var0 -> var0.group(
+                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player").forGetter(UsedEnderEyeTrigger.TriggerInstance::player),
+                  ExtraCodecs.strictOptionalField(MinMaxBounds.Doubles.CODEC, "distance", MinMaxBounds.Doubles.ANY)
+                     .forGetter(UsedEnderEyeTrigger.TriggerInstance::distance)
+               )
+               .apply(var0, UsedEnderEyeTrigger.TriggerInstance::new)
+      );
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, MinMaxBounds.Doubles var2) {
-         super(var1);
-         this.level = var2;
+         super();
+         this.player = var1;
+         this.distance = var2;
       }
 
       public boolean matches(double var1) {
-         return this.level.matchesSqr(var1);
+         return this.distance.matchesSqr(var1);
       }
    }
 }

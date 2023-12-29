@@ -8,11 +8,9 @@ import com.mojang.serialization.Dynamic;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
-import net.minecraft.network.chat.CommonComponents;
-import net.minecraft.network.chat.Component;
+import net.minecraft.util.datafix.ComponentDataFixUtils;
 
 public class DropInvalidSignDataFix extends NamedEntityFix {
-   private static final String EMPTY_COMPONENT = Component.Serializer.toJson(CommonComponents.EMPTY);
    private static final String[] FIELDS_TO_DROP = new String[]{
       "Text1", "Text2", "Text3", "Text4", "FilteredText1", "FilteredText2", "FilteredText3", "FilteredText4", "Color", "GlowingText"
    };
@@ -41,7 +39,7 @@ public class DropInvalidSignDataFix extends NamedEntityFix {
          if (var2.isEmpty()) {
             return var0;
          } else {
-            Dynamic var3 = var0.createString(EMPTY_COMPONENT);
+            Dynamic var3 = ComponentDataFixUtils.createEmptyComponent(var0.getOps());
             List var4 = var0.get("messages").asStreamOpt().result().orElse(Stream.of((T[])())).toList();
             List var5 = Streams.mapWithIndex((Stream)var2.get(), (var2x, var3x) -> {
                Dynamic var5x = var3x < (long)var4.size() ? (Dynamic)var4.get((int)var3x) : var3;

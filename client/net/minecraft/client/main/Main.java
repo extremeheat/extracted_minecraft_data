@@ -101,7 +101,7 @@ public class Main {
       OptionSet var32 = var3.parse(var0);
       List var33 = var32.valuesOf(var31);
       if (!var33.isEmpty()) {
-         LOGGER.info("Completely ignored arguments: " + var33);
+         LOGGER.info("Completely ignored arguments: {}", var33);
       }
 
       String var34 = parseArgument(var32, var12);
@@ -109,7 +109,7 @@ public class Main {
       if (var34 != null) {
          try {
             var35 = new Proxy(Type.SOCKS, new InetSocketAddress(var34, parseArgument(var32, var13)));
-         } catch (Exception var83) {
+         } catch (Exception var85) {
          }
       }
 
@@ -155,26 +155,37 @@ public class Main {
       }
 
       CrashReport.preload();
-      Bootstrap.bootStrap();
-      GameLoadTimesEvent.INSTANCE.setBootstrapTime(Bootstrap.bootstrapDuration.get());
-      Bootstrap.validate();
-      Util.startTimerHackThread();
+
+      try {
+         Bootstrap.bootStrap();
+         GameLoadTimesEvent.INSTANCE.setBootstrapTime(Bootstrap.bootstrapDuration.get());
+         Bootstrap.validate();
+      } catch (Throwable var84) {
+         CrashReport var63 = CrashReport.forThrowable(var84, "Bootstrap");
+         CrashReportCategory var64 = var63.addCategory("Initialization");
+         NativeModuleLister.addCrashSection(var64);
+         Minecraft.fillReport(null, null, var46, null, var63);
+         Minecraft.crash(null, var51, var63);
+         return;
+      }
+
       String var62 = (String)var29.value(var32);
-      User.Type var63 = User.Type.byName(var62);
-      if (var63 == null) {
+      User.Type var86 = User.Type.byName(var62);
+      if (var86 == null) {
          LOGGER.warn("Unrecognized user type: {}", var62);
       }
 
-      User var64 = new User(
-         (String)var16.value(var32), var54, (String)var20.value(var32), emptyStringToEmptyOptional(var56), emptyStringToEmptyOptional(var57), var63
+      User var87 = new User(
+         (String)var16.value(var32), var54, (String)var20.value(var32), emptyStringToEmptyOptional(var56), emptyStringToEmptyOptional(var57), var86
       );
       GameConfig var65 = new GameConfig(
-         new GameConfig.UserData(var64, var48, var49, var35),
+         new GameConfig.UserData(var87, var48, var49, var35),
          new DisplayData(var38, var39, var40, var41, var42),
          new GameConfig.FolderData(var51, var53, var52, var55),
          new GameConfig.GameData(var43, var46, var50, var44, var45),
          new GameConfig.QuickPlayData(var58, var59, var60, var61)
       );
+      Util.startTimerHackThread();
       Thread var66 = new Thread("Client Shutdown Thread") {
          @Override
          public void run() {
@@ -189,29 +200,31 @@ public class Main {
       };
       var66.setUncaughtExceptionHandler(new DefaultUncaughtExceptionHandler(LOGGER));
       Runtime.getRuntime().addShutdownHook(var66);
+      final Minecraft var67 = null;
 
-      final Minecraft var67;
       try {
          Thread.currentThread().setName("Render thread");
          RenderSystem.initRenderThread();
          RenderSystem.beginInitialization();
          var67 = new Minecraft(var65);
          RenderSystem.finishInitialization();
-      } catch (SilentInitException var81) {
-         LOGGER.warn("Failed to create window: ", var81);
+      } catch (SilentInitException var82) {
+         Util.shutdownExecutors();
+         LOGGER.warn("Failed to create window: ", var82);
          return;
-      } catch (Throwable var82) {
-         CrashReport var69 = CrashReport.forThrowable(var82, "Initializing game");
+      } catch (Throwable var83) {
+         CrashReport var69 = CrashReport.forThrowable(var83, "Initializing game");
          CrashReportCategory var70 = var69.addCategory("Initialization");
          NativeModuleLister.addCrashSection(var70);
-         Minecraft.fillReport(null, null, var65.game.launchVersion, null, var69);
-         Minecraft.crash(var69);
+         Minecraft.fillReport(var67, null, var65.game.launchVersion, null, var69);
+         Minecraft.crash(var67, var65.location.gameDirectory, var69);
          return;
       }
 
-      Thread var68;
+      Minecraft var68 = var67;
+      Thread var88;
       if (var67.renderOnThread()) {
-         var68 = new Thread("Game thread") {
+         var88 = new Thread("Game thread") {
             @Override
             public void run() {
                try {
@@ -222,32 +235,32 @@ public class Main {
                }
             }
          };
-         var68.start();
+         var88.start();
 
-         while(var67.isRunning()) {
+         while(var68.isRunning()) {
          }
       } else {
-         var68 = null;
+         var88 = null;
 
          try {
             RenderSystem.initGameThread(false);
-            var67.run();
-         } catch (Throwable var80) {
-            LOGGER.error("Unhandled game exception", var80);
+            var68.run();
+         } catch (Throwable var81) {
+            LOGGER.error("Unhandled game exception", var81);
          }
       }
 
       BufferUploader.reset();
 
       try {
-         var67.stop();
-         if (var68 != null) {
-            var68.join();
+         var68.stop();
+         if (var88 != null) {
+            var88.join();
          }
-      } catch (InterruptedException var78) {
-         LOGGER.error("Exception during client thread shutdown", var78);
+      } catch (InterruptedException var79) {
+         LOGGER.error("Exception during client thread shutdown", var79);
       } finally {
-         var67.destroy();
+         var68.destroy();
       }
    }
 

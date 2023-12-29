@@ -37,6 +37,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
+import net.minecraft.CrashReportCategory;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -81,6 +82,7 @@ import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.RandomSequences;
+import net.minecraft.world.TickRateManager;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -296,15 +298,20 @@ public class ServerLevel extends Level implements WorldGenLevel {
    public void tick(BooleanSupplier var1) {
       ProfilerFiller var2 = this.getProfiler();
       this.handlingTick = true;
-      var2.push("world border");
-      this.getWorldBorder().tick();
-      var2.popPush("weather");
-      this.advanceWeatherCycle();
-      int var3 = this.getGameRules().getInt(GameRules.RULE_PLAYERS_SLEEPING_PERCENTAGE);
-      if (this.sleepStatus.areEnoughSleeping(var3) && this.sleepStatus.areEnoughDeepSleeping(var3, this.players)) {
+      TickRateManager var3 = this.tickRateManager();
+      boolean var4 = var3.runsNormally();
+      if (var4) {
+         var2.push("world border");
+         this.getWorldBorder().tick();
+         var2.popPush("weather");
+         this.advanceWeatherCycle();
+      }
+
+      int var5 = this.getGameRules().getInt(GameRules.RULE_PLAYERS_SLEEPING_PERCENTAGE);
+      if (this.sleepStatus.areEnoughSleeping(var5) && this.sleepStatus.areEnoughDeepSleeping(var5, this.players)) {
          if (this.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT)) {
-            long var4 = this.levelData.getDayTime() + 24000L;
-            this.setDayTime(var4 - var4 % 24000L);
+            long var6 = this.levelData.getDayTime() + 24000L;
+            this.setDayTime(var6 - var6 % 24000L);
          }
 
          this.wakeUpAllPlayers();
@@ -314,58 +321,67 @@ public class ServerLevel extends Level implements WorldGenLevel {
       }
 
       this.updateSkyBrightness();
-      this.tickTime();
+      if (var4) {
+         this.tickTime();
+      }
+
       var2.popPush("tickPending");
-      if (!this.isDebug()) {
-         long var6 = this.getGameTime();
+      if (!this.isDebug() && var4) {
+         long var8 = this.getGameTime();
          var2.push("blockTicks");
-         this.blockTicks.tick(var6, 65536, this::tickBlock);
+         this.blockTicks.tick(var8, 65536, this::tickBlock);
          var2.popPush("fluidTicks");
-         this.fluidTicks.tick(var6, 65536, this::tickFluid);
+         this.fluidTicks.tick(var8, 65536, this::tickFluid);
          var2.pop();
       }
 
       var2.popPush("raid");
-      this.raids.tick();
+      if (var4) {
+         this.raids.tick();
+      }
+
       var2.popPush("chunkSource");
       this.getChunkSource().tick(var1, true);
       var2.popPush("blockEvents");
-      this.runBlockEvents();
+      if (var4) {
+         this.runBlockEvents();
+      }
+
       this.handlingTick = false;
       var2.pop();
-      boolean var7 = !this.players.isEmpty() || !this.getForcedChunks().isEmpty();
-      if (var7) {
+      boolean var9 = !this.players.isEmpty() || !this.getForcedChunks().isEmpty();
+      if (var9) {
          this.resetEmptyTime();
       }
 
-      if (var7 || this.emptyTime++ < 300) {
+      if (var9 || this.emptyTime++ < 300) {
          var2.push("entities");
-         if (this.dragonFight != null) {
+         if (this.dragonFight != null && var4) {
             var2.push("dragonFight");
             this.dragonFight.tick();
             var2.pop();
          }
 
-         this.entityTickList.forEach(var2x -> {
-            if (!var2x.isRemoved()) {
-               if (this.shouldDiscardEntity(var2x)) {
-                  var2x.discard();
-               } else {
+         this.entityTickList.forEach(var3x -> {
+            if (!var3x.isRemoved()) {
+               if (this.shouldDiscardEntity(var3x)) {
+                  var3x.discard();
+               } else if (!var3.isEntityFrozen(var3x)) {
                   var2.push("checkDespawn");
-                  var2x.checkDespawn();
+                  var3x.checkDespawn();
                   var2.pop();
-                  if (this.chunkSource.chunkMap.getDistanceManager().inEntityTickingRange(var2x.chunkPosition().toLong())) {
-                     Entity var3x = var2x.getVehicle();
-                     if (var3x != null) {
-                        if (!var3x.isRemoved() && var3x.hasPassenger(var2x)) {
+                  if (this.chunkSource.chunkMap.getDistanceManager().inEntityTickingRange(var3x.chunkPosition().toLong())) {
+                     Entity var4x = var3x.getVehicle();
+                     if (var4x != null) {
+                        if (!var4x.isRemoved() && var4x.hasPassenger(var3x)) {
                            return;
                         }
 
-                        var2x.stopRiding();
+                        var3x.stopRiding();
                      }
 
                      var2.push("tick");
-                     this.guardEntityTick(this::tickNonPassenger, var2x);
+                     this.guardEntityTick(this::tickNonPassenger, var3x);
                      var2.pop();
                   }
                }
@@ -456,7 +472,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
 
       for(int var17 = 0; var17 < var2; ++var17) {
          if (this.random.nextInt(48) == 0) {
-            this.tickIceAndSnow(var4, this.getBlockRandomPos(var5, 0, var6, 15));
+            this.tickPrecipitation(this.getBlockRandomPos(var5, 0, var6, 15));
          }
       }
 
@@ -492,34 +508,35 @@ public class ServerLevel extends Level implements WorldGenLevel {
       var7.pop();
    }
 
-   private void tickIceAndSnow(boolean var1, BlockPos var2) {
-      BlockPos var3 = this.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, var2);
-      BlockPos var4 = var3.below();
-      Biome var5 = this.getBiome(var3).value();
-      if (var5.shouldFreeze(this, var4)) {
-         this.setBlockAndUpdate(var4, Blocks.ICE.defaultBlockState());
+   @VisibleForTesting
+   public void tickPrecipitation(BlockPos var1) {
+      BlockPos var2 = this.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, var1);
+      BlockPos var3 = var2.below();
+      Biome var4 = this.getBiome(var2).value();
+      if (var4.shouldFreeze(this, var3)) {
+         this.setBlockAndUpdate(var3, Blocks.ICE.defaultBlockState());
       }
 
-      if (var1) {
-         int var6 = this.getGameRules().getInt(GameRules.RULE_SNOW_ACCUMULATION_HEIGHT);
-         if (var6 > 0 && var5.shouldSnow(this, var3)) {
-            BlockState var7 = this.getBlockState(var3);
-            if (var7.is(Blocks.SNOW)) {
-               int var8 = var7.getValue(SnowLayerBlock.LAYERS);
-               if (var8 < Math.min(var6, 8)) {
-                  BlockState var9 = var7.setValue(SnowLayerBlock.LAYERS, Integer.valueOf(var8 + 1));
-                  Block.pushEntitiesUp(var7, var9, this, var3);
-                  this.setBlockAndUpdate(var3, var9);
+      if (this.isRaining()) {
+         int var5 = this.getGameRules().getInt(GameRules.RULE_SNOW_ACCUMULATION_HEIGHT);
+         if (var5 > 0 && var4.shouldSnow(this, var2)) {
+            BlockState var6 = this.getBlockState(var2);
+            if (var6.is(Blocks.SNOW)) {
+               int var7 = var6.getValue(SnowLayerBlock.LAYERS);
+               if (var7 < Math.min(var5, 8)) {
+                  BlockState var8 = var6.setValue(SnowLayerBlock.LAYERS, Integer.valueOf(var7 + 1));
+                  Block.pushEntitiesUp(var6, var8, this, var2);
+                  this.setBlockAndUpdate(var2, var8);
                }
             } else {
-               this.setBlockAndUpdate(var3, Blocks.SNOW.defaultBlockState());
+               this.setBlockAndUpdate(var2, Blocks.SNOW.defaultBlockState());
             }
          }
 
-         Biome.Precipitation var10 = var5.getPrecipitationAt(var4);
-         if (var10 != Biome.Precipitation.NONE) {
-            BlockState var11 = this.getBlockState(var4);
-            var11.getBlock().handlePrecipitation(var11, this, var4, var10);
+         Biome.Precipitation var9 = var4.getPrecipitationAt(var3);
+         if (var9 != Biome.Precipitation.NONE) {
+            BlockState var10 = this.getBlockState(var3);
+            var10.getBlock().handlePrecipitation(var10, this, var3, var9);
          }
       }
    }
@@ -542,7 +559,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
       if (var3.isPresent()) {
          return (BlockPos)var3.get();
       } else {
-         AABB var4 = new AABB(var2, new BlockPos(var2.getX(), this.getMaxBuildHeight(), var2.getZ())).inflate(3.0);
+         AABB var4 = AABB.encapsulatingFullBlocks(var2, new BlockPos(var2.atY(this.getMaxBuildHeight()))).inflate(3.0);
          List var5 = this.getEntitiesOfClass(LivingEntity.class, var4, var1x -> var1x != null && var1x.isAlive() && this.canSeeSky(var1x.blockPosition()));
          if (!var5.isEmpty()) {
             return ((LivingEntity)var5.get(this.random.nextInt(var5.size()))).blockPosition();
@@ -678,7 +695,8 @@ public class ServerLevel extends Level implements WorldGenLevel {
       }
    }
 
-   private void resetWeatherCycle() {
+   @VisibleForTesting
+   public void resetWeatherCycle() {
       this.serverLevelData.setRainTime(0);
       this.serverLevelData.setRaining(false);
       this.serverLevelData.setThunderTime(0);
@@ -1043,20 +1061,37 @@ public class ServerLevel extends Level implements WorldGenLevel {
       double var8,
       float var10,
       boolean var11,
-      Level.ExplosionInteraction var12
+      Level.ExplosionInteraction var12,
+      ParticleOptions var13,
+      ParticleOptions var14,
+      SoundEvent var15
    ) {
-      Explosion var13 = this.explode(var1, var2, var3, var4, var6, var8, var10, var11, var12, false);
-      if (!var13.interactsWithBlocks()) {
-         var13.clearToBlow();
+      Explosion var16 = this.explode(var1, var2, var3, var4, var6, var8, var10, var11, var12, false, var13, var14, var15);
+      if (!var16.interactsWithBlocks()) {
+         var16.clearToBlow();
       }
 
-      for(ServerPlayer var15 : this.players) {
-         if (var15.distanceToSqr(var4, var6, var8) < 4096.0) {
-            var15.connection.send(new ClientboundExplodePacket(var4, var6, var8, var10, var13.getToBlow(), var13.getHitPlayers().get(var15)));
+      for(ServerPlayer var18 : this.players) {
+         if (var18.distanceToSqr(var4, var6, var8) < 4096.0) {
+            var18.connection
+               .send(
+                  new ClientboundExplodePacket(
+                     var4,
+                     var6,
+                     var8,
+                     var10,
+                     var16.getToBlow(),
+                     var16.getHitPlayers().get(var18),
+                     var16.getBlockInteraction(),
+                     var16.getSmallExplosionParticles(),
+                     var16.getLargeExplosionParticles(),
+                     var16.getExplosionSound()
+                  )
+               );
          }
       }
 
-      return var13;
+      return var16;
    }
 
    @Override
@@ -1203,6 +1238,11 @@ public class ServerLevel extends Level implements WorldGenLevel {
    @Override
    public RecipeManager getRecipeManager() {
       return this.server.getRecipeManager();
+   }
+
+   @Override
+   public TickRateManager tickRateManager() {
+      return this.server.tickRateManager();
    }
 
    @Override
@@ -1575,6 +1615,13 @@ public class ServerLevel extends Level implements WorldGenLevel {
 
    public RandomSequences getRandomSequences() {
       return this.randomSequences;
+   }
+
+   @Override
+   public CrashReportCategory fillReportDetails(CrashReport var1) {
+      CrashReportCategory var2 = super.fillReportDetails(var1);
+      var2.setDetail("Loaded entity count", () -> String.valueOf(this.entityManager.count()));
+      return var2;
    }
 
    final class EntityCallbacks implements LevelCallback<Entity> {

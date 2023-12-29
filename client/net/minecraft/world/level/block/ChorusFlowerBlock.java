@@ -1,10 +1,12 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.BlockGetter;
@@ -20,12 +22,21 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class ChorusFlowerBlock extends Block {
+   public static final MapCodec<ChorusFlowerBlock> CODEC = RecordCodecBuilder.mapCodec(
+      var0 -> var0.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("plant").forGetter(var0x -> var0x.plant), propertiesCodec())
+            .apply(var0, ChorusFlowerBlock::new)
+   );
    public static final int DEAD_AGE = 5;
    public static final IntegerProperty AGE = BlockStateProperties.AGE_5;
    protected static final VoxelShape BLOCK_SUPPORT_SHAPE = Block.box(1.0, 0.0, 1.0, 15.0, 15.0, 15.0);
-   private final ChorusPlantBlock plant;
+   private final Block plant;
 
-   protected ChorusFlowerBlock(ChorusPlantBlock var1, BlockBehaviour.Properties var2) {
+   @Override
+   public MapCodec<ChorusFlowerBlock> codec() {
+      return CODEC;
+   }
+
+   protected ChorusFlowerBlock(Block var1, BlockBehaviour.Properties var2) {
       super(var2);
       this.plant = var1;
       this.registerDefaultState(this.stateDefinition.any().setValue(AGE, Integer.valueOf(0)));
@@ -82,7 +93,7 @@ public class ChorusFlowerBlock extends Block {
             }
 
             if (var7 && allNeighborsEmpty(var2, var5, null) && var2.isEmptyBlock(var3.above(2))) {
-               var2.setBlock(var3, this.plant.getStateForPlacement(var2, var3), 2);
+               var2.setBlock(var3, ChorusPlantBlock.getStateWithConnections(var2, var3, this.plant.defaultBlockState()), 2);
                this.placeGrownFlower(var2, var5, var6);
             } else if (var6 < 4) {
                int var15 = var4.nextInt(4);
@@ -102,7 +113,7 @@ public class ChorusFlowerBlock extends Block {
                }
 
                if (var16) {
-                  var2.setBlock(var3, this.plant.getStateForPlacement(var2, var3), 2);
+                  var2.setBlock(var3, ChorusPlantBlock.getStateWithConnections(var2, var3, this.plant.defaultBlockState()), 2);
                } else {
                   this.placeDeadFlower(var2, var3);
                }
@@ -177,12 +188,12 @@ public class ChorusFlowerBlock extends Block {
    }
 
    public static void generatePlant(LevelAccessor var0, BlockPos var1, RandomSource var2, int var3) {
-      var0.setBlock(var1, ((ChorusPlantBlock)Blocks.CHORUS_PLANT).getStateForPlacement(var0, var1), 2);
+      var0.setBlock(var1, ChorusPlantBlock.getStateWithConnections(var0, var1, Blocks.CHORUS_PLANT.defaultBlockState()), 2);
       growTreeRecursive(var0, var1, var2, var1, var3, 0);
    }
 
    private static void growTreeRecursive(LevelAccessor var0, BlockPos var1, RandomSource var2, BlockPos var3, int var4, int var5) {
-      ChorusPlantBlock var6 = (ChorusPlantBlock)Blocks.CHORUS_PLANT;
+      Block var6 = Blocks.CHORUS_PLANT;
       int var7 = var2.nextInt(4) + 1;
       if (var5 == 0) {
          ++var7;
@@ -194,8 +205,8 @@ public class ChorusFlowerBlock extends Block {
             return;
          }
 
-         var0.setBlock(var9, var6.getStateForPlacement(var0, var9), 2);
-         var0.setBlock(var9.below(), var6.getStateForPlacement(var0, var9.below()), 2);
+         var0.setBlock(var9, ChorusPlantBlock.getStateWithConnections(var0, var9, var6.defaultBlockState()), 2);
+         var0.setBlock(var9.below(), ChorusPlantBlock.getStateWithConnections(var0, var9.below(), var6.defaultBlockState()), 2);
       }
 
       boolean var13 = false;
@@ -214,8 +225,12 @@ public class ChorusFlowerBlock extends Block {
                && var0.isEmptyBlock(var12.below())
                && allNeighborsEmpty(var0, var12, var11.getOpposite())) {
                var13 = true;
-               var0.setBlock(var12, var6.getStateForPlacement(var0, var12), 2);
-               var0.setBlock(var12.relative(var11.getOpposite()), var6.getStateForPlacement(var0, var12.relative(var11.getOpposite())), 2);
+               var0.setBlock(var12, ChorusPlantBlock.getStateWithConnections(var0, var12, var6.defaultBlockState()), 2);
+               var0.setBlock(
+                  var12.relative(var11.getOpposite()),
+                  ChorusPlantBlock.getStateWithConnections(var0, var12.relative(var11.getOpposite()), var6.defaultBlockState()),
+                  2
+               );
                growTreeRecursive(var0, var12, var2, var3, var4, var5 + 1);
             }
          }
@@ -229,7 +244,7 @@ public class ChorusFlowerBlock extends Block {
    @Override
    public void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
       BlockPos var5 = var3.getBlockPos();
-      if (!var1.isClientSide && var4.mayInteract(var1, var5) && var4.getType().is(EntityTypeTags.IMPACT_PROJECTILES)) {
+      if (!var1.isClientSide && var4.mayInteract(var1, var5) && var4.mayBreak(var1)) {
          var1.destroyBlock(var5, true, var4);
       }
    }

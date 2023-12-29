@@ -40,6 +40,8 @@ public class ItemEntity extends Entity implements TraceableEntity {
    @Nullable
    private UUID thrower;
    @Nullable
+   private Entity cachedThrower;
+   @Nullable
    private UUID target;
    public final float bobOffs;
 
@@ -78,14 +80,29 @@ public class ItemEntity extends Entity implements TraceableEntity {
    @Nullable
    @Override
    public Entity getOwner() {
-      if (this.thrower != null) {
-         Level var2 = this.level();
-         if (var2 instanceof ServerLevel var1) {
-            return var1.getEntity(this.thrower);
+      if (this.cachedThrower != null && !this.cachedThrower.isRemoved()) {
+         return this.cachedThrower;
+      } else {
+         if (this.thrower != null) {
+            Level var2 = this.level();
+            if (var2 instanceof ServerLevel var1) {
+               this.cachedThrower = var1.getEntity(this.thrower);
+               return this.cachedThrower;
+            }
          }
-      }
 
-      return null;
+         return null;
+      }
+   }
+
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   @Override
+   public void restoreFrom(Entity var1) {
+      super.restoreFrom(var1);
+      if (var1 instanceof ItemEntity var2) {
+         this.cachedThrower = var2.cachedThrower;
+      }
    }
 
    @Override
@@ -311,6 +328,7 @@ public class ItemEntity extends Entity implements TraceableEntity {
 
       if (var1.hasUUID("Thrower")) {
          this.thrower = var1.getUUID("Thrower");
+         this.cachedThrower = null;
       }
 
       CompoundTag var2 = var1.getCompound("Item");
@@ -381,8 +399,9 @@ public class ItemEntity extends Entity implements TraceableEntity {
       this.target = var1;
    }
 
-   public void setThrower(@Nullable UUID var1) {
-      this.thrower = var1;
+   public void setThrower(Entity var1) {
+      this.thrower = var1.getUUID();
+      this.cachedThrower = var1;
    }
 
    public int getAge() {

@@ -5,6 +5,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Object2ByteLinkedOpenHashMap;
 import java.util.List;
 import java.util.function.Function;
@@ -62,6 +63,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.slf4j.Logger;
 
 public class Block extends BlockBehaviour implements ItemLike {
+   public static final MapCodec<Block> CODEC = simpleCodec(Block::new);
    private static final Logger LOGGER = LogUtils.getLogger();
    private final Holder.Reference<Block> builtInRegistryHolder = BuiltInRegistries.BLOCK.createIntrusiveHolder(this);
    public static final IdMapper<BlockState> BLOCK_STATE_REGISTRY = new IdMapper<>();
@@ -101,6 +103,11 @@ public class Block extends BlockBehaviour implements ItemLike {
       var0.defaultReturnValue((byte)127);
       return var0;
    });
+
+   @Override
+   protected MapCodec<? extends Block> codec() {
+      return CODEC;
+   }
 
    public static int getId(@Nullable BlockState var0) {
       if (var0 == null) {
@@ -376,7 +383,7 @@ public class Block extends BlockBehaviour implements ItemLike {
       var2.setDeltaMovement(var2.getDeltaMovement().multiply(1.0, 0.0, 1.0));
    }
 
-   public ItemStack getCloneItemStack(BlockGetter var1, BlockPos var2, BlockState var3) {
+   public ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
       return new ItemStack(this);
    }
 
@@ -396,13 +403,14 @@ public class Block extends BlockBehaviour implements ItemLike {
       var1.levelEvent(var2, 2001, var3, getId(var4));
    }
 
-   public void playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
+   public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
       this.spawnDestroyParticles(var1, var4, var2, var3);
       if (var3.is(BlockTags.GUARDED_BY_PIGLINS)) {
          PiglinAi.angerNearbyPiglins(var4, false);
       }
 
       var1.gameEvent(GameEvent.BLOCK_DESTROY, var2, GameEvent.Context.of(var4, var3));
+      return var3;
    }
 
    public void handlePrecipitation(BlockState var1, Level var2, BlockPos var3, Biome.Precipitation var4) {

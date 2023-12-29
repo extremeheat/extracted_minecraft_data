@@ -44,6 +44,9 @@ public class GameRules {
    public static final GameRules.Key<GameRules.BooleanValue> RULE_DOMOBLOOT = register(
       "doMobLoot", GameRules.Category.DROPS, GameRules.BooleanValue.create(true)
    );
+   public static final GameRules.Key<GameRules.BooleanValue> RULE_PROJECTILESCANBREAKBLOCKS = register(
+      "projectilesCanBreakBlocks", GameRules.Category.DROPS, GameRules.BooleanValue.create(true)
+   );
    public static final GameRules.Key<GameRules.BooleanValue> RULE_DOBLOCKDROPS = register(
       "doTileDrops", GameRules.Category.DROPS, GameRules.BooleanValue.create(true)
    );
@@ -105,6 +108,9 @@ public class GameRules {
    public static final GameRules.Key<GameRules.IntegerValue> RULE_MAX_COMMAND_CHAIN_LENGTH = register(
       "maxCommandChainLength", GameRules.Category.MISC, GameRules.IntegerValue.create(65536)
    );
+   public static final GameRules.Key<GameRules.IntegerValue> RULE_MAX_COMMAND_FORK_COUNT = register(
+      "maxCommandForkCount", GameRules.Category.MISC, GameRules.IntegerValue.create(65536)
+   );
    public static final GameRules.Key<GameRules.IntegerValue> RULE_COMMAND_MODIFICATION_BLOCK_LIMIT = register(
       "commandModificationBlockLimit", GameRules.Category.MISC, GameRules.IntegerValue.create(32768)
    );
@@ -123,6 +129,12 @@ public class GameRules {
             var3.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.IMMEDIATE_RESPAWN, var1.get() ? 1.0F : 0.0F));
          }
       })
+   );
+   public static final GameRules.Key<GameRules.IntegerValue> RULE_PLAYERS_NETHER_PORTAL_DEFAULT_DELAY = register(
+      "playersNetherPortalDefaultDelay", GameRules.Category.PLAYER, GameRules.IntegerValue.create(80)
+   );
+   public static final GameRules.Key<GameRules.IntegerValue> RULE_PLAYERS_NETHER_PORTAL_CREATIVE_DELAY = register(
+      "playersNetherPortalCreativeDelay", GameRules.Category.PLAYER, GameRules.IntegerValue.create(1)
    );
    public static final GameRules.Key<GameRules.BooleanValue> RULE_DROWNING_DAMAGE = register(
       "drowningDamage", GameRules.Category.PLAYER, GameRules.BooleanValue.create(true)

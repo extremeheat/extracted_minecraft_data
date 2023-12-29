@@ -1,10 +1,13 @@
 package net.minecraft.core.registries;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import net.minecraft.advancements.CriterionTrigger;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.core.Registry;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.network.chat.ChatType;
+import net.minecraft.network.chat.numbers.NumberFormatType;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
@@ -74,6 +77,7 @@ import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
 import net.minecraft.world.level.levelgen.structure.placement.StructurePlacementType;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElementType;
 import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
+import net.minecraft.world.level.levelgen.structure.pools.alias.PoolAliasBinding;
 import net.minecraft.world.level.levelgen.structure.templatesystem.PosRuleTestType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTestType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorList;
@@ -89,11 +93,13 @@ import net.minecraft.world.level.storage.loot.providers.number.LootNumberProvide
 import net.minecraft.world.level.storage.loot.providers.score.LootScoreProviderType;
 
 public class Registries {
+   public static final ResourceLocation ROOT_REGISTRY_NAME = new ResourceLocation("root");
    public static final ResourceKey<Registry<Activity>> ACTIVITY = createRegistryKey("activity");
    public static final ResourceKey<Registry<Attribute>> ATTRIBUTE = createRegistryKey("attribute");
    public static final ResourceKey<Registry<BannerPattern>> BANNER_PATTERN = createRegistryKey("banner_pattern");
    public static final ResourceKey<Registry<Codec<? extends BiomeSource>>> BIOME_SOURCE = createRegistryKey("worldgen/biome_source");
    public static final ResourceKey<Registry<Block>> BLOCK = createRegistryKey("block");
+   public static final ResourceKey<Registry<MapCodec<? extends Block>>> BLOCK_TYPE = createRegistryKey("block_type");
    public static final ResourceKey<Registry<BlockEntityType<?>>> BLOCK_ENTITY_TYPE = createRegistryKey("block_entity_type");
    public static final ResourceKey<Registry<BlockPredicateType<?>>> BLOCK_PREDICATE_TYPE = createRegistryKey("block_predicate_type");
    public static final ResourceKey<Registry<BlockStateProviderType<?>>> BLOCK_STATE_PROVIDER_TYPE = createRegistryKey("worldgen/block_state_provider_type");
@@ -151,6 +157,7 @@ public class Registries {
    public static final ResourceKey<Registry<StructurePieceType>> STRUCTURE_PIECE = createRegistryKey("worldgen/structure_piece");
    public static final ResourceKey<Registry<StructurePlacementType<?>>> STRUCTURE_PLACEMENT = createRegistryKey("worldgen/structure_placement");
    public static final ResourceKey<Registry<StructurePoolElementType<?>>> STRUCTURE_POOL_ELEMENT = createRegistryKey("worldgen/structure_pool_element");
+   public static final ResourceKey<Registry<Codec<? extends PoolAliasBinding>>> POOL_ALIAS_BINDING = createRegistryKey("worldgen/pool_alias_binding");
    public static final ResourceKey<Registry<StructureProcessorType<?>>> STRUCTURE_PROCESSOR = createRegistryKey("worldgen/structure_processor");
    public static final ResourceKey<Registry<StructureType<?>>> STRUCTURE_TYPE = createRegistryKey("worldgen/structure_type");
    public static final ResourceKey<Registry<TreeDecoratorType<?>>> TREE_DECORATOR_TYPE = createRegistryKey("worldgen/tree_decorator_type");
@@ -158,6 +165,7 @@ public class Registries {
    public static final ResourceKey<Registry<VillagerProfession>> VILLAGER_PROFESSION = createRegistryKey("villager_profession");
    public static final ResourceKey<Registry<VillagerType>> VILLAGER_TYPE = createRegistryKey("villager_type");
    public static final ResourceKey<Registry<String>> DECORATED_POT_PATTERNS = createRegistryKey("decorated_pot_patterns");
+   public static final ResourceKey<Registry<NumberFormatType<?>>> NUMBER_FORMAT_TYPE = createRegistryKey("number_format_type");
    public static final ResourceKey<Registry<Biome>> BIOME = createRegistryKey("worldgen/biome");
    public static final ResourceKey<Registry<ChatType>> CHAT_TYPE = createRegistryKey("chat_type");
    public static final ResourceKey<Registry<ConfiguredWorldCarver<?>>> CONFIGURED_CARVER = createRegistryKey("worldgen/configured_carver");
@@ -172,6 +180,7 @@ public class Registries {
    public static final ResourceKey<Registry<StructureProcessorList>> PROCESSOR_LIST = createRegistryKey("worldgen/processor_list");
    public static final ResourceKey<Registry<StructureSet>> STRUCTURE_SET = createRegistryKey("worldgen/structure_set");
    public static final ResourceKey<Registry<StructureTemplatePool>> TEMPLATE_POOL = createRegistryKey("worldgen/template_pool");
+   public static final ResourceKey<Registry<CriterionTrigger<?>>> TRIGGER_TYPE = createRegistryKey("trigger_type");
    public static final ResourceKey<Registry<TrimMaterial>> TRIM_MATERIAL = createRegistryKey("trim_material");
    public static final ResourceKey<Registry<TrimPattern>> TRIM_PATTERN = createRegistryKey("trim_pattern");
    public static final ResourceKey<Registry<WorldPreset>> WORLD_PRESET = createRegistryKey("worldgen/world_preset");

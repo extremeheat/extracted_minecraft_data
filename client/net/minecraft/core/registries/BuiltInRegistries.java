@@ -4,9 +4,12 @@ import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Lifecycle;
+import com.mojang.serialization.MapCodec;
 import java.util.Map;
 import java.util.function.Supplier;
 import net.minecraft.Util;
+import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.advancements.CriterionTrigger;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.commands.synchronization.ArgumentTypeInfos;
 import net.minecraft.core.DefaultedMappedRegistry;
@@ -16,8 +19,11 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.WritableRegistry;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.numbers.NumberFormatType;
+import net.minecraft.network.chat.numbers.NumberFormatTypes;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.Bootstrap;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.stats.StatType;
@@ -57,6 +63,7 @@ import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.biome.BiomeSources;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.BlockTypes;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BannerPattern;
 import net.minecraft.world.level.block.entity.BannerPatterns;
@@ -85,6 +92,8 @@ import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
 import net.minecraft.world.level.levelgen.structure.placement.StructurePlacementType;
 import net.minecraft.world.level.levelgen.structure.pools.StructurePoolElementType;
+import net.minecraft.world.level.levelgen.structure.pools.alias.PoolAliasBinding;
+import net.minecraft.world.level.levelgen.structure.pools.alias.PoolAliasBindings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.PosRuleTestType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.RuleTestType;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessorType;
@@ -109,9 +118,8 @@ import org.slf4j.Logger;
 public class BuiltInRegistries {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Map<ResourceLocation, Supplier<?>> LOADERS = Maps.newLinkedHashMap();
-   public static final ResourceLocation ROOT_REGISTRY_NAME = new ResourceLocation("root");
    private static final WritableRegistry<WritableRegistry<?>> WRITABLE_REGISTRY = new MappedRegistry<>(
-      ResourceKey.createRegistryKey(ROOT_REGISTRY_NAME), Lifecycle.stable()
+      ResourceKey.createRegistryKey(Registries.ROOT_REGISTRY_NAME), Lifecycle.stable()
    );
    public static final DefaultedRegistry<GameEvent> GAME_EVENT = registerDefaultedWithIntrusiveHolders(Registries.GAME_EVENT, "step", var0 -> GameEvent.STEP);
    public static final Registry<SoundEvent> SOUND_EVENT = registerSimple(Registries.SOUND_EVENT, var0 -> SoundEvents.ITEM_PICKUP);
@@ -217,11 +225,15 @@ public class BuiltInRegistries {
    public static final Registry<Codec<? extends DensityFunction>> DENSITY_FUNCTION_TYPE = registerSimple(
       Registries.DENSITY_FUNCTION_TYPE, DensityFunctions::bootstrap
    );
+   public static final Registry<MapCodec<? extends Block>> BLOCK_TYPE = registerSimple(Registries.BLOCK_TYPE, BlockTypes::bootstrap);
    public static final Registry<StructureProcessorType<?>> STRUCTURE_PROCESSOR = registerSimple(
       Registries.STRUCTURE_PROCESSOR, var0 -> StructureProcessorType.BLOCK_IGNORE
    );
    public static final Registry<StructurePoolElementType<?>> STRUCTURE_POOL_ELEMENT = registerSimple(
       Registries.STRUCTURE_POOL_ELEMENT, var0 -> StructurePoolElementType.EMPTY
+   );
+   public static final Registry<Codec<? extends PoolAliasBinding>> POOL_ALIAS_BINDING_TYPE = registerSimple(
+      Registries.POOL_ALIAS_BINDING, PoolAliasBindings::bootstrap
    );
    public static final Registry<CatVariant> CAT_VARIANT = registerSimple(Registries.CAT_VARIANT, CatVariant::bootstrap);
    public static final Registry<FrogVariant> FROG_VARIANT = registerSimple(Registries.FROG_VARIANT, var0 -> FrogVariant.TEMPERATE);
@@ -229,6 +241,8 @@ public class BuiltInRegistries {
    public static final Registry<Instrument> INSTRUMENT = registerSimple(Registries.INSTRUMENT, Instruments::bootstrap);
    public static final Registry<String> DECORATED_POT_PATTERNS = registerSimple(Registries.DECORATED_POT_PATTERNS, DecoratedPotPatterns::bootstrap);
    public static final Registry<CreativeModeTab> CREATIVE_MODE_TAB = registerSimple(Registries.CREATIVE_MODE_TAB, CreativeModeTabs::bootstrap);
+   public static final Registry<CriterionTrigger<?>> TRIGGER_TYPES = registerSimple(Registries.TRIGGER_TYPE, CriteriaTriggers::bootstrap);
+   public static final Registry<NumberFormatType<?>> NUMBER_FORMAT_TYPE = registerSimple(Registries.NUMBER_FORMAT_TYPE, NumberFormatTypes::bootstrap);
    public static final Registry<? extends Registry<?>> REGISTRY = WRITABLE_REGISTRY;
 
    public BuiltInRegistries() {
@@ -272,6 +286,7 @@ public class BuiltInRegistries {
    private static <T, R extends WritableRegistry<T>> R internalRegister(
       ResourceKey<? extends Registry<T>> var0, R var1, BuiltInRegistries.RegistryBootstrap<T> var2, Lifecycle var3
    ) {
+      Bootstrap.checkBootstrapCalled(() -> "registry " + var0);
       ResourceLocation var4 = var0.location();
       LOADERS.put(var4, () -> var2.run(var1));
       WRITABLE_REGISTRY.register(var0, var1, var3);

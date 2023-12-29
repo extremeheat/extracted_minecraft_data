@@ -41,6 +41,7 @@ public class DebugRenderer {
    public final GameTestDebugRenderer gameTestDebugRenderer;
    public final GameEventListenerRenderer gameEventListenerRenderer;
    public final LightSectionDebugRenderer skyLightSectionDebugRenderer;
+   public final BreezeDebugRenderer breezeDebugRenderer;
    private boolean renderChunkborder;
 
    public DebugRenderer(Minecraft var1) {
@@ -64,6 +65,7 @@ public class DebugRenderer {
       this.gameTestDebugRenderer = new GameTestDebugRenderer();
       this.gameEventListenerRenderer = new GameEventListenerRenderer(var1);
       this.skyLightSectionDebugRenderer = new LightSectionDebugRenderer(var1, LightLayer.SKY);
+      this.breezeDebugRenderer = new BreezeDebugRenderer(var1);
    }
 
    public void clear() {
@@ -87,6 +89,7 @@ public class DebugRenderer {
       this.gameTestDebugRenderer.clear();
       this.gameEventListenerRenderer.clear();
       this.skyLightSectionDebugRenderer.clear();
+      this.breezeDebugRenderer.clear();
    }
 
    public boolean switchRenderChunkborder() {
@@ -121,11 +124,15 @@ public class DebugRenderer {
       }
    }
 
+   public static void renderFilledUnitCube(PoseStack var0, MultiBufferSource var1, BlockPos var2, float var3, float var4, float var5, float var6) {
+      renderFilledBox(var0, var1, var2, var2.offset(1, 1, 1), var3, var4, var5, var6);
+   }
+
    public static void renderFilledBox(PoseStack var0, MultiBufferSource var1, BlockPos var2, BlockPos var3, float var4, float var5, float var6, float var7) {
       Camera var8 = Minecraft.getInstance().gameRenderer.getMainCamera();
       if (var8.isInitialized()) {
          Vec3 var9 = var8.getPosition().reverse();
-         AABB var10 = new AABB(var2, var3).move(var9);
+         AABB var10 = AABB.encapsulatingFullBlocks(var2, var3).move(var9);
          renderFilledBox(var0, var1, var10, var4, var5, var6, var7);
       }
    }

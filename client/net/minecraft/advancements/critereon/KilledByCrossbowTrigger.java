@@ -2,7 +2,8 @@ package net.minecraft.advancements.critereon;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -12,6 +13,7 @@ import java.util.Optional;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.storage.loot.LootContext;
 
@@ -20,10 +22,9 @@ public class KilledByCrossbowTrigger extends SimpleCriterionTrigger<KilledByCros
       super();
    }
 
-   public KilledByCrossbowTrigger.TriggerInstance createInstance(JsonObject var1, Optional<ContextAwarePredicate> var2, DeserializationContext var3) {
-      List var4 = EntityPredicate.fromJsonArray(var1, "victims", var3);
-      MinMaxBounds.Ints var5 = MinMaxBounds.Ints.fromJson(var1.get("unique_entity_types"));
-      return new KilledByCrossbowTrigger.TriggerInstance(var2, var4, var5);
+   @Override
+   public Codec<KilledByCrossbowTrigger.TriggerInstance> codec() {
+      return KilledByCrossbowTrigger.TriggerInstance.CODEC;
    }
 
    public void trigger(ServerPlayer var1, Collection<Entity> var2) {
@@ -38,12 +39,25 @@ public class KilledByCrossbowTrigger extends SimpleCriterionTrigger<KilledByCros
       this.trigger(var1, var2x -> var2x.matches(var3, var4.size()));
    }
 
-   public static class TriggerInstance extends AbstractCriterionTriggerInstance {
+   public static record TriggerInstance(Optional<ContextAwarePredicate> b, List<ContextAwarePredicate> c, MinMaxBounds.Ints d)
+      implements SimpleCriterionTrigger.SimpleInstance {
+      private final Optional<ContextAwarePredicate> player;
       private final List<ContextAwarePredicate> victims;
       private final MinMaxBounds.Ints uniqueEntityTypes;
+      public static final Codec<KilledByCrossbowTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
+         var0 -> var0.group(
+                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player").forGetter(KilledByCrossbowTrigger.TriggerInstance::player),
+                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC.listOf(), "victims", List.of())
+                     .forGetter(KilledByCrossbowTrigger.TriggerInstance::victims),
+                  ExtraCodecs.strictOptionalField(MinMaxBounds.Ints.CODEC, "unique_entity_types", MinMaxBounds.Ints.ANY)
+                     .forGetter(KilledByCrossbowTrigger.TriggerInstance::uniqueEntityTypes)
+               )
+               .apply(var0, KilledByCrossbowTrigger.TriggerInstance::new)
+      );
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, List<ContextAwarePredicate> var2, MinMaxBounds.Ints var3) {
-         super(var1);
+         super();
+         this.player = var1;
          this.victims = var2;
          this.uniqueEntityTypes = var3;
       }
@@ -84,11 +98,9 @@ public class KilledByCrossbowTrigger extends SimpleCriterionTrigger<KilledByCros
       }
 
       @Override
-      public JsonObject serializeToJson() {
-         JsonObject var1 = super.serializeToJson();
-         var1.add("victims", ContextAwarePredicate.toJson(this.victims));
-         var1.add("unique_entity_types", this.uniqueEntityTypes.serializeToJson());
-         return var1;
+      public void validate(CriterionValidator var1) {
+         SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
+         var1.validateEntities(this.victims, ".victims");
       }
    }
 }

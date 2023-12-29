@@ -4,7 +4,6 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -63,26 +62,16 @@ public class RealmsPopupScreen extends RealmsScreen {
       this.backgroundScreen.resize(this.minecraft, this.width, this.height);
       if (this.trialAvailable) {
          this.createTrialButton = this.addRenderableWidget(
-            Button.builder(Component.translatable("mco.selectServer.trial"), var1x -> this.minecraft.setScreen(new ConfirmLinkScreen(var1xx -> {
-                  if (var1xx) {
-                     Util.getPlatform().openUri("https://aka.ms/startjavarealmstrial");
-                  }
-   
-                  this.minecraft.setScreen(this);
-               }, "https://aka.ms/startjavarealmstrial", true))).bounds(this.right() - 10 - 99, this.bottom() - 10 - 4 - 40, 99, 20).build()
+            Button.builder(Component.translatable("mco.selectServer.trial"), ConfirmLinkScreen.confirmLink(this, "https://aka.ms/startjavarealmstrial"))
+               .bounds(this.right() - 10 - 99, this.bottom() - 10 - 4 - 40, 99, 20)
+               .build()
          );
       }
 
-      this.setFocused(
-         this.addRenderableWidget(
-            Button.builder(Component.translatable("mco.selectServer.buy"), var1x -> this.minecraft.setScreen(new ConfirmLinkScreen(var1xx -> {
-                  if (var1xx) {
-                     Util.getPlatform().openUri("https://aka.ms/BuyJavaRealms");
-                  }
-      
-                  this.minecraft.setScreen(this);
-               }, "https://aka.ms/BuyJavaRealms", true))).bounds(this.right() - 10 - 99, this.bottom() - 10 - 20, 99, 20).build()
-         )
+      this.addRenderableWidget(
+         Button.builder(Component.translatable("mco.selectServer.buy"), ConfirmLinkScreen.confirmLink(this, "https://aka.ms/BuyJavaRealms"))
+            .bounds(this.right() - 10 - 99, this.bottom() - 10 - 20, 99, 20)
+            .build()
       );
       ImageButton var1 = this.addRenderableWidget(
          new ImageButton(this.left() + 4, this.top() + 4, 14, 14, CROSS_BUTTON_SPRITES, var1x -> this.onClose(), CLOSE_TEXT)

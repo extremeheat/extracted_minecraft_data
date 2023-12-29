@@ -3,12 +3,17 @@ package net.minecraft.world.level.block;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.UnmodifiableIterator;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.tags.FluidTags;
@@ -32,6 +37,14 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class LiquidBlock extends Block implements BucketPickup {
+   private static final Codec<FlowingFluid> FLOWING_FLUID = BuiltInRegistries.FLUID
+      .byNameCodec()
+      .comapFlatMap(
+         var0 -> var0 instanceof FlowingFluid var1 ? DataResult.success(var1) : DataResult.error(() -> "Not a flowing fluid: " + var0), var0 -> var0
+      );
+   public static final MapCodec<LiquidBlock> CODEC = RecordCodecBuilder.mapCodec(
+      var0 -> var0.group(FLOWING_FLUID.fieldOf("fluid").forGetter(var0x -> var0x.fluid), propertiesCodec()).apply(var0, LiquidBlock::new)
+   );
    public static final IntegerProperty LEVEL = BlockStateProperties.LEVEL;
    protected final FlowingFluid fluid;
    private final List<FluidState> stateCache;
@@ -39,6 +52,11 @@ public class LiquidBlock extends Block implements BucketPickup {
    public static final ImmutableList<Direction> POSSIBLE_FLOW_DIRECTIONS = ImmutableList.of(
       Direction.DOWN, Direction.SOUTH, Direction.NORTH, Direction.EAST, Direction.WEST
    );
+
+   @Override
+   public MapCodec<LiquidBlock> codec() {
+      return CODEC;
+   }
 
    protected LiquidBlock(FlowingFluid var1, BlockBehaviour.Properties var2) {
       super(var2);

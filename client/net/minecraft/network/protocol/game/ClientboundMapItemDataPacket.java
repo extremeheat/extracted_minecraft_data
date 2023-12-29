@@ -38,7 +38,7 @@ public class ClientboundMapItemDataPacket implements Packet<ClientGamePacketList
             byte var2x = var0x.readByte();
             byte var3x = var0x.readByte();
             byte var4x = (byte)(var0x.readByte() & 15);
-            Component var5x = var0x.readNullable(FriendlyByteBuf::readComponent);
+            Component var5x = var0x.readNullable(FriendlyByteBuf::readComponentTrusted);
             return new MapDecoration(var1x, var2x, var3x, var4x, var5x);
          }));
       short var2 = var1.readUnsignedByte();

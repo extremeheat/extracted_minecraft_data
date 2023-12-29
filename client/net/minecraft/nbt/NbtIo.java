@@ -5,49 +5,60 @@ import java.io.DataInput;
 import java.io.DataInputStream;
 import java.io.DataOutput;
 import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UTFDataFormatException;
+import java.nio.file.Files;
+import java.nio.file.OpenOption;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
-import net.minecraft.ReportedException;
+import net.minecraft.Util;
+import net.minecraft.util.DelegateDataOutput;
 import net.minecraft.util.FastBufferedInputStream;
 
 public class NbtIo {
+   private static final OpenOption[] SYNC_OUTPUT_OPTIONS = new OpenOption[]{
+      StandardOpenOption.SYNC, StandardOpenOption.WRITE, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING
+   };
+
    public NbtIo() {
       super();
    }
 
-   public static CompoundTag readCompressed(File var0) throws IOException {
-      CompoundTag var2;
-      try (FileInputStream var1 = new FileInputStream(var0)) {
-         var2 = readCompressed(var1);
+   public static CompoundTag readCompressed(Path var0, NbtAccounter var1) throws IOException {
+      CompoundTag var3;
+      try (InputStream var2 = Files.newInputStream(var0)) {
+         var3 = readCompressed(var2, var1);
       }
 
-      return var2;
+      return var3;
    }
 
    private static DataInputStream createDecompressorStream(InputStream var0) throws IOException {
       return new DataInputStream(new FastBufferedInputStream(new GZIPInputStream(var0)));
    }
 
-   public static CompoundTag readCompressed(InputStream var0) throws IOException {
-      CompoundTag var2;
-      try (DataInputStream var1 = createDecompressorStream(var0)) {
-         var2 = read(var1, NbtAccounter.unlimitedHeap());
-      }
-
-      return var2;
+   private static DataOutputStream createCompressorStream(OutputStream var0) throws IOException {
+      return new DataOutputStream(new BufferedOutputStream(new GZIPOutputStream(var0)));
    }
 
-   public static void parseCompressed(File var0, StreamTagVisitor var1, NbtAccounter var2) throws IOException {
-      try (FileInputStream var3 = new FileInputStream(var0)) {
+   public static CompoundTag readCompressed(InputStream var0, NbtAccounter var1) throws IOException {
+      CompoundTag var3;
+      try (DataInputStream var2 = createDecompressorStream(var0)) {
+         var3 = read(var2, var1);
+      }
+
+      return var3;
+   }
+
+   public static void parseCompressed(Path var0, StreamTagVisitor var1, NbtAccounter var2) throws IOException {
+      try (InputStream var3 = Files.newInputStream(var0)) {
          parseCompressed(var3, var1, var2);
       }
    }
@@ -58,35 +69,39 @@ public class NbtIo {
       }
    }
 
-   public static void writeCompressed(CompoundTag var0, File var1) throws IOException {
-      try (FileOutputStream var2 = new FileOutputStream(var1)) {
-         writeCompressed(var0, var2);
+   public static void writeCompressed(CompoundTag var0, Path var1) throws IOException {
+      try (
+         OutputStream var2 = Files.newOutputStream(var1, SYNC_OUTPUT_OPTIONS);
+         BufferedOutputStream var3 = new BufferedOutputStream(var2);
+      ) {
+         writeCompressed(var0, var3);
       }
    }
 
    public static void writeCompressed(CompoundTag var0, OutputStream var1) throws IOException {
-      try (DataOutputStream var2 = new DataOutputStream(new BufferedOutputStream(new GZIPOutputStream(var1)))) {
+      try (DataOutputStream var2 = createCompressorStream(var1)) {
          write(var0, var2);
       }
    }
 
-   public static void write(CompoundTag var0, File var1) throws IOException {
+   public static void write(CompoundTag var0, Path var1) throws IOException {
       try (
-         FileOutputStream var2 = new FileOutputStream(var1);
-         DataOutputStream var3 = new DataOutputStream(var2);
+         OutputStream var2 = Files.newOutputStream(var1, SYNC_OUTPUT_OPTIONS);
+         BufferedOutputStream var3 = new BufferedOutputStream(var2);
+         DataOutputStream var4 = new DataOutputStream(var3);
       ) {
-         write(var0, var3);
+         write(var0, var4);
       }
    }
 
    @Nullable
-   public static CompoundTag read(File var0) throws IOException {
-      if (!var0.exists()) {
+   public static CompoundTag read(Path var0) throws IOException {
+      if (!Files.exists(var0)) {
          return null;
       } else {
          CompoundTag var3;
          try (
-            FileInputStream var1 = new FileInputStream(var0);
+            InputStream var1 = Files.newInputStream(var0);
             DataInputStream var2 = new DataInputStream(var1);
          ) {
             var3 = read(var2, NbtAccounter.unlimitedHeap());
@@ -110,7 +125,7 @@ public class NbtIo {
    }
 
    public static void write(CompoundTag var0, DataOutput var1) throws IOException {
-      writeUnnamedTag(var0, var1);
+      writeUnnamedTagWithFallback(var0, var1);
    }
 
    public static void parse(DataInput var0, StreamTagVisitor var1, NbtAccounter var2) throws IOException {
@@ -155,6 +170,10 @@ public class NbtIo {
       }
    }
 
+   public static void writeUnnamedTagWithFallback(Tag var0, DataOutput var1) throws IOException {
+      writeUnnamedTag(var0, new NbtIo.StringFallbackDataOutput(var1));
+   }
+
    private static Tag readUnnamedTag(DataInput var0, NbtAccounter var1) throws IOException {
       byte var2 = var0.readByte();
       if (var2 == 0) {
@@ -172,7 +191,23 @@ public class NbtIo {
          CrashReport var4 = CrashReport.forThrowable(var6, "Loading NBT data");
          CrashReportCategory var5 = var4.addCategory("NBT Tag");
          var5.setDetail("Tag type", var2);
-         throw new ReportedException(var4);
+         throw new ReportedNbtException(var4);
+      }
+   }
+
+   public static class StringFallbackDataOutput extends DelegateDataOutput {
+      public StringFallbackDataOutput(DataOutput var1) {
+         super(var1);
+      }
+
+      @Override
+      public void writeUTF(String var1) throws IOException {
+         try {
+            super.writeUTF(var1);
+         } catch (UTFDataFormatException var3) {
+            Util.logAndPauseIfInIde("Failed to write NBT String", var3);
+            super.writeUTF("");
+         }
       }
    }
 }

@@ -1,23 +1,26 @@
 package net.minecraft.network.protocol.common;
 
+import java.util.UUID;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.Packet;
 
-public class ServerboundResourcePackPacket implements Packet<ServerCommonPacketListener> {
+public record ServerboundResourcePackPacket(UUID a, ServerboundResourcePackPacket.Action b) implements Packet<ServerCommonPacketListener> {
+   private final UUID id;
    private final ServerboundResourcePackPacket.Action action;
 
-   public ServerboundResourcePackPacket(ServerboundResourcePackPacket.Action var1) {
-      super();
-      this.action = var1;
+   public ServerboundResourcePackPacket(FriendlyByteBuf var1) {
+      this(var1.readUUID(), var1.readEnum(ServerboundResourcePackPacket.Action.class));
    }
 
-   public ServerboundResourcePackPacket(FriendlyByteBuf var1) {
+   public ServerboundResourcePackPacket(UUID var1, ServerboundResourcePackPacket.Action var2) {
       super();
-      this.action = var1.readEnum(ServerboundResourcePackPacket.Action.class);
+      this.id = var1;
+      this.action = var2;
    }
 
    @Override
    public void write(FriendlyByteBuf var1) {
+      var1.writeUUID(this.id);
       var1.writeEnum(this.action);
    }
 
@@ -25,17 +28,21 @@ public class ServerboundResourcePackPacket implements Packet<ServerCommonPacketL
       var1.handleResourcePackResponse(this);
    }
 
-   public ServerboundResourcePackPacket.Action getAction() {
-      return this.action;
-   }
-
    public static enum Action {
       SUCCESSFULLY_LOADED,
       DECLINED,
       FAILED_DOWNLOAD,
-      ACCEPTED;
+      ACCEPTED,
+      DOWNLOADED,
+      INVALID_URL,
+      FAILED_RELOAD,
+      DISCARDED;
 
       private Action() {
+      }
+
+      public boolean isTerminal() {
+         return this != ACCEPTED && this != DOWNLOADED;
       }
    }
 }

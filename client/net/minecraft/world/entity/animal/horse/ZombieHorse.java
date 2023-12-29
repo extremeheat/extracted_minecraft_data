@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.animal.horse;
 
 import javax.annotation.Nullable;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -11,11 +12,14 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 
 public class ZombieHorse extends AbstractHorse {
    public ZombieHorse(EntityType<? extends ZombieHorse> var1, Level var2) {
@@ -24,6 +28,14 @@ public class ZombieHorse extends AbstractHorse {
 
    public static AttributeSupplier.Builder createAttributes() {
       return createBaseHorseAttributes().add(Attributes.MAX_HEALTH, 15.0).add(Attributes.MOVEMENT_SPEED, 0.20000000298023224);
+   }
+
+   public static boolean checkZombieHorseSpawnRules(EntityType<? extends Animal> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
+      if (!MobSpawnType.isSpawner(var2)) {
+         return Animal.checkAnimalSpawnRules(var0, var1, var2, var3, var4);
+      } else {
+         return MobSpawnType.ignoresLightRequirements(var2) || isBrightEnoughToSpawn(var1, var3);
+      }
    }
 
    @Override

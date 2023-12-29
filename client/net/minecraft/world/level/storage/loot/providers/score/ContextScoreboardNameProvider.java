@@ -5,9 +5,9 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Set;
 import javax.annotation.Nullable;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
+import net.minecraft.world.scores.ScoreHolder;
 
 public record ContextScoreboardNameProvider(LootContext.EntityTarget c) implements ScoreboardNameProvider {
    private final LootContext.EntityTarget target;
@@ -34,9 +34,8 @@ public record ContextScoreboardNameProvider(LootContext.EntityTarget c) implemen
 
    @Nullable
    @Override
-   public String getScoreboardName(LootContext var1) {
-      Entity var2 = var1.getParamOrNull(this.target.getParam());
-      return var2 != null ? var2.getScoreboardName() : null;
+   public ScoreHolder getScoreHolder(LootContext var1) {
+      return var1.getParamOrNull(this.target.getParam());
    }
 
    @Override

@@ -44,7 +44,7 @@ import org.slf4j.Logger;
 public class RenderSystem {
    static final Logger LOGGER = LogUtils.getLogger();
    private static final ConcurrentLinkedQueue<RenderCall> recordingQueue = Queues.newConcurrentLinkedQueue();
-   private static final Tesselator RENDER_THREAD_TESSELATOR = new Tesselator();
+   private static final Tesselator RENDER_THREAD_TESSELATOR = new Tesselator(1536);
    private static final int MINIMUM_ATLAS_TEXTURE_SIZE = 1024;
    private static boolean isReplayingQueue;
    @Nullable
@@ -987,18 +987,20 @@ public class RenderSystem {
          if (!this.hasStorage(var1)) {
             var1 = Mth.roundToward(var1 * 2, this.indexStride);
             RenderSystem.LOGGER.debug("Growing IndexBuffer: Old limit {}, new limit {}.", this.indexCount, var1);
-            VertexFormat.IndexType var2 = VertexFormat.IndexType.least(var1);
-            int var3 = Mth.roundToward(var1 * var2.bytes, 4);
-            GlStateManager._glBufferData(34963, (long)var3, 35048);
-            ByteBuffer var4 = GlStateManager._glMapBuffer(34963, 35001);
-            if (var4 == null) {
+            int var2 = var1 / this.indexStride;
+            int var3 = var2 * this.vertexStride;
+            VertexFormat.IndexType var4 = VertexFormat.IndexType.least(var3);
+            int var5 = Mth.roundToward(var1 * var4.bytes, 4);
+            GlStateManager._glBufferData(34963, (long)var5, 35048);
+            ByteBuffer var6 = GlStateManager._glMapBuffer(34963, 35001);
+            if (var6 == null) {
                throw new RuntimeException("Failed to map GL buffer");
             } else {
-               this.type = var2;
-               it.unimi.dsi.fastutil.ints.IntConsumer var5 = this.intConsumer(var4);
+               this.type = var4;
+               it.unimi.dsi.fastutil.ints.IntConsumer var7 = this.intConsumer(var6);
 
-               for(int var6 = 0; var6 < var1; var6 += this.indexStride) {
-                  this.generator.accept(var5, var6 * this.vertexStride / this.indexStride);
+               for(int var8 = 0; var8 < var1; var8 += this.indexStride) {
+                  this.generator.accept(var7, var8 * this.vertexStride / this.indexStride);
                }
 
                GlStateManager._glUnmapBuffer(34963);

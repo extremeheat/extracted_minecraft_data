@@ -95,6 +95,10 @@ public class Options {
    private final OptionInstance<Boolean> hideLightningFlash = OptionInstance.createBoolean(
       "options.hideLightningFlashes", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_HIDE_LIGHTNING_FLASHES), false
    );
+   private static final Component ACCESSIBILITY_TOOLTIP_HIDE_SPLASH_TEXTS = Component.translatable("options.hideSplashTexts.tooltip");
+   private final OptionInstance<Boolean> hideSplashTexts = OptionInstance.createBoolean(
+      "options.hideSplashTexts", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_HIDE_SPLASH_TEXTS), false
+   );
    private final OptionInstance<Double> sensitivity = new OptionInstance<>("options.sensitivity", OptionInstance.noTooltip(), (var0, var1x) -> {
       if (var1x == 0.0) {
          return genericValueLabel(var0, Component.translatable("options.sensitivity.min"));
@@ -255,7 +259,11 @@ public class Options {
    );
    private final OptionInstance<Boolean> narratorHotkey = OptionInstance.createBoolean(
       "options.accessibility.narrator_hotkey",
-      OptionInstance.cachedConstantTooltip(Component.translatable("options.accessibility.narrator_hotkey.tooltip")),
+      OptionInstance.cachedConstantTooltip(
+         Minecraft.ON_OSX
+            ? Component.translatable("options.accessibility.narrator_hotkey.mac.tooltip")
+            : Component.translatable("options.accessibility.narrator_hotkey.tooltip")
+      ),
       true
    );
    @Nullable
@@ -702,6 +710,10 @@ public class Options {
       return this.hideLightningFlash;
    }
 
+   public OptionInstance<Boolean> hideSplashTexts() {
+      return this.hideSplashTexts;
+   }
+
    public OptionInstance<Double> sensitivity() {
       return this.sensitivity;
    }
@@ -1081,6 +1093,7 @@ public class Options {
       var1.process("toggleSprint", this.toggleSprint);
       var1.process("darkMojangStudiosBackground", this.darkMojangStudiosBackground);
       var1.process("hideLightningFlashes", this.hideLightningFlash);
+      var1.process("hideSplashTexts", this.hideSplashTexts);
       var1.process("mouseSensitivity", this.sensitivity);
       var1.process("fov", this.fov);
       var1.process("screenEffectScale", this.screenEffectScale);

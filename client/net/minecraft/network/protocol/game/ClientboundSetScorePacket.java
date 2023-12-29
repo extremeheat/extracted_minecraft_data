@@ -1,71 +1,50 @@
 package net.minecraft.network.protocol.game;
 
-import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.numbers.NumberFormat;
+import net.minecraft.network.chat.numbers.NumberFormatTypes;
 import net.minecraft.network.protocol.Packet;
-import net.minecraft.server.ServerScoreboard;
 
-public class ClientboundSetScorePacket implements Packet<ClientGamePacketListener> {
+public record ClientboundSetScorePacket(String a, String b, int c, @Nullable Component d, @Nullable NumberFormat e) implements Packet<ClientGamePacketListener> {
    private final String owner;
-   @Nullable
    private final String objectiveName;
    private final int score;
-   private final ServerScoreboard.Method method;
-
-   public ClientboundSetScorePacket(ServerScoreboard.Method var1, @Nullable String var2, String var3, int var4) {
-      super();
-      if (var1 != ServerScoreboard.Method.REMOVE && var2 == null) {
-         throw new IllegalArgumentException("Need an objective name");
-      } else {
-         this.owner = var3;
-         this.objectiveName = var2;
-         this.score = var4;
-         this.method = var1;
-      }
-   }
+   @Nullable
+   private final Component display;
+   @Nullable
+   private final NumberFormat numberFormat;
 
    public ClientboundSetScorePacket(FriendlyByteBuf var1) {
+      this(
+         var1.readUtf(),
+         var1.readUtf(),
+         var1.readVarInt(),
+         var1.readNullable(FriendlyByteBuf::readComponentTrusted),
+         var1.readNullable(NumberFormatTypes::readFromStream)
+      );
+   }
+
+   public ClientboundSetScorePacket(String var1, String var2, int var3, @Nullable Component var4, @Nullable NumberFormat var5) {
       super();
-      this.owner = var1.readUtf();
-      this.method = var1.readEnum(ServerScoreboard.Method.class);
-      String var2 = var1.readUtf();
-      this.objectiveName = Objects.equals(var2, "") ? null : var2;
-      if (this.method != ServerScoreboard.Method.REMOVE) {
-         this.score = var1.readVarInt();
-      } else {
-         this.score = 0;
-      }
+      this.owner = var1;
+      this.objectiveName = var2;
+      this.score = var3;
+      this.display = var4;
+      this.numberFormat = var5;
    }
 
    @Override
    public void write(FriendlyByteBuf var1) {
       var1.writeUtf(this.owner);
-      var1.writeEnum(this.method);
-      var1.writeUtf(this.objectiveName == null ? "" : this.objectiveName);
-      if (this.method != ServerScoreboard.Method.REMOVE) {
-         var1.writeVarInt(this.score);
-      }
+      var1.writeUtf(this.objectiveName);
+      var1.writeVarInt(this.score);
+      var1.writeNullable(this.display, FriendlyByteBuf::writeComponent);
+      var1.writeNullable(this.numberFormat, NumberFormatTypes::writeToStream);
    }
 
    public void handle(ClientGamePacketListener var1) {
       var1.handleSetScore(this);
-   }
-
-   public String getOwner() {
-      return this.owner;
-   }
-
-   @Nullable
-   public String getObjectiveName() {
-      return this.objectiveName;
-   }
-
-   public int getScore() {
-      return this.score;
-   }
-
-   public ServerScoreboard.Method getMethod() {
-      return this.method;
    }
 }

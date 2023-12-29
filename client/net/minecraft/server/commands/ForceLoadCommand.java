@@ -22,10 +22,10 @@ import net.minecraft.world.level.ChunkPos;
 public class ForceLoadCommand {
    private static final int MAX_CHUNK_LIMIT = 256;
    private static final Dynamic2CommandExceptionType ERROR_TOO_MANY_CHUNKS = new Dynamic2CommandExceptionType(
-      (var0, var1) -> Component.translatable("commands.forceload.toobig", var0, var1)
+      (var0, var1) -> Component.translatableEscape("commands.forceload.toobig", var0, var1)
    );
    private static final Dynamic2CommandExceptionType ERROR_NOT_TICKING = new Dynamic2CommandExceptionType(
-      (var0, var1) -> Component.translatable("commands.forceload.query.failure", var0, var1)
+      (var0, var1) -> Component.translatableEscape("commands.forceload.query.failure", var0, var1)
    );
    private static final SimpleCommandExceptionType ERROR_ALL_ADDED = new SimpleCommandExceptionType(Component.translatable("commands.forceload.added.failure"));
    private static final SimpleCommandExceptionType ERROR_NONE_REMOVED = new SimpleCommandExceptionType(
@@ -107,7 +107,9 @@ public class ForceLoadCommand {
       ResourceKey var4 = var3.dimension();
       boolean var5 = var3.getForcedChunks().contains(var2.toLong());
       if (var5) {
-         var0.sendSuccess(() -> Component.translatable("commands.forceload.query.success", var2, var4.location()), false);
+         var0.sendSuccess(
+            () -> Component.translatable("commands.forceload.query.success", Component.translationArg(var2), Component.translationArg(var4.location())), false
+         );
          return 1;
       } else {
          throw ERROR_NOT_TICKING.create(var2, var4.location());
@@ -122,12 +124,12 @@ public class ForceLoadCommand {
       if (var4 > 0) {
          String var5 = Joiner.on(", ").join(var3.stream().sorted().map(ChunkPos::new).map(ChunkPos::toString).iterator());
          if (var4 == 1) {
-            var0.sendSuccess(() -> Component.translatable("commands.forceload.list.single", var2.location(), var5), false);
+            var0.sendSuccess(() -> Component.translatable("commands.forceload.list.single", Component.translationArg(var2.location()), var5), false);
          } else {
-            var0.sendSuccess(() -> Component.translatable("commands.forceload.list.multiple", var4, var2.location(), var5), false);
+            var0.sendSuccess(() -> Component.translatable("commands.forceload.list.multiple", var4, Component.translationArg(var2.location()), var5), false);
          }
       } else {
-         var0.sendFailure(Component.translatable("commands.forceload.added.none", var2.location()));
+         var0.sendFailure(Component.translatable("commands.forceload.added.none", Component.translationArg(var2.location())));
       }
 
       return var4;
@@ -138,7 +140,7 @@ public class ForceLoadCommand {
       ResourceKey var2 = var1.dimension();
       LongSet var3 = var1.getForcedChunks();
       var3.forEach(var1x -> var1.setChunkForced(ChunkPos.getX(var1x), ChunkPos.getZ(var1x), false));
-      var0.sendSuccess(() -> Component.translatable("commands.forceload.removed.all", var2.location()), true);
+      var0.sendSuccess(() -> Component.translatable("commands.forceload.removed.all", Component.translationArg(var2.location())), true);
       return 0;
    }
 
@@ -179,13 +181,24 @@ public class ForceLoadCommand {
             } else {
                if (var17 == 1) {
                   var0.sendSuccess(
-                     () -> Component.translatable("commands.forceload." + (var3 ? "added" : "removed") + ".single", var21, var15.location()), true
+                     () -> Component.translatable(
+                           "commands.forceload." + (var3 ? "added" : "removed") + ".single",
+                           Component.translationArg(var21),
+                           Component.translationArg(var15.location())
+                        ),
+                     true
                   );
                } else {
                   ChunkPos var22 = new ChunkPos(var8, var9);
                   ChunkPos var23 = new ChunkPos(var10, var11);
                   var0.sendSuccess(
-                     () -> Component.translatable("commands.forceload." + (var3 ? "added" : "removed") + ".multiple", var21, var15.location(), var22, var23),
+                     () -> Component.translatable(
+                           "commands.forceload." + (var3 ? "added" : "removed") + ".multiple",
+                           Component.translationArg(var21),
+                           Component.translationArg(var15.location()),
+                           Component.translationArg(var22),
+                           Component.translationArg(var23)
+                        ),
                      true
                   );
                }

@@ -1,5 +1,7 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -14,9 +16,17 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class CoralPlantBlock extends BaseCoralPlantTypeBlock {
+   public static final MapCodec<CoralPlantBlock> CODEC = RecordCodecBuilder.mapCodec(
+      var0 -> var0.group(CoralBlock.DEAD_CORAL_FIELD.forGetter(var0x -> var0x.deadBlock), propertiesCodec()).apply(var0, CoralPlantBlock::new)
+   );
    private final Block deadBlock;
    protected static final float AABB_OFFSET = 6.0F;
    protected static final VoxelShape SHAPE = Block.box(2.0, 0.0, 2.0, 14.0, 15.0, 14.0);
+
+   @Override
+   public MapCodec<CoralPlantBlock> codec() {
+      return CODEC;
+   }
 
    protected CoralPlantBlock(Block var1, BlockBehaviour.Properties var2) {
       super(var2);

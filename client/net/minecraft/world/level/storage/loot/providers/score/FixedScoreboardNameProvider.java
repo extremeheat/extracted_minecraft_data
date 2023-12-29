@@ -4,9 +4,9 @@ import com.google.common.collect.ImmutableSet;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
+import net.minecraft.world.scores.ScoreHolder;
 
 public record FixedScoreboardNameProvider(String b) implements ScoreboardNameProvider {
    private final String name;
@@ -28,10 +28,9 @@ public record FixedScoreboardNameProvider(String b) implements ScoreboardNamePro
       return ScoreboardNameProviders.FIXED;
    }
 
-   @Nullable
    @Override
-   public String getScoreboardName(LootContext var1) {
-      return this.name;
+   public ScoreHolder getScoreHolder(LootContext var1) {
+      return ScoreHolder.forNameOnly(this.name);
    }
 
    @Override

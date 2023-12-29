@@ -132,7 +132,7 @@ public class ChiseledBookShelfBlockEntity extends BlockEntity implements Contain
 
    @Override
    public boolean canPlaceItem(int var1, ItemStack var2) {
-      return var2.is(ItemTags.BOOKSHELF_BOOKS) && this.getItem(var1).isEmpty();
+      return var2.is(ItemTags.BOOKSHELF_BOOKS) && this.getItem(var1).isEmpty() && var2.getCount() == this.getMaxStackSize();
    }
 
    public int getLastInteractedSlot() {

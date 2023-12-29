@@ -157,67 +157,67 @@ public class PotionUtils {
       }
    }
 
-   public static void addPotionTooltip(ItemStack var0, List<Component> var1, float var2) {
-      addPotionTooltip(getMobEffects(var0), var1, var2);
+   public static void addPotionTooltip(ItemStack var0, List<Component> var1, float var2, float var3) {
+      addPotionTooltip(getMobEffects(var0), var1, var2, var3);
    }
 
-   public static void addPotionTooltip(List<MobEffectInstance> var0, List<Component> var1, float var2) {
-      ArrayList var3 = Lists.newArrayList();
+   public static void addPotionTooltip(List<MobEffectInstance> var0, List<Component> var1, float var2, float var3) {
+      ArrayList var4 = Lists.newArrayList();
       if (var0.isEmpty()) {
          var1.add(NO_EFFECT);
       } else {
-         for(MobEffectInstance var5 : var0) {
-            MutableComponent var6 = Component.translatable(var5.getDescriptionId());
-            MobEffect var7 = var5.getEffect();
-            Map var8 = var7.getAttributeModifiers();
-            if (!var8.isEmpty()) {
-               for(Entry var10 : var8.entrySet()) {
-                  var3.add(new Pair((Attribute)var10.getKey(), ((AttributeModifierTemplate)var10.getValue()).create(var5.getAmplifier())));
+         for(MobEffectInstance var6 : var0) {
+            MutableComponent var7 = Component.translatable(var6.getDescriptionId());
+            MobEffect var8 = var6.getEffect();
+            Map var9 = var8.getAttributeModifiers();
+            if (!var9.isEmpty()) {
+               for(Entry var11 : var9.entrySet()) {
+                  var4.add(new Pair((Attribute)var11.getKey(), ((AttributeModifierTemplate)var11.getValue()).create(var6.getAmplifier())));
                }
             }
 
-            if (var5.getAmplifier() > 0) {
-               var6 = Component.translatable("potion.withAmplifier", var6, Component.translatable("potion.potency." + var5.getAmplifier()));
+            if (var6.getAmplifier() > 0) {
+               var7 = Component.translatable("potion.withAmplifier", var7, Component.translatable("potion.potency." + var6.getAmplifier()));
             }
 
-            if (!var5.endsWithin(20)) {
-               var6 = Component.translatable("potion.withDuration", var6, MobEffectUtil.formatDuration(var5, var2));
+            if (!var6.endsWithin(20)) {
+               var7 = Component.translatable("potion.withDuration", var7, MobEffectUtil.formatDuration(var6, var2, var3));
             }
 
-            var1.add(var6.withStyle(var7.getCategory().getTooltipFormatting()));
+            var1.add(var7.withStyle(var8.getCategory().getTooltipFormatting()));
          }
       }
 
-      if (!var3.isEmpty()) {
+      if (!var4.isEmpty()) {
          var1.add(CommonComponents.EMPTY);
          var1.add(Component.translatable("potion.whenDrank").withStyle(ChatFormatting.DARK_PURPLE));
 
-         for(Pair var12 : var3) {
-            AttributeModifier var13 = (AttributeModifier)var12.getSecond();
-            double var14 = var13.getAmount();
-            double var15;
-            if (var13.getOperation() != AttributeModifier.Operation.MULTIPLY_BASE && var13.getOperation() != AttributeModifier.Operation.MULTIPLY_TOTAL) {
-               var15 = var13.getAmount();
+         for(Pair var13 : var4) {
+            AttributeModifier var14 = (AttributeModifier)var13.getSecond();
+            double var15 = var14.getAmount();
+            double var16;
+            if (var14.getOperation() != AttributeModifier.Operation.MULTIPLY_BASE && var14.getOperation() != AttributeModifier.Operation.MULTIPLY_TOTAL) {
+               var16 = var14.getAmount();
             } else {
-               var15 = var13.getAmount() * 100.0;
+               var16 = var14.getAmount() * 100.0;
             }
 
-            if (var14 > 0.0) {
+            if (var15 > 0.0) {
                var1.add(
                   Component.translatable(
-                        "attribute.modifier.plus." + var13.getOperation().toValue(),
-                        ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(var15),
-                        Component.translatable(((Attribute)var12.getFirst()).getDescriptionId())
+                        "attribute.modifier.plus." + var14.getOperation().toValue(),
+                        ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(var16),
+                        Component.translatable(((Attribute)var13.getFirst()).getDescriptionId())
                      )
                      .withStyle(ChatFormatting.BLUE)
                );
-            } else if (var14 < 0.0) {
-               var15 *= -1.0;
+            } else if (var15 < 0.0) {
+               var16 *= -1.0;
                var1.add(
                   Component.translatable(
-                        "attribute.modifier.take." + var13.getOperation().toValue(),
-                        ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(var15),
-                        Component.translatable(((Attribute)var12.getFirst()).getDescriptionId())
+                        "attribute.modifier.take." + var14.getOperation().toValue(),
+                        ItemStack.ATTRIBUTE_MODIFIER_FORMAT.format(var16),
+                        Component.translatable(((Attribute)var13.getFirst()).getDescriptionId())
                      )
                      .withStyle(ChatFormatting.RED)
                );

@@ -11,6 +11,8 @@ import com.mojang.realmsclient.util.task.LongRunningTask;
 import com.mojang.realmsclient.util.task.ResettingGeneratedWorldTask;
 import com.mojang.realmsclient.util.task.ResettingTemplateWorldTask;
 import com.mojang.realmsclient.util.task.SwitchSlotTask;
+import com.mojang.realmsclient.util.task.WorldCreationTask;
+import java.util.ArrayList;
 import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -57,10 +59,18 @@ public class RealmsResetWorldScreen extends RealmsScreen {
    WorldTemplatePaginatedList experiences;
    WorldTemplatePaginatedList inspirations;
    public final int slot;
+   @Nullable
+   private final WorldCreationTask worldCreationTask;
    private final Runnable resetWorldRunnable;
    private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
 
    private RealmsResetWorldScreen(Screen var1, RealmsServer var2, int var3, Component var4, Component var5, int var6, Component var7, Runnable var8) {
+      this(var1, var2, var3, var4, var5, var6, var7, null, var8);
+   }
+
+   public RealmsResetWorldScreen(
+      Screen var1, RealmsServer var2, int var3, Component var4, Component var5, int var6, Component var7, @Nullable WorldCreationTask var8, Runnable var9
+   ) {
       super(var4);
       this.lastScreen = var1;
       this.serverData = var2;
@@ -68,11 +78,14 @@ public class RealmsResetWorldScreen extends RealmsScreen {
       this.subtitle = var5;
       this.subtitleColor = var6;
       this.resetTaskTitle = var7;
-      this.resetWorldRunnable = var8;
+      this.worldCreationTask = var8;
+      this.resetWorldRunnable = var9;
    }
 
-   public static RealmsResetWorldScreen forNewRealm(Screen var0, RealmsServer var1, Runnable var2) {
-      return new RealmsResetWorldScreen(var0, var1, var1.activeSlot, CREATE_REALM_TITLE, CREATE_REALM_SUBTITLE, -6250336, CREATE_WORLD_RESET_TASK_TITLE, var2);
+   public static RealmsResetWorldScreen forNewRealm(Screen var0, RealmsServer var1, WorldCreationTask var2, Runnable var3) {
+      return new RealmsResetWorldScreen(
+         var0, var1, var1.activeSlot, CREATE_REALM_TITLE, CREATE_REALM_SUBTITLE, -6250336, CREATE_WORLD_RESET_TASK_TITLE, var2, var3
+      );
    }
 
    public static RealmsResetWorldScreen forEmptySlot(Screen var0, int var1, RealmsServer var2, Runnable var3) {
@@ -203,34 +216,38 @@ public class RealmsResetWorldScreen extends RealmsScreen {
       return this.width / 2 - 130 + (var1 - 1) * 100;
    }
 
-   private void startTask(LongRunningTask var1) {
-      this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(this.lastScreen, var1));
-   }
-
-   public void switchSlot(Runnable var1) {
-      this.startTask(new SwitchSlotTask(this.serverData.id, this.slot, () -> this.minecraft.execute(var1)));
-   }
-
    private void templateSelectionCallback(@Nullable WorldTemplate var1) {
       this.minecraft.setScreen(this);
       if (var1 != null) {
-         this.resetWorld(() -> this.startTask(new ResettingTemplateWorldTask(var1, this.serverData.id, this.resetTaskTitle, this.resetWorldRunnable)));
+         this.runResetTasks(new ResettingTemplateWorldTask(var1, this.serverData.id, this.resetTaskTitle, this.resetWorldRunnable));
       }
    }
 
    private void generationSelectionCallback(@Nullable WorldGenerationInfo var1) {
       this.minecraft.setScreen(this);
       if (var1 != null) {
-         this.resetWorld(() -> this.startTask(new ResettingGeneratedWorldTask(var1, this.serverData.id, this.resetTaskTitle, this.resetWorldRunnable)));
+         this.runResetTasks(new ResettingGeneratedWorldTask(var1, this.serverData.id, this.resetTaskTitle, this.resetWorldRunnable));
       }
    }
 
-   private void resetWorld(Runnable var1) {
-      if (this.slot == -1) {
-         var1.run();
-      } else {
-         this.switchSlot(var1);
+   private void runResetTasks(LongRunningTask var1) {
+      ArrayList var2 = new ArrayList();
+      if (this.worldCreationTask != null) {
+         var2.add(this.worldCreationTask);
       }
+
+      if (this.slot != this.serverData.activeSlot) {
+         var2.add(new SwitchSlotTask(this.serverData.id, this.slot, () -> {
+         }));
+      }
+
+      var2.add(var1);
+      this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(this.lastScreen, var2.toArray(new LongRunningTask[0])));
+   }
+
+   public void switchSlot(Runnable var1) {
+      this.minecraft
+         .setScreen(new RealmsLongRunningMcoTaskScreen(this.lastScreen, new SwitchSlotTask(this.serverData.id, this.slot, () -> this.minecraft.execute(var1))));
    }
 
    class FrameButton extends Button {

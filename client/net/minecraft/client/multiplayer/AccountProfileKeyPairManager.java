@@ -148,7 +148,7 @@ public class AccountProfileKeyPairManager implements ProfileKeyPairManager {
             throw new CryptException(var5);
          }
       } else {
-         throw new CryptException(new MissingException());
+         throw new CryptException(new MissingException("Missing public key"));
       }
    }
 }

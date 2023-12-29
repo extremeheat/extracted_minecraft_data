@@ -120,11 +120,12 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.scores.PlayerTeam;
+import net.minecraft.world.scores.ScoreHolder;
 import net.minecraft.world.scores.Team;
 import org.joml.Vector3f;
 import org.slf4j.Logger;
 
-public abstract class Entity implements Nameable, EntityAccess, CommandSource {
+public abstract class Entity implements Nameable, EntityAccess, CommandSource, ScoreHolder {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final String ID_TAG = "id";
    public static final String PASSENGERS_TAG = "Passengers";
@@ -271,7 +272,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
    }
 
    public int getTeamColor() {
-      Team var1 = this.getTeam();
+      PlayerTeam var1 = this.getTeam();
       return var1 != null && var1.getColor().getColor() != null ? var1.getColor().getColor() : 16777215;
    }
 
@@ -2216,7 +2217,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
       if (var1.isSpectator()) {
          return false;
       } else {
-         Team var2 = this.getTeam();
+         PlayerTeam var2 = this.getTeam();
          return var2 != null && var1 != null && var1.getTeam() == var2 && var2.canSeeFriendlyInvisibles() ? false : this.isInvisible();
       }
    }
@@ -2229,7 +2230,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
    }
 
    @Nullable
-   public Team getTeam() {
+   public PlayerTeam getTeam() {
       return this.level().getScoreboard().getPlayersTeam(this.getScoreboardName());
    }
 
@@ -2619,6 +2620,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
       return this.stringUUID;
    }
 
+   @Override
    public String getScoreboardName() {
       return this.stringUUID;
    }
@@ -2837,7 +2839,7 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
       return InteractionResult.PASS;
    }
 
-   public boolean ignoreExplosion() {
+   public boolean ignoreExplosion(Explosion var1) {
       return false;
    }
 
@@ -2938,8 +2940,12 @@ public abstract class Entity implements Nameable, EntityAccess, CommandSource {
       return () -> this.getIndirectPassengersStream().iterator();
    }
 
+   public int countPlayerPassengers() {
+      return (int)this.getIndirectPassengersStream().filter(var0 -> var0 instanceof Player).count();
+   }
+
    public boolean hasExactlyOnePlayerPassenger() {
-      return this.getIndirectPassengersStream().filter(var0 -> var0 instanceof Player).count() == 1L;
+      return this.countPlayerPassengers() == 1;
    }
 
    public Entity getRootVehicle() {

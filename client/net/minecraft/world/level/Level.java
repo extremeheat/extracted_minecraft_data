@@ -19,6 +19,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -28,12 +29,14 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.FullChunkStatus;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.AbortableIterationConsumer;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.TickRateManager;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageSources;
 import net.minecraft.world.entity.Entity;
@@ -385,6 +388,10 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
    public abstract void playSeededSound(@Nullable Player var1, Entity var2, Holder<SoundEvent> var3, SoundSource var4, float var5, float var6, long var7);
 
+   public void playSound(@Nullable Player var1, double var2, double var4, double var6, SoundEvent var8, SoundSource var9) {
+      this.playSound(var1, var2, var4, var6, var8, var9, 1.0F, 1.0F);
+   }
+
    public void playSound(@Nullable Player var1, double var2, double var4, double var6, SoundEvent var8, SoundSource var9, float var10, float var11) {
       this.playSeededSound(var1, var2, var4, var6, var8, var9, var10, var11, this.threadSafeRandom.nextLong());
    }
@@ -395,6 +402,9 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
 
    public void playLocalSound(BlockPos var1, SoundEvent var2, SoundSource var3, float var4, float var5, boolean var6) {
       this.playLocalSound((double)var1.getX() + 0.5, (double)var1.getY() + 0.5, (double)var1.getZ() + 0.5, var2, var3, var4, var5, var6);
+   }
+
+   public void playLocalSound(Entity var1, SoundEvent var2, SoundSource var3, float var4, float var5) {
    }
 
    public void playLocalSound(double var1, double var3, double var5, SoundEvent var7, SoundSource var8, float var9, float var10, boolean var11) {
@@ -432,13 +442,14 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       }
 
       Iterator var2 = this.blockEntityTickers.iterator();
+      boolean var3 = this.tickRateManager().runsNormally();
 
       while(var2.hasNext()) {
-         TickingBlockEntity var3 = (TickingBlockEntity)var2.next();
-         if (var3.isRemoved()) {
+         TickingBlockEntity var4 = (TickingBlockEntity)var2.next();
+         if (var4.isRemoved()) {
             var2.remove();
-         } else if (this.shouldTickBlocksAt(var3.getPos())) {
-            var3.tick();
+         } else if (var3 && this.shouldTickBlocksAt(var4.getPos())) {
+            var4.tick();
          }
       }
 
@@ -470,11 +481,37 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    }
 
    public Explosion explode(@Nullable Entity var1, double var2, double var4, double var6, float var8, Level.ExplosionInteraction var9) {
-      return this.explode(var1, null, null, var2, var4, var6, var8, false, var9);
+      return this.explode(
+         var1,
+         Explosion.getDefaultDamageSource(this, var1),
+         null,
+         var2,
+         var4,
+         var6,
+         var8,
+         false,
+         var9,
+         ParticleTypes.EXPLOSION,
+         ParticleTypes.EXPLOSION_EMITTER,
+         SoundEvents.GENERIC_EXPLODE
+      );
    }
 
    public Explosion explode(@Nullable Entity var1, double var2, double var4, double var6, float var8, boolean var9, Level.ExplosionInteraction var10) {
-      return this.explode(var1, null, null, var2, var4, var6, var8, var9, var10);
+      return this.explode(
+         var1,
+         Explosion.getDefaultDamageSource(this, var1),
+         null,
+         var2,
+         var4,
+         var6,
+         var8,
+         var9,
+         var10,
+         ParticleTypes.EXPLOSION,
+         ParticleTypes.EXPLOSION_EMITTER,
+         SoundEvents.GENERIC_EXPLODE
+      );
    }
 
    public Explosion explode(
@@ -486,7 +523,20 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       boolean var6,
       Level.ExplosionInteraction var7
    ) {
-      return this.explode(var1, var2, var3, var4.x(), var4.y(), var4.z(), var5, var6, var7);
+      return this.explode(
+         var1,
+         var2,
+         var3,
+         var4.x(),
+         var4.y(),
+         var4.z(),
+         var5,
+         var6,
+         var7,
+         ParticleTypes.EXPLOSION,
+         ParticleTypes.EXPLOSION_EMITTER,
+         SoundEvents.GENERIC_EXPLODE
+      );
    }
 
    public Explosion explode(
@@ -500,7 +550,9 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       boolean var11,
       Level.ExplosionInteraction var12
    ) {
-      return this.explode(var1, var2, var3, var4, var6, var8, var10, var11, var12, true);
+      return this.explode(
+         var1, var2, var3, var4, var6, var8, var10, var11, var12, ParticleTypes.EXPLOSION, ParticleTypes.EXPLOSION_EMITTER, SoundEvents.GENERIC_EXPLODE
+      );
    }
 
    public Explosion explode(
@@ -513,20 +565,41 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       float var10,
       boolean var11,
       Level.ExplosionInteraction var12,
-      boolean var13
+      ParticleOptions var13,
+      ParticleOptions var14,
+      SoundEvent var15
    ) {
-      Explosion.BlockInteraction var14 = switch(var12) {
+      return this.explode(var1, var2, var3, var4, var6, var8, var10, var11, var12, true, var13, var14, var15);
+   }
+
+   public Explosion explode(
+      @Nullable Entity var1,
+      @Nullable DamageSource var2,
+      @Nullable ExplosionDamageCalculator var3,
+      double var4,
+      double var6,
+      double var8,
+      float var10,
+      boolean var11,
+      Level.ExplosionInteraction var12,
+      boolean var13,
+      ParticleOptions var14,
+      ParticleOptions var15,
+      SoundEvent var16
+   ) {
+      Explosion.BlockInteraction var17 = switch(var12) {
          case NONE -> Explosion.BlockInteraction.KEEP;
          case BLOCK -> this.getDestroyType(GameRules.RULE_BLOCK_EXPLOSION_DROP_DECAY);
          case MOB -> this.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)
          ? this.getDestroyType(GameRules.RULE_MOB_EXPLOSION_DROP_DECAY)
          : Explosion.BlockInteraction.KEEP;
          case TNT -> this.getDestroyType(GameRules.RULE_TNT_EXPLOSION_DROP_DECAY);
+         case BLOW -> Explosion.BlockInteraction.TRIGGER_BLOCK;
       };
-      Explosion var15 = new Explosion(this, var1, var2, var3, var4, var6, var8, var10, var11, var14);
-      var15.explode();
-      var15.finalizeExplosion(var13);
-      return var15;
+      Explosion var18 = new Explosion(this, var1, var2, var3, var4, var6, var8, var10, var11, var17, var14, var15, var16);
+      var18.explode();
+      var18.finalizeExplosion(var13);
+      return var18;
    }
 
    private Explosion.BlockInteraction getDestroyType(GameRules.Key<GameRules.BooleanValue> var1) {
@@ -729,6 +802,8 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
    public GameRules getGameRules() {
       return this.levelData.getGameRules();
    }
+
+   public abstract TickRateManager tickRateManager();
 
    public float getThunderLevel(float var1) {
       return Mth.lerp(var1, this.oThunderLevel, this.thunderLevel) * this.getRainLevel(var1);
@@ -935,7 +1010,8 @@ public abstract class Level implements LevelAccessor, AutoCloseable {
       NONE,
       BLOCK,
       MOB,
-      TNT;
+      TNT,
+      BLOW;
 
       private ExplosionInteraction() {
       }

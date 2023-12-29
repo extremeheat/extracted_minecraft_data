@@ -45,7 +45,10 @@ class ReportGameListener implements GameTestListener {
    @Override
    public void testPassed(GameTestInfo var1) {
       ++this.successes;
-      if (!var1.isFlaky()) {
+      if (var1.rerunUntilFailed()) {
+         reportPassed(var1, var1.getTestName() + " passed! (" + var1.getRunTime() + "ms). Rerunning until failed.");
+         this.rerunTest();
+      } else if (!var1.isFlaky()) {
          reportPassed(var1, var1.getTestName() + " passed! (" + var1.getRunTime() + "ms)");
       } else {
          if (this.successes >= var1.requiredSuccesses()) {
@@ -114,10 +117,10 @@ class ReportGameListener implements GameTestListener {
    private void rerunTest() {
       this.originalTestInfo.clearStructure();
       GameTestInfo var1 = new GameTestInfo(this.originalTestInfo.getTestFunction(), this.originalTestInfo.getRotation(), this.originalTestInfo.getLevel());
-      var1.startExecution();
+      var1.setRerunUntilFailed(this.originalTestInfo.rerunUntilFailed());
       this.testTicker.add(var1);
       var1.addListener(this);
-      var1.spawnStructure(this.structurePos, 2);
+      var1.prepareTestStructure(this.structurePos);
    }
 
    protected static void spawnBeacon(GameTestInfo var0, Block var1) {

@@ -1,7 +1,10 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.item.FallingBlockEntity;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -12,17 +15,26 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class ConcretePowderBlock extends FallingBlock {
-   private final BlockState concrete;
+   public static final MapCodec<ConcretePowderBlock> CODEC = RecordCodecBuilder.mapCodec(
+      var0 -> var0.group(BuiltInRegistries.BLOCK.byNameCodec().fieldOf("concrete").forGetter(var0x -> var0x.concrete), propertiesCodec())
+            .apply(var0, ConcretePowderBlock::new)
+   );
+   private final Block concrete;
+
+   @Override
+   public MapCodec<ConcretePowderBlock> codec() {
+      return CODEC;
+   }
 
    public ConcretePowderBlock(Block var1, BlockBehaviour.Properties var2) {
       super(var2);
-      this.concrete = var1.defaultBlockState();
+      this.concrete = var1;
    }
 
    @Override
    public void onLand(Level var1, BlockPos var2, BlockState var3, BlockState var4, FallingBlockEntity var5) {
       if (shouldSolidify(var1, var2, var4)) {
-         var1.setBlock(var2, this.concrete, 3);
+         var1.setBlock(var2, this.concrete.defaultBlockState(), 3);
       }
    }
 
@@ -31,7 +43,7 @@ public class ConcretePowderBlock extends FallingBlock {
       Level var2 = var1.getLevel();
       BlockPos var3 = var1.getClickedPos();
       BlockState var4 = var2.getBlockState(var3);
-      return shouldSolidify(var2, var3, var4) ? this.concrete : super.getStateForPlacement(var1);
+      return shouldSolidify(var2, var3, var4) ? this.concrete.defaultBlockState() : super.getStateForPlacement(var1);
    }
 
    private static boolean shouldSolidify(BlockGetter var0, BlockPos var1, BlockState var2) {
@@ -63,7 +75,7 @@ public class ConcretePowderBlock extends FallingBlock {
 
    @Override
    public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
-      return touchesLiquid(var4, var5) ? this.concrete : super.updateShape(var1, var2, var3, var4, var5, var6);
+      return touchesLiquid(var4, var5) ? this.concrete.defaultBlockState() : super.updateShape(var1, var2, var3, var4, var5, var6);
    }
 
    @Override

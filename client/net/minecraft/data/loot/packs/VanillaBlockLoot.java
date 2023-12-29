@@ -283,6 +283,14 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.dropSelf(Blocks.MANGROVE_TRAPDOOR);
       this.dropSelf(Blocks.CHERRY_TRAPDOOR);
       this.dropSelf(Blocks.BAMBOO_TRAPDOOR);
+      this.add(Blocks.COPPER_TRAPDOOR, noDrop());
+      this.add(Blocks.EXPOSED_COPPER_TRAPDOOR, noDrop());
+      this.add(Blocks.WEATHERED_COPPER_TRAPDOOR, noDrop());
+      this.add(Blocks.OXIDIZED_COPPER_TRAPDOOR, noDrop());
+      this.add(Blocks.WAXED_COPPER_TRAPDOOR, noDrop());
+      this.add(Blocks.WAXED_EXPOSED_COPPER_TRAPDOOR, noDrop());
+      this.add(Blocks.WAXED_WEATHERED_COPPER_TRAPDOOR, noDrop());
+      this.add(Blocks.WAXED_OXIDIZED_COPPER_TRAPDOOR, noDrop());
       this.dropSelf(Blocks.STONE_BRICKS);
       this.dropSelf(Blocks.MOSSY_STONE_BRICKS);
       this.dropSelf(Blocks.CRACKED_STONE_BRICKS);
@@ -624,6 +632,44 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.dropSelf(Blocks.MANGROVE_LOG);
       this.dropSelf(Blocks.MUD);
       this.dropSelf(Blocks.PACKED_MUD);
+      this.add(Blocks.CRAFTER, noDrop());
+      this.add(Blocks.CHISELED_TUFF, noDrop());
+      this.add(Blocks.TUFF_STAIRS, noDrop());
+      this.add(Blocks.TUFF_WALL, noDrop());
+      this.add(Blocks.POLISHED_TUFF, noDrop());
+      this.add(Blocks.POLISHED_TUFF_STAIRS, noDrop());
+      this.add(Blocks.POLISHED_TUFF_WALL, noDrop());
+      this.add(Blocks.TUFF_BRICKS, noDrop());
+      this.add(Blocks.TUFF_BRICK_STAIRS, noDrop());
+      this.add(Blocks.TUFF_BRICK_WALL, noDrop());
+      this.add(Blocks.CHISELED_TUFF_BRICKS, noDrop());
+      this.add(Blocks.TUFF_SLAB, noDrop());
+      this.add(Blocks.TUFF_BRICK_SLAB, noDrop());
+      this.add(Blocks.POLISHED_TUFF_SLAB, noDrop());
+      this.add(Blocks.CHISELED_COPPER, noDrop());
+      this.add(Blocks.EXPOSED_CHISELED_COPPER, noDrop());
+      this.add(Blocks.WEATHERED_CHISELED_COPPER, noDrop());
+      this.add(Blocks.OXIDIZED_CHISELED_COPPER, noDrop());
+      this.add(Blocks.WAXED_CHISELED_COPPER, noDrop());
+      this.add(Blocks.WAXED_EXPOSED_CHISELED_COPPER, noDrop());
+      this.add(Blocks.WAXED_WEATHERED_CHISELED_COPPER, noDrop());
+      this.add(Blocks.WAXED_OXIDIZED_CHISELED_COPPER, noDrop());
+      this.add(Blocks.COPPER_GRATE, noDrop());
+      this.add(Blocks.EXPOSED_COPPER_GRATE, noDrop());
+      this.add(Blocks.WEATHERED_COPPER_GRATE, noDrop());
+      this.add(Blocks.OXIDIZED_COPPER_GRATE, noDrop());
+      this.add(Blocks.WAXED_COPPER_GRATE, noDrop());
+      this.add(Blocks.WAXED_EXPOSED_COPPER_GRATE, noDrop());
+      this.add(Blocks.WAXED_WEATHERED_COPPER_GRATE, noDrop());
+      this.add(Blocks.WAXED_OXIDIZED_COPPER_GRATE, noDrop());
+      this.add(Blocks.COPPER_BULB, noDrop());
+      this.add(Blocks.EXPOSED_COPPER_BULB, noDrop());
+      this.add(Blocks.WEATHERED_COPPER_BULB, noDrop());
+      this.add(Blocks.OXIDIZED_COPPER_BULB, noDrop());
+      this.add(Blocks.WAXED_COPPER_BULB, noDrop());
+      this.add(Blocks.WAXED_EXPOSED_COPPER_BULB, noDrop());
+      this.add(Blocks.WAXED_WEATHERED_COPPER_BULB, noDrop());
+      this.add(Blocks.WAXED_OXIDIZED_COPPER_BULB, noDrop());
       this.dropOther(Blocks.FARMLAND, Blocks.DIRT);
       this.dropOther(Blocks.TRIPWIRE, Items.STRING);
       this.dropOther(Blocks.DIRT_PATH, Blocks.DIRT);
@@ -753,6 +799,14 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.add(Blocks.WARPED_DOOR, var1x -> this.createDoorTable(var1x));
       this.add(Blocks.CRIMSON_DOOR, var1x -> this.createDoorTable(var1x));
       this.add(Blocks.IRON_DOOR, var1x -> this.createDoorTable(var1x));
+      this.add(Blocks.COPPER_DOOR, noDrop());
+      this.add(Blocks.EXPOSED_COPPER_DOOR, noDrop());
+      this.add(Blocks.WEATHERED_COPPER_DOOR, noDrop());
+      this.add(Blocks.OXIDIZED_COPPER_DOOR, noDrop());
+      this.add(Blocks.WAXED_COPPER_DOOR, noDrop());
+      this.add(Blocks.WAXED_EXPOSED_COPPER_DOOR, noDrop());
+      this.add(Blocks.WAXED_WEATHERED_COPPER_DOOR, noDrop());
+      this.add(Blocks.WAXED_OXIDIZED_COPPER_DOOR, noDrop());
       this.add(Blocks.BLACK_BED, var1x -> this.createSinglePropConditionTable(var1x, BedBlock.PART, BedPart.HEAD));
       this.add(Blocks.BLUE_BED, var1x -> this.createSinglePropConditionTable(var1x, BedBlock.PART, BedPart.HEAD));
       this.add(Blocks.BROWN_BED, var1x -> this.createSinglePropConditionTable(var1x, BedBlock.PART, BedPart.HEAD));
@@ -1104,7 +1158,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.add(Blocks.MANGROVE_LEAVES, var1x -> this.createMangroveLeavesDrops(var1x));
       this.add(Blocks.TALL_SEAGRASS, createDoublePlantShearsDrop(Blocks.SEAGRASS));
       this.add(Blocks.LARGE_FERN, var1x -> this.createDoublePlantWithSeedDrops(var1x, Blocks.FERN));
-      this.add(Blocks.TALL_GRASS, var1x -> this.createDoublePlantWithSeedDrops(var1x, Blocks.GRASS));
+      this.add(Blocks.TALL_GRASS, var1x -> this.createDoublePlantWithSeedDrops(var1x, Blocks.SHORT_GRASS));
       this.add(Blocks.MELON_STEM, var1x -> this.createStemDrops(var1x, Items.MELON_SEEDS));
       this.add(Blocks.ATTACHED_MELON_STEM, var1x -> this.createAttachedStemDrops(var1x, Items.MELON_SEEDS));
       this.add(Blocks.PUMPKIN_STEM, var1x -> this.createStemDrops(var1x, Items.PUMPKIN_SEEDS));
@@ -1122,7 +1176,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
                )
       );
       this.add(Blocks.FERN, var1x -> this.createGrassDrops(var1x));
-      this.add(Blocks.GRASS, var1x -> this.createGrassDrops(var1x));
+      this.add(Blocks.SHORT_GRASS, var1x -> this.createGrassDrops(var1x));
       this.add(
          Blocks.GLOWSTONE,
          var1x -> createSilkTouchDispatchTable(
@@ -1372,6 +1426,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.add(Blocks.BLACK_CANDLE_CAKE, createCandleCakeDrops(Blocks.BLACK_CANDLE));
       this.add(Blocks.FROSTED_ICE, noDrop());
       this.add(Blocks.SPAWNER, noDrop());
+      this.add(Blocks.TRIAL_SPAWNER, noDrop());
       this.add(Blocks.FIRE, noDrop());
       this.add(Blocks.SOUL_FIRE, noDrop());
       this.add(Blocks.NETHER_PORTAL, noDrop());
@@ -1389,9 +1444,11 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
             LootPool.lootPool()
                .setRolls(ConstantValue.exactly(1.0F))
                .add(
-                  ((LootPoolSingletonContainer.Builder)((LootPoolSingletonContainer.Builder)DynamicLoot.dynamicEntry(DecoratedPotBlock.SHERDS_DYNAMIC_DROP_ID)
-                           .when(MatchTool.toolMatches(ItemPredicate.Builder.item().of(ItemTags.BREAKS_DECORATED_POTS))))
-                        .when(HAS_NO_SILK_TOUCH))
+                  ((LootPoolSingletonContainer.Builder)DynamicLoot.dynamicEntry(DecoratedPotBlock.SHERDS_DYNAMIC_DROP_ID)
+                        .when(
+                           LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1)
+                              .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(DecoratedPotBlock.CRACKED, true))
+                        ))
                      .otherwise(
                         LootItem.lootTableItem(var1).apply(CopyNbtFunction.copyData(ContextNbtProvider.BLOCK_ENTITY).copy("sherds", "BlockEntityTag.sherds"))
                      )
