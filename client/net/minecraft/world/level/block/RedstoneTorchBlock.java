@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block;
 
 import com.google.common.collect.Lists;
+import com.mojang.serialization.MapCodec;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -17,7 +18,8 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 
-public class RedstoneTorchBlock extends TorchBlock {
+public class RedstoneTorchBlock extends BaseTorchBlock {
+   public static final MapCodec<RedstoneTorchBlock> CODEC = simpleCodec(RedstoneTorchBlock::new);
    public static final BooleanProperty LIT = BlockStateProperties.LIT;
    private static final Map<BlockGetter, List<RedstoneTorchBlock.Toggle>> RECENT_TOGGLES = new WeakHashMap<>();
    public static final int RECENT_TOGGLE_TIMER = 60;
@@ -25,8 +27,13 @@ public class RedstoneTorchBlock extends TorchBlock {
    public static final int RESTART_DELAY = 160;
    private static final int TOGGLE_DELAY = 2;
 
+   @Override
+   public MapCodec<? extends RedstoneTorchBlock> codec() {
+      return CODEC;
+   }
+
    protected RedstoneTorchBlock(BlockBehaviour.Properties var1) {
-      super(var1, DustParticleOptions.REDSTONE);
+      super(var1);
       this.registerDefaultState(this.stateDefinition.any().setValue(LIT, Boolean.valueOf(true)));
    }
 
@@ -100,7 +107,7 @@ public class RedstoneTorchBlock extends TorchBlock {
          double var5 = (double)var3.getX() + 0.5 + (var4.nextDouble() - 0.5) * 0.2;
          double var7 = (double)var3.getY() + 0.7 + (var4.nextDouble() - 0.5) * 0.2;
          double var9 = (double)var3.getZ() + 0.5 + (var4.nextDouble() - 0.5) * 0.2;
-         var2.addParticle(this.flameParticle, var5, var7, var9, 0.0, 0.0, 0.0);
+         var2.addParticle(DustParticleOptions.REDSTONE, var5, var7, var9, 0.0, 0.0, 0.0);
       }
    }
 

@@ -6,8 +6,12 @@ import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
+import com.mojang.datafixers.util.Either;
 import java.util.ArrayList;
+import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -32,7 +36,7 @@ import org.apache.commons.lang3.mutable.MutableInt;
 public class FillBiomeCommand {
    public static final SimpleCommandExceptionType ERROR_NOT_LOADED = new SimpleCommandExceptionType(Component.translatable("argument.pos.unloaded"));
    private static final Dynamic2CommandExceptionType ERROR_VOLUME_TOO_LARGE = new Dynamic2CommandExceptionType(
-      (var0, var1) -> Component.translatable("commands.fillbiome.toobig", var0, var1)
+      (var0, var1) -> Component.translatableEscape("commands.fillbiome.toobig", var0, var1)
    );
 
    public FillBiomeCommand() {
@@ -101,23 +105,29 @@ public class FillBiomeCommand {
       };
    }
 
-   private static int fill(CommandSourceStack var0, BlockPos var1, BlockPos var2, Holder.Reference<Biome> var3, Predicate<Holder<Biome>> var4) throws CommandSyntaxException {
-      BlockPos var5 = quantize(var1);
-      BlockPos var6 = quantize(var2);
-      BoundingBox var7 = BoundingBox.fromCorners(var5, var6);
-      int var8 = var7.getXSpan() * var7.getYSpan() * var7.getZSpan();
-      int var9 = var0.getLevel().getGameRules().getInt(GameRules.RULE_COMMAND_MODIFICATION_BLOCK_LIMIT);
-      if (var8 > var9) {
-         throw ERROR_VOLUME_TOO_LARGE.create(var9, var8);
+   public static Either<Integer, CommandSyntaxException> fill(ServerLevel var0, BlockPos var1, BlockPos var2, Holder<Biome> var3) {
+      return fill(var0, var1, var2, var3, var0x -> true, var0x -> {
+      });
+   }
+
+   public static Either<Integer, CommandSyntaxException> fill(
+      ServerLevel var0, BlockPos var1, BlockPos var2, Holder<Biome> var3, Predicate<Holder<Biome>> var4, Consumer<Supplier<Component>> var5
+   ) {
+      BlockPos var6 = quantize(var1);
+      BlockPos var7 = quantize(var2);
+      BoundingBox var8 = BoundingBox.fromCorners(var6, var7);
+      int var9 = var8.getXSpan() * var8.getYSpan() * var8.getZSpan();
+      int var10 = var0.getGameRules().getInt(GameRules.RULE_COMMAND_MODIFICATION_BLOCK_LIMIT);
+      if (var9 > var10) {
+         return Either.right(ERROR_VOLUME_TOO_LARGE.create(var10, var9));
       } else {
-         ServerLevel var10 = var0.getLevel();
          ArrayList var11 = new ArrayList();
 
-         for(int var12 = SectionPos.blockToSectionCoord(var7.minZ()); var12 <= SectionPos.blockToSectionCoord(var7.maxZ()); ++var12) {
-            for(int var13 = SectionPos.blockToSectionCoord(var7.minX()); var13 <= SectionPos.blockToSectionCoord(var7.maxX()); ++var13) {
-               ChunkAccess var14 = var10.getChunk(var13, var12, ChunkStatus.FULL, false);
+         for(int var12 = SectionPos.blockToSectionCoord(var8.minZ()); var12 <= SectionPos.blockToSectionCoord(var8.maxZ()); ++var12) {
+            for(int var13 = SectionPos.blockToSectionCoord(var8.minX()); var13 <= SectionPos.blockToSectionCoord(var8.maxX()); ++var13) {
+               ChunkAccess var14 = var0.getChunk(var13, var12, ChunkStatus.FULL, false);
                if (var14 == null) {
-                  throw ERROR_NOT_LOADED.create();
+                  return Either.right(ERROR_NOT_LOADED.create());
                }
 
                var11.add(var14);
@@ -127,18 +137,27 @@ public class FillBiomeCommand {
          MutableInt var15 = new MutableInt(0);
 
          for(ChunkAccess var17 : var11) {
-            var17.fillBiomesFromNoise(makeResolver(var15, var17, var7, var3, var4), var10.getChunkSource().randomState().sampler());
+            var17.fillBiomesFromNoise(makeResolver(var15, var17, var8, var3, var4), var0.getChunkSource().randomState().sampler());
             var17.setUnsaved(true);
          }
 
-         var10.getChunkSource().chunkMap.resendBiomesForChunks(var11);
-         var0.sendSuccess(
+         var0.getChunkSource().chunkMap.resendBiomesForChunks(var11);
+         var5.accept(
             () -> Component.translatable(
-                  "commands.fillbiome.success.count", var15.getValue(), var7.minX(), var7.minY(), var7.minZ(), var7.maxX(), var7.maxY(), var7.maxZ()
-               ),
-            true
+                  "commands.fillbiome.success.count", var15.getValue(), var8.minX(), var8.minY(), var8.minZ(), var8.maxX(), var8.maxY(), var8.maxZ()
+               )
          );
-         return var15.getValue();
+         return Either.left(var15.getValue());
+      }
+   }
+
+   private static int fill(CommandSourceStack var0, BlockPos var1, BlockPos var2, Holder.Reference<Biome> var3, Predicate<Holder<Biome>> var4) throws CommandSyntaxException {
+      Either var5 = fill(var0.getLevel(), var1, var2, var3, var4, var1x -> var0.sendSuccess(var1x, true));
+      Optional var6 = var5.right();
+      if (var6.isPresent()) {
+         throw (CommandSyntaxException)var6.get();
+      } else {
+         return var5.left().get();
       }
    }
 }

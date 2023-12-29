@@ -1,5 +1,6 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvents;
@@ -26,7 +27,13 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.BlockHitResult;
 
 public class TntBlock extends Block {
+   public static final MapCodec<TntBlock> CODEC = simpleCodec(TntBlock::new);
    public static final BooleanProperty UNSTABLE = BlockStateProperties.UNSTABLE;
+
+   @Override
+   public MapCodec<TntBlock> codec() {
+      return CODEC;
+   }
 
    public TntBlock(BlockBehaviour.Properties var1) {
       super(var1);
@@ -52,12 +59,12 @@ public class TntBlock extends Block {
    }
 
    @Override
-   public void playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
+   public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
       if (!var1.isClientSide() && !var4.isCreative() && var3.getValue(UNSTABLE)) {
          explode(var1, var2);
       }
 
-      super.playerWillDestroy(var1, var2, var3, var4);
+      return super.playerWillDestroy(var1, var2, var3, var4);
    }
 
    @Override

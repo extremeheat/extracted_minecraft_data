@@ -1,5 +1,8 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.RandomSource;
@@ -18,8 +21,21 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class WitherRoseBlock extends FlowerBlock {
-   public WitherRoseBlock(MobEffect var1, BlockBehaviour.Properties var2) {
-      super(var1, 8, var2);
+   public static final MapCodec<WitherRoseBlock> CODEC = RecordCodecBuilder.mapCodec(
+      var0 -> var0.group(EFFECTS_FIELD.forGetter(FlowerBlock::getSuspiciousEffects), propertiesCodec()).apply(var0, WitherRoseBlock::new)
+   );
+
+   @Override
+   public MapCodec<WitherRoseBlock> codec() {
+      return CODEC;
+   }
+
+   public WitherRoseBlock(MobEffect var1, int var2, BlockBehaviour.Properties var3) {
+      this(makeEffectList(var1, var2), var3);
+   }
+
+   public WitherRoseBlock(List<SuspiciousEffectHolder.EffectEntry> var1, BlockBehaviour.Properties var2) {
+      super(var1, var2);
    }
 
    @Override

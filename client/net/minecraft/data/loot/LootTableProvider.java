@@ -17,6 +17,7 @@ import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.RandomSequence;
 import net.minecraft.world.level.storage.loot.LootDataId;
 import net.minecraft.world.level.storage.loot.LootDataResolver;
@@ -45,9 +46,9 @@ public class LootTableProvider implements DataProvider {
       final HashMap var2 = Maps.newHashMap();
       Object2ObjectOpenHashMap var3 = new Object2ObjectOpenHashMap();
       this.subProviders.forEach(var2x -> var2x.provider().get().generate((var3x, var4x) -> {
-            ResourceLocation var5 = var3.put(RandomSequence.seedForKey(var3x), var3x);
-            if (var5 != null) {
-               Util.logAndPauseIfInIde("Loot table random sequence seed collision on " + var5 + " and " + var3x);
+            ResourceLocation var5x = var3.put(RandomSequence.seedForKey(var3x), var3x);
+            if (var5x != null) {
+               Util.logAndPauseIfInIde("Loot table random sequence seed collision on " + var5x + " and " + var3x);
             }
 
             var4x.setRandomSequence(var3x);
@@ -55,7 +56,8 @@ public class LootTableProvider implements DataProvider {
                throw new IllegalStateException("Duplicate loot table " + var3x);
             }
          }));
-      ValidationContext var4 = new ValidationContext(LootContextParamSets.ALL_PARAMS, new LootDataResolver() {
+      ProblemReporter.Collector var4 = new ProblemReporter.Collector();
+      ValidationContext var5 = new ValidationContext(var4, LootContextParamSets.ALL_PARAMS, new LootDataResolver() {
          @Nullable
          @Override
          public <T> T getElement(LootDataId<T> var1) {
@@ -63,23 +65,23 @@ public class LootTableProvider implements DataProvider {
          }
       });
 
-      for(ResourceLocation var7 : Sets.difference(this.requiredTables, var2.keySet())) {
-         var4.reportProblem("Missing built-in table: " + var7);
+      for(ResourceLocation var8 : Sets.difference(this.requiredTables, var2.keySet())) {
+         var4.report("Missing built-in table: " + var8);
       }
 
       var2.forEach(
-         (var1x, var2x) -> var2x.validate(var4.setParams(var2x.getParamSet()).enterElement("{" + var1x + "}", new LootDataId<>(LootDataType.TABLE, var1x)))
+         (var1x, var2x) -> var2x.validate(var5.setParams(var2x.getParamSet()).enterElement("{" + var1x + "}", new LootDataId<>(LootDataType.TABLE, var1x)))
       );
-      Multimap var8 = var4.getProblems();
-      if (!var8.isEmpty()) {
-         var8.forEach((var0, var1x) -> LOGGER.warn("Found validation problem in {}: {}", var0, var1x));
+      Multimap var9 = var4.get();
+      if (!var9.isEmpty()) {
+         var9.forEach((var0, var1x) -> LOGGER.warn("Found validation problem in {}: {}", var0, var1x));
          throw new IllegalStateException("Failed to validate loot tables, see logs");
       } else {
          return CompletableFuture.allOf(var2.entrySet().stream().map(var2x -> {
             ResourceLocation var3x = (ResourceLocation)var2x.getKey();
             LootTable var4x = (LootTable)var2x.getValue();
-            Path var5 = this.pathProvider.json(var3x);
-            return DataProvider.saveStable(var1, LootTable.CODEC, var4x, var5);
+            Path var5x = this.pathProvider.json(var3x);
+            return DataProvider.saveStable(var1, LootTable.CODEC, var4x, var5x);
          }).toArray(var0 -> new CompletableFuture[var0]));
       }
    }

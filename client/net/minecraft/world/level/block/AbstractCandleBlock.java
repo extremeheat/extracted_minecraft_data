@@ -1,5 +1,7 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.MapCodec;
+import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -9,6 +11,8 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -22,6 +26,9 @@ import net.minecraft.world.phys.Vec3;
 public abstract class AbstractCandleBlock extends Block {
    public static final int LIGHT_PER_CANDLE = 3;
    public static final BooleanProperty LIT = BlockStateProperties.LIT;
+
+   @Override
+   protected abstract MapCodec<? extends AbstractCandleBlock> codec();
 
    protected AbstractCandleBlock(BlockBehaviour.Properties var1) {
       super(var1);
@@ -97,5 +104,14 @@ public abstract class AbstractCandleBlock extends Block {
 
    private static void setLit(LevelAccessor var0, BlockState var1, BlockPos var2, boolean var3) {
       var0.setBlock(var2, var1.setValue(LIT, Boolean.valueOf(var3)), 11);
+   }
+
+   @Override
+   public void onExplosionHit(BlockState var1, Level var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
+      if (var4.getBlockInteraction() == Explosion.BlockInteraction.TRIGGER_BLOCK && !var2.isClientSide() && var1.getValue(LIT)) {
+         extinguish(null, var1, var2, var3);
+      }
+
+      super.onExplosionHit(var1, var2, var3, var4, var5);
    }
 }

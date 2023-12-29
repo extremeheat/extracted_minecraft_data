@@ -7,6 +7,7 @@ import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -18,17 +19,22 @@ import net.minecraft.world.level.block.JigsawBlock;
 import net.minecraft.world.level.block.entity.JigsawBlockEntity;
 
 public class JigsawBlockEditScreen extends Screen {
-   private static final int MAX_LEVELS = 7;
    private static final Component JOINT_LABEL = Component.translatable("jigsaw_block.joint_label");
    private static final Component POOL_LABEL = Component.translatable("jigsaw_block.pool");
    private static final Component NAME_LABEL = Component.translatable("jigsaw_block.name");
    private static final Component TARGET_LABEL = Component.translatable("jigsaw_block.target");
    private static final Component FINAL_STATE_LABEL = Component.translatable("jigsaw_block.final_state");
+   private static final Component PLACEMENT_PRIORITY_LABEL = Component.translatable("jigsaw_block.placement_priority");
+   private static final Component PLACEMENT_PRIORITY_TOOLTIP = Component.translatable("jigsaw_block.placement_priority.tooltip");
+   private static final Component SELECTION_PRIORITY_LABEL = Component.translatable("jigsaw_block.selection_priority");
+   private static final Component SELECTION_PRIORITY_TOOLTIP = Component.translatable("jigsaw_block.selection_priority.tooltip");
    private final JigsawBlockEntity jigsawEntity;
    private EditBox nameEdit;
    private EditBox targetEdit;
    private EditBox poolEdit;
    private EditBox finalStateEdit;
+   private EditBox selectionPriorityEdit;
+   private EditBox placementPriorityEdit;
    int levels;
    private boolean keepJigsaws = true;
    private CycleButton<JigsawBlockEntity.JointType> jointButton;
@@ -60,9 +66,19 @@ public class JigsawBlockEditScreen extends Screen {
                new ResourceLocation(this.targetEdit.getValue()),
                new ResourceLocation(this.poolEdit.getValue()),
                this.finalStateEdit.getValue(),
-               this.joint
+               this.joint,
+               this.parseAsInt(this.selectionPriorityEdit.getValue()),
+               this.parseAsInt(this.placementPriorityEdit.getValue())
             )
          );
+   }
+
+   private int parseAsInt(String var1) {
+      try {
+         return Integer.parseInt(var1);
+      } catch (NumberFormatException var3) {
+         return 0;
+      }
    }
 
    private void sendGenerate() {
@@ -76,38 +92,47 @@ public class JigsawBlockEditScreen extends Screen {
 
    @Override
    protected void init() {
-      this.poolEdit = new EditBox(this.font, this.width / 2 - 153, 20, 300, 20, Component.translatable("jigsaw_block.pool"));
+      this.poolEdit = new EditBox(this.font, this.width / 2 - 153, 20, 300, 20, POOL_LABEL);
       this.poolEdit.setMaxLength(128);
       this.poolEdit.setValue(this.jigsawEntity.getPool().location().toString());
       this.poolEdit.setResponder(var1x -> this.updateValidity());
       this.addWidget(this.poolEdit);
-      this.nameEdit = new EditBox(this.font, this.width / 2 - 153, 55, 300, 20, Component.translatable("jigsaw_block.name"));
+      this.nameEdit = new EditBox(this.font, this.width / 2 - 153, 55, 300, 20, NAME_LABEL);
       this.nameEdit.setMaxLength(128);
       this.nameEdit.setValue(this.jigsawEntity.getName().toString());
       this.nameEdit.setResponder(var1x -> this.updateValidity());
       this.addWidget(this.nameEdit);
-      this.targetEdit = new EditBox(this.font, this.width / 2 - 153, 90, 300, 20, Component.translatable("jigsaw_block.target"));
+      this.targetEdit = new EditBox(this.font, this.width / 2 - 153, 90, 300, 20, TARGET_LABEL);
       this.targetEdit.setMaxLength(128);
       this.targetEdit.setValue(this.jigsawEntity.getTarget().toString());
       this.targetEdit.setResponder(var1x -> this.updateValidity());
       this.addWidget(this.targetEdit);
-      this.finalStateEdit = new EditBox(this.font, this.width / 2 - 153, 125, 300, 20, Component.translatable("jigsaw_block.final_state"));
+      this.finalStateEdit = new EditBox(this.font, this.width / 2 - 153, 125, 300, 20, FINAL_STATE_LABEL);
       this.finalStateEdit.setMaxLength(256);
       this.finalStateEdit.setValue(this.jigsawEntity.getFinalState());
       this.addWidget(this.finalStateEdit);
+      this.selectionPriorityEdit = new EditBox(this.font, this.width / 2 - 153, 160, 98, 20, SELECTION_PRIORITY_LABEL);
+      this.selectionPriorityEdit.setMaxLength(3);
+      this.selectionPriorityEdit.setValue(Integer.toString(this.jigsawEntity.getSelectionPriority()));
+      this.selectionPriorityEdit.setTooltip(Tooltip.create(SELECTION_PRIORITY_TOOLTIP));
+      this.addWidget(this.selectionPriorityEdit);
+      this.placementPriorityEdit = new EditBox(this.font, this.width / 2 - 50, 160, 98, 20, PLACEMENT_PRIORITY_LABEL);
+      this.placementPriorityEdit.setMaxLength(3);
+      this.placementPriorityEdit.setValue(Integer.toString(this.jigsawEntity.getPlacementPriority()));
+      this.placementPriorityEdit.setTooltip(Tooltip.create(PLACEMENT_PRIORITY_TOOLTIP));
+      this.addWidget(this.placementPriorityEdit);
       this.joint = this.jigsawEntity.getJoint();
-      int var1 = this.font.width(JOINT_LABEL) + 10;
       this.jointButton = this.addRenderableWidget(
          CycleButton.builder(JigsawBlockEntity.JointType::getTranslatedName)
             .withValues(JigsawBlockEntity.JointType.values())
             .withInitialValue(this.joint)
             .displayOnlyValue()
-            .create(this.width / 2 - 152 + var1, 150, 300 - var1, 20, JOINT_LABEL, (var1x, var2x) -> this.joint = var2x)
+            .create(this.width / 2 + 54, 160, 100, 20, JOINT_LABEL, (var1x, var2) -> this.joint = var2)
       );
-      boolean var2 = JigsawBlock.getFrontFacing(this.jigsawEntity.getBlockState()).getAxis().isVertical();
-      this.jointButton.active = var2;
-      this.jointButton.visible = var2;
-      this.addRenderableWidget(new AbstractSliderButton(this.width / 2 - 154, 180, 100, 20, CommonComponents.EMPTY, 0.0) {
+      boolean var1 = JigsawBlock.getFrontFacing(this.jigsawEntity.getBlockState()).getAxis().isVertical();
+      this.jointButton.active = var1;
+      this.jointButton.visible = var1;
+      this.addRenderableWidget(new AbstractSliderButton(this.width / 2 - 154, 185, 100, 20, CommonComponents.EMPTY, 0.0) {
          {
             this.updateMessage();
          }
@@ -119,17 +144,17 @@ public class JigsawBlockEditScreen extends Screen {
 
          @Override
          protected void applyValue() {
-            JigsawBlockEditScreen.this.levels = Mth.floor(Mth.clampedLerp(0.0, 7.0, this.value));
+            JigsawBlockEditScreen.this.levels = Mth.floor(Mth.clampedLerp(0.0, 20.0, this.value));
          }
       });
       this.addRenderableWidget(
          CycleButton.onOffBuilder(this.keepJigsaws)
-            .create(this.width / 2 - 50, 180, 100, 20, Component.translatable("jigsaw_block.keep_jigsaws"), (var1x, var2x) -> this.keepJigsaws = var2x)
+            .create(this.width / 2 - 50, 185, 100, 20, Component.translatable("jigsaw_block.keep_jigsaws"), (var1x, var2) -> this.keepJigsaws = var2)
       );
       this.generateButton = this.addRenderableWidget(Button.builder(Component.translatable("jigsaw_block.generate"), var1x -> {
          this.onDone();
          this.sendGenerate();
-      }).bounds(this.width / 2 + 54, 180, 100, 20).build());
+      }).bounds(this.width / 2 + 54, 185, 100, 20).build());
       this.doneButton = this.addRenderableWidget(
          Button.builder(CommonComponents.GUI_DONE, var1x -> this.onDone()).bounds(this.width / 2 - 4 - 150, 210, 150, 20).build()
       );
@@ -152,16 +177,20 @@ public class JigsawBlockEditScreen extends Screen {
       String var5 = this.targetEdit.getValue();
       String var6 = this.poolEdit.getValue();
       String var7 = this.finalStateEdit.getValue();
-      int var8 = this.levels;
-      JigsawBlockEntity.JointType var9 = this.joint;
+      String var8 = this.selectionPriorityEdit.getValue();
+      String var9 = this.placementPriorityEdit.getValue();
+      int var10 = this.levels;
+      JigsawBlockEntity.JointType var11 = this.joint;
       this.init(var1, var2, var3);
       this.nameEdit.setValue(var4);
       this.targetEdit.setValue(var5);
       this.poolEdit.setValue(var6);
       this.finalStateEdit.setValue(var7);
-      this.levels = var8;
-      this.joint = var9;
-      this.jointButton.setValue(var9);
+      this.levels = var10;
+      this.joint = var11;
+      this.jointButton.setValue(var11);
+      this.selectionPriorityEdit.setValue(var8);
+      this.placementPriorityEdit.setValue(var9);
    }
 
    @Override
@@ -187,8 +216,12 @@ public class JigsawBlockEditScreen extends Screen {
       this.targetEdit.render(var1, var2, var3, var4);
       var1.drawString(this.font, FINAL_STATE_LABEL, this.width / 2 - 153, 115, 10526880);
       this.finalStateEdit.render(var1, var2, var3, var4);
+      var1.drawString(this.font, SELECTION_PRIORITY_LABEL, this.width / 2 - 153, 150, 10526880);
+      this.placementPriorityEdit.render(var1, var2, var3, var4);
+      var1.drawString(this.font, PLACEMENT_PRIORITY_LABEL, this.width / 2 - 50, 150, 10526880);
+      this.selectionPriorityEdit.render(var1, var2, var3, var4);
       if (JigsawBlock.getFrontFacing(this.jigsawEntity.getBlockState()).getAxis().isVertical()) {
-         var1.drawString(this.font, JOINT_LABEL, this.width / 2 - 153, 156, 16777215);
+         var1.drawString(this.font, JOINT_LABEL, this.width / 2 + 53, 150, 10526880);
       }
    }
 }

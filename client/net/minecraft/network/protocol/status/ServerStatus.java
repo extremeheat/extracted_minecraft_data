@@ -13,7 +13,7 @@ import net.minecraft.WorldVersion;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.ExtraCodecs;
+import net.minecraft.network.chat.ComponentSerialization;
 
 public record ServerStatus(Component b, Optional<ServerStatus.Players> c, Optional<ServerStatus.Version> d, Optional<ServerStatus.Favicon> e, boolean f) {
    private final Component description;
@@ -23,7 +23,7 @@ public record ServerStatus(Component b, Optional<ServerStatus.Players> c, Option
    private final boolean enforcesSecureChat;
    public static final Codec<ServerStatus> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               ExtraCodecs.COMPONENT.optionalFieldOf("description", CommonComponents.EMPTY).forGetter(ServerStatus::description),
+               ComponentSerialization.CODEC.optionalFieldOf("description", CommonComponents.EMPTY).forGetter(ServerStatus::description),
                ServerStatus.Players.CODEC.optionalFieldOf("players").forGetter(ServerStatus::players),
                ServerStatus.Version.CODEC.optionalFieldOf("version").forGetter(ServerStatus::version),
                ServerStatus.Favicon.CODEC.optionalFieldOf("favicon").forGetter(ServerStatus::favicon),

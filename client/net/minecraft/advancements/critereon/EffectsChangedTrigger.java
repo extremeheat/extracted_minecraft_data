@@ -1,11 +1,13 @@
 package net.minecraft.advancements.critereon;
 
-import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -15,10 +17,9 @@ public class EffectsChangedTrigger extends SimpleCriterionTrigger<EffectsChanged
       super();
    }
 
-   public EffectsChangedTrigger.TriggerInstance createInstance(JsonObject var1, Optional<ContextAwarePredicate> var2, DeserializationContext var3) {
-      Optional var4 = MobEffectsPredicate.fromJson(var1.get("effects"));
-      Optional var5 = EntityPredicate.fromJson(var1, "source", var3);
-      return new EffectsChangedTrigger.TriggerInstance(var2, var4, var5);
+   @Override
+   public Codec<EffectsChangedTrigger.TriggerInstance> codec() {
+      return EffectsChangedTrigger.TriggerInstance.CODEC;
    }
 
    public void trigger(ServerPlayer var1, @Nullable Entity var2) {
@@ -26,12 +27,23 @@ public class EffectsChangedTrigger extends SimpleCriterionTrigger<EffectsChanged
       this.trigger(var1, var2x -> var2x.matches(var1, var3));
    }
 
-   public static class TriggerInstance extends AbstractCriterionTriggerInstance {
+   public static record TriggerInstance(Optional<ContextAwarePredicate> b, Optional<MobEffectsPredicate> c, Optional<ContextAwarePredicate> d)
+      implements SimpleCriterionTrigger.SimpleInstance {
+      private final Optional<ContextAwarePredicate> player;
       private final Optional<MobEffectsPredicate> effects;
       private final Optional<ContextAwarePredicate> source;
+      public static final Codec<EffectsChangedTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
+         var0 -> var0.group(
+                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player").forGetter(EffectsChangedTrigger.TriggerInstance::player),
+                  ExtraCodecs.strictOptionalField(MobEffectsPredicate.CODEC, "effects").forGetter(EffectsChangedTrigger.TriggerInstance::effects),
+                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "source").forGetter(EffectsChangedTrigger.TriggerInstance::source)
+               )
+               .apply(var0, EffectsChangedTrigger.TriggerInstance::new)
+      );
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<MobEffectsPredicate> var2, Optional<ContextAwarePredicate> var3) {
-         super(var1);
+         super();
+         this.player = var1;
          this.effects = var2;
          this.source = var3;
       }
@@ -54,11 +66,9 @@ public class EffectsChangedTrigger extends SimpleCriterionTrigger<EffectsChanged
       }
 
       @Override
-      public JsonObject serializeToJson() {
-         JsonObject var1 = super.serializeToJson();
-         this.effects.ifPresent(var1x -> var1.add("effects", var1x.serializeToJson()));
-         this.source.ifPresent(var1x -> var1.add("source", var1x.toJson()));
-         return var1;
+      public void validate(CriterionValidator var1) {
+         SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
+         var1.validateEntity(this.source, ".source");
       }
    }
 }

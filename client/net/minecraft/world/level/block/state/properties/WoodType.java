@@ -1,20 +1,23 @@
 package net.minecraft.world.level.block.state.properties;
 
-import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import java.util.Set;
+import com.mojang.serialization.Codec;
+import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
+import java.util.Map;
 import java.util.stream.Stream;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.block.SoundType;
 
-public record WoodType(String l, BlockSetType m, SoundType n, SoundType o, SoundEvent p, SoundEvent q) {
+public record WoodType(String m, BlockSetType n, SoundType o, SoundType p, SoundEvent q, SoundEvent r) {
    private final String name;
    private final BlockSetType setType;
    private final SoundType soundType;
    private final SoundType hangingSignSoundType;
    private final SoundEvent fenceGateClose;
    private final SoundEvent fenceGateOpen;
-   private static final Set<WoodType> VALUES = new ObjectArraySet();
+   private static final Map<String, WoodType> TYPES = new Object2ObjectArrayMap();
+   public static final Codec<WoodType> CODEC = ExtraCodecs.stringResolverCodec(WoodType::name, TYPES::get);
    public static final WoodType OAK = register(new WoodType("oak", BlockSetType.OAK));
    public static final WoodType SPRUCE = register(new WoodType("spruce", BlockSetType.SPRUCE));
    public static final WoodType BIRCH = register(new WoodType("birch", BlockSetType.BIRCH));
@@ -78,11 +81,11 @@ public record WoodType(String l, BlockSetType m, SoundType n, SoundType o, Sound
    }
 
    private static WoodType register(WoodType var0) {
-      VALUES.add(var0);
+      TYPES.put(var0.name(), var0);
       return var0;
    }
 
    public static Stream<WoodType> values() {
-      return VALUES.stream();
+      return TYPES.values().stream();
    }
 }

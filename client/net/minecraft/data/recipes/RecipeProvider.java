@@ -3,7 +3,6 @@ package net.minecraft.data.recipes;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
-import com.google.gson.JsonObject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -36,8 +35,11 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
+import net.minecraft.world.item.crafting.BlastingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -93,15 +95,13 @@ public abstract class RecipeProvider implements DataProvider {
       final ArrayList var3 = new ArrayList();
       this.buildRecipes(new RecipeOutput() {
          @Override
-         public void accept(FinishedRecipe var1x) {
-            if (!var2.add(var1x.id())) {
-               throw new IllegalStateException("Duplicate recipe " + var1x.id());
+         public void accept(ResourceLocation var1x, Recipe<?> var2x, @Nullable AdvancementHolder var3x) {
+            if (!var2.add(var1x)) {
+               throw new IllegalStateException("Duplicate recipe " + var1x);
             } else {
-               var3.add(DataProvider.saveStable(var1, var1x.serializeRecipe(), RecipeProvider.this.recipePathProvider.json(var1x.id())));
-               AdvancementHolder var2x = var1x.advancement();
-               if (var2x != null) {
-                  JsonObject var3x = var2x.value().serializeToJson();
-                  var3.add(DataProvider.saveStable(var1, var3x, RecipeProvider.this.advancementPathProvider.json(var2x.id())));
+               var3.add(DataProvider.saveStable(var1, Recipe.CODEC, var2x, RecipeProvider.this.recipePathProvider.json(var1x)));
+               if (var3x != null) {
+                  var3.add(DataProvider.saveStable(var1, Advancement.CODEC, var3x.value(), RecipeProvider.this.advancementPathProvider.json(var3x.id())));
                }
             }
          }
@@ -115,13 +115,13 @@ public abstract class RecipeProvider implements DataProvider {
    }
 
    protected CompletableFuture<?> buildAdvancement(CachedOutput var1, AdvancementHolder var2) {
-      return DataProvider.saveStable(var1, var2.value().serializeToJson(), this.advancementPathProvider.json(var2.id()));
+      return DataProvider.saveStable(var1, Advancement.CODEC, var2.value(), this.advancementPathProvider.json(var2.id()));
    }
 
    protected abstract void buildRecipes(RecipeOutput var1);
 
    protected static void generateForEnabledBlockFamilies(RecipeOutput var0, FeatureFlagSet var1) {
-      BlockFamilies.getAllFamilies().filter(var1x -> var1x.shouldGenerateRecipe(var1)).forEach(var1x -> generateRecipes(var0, var1x));
+      BlockFamilies.getAllFamilies().filter(BlockFamily::shouldGenerateRecipe).forEach(var2 -> generateRecipes(var0, var2, var1));
    }
 
    protected static void oneToOneConversionRecipe(RecipeOutput var0, ItemLike var1, ItemLike var2, @Nullable String var3) {
@@ -137,29 +137,30 @@ public abstract class RecipeProvider implements DataProvider {
    }
 
    protected static void oreSmelting(RecipeOutput var0, List<ItemLike> var1, RecipeCategory var2, ItemLike var3, float var4, int var5, String var6) {
-      oreCooking(var0, RecipeSerializer.SMELTING_RECIPE, var1, var2, var3, var4, var5, var6, "_from_smelting");
+      oreCooking(var0, RecipeSerializer.SMELTING_RECIPE, SmeltingRecipe::new, var1, var2, var3, var4, var5, var6, "_from_smelting");
    }
 
    protected static void oreBlasting(RecipeOutput var0, List<ItemLike> var1, RecipeCategory var2, ItemLike var3, float var4, int var5, String var6) {
-      oreCooking(var0, RecipeSerializer.BLASTING_RECIPE, var1, var2, var3, var4, var5, var6, "_from_blasting");
+      oreCooking(var0, RecipeSerializer.BLASTING_RECIPE, BlastingRecipe::new, var1, var2, var3, var4, var5, var6, "_from_blasting");
    }
 
-   private static void oreCooking(
+   private static <T extends AbstractCookingRecipe> void oreCooking(
       RecipeOutput var0,
-      RecipeSerializer<? extends AbstractCookingRecipe> var1,
-      List<ItemLike> var2,
-      RecipeCategory var3,
-      ItemLike var4,
-      float var5,
-      int var6,
-      String var7,
-      String var8
+      RecipeSerializer<T> var1,
+      AbstractCookingRecipe.Factory<T> var2,
+      List<ItemLike> var3,
+      RecipeCategory var4,
+      ItemLike var5,
+      float var6,
+      int var7,
+      String var8,
+      String var9
    ) {
-      for(ItemLike var10 : var2) {
-         SimpleCookingRecipeBuilder.generic(Ingredient.of(var10), var3, var4, var5, var6, var1)
-            .group(var7)
-            .unlockedBy(getHasName(var10), has(var10))
-            .save(var0, getItemName(var4) + var8 + "_" + getItemName(var10));
+      for(ItemLike var11 : var3) {
+         SimpleCookingRecipeBuilder.generic(Ingredient.of(var11), var4, var5, var6, var7, var1, var2)
+            .group(var8)
+            .unlockedBy(getHasName(var11), has(var11))
+            .save(var0, getItemName(var5) + var9 + "_" + getItemName(var11));
       }
    }
 
@@ -522,51 +523,81 @@ public abstract class RecipeProvider implements DataProvider {
          .save(var0);
    }
 
-   protected static void cookRecipes(RecipeOutput var0, String var1, RecipeSerializer<? extends AbstractCookingRecipe> var2, int var3) {
-      simpleCookingRecipe(var0, var1, var2, var3, Items.BEEF, Items.COOKED_BEEF, 0.35F);
-      simpleCookingRecipe(var0, var1, var2, var3, Items.CHICKEN, Items.COOKED_CHICKEN, 0.35F);
-      simpleCookingRecipe(var0, var1, var2, var3, Items.COD, Items.COOKED_COD, 0.35F);
-      simpleCookingRecipe(var0, var1, var2, var3, Items.KELP, Items.DRIED_KELP, 0.1F);
-      simpleCookingRecipe(var0, var1, var2, var3, Items.SALMON, Items.COOKED_SALMON, 0.35F);
-      simpleCookingRecipe(var0, var1, var2, var3, Items.MUTTON, Items.COOKED_MUTTON, 0.35F);
-      simpleCookingRecipe(var0, var1, var2, var3, Items.PORKCHOP, Items.COOKED_PORKCHOP, 0.35F);
-      simpleCookingRecipe(var0, var1, var2, var3, Items.POTATO, Items.BAKED_POTATO, 0.35F);
-      simpleCookingRecipe(var0, var1, var2, var3, Items.RABBIT, Items.COOKED_RABBIT, 0.35F);
-   }
-
-   private static void simpleCookingRecipe(
-      RecipeOutput var0, String var1, RecipeSerializer<? extends AbstractCookingRecipe> var2, int var3, ItemLike var4, ItemLike var5, float var6
+   protected static <T extends AbstractCookingRecipe> void cookRecipes(
+      RecipeOutput var0, String var1, RecipeSerializer<T> var2, AbstractCookingRecipe.Factory<T> var3, int var4
    ) {
-      SimpleCookingRecipeBuilder.generic(Ingredient.of(var4), RecipeCategory.FOOD, var5, var6, var3, var2)
-         .unlockedBy(getHasName(var4), has(var4))
-         .save(var0, getItemName(var5) + "_from_" + var1);
+      simpleCookingRecipe(var0, var1, var2, var3, var4, Items.BEEF, Items.COOKED_BEEF, 0.35F);
+      simpleCookingRecipe(var0, var1, var2, var3, var4, Items.CHICKEN, Items.COOKED_CHICKEN, 0.35F);
+      simpleCookingRecipe(var0, var1, var2, var3, var4, Items.COD, Items.COOKED_COD, 0.35F);
+      simpleCookingRecipe(var0, var1, var2, var3, var4, Items.KELP, Items.DRIED_KELP, 0.1F);
+      simpleCookingRecipe(var0, var1, var2, var3, var4, Items.SALMON, Items.COOKED_SALMON, 0.35F);
+      simpleCookingRecipe(var0, var1, var2, var3, var4, Items.MUTTON, Items.COOKED_MUTTON, 0.35F);
+      simpleCookingRecipe(var0, var1, var2, var3, var4, Items.PORKCHOP, Items.COOKED_PORKCHOP, 0.35F);
+      simpleCookingRecipe(var0, var1, var2, var3, var4, Items.POTATO, Items.BAKED_POTATO, 0.35F);
+      simpleCookingRecipe(var0, var1, var2, var3, var4, Items.RABBIT, Items.COOKED_RABBIT, 0.35F);
    }
 
-   protected static void waxRecipes(RecipeOutput var0) {
+   private static <T extends AbstractCookingRecipe> void simpleCookingRecipe(
+      RecipeOutput var0, String var1, RecipeSerializer<T> var2, AbstractCookingRecipe.Factory<T> var3, int var4, ItemLike var5, ItemLike var6, float var7
+   ) {
+      SimpleCookingRecipeBuilder.generic(Ingredient.of(var5), RecipeCategory.FOOD, var6, var7, var4, var2, var3)
+         .unlockedBy(getHasName(var5), has(var5))
+         .save(var0, getItemName(var6) + "_from_" + var1);
+   }
+
+   protected static void waxRecipes(RecipeOutput var0, FeatureFlagSet var1) {
       ((BiMap)HoneycombItem.WAXABLES.get())
          .forEach(
-            (var1, var2) -> ShapelessRecipeBuilder.shapeless(RecipeCategory.BUILDING_BLOCKS, var2)
-                  .requires(var1)
-                  .requires(Items.HONEYCOMB)
-                  .group(getItemName(var2))
-                  .unlockedBy(getHasName(var1), has(var1))
-                  .save(var0, getConversionRecipeName(var2, Items.HONEYCOMB))
+            (var2, var3) -> {
+               if (var3.requiredFeatures().isSubsetOf(var1)) {
+                  ShapelessRecipeBuilder.shapeless(RecipeCategory.BUILDING_BLOCKS, var3)
+                     .requires(var2)
+                     .requires(Items.HONEYCOMB)
+                     .group(getItemName(var3))
+                     .unlockedBy(getHasName(var2), has(var2))
+                     .save(var0, getConversionRecipeName(var3, Items.HONEYCOMB));
+               }
+            }
          );
    }
 
-   protected static void generateRecipes(RecipeOutput var0, BlockFamily var1) {
-      var1.getVariants().forEach((var2, var3) -> {
-         BiFunction var4 = SHAPE_BUILDERS.get(var2);
-         Block var5 = getBaseBlock(var1, var2);
-         if (var4 != null) {
-            RecipeBuilder var6 = (RecipeBuilder)var4.apply(var3, var5);
-            var1.getRecipeGroupPrefix().ifPresent(var2x -> var6.group(var2x + (var2 == BlockFamily.Variant.CUT ? "" : "_" + var2.getRecipeGroup())));
-            var6.unlockedBy(var1.getRecipeUnlockedBy().orElseGet(() -> getHasName(var5)), has(var5));
-            var6.save(var0);
-         }
+   protected static void grate(RecipeOutput var0, Block var1, Block var2) {
+      ShapedRecipeBuilder.shaped(RecipeCategory.BUILDING_BLOCKS, var1, 4)
+         .define('M', var2)
+         .pattern(" M ")
+         .pattern("M M")
+         .pattern(" M ")
+         .unlockedBy(getHasName(var2), has(var2))
+         .save(var0);
+   }
 
-         if (var2 == BlockFamily.Variant.CRACKED) {
-            smeltingResultFromBase(var0, var3, var5);
+   protected static void copperBulb(RecipeOutput var0, Block var1, Block var2) {
+      ShapedRecipeBuilder.shaped(RecipeCategory.REDSTONE, var1, 4)
+         .define('C', var2)
+         .define('R', Items.REDSTONE)
+         .define('B', Items.BLAZE_ROD)
+         .pattern(" C ")
+         .pattern("CBC")
+         .pattern(" R ")
+         .unlockedBy(getHasName(var2), has(var2))
+         .save(var0);
+   }
+
+   protected static void generateRecipes(RecipeOutput var0, BlockFamily var1, FeatureFlagSet var2) {
+      var1.getVariants().forEach((var3, var4) -> {
+         if (var4.requiredFeatures().isSubsetOf(var2)) {
+            BiFunction var5 = SHAPE_BUILDERS.get(var3);
+            Block var6 = getBaseBlock(var1, var3);
+            if (var5 != null) {
+               RecipeBuilder var7 = (RecipeBuilder)var5.apply(var4, var6);
+               var1.getRecipeGroupPrefix().ifPresent(var2xx -> var7.group(var2xx + (var3 == BlockFamily.Variant.CUT ? "" : "_" + var3.getRecipeGroup())));
+               var7.unlockedBy(var1.getRecipeUnlockedBy().orElseGet(() -> getHasName(var6)), has(var6));
+               var7.save(var0);
+            }
+
+            if (var3 == BlockFamily.Variant.CRACKED) {
+               smeltingResultFromBase(var0, var4, var6);
+            }
          }
       });
    }
@@ -584,7 +615,8 @@ public abstract class RecipeProvider implements DataProvider {
    }
 
    private static Criterion<EnterBlockTrigger.TriggerInstance> insideOf(Block var0) {
-      return CriteriaTriggers.ENTER_BLOCK.createCriterion(new EnterBlockTrigger.TriggerInstance(Optional.empty(), var0, Optional.empty()));
+      return CriteriaTriggers.ENTER_BLOCK
+         .createCriterion(new EnterBlockTrigger.TriggerInstance(Optional.empty(), Optional.of(var0.builtInRegistryHolder()), Optional.empty()));
    }
 
    private static Criterion<InventoryChangeTrigger.TriggerInstance> has(MinMaxBounds.Ints var0, ItemLike var1) {
@@ -605,9 +637,7 @@ public abstract class RecipeProvider implements DataProvider {
 
    private static Criterion<InventoryChangeTrigger.TriggerInstance> inventoryTrigger(ItemPredicate... var0) {
       return CriteriaTriggers.INVENTORY_CHANGED
-         .createCriterion(
-            new InventoryChangeTrigger.TriggerInstance(Optional.empty(), MinMaxBounds.Ints.ANY, MinMaxBounds.Ints.ANY, MinMaxBounds.Ints.ANY, List.of(var0))
-         );
+         .createCriterion(new InventoryChangeTrigger.TriggerInstance(Optional.empty(), InventoryChangeTrigger.TriggerInstance.Slots.ANY, List.of(var0)));
    }
 
    protected static String getHasName(ItemLike var0) {

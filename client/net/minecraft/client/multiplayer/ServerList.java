@@ -2,7 +2,8 @@ package net.minecraft.client.multiplayer;
 
 import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
-import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -30,7 +31,7 @@ public class ServerList {
       try {
          this.serverList.clear();
          this.hiddenServerList.clear();
-         CompoundTag var1 = NbtIo.read(new File(this.minecraft.gameDirectory, "servers.dat"));
+         CompoundTag var1 = NbtIo.read(this.minecraft.gameDirectory.toPath().resolve("servers.dat"));
          if (var1 == null) {
             return;
          }
@@ -61,21 +62,22 @@ public class ServerList {
             var1.add(var4);
          }
 
-         for(ServerData var9 : this.hiddenServerList) {
-            CompoundTag var11 = var9.write();
-            var11.putBoolean("hidden", true);
-            var1.add(var11);
+         for(ServerData var10 : this.hiddenServerList) {
+            CompoundTag var12 = var10.write();
+            var12.putBoolean("hidden", true);
+            var1.add(var12);
          }
 
-         CompoundTag var8 = new CompoundTag();
-         var8.put("servers", var1);
-         File var10 = File.createTempFile("servers", ".dat", this.minecraft.gameDirectory);
-         NbtIo.write(var8, var10);
-         File var12 = new File(this.minecraft.gameDirectory, "servers.dat_old");
-         File var5 = new File(this.minecraft.gameDirectory, "servers.dat");
-         Util.safeReplaceFile(var5, var10, var12);
-      } catch (Exception var6) {
-         LOGGER.error("Couldn't save server list", var6);
+         CompoundTag var9 = new CompoundTag();
+         var9.put("servers", var1);
+         Path var11 = this.minecraft.gameDirectory.toPath();
+         Path var13 = Files.createTempFile(var11, "servers", ".dat");
+         NbtIo.write(var9, var13);
+         Path var5 = var11.resolve("servers.dat_old");
+         Path var6 = var11.resolve("servers.dat");
+         Util.safeReplaceFile(var6, var13, var5);
+      } catch (Exception var7) {
+         LOGGER.error("Couldn't save server list", var7);
       }
    }
 

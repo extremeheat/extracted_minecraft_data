@@ -1,13 +1,8 @@
 package net.minecraft.advancements.critereon;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
@@ -114,16 +109,6 @@ public record LocationPredicate(
             return false;
          }
       }
-   }
-
-   public JsonElement serializeToJson() {
-      return Util.getOrThrow(CODEC.encodeStart(JsonOps.INSTANCE, this), IllegalStateException::new);
-   }
-
-   public static Optional<LocationPredicate> fromJson(@Nullable JsonElement var0) {
-      return var0 != null && !var0.isJsonNull()
-         ? Optional.of(Util.getOrThrow(CODEC.parse(JsonOps.INSTANCE, var0), JsonParseException::new))
-         : Optional.empty();
    }
 
    public static class Builder {

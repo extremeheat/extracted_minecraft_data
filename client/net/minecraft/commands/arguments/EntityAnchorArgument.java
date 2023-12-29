@@ -24,7 +24,7 @@ import net.minecraft.world.phys.Vec3;
 public class EntityAnchorArgument implements ArgumentType<EntityAnchorArgument.Anchor> {
    private static final Collection<String> EXAMPLES = Arrays.asList("eyes", "feet");
    private static final DynamicCommandExceptionType ERROR_INVALID = new DynamicCommandExceptionType(
-      var0 -> Component.translatable("argument.anchor.invalid", var0)
+      var0 -> Component.translatableEscape("argument.anchor.invalid", var0)
    );
 
    public EntityAnchorArgument() {

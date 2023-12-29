@@ -2,10 +2,11 @@ package net.minecraft.world.entity.ai.attributes;
 
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.function.Supplier;
 import javax.annotation.Nullable;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -14,33 +15,34 @@ import org.slf4j.Logger;
 
 public class AttributeModifier {
    private static final Logger LOGGER = LogUtils.getLogger();
+   public static final Codec<AttributeModifier> CODEC = RecordCodecBuilder.create(
+      var0 -> var0.group(
+               UUIDUtil.CODEC.fieldOf("UUID").forGetter(AttributeModifier::getId),
+               Codec.STRING.fieldOf("Name").forGetter(var0x -> var0x.name),
+               Codec.DOUBLE.fieldOf("Amount").forGetter(AttributeModifier::getAmount),
+               AttributeModifier.Operation.CODEC.fieldOf("Operation").forGetter(AttributeModifier::getOperation)
+            )
+            .apply(var0, AttributeModifier::new)
+   );
    private final double amount;
    private final AttributeModifier.Operation operation;
-   private final Supplier<String> nameGetter;
+   private final String name;
    private final UUID id;
 
    public AttributeModifier(String var1, double var2, AttributeModifier.Operation var4) {
-      this(Mth.createInsecureUUID(RandomSource.createNewThreadLocalInstance()), () -> var1, var2, var4);
+      this(Mth.createInsecureUUID(RandomSource.createNewThreadLocalInstance()), var1, var2, var4);
    }
 
    public AttributeModifier(UUID var1, String var2, double var3, AttributeModifier.Operation var5) {
-      this(var1, () -> var2, var3, var5);
-   }
-
-   public AttributeModifier(UUID var1, Supplier<String> var2, double var3, AttributeModifier.Operation var5) {
       super();
       this.id = var1;
-      this.nameGetter = var2;
+      this.name = var2;
       this.amount = var3;
       this.operation = var5;
    }
 
    public UUID getId() {
       return this.id;
-   }
-
-   public String getName() {
-      return this.nameGetter.get();
    }
 
    public AttributeModifier.Operation getOperation() {
@@ -70,20 +72,12 @@ public class AttributeModifier {
 
    @Override
    public String toString() {
-      return "AttributeModifier{amount="
-         + this.amount
-         + ", operation="
-         + this.operation
-         + ", name='"
-         + (String)this.nameGetter.get()
-         + "', id="
-         + this.id
-         + "}";
+      return "AttributeModifier{amount=" + this.amount + ", operation=" + this.operation + ", name='" + this.name + "', id=" + this.id + "}";
    }
 
    public CompoundTag save() {
       CompoundTag var1 = new CompoundTag();
-      var1.putString("Name", this.getName());
+      var1.putString("Name", this.name);
       var1.putDouble("Amount", this.amount);
       var1.putInt("Operation", this.operation.toValue());
       var1.putUUID("UUID", this.id);

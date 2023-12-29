@@ -23,6 +23,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.PlayerModelPart;
+import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Team;
 import org.slf4j.Logger;
 
@@ -236,8 +237,8 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, M extends Ent
          LocalPlayer var6 = var5.player;
          boolean var7 = !var1.isInvisibleTo(var6);
          if (var1 != var6) {
-            Team var8 = var1.getTeam();
-            Team var9 = var6.getTeam();
+            PlayerTeam var8 = var1.getTeam();
+            PlayerTeam var9 = var6.getTeam();
             if (var8 != null) {
                Team.Visibility var10 = var8.getNameTagVisibility();
                switch(var10) {

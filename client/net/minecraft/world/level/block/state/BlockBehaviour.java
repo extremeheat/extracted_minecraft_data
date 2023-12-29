@@ -1,12 +1,15 @@
 package net.minecraft.world.level.block.state;
 
 import com.google.common.collect.ImmutableMap;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
@@ -18,6 +21,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.protocol.game.DebugPackets;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.FluidTags;
@@ -41,6 +45,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.EmptyBlockGetter;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -107,6 +112,20 @@ public abstract class BlockBehaviour implements FeatureElement {
       this.properties = var1;
    }
 
+   public BlockBehaviour.Properties properties() {
+      return this.properties;
+   }
+
+   protected abstract MapCodec<? extends Block> codec();
+
+   protected static <B extends Block> RecordCodecBuilder<B, BlockBehaviour.Properties> propertiesCodec() {
+      return BlockBehaviour.Properties.CODEC.fieldOf("properties").forGetter(BlockBehaviour::properties);
+   }
+
+   public static <B extends Block> MapCodec<B> simpleCodec(Function<BlockBehaviour.Properties, B> var0) {
+      return RecordCodecBuilder.mapCodec(var1 -> var1.group(propertiesCodec()).apply(var1, var0));
+   }
+
    @Deprecated
    public void updateIndirectNeighbourShapes(BlockState var1, LevelAccessor var2, BlockPos var3, int var4, int var5) {
    }
@@ -148,6 +167,31 @@ public abstract class BlockBehaviour implements FeatureElement {
    public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (var1.hasBlockEntity() && !var1.is(var4.getBlock())) {
          var2.removeBlockEntity(var3);
+      }
+   }
+
+   @Deprecated
+   public void onExplosionHit(BlockState var1, Level var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
+      if (!var1.isAir() && var4.getBlockInteraction() != Explosion.BlockInteraction.TRIGGER_BLOCK) {
+         Block var6 = var1.getBlock();
+         boolean var7 = var4.getIndirectSourceEntity() instanceof Player;
+         if (var6.dropFromExplosion(var4) && var2 instanceof ServerLevel var8) {
+            BlockEntity var9 = var1.hasBlockEntity() ? var2.getBlockEntity(var3) : null;
+            LootParams.Builder var10 = new LootParams.Builder((ServerLevel)var8)
+               .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(var3))
+               .withParameter(LootContextParams.TOOL, ItemStack.EMPTY)
+               .withOptionalParameter(LootContextParams.BLOCK_ENTITY, var9)
+               .withOptionalParameter(LootContextParams.THIS_ENTITY, var4.getDirectSourceEntity());
+            if (var4.getBlockInteraction() == Explosion.BlockInteraction.DESTROY_WITH_DECAY) {
+               var10.withParameter(LootContextParams.EXPLOSION_RADIUS, var4.radius());
+            }
+
+            var1.spawnAfterBreak((ServerLevel)var8, var3, ItemStack.EMPTY, var7);
+            var1.getDrops(var10).forEach(var2x -> var5.accept(var2x, var3));
+         }
+
+         var2.setBlock(var3, Blocks.AIR.defaultBlockState(), 3);
+         var6.wasExploded(var2, var3, var4);
       }
    }
 
@@ -309,7 +353,6 @@ public abstract class BlockBehaviour implements FeatureElement {
 
    @Deprecated
    public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      this.tick(var1, var2, var3, var4);
    }
 
    @Deprecated
@@ -683,6 +726,10 @@ public abstract class BlockBehaviour implements FeatureElement {
          this.getBlock().onRemove(this.asState(), var1, var2, var3, var4);
       }
 
+      public void onExplosionHit(Level var1, BlockPos var2, Explosion var3, BiConsumer<ItemStack, BlockPos> var4) {
+         this.getBlock().onExplosionHit(this.asState(), var1, var2, var3, var4);
+      }
+
       public void tick(ServerLevel var1, BlockPos var2, RandomSource var3) {
          this.getBlock().tick(this.asState(), var1, var2, var3);
       }
@@ -783,6 +830,10 @@ public abstract class BlockBehaviour implements FeatureElement {
 
       public boolean is(Block var1) {
          return this.getBlock() == var1;
+      }
+
+      public boolean is(ResourceKey<Block> var1) {
+         return this.getBlock().builtInRegistryHolder().is(var1);
       }
 
       public FluidState getFluidState() {
@@ -909,6 +960,7 @@ public abstract class BlockBehaviour implements FeatureElement {
    }
 
    public static class Properties {
+      public static final Codec<BlockBehaviour.Properties> CODEC = Codec.unit(() -> of());
       Function<BlockState, MapColor> mapColor = var0 -> MapColor.NONE;
       boolean hasCollision = true;
       SoundType soundType = SoundType.STONE;
@@ -952,32 +1004,47 @@ public abstract class BlockBehaviour implements FeatureElement {
          return new BlockBehaviour.Properties();
       }
 
-      public static BlockBehaviour.Properties copy(BlockBehaviour var0) {
+      public static BlockBehaviour.Properties ofFullCopy(BlockBehaviour var0) {
+         BlockBehaviour.Properties var1 = ofLegacyCopy(var0);
+         BlockBehaviour.Properties var2 = var0.properties;
+         var1.jumpFactor = var2.jumpFactor;
+         var1.isRedstoneConductor = var2.isRedstoneConductor;
+         var1.isValidSpawn = var2.isValidSpawn;
+         var1.hasPostProcess = var2.hasPostProcess;
+         var1.isSuffocating = var2.isSuffocating;
+         var1.isViewBlocking = var2.isViewBlocking;
+         var1.drops = var2.drops;
+         return var1;
+      }
+
+      @Deprecated
+      public static BlockBehaviour.Properties ofLegacyCopy(BlockBehaviour var0) {
          BlockBehaviour.Properties var1 = new BlockBehaviour.Properties();
-         var1.destroyTime = var0.properties.destroyTime;
-         var1.explosionResistance = var0.properties.explosionResistance;
-         var1.hasCollision = var0.properties.hasCollision;
-         var1.isRandomlyTicking = var0.properties.isRandomlyTicking;
-         var1.lightEmission = var0.properties.lightEmission;
-         var1.mapColor = var0.properties.mapColor;
-         var1.soundType = var0.properties.soundType;
-         var1.friction = var0.properties.friction;
-         var1.speedFactor = var0.properties.speedFactor;
-         var1.dynamicShape = var0.properties.dynamicShape;
-         var1.canOcclude = var0.properties.canOcclude;
-         var1.isAir = var0.properties.isAir;
-         var1.ignitedByLava = var0.properties.ignitedByLava;
-         var1.liquid = var0.properties.liquid;
-         var1.forceSolidOff = var0.properties.forceSolidOff;
-         var1.forceSolidOn = var0.properties.forceSolidOn;
-         var1.pushReaction = var0.properties.pushReaction;
-         var1.requiresCorrectToolForDrops = var0.properties.requiresCorrectToolForDrops;
-         var1.offsetFunction = var0.properties.offsetFunction;
-         var1.spawnTerrainParticles = var0.properties.spawnTerrainParticles;
-         var1.requiredFeatures = var0.properties.requiredFeatures;
-         var1.emissiveRendering = var0.properties.emissiveRendering;
-         var1.instrument = var0.properties.instrument;
-         var1.replaceable = var0.properties.replaceable;
+         BlockBehaviour.Properties var2 = var0.properties;
+         var1.destroyTime = var2.destroyTime;
+         var1.explosionResistance = var2.explosionResistance;
+         var1.hasCollision = var2.hasCollision;
+         var1.isRandomlyTicking = var2.isRandomlyTicking;
+         var1.lightEmission = var2.lightEmission;
+         var1.mapColor = var2.mapColor;
+         var1.soundType = var2.soundType;
+         var1.friction = var2.friction;
+         var1.speedFactor = var2.speedFactor;
+         var1.dynamicShape = var2.dynamicShape;
+         var1.canOcclude = var2.canOcclude;
+         var1.isAir = var2.isAir;
+         var1.ignitedByLava = var2.ignitedByLava;
+         var1.liquid = var2.liquid;
+         var1.forceSolidOff = var2.forceSolidOff;
+         var1.forceSolidOn = var2.forceSolidOn;
+         var1.pushReaction = var2.pushReaction;
+         var1.requiresCorrectToolForDrops = var2.requiresCorrectToolForDrops;
+         var1.offsetFunction = var2.offsetFunction;
+         var1.spawnTerrainParticles = var2.spawnTerrainParticles;
+         var1.requiredFeatures = var2.requiredFeatures;
+         var1.emissiveRendering = var2.emissiveRendering;
+         var1.instrument = var2.instrument;
+         var1.replaceable = var2.replaceable;
          return var1;
       }
 

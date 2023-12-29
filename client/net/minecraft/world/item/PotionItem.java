@@ -137,6 +137,6 @@ public class PotionItem extends Item {
 
    @Override
    public void appendHoverText(ItemStack var1, @Nullable Level var2, List<Component> var3, TooltipFlag var4) {
-      PotionUtils.addPotionTooltip(var1, var3, 1.0F);
+      PotionUtils.addPotionTooltip(var1, var3, 1.0F, var2 == null ? 20.0F : var2.tickRateManager().tickrate());
    }
 }

@@ -118,7 +118,6 @@ public class StatsScreen extends Screen implements StatsUpdateListener {
          );
       } else {
          super.render(var1, var2, var3, var4);
-         this.getActiveList().render(var1, var2, var3, var4);
          var1.drawCenteredString(this.font, this.title, this.width / 2, 20, 16777215);
       }
    }
@@ -143,18 +142,13 @@ public class StatsScreen extends Screen implements StatsUpdateListener {
       return !this.isLoading;
    }
 
-   @Nullable
-   public ObjectSelectionList<?> getActiveList() {
-      return this.activeList;
-   }
-
    public void setActiveList(@Nullable ObjectSelectionList<?> var1) {
       if (this.activeList != null) {
          this.removeWidget(this.activeList);
       }
 
       if (var1 != null) {
-         this.addWidget(var1);
+         this.addRenderableWidget(var1);
          this.activeList = var1;
       }
    }
@@ -178,7 +172,7 @@ public class StatsScreen extends Screen implements StatsUpdateListener {
 
    class GeneralStatisticsList extends ObjectSelectionList<StatsScreen.GeneralStatisticsList.Entry> {
       public GeneralStatisticsList(Minecraft var2) {
-         super(var2, StatsScreen.this.width, StatsScreen.this.height, 32, StatsScreen.this.height - 64, 10);
+         super(var2, StatsScreen.this.width, StatsScreen.this.height - 96, 32, 10);
          ObjectArrayList var3 = new ObjectArrayList(Stats.CUSTOM.iterator());
          var3.sort(Comparator.comparing(var0 -> I18n.get(StatsScreen.getTranslationKey(var0))));
          ObjectListIterator var4 = var3.iterator();
@@ -237,7 +231,7 @@ public class StatsScreen extends Screen implements StatsUpdateListener {
       protected int sortOrder;
 
       public ItemStatisticsList(Minecraft var2) {
-         super(var2, StatsScreen.this.width, StatsScreen.this.height, 32, StatsScreen.this.height - 64, 20);
+         super(var2, StatsScreen.this.width, StatsScreen.this.height - 96, 32, 20);
          this.blockColumns = Lists.newArrayList();
          this.blockColumns.add(Stats.BLOCK_MINED);
          this.itemColumns = Lists.newArrayList(
@@ -315,7 +309,7 @@ public class StatsScreen extends Screen implements StatsUpdateListener {
       }
 
       @Override
-      protected void clickedHeader(int var1, int var2) {
+      protected boolean clickedHeader(int var1, int var2) {
          this.headerPressed = -1;
 
          for(int var3 = 0; var3 < this.iconSprites.length; ++var3) {
@@ -329,6 +323,9 @@ public class StatsScreen extends Screen implements StatsUpdateListener {
          if (this.headerPressed >= 0) {
             this.sortByColumn(this.getColumn(this.headerPressed));
             this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+            return true;
+         } else {
+            return super.clickedHeader(var1, var2);
          }
       }
 
@@ -348,7 +345,7 @@ public class StatsScreen extends Screen implements StatsUpdateListener {
 
       @Override
       protected void renderDecorations(GuiGraphics var1, int var2, int var3) {
-         if (var3 >= this.y0 && var3 <= this.y1) {
+         if (var3 >= this.getY() && var3 <= this.getBottom()) {
             StatsScreen.ItemStatisticsList.ItemRow var4 = this.getHovered();
             int var5 = (this.width - this.getRowWidth()) / 2;
             if (var4 != null) {
@@ -478,7 +475,7 @@ public class StatsScreen extends Screen implements StatsUpdateListener {
 
    class MobsStatisticsList extends ObjectSelectionList<StatsScreen.MobsStatisticsList.MobRow> {
       public MobsStatisticsList(Minecraft var2) {
-         super(var2, StatsScreen.this.width, StatsScreen.this.height, 32, StatsScreen.this.height - 64, 9 * 4);
+         super(var2, StatsScreen.this.width, StatsScreen.this.height - 96, 32, 9 * 4);
 
          for(EntityType var4 : BuiltInRegistries.ENTITY_TYPE) {
             if (StatsScreen.this.stats.getValue(Stats.ENTITY_KILLED.get(var4)) > 0 || StatsScreen.this.stats.getValue(Stats.ENTITY_KILLED_BY.get(var4)) > 0) {

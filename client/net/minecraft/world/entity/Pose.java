@@ -15,7 +15,10 @@ public enum Pose {
    ROARING,
    SNIFFING,
    EMERGING,
-   DIGGING;
+   DIGGING,
+   SLIDING,
+   SHOOTING,
+   INHALING;
 
    private Pose() {
    }

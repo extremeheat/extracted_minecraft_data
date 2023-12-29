@@ -77,6 +77,11 @@ public class MutableComponent implements Component {
       return this;
    }
 
+   public MutableComponent withColor(int var1) {
+      this.setStyle(this.getStyle().withColor(var1));
+      return this;
+   }
+
    @Override
    public FormattedCharSequence getVisualOrderText() {
       Language var1 = Language.getInstance();

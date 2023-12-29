@@ -18,13 +18,13 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.Mth;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySelector;
@@ -54,10 +54,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.joml.Vector3f;
 
-public class Boat extends Entity implements VariantHolder<Boat.Type> {
-   private static final EntityDataAccessor<Integer> DATA_ID_HURT = SynchedEntityData.defineId(Boat.class, EntityDataSerializers.INT);
-   private static final EntityDataAccessor<Integer> DATA_ID_HURTDIR = SynchedEntityData.defineId(Boat.class, EntityDataSerializers.INT);
-   private static final EntityDataAccessor<Float> DATA_ID_DAMAGE = SynchedEntityData.defineId(Boat.class, EntityDataSerializers.FLOAT);
+public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
    private static final EntityDataAccessor<Integer> DATA_ID_TYPE = SynchedEntityData.defineId(Boat.class, EntityDataSerializers.INT);
    private static final EntityDataAccessor<Boolean> DATA_ID_PADDLE_LEFT = SynchedEntityData.defineId(Boat.class, EntityDataSerializers.BOOLEAN);
    private static final EntityDataAccessor<Boolean> DATA_ID_PADDLE_RIGHT = SynchedEntityData.defineId(Boat.class, EntityDataSerializers.BOOLEAN);
@@ -118,9 +115,7 @@ public class Boat extends Entity implements VariantHolder<Boat.Type> {
 
    @Override
    protected void defineSynchedData() {
-      this.entityData.define(DATA_ID_HURT, 0);
-      this.entityData.define(DATA_ID_HURTDIR, 1);
-      this.entityData.define(DATA_ID_DAMAGE, 0.0F);
+      super.defineSynchedData();
       this.entityData.define(DATA_ID_TYPE, Boat.Type.OAK.ordinal());
       this.entityData.define(DATA_ID_PADDLE_LEFT, false);
       this.entityData.define(DATA_ID_PADDLE_RIGHT, false);
@@ -171,35 +166,6 @@ public class Boat extends Entity implements VariantHolder<Boat.Type> {
    }
 
    @Override
-   public boolean hurt(DamageSource var1, float var2) {
-      if (this.isInvulnerableTo(var1)) {
-         return false;
-      } else if (!this.level().isClientSide && !this.isRemoved()) {
-         this.setHurtDir(-this.getHurtDir());
-         this.setHurtTime(10);
-         this.setDamage(this.getDamage() + var2 * 10.0F);
-         this.markHurt();
-         this.gameEvent(GameEvent.ENTITY_DAMAGE, var1.getEntity());
-         boolean var3 = var1.getEntity() instanceof Player && ((Player)var1.getEntity()).getAbilities().instabuild;
-         if (var3 || this.getDamage() > 40.0F) {
-            if (!var3 && this.level().getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
-               this.destroy(var1);
-            }
-
-            this.discard();
-         }
-
-         return true;
-      } else {
-         return true;
-      }
-   }
-
-   protected void destroy(DamageSource var1) {
-      this.spawnAtLocation(this.getDropItem());
-   }
-
-   @Override
    public void onAboveBubbleCol(boolean var1) {
       if (!this.level().isClientSide) {
          this.isAboveBubbleColumn = true;
@@ -239,6 +205,7 @@ public class Boat extends Entity implements VariantHolder<Boat.Type> {
       }
    }
 
+   @Override
    public Item getDropItem() {
       return switch(this.getVariant()) {
          case SPRUCE -> Items.SPRUCE_BOAT;
@@ -703,13 +670,15 @@ public class Boat extends Entity implements VariantHolder<Boat.Type> {
    @Override
    protected void positionRider(Entity var1, Entity.MoveFunction var2) {
       super.positionRider(var1, var2);
-      var1.setYRot(var1.getYRot() + this.deltaRotation);
-      var1.setYHeadRot(var1.getYHeadRot() + this.deltaRotation);
-      this.clampRotation(var1);
-      if (var1 instanceof Animal && this.getPassengers().size() == this.getMaxPassengers()) {
-         int var3 = var1.getId() % 2 == 0 ? 90 : 270;
-         var1.setYBodyRot(((Animal)var1).yBodyRot + (float)var3);
-         var1.setYHeadRot(var1.getYHeadRot() + (float)var3);
+      if (!var1.getType().is(EntityTypeTags.CAN_TURN_IN_BOATS)) {
+         var1.setYRot(var1.getYRot() + this.deltaRotation);
+         var1.setYHeadRot(var1.getYHeadRot() + this.deltaRotation);
+         this.clampRotation(var1);
+         if (var1 instanceof Animal && this.getPassengers().size() == this.getMaxPassengers()) {
+            int var3 = var1.getId() % 2 == 0 ? 90 : 270;
+            var1.setYBodyRot(((Animal)var1).yBodyRot + (float)var3);
+            var1.setYHeadRot(var1.getYHeadRot() + (float)var3);
+         }
       }
    }
 
@@ -827,22 +796,6 @@ public class Boat extends Entity implements VariantHolder<Boat.Type> {
       return this.entityData.<Boolean>get(var1 == 0 ? DATA_ID_PADDLE_LEFT : DATA_ID_PADDLE_RIGHT) && this.getControllingPassenger() != null;
    }
 
-   public void setDamage(float var1) {
-      this.entityData.set(DATA_ID_DAMAGE, var1);
-   }
-
-   public float getDamage() {
-      return this.entityData.get(DATA_ID_DAMAGE);
-   }
-
-   public void setHurtTime(int var1) {
-      this.entityData.set(DATA_ID_HURT, var1);
-   }
-
-   public int getHurtTime() {
-      return this.entityData.get(DATA_ID_HURT);
-   }
-
    private void setBubbleTime(int var1) {
       this.entityData.set(DATA_ID_BUBBLE_TIME, var1);
    }
@@ -853,14 +806,6 @@ public class Boat extends Entity implements VariantHolder<Boat.Type> {
 
    public float getBubbleAngle(float var1) {
       return Mth.lerp(var1, this.bubbleAngleO, this.bubbleAngle);
-   }
-
-   public void setHurtDir(int var1) {
-      this.entityData.set(DATA_ID_HURTDIR, var1);
-   }
-
-   public int getHurtDir() {
-      return this.entityData.get(DATA_ID_HURTDIR);
    }
 
    public void setVariant(Boat.Type var1) {

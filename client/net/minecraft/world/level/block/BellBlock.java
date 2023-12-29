@@ -1,5 +1,7 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.MapCodec;
+import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -11,8 +13,10 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -36,6 +40,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class BellBlock extends BaseEntityBlock {
+   public static final MapCodec<BellBlock> CODEC = simpleCodec(BellBlock::new);
    public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
    public static final EnumProperty<BellAttachType> ATTACHMENT = BlockStateProperties.BELL_ATTACHMENT;
    public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
@@ -52,6 +57,11 @@ public class BellBlock extends BaseEntityBlock {
    private static final VoxelShape TO_SOUTH = Shapes.or(BELL_SHAPE, Block.box(7.0, 13.0, 3.0, 9.0, 15.0, 16.0));
    private static final VoxelShape CEILING_SHAPE = Shapes.or(BELL_SHAPE, Block.box(7.0, 13.0, 7.0, 9.0, 16.0, 9.0));
    public static final int EVENT_BELL_RING = 1;
+
+   @Override
+   public MapCodec<BellBlock> codec() {
+      return CODEC;
+   }
 
    public BellBlock(BlockBehaviour.Properties var1) {
       super(var1);
@@ -212,6 +222,15 @@ public class BellBlock extends BaseEntityBlock {
    }
 
    @Override
+   public void onExplosionHit(BlockState var1, Level var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
+      if (var4.getBlockInteraction() == Explosion.BlockInteraction.TRIGGER_BLOCK && !var2.isClientSide()) {
+         this.attemptToRing(var2, var3, null);
+      }
+
+      super.onExplosionHit(var1, var2, var3, var4, var5);
+   }
+
+   @Override
    public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       BellAttachType var7 = var1.getValue(ATTACHMENT);
       Direction var8 = getConnectedDirection(var1).getOpposite();
@@ -271,5 +290,15 @@ public class BellBlock extends BaseEntityBlock {
    @Override
    public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
       return false;
+   }
+
+   @Override
+   public BlockState rotate(BlockState var1, Rotation var2) {
+      return var1.setValue(FACING, var2.rotate(var1.getValue(FACING)));
+   }
+
+   @Override
+   public BlockState mirror(BlockState var1, Mirror var2) {
+      return var1.rotate(var2.getRotation(var1.getValue(FACING)));
    }
 }

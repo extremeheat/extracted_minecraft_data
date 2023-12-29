@@ -1,11 +1,10 @@
 package net.minecraft.world.level.block;
 
-import java.util.Map;
-import java.util.function.Predicate;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.cauldron.CauldronInteraction;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -18,18 +17,29 @@ import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 
 public class LayeredCauldronBlock extends AbstractCauldronBlock {
+   public static final MapCodec<LayeredCauldronBlock> CODEC = RecordCodecBuilder.mapCodec(
+      var0 -> var0.group(
+               Biome.Precipitation.CODEC.fieldOf("precipitation").forGetter(var0x -> var0x.precipitationType),
+               CauldronInteraction.CODEC.fieldOf("interactions").forGetter(var0x -> var0x.interactions),
+               propertiesCodec()
+            )
+            .apply(var0, LayeredCauldronBlock::new)
+   );
    public static final int MIN_FILL_LEVEL = 1;
    public static final int MAX_FILL_LEVEL = 3;
    public static final IntegerProperty LEVEL = BlockStateProperties.LEVEL_CAULDRON;
    private static final int BASE_CONTENT_HEIGHT = 6;
    private static final double HEIGHT_PER_LEVEL = 3.0;
-   public static final Predicate<Biome.Precipitation> RAIN = var0 -> var0 == Biome.Precipitation.RAIN;
-   public static final Predicate<Biome.Precipitation> SNOW = var0 -> var0 == Biome.Precipitation.SNOW;
-   private final Predicate<Biome.Precipitation> fillPredicate;
+   private final Biome.Precipitation precipitationType;
 
-   public LayeredCauldronBlock(BlockBehaviour.Properties var1, Predicate<Biome.Precipitation> var2, Map<Item, CauldronInteraction> var3) {
-      super(var1, var3);
-      this.fillPredicate = var2;
+   @Override
+   public MapCodec<LayeredCauldronBlock> codec() {
+      return CODEC;
+   }
+
+   public LayeredCauldronBlock(Biome.Precipitation var1, CauldronInteraction.InteractionMap var2, BlockBehaviour.Properties var3) {
+      super(var3, var2);
+      this.precipitationType = var1;
       this.registerDefaultState(this.stateDefinition.any().setValue(LEVEL, Integer.valueOf(1)));
    }
 
@@ -40,7 +50,7 @@ public class LayeredCauldronBlock extends AbstractCauldronBlock {
 
    @Override
    protected boolean canReceiveStalactiteDrip(Fluid var1) {
-      return var1 == Fluids.WATER && this.fillPredicate == RAIN;
+      return var1 == Fluids.WATER && this.precipitationType == Biome.Precipitation.RAIN;
    }
 
    @Override
@@ -58,8 +68,12 @@ public class LayeredCauldronBlock extends AbstractCauldronBlock {
       }
    }
 
-   protected void handleEntityOnFireInside(BlockState var1, Level var2, BlockPos var3) {
-      lowerFillLevel(var1, var2, var3);
+   private void handleEntityOnFireInside(BlockState var1, Level var2, BlockPos var3) {
+      if (this.precipitationType == Biome.Precipitation.SNOW) {
+         lowerFillLevel(Blocks.WATER_CAULDRON.defaultBlockState().setValue(LEVEL, var1.getValue(LEVEL)), var2, var3);
+      } else {
+         lowerFillLevel(var1, var2, var3);
+      }
    }
 
    public static void lowerFillLevel(BlockState var0, Level var1, BlockPos var2) {
@@ -71,7 +85,7 @@ public class LayeredCauldronBlock extends AbstractCauldronBlock {
 
    @Override
    public void handlePrecipitation(BlockState var1, Level var2, BlockPos var3, Biome.Precipitation var4) {
-      if (CauldronBlock.shouldHandlePrecipitation(var2, var4) && var1.getValue(LEVEL) != 3 && this.fillPredicate.test(var4)) {
+      if (CauldronBlock.shouldHandlePrecipitation(var2, var4) && var1.getValue(LEVEL) != 3 && var4 == this.precipitationType) {
          BlockState var5 = var1.cycle(LEVEL);
          var2.setBlockAndUpdate(var3, var5);
          var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var5));

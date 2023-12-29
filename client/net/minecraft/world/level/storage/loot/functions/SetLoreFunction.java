@@ -12,6 +12,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -24,7 +25,7 @@ public class SetLoreFunction extends LootItemConditionalFunction {
             .and(
                var0.group(
                   Codec.BOOL.fieldOf("replace").orElse(false).forGetter(var0x -> var0x.replace),
-                  ExtraCodecs.COMPONENT.listOf().fieldOf("lore").forGetter(var0x -> var0x.lore),
+                  ComponentSerialization.CODEC.listOf().fieldOf("lore").forGetter(var0x -> var0x.lore),
                   ExtraCodecs.strictOptionalField(LootContext.EntityTarget.CODEC, "entity").forGetter(var0x -> var0x.resolutionContext)
                )
             )

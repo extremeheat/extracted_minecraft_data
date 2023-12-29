@@ -6,7 +6,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.TypeRewriteRule;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Pair;
@@ -111,21 +110,18 @@ public class LevelDataGeneratorOptionsFix extends DataFix {
    protected TypeRewriteRule makeRule() {
       Type var1 = this.getOutputSchema().getType(References.LEVEL);
       return this.fixTypeEverywhereTyped(
-         "LevelDataGeneratorOptionsFix", this.getInputSchema().getType(References.LEVEL), var1, var1x -> (Typed)var1x.write().flatMap(var1xx -> {
-               Optional var2 = var1xx.get("generatorOptions").asString().result();
-               Dynamic var3;
-               if ("flat".equalsIgnoreCase(var1xx.get("generatorName").asString(""))) {
-                  String var4 = var2.orElse("");
-                  var3 = var1xx.set("generatorOptions", convert(var4, var1xx.getOps()));
-               } else if ("buffet".equalsIgnoreCase(var1xx.get("generatorName").asString("")) && var2.isPresent()) {
-                  Dynamic var5 = new Dynamic(JsonOps.INSTANCE, GsonHelper.parse((String)var2.get(), true));
-                  var3 = var1xx.set("generatorOptions", var5.convert(var1xx.getOps()));
+         "LevelDataGeneratorOptionsFix", this.getInputSchema().getType(References.LEVEL), var1, var1x -> Util.writeAndReadTypedOrThrow(var1x, var1, var0x -> {
+               Optional var1xx = var0x.get("generatorOptions").asString().result();
+               if ("flat".equalsIgnoreCase(var0x.get("generatorName").asString(""))) {
+                  String var3 = var1xx.orElse("");
+                  return var0x.set("generatorOptions", convert(var3, var0x.getOps()));
+               } else if ("buffet".equalsIgnoreCase(var0x.get("generatorName").asString("")) && var1xx.isPresent()) {
+                  Dynamic var2 = new Dynamic(JsonOps.INSTANCE, GsonHelper.parse((String)var1xx.get(), true));
+                  return var0x.set("generatorOptions", var2.convert(var0x.getOps()));
                } else {
-                  var3 = var1xx;
+                  return var0x;
                }
-   
-               return var1.readTyped(var3);
-            }).map(Pair::getFirst).result().orElseThrow(() -> new IllegalStateException("Could not read new level type."))
+            })
       );
    }
 

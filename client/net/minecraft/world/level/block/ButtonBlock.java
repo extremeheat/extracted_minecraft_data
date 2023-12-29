@@ -1,5 +1,9 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -12,7 +16,9 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -28,6 +34,14 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class ButtonBlock extends FaceAttachedHorizontalDirectionalBlock {
+   public static final MapCodec<ButtonBlock> CODEC = RecordCodecBuilder.mapCodec(
+      var0 -> var0.group(
+               BlockSetType.CODEC.fieldOf("block_set_type").forGetter(var0x -> var0x.type),
+               Codec.intRange(1, 1024).fieldOf("ticks_to_stay_pressed").forGetter(var0x -> var0x.ticksToStayPressed),
+               propertiesCodec()
+            )
+            .apply(var0, ButtonBlock::new)
+   );
    public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
    private static final int PRESSED_DEPTH = 1;
    private static final int UNPRESSED_DEPTH = 2;
@@ -51,16 +65,19 @@ public class ButtonBlock extends FaceAttachedHorizontalDirectionalBlock {
    protected static final VoxelShape PRESSED_EAST_AABB = Block.box(0.0, 6.0, 5.0, 1.0, 10.0, 11.0);
    private final BlockSetType type;
    private final int ticksToStayPressed;
-   private final boolean arrowsCanPress;
 
-   protected ButtonBlock(BlockBehaviour.Properties var1, BlockSetType var2, int var3, boolean var4) {
-      super(var1.sound(var2.soundType()));
-      this.type = var2;
+   @Override
+   public MapCodec<ButtonBlock> codec() {
+      return CODEC;
+   }
+
+   protected ButtonBlock(BlockSetType var1, int var2, BlockBehaviour.Properties var3) {
+      super(var3.sound(var1.soundType()));
+      this.type = var1;
       this.registerDefaultState(
          this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(POWERED, Boolean.valueOf(false)).setValue(FACE, AttachFace.WALL)
       );
-      this.ticksToStayPressed = var3;
-      this.arrowsCanPress = var4;
+      this.ticksToStayPressed = var2;
    }
 
    @Override
@@ -101,6 +118,15 @@ public class ButtonBlock extends FaceAttachedHorizontalDirectionalBlock {
          var2.gameEvent(var4, GameEvent.BLOCK_ACTIVATE, var3);
          return InteractionResult.sidedSuccess(var2.isClientSide);
       }
+   }
+
+   @Override
+   public void onExplosionHit(BlockState var1, Level var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
+      if (var4.getBlockInteraction() == Explosion.BlockInteraction.TRIGGER_BLOCK && !var2.isClientSide() && !var1.getValue(POWERED)) {
+         this.press(var1, var2, var3);
+      }
+
+      super.onExplosionHit(var1, var2, var3, var4, var5);
    }
 
    public void press(BlockState var1, Level var2, BlockPos var3) {
@@ -152,13 +178,13 @@ public class ButtonBlock extends FaceAttachedHorizontalDirectionalBlock {
 
    @Override
    public void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
-      if (!var2.isClientSide && this.arrowsCanPress && !var1.getValue(POWERED)) {
+      if (!var2.isClientSide && this.type.canButtonBeActivatedByArrows() && !var1.getValue(POWERED)) {
          this.checkPressed(var1, var2, var3);
       }
    }
 
    protected void checkPressed(BlockState var1, Level var2, BlockPos var3) {
-      AbstractArrow var4 = this.arrowsCanPress
+      AbstractArrow var4 = this.type.canButtonBeActivatedByArrows()
          ? var2.getEntitiesOfClass(AbstractArrow.class, var1.getShape(var2, var3).bounds().move(var3)).stream().findFirst().orElse(null)
          : null;
       boolean var5 = var4 != null;

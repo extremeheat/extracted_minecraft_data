@@ -29,10 +29,10 @@ public class ItemParser {
       Component.translatable("argument.item.tag.disallowed")
    );
    private static final DynamicCommandExceptionType ERROR_UNKNOWN_ITEM = new DynamicCommandExceptionType(
-      var0 -> Component.translatable("argument.item.id.invalid", var0)
+      var0 -> Component.translatableEscape("argument.item.id.invalid", var0)
    );
    private static final DynamicCommandExceptionType ERROR_UNKNOWN_TAG = new DynamicCommandExceptionType(
-      var0 -> Component.translatable("arguments.item.tag.unknown", var0)
+      var0 -> Component.translatableEscape("arguments.item.tag.unknown", var0)
    );
    private static final char SYNTAX_START_NBT = '{';
    private static final char SYNTAX_TAG = '#';

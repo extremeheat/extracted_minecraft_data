@@ -12,7 +12,6 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap.Entry;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.net.SocketAddress;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -23,7 +22,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
@@ -89,6 +87,7 @@ import net.minecraft.network.protocol.game.ServerboundConfigurationAcknowledgedP
 import net.minecraft.network.protocol.game.ServerboundContainerButtonClickPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
+import net.minecraft.network.protocol.game.ServerboundContainerSlotStateChangedPacket;
 import net.minecraft.network.protocol.game.ServerboundEditBookPacket;
 import net.minecraft.network.protocol.game.ServerboundEntityTagQuery;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
@@ -131,6 +130,7 @@ import net.minecraft.util.FutureChain;
 import net.minecraft.util.Mth;
 import net.minecraft.util.SignatureValidator;
 import net.minecraft.util.StringUtil;
+import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.effect.MobEffects;
@@ -151,6 +151,7 @@ import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.AnvilMenu;
 import net.minecraft.world.inventory.BeaconMenu;
+import net.minecraft.world.inventory.CrafterMenu;
 import net.minecraft.world.inventory.MerchantMenu;
 import net.minecraft.world.inventory.RecipeBookMenu;
 import net.minecraft.world.item.BlockItem;
@@ -167,6 +168,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CommandBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.CommandBlockEntity;
+import net.minecraft.world.level.block.entity.CrafterBlockEntity;
 import net.minecraft.world.level.block.entity.JigsawBlockEntity;
 import net.minecraft.world.level.block.entity.SignBlockEntity;
 import net.minecraft.world.level.block.entity.StructureBlockEntity;
@@ -220,7 +222,6 @@ public class ServerGamePacketListenerImpl
    private int aboveGroundVehicleTickCount;
    private int receivedMovePacketCount;
    private int knownMovePacketCount;
-   private final AtomicReference<Instant> lastChatTimeStamp = new AtomicReference<>(Instant.EPOCH);
    @Nullable
    private RemoteChatSession chatSession;
    private SignedMessageChain.Decoder signedMessageDecoder;
@@ -236,7 +237,7 @@ public class ServerGamePacketListenerImpl
       this.player = var3;
       var3.connection = this;
       var3.getTextFilter().join();
-      this.signedMessageDecoder = var1.enforceSecureProfile() ? SignedMessageChain.Decoder.REJECT_ALL : SignedMessageChain.Decoder.unsigned(var3.getUUID());
+      this.signedMessageDecoder = SignedMessageChain.Decoder.unsigned(var3.getUUID(), var1::enforceSecureProfile);
       this.chatMessageChain = new FutureChain(var1);
    }
 
@@ -674,7 +675,7 @@ public class ServerGamePacketListenerImpl
                } else if (var1.getUpdateType() == StructureBlockEntity.UpdateType.LOAD_AREA) {
                   if (!var5.isStructureLoadable()) {
                      this.player.displayClientMessage(Component.translatable("structure_block.load_not_found", var6), false);
-                  } else if (var5.loadStructure(this.player.serverLevel())) {
+                  } else if (var5.placeStructureIfSameSize(this.player.serverLevel())) {
                      this.player.displayClientMessage(Component.translatable("structure_block.load_success", var6), false);
                   } else {
                      this.player.displayClientMessage(Component.translatable("structure_block.load_prepare", var6), false);
@@ -711,6 +712,8 @@ public class ServerGamePacketListenerImpl
             var5.setPool(ResourceKey.create(Registries.TEMPLATE_POOL, var1.getPool()));
             var5.setFinalState(var1.getFinalState());
             var5.setJoint(var1.getJoint());
+            var5.setPlacementPriority(var1.getPlacementPriority());
+            var5.setSelectionPriority(var1.getSelectionPriority());
             var5.setChanged();
             this.player.level().sendBlockUpdated(var2, var3, var3, 3);
          }
@@ -828,6 +831,22 @@ public class ServerGamePacketListenerImpl
       }
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   @Override
+   public void handleContainerSlotStateChanged(ServerboundContainerSlotStateChangedPacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
+      if (!this.player.isSpectator() && var1.containerId() == this.player.containerMenu.containerId) {
+         AbstractContainerMenu var4 = this.player.containerMenu;
+         if (var4 instanceof CrafterMenu var2) {
+            Container var5 = var2.getContainer();
+            if (var5 instanceof CrafterBlockEntity var3) {
+               var3.setSlotState(var1.slotId(), var1.newState());
+            }
+         }
+      }
+   }
+
    @Override
    public void handleBlockEntityTagQuery(ServerboundBlockEntityTagQuery var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
@@ -885,33 +904,35 @@ public class ServerGamePacketListenerImpl
                         this.teleport(this.player.getX(), this.player.getY(), this.player.getZ(), var9, var10);
                      }
                   } else {
-                     ++this.receivedMovePacketCount;
-                     int var27 = this.receivedMovePacketCount - this.knownMovePacketCount;
-                     if (var27 > 5) {
-                        LOGGER.debug("{} is sending move packets too frequently ({} packets since last tick)", this.player.getName().getString(), var27);
-                        var27 = 1;
-                     }
+                     if (var2.tickRateManager().runsNormally()) {
+                        ++this.receivedMovePacketCount;
+                        int var27 = this.receivedMovePacketCount - this.knownMovePacketCount;
+                        if (var27 > 5) {
+                           LOGGER.debug("{} is sending move packets too frequently ({} packets since last tick)", this.player.getName().getString(), var27);
+                           var27 = 1;
+                        }
 
-                     if (!this.player.isChangingDimension()
-                        && (!this.player.level().getGameRules().getBoolean(GameRules.RULE_DISABLE_ELYTRA_MOVEMENT_CHECK) || !this.player.isFallFlying())) {
-                        float var28 = this.player.isFallFlying() ? 300.0F : 100.0F;
-                        if (var25 - var23 > (double)(var28 * (float)var27) && !this.isSingleplayerOwner()) {
-                           LOGGER.warn("{} moved too quickly! {},{},{}", new Object[]{this.player.getName().getString(), var17, var19, var21});
-                           this.teleport(this.player.getX(), this.player.getY(), this.player.getZ(), this.player.getYRot(), this.player.getXRot());
-                           return;
+                        if (!this.player.isChangingDimension()
+                           && (!this.player.level().getGameRules().getBoolean(GameRules.RULE_DISABLE_ELYTRA_MOVEMENT_CHECK) || !this.player.isFallFlying())) {
+                           float var28 = this.player.isFallFlying() ? 300.0F : 100.0F;
+                           if (var25 - var23 > (double)(var28 * (float)var27) && !this.isSingleplayerOwner()) {
+                              LOGGER.warn("{} moved too quickly! {},{},{}", new Object[]{this.player.getName().getString(), var17, var19, var21});
+                              this.teleport(this.player.getX(), this.player.getY(), this.player.getZ(), this.player.getYRot(), this.player.getXRot());
+                              return;
+                           }
                         }
                      }
 
-                     AABB var41 = this.player.getBoundingBox();
+                     AABB var40 = this.player.getBoundingBox();
                      var17 = var3 - this.lastGoodX;
                      var19 = var5 - this.lastGoodY;
                      var21 = var7 - this.lastGoodZ;
-                     boolean var29 = var19 > 0.0;
-                     if (this.player.onGround() && !var1.isOnGround() && var29) {
+                     boolean var41 = var19 > 0.0;
+                     if (this.player.onGround() && !var1.isOnGround() && var41) {
                         this.player.jumpFromGround();
                      }
 
-                     boolean var30 = this.player.verticalCollisionBelow;
+                     boolean var29 = this.player.verticalCollisionBelow;
                      this.player.move(MoverType.PLAYER, new Vec3(var17, var19, var21));
                      var17 = var3 - this.player.getX();
                      var19 = var5 - this.player.getY();
@@ -921,22 +942,22 @@ public class ServerGamePacketListenerImpl
 
                      var21 = var7 - this.player.getZ();
                      var25 = var17 * var17 + var19 * var19 + var21 * var21;
-                     boolean var33 = false;
+                     boolean var32 = false;
                      if (!this.player.isChangingDimension()
                         && var25 > 0.0625
                         && !this.player.isSleeping()
                         && !this.player.gameMode.isCreative()
                         && this.player.gameMode.getGameModeForPlayer() != GameType.SPECTATOR) {
-                        var33 = true;
+                        var32 = true;
                         LOGGER.warn("{} moved wrongly!", this.player.getName().getString());
                      }
 
                      if (this.player.noPhysics
                         || this.player.isSleeping()
-                        || (!var33 || !var2.noCollision(this.player, var41)) && !this.isPlayerCollidingWithAnythingNew(var2, var41, var3, var5, var7)) {
+                        || (!var32 || !var2.noCollision(this.player, var40)) && !this.isPlayerCollidingWithAnythingNew(var2, var40, var3, var5, var7)) {
                         this.player.absMoveTo(var3, var5, var7, var9, var10);
                         this.clientIsFloating = var19 >= -0.03125
-                           && !var30
+                           && !var29
                            && this.player.gameMode.getGameModeForPlayer() != GameType.SPECTATOR
                            && !this.server.isFlightAllowed()
                            && !this.player.getAbilities().mayfly
@@ -950,7 +971,7 @@ public class ServerGamePacketListenerImpl
                            .setOnGroundWithKnownMovement(
                               var1.isOnGround(), new Vec3(this.player.getX() - var11, this.player.getY() - var13, this.player.getZ() - var15)
                            );
-                        if (var29) {
+                        if (var41) {
                            this.player.resetFallDistance();
                         }
 
@@ -1191,7 +1212,7 @@ public class ServerGamePacketListenerImpl
       if (isChatMessageIllegal(var1.message())) {
          this.disconnect(Component.translatable("multiplayer.disconnect.illegal_characters"));
       } else {
-         Optional var2 = this.tryHandleChat(var1.message(), var1.timeStamp(), var1.lastSeenMessages());
+         Optional var2 = this.tryHandleChat(var1.lastSeenMessages());
          if (var2.isPresent()) {
             this.server.submit(() -> {
                PlayerChatMessage var3;
@@ -1204,10 +1225,10 @@ public class ServerGamePacketListenerImpl
 
                CompletableFuture var4 = this.filterTextPacket(var3.signedContent());
                Component var5 = this.server.getChatDecorator().decorate(this.player, var3.decoratedContent());
-               this.chatMessageChain.append(var4x -> var4.thenAcceptAsync(var3xx -> {
-                     PlayerChatMessage var4xx = var3.withUnsignedContent(var5).filter(var3xx.mask());
-                     this.broadcastChatMessage(var4xx);
-                  }, var4x));
+               this.chatMessageChain.append(var4, var3x -> {
+                  PlayerChatMessage var4x = var3.withUnsignedContent(var5).filter(var3x.mask());
+                  this.broadcastChatMessage(var4x);
+               });
             });
          }
       }
@@ -1218,7 +1239,7 @@ public class ServerGamePacketListenerImpl
       if (isChatMessageIllegal(var1.command())) {
          this.disconnect(Component.translatable("multiplayer.disconnect.illegal_characters"));
       } else {
-         Optional var2 = this.tryHandleChat(var1.command(), var1.timeStamp(), var1.lastSeenMessages());
+         Optional var2 = this.tryHandleChat(var1.lastSeenMessages());
          if (var2.isPresent()) {
             this.server.submit(() -> {
                this.performChatCommand(var1, (LastSeenMessages)var2.get());
@@ -1245,6 +1266,7 @@ public class ServerGamePacketListenerImpl
    }
 
    private void handleMessageDecodeFailure(SignedMessageChain.DecodeException var1) {
+      LOGGER.warn("Failed to update secure chat state for {}: '{}'", this.player.getGameProfile().getName(), var1.getComponent().getString());
       if (var1.shouldDisconnect()) {
          this.disconnect(var1.getComponent());
       } else {
@@ -1269,20 +1291,14 @@ public class ServerGamePacketListenerImpl
       return var2.parse(var1, this.player.createCommandSourceStack());
    }
 
-   private Optional<LastSeenMessages> tryHandleChat(String var1, Instant var2, LastSeenMessages.Update var3) {
-      if (!this.updateChatOrder(var2)) {
-         LOGGER.warn("{} sent out-of-order chat: '{}'", this.player.getName().getString(), var1);
-         this.disconnect(Component.translatable("multiplayer.disconnect.out_of_order_chat"));
+   private Optional<LastSeenMessages> tryHandleChat(LastSeenMessages.Update var1) {
+      Optional var2 = this.unpackAndApplyLastSeen(var1);
+      if (this.player.getChatVisibility() == ChatVisiblity.HIDDEN) {
+         this.send(new ClientboundSystemChatPacket(Component.translatable("chat.disabled.options").withStyle(ChatFormatting.RED), false));
          return Optional.empty();
       } else {
-         Optional var4 = this.unpackAndApplyLastSeen(var3);
-         if (this.player.getChatVisibility() == ChatVisiblity.HIDDEN) {
-            this.send(new ClientboundSystemChatPacket(Component.translatable("chat.disabled.options").withStyle(ChatFormatting.RED), false));
-            return Optional.empty();
-         } else {
-            this.player.resetLastActionTime();
-            return var4;
-         }
+         this.player.resetLastActionTime();
+         return var2;
       }
    }
 
@@ -1296,18 +1312,6 @@ public class ServerGamePacketListenerImpl
 
          return var3;
       }
-   }
-
-   private boolean updateChatOrder(Instant var1) {
-      Instant var2;
-      do {
-         var2 = this.lastChatTimeStamp.get();
-         if (var1.isBefore(var2)) {
-            return false;
-         }
-      } while(!this.lastChatTimeStamp.compareAndSet(var2, var1));
-
-      return true;
    }
 
    private static boolean isChatMessageIllegal(String var0) {
@@ -1413,7 +1417,7 @@ public class ServerGamePacketListenerImpl
    public void addPendingMessage(PlayerChatMessage var1) {
       MessageSignature var2 = var1.signature();
       if (var2 != null) {
-         this.messageSignatureCache.push(var1);
+         this.messageSignatureCache.push(var1.signedBody(), var1.signature());
          int var3;
          synchronized(this.lastSeenMessages) {
             this.lastSeenMessages.addPending(var2);
@@ -1756,14 +1760,13 @@ public class ServerGamePacketListenerImpl
       this.signedMessageDecoder = var1.createMessageDecoder(this.player.getUUID());
       this.chatMessageChain
          .append(
-            var2 -> {
+            () -> {
                this.player.setChatSession(var1);
                this.server
                   .getPlayerList()
                   .broadcastAll(
                      new ClientboundPlayerInfoUpdatePacket(EnumSet.of(ClientboundPlayerInfoUpdatePacket.Action.INITIALIZE_CHAT), List.of(this.player))
                   );
-               return CompletableFuture.completedFuture(null);
             }
          );
    }

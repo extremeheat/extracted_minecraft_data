@@ -8,11 +8,14 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.SectionPos;
 import net.minecraft.core.Vec3i;
+import net.minecraft.world.level.ChunkPos;
 import org.slf4j.Logger;
 
 public class BoundingBox {
@@ -85,6 +88,14 @@ public class BoundingBox {
          case EAST:
             return new BoundingBox(var0 + var5, var1 + var4, var2 + var3, var0 + var8 - 1 + var5, var1 + var7 - 1 + var4, var2 + var6 - 1 + var3);
       }
+   }
+
+   public Stream<ChunkPos> intersectingChunks() {
+      int var1 = SectionPos.blockToSectionCoord(this.minX());
+      int var2 = SectionPos.blockToSectionCoord(this.minZ());
+      int var3 = SectionPos.blockToSectionCoord(this.maxX());
+      int var4 = SectionPos.blockToSectionCoord(this.maxZ());
+      return ChunkPos.rangeClosed(new ChunkPos(var1, var2), new ChunkPos(var3, var4));
    }
 
    public boolean intersects(BoundingBox var1) {

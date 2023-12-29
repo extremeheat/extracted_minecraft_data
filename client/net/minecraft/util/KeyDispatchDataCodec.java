@@ -11,6 +11,7 @@ public record KeyDispatchDataCodec<A>(Codec<A> a) {
       this.codec = var1;
    }
 
+   @Deprecated
    public static <A> KeyDispatchDataCodec<A> of(Codec<A> var0) {
       return new KeyDispatchDataCodec<>(var0);
    }

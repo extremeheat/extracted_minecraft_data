@@ -18,7 +18,7 @@ import net.minecraft.world.level.GameType;
 public class SpectateCommand {
    private static final SimpleCommandExceptionType ERROR_SELF = new SimpleCommandExceptionType(Component.translatable("commands.spectate.self"));
    private static final DynamicCommandExceptionType ERROR_NOT_SPECTATOR = new DynamicCommandExceptionType(
-      var0 -> Component.translatable("commands.spectate.not_spectator", var0)
+      var0 -> Component.translatableEscape("commands.spectate.not_spectator", var0)
    );
 
    public SpectateCommand() {

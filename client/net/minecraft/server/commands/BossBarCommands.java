@@ -30,10 +30,10 @@ import net.minecraft.world.entity.player.Player;
 
 public class BossBarCommands {
    private static final DynamicCommandExceptionType ERROR_ALREADY_EXISTS = new DynamicCommandExceptionType(
-      var0 -> Component.translatable("commands.bossbar.create.failed", var0)
+      var0 -> Component.translatableEscape("commands.bossbar.create.failed", var0)
    );
    private static final DynamicCommandExceptionType ERROR_DOESNT_EXIST = new DynamicCommandExceptionType(
-      var0 -> Component.translatable("commands.bossbar.unknown", var0)
+      var0 -> Component.translatableEscape("commands.bossbar.unknown", var0)
    );
    private static final SimpleCommandExceptionType ERROR_NO_PLAYER_CHANGE = new SimpleCommandExceptionType(
       Component.translatable("commands.bossbar.set.players.unchanged")

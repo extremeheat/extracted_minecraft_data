@@ -66,7 +66,7 @@ public abstract class EffectRenderingInventoryScreen<T extends AbstractContainer
             }
 
             if (var11 != null) {
-               List var14 = List.of(this.getEffectName(var11), MobEffectUtil.formatDuration(var11, 1.0F));
+               List var14 = List.of(this.getEffectName(var11), MobEffectUtil.formatDuration(var11, 1.0F, this.minecraft.level.tickRateManager().tickrate()));
                var1.renderTooltip(this.font, var14, Optional.empty(), var2, var3);
             }
          }
@@ -105,7 +105,7 @@ public abstract class EffectRenderingInventoryScreen<T extends AbstractContainer
       for(MobEffectInstance var7 : var4) {
          Component var8 = this.getEffectName(var7);
          var1.drawString(this.font, var8, var2 + 10 + 18, var5 + 6, 16777215);
-         Component var9 = MobEffectUtil.formatDuration(var7, 1.0F);
+         Component var9 = MobEffectUtil.formatDuration(var7, 1.0F, this.minecraft.level.tickRateManager().tickrate());
          var1.drawString(this.font, var9, var2 + 10 + 18, var5 + 6 + 10, 8355711);
          var5 += var3;
       }

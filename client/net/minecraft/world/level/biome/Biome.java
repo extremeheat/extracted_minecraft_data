@@ -363,12 +363,21 @@ public final class Biome {
       }
    }
 
-   public static enum Precipitation {
-      NONE,
-      RAIN,
-      SNOW;
+   public static enum Precipitation implements StringRepresentable {
+      NONE("none"),
+      RAIN("rain"),
+      SNOW("snow");
 
-      private Precipitation() {
+      public static final Codec<Biome.Precipitation> CODEC = StringRepresentable.fromEnum(Biome.Precipitation::values);
+      private final String name;
+
+      private Precipitation(String var3) {
+         this.name = var3;
+      }
+
+      @Override
+      public String getSerializedName() {
+         return this.name;
       }
    }
 

@@ -16,6 +16,7 @@ import net.minecraft.ReportedException;
 import net.minecraft.Util;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.SimpleOptionsSubScreen;
@@ -104,11 +105,11 @@ public class KeyboardHandler {
    }
 
    private void debugFeedbackTranslated(String var1, Object... var2) {
-      this.debugFeedbackComponent(Component.translatable(var1, var2));
+      this.debugFeedbackComponent(Component.translatableEscape(var1, var2));
    }
 
    private void debugWarningTranslated(String var1, Object... var2) {
-      this.debugComponent(ChatFormatting.RED, Component.translatable(var1, var2));
+      this.debugComponent(ChatFormatting.RED, Component.translatableEscape(var1, var2));
    }
 
    private void debugFeedback(String var1, Object... var2) {
@@ -379,51 +380,73 @@ public class KeyboardHandler {
          }
 
          if (this.minecraft.getNarrator().isActive() && this.minecraft.options.narratorHotkey().get()) {
-            boolean var9 = var8 == null || !(var8.getFocused() instanceof EditBox) || !((EditBox)var8.getFocused()).canConsumeInput();
+            boolean var10000;
+            label155: {
+               if (var8 != null) {
+                  GuiEventListener var11 = var8.getFocused();
+                  if (var11 instanceof EditBox var10 && var10.canConsumeInput()) {
+                     var10000 = false;
+                     break label155;
+                  }
+               }
+
+               var10000 = true;
+            }
+
+            boolean var9 = var10000;
             if (var5 != 0 && var3 == 66 && Screen.hasControlDown() && var9) {
-               boolean var10 = this.minecraft.options.narrator().get() == NarratorStatus.OFF;
+               boolean var16 = this.minecraft.options.narrator().get() == NarratorStatus.OFF;
                this.minecraft.options.narrator().set(NarratorStatus.byId(this.minecraft.options.narrator().get().getId() + 1));
+               this.minecraft.options.save();
                if (var8 instanceof SimpleOptionsSubScreen) {
                   ((SimpleOptionsSubScreen)var8).updateNarratorButton();
                }
 
-               if (var10 && var8 != null) {
+               if (var16 && var8 != null) {
                   var8.narrationEnabled();
                }
             }
          }
 
          if (var8 != null) {
-            boolean[] var12 = new boolean[]{false};
+            boolean[] var14 = new boolean[]{false};
             Screen.wrapScreenError(() -> {
                if (var5 == 1 || var5 == 2) {
                   var8.afterKeyboardAction();
-                  var12[0] = var8.keyPressed(var3, var4, var6);
+                  var14[0] = var8.keyPressed(var3, var4, var6);
                } else if (var5 == 0) {
-                  var12[0] = var8.keyReleased(var3, var4, var6);
+                  var14[0] = var8.keyReleased(var3, var4, var6);
                }
             }, "keyPressed event handler", var8.getClass().getCanonicalName());
-            if (var12[0]) {
+            if (var14[0]) {
                return;
             }
          }
 
-         if (this.minecraft.screen != null) {
-            Screen var14 = this.minecraft.screen;
-            if (!(var14 instanceof PauseScreen)) {
-               return;
+         InputConstants.Key var15;
+         boolean var17;
+         boolean var20;
+         label185: {
+            var15 = InputConstants.getKey(var3, var4);
+            var17 = this.minecraft.screen == null;
+            label144:
+            if (!var17) {
+               Screen var13 = this.minecraft.screen;
+               if (var13 instanceof PauseScreen var12 && !var12.showsPauseMenu()) {
+                  break label144;
+               }
+
+               var20 = false;
+               break label185;
             }
 
-            PauseScreen var13 = (PauseScreen)var14;
-            if (var13.showsPauseMenu()) {
-               return;
-            }
+            var20 = true;
          }
 
-         InputConstants.Key var15 = InputConstants.getKey(var3, var4);
+         boolean var18 = var20;
          if (var5 == 0) {
             KeyMapping.set(var15, false);
-            if (var3 == 292) {
+            if (var18 && var3 == 292) {
                if (this.handledDebugKey) {
                   this.handledDebugKey = false;
                } else {
@@ -431,31 +454,35 @@ public class KeyboardHandler {
                }
             }
          } else {
-            if (var3 == 293 && this.minecraft.gameRenderer != null) {
-               this.minecraft.gameRenderer.togglePostEffect();
+            boolean var19 = false;
+            if (var18) {
+               if (var3 == 293 && this.minecraft.gameRenderer != null) {
+                  this.minecraft.gameRenderer.togglePostEffect();
+               }
+
+               if (var3 == 256) {
+                  this.minecraft.pauseGame(var7);
+                  var19 |= var7;
+               }
+
+               var19 |= var7 && this.handleDebugKeys(var3);
+               this.handledDebugKey |= var19;
+               if (var3 == 290) {
+                  this.minecraft.options.hideGui = !this.minecraft.options.hideGui;
+               }
+
+               if (this.minecraft.getDebugOverlay().showProfilerChart() && !var7 && var3 >= 48 && var3 <= 57) {
+                  this.minecraft.debugFpsMeterKeyPress(var3 - 48);
+               }
             }
 
-            boolean var11 = false;
-            if (var3 == 256) {
-               this.minecraft.pauseGame(var7);
-               var11 |= var7;
-            }
-
-            var11 |= var7 && this.handleDebugKeys(var3);
-            this.handledDebugKey |= var11;
-            if (var3 == 290) {
-               this.minecraft.options.hideGui = !this.minecraft.options.hideGui;
-            }
-
-            if (var11) {
-               KeyMapping.set(var15, false);
-            } else {
-               KeyMapping.set(var15, true);
-               KeyMapping.click(var15);
-            }
-
-            if (this.minecraft.getDebugOverlay().showProfilerChart() && !var7 && var3 >= 48 && var3 <= 57) {
-               this.minecraft.debugFpsMeterKeyPress(var3 - 48);
+            if (var17) {
+               if (var19) {
+                  KeyMapping.set(var15, false);
+               } else {
+                  KeyMapping.set(var15, true);
+                  KeyMapping.click(var15);
+               }
             }
          }
       }

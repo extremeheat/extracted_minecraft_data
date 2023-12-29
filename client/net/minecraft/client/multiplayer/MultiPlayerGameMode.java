@@ -18,6 +18,7 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundContainerButtonClickPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
+import net.minecraft.network.protocol.game.ServerboundContainerSlotStateChangedPacket;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.network.protocol.game.ServerboundMovePlayerPacket;
 import net.minecraft.network.protocol.game.ServerboundPickItemPacket;
@@ -252,7 +253,7 @@ public class MultiPlayerGameMode {
    }
 
    public float getPickRange() {
-      return this.localPlayerMode.isCreative() ? 5.0F : 4.5F;
+      return Player.getPickRange(this.localPlayerMode.isCreative());
    }
 
    public void tick() {
@@ -484,5 +485,9 @@ public class MultiPlayerGameMode {
 
    public void handlePickItem(int var1) {
       this.connection.send(new ServerboundPickItemPacket(var1));
+   }
+
+   public void handleSlotStateChanged(int var1, int var2, boolean var3) {
+      this.connection.send(new ServerboundContainerSlotStateChangedPacket(var1, var2, var3));
    }
 }

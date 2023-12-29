@@ -160,7 +160,6 @@ public abstract class LivingEntity extends Entity implements Attackable {
    protected static final float DEFAULT_EYE_HEIGHT = 1.74F;
    protected static final EntityDimensions SLEEPING_DIMENSIONS = EntityDimensions.fixed(0.2F, 0.2F);
    public static final float EXTRA_RENDER_CULLING_SIZE_WITH_BIG_HAT = 0.5F;
-   private static final int MAX_HEAD_ROTATION_RELATIVE_TO_BODY = 50;
    private final AttributeMap attributes;
    private final CombatTracker combatTracker = new CombatTracker(this);
    private final Map<MobEffect, MobEffectInstance> activeEffects = Maps.newHashMap();
@@ -327,8 +326,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
       }
    }
 
-   public boolean canBreatheUnderwater() {
-      return this.getMobType() == MobType.UNDEAD;
+   public final boolean canBreatheUnderwater() {
+      return this.getType().is(EntityTypeTags.CAN_BREATHE_UNDER_WATER);
    }
 
    public float getSwimAmount(float var1) {
@@ -1305,12 +1304,10 @@ public abstract class LivingEntity extends Entity implements Attackable {
       if (!var1.is(DamageTypeTags.BYPASSES_SHIELD) && this.isBlocking() && !var3) {
          Vec3 var7 = var1.getSourcePosition();
          if (var7 != null) {
-            Vec3 var5 = this.getViewVector(1.0F);
-            Vec3 var6 = var7.vectorTo(this.position()).normalize();
-            var6 = new Vec3(var6.x, 0.0, var6.z);
-            if (var6.dot(var5) < 0.0) {
-               return true;
-            }
+            Vec3 var5 = this.calculateViewVector(0.0F, this.getYHeadRot());
+            Vec3 var6 = var7.vectorTo(this.position());
+            var6 = new Vec3(var6.x, 0.0, var6.z).normalize();
+            return var6.dot(var5) < 0.0;
          }
       }
 
@@ -2506,16 +2503,21 @@ public abstract class LivingEntity extends Entity implements Attackable {
       float var3 = Mth.wrapDegrees(var1 - this.yBodyRot);
       this.yBodyRot += var3 * 0.3F;
       float var4 = Mth.wrapDegrees(this.getYRot() - this.yBodyRot);
-      if (Math.abs(var4) > 50.0F) {
-         this.yBodyRot += var4 - (float)(Mth.sign((double)var4) * 50);
+      float var5 = this.getMaxHeadRotationRelativeToBody();
+      if (Math.abs(var4) > var5) {
+         this.yBodyRot += var4 - (float)Mth.sign((double)var4) * var5;
       }
 
-      boolean var5 = var4 < -90.0F || var4 >= 90.0F;
-      if (var5) {
+      boolean var6 = var4 < -90.0F || var4 >= 90.0F;
+      if (var6) {
          var2 *= -1.0F;
       }
 
       return var2;
+   }
+
+   protected float getMaxHeadRotationRelativeToBody() {
+      return 50.0F;
    }
 
    public void aiStep() {
@@ -3116,6 +3118,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
       return this.fallFlyTicks;
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public boolean randomTeleport(double var1, double var3, double var5, boolean var7) {
       double var8 = this.getX();
       double var10 = this.getY();
@@ -3154,8 +3158,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
             var18.broadcastEntityEvent(this, (byte)46);
          }
 
-         if (this instanceof PathfinderMob) {
-            ((PathfinderMob)this).getNavigation().stop();
+         if (this instanceof PathfinderMob var22) {
+            var22.getNavigation().stop();
          }
 
          return true;
@@ -3163,7 +3167,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
    }
 
    public boolean isAffectedByPotions() {
-      return true;
+      return !this.isDeadOrDying();
    }
 
    public boolean attackable() {

@@ -1,19 +1,14 @@
 package net.minecraft.network.chat;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.serialization.MapCodec;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.Entity;
 
 public interface ComponentContents {
-   ComponentContents EMPTY = new ComponentContents() {
-      @Override
-      public String toString() {
-         return "empty";
-      }
-   };
-
    default <T> Optional<T> visit(FormattedText.StyledContentConsumer<T> var1, Style var2) {
       return Optional.empty();
    }
@@ -24,5 +19,23 @@ public interface ComponentContents {
 
    default MutableComponent resolve(@Nullable CommandSourceStack var1, @Nullable Entity var2, int var3) throws CommandSyntaxException {
       return MutableComponent.create(this);
+   }
+
+   ComponentContents.Type<?> type();
+
+   public static record Type<T extends ComponentContents>(MapCodec<T> a, String b) implements StringRepresentable {
+      private final MapCodec<T> codec;
+      private final String id;
+
+      public Type(MapCodec<T> var1, String var2) {
+         super();
+         this.codec = var1;
+         this.id = var2;
+      }
+
+      @Override
+      public String getSerializedName() {
+         return this.id;
+      }
    }
 }

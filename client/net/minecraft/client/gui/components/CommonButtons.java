@@ -1,6 +1,7 @@
 package net.minecraft.client.gui.components;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 
 public class CommonButtons {
@@ -16,9 +17,7 @@ public class CommonButtons {
    }
 
    public static SpriteIconButton accessibility(int var0, Button.OnPress var1, boolean var2) {
-      return SpriteIconButton.builder(Component.translatable("options.accessibility"), var1, var2)
-         .width(var0)
-         .sprite(new ResourceLocation("icon/accessibility"), 15, 15)
-         .build();
+      MutableComponent var3 = var2 ? Component.translatable("options.accessibility") : Component.translatable("accessibility.onboarding.accessibility.button");
+      return SpriteIconButton.builder(var3, var1, var2).width(var0).sprite(new ResourceLocation("icon/accessibility"), 15, 15).build();
    }
 }

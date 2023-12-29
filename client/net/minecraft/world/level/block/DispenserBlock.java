@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block;
 
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.Map;
 import net.minecraft.Util;
@@ -40,12 +41,18 @@ import org.slf4j.Logger;
 
 public class DispenserBlock extends BaseEntityBlock {
    private static final Logger LOGGER = LogUtils.getLogger();
+   public static final MapCodec<DispenserBlock> CODEC = simpleCodec(DispenserBlock::new);
    public static final DirectionProperty FACING = DirectionalBlock.FACING;
    public static final BooleanProperty TRIGGERED = BlockStateProperties.TRIGGERED;
    private static final Map<Item, DispenseItemBehavior> DISPENSER_REGISTRY = Util.make(
       new Object2ObjectOpenHashMap(), var0 -> var0.defaultReturnValue(new DefaultDispenseItemBehavior())
    );
    private static final int TRIGGER_DURATION = 4;
+
+   @Override
+   public MapCodec<? extends DispenserBlock> codec() {
+      return CODEC;
+   }
 
    public static void registerBehavior(ItemLike var0, DispenseItemBehavior var1) {
       DISPENSER_REGISTRY.put(var0.asItem(), var1);
@@ -138,15 +145,8 @@ public class DispenserBlock extends BaseEntityBlock {
 
    @Override
    public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var1.is(var4.getBlock())) {
-         BlockEntity var6 = var2.getBlockEntity(var3);
-         if (var6 instanceof DispenserBlockEntity) {
-            Containers.dropContents(var2, var3, (DispenserBlockEntity)var6);
-            var2.updateNeighbourForOutputSignal(var3, this);
-         }
-
-         super.onRemove(var1, var2, var3, var4, var5);
-      }
+      Containers.dropContentsOnDestroy(var1, var4, var2, var3);
+      super.onRemove(var1, var2, var3, var4, var5);
    }
 
    public static Position getDispensePosition(BlockSource var0) {

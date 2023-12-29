@@ -1,19 +1,23 @@
 package net.minecraft.client;
 
+import it.unimi.dsi.fastutil.floats.FloatUnaryOperator;
+
 public class Timer {
    public float partialTick;
    public float tickDelta;
    private long lastMs;
    private final float msPerTick;
+   private final FloatUnaryOperator targetMsptProvider;
 
-   public Timer(float var1, long var2) {
+   public Timer(float var1, long var2, FloatUnaryOperator var4) {
       super();
       this.msPerTick = 1000.0F / var1;
       this.lastMs = var2;
+      this.targetMsptProvider = var4;
    }
 
    public int advanceTime(long var1) {
-      this.tickDelta = (float)(var1 - this.lastMs) / this.msPerTick;
+      this.tickDelta = (float)(var1 - this.lastMs) / this.targetMsptProvider.apply(this.msPerTick);
       this.lastMs = var1;
       this.partialTick += this.tickDelta;
       int var3 = (int)this.partialTick;

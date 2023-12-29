@@ -9,6 +9,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Tuple;
+import net.minecraft.world.RandomizableContainer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.monster.Shulker;
@@ -17,7 +18,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Rotation;
-import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.levelgen.structure.TemplateStructurePiece;
@@ -309,7 +309,7 @@ public class EndCityPieces {
          if (var1.startsWith("Chest")) {
             BlockPos var6 = var2.below();
             if (var5.isInside(var6)) {
-               RandomizableContainerBlockEntity.setLootTable(var3, var4, var6, BuiltInLootTables.END_CITY_TREASURE);
+               RandomizableContainer.setBlockEntityLootTable(var3, var4, var6, BuiltInLootTables.END_CITY_TREASURE);
             }
          } else if (var5.isInside(var2) && Level.isInSpawnableBounds(var2)) {
             if (var1.startsWith("Sentry")) {

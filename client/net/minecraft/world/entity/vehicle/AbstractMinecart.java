@@ -19,9 +19,9 @@ import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySelector;
@@ -33,10 +33,8 @@ import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.entity.npc.WanderingTrader;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseRailBlock;
 import net.minecraft.world.level.block.Block;
@@ -44,17 +42,13 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.PoweredRailBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.RailShape;
-import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 
-public abstract class AbstractMinecart extends Entity {
+public abstract class AbstractMinecart extends VehicleEntity {
    private static final float LOWERED_PASSENGER_ATTACHMENT_Y = 0.0F;
    private static final float PASSENGER_ATTACHMENT_Y = 0.1875F;
-   private static final EntityDataAccessor<Integer> DATA_ID_HURT = SynchedEntityData.defineId(AbstractMinecart.class, EntityDataSerializers.INT);
-   private static final EntityDataAccessor<Integer> DATA_ID_HURTDIR = SynchedEntityData.defineId(AbstractMinecart.class, EntityDataSerializers.INT);
-   private static final EntityDataAccessor<Float> DATA_ID_DAMAGE = SynchedEntityData.defineId(AbstractMinecart.class, EntityDataSerializers.FLOAT);
    private static final EntityDataAccessor<Integer> DATA_ID_DISPLAY_BLOCK = SynchedEntityData.defineId(AbstractMinecart.class, EntityDataSerializers.INT);
    private static final EntityDataAccessor<Integer> DATA_ID_DISPLAY_OFFSET = SynchedEntityData.defineId(AbstractMinecart.class, EntityDataSerializers.INT);
    private static final EntityDataAccessor<Boolean> DATA_ID_CUSTOM_DISPLAY = SynchedEntityData.defineId(AbstractMinecart.class, EntityDataSerializers.BOOLEAN);
@@ -105,22 +99,20 @@ public abstract class AbstractMinecart extends Entity {
       this.zo = var7;
    }
 
-   public static AbstractMinecart createMinecart(Level var0, double var1, double var3, double var5, AbstractMinecart.Type var7) {
-      if (var7 == AbstractMinecart.Type.CHEST) {
-         return new MinecartChest(var0, var1, var3, var5);
-      } else if (var7 == AbstractMinecart.Type.FURNACE) {
-         return new MinecartFurnace(var0, var1, var3, var5);
-      } else if (var7 == AbstractMinecart.Type.TNT) {
-         return new MinecartTNT(var0, var1, var3, var5);
-      } else if (var7 == AbstractMinecart.Type.SPAWNER) {
-         return new MinecartSpawner(var0, var1, var3, var5);
-      } else if (var7 == AbstractMinecart.Type.HOPPER) {
-         return new MinecartHopper(var0, var1, var3, var5);
-      } else {
-         return (AbstractMinecart)(var7 == AbstractMinecart.Type.COMMAND_BLOCK
-            ? new MinecartCommandBlock(var0, var1, var3, var5)
-            : new Minecart(var0, var1, var3, var5));
-      }
+   public static AbstractMinecart createMinecart(
+      ServerLevel var0, double var1, double var3, double var5, AbstractMinecart.Type var7, ItemStack var8, @Nullable Player var9
+   ) {
+      Object var10 = switch(var7) {
+         case CHEST -> new MinecartChest(var0, var1, var3, var5);
+         case FURNACE -> new MinecartFurnace(var0, var1, var3, var5);
+         case TNT -> new MinecartTNT(var0, var1, var3, var5);
+         case SPAWNER -> new MinecartSpawner(var0, var1, var3, var5);
+         case HOPPER -> new MinecartHopper(var0, var1, var3, var5);
+         case COMMAND_BLOCK -> new MinecartCommandBlock(var0, var1, var3, var5);
+         default -> new Minecart(var0, var1, var3, var5);
+      };
+      EntityType.createDefaultStackConfig(var0, var8, var9).accept(var10);
+      return (AbstractMinecart)var10;
    }
 
    @Override
@@ -130,9 +122,7 @@ public abstract class AbstractMinecart extends Entity {
 
    @Override
    protected void defineSynchedData() {
-      this.entityData.define(DATA_ID_HURT, 0);
-      this.entityData.define(DATA_ID_HURTDIR, 1);
-      this.entityData.define(DATA_ID_DAMAGE, 0.0F);
+      super.defineSynchedData();
       this.entityData.define(DATA_ID_DISPLAY_BLOCK, Block.getId(Blocks.AIR.defaultBlockState()));
       this.entityData.define(DATA_ID_DISPLAY_OFFSET, 6);
       this.entityData.define(DATA_ID_CUSTOM_DISPLAY, false);
@@ -218,50 +208,10 @@ public abstract class AbstractMinecart extends Entity {
    }
 
    @Override
-   public boolean hurt(DamageSource var1, float var2) {
-      if (this.level().isClientSide || this.isRemoved()) {
-         return true;
-      } else if (this.isInvulnerableTo(var1)) {
-         return false;
-      } else {
-         this.setHurtDir(-this.getHurtDir());
-         this.setHurtTime(10);
-         this.markHurt();
-         this.setDamage(this.getDamage() + var2 * 10.0F);
-         this.gameEvent(GameEvent.ENTITY_DAMAGE, var1.getEntity());
-         boolean var3 = var1.getEntity() instanceof Player && ((Player)var1.getEntity()).getAbilities().instabuild;
-         if (var3 || this.getDamage() > 40.0F) {
-            this.ejectPassengers();
-            if (var3 && !this.hasCustomName()) {
-               this.discard();
-            } else {
-               this.destroy(var1);
-            }
-         }
-
-         return true;
-      }
-   }
-
-   @Override
    protected float getBlockSpeedFactor() {
       BlockState var1 = this.level().getBlockState(this.blockPosition());
       return var1.is(BlockTags.RAILS) ? 1.0F : super.getBlockSpeedFactor();
    }
-
-   public void destroy(DamageSource var1) {
-      this.kill();
-      if (this.level().getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
-         ItemStack var2 = new ItemStack(this.getDropItem());
-         if (this.hasCustomName()) {
-            var2.setHoverName(this.getCustomName());
-         }
-
-         this.spawnAtLocation(var2);
-      }
-   }
-
-   abstract Item getDropItem();
 
    @Override
    public void animateHurt(float var1) {
@@ -798,30 +748,6 @@ public abstract class AbstractMinecart extends Entity {
       this.setDeltaMovement(this.targetDeltaMovement);
    }
 
-   public void setDamage(float var1) {
-      this.entityData.set(DATA_ID_DAMAGE, var1);
-   }
-
-   public float getDamage() {
-      return this.entityData.get(DATA_ID_DAMAGE);
-   }
-
-   public void setHurtTime(int var1) {
-      this.entityData.set(DATA_ID_HURT, var1);
-   }
-
-   public int getHurtTime() {
-      return this.entityData.get(DATA_ID_HURT);
-   }
-
-   public void setHurtDir(int var1) {
-      this.entityData.set(DATA_ID_HURTDIR, var1);
-   }
-
-   public int getHurtDir() {
-      return this.entityData.get(DATA_ID_HURTDIR);
-   }
-
    public abstract AbstractMinecart.Type getMinecartType();
 
    public BlockState getDisplayBlockState() {
@@ -861,12 +787,12 @@ public abstract class AbstractMinecart extends Entity {
    @Override
    public ItemStack getPickResult() {
       return new ItemStack(switch(this.getMinecartType()) {
-         case FURNACE -> Items.FURNACE_MINECART;
          case CHEST -> Items.CHEST_MINECART;
+         case FURNACE -> Items.FURNACE_MINECART;
          case TNT -> Items.TNT_MINECART;
+         default -> Items.MINECART;
          case HOPPER -> Items.HOPPER_MINECART;
          case COMMAND_BLOCK -> Items.COMMAND_BLOCK_MINECART;
-         default -> Items.MINECART;
       });
    }
 

@@ -241,6 +241,10 @@ public class Item implements FeatureElement, ItemLike {
    }
 
    public void onCraftedBy(ItemStack var1, Level var2, Player var3) {
+      this.onCraftedPostProcess(var1, var2);
+   }
+
+   public void onCraftedPostProcess(ItemStack var1, Level var2) {
    }
 
    public boolean isComplex() {

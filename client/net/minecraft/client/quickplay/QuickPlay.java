@@ -11,7 +11,6 @@ import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ConnectScreen;
 import net.minecraft.client.gui.screens.DisconnectedScreen;
-import net.minecraft.client.gui.screens.GenericDirtMessageScreen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
 import net.minecraft.client.gui.screens.worldselection.SelectWorldScreen;
@@ -53,8 +52,7 @@ public class QuickPlay {
          SelectWorldScreen var2 = new SelectWorldScreen(new TitleScreen());
          var0.setScreen(new DisconnectedScreen(var2, ERROR_TITLE, INVALID_IDENTIFIER, TO_WORLD_LIST));
       } else {
-         var0.forceSetScreen(new GenericDirtMessageScreen(Component.translatable("selectWorld.data_read")));
-         var0.createWorldOpenFlows().loadLevel(new TitleScreen(), var1);
+         var0.createWorldOpenFlows().checkForBackupAndLoad(var1, () -> var0.setScreen(new TitleScreen()));
       }
    }
 

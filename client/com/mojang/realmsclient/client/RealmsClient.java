@@ -2,6 +2,7 @@ package com.mojang.realmsclient.client;
 
 import com.google.gson.JsonArray;
 import com.mojang.logging.LogUtils;
+import com.mojang.realmsclient.RealmsMainScreen;
 import com.mojang.realmsclient.dto.BackupList;
 import com.mojang.realmsclient.dto.GuardedSerializer;
 import com.mojang.realmsclient.dto.Ops;
@@ -33,6 +34,7 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
@@ -57,6 +59,9 @@ public class RealmsClient {
    private static final String REGIONS_RESOURCE = "regions/ping/stat";
    private static final String TRIALS_RESOURCE = "trial";
    private static final String NOTIFICATIONS_RESOURCE = "notifications";
+   private static final String PATH_LIST_ALL_REALMS = "/listUserWorldsOfType/any";
+   private static final String PATH_CREATE_SNAPSHOT_REALM = "/$PARENT_WORLD_ID/createPrereleaseRealm";
+   private static final String PATH_SNAPSHOT_ELIGIBLE_REALMS = "/listPrereleaseEligibleWorlds";
    private static final String PATH_INITIALIZE = "/$WORLD_ID/initialize";
    private static final String PATH_GET_ACTIVTIES = "/$WORLD_ID";
    private static final String PATH_GET_LIVESTATS = "/liveplayerlist";
@@ -111,15 +116,30 @@ public class RealmsClient {
 
    public RealmsServerList listWorlds() throws RealmsServiceException {
       String var1 = this.url("worlds");
+      if (RealmsMainScreen.isSnapshot()) {
+         var1 = var1 + "/listUserWorldsOfType/any";
+      }
+
       String var2 = this.execute(Request.get(var1));
       return RealmsServerList.parse(var2);
+   }
+
+   public List<RealmsServer> listSnapshotEligibleRealms() throws RealmsServiceException {
+      String var1 = this.url("worlds/listPrereleaseEligibleWorlds");
+      String var2 = this.execute(Request.get(var1));
+      return RealmsServerList.parse(var2).servers;
+   }
+
+   public RealmsServer createSnapshotRealm(Long var1) throws RealmsServiceException {
+      String var2 = String.valueOf(var1);
+      String var3 = this.url("worlds" + "/$PARENT_WORLD_ID/createPrereleaseRealm".replace("$PARENT_WORLD_ID", var2));
+      return RealmsServer.parse(this.execute(Request.post(var3, var2)));
    }
 
    public List<RealmsNotification> getNotifications() throws RealmsServiceException {
       String var1 = this.url("notifications");
       String var2 = this.execute(Request.get(var1));
-      List var3 = RealmsNotification.parseList(var2);
-      return var3.size() > 1 ? List.of((RealmsNotification)var3.get(0)) : var3;
+      return RealmsNotification.parseList(var2);
    }
 
    private static JsonArray uuidListToJsonArray(List<UUID> var0) {
@@ -278,14 +298,14 @@ public class RealmsClient {
    }
 
    public Boolean resetWorldWithSeed(long var1, WorldGenerationInfo var3) throws RealmsServiceException {
-      RealmsWorldResetDto var4 = new RealmsWorldResetDto(var3.getSeed(), -1L, var3.getLevelType().getDtoIndex(), var3.shouldGenerateStructures());
+      RealmsWorldResetDto var4 = new RealmsWorldResetDto(var3.seed(), -1L, var3.levelType().getDtoIndex(), var3.generateStructures(), var3.experiments());
       String var5 = this.url("worlds" + "/$WORLD_ID/reset".replace("$WORLD_ID", String.valueOf(var1)));
       String var6 = this.execute(Request.post(var5, GSON.toJson(var4), 30000, 80000));
       return Boolean.valueOf(var6);
    }
 
    public Boolean resetWorldWithTemplate(long var1, String var3) throws RealmsServiceException {
-      RealmsWorldResetDto var4 = new RealmsWorldResetDto(null, Long.valueOf(var3), -1, false);
+      RealmsWorldResetDto var4 = new RealmsWorldResetDto(null, Long.valueOf(var3), -1, false, Set.of());
       String var5 = this.url("worlds" + "/$WORLD_ID/reset".replace("$WORLD_ID", String.valueOf(var1)));
       String var6 = this.execute(Request.post(var5, GSON.toJson(var4), 30000, 80000));
       return Boolean.valueOf(var6);
@@ -380,6 +400,7 @@ public class RealmsClient {
       var1.cookie("sid", this.sessionId);
       var1.cookie("user", this.username);
       var1.cookie("version", SharedConstants.getCurrentVersion().getName());
+      var1.addSnapshotHeader(RealmsMainScreen.isSnapshot());
 
       try {
          int var2 = var1.responseCode();

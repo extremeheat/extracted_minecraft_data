@@ -19,7 +19,7 @@ import net.minecraft.world.scores.PlayerTeam;
 public class TeamArgument implements ArgumentType<String> {
    private static final Collection<String> EXAMPLES = Arrays.asList("foo", "123");
    private static final DynamicCommandExceptionType ERROR_TEAM_NOT_FOUND = new DynamicCommandExceptionType(
-      var0 -> Component.translatable("team.notFound", var0)
+      var0 -> Component.translatableEscape("team.notFound", var0)
    );
 
    public TeamArgument() {

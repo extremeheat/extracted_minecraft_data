@@ -18,7 +18,7 @@ import net.minecraft.network.chat.Component;
 public class ColorArgument implements ArgumentType<ChatFormatting> {
    private static final Collection<String> EXAMPLES = Arrays.asList("red", "green");
    public static final DynamicCommandExceptionType ERROR_INVALID_VALUE = new DynamicCommandExceptionType(
-      var0 -> Component.translatable("argument.color.invalid", var0)
+      var0 -> Component.translatableEscape("argument.color.invalid", var0)
    );
 
    private ColorArgument() {

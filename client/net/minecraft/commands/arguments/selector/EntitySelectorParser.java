@@ -46,7 +46,7 @@ public class EntitySelectorParser {
       Component.translatable("argument.entity.invalid")
    );
    public static final DynamicCommandExceptionType ERROR_UNKNOWN_SELECTOR_TYPE = new DynamicCommandExceptionType(
-      var0 -> Component.translatable("argument.entity.selector.unknown", var0)
+      var0 -> Component.translatableEscape("argument.entity.selector.unknown", var0)
    );
    public static final SimpleCommandExceptionType ERROR_SELECTORS_NOT_ALLOWED = new SimpleCommandExceptionType(
       Component.translatable("argument.entity.selector.not_allowed")
@@ -58,7 +58,7 @@ public class EntitySelectorParser {
       Component.translatable("argument.entity.options.unterminated")
    );
    public static final DynamicCommandExceptionType ERROR_EXPECTED_OPTION_VALUE = new DynamicCommandExceptionType(
-      var0 -> Component.translatable("argument.entity.options.valueless", var0)
+      var0 -> Component.translatableEscape("argument.entity.options.valueless", var0)
    );
    public static final BiConsumer<Vec3, List<? extends Entity>> ORDER_NEAREST = (var0, var1) -> var1.sort(
          (var1x, var2) -> Doubles.compare(var1x.distanceToSqr(var0), var2.distanceToSqr(var0))

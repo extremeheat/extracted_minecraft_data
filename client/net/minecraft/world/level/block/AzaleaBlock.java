@@ -1,12 +1,13 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.grower.AzaleaTreeGrower;
+import net.minecraft.world.level.block.grower.TreeGrower;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -14,8 +15,13 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class AzaleaBlock extends BushBlock implements BonemealableBlock {
-   private static final AzaleaTreeGrower TREE_GROWER = new AzaleaTreeGrower();
+   public static final MapCodec<AzaleaBlock> CODEC = simpleCodec(AzaleaBlock::new);
    private static final VoxelShape SHAPE = Shapes.or(Block.box(0.0, 8.0, 0.0, 16.0, 16.0, 16.0), Block.box(6.0, 0.0, 6.0, 10.0, 8.0, 10.0));
+
+   @Override
+   public MapCodec<AzaleaBlock> codec() {
+      return CODEC;
+   }
 
    protected AzaleaBlock(BlockBehaviour.Properties var1) {
       super(var1);
@@ -43,6 +49,6 @@ public class AzaleaBlock extends BushBlock implements BonemealableBlock {
 
    @Override
    public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      TREE_GROWER.growTree(var1, var1.getChunkSource().getGenerator(), var3, var4, var2);
+      TreeGrower.AZALEA.growTree(var1, var1.getChunkSource().getGenerator(), var3, var4, var2);
    }
 }

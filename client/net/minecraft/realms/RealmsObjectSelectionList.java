@@ -5,8 +5,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 
 public abstract class RealmsObjectSelectionList<E extends ObjectSelectionList.Entry<E>> extends ObjectSelectionList<E> {
-   protected RealmsObjectSelectionList(int var1, int var2, int var3, int var4, int var5) {
-      super(Minecraft.getInstance(), var1, var2, var3, var4, var5);
+   protected RealmsObjectSelectionList(int var1, int var2, int var3, int var4) {
+      super(Minecraft.getInstance(), var1, var2, var3, var4);
    }
 
    public void setSelectedItem(int var1) {

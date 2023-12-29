@@ -1,6 +1,7 @@
 package net.minecraft.client.gui.screens.worldselection;
 
 import com.mojang.logging.LogUtils;
+import javax.annotation.Nullable;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -8,6 +9,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.levelgen.WorldOptions;
+import net.minecraft.world.level.storage.LevelSummary;
 import org.slf4j.Logger;
 
 public class SelectWorldScreen extends Screen {
@@ -30,13 +32,12 @@ public class SelectWorldScreen extends Screen {
    protected void init() {
       this.searchBox = new EditBox(this.font, this.width / 2 - 100, 22, 200, 20, this.searchBox, Component.translatable("selectWorld.search"));
       this.searchBox.setResponder(var1 -> this.list.updateFilter(var1));
-      this.list = new WorldSelectionList(this, this.minecraft, this.width, this.height, 48, this.height - 64, 36, this.searchBox.getValue(), this.list);
       this.addWidget(this.searchBox);
-      this.addWidget(this.list);
+      this.list = this.addRenderableWidget(
+         new WorldSelectionList(this, this.minecraft, this.width, this.height - 112, 48, 36, this.searchBox.getValue(), this.list)
+      );
       this.selectButton = this.addRenderableWidget(
-         Button.builder(
-               Component.translatable("selectWorld.select"), var1 -> this.list.getSelectedOpt().ifPresent(WorldSelectionList.WorldListEntry::joinWorld)
-            )
+         Button.builder(LevelSummary.PLAY_WORLD, var1 -> this.list.getSelectedOpt().ifPresent(WorldSelectionList.WorldListEntry::joinWorld))
             .bounds(this.width / 2 - 154, this.height - 52, 150, 20)
             .build()
       );
@@ -69,13 +70,8 @@ public class SelectWorldScreen extends Screen {
             .bounds(this.width / 2 + 82, this.height - 28, 72, 20)
             .build()
       );
-      this.updateButtonStatus(false, false);
+      this.updateButtonStatus(null);
       this.setInitialFocus(this.searchBox);
-   }
-
-   @Override
-   public boolean keyPressed(int var1, int var2, int var3) {
-      return super.keyPressed(var1, var2, var3) ? true : this.searchBox.keyPressed(var1, var2, var3);
    }
 
    @Override
@@ -84,23 +80,26 @@ public class SelectWorldScreen extends Screen {
    }
 
    @Override
-   public boolean charTyped(char var1, int var2) {
-      return this.searchBox.charTyped(var1, var2);
-   }
-
-   @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      this.list.render(var1, var2, var3, var4);
       this.searchBox.render(var1, var2, var3, var4);
       var1.drawCenteredString(this.font, this.title, this.width / 2, 8, 16777215);
    }
 
-   public void updateButtonStatus(boolean var1, boolean var2) {
-      this.selectButton.active = var1;
-      this.renameButton.active = var1;
-      this.copyButton.active = var1;
-      this.deleteButton.active = var2;
+   public void updateButtonStatus(@Nullable LevelSummary var1) {
+      if (var1 == null) {
+         this.selectButton.setMessage(LevelSummary.PLAY_WORLD);
+         this.selectButton.active = false;
+         this.renameButton.active = false;
+         this.copyButton.active = false;
+         this.deleteButton.active = false;
+      } else {
+         this.selectButton.setMessage(var1.primaryActionMessage());
+         this.selectButton.active = var1.primaryActionActive();
+         this.renameButton.active = var1.canEdit();
+         this.copyButton.active = var1.canRecreate();
+         this.deleteButton.active = var1.canDelete();
+      }
    }
 
    @Override

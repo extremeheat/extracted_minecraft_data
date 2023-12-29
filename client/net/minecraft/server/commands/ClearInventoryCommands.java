@@ -19,9 +19,11 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 
 public class ClearInventoryCommands {
-   private static final DynamicCommandExceptionType ERROR_SINGLE = new DynamicCommandExceptionType(var0 -> Component.translatable("clear.failed.single", var0));
+   private static final DynamicCommandExceptionType ERROR_SINGLE = new DynamicCommandExceptionType(
+      var0 -> Component.translatableEscape("clear.failed.single", var0)
+   );
    private static final DynamicCommandExceptionType ERROR_MULTIPLE = new DynamicCommandExceptionType(
-      var0 -> Component.translatable("clear.failed.multiple", var0)
+      var0 -> Component.translatableEscape("clear.failed.multiple", var0)
    );
 
    public ClearInventoryCommands() {

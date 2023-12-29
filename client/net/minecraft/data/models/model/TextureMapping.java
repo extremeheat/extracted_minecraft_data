@@ -244,6 +244,13 @@ public class TextureMapping {
       return new TextureMapping().put(TextureSlot.TORCH, var0);
    }
 
+   public static TextureMapping trialSpawner(Block var0, String var1, String var2) {
+      return new TextureMapping()
+         .put(TextureSlot.SIDE, getBlockTexture(var0, var1))
+         .put(TextureSlot.TOP, getBlockTexture(var0, var2))
+         .put(TextureSlot.BOTTOM, getBlockTexture(var0, "_bottom"));
+   }
+
    public static TextureMapping particleFromItem(Item var0) {
       return new TextureMapping().put(TextureSlot.PARTICLE, getItemTexture(var0));
    }

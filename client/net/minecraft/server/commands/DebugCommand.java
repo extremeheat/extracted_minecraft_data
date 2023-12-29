@@ -2,10 +2,11 @@ package net.minecraft.server.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.context.ContextChain;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.logging.LogUtils;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UncheckedIOException;
@@ -15,26 +16,37 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Locale;
 import net.minecraft.Util;
-import net.minecraft.commands.CommandFunction;
+import net.minecraft.commands.CommandResultCallback;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.FunctionInstantiationException;
 import net.minecraft.commands.arguments.item.FunctionArgument;
+import net.minecraft.commands.execution.ChainModifiers;
+import net.minecraft.commands.execution.CustomCommandExecutor;
+import net.minecraft.commands.execution.ExecutionContext;
+import net.minecraft.commands.execution.ExecutionControl;
+import net.minecraft.commands.execution.Frame;
+import net.minecraft.commands.execution.TraceCallbacks;
+import net.minecraft.commands.execution.tasks.CallFunction;
+import net.minecraft.commands.functions.CommandFunction;
+import net.minecraft.commands.functions.InstantiatedFunction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.ServerFunctionManager;
 import net.minecraft.util.TimeUtil;
 import net.minecraft.util.profiling.ProfileResults;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 
 public class DebugCommand {
-   private static final Logger LOGGER = LogUtils.getLogger();
+   static final Logger LOGGER = LogUtils.getLogger();
    private static final SimpleCommandExceptionType ERROR_NOT_RUNNING = new SimpleCommandExceptionType(Component.translatable("commands.debug.notRunning"));
    private static final SimpleCommandExceptionType ERROR_ALREADY_RUNNING = new SimpleCommandExceptionType(
       Component.translatable("commands.debug.alreadyRunning")
    );
+   static final SimpleCommandExceptionType NO_RECURSIVE_TRACES = new SimpleCommandExceptionType(Component.translatable("commands.debug.function.noRecursion"));
+   static final SimpleCommandExceptionType NO_RETURN_RUN = new SimpleCommandExceptionType(Component.translatable("commands.debug.function.noReturnRun"));
 
    public DebugCommand() {
       super();
@@ -51,7 +63,7 @@ public class DebugCommand {
                   .then(
                      Commands.argument("name", FunctionArgument.functions())
                         .suggests(FunctionCommand.SUGGEST_FUNCTION)
-                        .executes(var0x -> traceFunction((CommandSourceStack)var0x.getSource(), FunctionArgument.getFunctions(var0x, "name")))
+                        .executes(new DebugCommand.TraceCustomExecutor())
                   )
             )
       );
@@ -86,47 +98,73 @@ public class DebugCommand {
       }
    }
 
-   private static int traceFunction(CommandSourceStack var0, Collection<CommandFunction> var1) {
-      int var2 = 0;
-      MinecraftServer var3 = var0.getServer();
-      String var4 = "debug-trace-" + Util.getFilenameFormattedDateTime() + ".txt";
+   static class TraceCustomExecutor
+      extends CustomCommandExecutor.WithErrorHandling<CommandSourceStack>
+      implements CustomCommandExecutor.CommandAdapter<CommandSourceStack> {
+      TraceCustomExecutor() {
+         super();
+      }
 
-      try {
-         Path var5 = var3.getFile("debug").toPath();
-         Files.createDirectories(var5);
+      public void runGuarded(CommandSourceStack var1, ContextChain<CommandSourceStack> var2, ChainModifiers var3, ExecutionControl<CommandSourceStack> var4) throws CommandSyntaxException {
+         if (var3.isReturn()) {
+            throw DebugCommand.NO_RETURN_RUN.create();
+         } else if (var4.tracer() != null) {
+            throw DebugCommand.NO_RECURSIVE_TRACES.create();
+         } else {
+            CommandContext var5 = var2.getTopContext();
+            Collection var6 = FunctionArgument.getFunctions(var5, "name");
+            MinecraftServer var7 = var1.getServer();
+            String var8 = "debug-trace-" + Util.getFilenameFormattedDateTime() + ".txt";
+            CommandDispatcher var9 = var1.getServer().getFunctions().getDispatcher();
+            int var10 = 0;
 
-         try (BufferedWriter var6 = Files.newBufferedWriter(var5.resolve(var4), StandardCharsets.UTF_8)) {
-            PrintWriter var7 = new PrintWriter(var6);
+            try {
+               Path var11 = var7.getFile("debug").toPath();
+               Files.createDirectories(var11);
+               final PrintWriter var12 = new PrintWriter(Files.newBufferedWriter(var11.resolve(var8), StandardCharsets.UTF_8));
+               DebugCommand.Tracer var13 = new DebugCommand.Tracer(var12);
+               var4.tracer(var13);
 
-            for(CommandFunction var9 : var1) {
-               var7.println(var9.getId());
-               DebugCommand.Tracer var10 = new DebugCommand.Tracer(var7);
-
-               try {
-                  var2 += var0.getServer().getFunctions().execute(var9, var0.withSource(var10).withMaximumPermission(2), var10, null);
-               } catch (FunctionInstantiationException var13) {
-                  var0.sendFailure(var13.messageComponent());
+               for(final CommandFunction var15 : var6) {
+                  try {
+                     CommandSourceStack var16 = var1.withSource(var13).withMaximumPermission(2);
+                     InstantiatedFunction var17 = var15.instantiate(null, var9, var16);
+                     var4.queueNext((new CallFunction<CommandSourceStack>(var17, CommandResultCallback.EMPTY, false) {
+                        public void execute(CommandSourceStack var1, ExecutionContext<CommandSourceStack> var2, Frame var3) {
+                           var12.println(var15.id());
+                           super.execute(var1, var2, var3);
+                        }
+                     }).bind(var16));
+                     var10 += var17.entries().size();
+                  } catch (FunctionInstantiationException var18) {
+                     var1.sendFailure(var18.messageComponent());
+                  }
                }
+            } catch (IOException | UncheckedIOException var19) {
+               DebugCommand.LOGGER.warn("Tracing failed", var19);
+               var1.sendFailure(Component.translatable("commands.debug.function.traceFailed"));
             }
+
+            int var20 = var10;
+            var4.queueNext(
+               (var4x, var5x) -> {
+                  if (var6.size() == 1) {
+                     var1.sendSuccess(
+                        () -> Component.translatable(
+                              "commands.debug.function.success.single", var20, Component.translationArg(((CommandFunction)var6.iterator().next()).id()), var8
+                           ),
+                        true
+                     );
+                  } else {
+                     var1.sendSuccess(() -> Component.translatable("commands.debug.function.success.multiple", var20, var6.size(), var8), true);
+                  }
+               }
+            );
          }
-      } catch (IOException | UncheckedIOException var15) {
-         LOGGER.warn("Tracing failed", var15);
-         var0.sendFailure(Component.translatable("commands.debug.function.traceFailed"));
       }
-
-      int var16 = var2;
-      if (var1.size() == 1) {
-         var0.sendSuccess(
-            () -> Component.translatable("commands.debug.function.success.single", var16, ((CommandFunction)var1.iterator().next()).getId(), var4), true
-         );
-      } else {
-         var0.sendSuccess(() -> Component.translatable("commands.debug.function.success.multiple", var16, var1.size(), var4), true);
-      }
-
-      return var2;
    }
 
-   static class Tracer implements ServerFunctionManager.TraceCallbacks, CommandSource {
+   static class Tracer implements CommandSource, TraceCallbacks {
       public static final int INDENT_OFFSET = 1;
       private final PrintWriter output;
       private int lastIndent;
@@ -190,11 +228,11 @@ public class DebugCommand {
       }
 
       @Override
-      public void onError(int var1, String var2) {
+      public void onError(String var1) {
          this.newLine();
-         this.indentAndSave(var1 + 1);
+         this.indentAndSave(this.lastIndent + 1);
          this.output.print("[E] ");
-         this.output.print(var2);
+         this.output.print(var1);
       }
 
       @Override
@@ -223,6 +261,11 @@ public class DebugCommand {
       @Override
       public boolean alwaysAccepts() {
          return true;
+      }
+
+      @Override
+      public void close() {
+         IOUtils.closeQuietly(this.output);
       }
    }
 }

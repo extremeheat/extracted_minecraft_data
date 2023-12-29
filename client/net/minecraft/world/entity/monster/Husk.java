@@ -23,7 +23,7 @@ public class Husk extends Zombie {
    }
 
    public static boolean checkHuskSpawnRules(EntityType<Husk> var0, ServerLevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
-      return checkMonsterSpawnRules(var0, var1, var2, var3, var4) && (var2 == MobSpawnType.SPAWNER || var1.canSeeSky(var3));
+      return checkMonsterSpawnRules(var0, var1, var2, var3, var4) && (MobSpawnType.isSpawner(var2) || var1.canSeeSky(var3));
    }
 
    @Override

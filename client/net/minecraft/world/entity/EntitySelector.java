@@ -6,6 +6,7 @@ import javax.annotation.Nullable;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Team;
 
 public final class EntitySelector {
@@ -27,13 +28,13 @@ public final class EntitySelector {
    }
 
    public static Predicate<Entity> pushableBy(Entity var0) {
-      Team var1 = var0.getTeam();
+      PlayerTeam var1 = var0.getTeam();
       Team.CollisionRule var2 = var1 == null ? Team.CollisionRule.ALWAYS : var1.getCollisionRule();
       return (Predicate<Entity>)(var2 == Team.CollisionRule.NEVER ? Predicates.alwaysFalse() : NO_SPECTATORS.and(var3 -> {
          if (!var3.isPushable()) {
             return false;
          } else if (!var0.level().isClientSide || var3 instanceof Player && ((Player)var3).isLocalPlayer()) {
-            Team var4 = var3.getTeam();
+            PlayerTeam var4 = var3.getTeam();
             Team.CollisionRule var5 = var4 == null ? Team.CollisionRule.ALWAYS : var4.getCollisionRule();
             if (var5 == Team.CollisionRule.NEVER) {
                return false;

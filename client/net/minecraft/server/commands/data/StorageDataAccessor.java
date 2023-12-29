@@ -62,16 +62,18 @@ public class StorageDataAccessor implements DataAccessor {
 
    @Override
    public Component getModifiedSuccess() {
-      return Component.translatable("commands.data.storage.modified", this.id);
+      return Component.translatable("commands.data.storage.modified", Component.translationArg(this.id));
    }
 
    @Override
    public Component getPrintSuccess(Tag var1) {
-      return Component.translatable("commands.data.storage.query", this.id, NbtUtils.toPrettyComponent(var1));
+      return Component.translatable("commands.data.storage.query", Component.translationArg(this.id), NbtUtils.toPrettyComponent(var1));
    }
 
    @Override
    public Component getPrintSuccess(NbtPathArgument.NbtPath var1, double var2, int var4) {
-      return Component.translatable("commands.data.storage.get", var1, this.id, String.format(Locale.ROOT, "%.2f", var2), var4);
+      return Component.translatable(
+         "commands.data.storage.get", var1.asString(), Component.translationArg(this.id), String.format(Locale.ROOT, "%.2f", var2), var4
+      );
    }
 }

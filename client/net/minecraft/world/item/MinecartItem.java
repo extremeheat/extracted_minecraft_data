@@ -58,11 +58,7 @@ public class MinecartItem extends Item {
             }
          }
 
-         AbstractMinecart var19 = AbstractMinecart.createMinecart(var4, var6, var8 + var15, var10, ((MinecartItem)var2.getItem()).type);
-         if (var2.hasCustomHoverName()) {
-            var19.setCustomName(var2.getHoverName());
-         }
-
+         AbstractMinecart var19 = AbstractMinecart.createMinecart(var4, var6, var8 + var15, var10, ((MinecartItem)var2.getItem()).type, var2, null);
          var4.addFreshEntity(var19);
          var2.shrink(1);
          return var2;
@@ -90,24 +86,22 @@ public class MinecartItem extends Item {
          return InteractionResult.FAIL;
       } else {
          ItemStack var5 = var1.getItemInHand();
-         if (!var2.isClientSide) {
-            RailShape var6 = var4.getBlock() instanceof BaseRailBlock
+         if (var2 instanceof ServerLevel var6) {
+            RailShape var7 = var4.getBlock() instanceof BaseRailBlock
                ? var4.getValue(((BaseRailBlock)var4.getBlock()).getShapeProperty())
                : RailShape.NORTH_SOUTH;
-            double var7 = 0.0;
-            if (var6.isAscending()) {
-               var7 = 0.5;
+            double var8 = 0.0;
+            if (var7.isAscending()) {
+               var8 = 0.5;
             }
 
-            AbstractMinecart var9 = AbstractMinecart.createMinecart(
-               var2, (double)var3.getX() + 0.5, (double)var3.getY() + 0.0625 + var7, (double)var3.getZ() + 0.5, this.type
+            AbstractMinecart var10 = AbstractMinecart.createMinecart(
+               (ServerLevel)var6, (double)var3.getX() + 0.5, (double)var3.getY() + 0.0625 + var8, (double)var3.getZ() + 0.5, this.type, var5, var1.getPlayer()
             );
-            if (var5.hasCustomHoverName()) {
-               var9.setCustomName(var5.getHoverName());
-            }
-
-            var2.addFreshEntity(var9);
-            var2.gameEvent(GameEvent.ENTITY_PLACE, var3, GameEvent.Context.of(var1.getPlayer(), var2.getBlockState(var3.below())));
+            ((ServerLevel)var6).addFreshEntity(var10);
+            ((ServerLevel)var6).gameEvent(
+               GameEvent.ENTITY_PLACE, var3, GameEvent.Context.of(var1.getPlayer(), ((ServerLevel)var6).getBlockState(var3.below()))
+            );
          }
 
          var5.shrink(1);

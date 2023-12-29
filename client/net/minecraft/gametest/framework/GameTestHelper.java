@@ -1,6 +1,7 @@
 package net.minecraft.gametest.framework;
 
 import com.mojang.authlib.GameProfile;
+import com.mojang.datafixers.util.Either;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.embedded.EmbeddedChannel;
 import java.util.List;
@@ -16,9 +17,12 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.Connection;
 import net.minecraft.network.ConnectionProtocol;
 import net.minecraft.network.protocol.PacketFlow;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.commands.FillBiomeCommand;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
@@ -37,6 +41,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ButtonBlock;
@@ -400,6 +405,13 @@ public class GameTestHelper {
       }
    }
 
+   public void assertEntitiesPresent(EntityType<?> var1, int var2) {
+      List var3 = this.getLevel().getEntities(var1, this.getBounds(), Entity::isAlive);
+      if (var3.size() != var2) {
+         throw new GameTestAssertException("Expected " + var2 + " of type " + var1.toShortString() + " to exist, found " + var3.size());
+      }
+   }
+
    public void assertEntitiesPresent(EntityType<?> var1, BlockPos var2, int var3, double var4) {
       BlockPos var6 = this.absolutePos(var2);
       List var7 = this.getEntities(var1, var2, var4);
@@ -478,6 +490,26 @@ public class GameTestHelper {
          ItemEntity var9 = (ItemEntity)var8;
          if (var9.getItem().getItem().equals(var1)) {
             throw new GameTestAssertPosException("Did not expect " + var1.getDescription().getString() + " item", var5, var2, this.testInfo.getTick());
+         }
+      }
+   }
+
+   public void assertItemEntityPresent(Item var1) {
+      for(Entity var4 : this.getLevel().getEntities(EntityType.ITEM, this.getBounds(), Entity::isAlive)) {
+         ItemEntity var5 = (ItemEntity)var4;
+         if (var5.getItem().getItem().equals(var1)) {
+            return;
+         }
+      }
+
+      throw new GameTestAssertException("Expected " + var1.getDescription().getString() + " item");
+   }
+
+   public void assertItemEntityNotPresent(Item var1) {
+      for(Entity var4 : this.getLevel().getEntities(EntityType.ITEM, this.getBounds(), Entity::isAlive)) {
+         ItemEntity var5 = (ItemEntity)var4;
+         if (var5.getItem().getItem().equals(var1)) {
+            throw new GameTestAssertException("Did not expect " + var1.getDescription().getString() + " item");
          }
       }
    }
@@ -695,6 +727,25 @@ public class GameTestHelper {
       var3.getBlockState(var2).randomTick(var3, var2, var3.random);
    }
 
+   public void tickPrecipitation(BlockPos var1) {
+      BlockPos var2 = this.absolutePos(var1);
+      ServerLevel var3 = this.getLevel();
+      var3.tickPrecipitation(var2);
+   }
+
+   public void tickPrecipitation() {
+      AABB var1 = this.getRelativeBounds();
+      int var2 = (int)Math.floor(var1.maxX);
+      int var3 = (int)Math.floor(var1.maxZ);
+      int var4 = (int)Math.floor(var1.maxY);
+
+      for(int var5 = (int)Math.floor(var1.minX); var5 < var2; ++var5) {
+         for(int var6 = (int)Math.floor(var1.minZ); var6 < var3; ++var6) {
+            this.tickPrecipitation(new BlockPos(var5, var4, var6));
+         }
+      }
+   }
+
    public int getHeight(Heightmap.Types var1, int var2, int var3) {
       BlockPos var4 = this.absolutePos(new BlockPos(var2, 0, var3));
       return this.relativePos(this.getLevel().getHeightmapPos(var1, var4)).getY();
@@ -763,7 +814,7 @@ public class GameTestHelper {
       return this.testInfo.getTick();
    }
 
-   private AABB getBounds() {
+   public AABB getBounds() {
       return this.testInfo.getStructureBounds();
    }
 
@@ -786,5 +837,17 @@ public class GameTestHelper {
       BlockHitResult var6 = new BlockHitResult(Vec3.atCenterOf(var5), var4, var5, false);
       UseOnContext var7 = new UseOnContext(var1, InteractionHand.MAIN_HAND, var6);
       var2.useOn(var7);
+   }
+
+   public void setBiome(ResourceKey<Biome> var1) {
+      AABB var2 = this.getBounds();
+      BlockPos var3 = BlockPos.containing(var2.minX, var2.minY, var2.minZ);
+      BlockPos var4 = BlockPos.containing(var2.maxX, var2.maxY, var2.maxZ);
+      Either var5 = FillBiomeCommand.fill(
+         this.getLevel(), var3, var4, this.getLevel().registryAccess().registryOrThrow(Registries.BIOME).getHolderOrThrow(var1)
+      );
+      if (var5.right().isPresent()) {
+         this.fail("Failed to set biome for test");
+      }
    }
 }

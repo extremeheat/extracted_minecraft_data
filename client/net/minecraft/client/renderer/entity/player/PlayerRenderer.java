@@ -25,6 +25,8 @@ import net.minecraft.client.renderer.entity.layers.SpinAttackEffectLayer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.numbers.StyledFormat;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -37,7 +39,7 @@ import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.DisplaySlot;
 import net.minecraft.world.scores.Objective;
-import net.minecraft.world.scores.Score;
+import net.minecraft.world.scores.ReadOnlyScoreInfo;
 import net.minecraft.world.scores.Scoreboard;
 
 public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
@@ -160,10 +162,9 @@ public class PlayerRenderer extends LivingEntityRenderer<AbstractClientPlayer, P
          Scoreboard var8 = var1.getScoreboard();
          Objective var9 = var8.getDisplayObjective(DisplaySlot.BELOW_NAME);
          if (var9 != null) {
-            Score var10 = var8.getOrCreatePlayerScore(var1.getScoreboardName(), var9);
-            super.renderNameTag(
-               var1, Component.literal(Integer.toString(var10.getScore())).append(CommonComponents.SPACE).append(var9.getDisplayName()), var3, var4, var5
-            );
+            ReadOnlyScoreInfo var10 = var8.getPlayerScoreInfo(var1, var9);
+            MutableComponent var11 = ReadOnlyScoreInfo.safeFormatValue(var10, var9.numberFormatOrDefault(StyledFormat.NO_STYLE));
+            super.renderNameTag(var1, Component.empty().append(var11).append(CommonComponents.SPACE).append(var9.getDisplayName()), var3, var4, var5);
             var3.translate(0.0F, 9.0F * 1.15F * 0.025F, 0.0F);
          }
       }

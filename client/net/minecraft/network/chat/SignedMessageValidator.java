@@ -9,20 +9,14 @@ import org.slf4j.Logger;
 @FunctionalInterface
 public interface SignedMessageValidator {
    Logger LOGGER = LogUtils.getLogger();
-   SignedMessageValidator ACCEPT_UNSIGNED = var0 -> {
-      if (var0.hasSignature()) {
-         LOGGER.error("Received chat message with signature from {}, but they have no chat session initialized", var0.sender());
-         return false;
-      } else {
-         return true;
-      }
-   };
+   SignedMessageValidator ACCEPT_UNSIGNED = PlayerChatMessage::removeSignature;
    SignedMessageValidator REJECT_ALL = var0 -> {
       LOGGER.error("Received chat message from {}, but they have no chat session initialized and secure chat is enforced", var0.sender());
-      return false;
+      return null;
    };
 
-   boolean updateAndValidate(PlayerChatMessage var1);
+   @Nullable
+   PlayerChatMessage updateAndValidate(PlayerChatMessage var1);
 
    public static class KeyBased implements SignedMessageValidator {
       private final SignatureValidator validator;
@@ -63,14 +57,15 @@ public interface SignedMessageValidator {
          }
       }
 
+      @Nullable
       @Override
-      public boolean updateAndValidate(PlayerChatMessage var1) {
+      public PlayerChatMessage updateAndValidate(PlayerChatMessage var1) {
          this.isChainValid = this.isChainValid && this.validate(var1);
          if (!this.isChainValid) {
-            return false;
+            return null;
          } else {
             this.lastMessage = var1;
-            return true;
+            return var1;
          }
       }
    }

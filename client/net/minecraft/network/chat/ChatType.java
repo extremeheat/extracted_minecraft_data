@@ -126,7 +126,7 @@ public record ChatType(ChatTypeDecoration j, ChatTypeDecoration k) {
       private final Component targetName;
 
       public BoundNetwork(FriendlyByteBuf var1) {
-         this(var1.readVarInt(), var1.readComponent(), var1.readNullable(FriendlyByteBuf::readComponent));
+         this(var1.readVarInt(), var1.readComponentTrusted(), var1.readNullable(FriendlyByteBuf::readComponentTrusted));
       }
 
       public BoundNetwork(int var1, Component var2, @Nullable Component var3) {

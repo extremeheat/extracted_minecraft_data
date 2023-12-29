@@ -1,32 +1,42 @@
 package net.minecraft.advancements.critereon;
 
-import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.GsonHelper;
+import net.minecraft.util.ExtraCodecs;
 
 public class LootTableTrigger extends SimpleCriterionTrigger<LootTableTrigger.TriggerInstance> {
    public LootTableTrigger() {
       super();
    }
 
-   protected LootTableTrigger.TriggerInstance createInstance(JsonObject var1, Optional<ContextAwarePredicate> var2, DeserializationContext var3) {
-      ResourceLocation var4 = new ResourceLocation(GsonHelper.getAsString(var1, "loot_table"));
-      return new LootTableTrigger.TriggerInstance(var2, var4);
+   @Override
+   public Codec<LootTableTrigger.TriggerInstance> codec() {
+      return LootTableTrigger.TriggerInstance.CODEC;
    }
 
    public void trigger(ServerPlayer var1, ResourceLocation var2) {
       this.trigger(var1, var1x -> var1x.matches(var2));
    }
 
-   public static class TriggerInstance extends AbstractCriterionTriggerInstance {
+   public static record TriggerInstance(Optional<ContextAwarePredicate> b, ResourceLocation c) implements SimpleCriterionTrigger.SimpleInstance {
+      private final Optional<ContextAwarePredicate> player;
       private final ResourceLocation lootTable;
+      public static final Codec<LootTableTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
+         var0 -> var0.group(
+                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player").forGetter(LootTableTrigger.TriggerInstance::player),
+                  ResourceLocation.CODEC.fieldOf("loot_table").forGetter(LootTableTrigger.TriggerInstance::lootTable)
+               )
+               .apply(var0, LootTableTrigger.TriggerInstance::new)
+      );
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, ResourceLocation var2) {
-         super(var1);
+         super();
+         this.player = var1;
          this.lootTable = var2;
       }
 
@@ -36,13 +46,6 @@ public class LootTableTrigger extends SimpleCriterionTrigger<LootTableTrigger.Tr
 
       public boolean matches(ResourceLocation var1) {
          return this.lootTable.equals(var1);
-      }
-
-      @Override
-      public JsonObject serializeToJson() {
-         JsonObject var1 = super.serializeToJson();
-         var1.addProperty("loot_table", this.lootTable.toString());
-         return var1;
       }
    }
 }

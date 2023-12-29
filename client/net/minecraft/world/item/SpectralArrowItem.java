@@ -12,6 +12,6 @@ public class SpectralArrowItem extends ArrowItem {
 
    @Override
    public AbstractArrow createArrow(Level var1, ItemStack var2, LivingEntity var3) {
-      return new SpectralArrow(var1, var3);
+      return new SpectralArrow(var1, var3, var2.copyWithCount(1));
    }
 }

@@ -1,5 +1,6 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -27,6 +28,9 @@ public abstract class DiodeBlock extends HorizontalDirectionalBlock {
    protected DiodeBlock(BlockBehaviour.Properties var1) {
       super(var1);
    }
+
+   @Override
+   protected abstract MapCodec<? extends DiodeBlock> codec();
 
    @Override
    public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {

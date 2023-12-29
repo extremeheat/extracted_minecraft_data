@@ -2,7 +2,6 @@ package net.minecraft.world.level.storage;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
-import com.mojang.datafixers.DataFixer;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
@@ -25,7 +24,6 @@ import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
@@ -42,6 +40,7 @@ import org.slf4j.Logger;
 
 public class PrimaryLevelData implements ServerLevelData, WorldData {
    private static final Logger LOGGER = LogUtils.getLogger();
+   public static final String LEVEL_NAME = "LevelName";
    protected static final String PLAYER = "Player";
    protected static final String WORLD_GEN_SETTINGS = "WorldGenSettings";
    private LevelSettings settings;
@@ -55,11 +54,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
    private long gameTime;
    private long dayTime;
    @Nullable
-   private final DataFixer fixerUpper;
-   private final int playerDataVersion;
-   private boolean upgradedPlayerTag;
-   @Nullable
-   private CompoundTag loadedPlayerTag;
+   private final CompoundTag loadedPlayerTag;
    private final int version;
    private int clearWeatherTime;
    private boolean raining;
@@ -82,76 +77,70 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
    private final TimerQueue<MinecraftServer> scheduledEvents;
 
    private PrimaryLevelData(
-      @Nullable DataFixer var1,
-      int var2,
-      @Nullable CompoundTag var3,
-      boolean var4,
+      @Nullable CompoundTag var1,
+      boolean var2,
+      int var3,
+      int var4,
       int var5,
-      int var6,
-      int var7,
-      float var8,
+      float var6,
+      long var7,
       long var9,
-      long var11,
+      int var11,
+      int var12,
       int var13,
-      int var14,
+      boolean var14,
       int var15,
       boolean var16,
-      int var17,
+      boolean var17,
       boolean var18,
-      boolean var19,
-      boolean var20,
-      WorldBorder.Settings var21,
-      int var22,
-      int var23,
-      @Nullable UUID var24,
-      Set<String> var25,
-      Set<String> var26,
-      TimerQueue<MinecraftServer> var27,
-      @Nullable CompoundTag var28,
-      EndDragonFight.Data var29,
-      LevelSettings var30,
-      WorldOptions var31,
-      PrimaryLevelData.SpecialWorldProperty var32,
-      Lifecycle var33
+      WorldBorder.Settings var19,
+      int var20,
+      int var21,
+      @Nullable UUID var22,
+      Set<String> var23,
+      Set<String> var24,
+      TimerQueue<MinecraftServer> var25,
+      @Nullable CompoundTag var26,
+      EndDragonFight.Data var27,
+      LevelSettings var28,
+      WorldOptions var29,
+      PrimaryLevelData.SpecialWorldProperty var30,
+      Lifecycle var31
    ) {
       super();
-      this.fixerUpper = var1;
-      this.wasModded = var4;
-      this.xSpawn = var5;
-      this.ySpawn = var6;
-      this.zSpawn = var7;
-      this.spawnAngle = var8;
-      this.gameTime = var9;
-      this.dayTime = var11;
-      this.version = var13;
-      this.clearWeatherTime = var14;
-      this.rainTime = var15;
-      this.raining = var16;
-      this.thunderTime = var17;
-      this.thundering = var18;
-      this.initialized = var19;
-      this.difficultyLocked = var20;
-      this.worldBorder = var21;
-      this.wanderingTraderSpawnDelay = var22;
-      this.wanderingTraderSpawnChance = var23;
-      this.wanderingTraderId = var24;
-      this.knownServerBrands = var25;
-      this.removedFeatureFlags = var26;
-      this.loadedPlayerTag = var3;
-      this.playerDataVersion = var2;
-      this.scheduledEvents = var27;
-      this.customBossEvents = var28;
-      this.endDragonFightData = var29;
-      this.settings = var30;
-      this.worldOptions = var31;
-      this.specialWorldProperty = var32;
-      this.worldGenSettingsLifecycle = var33;
+      this.wasModded = var2;
+      this.xSpawn = var3;
+      this.ySpawn = var4;
+      this.zSpawn = var5;
+      this.spawnAngle = var6;
+      this.gameTime = var7;
+      this.dayTime = var9;
+      this.version = var11;
+      this.clearWeatherTime = var12;
+      this.rainTime = var13;
+      this.raining = var14;
+      this.thunderTime = var15;
+      this.thundering = var16;
+      this.initialized = var17;
+      this.difficultyLocked = var18;
+      this.worldBorder = var19;
+      this.wanderingTraderSpawnDelay = var20;
+      this.wanderingTraderSpawnChance = var21;
+      this.wanderingTraderId = var22;
+      this.knownServerBrands = var23;
+      this.removedFeatureFlags = var24;
+      this.loadedPlayerTag = var1;
+      this.scheduledEvents = var25;
+      this.customBossEvents = var26;
+      this.endDragonFightData = var27;
+      this.settings = var28;
+      this.worldOptions = var29;
+      this.specialWorldProperty = var30;
+      this.worldGenSettingsLifecycle = var31;
    }
 
    public PrimaryLevelData(LevelSettings var1, WorldOptions var2, PrimaryLevelData.SpecialWorldProperty var3, Lifecycle var4) {
       this(
-         null,
-         SharedConstants.getCurrentVersion().getDataVersion().getVersion(),
          null,
          false,
          0,
@@ -184,30 +173,18 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       );
    }
 
-   public static <T> PrimaryLevelData parse(
-      Dynamic<T> var0,
-      DataFixer var1,
-      int var2,
-      @Nullable CompoundTag var3,
-      LevelSettings var4,
-      LevelVersion var5,
-      PrimaryLevelData.SpecialWorldProperty var6,
-      WorldOptions var7,
-      Lifecycle var8
-   ) {
-      long var9 = var0.get("Time").asLong(0L);
+   public static <T> PrimaryLevelData parse(Dynamic<T> var0, LevelSettings var1, PrimaryLevelData.SpecialWorldProperty var2, WorldOptions var3, Lifecycle var4) {
+      long var5 = var0.get("Time").asLong(0L);
       return new PrimaryLevelData(
-         var1,
-         var2,
-         var3,
+         (CompoundTag)CompoundTag.CODEC.parse(var0.get("Player").orElseEmptyMap()).result().orElse((T)null),
          var0.get("WasModded").asBoolean(false),
          var0.get("SpawnX").asInt(0),
          var0.get("SpawnY").asInt(0),
          var0.get("SpawnZ").asInt(0),
          var0.get("SpawnAngle").asFloat(0.0F),
-         var9,
-         var0.get("DayTime").asLong(var9),
-         var5.levelDataVersion(),
+         var5,
+         var0.get("DayTime").asLong(var5),
+         LevelVersion.parse(var0).levelDataVersion(),
          var0.get("clearWeatherTime").asInt(0),
          var0.get("rainTime").asInt(0),
          var0.get("raining").asBoolean(false),
@@ -224,16 +201,15 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
          new TimerQueue<>(TimerCallbacks.SERVER_CALLBACKS, var0.get("ScheduledEvents").asStream()),
          (CompoundTag)var0.get("CustomBossEvents").orElseEmptyMap().getValue(),
          var0.get("DragonFight").read(EndDragonFight.Data.CODEC).resultOrPartial(LOGGER::error).orElse(EndDragonFight.Data.DEFAULT),
-         var4,
-         var7,
-         var6,
-         var8
+         var1,
+         var3,
+         var2,
+         var4
       );
    }
 
    @Override
    public CompoundTag createTag(RegistryAccess var1, @Nullable CompoundTag var2) {
-      this.updatePlayerTag();
       if (var2 == null) {
          var2 = this.loadedPlayerTag;
       }
@@ -338,25 +314,9 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       return this.dayTime;
    }
 
-   private void updatePlayerTag() {
-      if (!this.upgradedPlayerTag && this.loadedPlayerTag != null) {
-         if (this.playerDataVersion < SharedConstants.getCurrentVersion().getDataVersion().getVersion()) {
-            if (this.fixerUpper == null) {
-               throw (NullPointerException)Util.pauseInIde(
-                  new NullPointerException("Fixer Upper not set inside LevelData, and the player tag is not upgraded.")
-               );
-            }
-
-            this.loadedPlayerTag = DataFixTypes.PLAYER.updateToCurrentVersion(this.fixerUpper, this.loadedPlayerTag, this.playerDataVersion);
-         }
-
-         this.upgradedPlayerTag = true;
-      }
-   }
-
+   @Nullable
    @Override
    public CompoundTag getLoadedPlayerTag() {
-      this.updatePlayerTag();
       return this.loadedPlayerTag;
    }
 

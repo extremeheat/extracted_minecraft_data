@@ -21,7 +21,7 @@ import net.minecraft.util.StringRepresentable;
 
 public class StringRepresentableArgument<T extends Enum<T> & StringRepresentable> implements ArgumentType<T> {
    private static final DynamicCommandExceptionType ERROR_INVALID_VALUE = new DynamicCommandExceptionType(
-      var0 -> Component.translatable("argument.enum.invalid", var0)
+      var0 -> Component.translatableEscape("argument.enum.invalid", var0)
    );
    private final Codec<T> codec;
    private final Supplier<T[]> values;

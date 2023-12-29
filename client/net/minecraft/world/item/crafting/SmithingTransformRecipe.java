@@ -76,7 +76,7 @@ public class SmithingTransformRecipe implements SmithingRecipe {
                   Ingredient.CODEC.fieldOf("template").forGetter(var0x -> var0x.template),
                   Ingredient.CODEC.fieldOf("base").forGetter(var0x -> var0x.base),
                   Ingredient.CODEC.fieldOf("addition").forGetter(var0x -> var0x.addition),
-                  CraftingRecipeCodecs.ITEMSTACK_OBJECT_CODEC.fieldOf("result").forGetter(var0x -> var0x.result)
+                  ItemStack.ITEM_WITH_COUNT_CODEC.fieldOf("result").forGetter(var0x -> var0x.result)
                )
                .apply(var0, SmithingTransformRecipe::new)
       );

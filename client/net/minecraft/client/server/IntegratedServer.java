@@ -72,6 +72,11 @@ public class IntegratedServer extends MinecraftServer {
    }
 
    @Override
+   public boolean isPaused() {
+      return this.paused;
+   }
+
+   @Override
    public void tickServer(BooleanSupplier var1) {
       boolean var2 = this.paused;
       this.paused = Minecraft.getInstance().isPaused();

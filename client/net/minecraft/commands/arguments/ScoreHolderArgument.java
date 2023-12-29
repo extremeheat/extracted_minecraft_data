@@ -1,6 +1,5 @@
 package net.minecraft.commands.arguments;
 
-import com.google.common.collect.Lists;
 import com.google.gson.JsonObject;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
@@ -13,7 +12,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
+import java.util.UUID;
 import java.util.function.Supplier;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
@@ -23,7 +22,11 @@ import net.minecraft.commands.arguments.selector.EntitySelectorParser;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.scores.ScoreHolder;
 
 public class ScoreHolderArgument implements ArgumentType<ScoreHolderArgument.Result> {
    public static final SuggestionProvider<CommandSourceStack> SUGGEST_SCORE_HOLDERS = (var0, var1) -> {
@@ -47,19 +50,19 @@ public class ScoreHolderArgument implements ArgumentType<ScoreHolderArgument.Res
       this.multiple = var1;
    }
 
-   public static String getName(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
+   public static ScoreHolder getName(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
       return getNames(var0, var1).iterator().next();
    }
 
-   public static Collection<String> getNames(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
+   public static Collection<ScoreHolder> getNames(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
       return getNames(var0, var1, Collections::emptyList);
    }
 
-   public static Collection<String> getNamesWithDefaultWildcard(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
+   public static Collection<ScoreHolder> getNamesWithDefaultWildcard(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
       return getNames(var0, var1, ((CommandSourceStack)var0.getSource()).getServer().getScoreboard()::getTrackedPlayers);
    }
 
-   public static Collection<String> getNames(CommandContext<CommandSourceStack> var0, String var1, Supplier<Collection<String>> var2) throws CommandSyntaxException {
+   public static Collection<ScoreHolder> getNames(CommandContext<CommandSourceStack> var0, String var1, Supplier<Collection<ScoreHolder>> var2) throws CommandSyntaxException {
       Collection var3 = ((ScoreHolderArgument.Result)var0.getArgument(var1, ScoreHolderArgument.Result.class))
          .getNames((CommandSourceStack)var0.getSource(), var2);
       if (var3.isEmpty()) {
@@ -79,12 +82,12 @@ public class ScoreHolderArgument implements ArgumentType<ScoreHolderArgument.Res
 
    public ScoreHolderArgument.Result parse(StringReader var1) throws CommandSyntaxException {
       if (var1.canRead() && var1.peek() == '@') {
-         EntitySelectorParser var5 = new EntitySelectorParser(var1);
-         EntitySelector var6 = var5.parse();
-         if (!this.multiple && var6.getMaxResults() > 1) {
+         EntitySelectorParser var7 = new EntitySelectorParser(var1);
+         EntitySelector var8 = var7.parse();
+         if (!this.multiple && var8.getMaxResults() > 1) {
             throw EntityArgument.ERROR_NOT_SINGLE_ENTITY.create();
          } else {
-            return new ScoreHolderArgument.SelectorResult(var6);
+            return new ScoreHolderArgument.SelectorResult(var8);
          }
       } else {
          int var2 = var1.getCursor();
@@ -104,8 +107,47 @@ public class ScoreHolderArgument implements ArgumentType<ScoreHolderArgument.Res
                }
             };
          } else {
-            Set var4 = Collections.singleton(var3);
-            return (var1x, var2x) -> var4;
+            List var4 = List.of(ScoreHolder.forNameOnly(var3));
+            if (var3.startsWith("#")) {
+               return (var1x, var2x) -> var4;
+            } else {
+               try {
+                  UUID var5 = UUID.fromString(var3);
+                  return (var2x, var3x) -> {
+                     MinecraftServer var4x = var2x.getServer();
+                     Entity var5x = null;
+                     ArrayList var6x = null;
+
+                     for(ServerLevel var8x : var4x.getAllLevels()) {
+                        Entity var9 = var8x.getEntity(var5);
+                        if (var9 != null) {
+                           if (var5x == null) {
+                              var5x = var9;
+                           } else {
+                              if (var6x == null) {
+                                 var6x = new ArrayList();
+                                 var6x.add(var5x);
+                              }
+
+                              var6x.add(var9);
+                           }
+                        }
+                     }
+
+                     if (var6x != null) {
+                        return var6x;
+                     } else {
+                        return var5x != null ? List.of(var5x) : var4;
+                     }
+                  };
+               } catch (IllegalArgumentException var6) {
+                  return (var2x, var3x) -> {
+                     MinecraftServer var4x = var2x.getServer();
+                     ServerPlayer var5x = var4x.getPlayerList().getPlayerByName(var3);
+                     return var5x != null ? List.of(var5x) : var4;
+                  };
+               }
+            }
          }
       }
    }
@@ -165,7 +207,7 @@ public class ScoreHolderArgument implements ArgumentType<ScoreHolderArgument.Res
 
    @FunctionalInterface
    public interface Result {
-      Collection<String> getNames(CommandSourceStack var1, Supplier<Collection<String>> var2) throws CommandSyntaxException;
+      Collection<ScoreHolder> getNames(CommandSourceStack var1, Supplier<Collection<ScoreHolder>> var2) throws CommandSyntaxException;
    }
 
    public static class SelectorResult implements ScoreHolderArgument.Result {
@@ -177,18 +219,12 @@ public class ScoreHolderArgument implements ArgumentType<ScoreHolderArgument.Res
       }
 
       @Override
-      public Collection<String> getNames(CommandSourceStack var1, Supplier<Collection<String>> var2) throws CommandSyntaxException {
+      public Collection<ScoreHolder> getNames(CommandSourceStack var1, Supplier<Collection<ScoreHolder>> var2) throws CommandSyntaxException {
          List var3 = this.selector.findEntities(var1);
          if (var3.isEmpty()) {
             throw EntityArgument.NO_ENTITIES_FOUND.create();
          } else {
-            ArrayList var4 = Lists.newArrayList();
-
-            for(Entity var6 : var3) {
-               var4.add(var6.getScoreboardName());
-            }
-
-            return var4;
+            return List.copyOf(var3);
          }
       }
    }

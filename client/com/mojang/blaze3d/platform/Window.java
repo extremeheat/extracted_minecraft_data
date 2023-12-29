@@ -338,7 +338,7 @@ public final class Window implements AutoCloseable {
             this.fullscreen = false;
          } else {
             if (Minecraft.ON_OSX) {
-               MacosUtil.toggleFullscreen(this.window);
+               MacosUtil.exitNativeFullscreen(this.window);
             }
 
             VideoMode var3 = var2.getPreferredVidMode(this.preferredFullscreenVideoMode);
@@ -354,6 +354,9 @@ public final class Window implements AutoCloseable {
             this.width = var3.getWidth();
             this.height = var3.getHeight();
             GLFW.glfwSetWindowMonitor(this.window, var2.getMonitor(), this.x, this.y, this.width, this.height, var3.getRefreshRate());
+            if (Minecraft.ON_OSX) {
+               MacosUtil.clearResizableBit(this.window);
+            }
          }
       } else {
          this.x = this.windowedX;

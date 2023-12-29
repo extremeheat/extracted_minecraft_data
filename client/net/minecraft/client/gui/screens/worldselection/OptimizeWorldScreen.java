@@ -3,8 +3,8 @@ package net.minecraft.client.gui.screens.worldselection;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenCustomHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
+import java.util.function.ToIntFunction;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
@@ -19,6 +19,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.WorldStem;
+import net.minecraft.server.packs.repository.PackRepository;
+import net.minecraft.server.packs.repository.ServerPacksSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.worldupdate.WorldUpgrader;
 import net.minecraft.world.level.Level;
@@ -30,7 +32,7 @@ import org.slf4j.Logger;
 
 public class OptimizeWorldScreen extends Screen {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final Object2IntMap<ResourceKey<Level>> DIMENSION_COLORS = Util.make(new Object2IntOpenCustomHashMap(Util.identityStrategy()), var0 -> {
+   private static final ToIntFunction<ResourceKey<Level>> DIMENSION_COLORS = Util.make(new Reference2IntOpenHashMap(), var0 -> {
       var0.put(Level.OVERWORLD, -13408734);
       var0.put(Level.NETHER, -10075085);
       var0.put(Level.END, -8943531);
@@ -42,17 +44,20 @@ public class OptimizeWorldScreen extends Screen {
    @Nullable
    public static OptimizeWorldScreen create(Minecraft var0, BooleanConsumer var1, DataFixer var2, LevelStorageSource.LevelStorageAccess var3, boolean var4) {
       try {
-         OptimizeWorldScreen var8;
-         try (WorldStem var5 = var0.createWorldOpenFlows().loadWorldStem(var3, false)) {
-            WorldData var6 = var5.worldData();
-            RegistryAccess.Frozen var7 = var5.registries().compositeAccess();
-            var3.saveDataTag(var7, var6);
-            var8 = new OptimizeWorldScreen(var1, var2, var3, var6.getLevelSettings(), var4, var7.registryOrThrow(Registries.LEVEL_STEM));
+         WorldOpenFlows var5 = var0.createWorldOpenFlows();
+         PackRepository var6 = ServerPacksSource.createPackRepository(var3);
+
+         OptimizeWorldScreen var10;
+         try (WorldStem var7 = var5.loadWorldStem(var3.getDataTag(), false, var6)) {
+            WorldData var8 = var7.worldData();
+            RegistryAccess.Frozen var9 = var7.registries().compositeAccess();
+            var3.saveDataTag(var9, var8);
+            var10 = new OptimizeWorldScreen(var1, var2, var3, var8.getLevelSettings(), var4, var9.registryOrThrow(Registries.LEVEL_STEM));
          }
 
-         return var8;
-      } catch (Exception var11) {
-         LOGGER.warn("Failed to load datapacks, can't optimize world", var11);
+         return var10;
+      } catch (Exception var13) {
+         LOGGER.warn("Failed to load datapacks, can't optimize world", var13);
          return null;
       }
    }
@@ -109,7 +114,7 @@ public class OptimizeWorldScreen extends Screen {
 
          for(ResourceKey var11 : this.upgrader.levels()) {
             int var12 = Mth.floor(this.upgrader.dimensionProgress(var11) * (float)(var6 - var5));
-            var1.fill(var5 + var9, var7, var5 + var9 + var12, var8, DIMENSION_COLORS.getInt(var11));
+            var1.fill(var5 + var9, var7, var5 + var9 + var12, var8, DIMENSION_COLORS.applyAsInt(var11));
             var9 += var12;
          }
 

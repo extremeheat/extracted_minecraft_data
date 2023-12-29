@@ -38,6 +38,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.scores.PlayerTeam;
 
 public class Evoker extends SpellcasterIllager {
    @Nullable
@@ -277,18 +278,23 @@ public class Evoker extends SpellcasterIllager {
       @Override
       protected void performSpellCasting() {
          ServerLevel var1 = (ServerLevel)Evoker.this.level();
+         PlayerTeam var2 = Evoker.this.getTeam();
 
-         for(int var2 = 0; var2 < 3; ++var2) {
-            BlockPos var3 = Evoker.this.blockPosition().offset(-2 + Evoker.this.random.nextInt(5), 1, -2 + Evoker.this.random.nextInt(5));
-            Vex var4 = EntityType.VEX.create(Evoker.this.level());
-            if (var4 != null) {
-               var4.moveTo(var3, 0.0F, 0.0F);
-               var4.finalizeSpawn(var1, Evoker.this.level().getCurrentDifficultyAt(var3), MobSpawnType.MOB_SUMMONED, null, null);
-               var4.setOwner(Evoker.this);
-               var4.setBoundOrigin(var3);
-               var4.setLimitedLife(20 * (30 + Evoker.this.random.nextInt(90)));
-               var1.addFreshEntityWithPassengers(var4);
-               var1.gameEvent(GameEvent.ENTITY_PLACE, var3, GameEvent.Context.of(Evoker.this));
+         for(int var3 = 0; var3 < 3; ++var3) {
+            BlockPos var4 = Evoker.this.blockPosition().offset(-2 + Evoker.this.random.nextInt(5), 1, -2 + Evoker.this.random.nextInt(5));
+            Vex var5 = EntityType.VEX.create(Evoker.this.level());
+            if (var5 != null) {
+               var5.moveTo(var4, 0.0F, 0.0F);
+               var5.finalizeSpawn(var1, Evoker.this.level().getCurrentDifficultyAt(var4), MobSpawnType.MOB_SUMMONED, null, null);
+               var5.setOwner(Evoker.this);
+               var5.setBoundOrigin(var4);
+               var5.setLimitedLife(20 * (30 + Evoker.this.random.nextInt(90)));
+               if (var2 != null) {
+                  var1.getScoreboard().addPlayerToTeam(var5.getScoreboardName(), var2);
+               }
+
+               var1.addFreshEntityWithPassengers(var5);
+               var1.gameEvent(GameEvent.ENTITY_PLACE, var4, GameEvent.Context.of(Evoker.this));
             }
          }
       }

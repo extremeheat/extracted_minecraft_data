@@ -5,6 +5,7 @@ import net.minecraft.advancements.Criterion;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.crafting.CraftingBookCategory;
 import net.minecraft.world.level.ItemLike;
 
 public interface RecipeBuilder {
@@ -34,5 +35,14 @@ public interface RecipeBuilder {
 
    static ResourceLocation getDefaultRecipeId(ItemLike var0) {
       return BuiltInRegistries.ITEM.getKey(var0.asItem());
+   }
+
+   static CraftingBookCategory determineBookCategory(RecipeCategory var0) {
+      return switch(var0) {
+         case BUILDING_BLOCKS -> CraftingBookCategory.BUILDING;
+         case TOOLS, COMBAT -> CraftingBookCategory.EQUIPMENT;
+         case REDSTONE -> CraftingBookCategory.REDSTONE;
+         default -> CraftingBookCategory.MISC;
+      };
    }
 }

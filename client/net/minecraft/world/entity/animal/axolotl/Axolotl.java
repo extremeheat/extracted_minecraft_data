@@ -229,11 +229,6 @@ public class Axolotl extends Animal implements LerpingModel, VariantHolder<Axolo
    }
 
    @Override
-   public boolean canBreatheUnderwater() {
-      return true;
-   }
-
-   @Override
    public boolean isPushedByFluid() {
       return false;
    }

@@ -8,6 +8,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -30,7 +31,7 @@ public class GameTestRegistry {
    }
 
    public static void register(Class<?> var0) {
-      Arrays.stream(var0.getDeclaredMethods()).forEach(GameTestRegistry::register);
+      Arrays.stream(var0.getDeclaredMethods()).sorted(Comparator.comparing(Method::getName)).forEach(GameTestRegistry::register);
    }
 
    public static void register(Method var0) {

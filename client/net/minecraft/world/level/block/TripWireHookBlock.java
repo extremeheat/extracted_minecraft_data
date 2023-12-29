@@ -1,6 +1,8 @@
 package net.minecraft.world.level.block;
 
 import com.google.common.base.MoreObjects;
+import com.mojang.serialization.MapCodec;
+import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -26,6 +28,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class TripWireHookBlock extends Block {
+   public static final MapCodec<TripWireHookBlock> CODEC = simpleCodec(TripWireHookBlock::new);
    public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
    public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
    public static final BooleanProperty ATTACHED = BlockStateProperties.ATTACHED;
@@ -37,6 +40,11 @@ public class TripWireHookBlock extends Block {
    protected static final VoxelShape SOUTH_AABB = Block.box(5.0, 0.0, 0.0, 11.0, 10.0, 6.0);
    protected static final VoxelShape WEST_AABB = Block.box(10.0, 0.0, 5.0, 16.0, 10.0, 11.0);
    protected static final VoxelShape EAST_AABB = Block.box(0.0, 0.0, 5.0, 6.0, 10.0, 11.0);
+
+   @Override
+   public MapCodec<TripWireHookBlock> codec() {
+      return CODEC;
+   }
 
    public TripWireHookBlock(BlockBehaviour.Properties var1) {
       super(var1);
@@ -98,73 +106,77 @@ public class TripWireHookBlock extends Block {
 
    @Override
    public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, LivingEntity var4, ItemStack var5) {
-      this.calculateState(var1, var2, var3, false, false, -1, null);
+      calculateState(var1, var2, var3, false, false, -1, null);
    }
 
-   public void calculateState(Level var1, BlockPos var2, BlockState var3, boolean var4, boolean var5, int var6, @Nullable BlockState var7) {
-      Direction var8 = var3.getValue(FACING);
-      boolean var9 = var3.getValue(ATTACHED);
-      boolean var10 = var3.getValue(POWERED);
-      boolean var11 = !var4;
-      boolean var12 = false;
-      int var13 = 0;
-      BlockState[] var14 = new BlockState[42];
+   public static void calculateState(Level var0, BlockPos var1, BlockState var2, boolean var3, boolean var4, int var5, @Nullable BlockState var6) {
+      Optional var7 = var2.getOptionalValue(FACING);
+      if (var7.isPresent()) {
+         Direction var8 = (Direction)var7.get();
+         boolean var9 = var2.getOptionalValue(ATTACHED).orElse(false);
+         boolean var10 = var2.getOptionalValue(POWERED).orElse(false);
+         Block var11 = var2.getBlock();
+         boolean var12 = !var3;
+         boolean var13 = false;
+         int var14 = 0;
+         BlockState[] var15 = new BlockState[42];
 
-      for(int var15 = 1; var15 < 42; ++var15) {
-         BlockPos var16 = var2.relative(var8, var15);
-         BlockState var17 = var1.getBlockState(var16);
-         if (var17.is(Blocks.TRIPWIRE_HOOK)) {
-            if (var17.getValue(FACING) == var8.getOpposite()) {
-               var13 = var15;
-            }
-            break;
-         }
-
-         if (!var17.is(Blocks.TRIPWIRE) && var15 != var6) {
-            var14[var15] = null;
-            var11 = false;
-         } else {
-            if (var15 == var6) {
-               var17 = (BlockState)MoreObjects.firstNonNull(var7, var17);
+         for(int var16 = 1; var16 < 42; ++var16) {
+            BlockPos var17 = var1.relative(var8, var16);
+            BlockState var18 = var0.getBlockState(var17);
+            if (var18.is(Blocks.TRIPWIRE_HOOK)) {
+               if (var18.getValue(FACING) == var8.getOpposite()) {
+                  var14 = var16;
+               }
+               break;
             }
 
-            boolean var18 = !var17.getValue(TripWireBlock.DISARMED);
-            boolean var19 = var17.getValue(TripWireBlock.POWERED);
-            var12 |= var18 && var19;
-            var14[var15] = var17;
-            if (var15 == var6) {
-               var1.scheduleTick(var2, this, 10);
-               var11 &= var18;
+            if (!var18.is(Blocks.TRIPWIRE) && var16 != var5) {
+               var15[var16] = null;
+               var12 = false;
+            } else {
+               if (var16 == var5) {
+                  var18 = (BlockState)MoreObjects.firstNonNull(var6, var18);
+               }
+
+               boolean var19 = !var18.getValue(TripWireBlock.DISARMED);
+               boolean var20 = var18.getValue(TripWireBlock.POWERED);
+               var13 |= var19 && var20;
+               var15[var16] = var18;
+               if (var16 == var5) {
+                  var0.scheduleTick(var1, var11, 10);
+                  var12 &= var19;
+               }
             }
          }
-      }
 
-      var11 &= var13 > 1;
-      var12 &= var11;
-      BlockState var22 = this.defaultBlockState().setValue(ATTACHED, Boolean.valueOf(var11)).setValue(POWERED, Boolean.valueOf(var12));
-      if (var13 > 0) {
-         BlockPos var23 = var2.relative(var8, var13);
-         Direction var25 = var8.getOpposite();
-         var1.setBlock(var23, var22.setValue(FACING, var25), 3);
-         this.notifyNeighbors(var1, var23, var25);
-         this.emitState(var1, var23, var11, var12, var9, var10);
-      }
-
-      this.emitState(var1, var2, var11, var12, var9, var10);
-      if (!var4) {
-         var1.setBlock(var2, var22.setValue(FACING, var8), 3);
-         if (var5) {
-            this.notifyNeighbors(var1, var2, var8);
+         var12 &= var14 > 1;
+         var13 &= var12;
+         BlockState var23 = var11.defaultBlockState().trySetValue(ATTACHED, Boolean.valueOf(var12)).trySetValue(POWERED, Boolean.valueOf(var13));
+         if (var14 > 0) {
+            BlockPos var24 = var1.relative(var8, var14);
+            Direction var26 = var8.getOpposite();
+            var0.setBlock(var24, var23.setValue(FACING, var26), 3);
+            notifyNeighbors(var11, var0, var24, var26);
+            emitState(var0, var24, var12, var13, var9, var10);
          }
-      }
 
-      if (var9 != var11) {
-         for(int var24 = 1; var24 < var13; ++var24) {
-            BlockPos var26 = var2.relative(var8, var24);
-            BlockState var27 = var14[var24];
-            if (var27 != null) {
-               var1.setBlock(var26, var27.setValue(ATTACHED, Boolean.valueOf(var11)), 3);
-               if (!var1.getBlockState(var26).isAir()) {
+         emitState(var0, var1, var12, var13, var9, var10);
+         if (!var3) {
+            var0.setBlock(var1, var23.setValue(FACING, var8), 3);
+            if (var4) {
+               notifyNeighbors(var11, var0, var1, var8);
+            }
+         }
+
+         if (var9 != var12) {
+            for(int var25 = 1; var25 < var14; ++var25) {
+               BlockPos var27 = var1.relative(var8, var25);
+               BlockState var28 = var15[var25];
+               if (var28 != null) {
+                  var0.setBlock(var27, var28.trySetValue(ATTACHED, Boolean.valueOf(var12)), 3);
+                  if (!var0.getBlockState(var27).isAir()) {
+                  }
                }
             }
          }
@@ -173,28 +185,28 @@ public class TripWireHookBlock extends Block {
 
    @Override
    public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      this.calculateState(var2, var3, var1, false, true, -1, null);
+      calculateState(var2, var3, var1, false, true, -1, null);
    }
 
-   private void emitState(Level var1, BlockPos var2, boolean var3, boolean var4, boolean var5, boolean var6) {
-      if (var4 && !var6) {
-         var1.playSound(null, var2, SoundEvents.TRIPWIRE_CLICK_ON, SoundSource.BLOCKS, 0.4F, 0.6F);
-         var1.gameEvent(null, GameEvent.BLOCK_ACTIVATE, var2);
-      } else if (!var4 && var6) {
-         var1.playSound(null, var2, SoundEvents.TRIPWIRE_CLICK_OFF, SoundSource.BLOCKS, 0.4F, 0.5F);
-         var1.gameEvent(null, GameEvent.BLOCK_DEACTIVATE, var2);
-      } else if (var3 && !var5) {
-         var1.playSound(null, var2, SoundEvents.TRIPWIRE_ATTACH, SoundSource.BLOCKS, 0.4F, 0.7F);
-         var1.gameEvent(null, GameEvent.BLOCK_ATTACH, var2);
+   private static void emitState(Level var0, BlockPos var1, boolean var2, boolean var3, boolean var4, boolean var5) {
+      if (var3 && !var5) {
+         var0.playSound(null, var1, SoundEvents.TRIPWIRE_CLICK_ON, SoundSource.BLOCKS, 0.4F, 0.6F);
+         var0.gameEvent(null, GameEvent.BLOCK_ACTIVATE, var1);
       } else if (!var3 && var5) {
-         var1.playSound(null, var2, SoundEvents.TRIPWIRE_DETACH, SoundSource.BLOCKS, 0.4F, 1.2F / (var1.random.nextFloat() * 0.2F + 0.9F));
-         var1.gameEvent(null, GameEvent.BLOCK_DETACH, var2);
+         var0.playSound(null, var1, SoundEvents.TRIPWIRE_CLICK_OFF, SoundSource.BLOCKS, 0.4F, 0.5F);
+         var0.gameEvent(null, GameEvent.BLOCK_DEACTIVATE, var1);
+      } else if (var2 && !var4) {
+         var0.playSound(null, var1, SoundEvents.TRIPWIRE_ATTACH, SoundSource.BLOCKS, 0.4F, 0.7F);
+         var0.gameEvent(null, GameEvent.BLOCK_ATTACH, var1);
+      } else if (!var2 && var4) {
+         var0.playSound(null, var1, SoundEvents.TRIPWIRE_DETACH, SoundSource.BLOCKS, 0.4F, 1.2F / (var0.random.nextFloat() * 0.2F + 0.9F));
+         var0.gameEvent(null, GameEvent.BLOCK_DETACH, var1);
       }
    }
 
-   private void notifyNeighbors(Level var1, BlockPos var2, Direction var3) {
-      var1.updateNeighborsAt(var2, this);
-      var1.updateNeighborsAt(var2.relative(var3.getOpposite()), this);
+   private static void notifyNeighbors(Block var0, Level var1, BlockPos var2, Direction var3) {
+      var1.updateNeighborsAt(var2, var0);
+      var1.updateNeighborsAt(var2.relative(var3.getOpposite()), var0);
    }
 
    @Override
@@ -203,7 +215,7 @@ public class TripWireHookBlock extends Block {
          boolean var6 = var1.getValue(ATTACHED);
          boolean var7 = var1.getValue(POWERED);
          if (var6 || var7) {
-            this.calculateState(var2, var3, var1, true, false, -1, null);
+            calculateState(var2, var3, var1, true, false, -1, null);
          }
 
          if (var7) {

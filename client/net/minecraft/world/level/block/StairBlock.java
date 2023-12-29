@@ -1,18 +1,12 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.stream.IntStream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
-import net.minecraft.world.level.Explosion;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
@@ -26,12 +20,14 @@ import net.minecraft.world.level.block.state.properties.StairsShape;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.pathfinder.PathComputationType;
-import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class StairBlock extends Block implements SimpleWaterloggedBlock {
+   public static final MapCodec<StairBlock> CODEC = RecordCodecBuilder.mapCodec(
+      var0 -> var0.group(BlockState.CODEC.fieldOf("base_state").forGetter(var0x -> var0x.baseState), propertiesCodec()).apply(var0, StairBlock::new)
+   );
    public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
    public static final EnumProperty<Half> HALF = BlockStateProperties.HALF;
    public static final EnumProperty<StairsShape> SHAPE = BlockStateProperties.STAIRS_SHAPE;
@@ -50,7 +46,12 @@ public class StairBlock extends Block implements SimpleWaterloggedBlock {
    protected static final VoxelShape[] BOTTOM_SHAPES = makeShapes(BOTTOM_AABB, OCTET_NPN, OCTET_PPN, OCTET_NPP, OCTET_PPP);
    private static final int[] SHAPE_BY_STATE = new int[]{12, 5, 3, 10, 14, 13, 7, 11, 13, 7, 11, 14, 8, 4, 1, 2, 4, 1, 2, 8};
    private final Block base;
-   private final BlockState baseState;
+   protected final BlockState baseState;
+
+   @Override
+   public MapCodec<? extends StairBlock> codec() {
+      return CODEC;
+   }
 
    private static VoxelShape[] makeShapes(VoxelShape var0, VoxelShape var1, VoxelShape var2, VoxelShape var3, VoxelShape var4) {
       return IntStream.range(0, 16).mapToObj(var5 -> makeStairShape(var5, var0, var1, var2, var3, var4)).toArray(var0x -> new VoxelShape[var0x]);
@@ -106,68 +107,8 @@ public class StairBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    @Override
-   public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
-      this.base.animateTick(var1, var2, var3, var4);
-   }
-
-   @Override
-   public void attack(BlockState var1, Level var2, BlockPos var3, Player var4) {
-      this.baseState.attack(var2, var3, var4);
-   }
-
-   @Override
-   public void destroy(LevelAccessor var1, BlockPos var2, BlockState var3) {
-      this.base.destroy(var1, var2, var3);
-   }
-
-   @Override
    public float getExplosionResistance() {
       return this.base.getExplosionResistance();
-   }
-
-   @Override
-   public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var1.is(var1.getBlock())) {
-         var2.neighborChanged(this.baseState, var3, Blocks.AIR, var3, false);
-         this.base.onPlace(this.baseState, var2, var3, var4, false);
-      }
-   }
-
-   @Override
-   public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var1.is(var4.getBlock())) {
-         this.baseState.onRemove(var2, var3, var4, var5);
-      }
-   }
-
-   @Override
-   public void stepOn(Level var1, BlockPos var2, BlockState var3, Entity var4) {
-      this.base.stepOn(var1, var2, var3, var4);
-   }
-
-   @Override
-   public boolean isRandomlyTicking(BlockState var1) {
-      return this.base.isRandomlyTicking(var1);
-   }
-
-   @Override
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      this.base.randomTick(var1, var2, var3, var4);
-   }
-
-   @Override
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      this.base.tick(var1, var2, var3, var4);
-   }
-
-   @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
-      return this.baseState.use(var2, var4, var5, var6);
-   }
-
-   @Override
-   public void wasExploded(Level var1, BlockPos var2, Explosion var3) {
-      this.base.wasExploded(var1, var2, var3);
    }
 
    @Override

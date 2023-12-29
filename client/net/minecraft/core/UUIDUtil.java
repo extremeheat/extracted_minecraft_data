@@ -1,5 +1,8 @@
 package net.minecraft.core;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
@@ -10,12 +13,14 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
+import java.util.Set;
 import java.util.UUID;
 import net.minecraft.Util;
 
 public final class UUIDUtil {
    public static final Codec<UUID> CODEC = Codec.INT_STREAM
       .comapFlatMap(var0 -> Util.fixedSize(var0, 4).map(UUIDUtil::uuidFromIntArray), var0 -> Arrays.stream(uuidToIntArray(var0)));
+   public static final Codec<Set<UUID>> CODEC_SET = Codec.list(CODEC).xmap(Sets::newHashSet, Lists::newArrayList);
    public static final Codec<UUID> STRING_CODEC = Codec.STRING.comapFlatMap(var0 -> {
       try {
          return DataResult.success(UUID.fromString(var0), Lifecycle.stable());
@@ -30,6 +35,7 @@ public final class UUIDUtil {
          return DataResult.error(() -> "Invalid UUID " + var0 + ": " + var2.getMessage());
       }
    }, UndashedUuid::toString)).xmap(var0 -> (UUID)var0.map(var0x -> var0x, var0x -> var0x), Either::right);
+   public static Codec<UUID> LENIENT_CODEC = Codec.either(CODEC, STRING_CODEC).xmap(var0 -> (UUID)var0.map(var0x -> var0x, var0x -> var0x), Either::left);
    public static final int UUID_BYTES = 16;
    private static final String UUID_PREFIX_OFFLINE_PLAYER = "OfflinePlayer:";
 
@@ -68,5 +74,10 @@ public final class UUIDUtil {
 
    public static UUID createOfflinePlayerUUID(String var0) {
       return UUID.nameUUIDFromBytes(("OfflinePlayer:" + var0).getBytes(StandardCharsets.UTF_8));
+   }
+
+   public static GameProfile createOfflineProfile(String var0) {
+      UUID var1 = createOfflinePlayerUUID(var0);
+      return new GameProfile(var1, var0);
    }
 }

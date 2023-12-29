@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.function.IntUnaryOperator;
 import javax.annotation.Nullable;
 import net.minecraft.util.FastColor;
+import net.minecraft.util.PngInfo;
 import org.apache.commons.io.IOUtils;
 import org.lwjgl.stb.STBIWriteCallback;
 import org.lwjgl.stb.STBImage;
@@ -150,6 +151,7 @@ public final class NativeImage implements AutoCloseable {
       } else if (MemoryUtil.memAddress(var1) == 0L) {
          throw new IllegalArgumentException("Invalid buffer");
       } else {
+         PngInfo.validateHeader(var1);
          MemoryStack var2 = MemoryStack.stackPush();
 
          NativeImage var7;

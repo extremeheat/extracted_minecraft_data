@@ -18,11 +18,9 @@ import org.slf4j.Logger;
 
 public class RealmsInviteScreen extends RealmsScreen {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final Component NAME_LABEL = Component.translatable("mco.configure.world.invite.profile.name").withStyle(var0 -> var0.withColor(-6250336));
-   private static final Component INVITING_PLAYER_TEXT = Component.translatable("mco.configure.world.players.inviting")
-      .withStyle(var0 -> var0.withColor(-6250336));
-   private static final Component NO_SUCH_PLAYER_ERROR_TEXT = Component.translatable("mco.configure.world.players.error")
-      .withStyle(var0 -> var0.withColor(-65536));
+   private static final Component NAME_LABEL = Component.translatable("mco.configure.world.invite.profile.name").withColor(-6250336);
+   private static final Component INVITING_PLAYER_TEXT = Component.translatable("mco.configure.world.players.inviting").withColor(-6250336);
+   private static final Component NO_SUCH_PLAYER_ERROR_TEXT = Component.translatable("mco.configure.world.players.error").withColor(-65536);
    private EditBox profileName;
    private Button inviteButton;
    private final RealmsServer serverData;

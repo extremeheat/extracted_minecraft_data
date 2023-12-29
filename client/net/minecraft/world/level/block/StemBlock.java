@@ -1,8 +1,14 @@
 package net.minecraft.world.level.block;
 
-import java.util.function.Supplier;
+import com.mojang.datafixers.DataFixUtils;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
@@ -10,6 +16,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -21,6 +28,15 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class StemBlock extends BushBlock implements BonemealableBlock {
+   public static final MapCodec<StemBlock> CODEC = RecordCodecBuilder.mapCodec(
+      var0 -> var0.group(
+               ResourceKey.codec(Registries.BLOCK).fieldOf("fruit").forGetter(var0x -> var0x.fruit),
+               ResourceKey.codec(Registries.BLOCK).fieldOf("attached_stem").forGetter(var0x -> var0x.attachedStem),
+               ResourceKey.codec(Registries.ITEM).fieldOf("seed").forGetter(var0x -> var0x.seed),
+               propertiesCodec()
+            )
+            .apply(var0, StemBlock::new)
+   );
    public static final int MAX_AGE = 7;
    public static final IntegerProperty AGE = BlockStateProperties.AGE_7;
    protected static final float AABB_OFFSET = 1.0F;
@@ -34,13 +50,20 @@ public class StemBlock extends BushBlock implements BonemealableBlock {
       Block.box(7.0, 0.0, 7.0, 9.0, 14.0, 9.0),
       Block.box(7.0, 0.0, 7.0, 9.0, 16.0, 9.0)
    };
-   private final StemGrownBlock fruit;
-   private final Supplier<Item> seedSupplier;
+   private final ResourceKey<Block> fruit;
+   private final ResourceKey<Block> attachedStem;
+   private final ResourceKey<Item> seed;
 
-   protected StemBlock(StemGrownBlock var1, Supplier<Item> var2, BlockBehaviour.Properties var3) {
-      super(var3);
+   @Override
+   public MapCodec<StemBlock> codec() {
+      return CODEC;
+   }
+
+   protected StemBlock(ResourceKey<Block> var1, ResourceKey<Block> var2, ResourceKey<Item> var3, BlockBehaviour.Properties var4) {
+      super(var4);
       this.fruit = var1;
-      this.seedSupplier = var2;
+      this.attachedStem = var2;
+      this.seed = var3;
       this.registerDefaultState(this.stateDefinition.any().setValue(AGE, Integer.valueOf(0)));
    }
 
@@ -68,8 +91,13 @@ public class StemBlock extends BushBlock implements BonemealableBlock {
                BlockPos var8 = var3.relative(var7);
                BlockState var9 = var2.getBlockState(var8.below());
                if (var2.getBlockState(var8).isAir() && (var9.is(Blocks.FARMLAND) || var9.is(BlockTags.DIRT))) {
-                  var2.setBlockAndUpdate(var8, this.fruit.defaultBlockState());
-                  var2.setBlockAndUpdate(var3, this.fruit.getAttachedStem().defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, var7));
+                  Registry var10 = var2.registryAccess().registryOrThrow(Registries.BLOCK);
+                  Optional var11 = var10.getOptional(this.fruit);
+                  Optional var12 = var10.getOptional(this.attachedStem);
+                  if (var11.isPresent() && var12.isPresent()) {
+                     var2.setBlockAndUpdate(var8, ((Block)var11.get()).defaultBlockState());
+                     var2.setBlockAndUpdate(var3, ((Block)var12.get()).defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, var7));
+                  }
                }
             }
          }
@@ -77,8 +105,8 @@ public class StemBlock extends BushBlock implements BonemealableBlock {
    }
 
    @Override
-   public ItemStack getCloneItemStack(BlockGetter var1, BlockPos var2, BlockState var3) {
-      return new ItemStack(this.seedSupplier.get());
+   public ItemStack getCloneItemStack(LevelReader var1, BlockPos var2, BlockState var3) {
+      return new ItemStack((ItemLike)DataFixUtils.orElse(var1.registryAccess().registryOrThrow(Registries.ITEM).getOptional(this.seed), this));
    }
 
    @Override
@@ -104,9 +132,5 @@ public class StemBlock extends BushBlock implements BonemealableBlock {
    @Override
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
       var1.add(AGE);
-   }
-
-   public StemGrownBlock getFruit() {
-      return this.fruit;
    }
 }

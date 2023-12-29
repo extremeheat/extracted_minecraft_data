@@ -19,6 +19,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.core.Direction;
+import net.minecraft.util.Mth;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.DecoratedPotBlockEntity;
@@ -40,6 +41,7 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
    private final ModelPart top;
    private final ModelPart bottom;
    private final Material baseMaterial = Objects.requireNonNull(Sheets.getDecoratedPotMaterial(DecoratedPotPatterns.BASE));
+   private static final float WOBBLE_AMPLITUDE = 0.125F;
 
    public DecoratedPotRenderer(BlockEntityRendererProvider.Context var1) {
       super();
@@ -101,15 +103,34 @@ public class DecoratedPotRenderer implements BlockEntityRenderer<DecoratedPotBlo
       var3.translate(0.5, 0.0, 0.5);
       var3.mulPose(Axis.YP.rotationDegrees(180.0F - var7.toYRot()));
       var3.translate(-0.5, 0.0, -0.5);
-      VertexConsumer var8 = this.baseMaterial.buffer(var4, RenderType::entitySolid);
-      this.neck.render(var3, var8, var5, var6);
-      this.top.render(var3, var8, var5, var6);
-      this.bottom.render(var3, var8, var5, var6);
-      DecoratedPotBlockEntity.Decorations var9 = var1.getDecorations();
-      this.renderSide(this.frontSide, var3, var4, var5, var6, getMaterial(var9.front()));
-      this.renderSide(this.backSide, var3, var4, var5, var6, getMaterial(var9.back()));
-      this.renderSide(this.leftSide, var3, var4, var5, var6, getMaterial(var9.left()));
-      this.renderSide(this.rightSide, var3, var4, var5, var6, getMaterial(var9.right()));
+      DecoratedPotBlockEntity.WobbleStyle var8 = var1.lastWobbleStyle;
+      if (var8 != null && var1.getLevel() != null) {
+         float var9 = ((float)(var1.getLevel().getGameTime() - var1.wobbleStartedAtTick) + var2) / (float)var8.duration;
+         if (var9 >= 0.0F && var9 <= 1.0F) {
+            if (var8 == DecoratedPotBlockEntity.WobbleStyle.POSITIVE) {
+               float var10 = 0.015625F;
+               float var11 = var9 * 6.2831855F;
+               float var12 = -1.5F * (Mth.cos(var11) + 0.5F) * Mth.sin(var11 / 2.0F);
+               var3.rotateAround(Axis.XP.rotation(var12 * 0.015625F), 0.5F, 0.0F, 0.5F);
+               float var13 = Mth.sin(var11);
+               var3.rotateAround(Axis.ZP.rotation(var13 * 0.015625F), 0.5F, 0.0F, 0.5F);
+            } else {
+               float var15 = Mth.sin(-var9 * 3.0F * 3.1415927F) * 0.125F;
+               float var17 = 1.0F - var9;
+               var3.rotateAround(Axis.YP.rotation(var15 * var17), 0.5F, 0.0F, 0.5F);
+            }
+         }
+      }
+
+      VertexConsumer var14 = this.baseMaterial.buffer(var4, RenderType::entitySolid);
+      this.neck.render(var3, var14, var5, var6);
+      this.top.render(var3, var14, var5, var6);
+      this.bottom.render(var3, var14, var5, var6);
+      DecoratedPotBlockEntity.Decorations var16 = var1.getDecorations();
+      this.renderSide(this.frontSide, var3, var4, var5, var6, getMaterial(var16.front()));
+      this.renderSide(this.backSide, var3, var4, var5, var6, getMaterial(var16.back()));
+      this.renderSide(this.leftSide, var3, var4, var5, var6, getMaterial(var16.left()));
+      this.renderSide(this.rightSide, var3, var4, var5, var6, getMaterial(var16.right()));
       var3.popPose();
    }
 

@@ -14,10 +14,6 @@ import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.inventory.tooltip.BelowOrAboveWidgetTooltipPositioner;
-import net.minecraft.client.gui.screens.inventory.tooltip.ClientTooltipPositioner;
-import net.minecraft.client.gui.screens.inventory.tooltip.MenuTooltipPositioner;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.Component;
@@ -41,9 +37,6 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
    private boolean focused;
    @Nullable
    private Tooltip tooltip;
-   private int tooltipMsDelay;
-   private long hoverOrFocusedStartTime;
-   private boolean wasHoveredOrFocused;
 
    public AbstractWidget(int var1, int var2, int var3, int var4, Component var5) {
       super();
@@ -60,38 +53,14 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
    }
 
    @Override
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
+   public final void render(GuiGraphics var1, int var2, int var3, float var4) {
       if (this.visible) {
          this.isHovered = var2 >= this.getX() && var3 >= this.getY() && var2 < this.getX() + this.width && var3 < this.getY() + this.height;
          this.renderWidget(var1, var2, var3, var4);
-         this.updateTooltip();
-      }
-   }
-
-   private void updateTooltip() {
-      if (this.tooltip != null) {
-         boolean var1 = this.isHovered || this.isFocused() && Minecraft.getInstance().getLastInputType().isKeyboard();
-         if (var1 != this.wasHoveredOrFocused) {
-            if (var1) {
-               this.hoverOrFocusedStartTime = Util.getMillis();
-            }
-
-            this.wasHoveredOrFocused = var1;
-         }
-
-         if (var1 && Util.getMillis() - this.hoverOrFocusedStartTime > (long)this.tooltipMsDelay) {
-            Screen var2 = Minecraft.getInstance().screen;
-            if (var2 != null) {
-               var2.setTooltipForNextRenderPass(this.tooltip, this.createTooltipPositioner(), this.isFocused());
-            }
+         if (this.tooltip != null) {
+            this.tooltip.refreshTooltipForNextRenderPass(this.isHovered(), this.isFocused(), this.getRectangle());
          }
       }
-   }
-
-   protected ClientTooltipPositioner createTooltipPositioner() {
-      return (ClientTooltipPositioner)(!this.isHovered && this.isFocused() && Minecraft.getInstance().getLastInputType().isKeyboard()
-         ? new BelowOrAboveWidgetTooltipPositioner(this)
-         : new MenuTooltipPositioner(this));
    }
 
    public void setTooltip(@Nullable Tooltip var1) {
@@ -104,7 +73,9 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
    }
 
    public void setTooltipDelay(int var1) {
-      this.tooltipMsDelay = var1;
+      if (this.tooltip != null) {
+         this.tooltip.setDelay(var1);
+      }
    }
 
    protected MutableComponent createNarrationMessage() {
@@ -202,8 +173,8 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
          && this.visible
          && var1 >= (double)this.getX()
          && var3 >= (double)this.getY()
-         && var1 < (double)(this.getX() + this.width)
-         && var3 < (double)(this.getY() + this.height);
+         && var1 < (double)(this.getX() + this.getWidth())
+         && var3 < (double)(this.getY() + this.getHeight());
    }
 
    @Nullable
@@ -328,14 +299,32 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
       this.y = var1;
    }
 
+   public int getRight() {
+      return this.getX() + this.getWidth();
+   }
+
+   public int getBottom() {
+      return this.getY() + this.getHeight();
+   }
+
    @Override
    public void visitWidgets(Consumer<AbstractWidget> var1) {
       var1.accept(this);
    }
 
+   public void setSize(int var1, int var2) {
+      this.width = var1;
+      this.height = var2;
+   }
+
    @Override
    public ScreenRectangle getRectangle() {
       return LayoutElement.super.getRectangle();
+   }
+
+   public void setRectangle(int var1, int var2, int var3, int var4) {
+      this.setSize(var1, var2);
+      this.setPosition(var3, var4);
    }
 
    @Override

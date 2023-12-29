@@ -1,5 +1,6 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.Object2FloatMap;
 import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 import javax.annotation.Nullable;
@@ -41,6 +42,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class ComposterBlock extends Block implements WorldlyContainerHolder {
+   public static final MapCodec<ComposterBlock> CODEC = simpleCodec(ComposterBlock::new);
    public static final int READY = 8;
    public static final int MIN_LEVEL = 0;
    public static final int MAX_LEVEL = 7;
@@ -55,6 +57,11 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
 
       var0[8] = var0[7];
    });
+
+   @Override
+   public MapCodec<ComposterBlock> codec() {
+      return CODEC;
+   }
 
    public static void bootStrap() {
       COMPOSTABLES.defaultReturnValue(-1.0F);
@@ -82,7 +89,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
       add(0.3F, Items.MANGROVE_PROPAGULE);
       add(0.3F, Items.BEETROOT_SEEDS);
       add(0.3F, Items.DRIED_KELP);
-      add(0.3F, Items.GRASS);
+      add(0.3F, Items.SHORT_GRASS);
       add(0.3F, Items.KELP);
       add(0.3F, Items.MELON_SEEDS);
       add(0.3F, Items.PUMPKIN_SEEDS);

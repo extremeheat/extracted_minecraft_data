@@ -25,7 +25,7 @@ public class DimensionArgument implements ArgumentType<ResourceLocation> {
       .map(var0 -> var0.location().toString())
       .collect(Collectors.toList());
    private static final DynamicCommandExceptionType ERROR_INVALID_VALUE = new DynamicCommandExceptionType(
-      var0 -> Component.translatable("argument.dimension.invalid", var0)
+      var0 -> Component.translatableEscape("argument.dimension.invalid", var0)
    );
 
    public DimensionArgument() {

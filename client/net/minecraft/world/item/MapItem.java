@@ -310,14 +310,14 @@ public class MapItem extends ComplexItem {
    }
 
    @Override
-   public void onCraftedBy(ItemStack var1, Level var2, Player var3) {
-      CompoundTag var4 = var1.getTag();
-      if (var4 != null && var4.contains("map_scale_direction", 99)) {
-         scaleMap(var1, var2, var4.getInt("map_scale_direction"));
-         var4.remove("map_scale_direction");
-      } else if (var4 != null && var4.contains("map_to_lock", 1) && var4.getBoolean("map_to_lock")) {
+   public void onCraftedPostProcess(ItemStack var1, Level var2) {
+      CompoundTag var3 = var1.getTag();
+      if (var3 != null && var3.contains("map_scale_direction", 99)) {
+         scaleMap(var1, var2, var3.getInt("map_scale_direction"));
+         var3.remove("map_scale_direction");
+      } else if (var3 != null && var3.contains("map_to_lock", 1) && var3.getBoolean("map_to_lock")) {
          lockMap(var2, var1);
-         var4.remove("map_to_lock");
+         var3.remove("map_to_lock");
       }
    }
 

@@ -12,8 +12,8 @@ import net.minecraft.network.chat.Component;
 public abstract class ObjectSelectionList<E extends ObjectSelectionList.Entry<E>> extends AbstractSelectionList<E> {
    private static final Component USAGE_NARRATION = Component.translatable("narration.selection.usage");
 
-   public ObjectSelectionList(Minecraft var1, int var2, int var3, int var4, int var5, int var6) {
-      super(var1, var2, var3, var4, var5, var6);
+   public ObjectSelectionList(Minecraft var1, int var2, int var3, int var4, int var5) {
+      super(var1, var2, var3, var4, var5);
    }
 
    // $QF: Could not properly define all variable types!
@@ -39,7 +39,7 @@ public abstract class ObjectSelectionList<E extends ObjectSelectionList.Entry<E>
    }
 
    @Override
-   public void updateNarration(NarrationElementOutput var1) {
+   public void updateWidgetNarration(NarrationElementOutput var1) {
       ObjectSelectionList.Entry var2 = this.getHovered();
       if (var2 != null) {
          this.narrateListElementPosition(var1.nest(), (E)var2);

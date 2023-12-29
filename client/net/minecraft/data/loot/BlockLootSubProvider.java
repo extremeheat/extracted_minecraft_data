@@ -619,7 +619,7 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
    }
 
    protected void dropPottedContents(Block var1) {
-      this.add(var1, var1x -> this.createPotFlowerItemTable(((FlowerPotBlock)var1x).getContent()));
+      this.add(var1, var1x -> this.createPotFlowerItemTable(((FlowerPotBlock)var1x).getPotted()));
    }
 
    protected void otherWhenSilkTouch(Block var1, Block var2) {

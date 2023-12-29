@@ -1,18 +1,15 @@
 package net.minecraft.client.gui;
 
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.datafixers.util.Pair;
 import com.mojang.math.Axis;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Comparator;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
@@ -39,6 +36,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.numbers.NumberFormat;
+import net.minecraft.network.chat.numbers.StyledFormat;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.FastColor;
@@ -65,8 +64,8 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.scores.DisplaySlot;
 import net.minecraft.world.scores.Objective;
+import net.minecraft.world.scores.PlayerScoreEntry;
 import net.minecraft.world.scores.PlayerTeam;
-import net.minecraft.world.scores.Score;
 import net.minecraft.world.scores.Scoreboard;
 
 public class Gui {
@@ -105,6 +104,9 @@ public class Gui {
    private static final ResourceLocation PUMPKIN_BLUR_LOCATION = new ResourceLocation("textures/misc/pumpkinblur.png");
    private static final ResourceLocation SPYGLASS_SCOPE_LOCATION = new ResourceLocation("textures/misc/spyglass_scope.png");
    private static final ResourceLocation POWDER_SNOW_OUTLINE_LOCATION = new ResourceLocation("textures/misc/powder_snow_outline.png");
+   private static final Comparator<PlayerScoreEntry> SCORE_DISPLAY_ORDER = Comparator.comparing(PlayerScoreEntry::value)
+      .reversed()
+      .thenComparing(PlayerScoreEntry::owner, String.CASE_INSENSITIVE_ORDER);
    private static final Component DEMO_EXPIRED_TEXT = Component.translatable("demo.demoExpired");
    private static final Component SAVING_TEXT = Component.translatable("menu.savingLevel");
    private static final int COLOR_WHITE = 16777215;
@@ -423,7 +425,7 @@ public class Gui {
       }
    }
 
-   private boolean canRenderCrosshairForSpectator(HitResult var1) {
+   private boolean canRenderCrosshairForSpectator(@Nullable HitResult var1) {
       if (var1 == null) {
          return false;
       } else if (var1.getType() == HitResult.Type.ENTITY) {
@@ -635,7 +637,10 @@ public class Gui {
       if (this.minecraft.level.getGameTime() >= 120500L) {
          var2 = DEMO_EXPIRED_TEXT;
       } else {
-         var2 = Component.translatable("demo.remainingTime", StringUtil.formatTickDuration((int)(120500L - this.minecraft.level.getGameTime())));
+         var2 = Component.translatable(
+            "demo.remainingTime",
+            StringUtil.formatTickDuration((int)(120500L - this.minecraft.level.getGameTime()), this.minecraft.level.tickRateManager().tickrate())
+         );
       }
 
       int var3 = this.getFont().width((FormattedText)var2);
@@ -645,57 +650,69 @@ public class Gui {
 
    private void displayScoreboardSidebar(GuiGraphics var1, Objective var2) {
       Scoreboard var3 = var2.getScoreboard();
-      Collection var4 = var3.getPlayerScores(var2);
-      List var5 = var4.stream().filter(var0 -> var0.getOwner() != null && !var0.getOwner().startsWith("#")).collect(Collectors.toList());
-      if (var5.size() > 15) {
-         var4 = Lists.newArrayList(Iterables.skip(var5, var4.size() - 15));
-      } else {
-         var4 = var5;
-      }
+      NumberFormat var4 = var2.numberFormatOrDefault(StyledFormat.SIDEBAR_DEFAULT);
 
-      ArrayList var6 = Lists.newArrayListWithCapacity(var4.size());
-      Component var7 = var2.getDisplayName();
-      int var8 = this.getFont().width(var7);
-      int var9 = var8;
-      int var10 = this.getFont().width(": ");
+      record 1DisplayEntry(Component a, Component b, int c) {
+         final Component name;
+         final Component score;
+         final int scoreWidth;
 
-      for(Score var12 : var4) {
-         PlayerTeam var13 = var3.getPlayersTeam(var12.getOwner());
-         MutableComponent var14 = PlayerTeam.formatNameForTeam(var13, Component.literal(var12.getOwner()));
-         var6.add(Pair.of(var12, var14));
-         var9 = Math.max(var9, this.getFont().width(var14) + var10 + this.getFont().width(Integer.toString(var12.getScore())));
-      }
-
-      int var27 = var4.size() * 9;
-      int var28 = this.screenHeight / 2 + var27 / 3;
-      boolean var29 = true;
-      int var30 = this.screenWidth - var9 - 3;
-      int var15 = 0;
-      int var16 = this.minecraft.options.getBackgroundColor(0.3F);
-      int var17 = this.minecraft.options.getBackgroundColor(0.4F);
-
-      for(Pair var19 : var6) {
-         ++var15;
-         Score var20 = (Score)var19.getFirst();
-         Component var21 = (Component)var19.getSecond();
-         String var22 = "" + ChatFormatting.RED + var20.getScore();
-         int var24 = var28 - var15 * 9;
-         int var25 = this.screenWidth - 3 + 2;
-         var1.fill(var30 - 2, var24, var25, var24 + 9, var16);
-         var1.drawString(this.getFont(), var21, var30, var24, -1, false);
-         var1.drawString(this.getFont(), var22, var25 - this.getFont().width(var22), var24, -1, false);
-         if (var15 == var4.size()) {
-            var1.fill(var30 - 2, var24 - 9 - 1, var25, var24 - 1, var17);
-            var1.fill(var30 - 2, var24 - 1, var25, var24, var16);
-            var1.drawString(this.getFont(), var7, var30 + var9 / 2 - var8 / 2, var24 - 9, -1, false);
+         _DisplayEntry/* $QF was: 1DisplayEntry*/(Component var1, Component var2, int var3) {
+            super();
+            this.name = var1;
+            this.score = var2;
+            this.scoreWidth = var3;
          }
       }
+
+      1DisplayEntry[] var5 = var3.listPlayerScores(var2).stream().filter(var0 -> !var0.isHidden()).sorted(SCORE_DISPLAY_ORDER).limit(15L).map(var3x -> {
+         PlayerTeam var4x = var3.getPlayersTeam(var3x.owner());
+         Component var5x = var3x.ownerName();
+         MutableComponent var6x = PlayerTeam.formatNameForTeam(var4x, var5x);
+         MutableComponent var7x = var3x.formatValue(var4);
+         int var8x = this.getFont().width(var7x);
+         return new 1DisplayEntry(var6x, var7x, var8x);
+      }).toArray(var0 -> new 1DisplayEntry[var0]);
+      Component var6 = var2.getDisplayName();
+      int var7 = this.getFont().width(var6);
+      int var8 = var7;
+      int var9 = this.getFont().width(": ");
+
+      for(1DisplayEntry var13 : var5) {
+         var8 = Math.max(var8, this.getFont().width(var13.name) + (var13.scoreWidth > 0 ? var9 + var13.scoreWidth : 0));
+      }
+
+      int var14 = var8;
+      var1.drawManaged(() -> {
+         int var6x = var5.length;
+         int var7x = var6x * 9;
+         int var8x = this.screenHeight / 2 + var7x / 3;
+         boolean var9x = true;
+         int var10 = this.screenWidth - var14 - 3;
+         int var11 = this.screenWidth - 3 + 2;
+         int var12 = this.minecraft.options.getBackgroundColor(0.3F);
+         int var13x = this.minecraft.options.getBackgroundColor(0.4F);
+         int var14x = var8x - var6x * 9;
+         var1.fill(var10 - 2, var14x - 9 - 1, var11, var14x - 1, var13x);
+         var1.fill(var10 - 2, var14x - 1, var11, var8x, var12);
+         var1.drawString(this.getFont(), var6, var10 + var14 / 2 - var7 / 2, var14x - 9, -1, false);
+
+         for(int var15 = 0; var15 < var6x; ++var15) {
+            1DisplayEntry var16 = var5[var15];
+            int var17 = var8x - (var6x - var15) * 9;
+            var1.drawString(this.getFont(), var16.name, var10, var17, -1, false);
+            var1.drawString(this.getFont(), var16.score, var11 - var16.scoreWidth, var17, -1, false);
+         }
+      });
    }
 
+   @Nullable
    private Player getCameraPlayer() {
-      return !(this.minecraft.getCameraEntity() instanceof Player) ? null : (Player)this.minecraft.getCameraEntity();
+      Entity var2 = this.minecraft.getCameraEntity();
+      return var2 instanceof Player var1 ? var1 : null;
    }
 
+   @Nullable
    private LivingEntity getPlayerVehicleWithHealth() {
       Player var1 = this.getCameraPlayer();
       if (var1 != null) {
@@ -712,7 +729,7 @@ public class Gui {
       return null;
    }
 
-   private int getVehicleMaxHearts(LivingEntity var1) {
+   private int getVehicleMaxHearts(@Nullable LivingEntity var1) {
       if (var1 != null && var1.showVehicleHealth()) {
          float var2 = var1.getMaxHealth();
          int var3 = (int)(var2 + 0.5F) / 2;
@@ -958,23 +975,22 @@ public class Gui {
    }
 
    private void updateVignetteBrightness(Entity var1) {
-      if (var1 != null) {
-         BlockPos var2 = BlockPos.containing(var1.getX(), var1.getEyeY(), var1.getZ());
-         float var3 = LightTexture.getBrightness(var1.level().dimensionType(), var1.level().getMaxLocalRawBrightness(var2));
-         float var4 = Mth.clamp(1.0F - var3, 0.0F, 1.0F);
-         this.vignetteBrightness += (var4 - this.vignetteBrightness) * 0.01F;
-      }
+      BlockPos var2 = BlockPos.containing(var1.getX(), var1.getEyeY(), var1.getZ());
+      float var3 = LightTexture.getBrightness(var1.level().dimensionType(), var1.level().getMaxLocalRawBrightness(var2));
+      float var4 = Mth.clamp(1.0F - var3, 0.0F, 1.0F);
+      this.vignetteBrightness += (var4 - this.vignetteBrightness) * 0.01F;
    }
 
-   private void renderVignette(GuiGraphics var1, Entity var2) {
+   private void renderVignette(GuiGraphics var1, @Nullable Entity var2) {
       WorldBorder var3 = this.minecraft.level.getWorldBorder();
-      float var4 = (float)var3.getDistanceToBorder(var2);
-      double var5 = Math.min(var3.getLerpSpeed() * (double)var3.getWarningTime() * 1000.0, Math.abs(var3.getLerpTarget() - var3.getSize()));
-      double var7 = Math.max((double)var3.getWarningBlocks(), var5);
-      if ((double)var4 < var7) {
-         var4 = 1.0F - (float)((double)var4 / var7);
-      } else {
-         var4 = 0.0F;
+      float var4 = 0.0F;
+      if (var2 != null) {
+         float var5 = (float)var3.getDistanceToBorder(var2);
+         double var6 = Math.min(var3.getLerpSpeed() * (double)var3.getWarningTime() * 1000.0, Math.abs(var3.getLerpTarget() - var3.getSize()));
+         double var8 = Math.max((double)var3.getWarningBlocks(), var6);
+         if ((double)var5 < var8) {
+            var4 = 1.0F - (float)((double)var5 / var8);
+         }
       }
 
       RenderSystem.disableDepthTest();
@@ -986,9 +1002,9 @@ public class Gui {
          var4 = Mth.clamp(var4, 0.0F, 1.0F);
          var1.setColor(0.0F, var4, var4, 1.0F);
       } else {
-         float var9 = this.vignetteBrightness;
-         var9 = Mth.clamp(var9, 0.0F, 1.0F);
-         var1.setColor(var9, var9, var9, 1.0F);
+         float var11 = this.vignetteBrightness;
+         var11 = Mth.clamp(var11, 0.0F, 1.0F);
+         var1.setColor(var11, var11, var11, 1.0F);
       }
 
       var1.blit(VIGNETTE_LOCATION, 0, 0, -90, 0.0F, 0.0F, this.screenWidth, this.screenHeight, this.screenWidth, this.screenHeight);

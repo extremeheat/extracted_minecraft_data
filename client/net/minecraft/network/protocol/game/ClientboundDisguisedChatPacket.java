@@ -10,7 +10,7 @@ public record ClientboundDisguisedChatPacket(Component a, ChatType.BoundNetwork 
    private final ChatType.BoundNetwork chatType;
 
    public ClientboundDisguisedChatPacket(FriendlyByteBuf var1) {
-      this(var1.readComponent(), new ChatType.BoundNetwork(var1));
+      this(var1.readComponentTrusted(), new ChatType.BoundNetwork(var1));
    }
 
    public ClientboundDisguisedChatPacket(Component var1, ChatType.BoundNetwork var2) {

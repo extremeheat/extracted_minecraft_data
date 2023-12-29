@@ -31,7 +31,7 @@ public class ShearsItem extends Item {
 
       return !var3.is(BlockTags.LEAVES)
             && !var3.is(Blocks.COBWEB)
-            && !var3.is(Blocks.GRASS)
+            && !var3.is(Blocks.SHORT_GRASS)
             && !var3.is(Blocks.FERN)
             && !var3.is(Blocks.DEAD_BUSH)
             && !var3.is(Blocks.HANGING_ROOTS)

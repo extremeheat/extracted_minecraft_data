@@ -1,5 +1,8 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
@@ -47,6 +50,14 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedBlock {
+   public static final MapCodec<CampfireBlock> CODEC = RecordCodecBuilder.mapCodec(
+      var0 -> var0.group(
+               Codec.BOOL.fieldOf("spawn_particles").forGetter(var0x -> var0x.spawnParticles),
+               Codec.intRange(0, 1000).fieldOf("fire_damage").forGetter(var0x -> var0x.fireDamage),
+               propertiesCodec()
+            )
+            .apply(var0, CampfireBlock::new)
+   );
    protected static final VoxelShape SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 7.0, 16.0);
    public static final BooleanProperty LIT = BlockStateProperties.LIT;
    public static final BooleanProperty SIGNAL_FIRE = BlockStateProperties.SIGNAL_FIRE;
@@ -56,6 +67,11 @@ public class CampfireBlock extends BaseEntityBlock implements SimpleWaterloggedB
    private static final int SMOKE_DISTANCE = 5;
    private final boolean spawnParticles;
    private final int fireDamage;
+
+   @Override
+   public MapCodec<CampfireBlock> codec() {
+      return CODEC;
+   }
 
    public CampfireBlock(boolean var1, int var2, BlockBehaviour.Properties var3) {
       super(var3);

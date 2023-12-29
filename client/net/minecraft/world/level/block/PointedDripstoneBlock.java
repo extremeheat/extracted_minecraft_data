@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.mojang.serialization.MapCodec;
 import java.util.Optional;
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
@@ -43,6 +44,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class PointedDripstoneBlock extends Block implements Fallable, SimpleWaterloggedBlock {
+   public static final MapCodec<PointedDripstoneBlock> CODEC = simpleCodec(PointedDripstoneBlock::new);
    public static final DirectionProperty TIP_DIRECTION = BlockStateProperties.VERTICAL_DIRECTION;
    public static final EnumProperty<DripstoneThickness> THICKNESS = BlockStateProperties.DRIPSTONE_THICKNESS;
    public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
@@ -72,6 +74,11 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
    private static final VoxelShape BASE_SHAPE = Block.box(2.0, 0.0, 2.0, 14.0, 16.0, 14.0);
    private static final float MAX_HORIZONTAL_OFFSET = 0.125F;
    private static final VoxelShape REQUIRED_SPACE_TO_DRIP_THROUGH_NON_SOLID_BLOCK = Block.box(6.0, 0.0, 6.0, 10.0, 16.0, 10.0);
+
+   @Override
+   public MapCodec<PointedDripstoneBlock> codec() {
+      return CODEC;
+   }
 
    public PointedDripstoneBlock(BlockBehaviour.Properties var1) {
       super(var1);
@@ -124,9 +131,11 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
 
    @Override
    public void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
-      BlockPos var5 = var3.getBlockPos();
-      if (!var1.isClientSide && var4.mayInteract(var1, var5) && var4 instanceof ThrownTrident && var4.getDeltaMovement().length() > 0.6) {
-         var1.destroyBlock(var5, true);
+      if (!var1.isClientSide) {
+         BlockPos var5 = var3.getBlockPos();
+         if (var4.mayInteract(var1, var5) && var4.mayBreak(var1) && var4 instanceof ThrownTrident && var4.getDeltaMovement().length() > 0.6) {
+            var1.destroyBlock(var5, true);
+         }
       }
    }
 

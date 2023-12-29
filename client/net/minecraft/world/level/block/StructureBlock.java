@@ -1,5 +1,6 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -20,7 +21,13 @@ import net.minecraft.world.level.block.state.properties.StructureMode;
 import net.minecraft.world.phys.BlockHitResult;
 
 public class StructureBlock extends BaseEntityBlock implements GameMasterBlock {
+   public static final MapCodec<StructureBlock> CODEC = simpleCodec(StructureBlock::new);
    public static final EnumProperty<StructureMode> MODE = BlockStateProperties.STRUCTUREBLOCK_MODE;
+
+   @Override
+   public MapCodec<StructureBlock> codec() {
+      return CODEC;
+   }
 
    protected StructureBlock(BlockBehaviour.Properties var1) {
       super(var1);
@@ -88,7 +95,7 @@ public class StructureBlock extends BaseEntityBlock implements GameMasterBlock {
             var2.saveStructure(false);
             break;
          case LOAD:
-            var2.loadStructure(var1, false);
+            var2.placeStructure(var1);
             break;
          case CORNER:
             var2.unloadStructure();

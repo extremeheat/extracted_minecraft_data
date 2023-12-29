@@ -1,23 +1,26 @@
 package net.minecraft.data.recipes;
 
-import com.google.gson.JsonObject;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.Advancement;
-import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementRequirements;
 import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
+import net.minecraft.world.item.crafting.BlastingRecipe;
+import net.minecraft.world.item.crafting.CampfireCookingRecipe;
 import net.minecraft.world.item.crafting.CookingBookCategory;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.SmeltingRecipe;
+import net.minecraft.world.item.crafting.SmokingRecipe;
 import net.minecraft.world.level.ItemLike;
 
 public class SimpleCookingRecipeBuilder implements RecipeBuilder {
@@ -30,16 +33,10 @@ public class SimpleCookingRecipeBuilder implements RecipeBuilder {
    private final Map<String, Criterion<?>> criteria = new LinkedHashMap<>();
    @Nullable
    private String group;
-   private final RecipeSerializer<? extends AbstractCookingRecipe> serializer;
+   private final AbstractCookingRecipe.Factory<?> factory;
 
    private SimpleCookingRecipeBuilder(
-      RecipeCategory var1,
-      CookingBookCategory var2,
-      ItemLike var3,
-      Ingredient var4,
-      float var5,
-      int var6,
-      RecipeSerializer<? extends AbstractCookingRecipe> var7
+      RecipeCategory var1, CookingBookCategory var2, ItemLike var3, Ingredient var4, float var5, int var6, AbstractCookingRecipe.Factory<?> var7
    ) {
       super();
       this.category = var1;
@@ -48,29 +45,29 @@ public class SimpleCookingRecipeBuilder implements RecipeBuilder {
       this.ingredient = var4;
       this.experience = var5;
       this.cookingTime = var6;
-      this.serializer = var7;
+      this.factory = var7;
    }
 
-   public static SimpleCookingRecipeBuilder generic(
-      Ingredient var0, RecipeCategory var1, ItemLike var2, float var3, int var4, RecipeSerializer<? extends AbstractCookingRecipe> var5
+   public static <T extends AbstractCookingRecipe> SimpleCookingRecipeBuilder generic(
+      Ingredient var0, RecipeCategory var1, ItemLike var2, float var3, int var4, RecipeSerializer<T> var5, AbstractCookingRecipe.Factory<T> var6
    ) {
-      return new SimpleCookingRecipeBuilder(var1, determineRecipeCategory(var5, var2), var2, var0, var3, var4, var5);
+      return new SimpleCookingRecipeBuilder(var1, determineRecipeCategory(var5, var2), var2, var0, var3, var4, var6);
    }
 
    public static SimpleCookingRecipeBuilder campfireCooking(Ingredient var0, RecipeCategory var1, ItemLike var2, float var3, int var4) {
-      return new SimpleCookingRecipeBuilder(var1, CookingBookCategory.FOOD, var2, var0, var3, var4, RecipeSerializer.CAMPFIRE_COOKING_RECIPE);
+      return new SimpleCookingRecipeBuilder(var1, CookingBookCategory.FOOD, var2, var0, var3, var4, CampfireCookingRecipe::new);
    }
 
    public static SimpleCookingRecipeBuilder blasting(Ingredient var0, RecipeCategory var1, ItemLike var2, float var3, int var4) {
-      return new SimpleCookingRecipeBuilder(var1, determineBlastingRecipeCategory(var2), var2, var0, var3, var4, RecipeSerializer.BLASTING_RECIPE);
+      return new SimpleCookingRecipeBuilder(var1, determineBlastingRecipeCategory(var2), var2, var0, var3, var4, BlastingRecipe::new);
    }
 
    public static SimpleCookingRecipeBuilder smelting(Ingredient var0, RecipeCategory var1, ItemLike var2, float var3, int var4) {
-      return new SimpleCookingRecipeBuilder(var1, determineSmeltingRecipeCategory(var2), var2, var0, var3, var4, RecipeSerializer.SMELTING_RECIPE);
+      return new SimpleCookingRecipeBuilder(var1, determineSmeltingRecipeCategory(var2), var2, var0, var3, var4, SmeltingRecipe::new);
    }
 
    public static SimpleCookingRecipeBuilder smoking(Ingredient var0, RecipeCategory var1, ItemLike var2, float var3, int var4) {
-      return new SimpleCookingRecipeBuilder(var1, CookingBookCategory.FOOD, var2, var0, var3, var4, RecipeSerializer.SMOKING_RECIPE);
+      return new SimpleCookingRecipeBuilder(var1, CookingBookCategory.FOOD, var2, var0, var3, var4, SmokingRecipe::new);
    }
 
    public SimpleCookingRecipeBuilder unlockedBy(String var1, Criterion<?> var2) {
@@ -96,19 +93,9 @@ public class SimpleCookingRecipeBuilder implements RecipeBuilder {
          .rewards(AdvancementRewards.Builder.recipe(var2))
          .requirements(AdvancementRequirements.Strategy.OR);
       this.criteria.forEach(var3::addCriterion);
-      var1.accept(
-         new SimpleCookingRecipeBuilder.Result(
-            var2,
-            this.group == null ? "" : this.group,
-            this.bookCategory,
-            this.ingredient,
-            this.result,
-            this.experience,
-            this.cookingTime,
-            var3.build(var2.withPrefix("recipes/" + this.category.getFolderName() + "/")),
-            this.serializer
-         )
-      );
+      AbstractCookingRecipe var4 = this.factory
+         .create(Objects.requireNonNullElse(this.group, ""), this.bookCategory, this.ingredient, new ItemStack(this.result), this.experience, this.cookingTime);
+      var1.accept(var2, var4, var3.build(var2.withPrefix("recipes/" + this.category.getFolderName() + "/")));
    }
 
    private static CookingBookCategory determineSmeltingRecipeCategory(ItemLike var0) {
@@ -138,64 +125,6 @@ public class SimpleCookingRecipeBuilder implements RecipeBuilder {
    private void ensureValid(ResourceLocation var1) {
       if (this.criteria.isEmpty()) {
          throw new IllegalStateException("No way of obtaining recipe " + var1);
-      }
-   }
-
-   static record Result(
-      ResourceLocation a,
-      String b,
-      CookingBookCategory c,
-      Ingredient d,
-      Item e,
-      float f,
-      int g,
-      AdvancementHolder h,
-      RecipeSerializer<? extends AbstractCookingRecipe> i
-   ) implements FinishedRecipe {
-      private final ResourceLocation id;
-      private final String group;
-      private final CookingBookCategory category;
-      private final Ingredient ingredient;
-      private final Item result;
-      private final float experience;
-      private final int cookingTime;
-      private final AdvancementHolder advancement;
-      private final RecipeSerializer<? extends AbstractCookingRecipe> type;
-
-      Result(
-         ResourceLocation var1,
-         String var2,
-         CookingBookCategory var3,
-         Ingredient var4,
-         Item var5,
-         float var6,
-         int var7,
-         AdvancementHolder var8,
-         RecipeSerializer<? extends AbstractCookingRecipe> var9
-      ) {
-         super();
-         this.id = var1;
-         this.group = var2;
-         this.category = var3;
-         this.ingredient = var4;
-         this.result = var5;
-         this.experience = var6;
-         this.cookingTime = var7;
-         this.advancement = var8;
-         this.type = var9;
-      }
-
-      @Override
-      public void serializeRecipeData(JsonObject var1) {
-         if (!this.group.isEmpty()) {
-            var1.addProperty("group", this.group);
-         }
-
-         var1.addProperty("category", this.category.getSerializedName());
-         var1.add("ingredient", this.ingredient.toJson(false));
-         var1.addProperty("result", BuiltInRegistries.ITEM.getKey(this.result).toString());
-         var1.addProperty("experience", this.experience);
-         var1.addProperty("cookingtime", this.cookingTime);
       }
    }
 }

@@ -1,12 +1,14 @@
 package net.minecraft.advancements.critereon;
 
-import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -16,10 +18,9 @@ public class LightningStrikeTrigger extends SimpleCriterionTrigger<LightningStri
       super();
    }
 
-   public LightningStrikeTrigger.TriggerInstance createInstance(JsonObject var1, Optional<ContextAwarePredicate> var2, DeserializationContext var3) {
-      Optional var4 = EntityPredicate.fromJson(var1, "lightning", var3);
-      Optional var5 = EntityPredicate.fromJson(var1, "bystander", var3);
-      return new LightningStrikeTrigger.TriggerInstance(var2, var4, var5);
+   @Override
+   public Codec<LightningStrikeTrigger.TriggerInstance> codec() {
+      return LightningStrikeTrigger.TriggerInstance.CODEC;
    }
 
    public void trigger(ServerPlayer var1, LightningBolt var2, List<Entity> var3) {
@@ -28,12 +29,23 @@ public class LightningStrikeTrigger extends SimpleCriterionTrigger<LightningStri
       this.trigger(var1, var2x -> var2x.matches(var5, var4));
    }
 
-   public static class TriggerInstance extends AbstractCriterionTriggerInstance {
+   public static record TriggerInstance(Optional<ContextAwarePredicate> b, Optional<ContextAwarePredicate> c, Optional<ContextAwarePredicate> d)
+      implements SimpleCriterionTrigger.SimpleInstance {
+      private final Optional<ContextAwarePredicate> player;
       private final Optional<ContextAwarePredicate> lightning;
       private final Optional<ContextAwarePredicate> bystander;
+      public static final Codec<LightningStrikeTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
+         var0 -> var0.group(
+                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player").forGetter(LightningStrikeTrigger.TriggerInstance::player),
+                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "lightning").forGetter(LightningStrikeTrigger.TriggerInstance::lightning),
+                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "bystander").forGetter(LightningStrikeTrigger.TriggerInstance::bystander)
+               )
+               .apply(var0, LightningStrikeTrigger.TriggerInstance::new)
+      );
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<ContextAwarePredicate> var2, Optional<ContextAwarePredicate> var3) {
-         super(var1);
+         super();
+         this.player = var1;
          this.lightning = var2;
          this.bystander = var3;
       }
@@ -52,11 +64,10 @@ public class LightningStrikeTrigger extends SimpleCriterionTrigger<LightningStri
       }
 
       @Override
-      public JsonObject serializeToJson() {
-         JsonObject var1 = super.serializeToJson();
-         this.lightning.ifPresent(var1x -> var1.add("lightning", var1x.toJson()));
-         this.bystander.ifPresent(var1x -> var1.add("bystander", var1x.toJson()));
-         return var1;
+      public void validate(CriterionValidator var1) {
+         SimpleCriterionTrigger.SimpleInstance.super.validate(var1);
+         var1.validateEntity(this.lightning, ".lightning");
+         var1.validateEntity(this.bystander, ".bystander");
       }
    }
 }

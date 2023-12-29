@@ -7,7 +7,6 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -87,9 +86,9 @@ public class SocialInteractionsScreen extends Screen {
    @Override
    protected void init() {
       if (this.initialized) {
-         this.socialInteractionsPlayerList.updateSize(this.width, this.height, 88, this.listEnd());
+         this.socialInteractionsPlayerList.setRectangle(this.width, this.listEnd() - 88, 0, 88);
       } else {
-         this.socialInteractionsPlayerList = new SocialInteractionsPlayerList(this, this.minecraft, this.width, this.height, 88, this.listEnd(), 36);
+         this.socialInteractionsPlayerList = new SocialInteractionsPlayerList(this, this.minecraft, this.width, this.listEnd() - 88, 88, 36);
       }
 
       int var1 = this.socialInteractionsPlayerList.getRowWidth() / 3;
@@ -124,13 +123,9 @@ public class SocialInteractionsScreen extends Screen {
       this.searchBox.setResponder(this::checkSearchStringUpdate);
       this.addWidget(this.searchBox);
       this.addWidget(this.socialInteractionsPlayerList);
-      this.blockingHintButton = this.addRenderableWidget(Button.builder(BLOCKING_HINT, var1x -> this.minecraft.setScreen(new ConfirmLinkScreen(var1xx -> {
-            if (var1xx) {
-               Util.getPlatform().openUri("https://aka.ms/javablocking");
-            }
-
-            this.minecraft.setScreen(this);
-         }, "https://aka.ms/javablocking", true))).bounds(var6, var5, var4, 20).build());
+      this.blockingHintButton = this.addRenderableWidget(
+         Button.builder(BLOCKING_HINT, ConfirmLinkScreen.confirmLink(this, "https://aka.ms/javablocking")).bounds(var6, var5, var4, 20).build()
+      );
       this.initialized = true;
       this.showPage(this.page);
    }

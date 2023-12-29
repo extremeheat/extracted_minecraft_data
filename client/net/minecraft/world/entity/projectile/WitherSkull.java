@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.projectile;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -118,5 +119,17 @@ public class WitherSkull extends AbstractHurtingProjectile {
    @Override
    protected boolean shouldBurn() {
       return false;
+   }
+
+   @Override
+   public void addAdditionalSaveData(CompoundTag var1) {
+      super.addAdditionalSaveData(var1);
+      var1.putBoolean("dangerous", this.isDangerous());
+   }
+
+   @Override
+   public void readAdditionalSaveData(CompoundTag var1) {
+      super.readAdditionalSaveData(var1);
+      this.setDangerous(var1.getBoolean("dangerous"));
    }
 }

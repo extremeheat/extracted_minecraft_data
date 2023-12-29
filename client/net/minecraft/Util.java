@@ -5,17 +5,19 @@ import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.mojang.datafixers.DataFixUtils;
+import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.DSL.TypeReference;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DataResult.PartialResult;
-import it.unimi.dsi.fastutil.Hash.Strategy;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ReferenceImmutableList;
 import java.io.File;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -58,10 +60,10 @@ import java.util.function.BiFunction;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -81,11 +83,13 @@ import org.slf4j.Logger;
 public class Util {
    static final Logger LOGGER = LogUtils.getLogger();
    private static final int DEFAULT_MAX_THREADS = 255;
+   private static final int DEFAULT_SAFE_FILE_OPERATION_RETRIES = 10;
    private static final String MAX_THREADS_SYSTEM_PROPERTY = "max.bg.threads";
-   private static final AtomicInteger WORKER_COUNT = new AtomicInteger(1);
    private static final ExecutorService BACKGROUND_EXECUTOR = makeExecutor("Main");
-   private static final ExecutorService IO_POOL = makeIoExecutor();
+   private static final ExecutorService IO_POOL = makeIoExecutor("IO-Worker-", false);
+   private static final ExecutorService DOWNLOAD_POOL = makeIoExecutor("Download-", true);
    private static final DateTimeFormatter FILENAME_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss", Locale.ROOT);
+   private static final int LINEAR_LOOKUP_THRESHOLD = 8;
    public static final long NANOS_PER_MILLI = 1000000L;
    public static TimeSource.NanoTimeSource timeSource = System::nanoTime;
    public static final Ticker TICKER = new Ticker() {
@@ -140,8 +144,9 @@ public class Util {
       if (var1 <= 0) {
          var2 = MoreExecutors.newDirectExecutorService();
       } else {
-         var2 = new ForkJoinPool(var1, var1x -> {
-            ForkJoinWorkerThread var2x = new ForkJoinWorkerThread(var1x) {
+         AtomicInteger var3 = new AtomicInteger(1);
+         var2 = new ForkJoinPool(var1, var2x -> {
+            ForkJoinWorkerThread var3x = new ForkJoinWorkerThread(var2x) {
                @Override
                protected void onTermination(Throwable var1) {
                   if (var1 != null) {
@@ -153,8 +158,8 @@ public class Util {
                   super.onTermination(var1);
                }
             };
-            var2x.setName("Worker-" + var0 + "-" + WORKER_COUNT.getAndIncrement());
-            return var2x;
+            var3x.setName("Worker-" + var0 + "-" + var3.getAndIncrement());
+            return var3x;
          }, Util::onThreadException, true);
       }
 
@@ -187,6 +192,10 @@ public class Util {
       return IO_POOL;
    }
 
+   public static ExecutorService nonCriticalIoPool() {
+      return DOWNLOAD_POOL;
+   }
+
    public static void shutdownExecutors() {
       shutdownExecutor(BACKGROUND_EXECUTOR);
       shutdownExecutor(IO_POOL);
@@ -207,12 +216,14 @@ public class Util {
       }
    }
 
-   private static ExecutorService makeIoExecutor() {
-      return Executors.newCachedThreadPool(var0 -> {
-         Thread var1 = new Thread(var0);
-         var1.setName("IO-Worker-" + WORKER_COUNT.getAndIncrement());
-         var1.setUncaughtExceptionHandler(Util::onThreadException);
-         return var1;
+   private static ExecutorService makeIoExecutor(String var0, boolean var1) {
+      AtomicInteger var2 = new AtomicInteger(1);
+      return Executors.newCachedThreadPool(var3 -> {
+         Thread var4 = new Thread(var3);
+         var4.setName(var0 + var2.getAndIncrement());
+         var4.setDaemon(var1);
+         var4.setUncaughtExceptionHandler(Util::onThreadException);
+         return var4;
       });
    }
 
@@ -220,14 +231,16 @@ public class Util {
       throw var0 instanceof RuntimeException ? (RuntimeException)var0 : new RuntimeException(var0);
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private static void onThreadException(Thread var0, Throwable var1) {
       pauseInIde(var1);
       if (var1 instanceof CompletionException) {
          var1 = var1.getCause();
       }
 
-      if (var1 instanceof ReportedException) {
-         Bootstrap.realStdoutPrintln(((ReportedException)var1).getReport().getFriendlyReport());
+      if (var1 instanceof ReportedException var2) {
+         Bootstrap.realStdoutPrintln(var2.getReport().getFriendlyReport());
          System.exit(-1);
       }
 
@@ -359,10 +372,6 @@ public class Util {
    public static <T> T make(T var0, Consumer<? super T> var1) {
       var1.accept(var0);
       return (T)var0;
-   }
-
-   public static <K> Strategy<K> identityStrategy() {
-      return Util.IdentityStrategy.INSTANCE;
    }
 
    public static <V> CompletableFuture<List<V>> sequence(List<? extends CompletableFuture<V>> var0) {
@@ -579,26 +588,20 @@ public class Util {
       return false;
    }
 
-   public static void safeReplaceFile(File var0, File var1, File var2) {
-      safeReplaceFile(var0.toPath(), var1.toPath(), var2.toPath());
-   }
-
    public static void safeReplaceFile(Path var0, Path var1, Path var2) {
       safeReplaceOrMoveFile(var0, var1, var2, false);
    }
 
-   public static void safeReplaceOrMoveFile(File var0, File var1, File var2, boolean var3) {
-      safeReplaceOrMoveFile(var0.toPath(), var1.toPath(), var2.toPath(), var3);
-   }
-
-   public static void safeReplaceOrMoveFile(Path var0, Path var1, Path var2, boolean var3) {
-      boolean var4 = true;
-      if (!Files.exists(var0) || runWithRetries(10, "create backup " + var2, createDeleter(var2), createRenamer(var0, var2), createFileCreatedCheck(var2))) {
-         if (runWithRetries(10, "remove old " + var0, createDeleter(var0), createFileDeletedCheck(var0))) {
-            if (!runWithRetries(10, "replace " + var0 + " with " + var1, createRenamer(var1, var0), createFileCreatedCheck(var0)) && !var3) {
-               runWithRetries(10, "restore " + var0 + " from " + var2, createRenamer(var2, var0), createFileCreatedCheck(var0));
-            }
-         }
+   public static boolean safeReplaceOrMoveFile(Path var0, Path var1, Path var2, boolean var3) {
+      if (Files.exists(var0) && !runWithRetries(10, "create backup " + var2, createDeleter(var2), createRenamer(var0, var2), createFileCreatedCheck(var2))) {
+         return false;
+      } else if (!runWithRetries(10, "remove old " + var0, createDeleter(var0), createFileDeletedCheck(var0))) {
+         return false;
+      } else if (!runWithRetries(10, "replace " + var0 + " with " + var1, createRenamer(var1, var0), createFileCreatedCheck(var0)) && !var3) {
+         runWithRetries(10, "restore " + var0 + " from " + var2, createRenamer(var2, var0), createFileCreatedCheck(var0));
+         return false;
+      } else {
+         return true;
       }
    }
 
@@ -753,7 +756,7 @@ public class Util {
       return var2;
    }
 
-   public static <T> void shuffle(ObjectArrayList<T> var0, RandomSource var1) {
+   public static <T> void shuffle(List<T> var0, RandomSource var1) {
       int var2 = var0.size();
 
       for(int var3 = var2; var3 > 1; --var3) {
@@ -791,25 +794,82 @@ public class Util {
    }
 
    public static <T> ToIntFunction<T> createIndexLookup(List<T> var0) {
-      return createIndexLookup(var0, Object2IntOpenHashMap::new);
-   }
+      int var1 = var0.size();
+      if (var1 < 8) {
+         return var0::indexOf;
+      } else {
+         Object2IntOpenHashMap var2 = new Object2IntOpenHashMap(var1);
+         var2.defaultReturnValue(-1);
 
-   public static <T> ToIntFunction<T> createIndexLookup(List<T> var0, IntFunction<Object2IntMap<T>> var1) {
-      Object2IntMap var2 = (Object2IntMap)var1.apply(var0.size());
+         for(int var3 = 0; var3 < var1; ++var3) {
+            var2.put(var0.get(var3), var3);
+         }
 
-      for(int var3 = 0; var3 < var0.size(); ++var3) {
-         var2.put(var0.get(var3), var3);
+         return var2;
       }
-
-      return var2;
    }
 
-   public static <T, E extends Exception> T getOrThrow(DataResult<T> var0, Function<String, E> var1) throws E {
+   public static <T> ToIntFunction<T> createIndexIdentityLookup(List<T> var0) {
+      int var1 = var0.size();
+      if (var1 < 8) {
+         ReferenceImmutableList var4 = new ReferenceImmutableList(var0);
+         return var4::indexOf;
+      } else {
+         Reference2IntOpenHashMap var2 = new Reference2IntOpenHashMap(var1);
+         var2.defaultReturnValue(-1);
+
+         for(int var3 = 0; var3 < var1; ++var3) {
+            var2.put(var0.get(var3), var3);
+         }
+
+         return var2;
+      }
+   }
+
+   public static <T, E extends Throwable> T getOrThrow(DataResult<T> var0, Function<String, E> var1) throws E {
       Optional var2 = var0.error();
       if (var2.isPresent()) {
-         throw (Exception)var1.apply(((PartialResult)var2.get()).message());
+         throw (Throwable)var1.apply(((PartialResult)var2.get()).message());
       } else {
          return (T)var0.result().orElseThrow();
+      }
+   }
+
+   public static <T, E extends Throwable> T getPartialOrThrow(DataResult<T> var0, Function<String, E> var1) throws E {
+      Optional var2 = var0.error();
+      if (var2.isPresent()) {
+         Optional var3 = var0.resultOrPartial(var0x -> {
+         });
+         if (var3.isPresent()) {
+            return (T)var3.get();
+         } else {
+            throw (Throwable)var1.apply(((PartialResult)var2.get()).message());
+         }
+      } else {
+         return (T)var0.result().orElseThrow();
+      }
+   }
+
+   public static <A, B> Typed<B> writeAndReadTypedOrThrow(Typed<A> var0, Type<B> var1, UnaryOperator<Dynamic<?>> var2) {
+      Dynamic var3 = getOrThrow(var0.write(), IllegalStateException::new);
+      return readTypedOrThrow(var1, (Dynamic<?>)var2.apply(var3), true);
+   }
+
+   public static <T> Typed<T> readTypedOrThrow(Type<T> var0, Dynamic<?> var1) {
+      return readTypedOrThrow(var0, var1, false);
+   }
+
+   public static <T> Typed<T> readTypedOrThrow(Type<T> var0, Dynamic<?> var1, boolean var2) {
+      DataResult var3 = var0.readTyped(var1).map(Pair::getFirst);
+
+      try {
+         return var2 ? getPartialOrThrow(var3, IllegalStateException::new) : getOrThrow(var3, IllegalStateException::new);
+      } catch (IllegalStateException var7) {
+         CrashReport var5 = CrashReport.forThrowable(var7, "Reading type");
+         CrashReportCategory var6 = var5.addCategory("Info");
+         var6.setDetail("Data", var1);
+         var6.setDetail("Type", var0);
+         throw new ReportedException(var5);
       }
    }
 
@@ -819,21 +879,6 @@ public class Util {
 
    public static boolean isBlank(@Nullable String var0) {
       return var0 != null && var0.length() != 0 ? var0.chars().allMatch(Util::isWhitespace) : true;
-   }
-
-   static enum IdentityStrategy implements Strategy<Object> {
-      INSTANCE;
-
-      private IdentityStrategy() {
-      }
-
-      public int hashCode(Object var1) {
-         return System.identityHashCode(var1);
-      }
-
-      public boolean equals(Object var1, Object var2) {
-         return var1 == var2;
-      }
    }
 
    public static enum OS {

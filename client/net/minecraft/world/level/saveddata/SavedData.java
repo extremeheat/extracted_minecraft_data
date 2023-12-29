@@ -40,7 +40,7 @@ public abstract class SavedData {
          NbtUtils.addCurrentDataVersion(var2);
 
          try {
-            NbtIo.writeCompressed(var2, var1);
+            NbtIo.writeCompressed(var2, var1.toPath());
          } catch (IOException var4) {
             LOGGER.error("Could not save data {}", this, var4);
          }

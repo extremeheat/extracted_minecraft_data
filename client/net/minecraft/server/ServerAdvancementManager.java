@@ -1,25 +1,28 @@
 package net.minecraft.server;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.JsonOps;
 import java.util.Collection;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementNode;
 import net.minecraft.advancements.AdvancementTree;
 import net.minecraft.advancements.TreeNodePosition;
-import net.minecraft.advancements.critereon.DeserializationContext;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
-import net.minecraft.util.GsonHelper;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.storage.loot.LootDataManager;
 import org.slf4j.Logger;
@@ -40,11 +43,11 @@ public class ServerAdvancementManager extends SimpleJsonResourceReloadListener {
       Builder var4 = ImmutableMap.builder();
       var1.forEach((var2x, var3x) -> {
          try {
-            JsonObject var4x = GsonHelper.convertToJsonObject(var3x, "advancement");
-            Advancement var5x = Advancement.fromJson(var4x, new DeserializationContext(var2x, this.lootData));
-            var4.put(var2x, new AdvancementHolder(var2x, var5x));
-         } catch (Exception var6) {
-            LOGGER.error("Parsing error loading custom advancement {}: {}", var2x, var6.getMessage());
+            Advancement var4x = Util.getOrThrow(Advancement.CODEC.parse(JsonOps.INSTANCE, var3x), JsonParseException::new);
+            this.validate(var2x, var4x);
+            var4.put(var2x, new AdvancementHolder(var2x, var4x));
+         } catch (Exception var5x) {
+            LOGGER.error("Parsing error loading custom advancement {}: {}", var2x, var5x.getMessage());
          }
       });
       this.advancements = var4.buildOrThrow();
@@ -58,6 +61,20 @@ public class ServerAdvancementManager extends SimpleJsonResourceReloadListener {
       }
 
       this.tree = var5;
+   }
+
+   private void validate(ResourceLocation var1, Advancement var2) {
+      ProblemReporter.Collector var3 = new ProblemReporter.Collector();
+      var2.validate(var3, this.lootData);
+      Multimap var4 = var3.get();
+      if (!var4.isEmpty()) {
+         String var5 = var4.asMap()
+            .entrySet()
+            .stream()
+            .map(var0 -> "  at " + (String)var0.getKey() + ": " + String.join("; ", (Iterable<? extends CharSequence>)var0.getValue()))
+            .collect(Collectors.joining("\n"));
+         LOGGER.warn("Found validation problems in advancement {}: \n{}", var1, var5);
+      }
    }
 
    @Nullable

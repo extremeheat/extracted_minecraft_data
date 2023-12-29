@@ -26,6 +26,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Clearable;
+import net.minecraft.world.RandomizableContainer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -42,7 +43,6 @@ import net.minecraft.world.level.block.LiquidBlockContainer;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.RandomizableContainerBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.material.FluidState;
@@ -114,7 +114,7 @@ public class StructureTemplate {
          this.palettes.clear();
          this.palettes.add(new StructureTemplate.Palette(var18));
          if (var4) {
-            this.fillEntityList(var1, var10, var11.offset(1, 1, 1));
+            this.fillEntityList(var1, var10, var11);
          } else {
             this.entityInfoList.clear();
          }
@@ -153,7 +153,7 @@ public class StructureTemplate {
    }
 
    private void fillEntityList(Level var1, BlockPos var2, BlockPos var3) {
-      List var4 = var1.getEntitiesOfClass(Entity.class, new AABB(var2, var3), var0 -> !(var0 instanceof Player));
+      List var4 = var1.getEntitiesOfClass(Entity.class, AABB.encapsulatingFullBlocks(var2, var3), var0 -> !(var0 instanceof Player));
       this.entityInfoList.clear();
 
       for(Entity var6 : var4) {
@@ -244,7 +244,7 @@ public class StructureTemplate {
                      if (var20.nbt != null) {
                         BlockEntity var39 = var1.getBlockEntity(var21);
                         if (var39 != null) {
-                           if (var39 instanceof RandomizableContainerBlockEntity) {
+                           if (var39 instanceof RandomizableContainer) {
                               var20.nbt.putLong("LootTableSeed", var5.nextLong());
                            }
 

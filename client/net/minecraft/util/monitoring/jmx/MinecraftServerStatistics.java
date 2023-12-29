@@ -57,11 +57,11 @@ public final class MinecraftServerStatistics implements DynamicMBean {
    }
 
    private float getAverageTickTime() {
-      return this.server.getAverageTickTime();
+      return this.server.getCurrentSmoothedTickTime();
    }
 
    private long[] getTickTimes() {
-      return this.server.tickTimes;
+      return this.server.getTickTimesNanos();
    }
 
    @Nullable

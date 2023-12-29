@@ -1,32 +1,28 @@
 package net.minecraft.data.recipes;
 
-import com.google.common.collect.Lists;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.Advancement;
-import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementRequirements;
 import net.minecraft.advancements.AdvancementRewards;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.advancements.critereon.RecipeUnlockedTrigger;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.crafting.CraftingBookCategory;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.ShapelessRecipe;
 import net.minecraft.world.level.ItemLike;
 
-public class ShapelessRecipeBuilder extends CraftingRecipeBuilder implements RecipeBuilder {
+public class ShapelessRecipeBuilder implements RecipeBuilder {
    private final RecipeCategory category;
    private final Item result;
    private final int count;
-   private final List<Ingredient> ingredients = Lists.newArrayList();
+   private final NonNullList<Ingredient> ingredients = NonNullList.create();
    private final Map<String, Criterion<?>> criteria = new LinkedHashMap<>();
    @Nullable
    private String group;
@@ -97,79 +93,18 @@ public class ShapelessRecipeBuilder extends CraftingRecipeBuilder implements Rec
          .rewards(AdvancementRewards.Builder.recipe(var2))
          .requirements(AdvancementRequirements.Strategy.OR);
       this.criteria.forEach(var3::addCriterion);
-      var1.accept(
-         new ShapelessRecipeBuilder.Result(
-            var2,
-            this.result,
-            this.count,
-            this.group == null ? "" : this.group,
-            determineBookCategory(this.category),
-            this.ingredients,
-            var3.build(var2.withPrefix("recipes/" + this.category.getFolderName() + "/"))
-         )
+      ShapelessRecipe var4 = new ShapelessRecipe(
+         Objects.requireNonNullElse(this.group, ""),
+         RecipeBuilder.determineBookCategory(this.category),
+         new ItemStack(this.result, this.count),
+         this.ingredients
       );
+      var1.accept(var2, var4, var3.build(var2.withPrefix("recipes/" + this.category.getFolderName() + "/")));
    }
 
    private void ensureValid(ResourceLocation var1) {
       if (this.criteria.isEmpty()) {
          throw new IllegalStateException("No way of obtaining recipe " + var1);
-      }
-   }
-
-   public static class Result extends CraftingRecipeBuilder.CraftingResult {
-      private final ResourceLocation id;
-      private final Item result;
-      private final int count;
-      private final String group;
-      private final List<Ingredient> ingredients;
-      private final AdvancementHolder advancement;
-
-      public Result(ResourceLocation var1, Item var2, int var3, String var4, CraftingBookCategory var5, List<Ingredient> var6, AdvancementHolder var7) {
-         super(var5);
-         this.id = var1;
-         this.result = var2;
-         this.count = var3;
-         this.group = var4;
-         this.ingredients = var6;
-         this.advancement = var7;
-      }
-
-      @Override
-      public void serializeRecipeData(JsonObject var1) {
-         super.serializeRecipeData(var1);
-         if (!this.group.isEmpty()) {
-            var1.addProperty("group", this.group);
-         }
-
-         JsonArray var2 = new JsonArray();
-
-         for(Ingredient var4 : this.ingredients) {
-            var2.add(var4.toJson(false));
-         }
-
-         var1.add("ingredients", var2);
-         JsonObject var5 = new JsonObject();
-         var5.addProperty("item", BuiltInRegistries.ITEM.getKey(this.result).toString());
-         if (this.count > 1) {
-            var5.addProperty("count", this.count);
-         }
-
-         var1.add("result", var5);
-      }
-
-      @Override
-      public RecipeSerializer<?> type() {
-         return RecipeSerializer.SHAPELESS_RECIPE;
-      }
-
-      @Override
-      public ResourceLocation id() {
-         return this.id;
-      }
-
-      @Override
-      public AdvancementHolder advancement() {
-         return this.advancement;
       }
    }
 }

@@ -8,6 +8,7 @@ import com.google.common.collect.Sets;
 import com.mojang.blaze3d.audio.Channel;
 import com.mojang.blaze3d.audio.Library;
 import com.mojang.blaze3d.audio.Listener;
+import com.mojang.blaze3d.audio.ListenerTransform;
 import com.mojang.logging.LogUtils;
 import java.util.Iterator;
 import java.util.List;
@@ -32,7 +33,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Vector3f;
 import org.slf4j.Logger;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
@@ -139,6 +139,12 @@ public class SoundEngine {
          this.soundBuffers.clear();
          this.library.cleanup();
          this.loaded = false;
+      }
+   }
+
+   public void emergencyShutdown() {
+      if (this.loaded) {
+         this.library.cleanup();
       }
    }
 
@@ -342,15 +348,10 @@ public class SoundEngine {
                      } else {
                         Vec3 var12 = new Vec3(var1.getX(), var1.getY(), var1.getZ());
                         if (!this.listeners.isEmpty()) {
-                           boolean var13 = var11
-                              || var10 == SoundInstance.Attenuation.NONE
-                              || this.listener.getListenerPosition().distanceToSqr(var12) < (double)(var6 * var6);
-                           if (var13) {
-                              for(SoundEventListener var15 : this.listeners) {
-                                 var15.onPlaySound(var1, var2);
-                              }
-                           } else {
-                              LOGGER.debug(MARKER, "Did not notify listeners of soundEvent: {}, it is too far away to hear", var3);
+                           float var13 = !var11 && var10 != SoundInstance.Attenuation.NONE ? var6 : 1.0F / 0.0F;
+
+                           for(SoundEventListener var15 : this.listeners) {
+                              var15.onPlaySound(var1, var2, var13);
                            }
                         }
 
@@ -446,13 +447,8 @@ public class SoundEngine {
 
    public void updateSource(Camera var1) {
       if (this.loaded && var1.isInitialized()) {
-         Vec3 var2 = var1.getPosition();
-         Vector3f var3 = var1.getLookVector();
-         Vector3f var4 = var1.getUpVector();
-         this.executor.execute(() -> {
-            this.listener.setListenerPosition(var2);
-            this.listener.setListenerOrientation(var3, var4);
-         });
+         ListenerTransform var2 = new ListenerTransform(var1.getPosition(), new Vec3(var1.getLookVector()), new Vec3(var1.getUpVector()));
+         this.executor.execute(() -> this.listener.setTransform(var2));
       }
    }
 
@@ -480,6 +476,10 @@ public class SoundEngine {
 
    public List<String> getAvailableSoundDevices() {
       return this.library.getAvailableSoundDevices();
+   }
+
+   public ListenerTransform getListenerTransform() {
+      return this.listener.getTransform();
    }
 
    static enum DeviceCheckState {

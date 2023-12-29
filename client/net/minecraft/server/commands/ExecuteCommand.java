@@ -1,15 +1,16 @@
 package net.minecraft.server.commands;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.RedirectModifier;
-import com.mojang.brigadier.ResultConsumer;
 import com.mojang.brigadier.arguments.DoubleArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.context.ContextChain;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
@@ -23,15 +24,18 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
-import java.util.function.BiPredicate;
-import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.IntFunction;
+import java.util.function.IntPredicate;
 import java.util.stream.Stream;
+import javax.annotation.Nullable;
 import net.minecraft.advancements.critereon.MinMaxBounds;
 import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.CommandResultCallback;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.commands.ExecutionCommandSource;
+import net.minecraft.commands.FunctionInstantiationException;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.DimensionArgument;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
@@ -49,6 +53,16 @@ import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.commands.arguments.coordinates.RotationArgument;
 import net.minecraft.commands.arguments.coordinates.SwizzleArgument;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
+import net.minecraft.commands.arguments.item.FunctionArgument;
+import net.minecraft.commands.execution.ChainModifiers;
+import net.minecraft.commands.execution.CustomModifierExecutor;
+import net.minecraft.commands.execution.ExecutionControl;
+import net.minecraft.commands.execution.tasks.BuildContexts;
+import net.minecraft.commands.execution.tasks.CallFunction;
+import net.minecraft.commands.execution.tasks.FallthroughTask;
+import net.minecraft.commands.execution.tasks.IsolatedCall;
+import net.minecraft.commands.functions.CommandFunction;
+import net.minecraft.commands.functions.InstantiatedFunction;
 import net.minecraft.commands.synchronization.SuggestionProviders;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -93,23 +107,25 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.scores.Objective;
-import net.minecraft.world.scores.Score;
+import net.minecraft.world.scores.ReadOnlyScoreInfo;
+import net.minecraft.world.scores.ScoreAccess;
+import net.minecraft.world.scores.ScoreHolder;
 
 public class ExecuteCommand {
    private static final int MAX_TEST_AREA = 32768;
    private static final Dynamic2CommandExceptionType ERROR_AREA_TOO_LARGE = new Dynamic2CommandExceptionType(
-      (var0, var1) -> Component.translatable("commands.execute.blocks.toobig", var0, var1)
+      (var0, var1) -> Component.translatableEscape("commands.execute.blocks.toobig", var0, var1)
    );
    private static final SimpleCommandExceptionType ERROR_CONDITIONAL_FAILED = new SimpleCommandExceptionType(
       Component.translatable("commands.execute.conditional.fail")
    );
    private static final DynamicCommandExceptionType ERROR_CONDITIONAL_FAILED_COUNT = new DynamicCommandExceptionType(
-      var0 -> Component.translatable("commands.execute.conditional.fail_count", var0)
+      var0 -> Component.translatableEscape("commands.execute.conditional.fail_count", var0)
    );
-   private static final BinaryOperator<ResultConsumer<CommandSourceStack>> CALLBACK_CHAINER = (var0, var1) -> (var2, var3, var4) -> {
-         var0.onCommandComplete(var2, var3, var4);
-         var1.onCommandComplete(var2, var3, var4);
-      };
+   @VisibleForTesting
+   public static final Dynamic2CommandExceptionType ERROR_FUNCTION_CONDITION_INSTANTATION_FAILURE = new Dynamic2CommandExceptionType(
+      (var0, var1) -> Component.translatableEscape("commands.execute.function.instantiationFailure", var0, var1)
+   );
    private static final SuggestionProvider<CommandSourceStack> SUGGEST_PREDICATE = (var0, var1) -> {
       LootDataManager var2 = ((CommandSourceStack)var0.getSource()).getServer().getLootData();
       return SharedSuggestionProvider.suggestResource(var2.getKeys(LootDataType.PREDICATE), var1);
@@ -438,38 +454,38 @@ public class ExecuteCommand {
       return var1;
    }
 
-   private static CommandSourceStack storeValue(CommandSourceStack var0, Collection<String> var1, Objective var2, boolean var3) {
+   private static CommandSourceStack storeValue(CommandSourceStack var0, Collection<ScoreHolder> var1, Objective var2, boolean var3) {
       ServerScoreboard var4 = var0.getServer().getScoreboard();
-      return var0.withCallback((var4x, var5, var6) -> {
-         for(String var8 : var1) {
-            Score var9 = var4.getOrCreatePlayerScore(var8, var2);
-            int var10 = var3 ? var6 : (var5 ? 1 : 0);
-            var9.setScore(var10);
+      return var0.withCallback((var4x, var5) -> {
+         for(ScoreHolder var7 : var1) {
+            ScoreAccess var8 = var4.getOrCreatePlayerScore(var7, var2);
+            int var9 = var3 ? var5 : (var4x ? 1 : 0);
+            var8.set(var9);
          }
-      }, CALLBACK_CHAINER);
+      }, CommandResultCallback::chain);
    }
 
    private static CommandSourceStack storeValue(CommandSourceStack var0, CustomBossEvent var1, boolean var2, boolean var3) {
-      return var0.withCallback((var3x, var4, var5) -> {
-         int var6 = var3 ? var5 : (var4 ? 1 : 0);
+      return var0.withCallback((var3x, var4) -> {
+         int var5 = var3 ? var4 : (var3x ? 1 : 0);
          if (var2) {
-            var1.setValue(var6);
+            var1.setValue(var5);
          } else {
-            var1.setMax(var6);
+            var1.setMax(var5);
          }
-      }, CALLBACK_CHAINER);
+      }, CommandResultCallback::chain);
    }
 
    private static CommandSourceStack storeData(CommandSourceStack var0, DataAccessor var1, NbtPathArgument.NbtPath var2, IntFunction<Tag> var3, boolean var4) {
-      return var0.withCallback((var4x, var5, var6) -> {
+      return var0.withCallback((var4x, var5) -> {
          try {
-            CompoundTag var7 = var1.getData();
-            int var8 = var4 ? var6 : (var5 ? 1 : 0);
-            var2.set(var7, (Tag)var3.apply(var8));
-            var1.setData(var7);
-         } catch (CommandSyntaxException var9) {
+            CompoundTag var6 = var1.getData();
+            int var7 = var4 ? var5 : (var4x ? 1 : 0);
+            var2.set(var6, (Tag)var3.apply(var7));
+            var1.setData(var6);
+         } catch (CommandSyntaxException var8) {
          }
-      }, CALLBACK_CHAINER);
+      }, CommandResultCallback::chain);
    }
 
    private static boolean isChunkLoaded(ServerLevel var0, BlockPos var1) {
@@ -485,79 +501,94 @@ public class ExecuteCommand {
    private static ArgumentBuilder<CommandSourceStack, ?> addConditionals(
       CommandNode<CommandSourceStack> var0, LiteralArgumentBuilder<CommandSourceStack> var1, boolean var2, CommandBuildContext var3
    ) {
-      ((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)var1.then(
-                              Commands.literal("block")
-                                 .then(
-                                    Commands.argument("pos", BlockPosArgument.blockPos())
-                                       .then(
-                                          addConditional(
-                                             var0,
-                                             Commands.argument("block", BlockPredicateArgument.blockPredicate(var3)),
-                                             var2,
-                                             var0x -> BlockPredicateArgument.getBlockPredicate(var0x, "block")
-                                                   .test(
-                                                      new BlockInWorld(
-                                                         ((CommandSourceStack)var0x.getSource()).getLevel(),
-                                                         BlockPosArgument.getLoadedBlockPos(var0x, "pos"),
-                                                         true
+      ((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)var1.then(
+                                 Commands.literal("block")
+                                    .then(
+                                       Commands.argument("pos", BlockPosArgument.blockPos())
+                                          .then(
+                                             addConditional(
+                                                var0,
+                                                Commands.argument("block", BlockPredicateArgument.blockPredicate(var3)),
+                                                var2,
+                                                var0x -> BlockPredicateArgument.getBlockPredicate(var0x, "block")
+                                                      .test(
+                                                         new BlockInWorld(
+                                                            ((CommandSourceStack)var0x.getSource()).getLevel(),
+                                                            BlockPosArgument.getLoadedBlockPos(var0x, "pos"),
+                                                            true
+                                                         )
                                                       )
-                                                   )
+                                             )
                                           )
-                                       )
-                                 )
-                           ))
+                                    )
+                              ))
+                              .then(
+                                 Commands.literal("biome")
+                                    .then(
+                                       Commands.argument("pos", BlockPosArgument.blockPos())
+                                          .then(
+                                             addConditional(
+                                                var0,
+                                                Commands.argument("biome", ResourceOrTagArgument.resourceOrTag(var3, Registries.BIOME)),
+                                                var2,
+                                                var0x -> ResourceOrTagArgument.getResourceOrTag(var0x, "biome", Registries.BIOME)
+                                                      .test(
+                                                         ((CommandSourceStack)var0x.getSource())
+                                                            .getLevel()
+                                                            .getBiome(BlockPosArgument.getLoadedBlockPos(var0x, "pos"))
+                                                      )
+                                             )
+                                          )
+                                    )
+                              ))
                            .then(
-                              Commands.literal("biome")
+                              Commands.literal("loaded")
                                  .then(
-                                    Commands.argument("pos", BlockPosArgument.blockPos())
-                                       .then(
-                                          addConditional(
-                                             var0,
-                                             Commands.argument("biome", ResourceOrTagArgument.resourceOrTag(var3, Registries.BIOME)),
-                                             var2,
-                                             var0x -> ResourceOrTagArgument.getResourceOrTag(var0x, "biome", Registries.BIOME)
-                                                   .test(
-                                                      ((CommandSourceStack)var0x.getSource())
-                                                         .getLevel()
-                                                         .getBiome(BlockPosArgument.getLoadedBlockPos(var0x, "pos"))
-                                                   )
-                                          )
-                                       )
+                                    addConditional(
+                                       var0,
+                                       Commands.argument("pos", BlockPosArgument.blockPos()),
+                                       var2,
+                                       var0x -> isChunkLoaded(((CommandSourceStack)var0x.getSource()).getLevel(), BlockPosArgument.getBlockPos(var0x, "pos"))
+                                    )
                                  )
                            ))
                         .then(
-                           Commands.literal("loaded")
+                           Commands.literal("dimension")
                               .then(
                                  addConditional(
                                     var0,
-                                    Commands.argument("pos", BlockPosArgument.blockPos()),
+                                    Commands.argument("dimension", DimensionArgument.dimension()),
                                     var2,
-                                    var0x -> isChunkLoaded(((CommandSourceStack)var0x.getSource()).getLevel(), BlockPosArgument.getBlockPos(var0x, "pos"))
+                                    var0x -> DimensionArgument.getDimension(var0x, "dimension") == ((CommandSourceStack)var0x.getSource()).getLevel()
                                  )
                               )
                         ))
                      .then(
-                        Commands.literal("dimension")
+                        Commands.literal("score")
                            .then(
-                              addConditional(
-                                 var0,
-                                 Commands.argument("dimension", DimensionArgument.dimension()),
-                                 var2,
-                                 var0x -> DimensionArgument.getDimension(var0x, "dimension") == ((CommandSourceStack)var0x.getSource()).getLevel()
-                              )
-                           )
-                     ))
-                  .then(
-                     Commands.literal("score")
-                        .then(
-                           Commands.argument("target", ScoreHolderArgument.scoreHolder())
-                              .suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS)
-                              .then(
-                                 ((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument(
-                                                      "targetObjective", ObjectiveArgument.objective()
-                                                   )
+                              Commands.argument("target", ScoreHolderArgument.scoreHolder())
+                                 .suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS)
+                                 .then(
+                                    ((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)((RequiredArgumentBuilder)Commands.argument(
+                                                         "targetObjective", ObjectiveArgument.objective()
+                                                      )
+                                                      .then(
+                                                         Commands.literal("=")
+                                                            .then(
+                                                               Commands.argument("source", ScoreHolderArgument.scoreHolder())
+                                                                  .suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS)
+                                                                  .then(
+                                                                     addConditional(
+                                                                        var0,
+                                                                        Commands.argument("sourceObjective", ObjectiveArgument.objective()),
+                                                                        var2,
+                                                                        var0x -> checkScore(var0x, (var0xx, var1x) -> var0xx == var1x)
+                                                                     )
+                                                                  )
+                                                            )
+                                                      ))
                                                    .then(
-                                                      Commands.literal("=")
+                                                      Commands.literal("<")
                                                          .then(
                                                             Commands.argument("source", ScoreHolderArgument.scoreHolder())
                                                                .suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS)
@@ -566,13 +597,13 @@ public class ExecuteCommand {
                                                                      var0,
                                                                      Commands.argument("sourceObjective", ObjectiveArgument.objective()),
                                                                      var2,
-                                                                     var0x -> checkScore(var0x, Integer::equals)
+                                                                     var0x -> checkScore(var0x, (var0xx, var1x) -> var0xx < var1x)
                                                                   )
                                                                )
                                                          )
                                                    ))
                                                 .then(
-                                                   Commands.literal("<")
+                                                   Commands.literal("<=")
                                                       .then(
                                                          Commands.argument("source", ScoreHolderArgument.scoreHolder())
                                                             .suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS)
@@ -581,13 +612,13 @@ public class ExecuteCommand {
                                                                   var0,
                                                                   Commands.argument("sourceObjective", ObjectiveArgument.objective()),
                                                                   var2,
-                                                                  var0x -> checkScore(var0x, (var0xx, var1x) -> var0xx < var1x)
+                                                                  var0x -> checkScore(var0x, (var0xx, var1x) -> var0xx <= var1x)
                                                                )
                                                             )
                                                       )
                                                 ))
                                              .then(
-                                                Commands.literal("<=")
+                                                Commands.literal(">")
                                                    .then(
                                                       Commands.argument("source", ScoreHolderArgument.scoreHolder())
                                                          .suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS)
@@ -596,13 +627,13 @@ public class ExecuteCommand {
                                                                var0,
                                                                Commands.argument("sourceObjective", ObjectiveArgument.objective()),
                                                                var2,
-                                                               var0x -> checkScore(var0x, (var0xx, var1x) -> var0xx <= var1x)
+                                                               var0x -> checkScore(var0x, (var0xx, var1x) -> var0xx > var1x)
                                                             )
                                                          )
                                                    )
                                              ))
                                           .then(
-                                             Commands.literal(">")
+                                             Commands.literal(">=")
                                                 .then(
                                                    Commands.argument("source", ScoreHolderArgument.scoreHolder())
                                                       .suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS)
@@ -611,71 +642,64 @@ public class ExecuteCommand {
                                                             var0,
                                                             Commands.argument("sourceObjective", ObjectiveArgument.objective()),
                                                             var2,
-                                                            var0x -> checkScore(var0x, (var0xx, var1x) -> var0xx > var1x)
+                                                            var0x -> checkScore(var0x, (var0xx, var1x) -> var0xx >= var1x)
                                                          )
                                                       )
                                                 )
                                           ))
                                        .then(
-                                          Commands.literal(">=")
+                                          Commands.literal("matches")
                                              .then(
-                                                Commands.argument("source", ScoreHolderArgument.scoreHolder())
-                                                   .suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS)
-                                                   .then(
-                                                      addConditional(
-                                                         var0,
-                                                         Commands.argument("sourceObjective", ObjectiveArgument.objective()),
-                                                         var2,
-                                                         var0x -> checkScore(var0x, (var0xx, var1x) -> var0xx >= var1x)
-                                                      )
-                                                   )
+                                                addConditional(
+                                                   var0,
+                                                   Commands.argument("range", RangeArgument.intRange()),
+                                                   var2,
+                                                   var0x -> checkScore(var0x, RangeArgument.Ints.getRange(var0x, "range"))
+                                                )
                                              )
-                                       ))
+                                       )
+                                 )
+                           )
+                     ))
+                  .then(
+                     Commands.literal("blocks")
+                        .then(
+                           Commands.argument("start", BlockPosArgument.blockPos())
+                              .then(
+                                 Commands.argument("end", BlockPosArgument.blockPos())
                                     .then(
-                                       Commands.literal("matches")
-                                          .then(
-                                             addConditional(
-                                                var0,
-                                                Commands.argument("range", RangeArgument.intRange()),
-                                                var2,
-                                                var0x -> checkScore(var0x, RangeArgument.Ints.getRange(var0x, "range"))
-                                             )
-                                          )
+                                       ((RequiredArgumentBuilder)Commands.argument("destination", BlockPosArgument.blockPos())
+                                             .then(addIfBlocksConditional(var0, Commands.literal("all"), var2, false)))
+                                          .then(addIfBlocksConditional(var0, Commands.literal("masked"), var2, true))
                                     )
                               )
                         )
                   ))
                .then(
-                  Commands.literal("blocks")
+                  Commands.literal("entity")
                      .then(
-                        Commands.argument("start", BlockPosArgument.blockPos())
-                           .then(
-                              Commands.argument("end", BlockPosArgument.blockPos())
-                                 .then(
-                                    ((RequiredArgumentBuilder)Commands.argument("destination", BlockPosArgument.blockPos())
-                                          .then(addIfBlocksConditional(var0, Commands.literal("all"), var2, false)))
-                                       .then(addIfBlocksConditional(var0, Commands.literal("masked"), var2, true))
-                                 )
-                           )
+                        ((RequiredArgumentBuilder)Commands.argument("entities", EntityArgument.entities())
+                              .fork(var0, var1x -> expect(var1x, var2, !EntityArgument.getOptionalEntities(var1x, "entities").isEmpty())))
+                           .executes(createNumericConditionalHandler(var2, var0x -> EntityArgument.getOptionalEntities(var0x, "entities").size()))
                      )
                ))
             .then(
-               Commands.literal("entity")
+               Commands.literal("predicate")
                   .then(
-                     ((RequiredArgumentBuilder)Commands.argument("entities", EntityArgument.entities())
-                           .fork(var0, var1x -> expect(var1x, var2, !EntityArgument.getOptionalEntities(var1x, "entities").isEmpty())))
-                        .executes(createNumericConditionalHandler(var2, var0x -> EntityArgument.getOptionalEntities(var0x, "entities").size()))
+                     addConditional(
+                        var0,
+                        Commands.argument("predicate", ResourceLocationArgument.id()).suggests(SUGGEST_PREDICATE),
+                        var2,
+                        var0x -> checkCustomPredicate((CommandSourceStack)var0x.getSource(), ResourceLocationArgument.getPredicate(var0x, "predicate"))
+                     )
                   )
             ))
          .then(
-            Commands.literal("predicate")
+            Commands.literal("function")
                .then(
-                  addConditional(
-                     var0,
-                     Commands.argument("predicate", ResourceLocationArgument.id()).suggests(SUGGEST_PREDICATE),
-                     var2,
-                     var0x -> checkCustomPredicate((CommandSourceStack)var0x.getSource(), ResourceLocationArgument.getPredicate(var0x, "predicate"))
-                  )
+                  Commands.argument("name", FunctionArgument.functions())
+                     .suggests(FunctionCommand.SUGGEST_FUNCTION)
+                     .fork(var0, new ExecuteCommand.ExecuteIfFunctionCustomModifier(var2))
                )
          );
 
@@ -721,26 +745,23 @@ public class ExecuteCommand {
       return var1.countMatching(var0.getData());
    }
 
-   private static boolean checkScore(CommandContext<CommandSourceStack> var0, BiPredicate<Integer, Integer> var1) throws CommandSyntaxException {
-      String var2 = ScoreHolderArgument.getName(var0, "target");
+   private static boolean checkScore(CommandContext<CommandSourceStack> var0, ExecuteCommand.IntBiPredicate var1) throws CommandSyntaxException {
+      ScoreHolder var2 = ScoreHolderArgument.getName(var0, "target");
       Objective var3 = ObjectiveArgument.getObjective(var0, "targetObjective");
-      String var4 = ScoreHolderArgument.getName(var0, "source");
+      ScoreHolder var4 = ScoreHolderArgument.getName(var0, "source");
       Objective var5 = ObjectiveArgument.getObjective(var0, "sourceObjective");
       ServerScoreboard var6 = ((CommandSourceStack)var0.getSource()).getServer().getScoreboard();
-      if (var6.hasPlayerScore(var2, var3) && var6.hasPlayerScore(var4, var5)) {
-         Score var7 = var6.getOrCreatePlayerScore(var2, var3);
-         Score var8 = var6.getOrCreatePlayerScore(var4, var5);
-         return var1.test(var7.getScore(), var8.getScore());
-      } else {
-         return false;
-      }
+      ReadOnlyScoreInfo var7 = var6.getPlayerScoreInfo(var2, var3);
+      ReadOnlyScoreInfo var8 = var6.getPlayerScoreInfo(var4, var5);
+      return var7 != null && var8 != null ? var1.test(var7.value(), var8.value()) : false;
    }
 
    private static boolean checkScore(CommandContext<CommandSourceStack> var0, MinMaxBounds.Ints var1) throws CommandSyntaxException {
-      String var2 = ScoreHolderArgument.getName(var0, "target");
+      ScoreHolder var2 = ScoreHolderArgument.getName(var0, "target");
       Objective var3 = ObjectiveArgument.getObjective(var0, "targetObjective");
       ServerScoreboard var4 = ((CommandSourceStack)var0.getSource()).getServer().getScoreboard();
-      return !var4.hasPlayerScore(var2, var3) ? false : var1.matches(var4.getOrCreatePlayerScore(var2, var3).getScore());
+      ReadOnlyScoreInfo var5 = var4.getPlayerScoreInfo(var2, var3);
+      return var5 == null ? false : var1.matches(var5.value());
    }
 
    private static boolean checkCustomPredicate(CommandSourceStack var0, LootItemCondition var1) {
@@ -931,6 +952,70 @@ public class ExecuteCommand {
       return var0.withEntity(var2);
    }
 
+   public static <T extends ExecutionCommandSource<T>> void scheduleFunctionConditionsAndTest(
+      T var0,
+      List<T> var1,
+      Function<T, T> var2,
+      IntPredicate var3,
+      ContextChain<T> var4,
+      @Nullable CompoundTag var5,
+      ExecutionControl<T> var6,
+      ExecuteCommand.CommandGetter<T, Collection<CommandFunction<T>>> var7,
+      ChainModifiers var8
+   ) {
+      ArrayList var9 = new ArrayList(var1.size());
+
+      Collection var10;
+      try {
+         var10 = (Collection)var7.get(var4.getTopContext().copyFor(var0));
+      } catch (CommandSyntaxException var18) {
+         var0.handleError(var18, var8.isForked(), var6.tracer());
+         return;
+      }
+
+      int var11 = var10.size();
+      if (var11 != 0) {
+         ArrayList var12 = new ArrayList(var11);
+
+         try {
+            for(CommandFunction var14 : var10) {
+               try {
+                  var12.add(var14.instantiate(var5, var0.dispatcher(), var0));
+               } catch (FunctionInstantiationException var17) {
+                  throw ERROR_FUNCTION_CONDITION_INSTANTATION_FAILURE.create(var14.id(), var17.messageComponent());
+               }
+            }
+         } catch (CommandSyntaxException var19) {
+            var0.handleError(var19, var8.isForked(), var6.tracer());
+         }
+
+         for(ExecutionCommandSource var22 : var1) {
+            ExecutionCommandSource var15 = (ExecutionCommandSource)var2.apply(var22.clearCallbacks());
+            CommandResultCallback var16 = (var3x, var4x) -> {
+               if (var3.test(var4x)) {
+                  var9.add(var22);
+               }
+            };
+            var6.queueNext(new IsolatedCall<>(var2x -> {
+               for(InstantiatedFunction var4x : var12) {
+                  var2x.queueNext(new CallFunction<T>(var4x, var2x.currentFrame().returnValueConsumer(), true).bind((T)var15));
+               }
+
+               var2x.queueNext(FallthroughTask.instance());
+            }, var16));
+         }
+
+         ContextChain var21 = var4.nextStage();
+         String var23 = var4.getTopContext().getInput();
+         var6.queueNext(new BuildContexts.Continuation<>(var23, var21, var8, (T)var0, var9));
+      }
+   }
+
+   @FunctionalInterface
+   public interface CommandGetter<T, R> {
+      R get(CommandContext<T> var1) throws CommandSyntaxException;
+   }
+
    @FunctionalInterface
    interface CommandNumericPredicate {
       int test(CommandContext<CommandSourceStack> var1) throws CommandSyntaxException;
@@ -939,5 +1024,31 @@ public class ExecuteCommand {
    @FunctionalInterface
    interface CommandPredicate {
       boolean test(CommandContext<CommandSourceStack> var1) throws CommandSyntaxException;
+   }
+
+   static class ExecuteIfFunctionCustomModifier implements CustomModifierExecutor.ModifierAdapter<CommandSourceStack> {
+      private final IntPredicate check;
+
+      ExecuteIfFunctionCustomModifier(boolean var1) {
+         super();
+         this.check = var1 ? var0 -> var0 != 0 : var0 -> var0 == 0;
+      }
+
+      public void apply(
+         CommandSourceStack var1,
+         List<CommandSourceStack> var2,
+         ContextChain<CommandSourceStack> var3,
+         ChainModifiers var4,
+         ExecutionControl<CommandSourceStack> var5
+      ) {
+         ExecuteCommand.scheduleFunctionConditionsAndTest(
+            var1, var2, FunctionCommand::modifySenderForExecution, this.check, var3, null, var5, var0 -> FunctionArgument.getFunctions(var0, "name"), var4
+         );
+      }
+   }
+
+   @FunctionalInterface
+   interface IntBiPredicate {
+      boolean test(int var1, int var2);
    }
 }

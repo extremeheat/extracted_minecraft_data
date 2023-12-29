@@ -31,6 +31,7 @@ import net.minecraft.world.entity.ai.memory.ExpirableValue;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.WalkTarget;
 import net.minecraft.world.entity.animal.Bee;
+import net.minecraft.world.entity.monster.breeze.Breeze;
 import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
@@ -96,6 +97,9 @@ public class DebugPackets {
    }
 
    public static void sendBeeInfo(Bee var0) {
+   }
+
+   public static void sendBreezeInfo(Breeze var0) {
    }
 
    public static void sendGameEventInfo(Level var0, GameEvent var1, Vec3 var2) {

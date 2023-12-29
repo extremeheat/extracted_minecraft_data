@@ -8,11 +8,13 @@ import net.minecraft.network.chat.Component;
 
 public class DatapackLoadFailureScreen extends Screen {
    private MultiLineLabel message = MultiLineLabel.EMPTY;
-   private final Runnable callback;
+   private final Runnable cancelCallback;
+   private final Runnable safeModeCallback;
 
-   public DatapackLoadFailureScreen(Runnable var1) {
+   public DatapackLoadFailureScreen(Runnable var1, Runnable var2) {
       super(Component.translatable("datapackFailure.title"));
-      this.callback = var1;
+      this.cancelCallback = var1;
+      this.safeModeCallback = var2;
    }
 
    @Override
@@ -20,12 +22,12 @@ public class DatapackLoadFailureScreen extends Screen {
       super.init();
       this.message = MultiLineLabel.create(this.font, this.getTitle(), this.width - 50);
       this.addRenderableWidget(
-         Button.builder(Component.translatable("datapackFailure.safeMode"), var1 -> this.callback.run())
+         Button.builder(Component.translatable("datapackFailure.safeMode"), var1 -> this.safeModeCallback.run())
             .bounds(this.width / 2 - 155, this.height / 6 + 96, 150, 20)
             .build()
       );
       this.addRenderableWidget(
-         Button.builder(CommonComponents.GUI_TO_TITLE, var1 -> this.minecraft.setScreen(null))
+         Button.builder(CommonComponents.GUI_BACK, var1 -> this.cancelCallback.run())
             .bounds(this.width / 2 - 155 + 160, this.height / 6 + 96, 150, 20)
             .build()
       );

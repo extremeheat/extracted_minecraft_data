@@ -49,6 +49,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.TickRateManager;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
@@ -97,6 +98,7 @@ public class ClientLevel extends Level {
    private final LevelRenderer levelRenderer;
    private final ClientLevel.ClientLevelData clientLevelData;
    private final DimensionSpecialEffects effects;
+   private final TickRateManager tickRateManager;
    private final Minecraft minecraft = Minecraft.getInstance();
    final List<AbstractClientPlayer> players = Lists.newArrayList();
    private Scoreboard scoreboard = new Scoreboard();
@@ -169,6 +171,7 @@ public class ClientLevel extends Level {
       super(var2, var3, var1.registryAccess(), var4, var7, true, var9, var10, 1000000);
       this.connection = var1;
       this.chunkSource = new ClientChunkCache(this, var5);
+      this.tickRateManager = new TickRateManager();
       this.clientLevelData = var2;
       this.levelRenderer = var8;
       this.effects = DimensionSpecialEffects.forType((DimensionType)var4.value());
@@ -206,7 +209,10 @@ public class ClientLevel extends Level {
 
    public void tick(BooleanSupplier var1) {
       this.getWorldBorder().tick();
-      this.tickTime();
+      if (this.tickRateManager().runsNormally()) {
+         this.tickTime();
+      }
+
       if (this.skyFlashTime > 0) {
          this.setSkyFlashTime(this.skyFlashTime - 1);
       }
@@ -246,7 +252,7 @@ public class ClientLevel extends Level {
       ProfilerFiller var1 = this.getProfiler();
       var1.push("entities");
       this.tickingEntities.forEach(var1x -> {
-         if (!var1x.isRemoved() && !var1x.isPassenger()) {
+         if (!var1x.isRemoved() && !var1x.isPassenger() && !this.tickRateManager.isEntityFrozen(var1x)) {
             this.guardEntityTick(this::tickNonPassenger, var1x);
          }
       });
@@ -456,6 +462,7 @@ public class ClientLevel extends Level {
       var2.setDetail(
          "Server type", () -> this.minecraft.getSingleplayerServer() == null ? "Non-integrated multiplayer server" : "Integrated singleplayer server"
       );
+      var2.setDetail("Tracked entity count", () -> String.valueOf(this.getEntityCount()));
       return var2;
    }
 
@@ -473,6 +480,11 @@ public class ClientLevel extends Level {
       if (var1 == this.minecraft.player) {
          this.minecraft.getSoundManager().play(new EntityBoundSoundInstance((SoundEvent)var3.value(), var4, var5, var6, var2, var7));
       }
+   }
+
+   @Override
+   public void playLocalSound(Entity var1, SoundEvent var2, SoundSource var3, float var4, float var5) {
+      this.minecraft.getSoundManager().play(new EntityBoundSoundInstance(var2, var3, var4, var5, var1, this.random.nextLong()));
    }
 
    @Override
@@ -504,6 +516,11 @@ public class ClientLevel extends Level {
    @Override
    public RecipeManager getRecipeManager() {
       return this.connection.getRecipeManager();
+   }
+
+   @Override
+   public TickRateManager tickRateManager() {
+      return this.tickRateManager;
    }
 
    public void setScoreboard(Scoreboard var1) {

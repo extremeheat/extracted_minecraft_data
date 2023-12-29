@@ -13,9 +13,11 @@ public class ServerboundSetJigsawBlockPacket implements Packet<ServerGamePacketL
    private final ResourceLocation pool;
    private final String finalState;
    private final JigsawBlockEntity.JointType joint;
+   private final int selectionPriority;
+   private final int placementPriority;
 
    public ServerboundSetJigsawBlockPacket(
-      BlockPos var1, ResourceLocation var2, ResourceLocation var3, ResourceLocation var4, String var5, JigsawBlockEntity.JointType var6
+      BlockPos var1, ResourceLocation var2, ResourceLocation var3, ResourceLocation var4, String var5, JigsawBlockEntity.JointType var6, int var7, int var8
    ) {
       super();
       this.pos = var1;
@@ -24,6 +26,8 @@ public class ServerboundSetJigsawBlockPacket implements Packet<ServerGamePacketL
       this.pool = var4;
       this.finalState = var5;
       this.joint = var6;
+      this.selectionPriority = var7;
+      this.placementPriority = var8;
    }
 
    public ServerboundSetJigsawBlockPacket(FriendlyByteBuf var1) {
@@ -34,6 +38,8 @@ public class ServerboundSetJigsawBlockPacket implements Packet<ServerGamePacketL
       this.pool = var1.readResourceLocation();
       this.finalState = var1.readUtf();
       this.joint = JigsawBlockEntity.JointType.byName(var1.readUtf()).orElse(JigsawBlockEntity.JointType.ALIGNED);
+      this.selectionPriority = var1.readVarInt();
+      this.placementPriority = var1.readVarInt();
    }
 
    @Override
@@ -44,6 +50,8 @@ public class ServerboundSetJigsawBlockPacket implements Packet<ServerGamePacketL
       var1.writeResourceLocation(this.pool);
       var1.writeUtf(this.finalState);
       var1.writeUtf(this.joint.getSerializedName());
+      var1.writeVarInt(this.selectionPriority);
+      var1.writeVarInt(this.placementPriority);
    }
 
    public void handle(ServerGamePacketListener var1) {
@@ -72,5 +80,13 @@ public class ServerboundSetJigsawBlockPacket implements Packet<ServerGamePacketL
 
    public JigsawBlockEntity.JointType getJoint() {
       return this.joint;
+   }
+
+   public int getSelectionPriority() {
+      return this.selectionPriority;
+   }
+
+   public int getPlacementPriority() {
+      return this.placementPriority;
    }
 }

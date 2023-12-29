@@ -1,5 +1,8 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -12,11 +15,24 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 
 public class WeightedPressurePlateBlock extends BasePressurePlateBlock {
+   public static final MapCodec<WeightedPressurePlateBlock> CODEC = RecordCodecBuilder.mapCodec(
+      var0 -> var0.group(
+               Codec.intRange(1, 1024).fieldOf("max_weight").forGetter(var0x -> var0x.maxWeight),
+               BlockSetType.CODEC.fieldOf("block_set_type").forGetter(var0x -> var0x.type),
+               propertiesCodec()
+            )
+            .apply(var0, WeightedPressurePlateBlock::new)
+   );
    public static final IntegerProperty POWER = BlockStateProperties.POWER;
    private final int maxWeight;
 
-   protected WeightedPressurePlateBlock(int var1, BlockBehaviour.Properties var2, BlockSetType var3) {
-      super(var2, var3);
+   @Override
+   public MapCodec<WeightedPressurePlateBlock> codec() {
+      return CODEC;
+   }
+
+   protected WeightedPressurePlateBlock(int var1, BlockSetType var2, BlockBehaviour.Properties var3) {
+      super(var3, var2);
       this.registerDefaultState(this.stateDefinition.any().setValue(POWER, Integer.valueOf(0)));
       this.maxWeight = var1;
    }

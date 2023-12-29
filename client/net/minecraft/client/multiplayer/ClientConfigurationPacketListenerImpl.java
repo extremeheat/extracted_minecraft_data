@@ -6,6 +6,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.Connection;
 import net.minecraft.network.TickablePacketListener;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.PacketUtils;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.protocol.configuration.ClientConfigurationPacketListener;
@@ -92,5 +93,11 @@ public class ClientConfigurationPacketListenerImpl extends ClientCommonPacketLis
    @Override
    public void tick() {
       this.sendDeferredPackets();
+   }
+
+   @Override
+   public void onDisconnect(Component var1) {
+      super.onDisconnect(var1);
+      this.minecraft.clearDownloadedResourcePacks();
    }
 }

@@ -1,23 +1,15 @@
 package net.minecraft.advancements.critereon;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.ExtraCodecs;
-import net.minecraft.util.GsonHelper;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -28,22 +20,22 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemEntityPropertyCondition;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.scores.Team;
+import net.minecraft.world.scores.PlayerTeam;
 
 public record EntityPredicate(
-   Optional<EntityTypePredicate> b,
-   Optional<DistancePredicate> c,
-   Optional<LocationPredicate> d,
+   Optional<EntityTypePredicate> c,
+   Optional<DistancePredicate> d,
    Optional<LocationPredicate> e,
-   Optional<MobEffectsPredicate> f,
-   Optional<NbtPredicate> g,
-   Optional<EntityFlagsPredicate> h,
-   Optional<EntityEquipmentPredicate> i,
-   Optional<EntitySubPredicate> j,
-   Optional<EntityPredicate> k,
+   Optional<LocationPredicate> f,
+   Optional<MobEffectsPredicate> g,
+   Optional<NbtPredicate> h,
+   Optional<EntityFlagsPredicate> i,
+   Optional<EntityEquipmentPredicate> j,
+   Optional<EntitySubPredicate> k,
    Optional<EntityPredicate> l,
    Optional<EntityPredicate> m,
-   Optional<String> n
+   Optional<EntityPredicate> n,
+   Optional<String> o
 ) {
    private final Optional<EntityTypePredicate> entityType;
    private final Optional<DistancePredicate> distanceToPlayer;
@@ -59,6 +51,7 @@ public record EntityPredicate(
    private final Optional<EntityPredicate> targetedEntity;
    private final Optional<String> team;
    public static final Codec<EntityPredicate> CODEC = ExtraCodecs.recursive(
+      "EntityPredicate",
       var0 -> RecordCodecBuilder.create(
             var1 -> var1.group(
                      ExtraCodecs.strictOptionalField(EntityTypePredicate.CODEC, "type").forGetter(EntityPredicate::entityType),
@@ -78,6 +71,7 @@ public record EntityPredicate(
                   .apply(var1, EntityPredicate::new)
          )
    );
+   public static final Codec<ContextAwarePredicate> ADVANCEMENT_CODEC = ExtraCodecs.withAlternative(ContextAwarePredicate.CODEC, CODEC, EntityPredicate::wrap);
 
    public EntityPredicate(
       Optional<EntityTypePredicate> var1,
@@ -108,37 +102,6 @@ public record EntityPredicate(
       this.passenger = var11;
       this.targetedEntity = var12;
       this.team = var13;
-   }
-
-   public static Optional<ContextAwarePredicate> fromJson(JsonObject var0, String var1, DeserializationContext var2) {
-      JsonElement var3 = var0.get(var1);
-      return fromElement(var1, var2, var3);
-   }
-
-   public static List<ContextAwarePredicate> fromJsonArray(JsonObject var0, String var1, DeserializationContext var2) {
-      JsonElement var3 = var0.get(var1);
-      if (var3 != null && !var3.isJsonNull()) {
-         JsonArray var4 = GsonHelper.convertToJsonArray(var3, var1);
-         ArrayList var5 = new ArrayList(var4.size());
-
-         for(int var6 = 0; var6 < var4.size(); ++var6) {
-            fromElement(var1 + "[" + var6 + "]", var2, var4.get(var6)).ifPresent(var5::add);
-         }
-
-         return List.copyOf(var5);
-      } else {
-         return List.of();
-      }
-   }
-
-   private static Optional<ContextAwarePredicate> fromElement(String var0, DeserializationContext var1, @Nullable JsonElement var2) {
-      Optional var3 = ContextAwarePredicate.fromElement(var0, var1, var2, LootContextParamSets.ADVANCEMENT_ENTITY);
-      if (var3.isPresent()) {
-         return (Optional<ContextAwarePredicate>)var3.get();
-      } else {
-         Optional var4 = fromJson(var2);
-         return wrap(var4);
-      }
    }
 
    public static ContextAwarePredicate wrap(EntityPredicate.Builder var0) {
@@ -206,7 +169,7 @@ public record EntityPredicate(
                return false;
             } else {
                if (this.team.isPresent()) {
-                  Team var5 = var3.getTeam();
+                  PlayerTeam var5 = var3.getTeam();
                   if (var5 == null || !this.team.get().equals(var5.getName())) {
                      return false;
                   }
@@ -216,16 +179,6 @@ public record EntityPredicate(
             }
          }
       }
-   }
-
-   public static Optional<EntityPredicate> fromJson(@Nullable JsonElement var0) {
-      return var0 != null && !var0.isJsonNull()
-         ? Optional.of(Util.getOrThrow(CODEC.parse(JsonOps.INSTANCE, var0), JsonParseException::new))
-         : Optional.empty();
-   }
-
-   public JsonElement serializeToJson() {
-      return Util.getOrThrow(CODEC.encodeStart(JsonOps.INSTANCE, this), IllegalStateException::new);
    }
 
    public static LootContext createContext(ServerPlayer var0, Entity var1) {

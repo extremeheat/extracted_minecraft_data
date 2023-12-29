@@ -537,6 +537,7 @@ public class CommandSuggestions {
             return true;
          } else if (var1 == 256) {
             CommandSuggestions.this.hide();
+            CommandSuggestions.this.input.setSuggestion(null);
             return true;
          } else {
             return false;
@@ -593,7 +594,9 @@ public class CommandSuggestions {
          Suggestion var1 = (Suggestion)this.suggestionList.get(this.current);
          Message var2 = var1.getTooltip();
          return var2 != null
-            ? Component.translatable("narration.suggestion.tooltip", this.current + 1, this.suggestionList.size(), var1.getText(), var2)
+            ? Component.translatable(
+               "narration.suggestion.tooltip", this.current + 1, this.suggestionList.size(), var1.getText(), Component.translationArg(var2)
+            )
             : Component.translatable("narration.suggestion", this.current + 1, this.suggestionList.size(), var1.getText());
       }
    }

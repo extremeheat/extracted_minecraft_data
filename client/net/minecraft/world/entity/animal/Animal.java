@@ -101,7 +101,8 @@ public abstract class Animal extends AgeableMob {
    }
 
    public static boolean checkAnimalSpawnRules(EntityType<? extends Animal> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
-      return var1.getBlockState(var3.below()).is(BlockTags.ANIMALS_SPAWNABLE_ON) && isBrightEnoughToSpawn(var1, var3);
+      boolean var5 = MobSpawnType.ignoresLightRequirements(var2) || isBrightEnoughToSpawn(var1, var3);
+      return var1.getBlockState(var3.below()).is(BlockTags.ANIMALS_SPAWNABLE_ON) && var5;
    }
 
    protected static boolean isBrightEnoughToSpawn(BlockAndTintGetter var0, BlockPos var1) {

@@ -1,17 +1,35 @@
 package net.minecraft.world.level.block.state.properties;
 
-import it.unimi.dsi.fastutil.objects.ObjectArraySet;
-import java.util.Set;
+import com.mojang.serialization.Codec;
+import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
+import java.util.Map;
 import java.util.stream.Stream;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.block.SoundType;
 
 public record BlockSetType(
-   String p, boolean q, SoundType r, SoundEvent s, SoundEvent t, SoundEvent u, SoundEvent v, SoundEvent w, SoundEvent x, SoundEvent y, SoundEvent z
+   String r,
+   boolean s,
+   boolean t,
+   boolean u,
+   BlockSetType.PressurePlateSensitivity v,
+   SoundType w,
+   SoundEvent x,
+   SoundEvent y,
+   SoundEvent z,
+   SoundEvent A,
+   SoundEvent B,
+   SoundEvent C,
+   SoundEvent D,
+   SoundEvent E
 ) {
    private final String name;
    private final boolean canOpenByHand;
+   private final boolean canOpenByWindCharge;
+   private final boolean canButtonBeActivatedByArrows;
+   private final BlockSetType.PressurePlateSensitivity pressurePlateSensitivity;
    private final SoundType soundType;
    private final SoundEvent doorClose;
    private final SoundEvent doorOpen;
@@ -21,11 +39,15 @@ public record BlockSetType(
    private final SoundEvent pressurePlateClickOn;
    private final SoundEvent buttonClickOff;
    private final SoundEvent buttonClickOn;
-   private static final Set<BlockSetType> VALUES = new ObjectArraySet();
+   private static final Map<String, BlockSetType> TYPES = new Object2ObjectArrayMap();
+   public static final Codec<BlockSetType> CODEC = ExtraCodecs.stringResolverCodec(BlockSetType::name, TYPES::get);
    public static final BlockSetType IRON = register(
       new BlockSetType(
          "iron",
          false,
+         false,
+         false,
+         BlockSetType.PressurePlateSensitivity.EVERYTHING,
          SoundType.METAL,
          SoundEvents.IRON_DOOR_CLOSE,
          SoundEvents.IRON_DOOR_OPEN,
@@ -37,10 +59,31 @@ public record BlockSetType(
          SoundEvents.STONE_BUTTON_CLICK_ON
       )
    );
+   public static final BlockSetType COPPER = register(
+      new BlockSetType(
+         "copper",
+         true,
+         true,
+         false,
+         BlockSetType.PressurePlateSensitivity.EVERYTHING,
+         SoundType.COPPER,
+         SoundEvents.COPPER_DOOR_CLOSE,
+         SoundEvents.COPPER_DOOR_OPEN,
+         SoundEvents.COPPER_TRAPDOOR_CLOSE,
+         SoundEvents.COPPER_TRAPDOOR_OPEN,
+         SoundEvents.METAL_PRESSURE_PLATE_CLICK_OFF,
+         SoundEvents.METAL_PRESSURE_PLATE_CLICK_ON,
+         SoundEvents.STONE_BUTTON_CLICK_OFF,
+         SoundEvents.STONE_BUTTON_CLICK_ON
+      )
+   );
    public static final BlockSetType GOLD = register(
       new BlockSetType(
          "gold",
          false,
+         true,
+         false,
+         BlockSetType.PressurePlateSensitivity.EVERYTHING,
          SoundType.METAL,
          SoundEvents.IRON_DOOR_CLOSE,
          SoundEvents.IRON_DOOR_OPEN,
@@ -56,6 +99,9 @@ public record BlockSetType(
       new BlockSetType(
          "stone",
          true,
+         true,
+         false,
+         BlockSetType.PressurePlateSensitivity.MOBS,
          SoundType.STONE,
          SoundEvents.IRON_DOOR_CLOSE,
          SoundEvents.IRON_DOOR_OPEN,
@@ -71,6 +117,9 @@ public record BlockSetType(
       new BlockSetType(
          "polished_blackstone",
          true,
+         true,
+         false,
+         BlockSetType.PressurePlateSensitivity.MOBS,
          SoundType.STONE,
          SoundEvents.IRON_DOOR_CLOSE,
          SoundEvents.IRON_DOOR_OPEN,
@@ -90,6 +139,9 @@ public record BlockSetType(
       new BlockSetType(
          "cherry",
          true,
+         true,
+         true,
+         BlockSetType.PressurePlateSensitivity.EVERYTHING,
          SoundType.CHERRY_WOOD,
          SoundEvents.CHERRY_WOOD_DOOR_CLOSE,
          SoundEvents.CHERRY_WOOD_DOOR_OPEN,
@@ -107,6 +159,9 @@ public record BlockSetType(
       new BlockSetType(
          "crimson",
          true,
+         true,
+         true,
+         BlockSetType.PressurePlateSensitivity.EVERYTHING,
          SoundType.NETHER_WOOD,
          SoundEvents.NETHER_WOOD_DOOR_CLOSE,
          SoundEvents.NETHER_WOOD_DOOR_OPEN,
@@ -122,6 +177,9 @@ public record BlockSetType(
       new BlockSetType(
          "warped",
          true,
+         true,
+         true,
+         BlockSetType.PressurePlateSensitivity.EVERYTHING,
          SoundType.NETHER_WOOD,
          SoundEvents.NETHER_WOOD_DOOR_CLOSE,
          SoundEvents.NETHER_WOOD_DOOR_OPEN,
@@ -138,6 +196,9 @@ public record BlockSetType(
       new BlockSetType(
          "bamboo",
          true,
+         true,
+         true,
+         BlockSetType.PressurePlateSensitivity.EVERYTHING,
          SoundType.BAMBOO_WOOD,
          SoundEvents.BAMBOO_WOOD_DOOR_CLOSE,
          SoundEvents.BAMBOO_WOOD_DOOR_OPEN,
@@ -154,6 +215,9 @@ public record BlockSetType(
       this(
          var1,
          true,
+         true,
+         true,
+         BlockSetType.PressurePlateSensitivity.EVERYTHING,
          SoundType.WOOD,
          SoundEvents.WOODEN_DOOR_CLOSE,
          SoundEvents.WOODEN_DOOR_OPEN,
@@ -169,36 +233,50 @@ public record BlockSetType(
    public BlockSetType(
       String var1,
       boolean var2,
-      SoundType var3,
-      SoundEvent var4,
-      SoundEvent var5,
-      SoundEvent var6,
+      boolean var3,
+      boolean var4,
+      BlockSetType.PressurePlateSensitivity var5,
+      SoundType var6,
       SoundEvent var7,
       SoundEvent var8,
       SoundEvent var9,
       SoundEvent var10,
-      SoundEvent var11
+      SoundEvent var11,
+      SoundEvent var12,
+      SoundEvent var13,
+      SoundEvent var14
    ) {
       super();
       this.name = var1;
       this.canOpenByHand = var2;
-      this.soundType = var3;
-      this.doorClose = var4;
-      this.doorOpen = var5;
-      this.trapdoorClose = var6;
-      this.trapdoorOpen = var7;
-      this.pressurePlateClickOff = var8;
-      this.pressurePlateClickOn = var9;
-      this.buttonClickOff = var10;
-      this.buttonClickOn = var11;
+      this.canOpenByWindCharge = var3;
+      this.canButtonBeActivatedByArrows = var4;
+      this.pressurePlateSensitivity = var5;
+      this.soundType = var6;
+      this.doorClose = var7;
+      this.doorOpen = var8;
+      this.trapdoorClose = var9;
+      this.trapdoorOpen = var10;
+      this.pressurePlateClickOff = var11;
+      this.pressurePlateClickOn = var12;
+      this.buttonClickOff = var13;
+      this.buttonClickOn = var14;
    }
 
    private static BlockSetType register(BlockSetType var0) {
-      VALUES.add(var0);
+      TYPES.put(var0.name, var0);
       return var0;
    }
 
    public static Stream<BlockSetType> values() {
-      return VALUES.stream();
+      return TYPES.values().stream();
+   }
+
+   public static enum PressurePlateSensitivity {
+      EVERYTHING,
+      MOBS;
+
+      private PressurePlateSensitivity() {
+      }
    }
 }

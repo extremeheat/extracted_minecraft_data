@@ -4,11 +4,11 @@ import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.TypeRewriteRule;
-import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
+import net.minecraft.Util;
 
 public class StructureSettingsFlattenFix extends DataFix {
    public StructureSettingsFlattenFix(Schema var1) {
@@ -18,11 +18,13 @@ public class StructureSettingsFlattenFix extends DataFix {
    protected TypeRewriteRule makeRule() {
       Type var1 = this.getInputSchema().getType(References.WORLD_GEN_SETTINGS);
       OpticFinder var2 = var1.findField("dimensions");
-      return this.fixTypeEverywhereTyped("StructureSettingsFlatten", var1, var1x -> var1x.updateTyped(var2, var1xx -> {
-            Dynamic var2x = (Dynamic)var1xx.write().result().orElseThrow();
-            Dynamic var3 = var2x.updateMapValues(StructureSettingsFlattenFix::fixDimension);
-            return (Typed)((Pair)var2.type().readTyped(var3).result().orElseThrow()).getFirst();
-         }));
+      return this.fixTypeEverywhereTyped(
+         "StructureSettingsFlatten",
+         var1,
+         var1x -> var1x.updateTyped(
+               var2, var1xx -> Util.writeAndReadTypedOrThrow(var1xx, var2.type(), var0xx -> var0xx.updateMapValues(StructureSettingsFlattenFix::fixDimension))
+            )
+      );
    }
 
    private static Pair<Dynamic<?>, Dynamic<?>> fixDimension(Pair<Dynamic<?>, Dynamic<?>> var0) {

@@ -35,7 +35,7 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 public class CloneCommands {
    private static final SimpleCommandExceptionType ERROR_OVERLAP = new SimpleCommandExceptionType(Component.translatable("commands.clone.overlap"));
    private static final Dynamic2CommandExceptionType ERROR_AREA_TOO_LARGE = new Dynamic2CommandExceptionType(
-      (var0, var1) -> Component.translatable("commands.clone.toobig", var0, var1)
+      (var0, var1) -> Component.translatableEscape("commands.clone.toobig", var0, var1)
    );
    private static final SimpleCommandExceptionType ERROR_FAILED = new SimpleCommandExceptionType(Component.translatable("commands.clone.failed"));
    public static final Predicate<BlockInWorld> FILTER_AIR = var0 -> !var0.getState().isAir();

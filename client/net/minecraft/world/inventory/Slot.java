@@ -156,4 +156,8 @@ public class Slot {
    public boolean isHighlightable() {
       return true;
    }
+
+   public boolean isFake() {
+      return false;
+   }
 }

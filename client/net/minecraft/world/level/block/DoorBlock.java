@@ -1,5 +1,8 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -13,6 +16,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
@@ -34,6 +38,9 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class DoorBlock extends Block {
+   public static final MapCodec<DoorBlock> CODEC = RecordCodecBuilder.mapCodec(
+      var0 -> var0.group(BlockSetType.CODEC.fieldOf("block_set_type").forGetter(DoorBlock::type), propertiesCodec()).apply(var0, DoorBlock::new)
+   );
    public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
    public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
    public static final EnumProperty<DoorHingeSide> HINGE = BlockStateProperties.DOOR_HINGE;
@@ -46,9 +53,14 @@ public class DoorBlock extends Block {
    protected static final VoxelShape EAST_AABB = Block.box(0.0, 0.0, 0.0, 3.0, 16.0, 16.0);
    private final BlockSetType type;
 
-   protected DoorBlock(BlockBehaviour.Properties var1, BlockSetType var2) {
-      super(var1.sound(var2.soundType()));
-      this.type = var2;
+   @Override
+   public MapCodec<? extends DoorBlock> codec() {
+      return CODEC;
+   }
+
+   protected DoorBlock(BlockSetType var1, BlockBehaviour.Properties var2) {
+      super(var2.sound(var1.soundType()));
+      this.type = var1;
       this.registerDefaultState(
          this.stateDefinition
             .any()
@@ -69,17 +81,13 @@ public class DoorBlock extends Block {
       Direction var5 = var1.getValue(FACING);
       boolean var6 = !var1.getValue(OPEN);
       boolean var7 = var1.getValue(HINGE) == DoorHingeSide.RIGHT;
-      switch(var5) {
-         case EAST:
-         default:
-            return var6 ? EAST_AABB : (var7 ? NORTH_AABB : SOUTH_AABB);
-         case SOUTH:
-            return var6 ? SOUTH_AABB : (var7 ? EAST_AABB : WEST_AABB);
-         case WEST:
-            return var6 ? WEST_AABB : (var7 ? SOUTH_AABB : NORTH_AABB);
-         case NORTH:
-            return var6 ? NORTH_AABB : (var7 ? WEST_AABB : EAST_AABB);
-      }
+
+      return switch(var5) {
+         case SOUTH -> var6 ? SOUTH_AABB : (var7 ? EAST_AABB : WEST_AABB);
+         case WEST -> var6 ? WEST_AABB : (var7 ? SOUTH_AABB : NORTH_AABB);
+         case NORTH -> var6 ? NORTH_AABB : (var7 ? WEST_AABB : EAST_AABB);
+         default -> var6 ? EAST_AABB : (var7 ? NORTH_AABB : SOUTH_AABB);
+      };
    }
 
    @Override
@@ -90,36 +98,38 @@ public class DoorBlock extends Block {
             ? Blocks.AIR.defaultBlockState()
             : super.updateShape(var1, var2, var3, var4, var5, var6);
       } else {
-         return var3.is(this) && var3.getValue(HALF) != var7
-            ? var1.setValue(FACING, var3.getValue(FACING))
-               .setValue(OPEN, var3.getValue(OPEN))
-               .setValue(HINGE, var3.getValue(HINGE))
-               .setValue(POWERED, var3.getValue(POWERED))
-            : Blocks.AIR.defaultBlockState();
+         return var3.getBlock() instanceof DoorBlock && var3.getValue(HALF) != var7 ? var3.setValue(HALF, var7) : Blocks.AIR.defaultBlockState();
       }
    }
 
    @Override
-   public void playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
-      if (!var1.isClientSide && var4.isCreative()) {
-         DoublePlantBlock.preventCreativeDropFromBottomPart(var1, var2, var3, var4);
+   public void onExplosionHit(BlockState var1, Level var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
+      if (var4.getBlockInteraction() == Explosion.BlockInteraction.TRIGGER_BLOCK
+         && var1.getValue(HALF) == DoubleBlockHalf.LOWER
+         && !var2.isClientSide()
+         && this.type.canOpenByWindCharge()
+         && !var1.getValue(POWERED)) {
+         this.setOpen(null, var2, var1, var3, !this.isOpen(var1));
       }
 
-      super.playerWillDestroy(var1, var2, var3, var4);
+      super.onExplosionHit(var1, var2, var3, var4, var5);
+   }
+
+   @Override
+   public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
+      if (!var1.isClientSide && (var4.isCreative() || !var4.hasCorrectToolForDrops(var3))) {
+         DoublePlantBlock.preventDropFromBottomPart(var1, var2, var3, var4);
+      }
+
+      return super.playerWillDestroy(var1, var2, var3, var4);
    }
 
    @Override
    public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
-      switch(var4) {
-         case LAND:
-            return var1.getValue(OPEN);
-         case WATER:
-            return false;
-         case AIR:
-            return var1.getValue(OPEN);
-         default:
-            return false;
-      }
+      return switch(var4) {
+         case LAND, AIR -> var1.getValue(OPEN);
+         case WATER -> false;
+      };
    }
 
    @Nullable

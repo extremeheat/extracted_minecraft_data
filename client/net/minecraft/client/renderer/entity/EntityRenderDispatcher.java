@@ -3,7 +3,6 @@ package net.minecraft.client.renderer.entity;
 import com.google.common.collect.ImmutableMap;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Axis;
 import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
@@ -144,7 +143,7 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
          var10.translate(var25, var26, var19);
          var13.render(var1, var8, var9, var10, var11, var12);
          if (var1.displayFireAnimation()) {
-            this.renderFlame(var10, var11, var1);
+            this.renderFlame(var10, var11, var1, Mth.rotationAroundAxis(Mth.Y_AXIS, this.cameraOrientation, new Quaternionf()));
          }
 
          var10.translate(-var14.x(), -var14.y(), -var14.z());
@@ -242,42 +241,42 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
          .endVertex();
    }
 
-   private void renderFlame(PoseStack var1, MultiBufferSource var2, Entity var3) {
-      TextureAtlasSprite var4 = ModelBakery.FIRE_0.sprite();
-      TextureAtlasSprite var5 = ModelBakery.FIRE_1.sprite();
+   private void renderFlame(PoseStack var1, MultiBufferSource var2, Entity var3, Quaternionf var4) {
+      TextureAtlasSprite var5 = ModelBakery.FIRE_0.sprite();
+      TextureAtlasSprite var6 = ModelBakery.FIRE_1.sprite();
       var1.pushPose();
-      float var6 = var3.getBbWidth() * 1.4F;
-      var1.scale(var6, var6, var6);
-      float var7 = 0.5F;
-      float var8 = 0.0F;
-      float var9 = var3.getBbHeight() / var6;
-      float var10 = 0.0F;
-      var1.mulPose(Axis.YP.rotationDegrees(-this.camera.getYRot()));
-      var1.translate(0.0F, 0.0F, -0.3F + (float)((int)var9) * 0.02F);
+      float var7 = var3.getBbWidth() * 1.4F;
+      var1.scale(var7, var7, var7);
+      float var8 = 0.5F;
+      float var9 = 0.0F;
+      float var10 = var3.getBbHeight() / var7;
       float var11 = 0.0F;
-      int var12 = 0;
-      VertexConsumer var13 = var2.getBuffer(Sheets.cutoutBlockSheet());
+      var1.mulPose(var4);
+      var1.translate(0.0F, 0.0F, -0.3F + (float)((int)var10) * 0.02F);
+      float var12 = 0.0F;
+      int var13 = 0;
+      VertexConsumer var14 = var2.getBuffer(Sheets.cutoutBlockSheet());
 
-      for(PoseStack.Pose var14 = var1.last(); var9 > 0.0F; ++var12) {
-         TextureAtlasSprite var15 = var12 % 2 == 0 ? var4 : var5;
-         float var16 = var15.getU0();
-         float var17 = var15.getV0();
-         float var18 = var15.getU1();
-         float var19 = var15.getV1();
-         if (var12 / 2 % 2 == 0) {
-            float var20 = var18;
-            var18 = var16;
-            var16 = var20;
+      for(PoseStack.Pose var15 = var1.last(); var10 > 0.0F; ++var13) {
+         TextureAtlasSprite var16 = var13 % 2 == 0 ? var5 : var6;
+         float var17 = var16.getU0();
+         float var18 = var16.getV0();
+         float var19 = var16.getU1();
+         float var20 = var16.getV1();
+         if (var13 / 2 % 2 == 0) {
+            float var21 = var19;
+            var19 = var17;
+            var17 = var21;
          }
 
-         fireVertex(var14, var13, var7 - 0.0F, 0.0F - var10, var11, var18, var19);
-         fireVertex(var14, var13, -var7 - 0.0F, 0.0F - var10, var11, var16, var19);
-         fireVertex(var14, var13, -var7 - 0.0F, 1.4F - var10, var11, var16, var17);
-         fireVertex(var14, var13, var7 - 0.0F, 1.4F - var10, var11, var18, var17);
-         var9 -= 0.45F;
+         fireVertex(var15, var14, var8 - 0.0F, 0.0F - var11, var12, var19, var20);
+         fireVertex(var15, var14, -var8 - 0.0F, 0.0F - var11, var12, var17, var20);
+         fireVertex(var15, var14, -var8 - 0.0F, 1.4F - var11, var12, var17, var18);
+         fireVertex(var15, var14, var8 - 0.0F, 1.4F - var11, var12, var19, var18);
          var10 -= 0.45F;
-         var7 *= 0.9F;
-         var11 += 0.03F;
+         var11 -= 0.45F;
+         var8 *= 0.9F;
+         var12 += 0.03F;
       }
 
       var1.popPose();

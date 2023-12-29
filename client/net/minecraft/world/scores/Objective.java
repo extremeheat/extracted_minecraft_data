@@ -1,8 +1,11 @@
 package net.minecraft.world.scores;
 
+import java.util.Objects;
+import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.numbers.NumberFormat;
 import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 
 public class Objective {
@@ -12,8 +15,13 @@ public class Objective {
    private Component displayName;
    private Component formattedDisplayName;
    private ObjectiveCriteria.RenderType renderType;
+   private boolean displayAutoUpdate;
+   @Nullable
+   private NumberFormat numberFormat;
 
-   public Objective(Scoreboard var1, String var2, ObjectiveCriteria var3, Component var4, ObjectiveCriteria.RenderType var5) {
+   public Objective(
+      Scoreboard var1, String var2, ObjectiveCriteria var3, Component var4, ObjectiveCriteria.RenderType var5, boolean var6, @Nullable NumberFormat var7
+   ) {
       super();
       this.scoreboard = var1;
       this.name = var2;
@@ -21,6 +29,8 @@ public class Objective {
       this.displayName = var4;
       this.formattedDisplayName = this.createFormattedDisplayName();
       this.renderType = var5;
+      this.displayAutoUpdate = var6;
+      this.numberFormat = var7;
    }
 
    public Scoreboard getScoreboard() {
@@ -37,6 +47,19 @@ public class Objective {
 
    public Component getDisplayName() {
       return this.displayName;
+   }
+
+   public boolean displayAutoUpdate() {
+      return this.displayAutoUpdate;
+   }
+
+   @Nullable
+   public NumberFormat numberFormat() {
+      return this.numberFormat;
+   }
+
+   public NumberFormat numberFormatOrDefault(NumberFormat var1) {
+      return Objects.requireNonNullElse(this.numberFormat, var1);
    }
 
    private Component createFormattedDisplayName() {
@@ -61,6 +84,16 @@ public class Objective {
 
    public void setRenderType(ObjectiveCriteria.RenderType var1) {
       this.renderType = var1;
+      this.scoreboard.onObjectiveChanged(this);
+   }
+
+   public void setDisplayAutoUpdate(boolean var1) {
+      this.displayAutoUpdate = var1;
+      this.scoreboard.onObjectiveChanged(this);
+   }
+
+   public void setNumberFormat(@Nullable NumberFormat var1) {
+      this.numberFormat = var1;
       this.scoreboard.onObjectiveChanged(this);
    }
 }

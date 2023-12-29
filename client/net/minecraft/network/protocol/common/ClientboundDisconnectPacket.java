@@ -14,7 +14,7 @@ public class ClientboundDisconnectPacket implements Packet<ClientCommonPacketLis
 
    public ClientboundDisconnectPacket(FriendlyByteBuf var1) {
       super();
-      this.reason = var1.readComponent();
+      this.reason = var1.readComponentTrusted();
    }
 
    @Override

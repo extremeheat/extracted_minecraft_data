@@ -1,11 +1,13 @@
 package net.minecraft.advancements.critereon;
 
-import com.google.gson.JsonObject;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Optional;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.phys.Vec3;
 
 public class DistanceTrigger extends SimpleCriterionTrigger<DistanceTrigger.TriggerInstance> {
@@ -13,10 +15,9 @@ public class DistanceTrigger extends SimpleCriterionTrigger<DistanceTrigger.Trig
       super();
    }
 
-   public DistanceTrigger.TriggerInstance createInstance(JsonObject var1, Optional<ContextAwarePredicate> var2, DeserializationContext var3) {
-      Optional var4 = LocationPredicate.fromJson(var1.get("start_position"));
-      Optional var5 = DistancePredicate.fromJson(var1.get("distance"));
-      return new DistanceTrigger.TriggerInstance(var2, var4, var5);
+   @Override
+   public Codec<DistanceTrigger.TriggerInstance> codec() {
+      return DistanceTrigger.TriggerInstance.CODEC;
    }
 
    public void trigger(ServerPlayer var1, Vec3 var2) {
@@ -24,12 +25,23 @@ public class DistanceTrigger extends SimpleCriterionTrigger<DistanceTrigger.Trig
       this.trigger(var1, var3x -> var3x.matches(var1.serverLevel(), var2, var3));
    }
 
-   public static class TriggerInstance extends AbstractCriterionTriggerInstance {
+   public static record TriggerInstance(Optional<ContextAwarePredicate> b, Optional<LocationPredicate> c, Optional<DistancePredicate> d)
+      implements SimpleCriterionTrigger.SimpleInstance {
+      private final Optional<ContextAwarePredicate> player;
       private final Optional<LocationPredicate> startPosition;
       private final Optional<DistancePredicate> distance;
+      public static final Codec<DistanceTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
+         var0 -> var0.group(
+                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player").forGetter(DistanceTrigger.TriggerInstance::player),
+                  ExtraCodecs.strictOptionalField(LocationPredicate.CODEC, "start_position").forGetter(DistanceTrigger.TriggerInstance::startPosition),
+                  ExtraCodecs.strictOptionalField(DistancePredicate.CODEC, "distance").forGetter(DistanceTrigger.TriggerInstance::distance)
+               )
+               .apply(var0, DistanceTrigger.TriggerInstance::new)
+      );
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<LocationPredicate> var2, Optional<DistancePredicate> var3) {
-         super(var1);
+         super();
+         this.player = var1;
          this.startPosition = var2;
          this.distance = var3;
       }
@@ -48,14 +60,6 @@ public class DistanceTrigger extends SimpleCriterionTrigger<DistanceTrigger.Trig
 
       public static Criterion<DistanceTrigger.TriggerInstance> travelledThroughNether(DistancePredicate var0) {
          return CriteriaTriggers.NETHER_TRAVEL.createCriterion(new DistanceTrigger.TriggerInstance(Optional.empty(), Optional.empty(), Optional.of(var0)));
-      }
-
-      @Override
-      public JsonObject serializeToJson() {
-         JsonObject var1 = super.serializeToJson();
-         this.startPosition.ifPresent(var1x -> var1.add("start_position", var1x.serializeToJson()));
-         this.distance.ifPresent(var1x -> var1.add("distance", var1x.serializeToJson()));
-         return var1;
       }
 
       public boolean matches(ServerLevel var1, Vec3 var2, Vec3 var3) {

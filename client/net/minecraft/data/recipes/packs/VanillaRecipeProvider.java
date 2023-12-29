@@ -2,11 +2,8 @@ package net.minecraft.data.recipes.packs;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.CriteriaTriggers;
@@ -31,8 +28,24 @@ import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.ArmorDyeRecipe;
+import net.minecraft.world.item.crafting.BannerDuplicateRecipe;
+import net.minecraft.world.item.crafting.BookCloningRecipe;
+import net.minecraft.world.item.crafting.CampfireCookingRecipe;
+import net.minecraft.world.item.crafting.DecoratedPotRecipe;
+import net.minecraft.world.item.crafting.FireworkRocketRecipe;
+import net.minecraft.world.item.crafting.FireworkStarFadeRecipe;
+import net.minecraft.world.item.crafting.FireworkStarRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.MapCloningRecipe;
+import net.minecraft.world.item.crafting.MapExtendingRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.RepairItemRecipe;
+import net.minecraft.world.item.crafting.ShieldDecorationRecipe;
+import net.minecraft.world.item.crafting.ShulkerBoxColoring;
+import net.minecraft.world.item.crafting.SmokingRecipe;
+import net.minecraft.world.item.crafting.SuspiciousStewRecipe;
+import net.minecraft.world.item.crafting.TippedArrowRecipe;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Blocks;
 
@@ -558,7 +571,9 @@ public class VanillaRecipeProvider extends RecipeProvider {
             CriteriaTriggers.INVENTORY_CHANGED
                .createCriterion(
                   new InventoryChangeTrigger.TriggerInstance(
-                     Optional.empty(), MinMaxBounds.Ints.atLeast(10), MinMaxBounds.Ints.ANY, MinMaxBounds.Ints.ANY, List.of()
+                     Optional.empty(),
+                     new InventoryChangeTrigger.TriggerInstance.Slots(MinMaxBounds.Ints.atLeast(10), MinMaxBounds.Ints.ANY, MinMaxBounds.Ints.ANY),
+                     List.of()
                   )
                )
          )
@@ -669,7 +684,7 @@ public class VanillaRecipeProvider extends RecipeProvider {
          .group(getItemName(Items.COPPER_INGOT))
          .unlockedBy(getHasName(Blocks.WAXED_COPPER_BLOCK), has(Blocks.WAXED_COPPER_BLOCK))
          .save(var1, getConversionRecipeName(Items.COPPER_INGOT, Blocks.WAXED_COPPER_BLOCK));
-      waxRecipes(var1);
+      waxRecipes(var1, FeatureFlagSet.of(FeatureFlags.VANILLA));
       ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, Items.CYAN_DYE, 2)
          .requires(Items.BLUE_DYE)
          .requires(Items.GREEN_DYE)
@@ -2006,19 +2021,19 @@ public class VanillaRecipeProvider extends RecipeProvider {
          .unlockedBy("has_amethyst_shard", has(Items.AMETHYST_SHARD))
          .save(var1);
       threeByThreePacker(var1, RecipeCategory.MISC, Items.MUSIC_DISC_5, Items.DISC_FRAGMENT_5);
-      SpecialRecipeBuilder.special(RecipeSerializer.ARMOR_DYE).save(var1, "armor_dye");
-      SpecialRecipeBuilder.special(RecipeSerializer.BANNER_DUPLICATE).save(var1, "banner_duplicate");
-      SpecialRecipeBuilder.special(RecipeSerializer.BOOK_CLONING).save(var1, "book_cloning");
-      SpecialRecipeBuilder.special(RecipeSerializer.FIREWORK_ROCKET).save(var1, "firework_rocket");
-      SpecialRecipeBuilder.special(RecipeSerializer.FIREWORK_STAR).save(var1, "firework_star");
-      SpecialRecipeBuilder.special(RecipeSerializer.FIREWORK_STAR_FADE).save(var1, "firework_star_fade");
-      SpecialRecipeBuilder.special(RecipeSerializer.MAP_CLONING).save(var1, "map_cloning");
-      SpecialRecipeBuilder.special(RecipeSerializer.MAP_EXTENDING).save(var1, "map_extending");
-      SpecialRecipeBuilder.special(RecipeSerializer.REPAIR_ITEM).save(var1, "repair_item");
-      SpecialRecipeBuilder.special(RecipeSerializer.SHIELD_DECORATION).save(var1, "shield_decoration");
-      SpecialRecipeBuilder.special(RecipeSerializer.SHULKER_BOX_COLORING).save(var1, "shulker_box_coloring");
-      SpecialRecipeBuilder.special(RecipeSerializer.TIPPED_ARROW).save(var1, "tipped_arrow");
-      SpecialRecipeBuilder.special(RecipeSerializer.SUSPICIOUS_STEW).save(var1, "suspicious_stew");
+      SpecialRecipeBuilder.special(ArmorDyeRecipe::new).save(var1, "armor_dye");
+      SpecialRecipeBuilder.special(BannerDuplicateRecipe::new).save(var1, "banner_duplicate");
+      SpecialRecipeBuilder.special(BookCloningRecipe::new).save(var1, "book_cloning");
+      SpecialRecipeBuilder.special(FireworkRocketRecipe::new).save(var1, "firework_rocket");
+      SpecialRecipeBuilder.special(FireworkStarRecipe::new).save(var1, "firework_star");
+      SpecialRecipeBuilder.special(FireworkStarFadeRecipe::new).save(var1, "firework_star_fade");
+      SpecialRecipeBuilder.special(MapCloningRecipe::new).save(var1, "map_cloning");
+      SpecialRecipeBuilder.special(MapExtendingRecipe::new).save(var1, "map_extending");
+      SpecialRecipeBuilder.special(RepairItemRecipe::new).save(var1, "repair_item");
+      SpecialRecipeBuilder.special(ShieldDecorationRecipe::new).save(var1, "shield_decoration");
+      SpecialRecipeBuilder.special(ShulkerBoxColoring::new).save(var1, "shulker_box_coloring");
+      SpecialRecipeBuilder.special(TippedArrowRecipe::new).save(var1, "tipped_arrow");
+      SpecialRecipeBuilder.special(SuspiciousStewRecipe::new).save(var1, "suspicious_stew");
       SimpleCookingRecipeBuilder.smelting(Ingredient.of(Items.POTATO), RecipeCategory.FOOD, Items.BAKED_POTATO, 0.35F, 200)
          .unlockedBy("has_potato", has(Items.POTATO))
          .save(var1);
@@ -2328,8 +2343,8 @@ public class VanillaRecipeProvider extends RecipeProvider {
       SimpleCookingRecipeBuilder.blasting(Ingredient.of(Blocks.ANCIENT_DEBRIS), RecipeCategory.MISC, Items.NETHERITE_SCRAP, 2.0F, 100)
          .unlockedBy("has_ancient_debris", has(Blocks.ANCIENT_DEBRIS))
          .save(var1, getBlastingRecipeName(Items.NETHERITE_SCRAP));
-      cookRecipes(var1, "smoking", RecipeSerializer.SMOKING_RECIPE, 100);
-      cookRecipes(var1, "campfire_cooking", RecipeSerializer.CAMPFIRE_COOKING_RECIPE, 600);
+      cookRecipes(var1, "smoking", RecipeSerializer.SMOKING_RECIPE, SmokingRecipe::new, 100);
+      cookRecipes(var1, "campfire_cooking", RecipeSerializer.CAMPFIRE_COOKING_RECIPE, CampfireCookingRecipe::new, 600);
       stonecutterResultFromBase(var1, RecipeCategory.BUILDING_BLOCKS, Blocks.STONE_SLAB, Blocks.STONE, 2);
       stonecutterResultFromBase(var1, RecipeCategory.BUILDING_BLOCKS, Blocks.STONE_STAIRS, Blocks.STONE);
       stonecutterResultFromBase(var1, RecipeCategory.BUILDING_BLOCKS, Blocks.STONE_BRICKS, Blocks.STONE);
@@ -2555,7 +2570,7 @@ public class VanillaRecipeProvider extends RecipeProvider {
       stonecutterResultFromBase(var1, RecipeCategory.BUILDING_BLOCKS, Blocks.DEEPSLATE_TILE_SLAB, Blocks.DEEPSLATE_TILES, 2);
       stonecutterResultFromBase(var1, RecipeCategory.BUILDING_BLOCKS, Blocks.DEEPSLATE_TILE_STAIRS, Blocks.DEEPSLATE_TILES);
       stonecutterResultFromBase(var1, RecipeCategory.DECORATIONS, Blocks.DEEPSLATE_TILE_WALL, Blocks.DEEPSLATE_TILES);
-      smithingTrims().forEach((var1x, var2x) -> trimSmithing(var1, var1x, var2x));
+      smithingTrims().forEach(var1x -> trimSmithing(var1, var1x.template(), var1x.id()));
       netheriteSmithing(var1, Items.DIAMOND_CHESTPLATE, RecipeCategory.COMBAT, Items.NETHERITE_CHESTPLATE);
       netheriteSmithing(var1, Items.DIAMOND_LEGGINGS, RecipeCategory.COMBAT, Items.NETHERITE_LEGGINGS);
       netheriteSmithing(var1, Items.DIAMOND_HELMET, RecipeCategory.COMBAT, Items.NETHERITE_HELMET);
@@ -2630,28 +2645,39 @@ public class VanillaRecipeProvider extends RecipeProvider {
          .pattern(" # ")
          .unlockedBy("has_brick", has(ItemTags.DECORATED_POT_INGREDIENTS))
          .save(var1, "decorated_pot_simple");
-      SpecialRecipeBuilder.special(RecipeSerializer.DECORATED_POT_RECIPE).save(var1, "decorated_pot");
+      SpecialRecipeBuilder.special(DecoratedPotRecipe::new).save(var1, "decorated_pot");
    }
 
-   public static Map<Item, ResourceLocation> smithingTrims() {
+   public static Stream<VanillaRecipeProvider.TrimTemplate> smithingTrims() {
       return Stream.of(
-            Items.TIDE_ARMOR_TRIM_SMITHING_TEMPLATE,
-            Items.SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE,
             Items.COAST_ARMOR_TRIM_SMITHING_TEMPLATE,
-            Items.VEX_ARMOR_TRIM_SMITHING_TEMPLATE,
-            Items.SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE,
-            Items.WARD_ARMOR_TRIM_SMITHING_TEMPLATE,
-            Items.EYE_ARMOR_TRIM_SMITHING_TEMPLATE,
             Items.DUNE_ARMOR_TRIM_SMITHING_TEMPLATE,
-            Items.WILD_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.EYE_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.HOST_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.RAISER_ARMOR_TRIM_SMITHING_TEMPLATE,
             Items.RIB_ARMOR_TRIM_SMITHING_TEMPLATE,
             Items.SENTRY_ARMOR_TRIM_SMITHING_TEMPLATE,
-            Items.WAYFINDER_ARMOR_TRIM_SMITHING_TEMPLATE,
             Items.SHAPER_ARMOR_TRIM_SMITHING_TEMPLATE,
             Items.SILENCE_ARMOR_TRIM_SMITHING_TEMPLATE,
-            Items.RAISER_ARMOR_TRIM_SMITHING_TEMPLATE,
-            Items.HOST_ARMOR_TRIM_SMITHING_TEMPLATE
+            Items.SNOUT_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.SPIRE_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.TIDE_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.VEX_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.WARD_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.WAYFINDER_ARMOR_TRIM_SMITHING_TEMPLATE,
+            Items.WILD_ARMOR_TRIM_SMITHING_TEMPLATE
          )
-         .collect(Collectors.toMap(Function.identity(), var0 -> new ResourceLocation(getItemName(var0) + "_smithing_trim")));
+         .map(var0 -> new VanillaRecipeProvider.TrimTemplate(var0, new ResourceLocation(getItemName(var0) + "_smithing_trim")));
+   }
+
+   public static record TrimTemplate(Item a, ResourceLocation b) {
+      private final Item template;
+      private final ResourceLocation id;
+
+      public TrimTemplate(Item var1, ResourceLocation var2) {
+         super();
+         this.template = var1;
+         this.id = var2;
+      }
    }
 }

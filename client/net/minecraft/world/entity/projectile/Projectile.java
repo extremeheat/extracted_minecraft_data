@@ -9,6 +9,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -42,15 +43,22 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       }
    }
 
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Nullable
    @Override
    public Entity getOwner() {
       if (this.cachedOwner != null && !this.cachedOwner.isRemoved()) {
          return this.cachedOwner;
-      } else if (this.ownerUUID != null && this.level() instanceof ServerLevel) {
-         this.cachedOwner = ((ServerLevel)this.level()).getEntity(this.ownerUUID);
-         return this.cachedOwner;
       } else {
+         if (this.ownerUUID != null) {
+            Level var2 = this.level();
+            if (var2 instanceof ServerLevel var1) {
+               this.cachedOwner = var1.getEntity(this.ownerUUID);
+               return this.cachedOwner;
+            }
+         }
+
          return null;
       }
    }
@@ -85,6 +93,16 @@ public abstract class Projectile extends Entity implements TraceableEntity {
 
       this.leftOwner = var1.getBoolean("LeftOwner");
       this.hasBeenShot = var1.getBoolean("HasBeenShot");
+   }
+
+   // $QF: Could not properly define all variable types!
+   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   @Override
+   public void restoreFrom(Entity var1) {
+      super.restoreFrom(var1);
+      if (var1 instanceof Projectile var2) {
+         this.cachedOwner = var2.cachedOwner;
+      }
    }
 
    @Override
@@ -226,5 +244,9 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       } else {
          return var3 == null || var1.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING);
       }
+   }
+
+   public boolean mayBreak(Level var1) {
+      return this.getType().is(EntityTypeTags.IMPACT_PROJECTILES) && var1.getGameRules().getBoolean(GameRules.RULE_PROJECTILESCANBREAKBLOCKS);
    }
 }

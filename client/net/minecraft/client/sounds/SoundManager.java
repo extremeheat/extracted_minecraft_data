@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import com.mojang.blaze3d.audio.ListenerTransform;
 import com.mojang.logging.LogUtils;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -47,7 +48,7 @@ public class SoundManager extends SimplePreparableReloadListener<SoundManager.Pr
    static final Logger LOGGER = LogUtils.getLogger();
    private static final String SOUNDS_PATH = "sounds.json";
    private static final Gson GSON = new GsonBuilder()
-      .registerTypeHierarchyAdapter(Component.class, new Component.Serializer())
+      .registerTypeHierarchyAdapter(Component.class, new Component.SerializerAdapter())
       .registerTypeAdapter(SoundEventRegistration.class, new SoundEventRegistrationSerializer())
       .create();
    private static final TypeToken<Map<String, SoundEventRegistration>> SOUND_EVENT_REGISTRATION_TYPE = new TypeToken<Map<String, SoundEventRegistration>>() {
@@ -127,6 +128,10 @@ public class SoundManager extends SimplePreparableReloadListener<SoundManager.Pr
       return this.soundEngine.getAvailableSoundDevices();
    }
 
+   public ListenerTransform getListenerTransform() {
+      return this.soundEngine.getListenerTransform();
+   }
+
    static boolean validateSoundResource(Sound var0, ResourceLocation var1, ResourceProvider var2) {
       ResourceLocation var3 = var0.getPath();
       if (var2.getResource(var3).isEmpty()) {
@@ -172,6 +177,10 @@ public class SoundManager extends SimplePreparableReloadListener<SoundManager.Pr
 
    public void destroy() {
       this.soundEngine.destroy();
+   }
+
+   public void emergencyShutdown() {
+      this.soundEngine.emergencyShutdown();
    }
 
    public void tick(boolean var1) {

@@ -1,6 +1,6 @@
 package net.minecraft.client.gui.screens.inventory.tooltip;
 
-import net.minecraft.client.gui.components.AbstractWidget;
+import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.util.Mth;
 import org.joml.Vector2i;
 import org.joml.Vector2ic;
@@ -10,11 +10,11 @@ public class MenuTooltipPositioner implements ClientTooltipPositioner {
    private static final int MOUSE_OFFSET_X = 12;
    public static final int MAX_OVERLAP_WITH_WIDGET = 3;
    public static final int MAX_DISTANCE_TO_WIDGET = 5;
-   private final AbstractWidget widget;
+   private final ScreenRectangle screenRectangle;
 
-   public MenuTooltipPositioner(AbstractWidget var1) {
+   public MenuTooltipPositioner(ScreenRectangle var1) {
       super();
-      this.widget = var1;
+      this.screenRectangle = var1;
    }
 
    @Override
@@ -26,12 +26,12 @@ public class MenuTooltipPositioner implements ClientTooltipPositioner {
 
       var7.y += 3;
       int var8 = var6 + 3 + 3;
-      int var9 = this.widget.getY() + this.widget.getHeight() + 3 + getOffset(0, 0, this.widget.getHeight());
+      int var9 = this.screenRectangle.bottom() + 3 + getOffset(0, 0, this.screenRectangle.height());
       int var10 = var2 - 5;
       if (var9 + var8 <= var10) {
-         var7.y += getOffset(var7.y, this.widget.getY(), this.widget.getHeight());
+         var7.y += getOffset(var7.y, this.screenRectangle.top(), this.screenRectangle.height());
       } else {
-         var7.y -= var8 + getOffset(var7.y, this.widget.getY() + this.widget.getHeight(), this.widget.getHeight());
+         var7.y -= var8 + getOffset(var7.y, this.screenRectangle.bottom(), this.screenRectangle.height());
       }
 
       return var7;

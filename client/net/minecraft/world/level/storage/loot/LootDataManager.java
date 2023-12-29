@@ -17,6 +17,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import org.slf4j.Logger;
@@ -68,17 +69,18 @@ public class LootDataManager implements PreparableReloadListener, LootDataResolv
             var4.put(var2x, var3xx);
          }));
       var3.put(EMPTY_LOOT_TABLE_KEY, LootTable.EMPTY);
-      final ImmutableMap var5 = var3.build();
-      ValidationContext var6 = new ValidationContext(LootContextParamSets.ALL_PARAMS, new LootDataResolver() {
+      ProblemReporter.Collector var5 = new ProblemReporter.Collector();
+      final ImmutableMap var6 = var3.build();
+      ValidationContext var7 = new ValidationContext(var5, LootContextParamSets.ALL_PARAMS, new LootDataResolver() {
          @Nullable
          @Override
          public <T> T getElement(LootDataId<T> var1) {
-            return (T)var5.get(var1);
+            return (T)var6.get(var1);
          }
       });
-      var5.forEach((var1x, var2x) -> castAndValidate(var6, var1x, var2x));
-      var6.getProblems().forEach((var0, var1x) -> LOGGER.warn("Found loot table element validation problem in {}: {}", var0, var1x));
-      this.elements = var5;
+      var6.forEach((var1x, var2x) -> castAndValidate(var7, var1x, var2x));
+      var5.get().forEach((var0, var1x) -> LOGGER.warn("Found loot table element validation problem in {}: {}", var0, var1x));
+      this.elements = var6;
       this.typeKeys = var4.build();
    }
 

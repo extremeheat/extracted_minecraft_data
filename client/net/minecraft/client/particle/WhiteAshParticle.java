@@ -2,6 +2,7 @@ package net.minecraft.client.particle;
 
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.util.FastColor;
 import net.minecraft.util.RandomSource;
 
 public class WhiteAshParticle extends BaseAshSmokeParticle {
@@ -9,9 +10,9 @@ public class WhiteAshParticle extends BaseAshSmokeParticle {
 
    protected WhiteAshParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, float var14, SpriteSet var15) {
       super(var1, var2, var4, var6, 0.1F, -0.1F, 0.1F, var8, var10, var12, var14, var15, 0.0F, 20, 0.0125F, false);
-      this.rCol = 0.7294118F;
-      this.gCol = 0.69411767F;
-      this.bCol = 0.7607843F;
+      this.rCol = (float)FastColor.ARGB32.red(12235202) / 255.0F;
+      this.gCol = (float)FastColor.ARGB32.green(12235202) / 255.0F;
+      this.bCol = (float)FastColor.ARGB32.blue(12235202) / 255.0F;
    }
 
    public static class Provider implements ParticleProvider<SimpleParticleType> {

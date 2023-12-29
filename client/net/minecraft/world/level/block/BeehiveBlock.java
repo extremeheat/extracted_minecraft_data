@@ -1,5 +1,6 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.MapCodec;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -54,10 +55,16 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class BeehiveBlock extends BaseEntityBlock {
+   public static final MapCodec<BeehiveBlock> CODEC = simpleCodec(BeehiveBlock::new);
    public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
    public static final IntegerProperty HONEY_LEVEL = BlockStateProperties.LEVEL_HONEY;
    public static final int MAX_HONEY_LEVELS = 5;
    private static final int SHEARED_HONEYCOMB_COUNT = 3;
+
+   @Override
+   public MapCodec<BeehiveBlock> codec() {
+      return CODEC;
+   }
 
    public BeehiveBlock(BlockBehaviour.Properties var1) {
       super(var1);
@@ -262,7 +269,7 @@ public class BeehiveBlock extends BaseEntityBlock {
    // $QF: Could not properly define all variable types!
    // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
-   public void playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
+   public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
       if (!var1.isClientSide && var4.isCreative() && var1.getGameRules().getBoolean(GameRules.RULE_DOBLOCKDROPS)) {
          BlockEntity var5 = var1.getBlockEntity(var2);
          if (var5 instanceof BeehiveBlockEntity var6) {
@@ -286,7 +293,7 @@ public class BeehiveBlock extends BaseEntityBlock {
          }
       }
 
-      super.playerWillDestroy(var1, var2, var3, var4);
+      return super.playerWillDestroy(var1, var2, var3, var4);
    }
 
    // $QF: Could not properly define all variable types!
@@ -316,5 +323,15 @@ public class BeehiveBlock extends BaseEntityBlock {
       }
 
       return super.updateShape(var1, var2, var3, var4, var5, var6);
+   }
+
+   @Override
+   public BlockState rotate(BlockState var1, Rotation var2) {
+      return var1.setValue(FACING, var2.rotate(var1.getValue(FACING)));
+   }
+
+   @Override
+   public BlockState mirror(BlockState var1, Mirror var2) {
+      return var1.rotate(var2.getRotation(var1.getValue(FACING)));
    }
 }

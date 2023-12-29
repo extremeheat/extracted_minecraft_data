@@ -1,11 +1,9 @@
 package net.minecraft.world.item.crafting;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.Container;
@@ -64,25 +62,22 @@ public abstract class SingleItemRecipe implements Recipe<Container> {
       return this.result.copy();
    }
 
+   public interface Factory<T extends SingleItemRecipe> {
+      T create(String var1, Ingredient var2, ItemStack var3);
+   }
+
    public static class Serializer<T extends SingleItemRecipe> implements RecipeSerializer<T> {
-      private static final MapCodec<ItemStack> RESULT_CODEC = RecordCodecBuilder.mapCodec(
-         var0 -> var0.group(
-                  BuiltInRegistries.ITEM.byNameCodec().fieldOf("result").forGetter(ItemStack::getItem),
-                  Codec.INT.fieldOf("count").forGetter(ItemStack::getCount)
-               )
-               .apply(var0, ItemStack::new)
-      );
-      final SingleItemRecipe.Serializer.SingleItemMaker<T> factory;
+      final SingleItemRecipe.Factory<T> factory;
       private final Codec<T> codec;
 
-      protected Serializer(SingleItemRecipe.Serializer.SingleItemMaker<T> var1) {
+      protected Serializer(SingleItemRecipe.Factory<T> var1) {
          super();
          this.factory = var1;
          this.codec = RecordCodecBuilder.create(
             var1x -> var1x.group(
                      ExtraCodecs.strictOptionalField(Codec.STRING, "group", "").forGetter(var0x -> var0x.group),
                      Ingredient.CODEC_NONEMPTY.fieldOf("ingredient").forGetter(var0x -> var0x.ingredient),
-                     RESULT_CODEC.forGetter(var0x -> var0x.result)
+                     ItemStack.RESULT_CODEC.forGetter(var0x -> var0x.result)
                   )
                   .apply(var1x, var1::create)
          );
@@ -104,10 +99,6 @@ public abstract class SingleItemRecipe implements Recipe<Container> {
          var1.writeUtf(var2.group);
          var2.ingredient.toNetwork(var1);
          var1.writeItem(var2.result);
-      }
-
-      interface SingleItemMaker<T extends SingleItemRecipe> {
-         T create(String var1, Ingredient var2, ItemStack var3);
       }
    }
 }

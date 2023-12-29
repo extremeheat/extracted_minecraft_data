@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Streams;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -17,8 +18,7 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import org.apache.commons.lang3.mutable.MutableInt;
 
 public class GameTestRunner {
-   private static final int MAX_TESTS_PER_BATCH = 100;
-   public static final int PADDING_AROUND_EACH_STRUCTURE = 2;
+   private static final int MAX_TESTS_PER_BATCH = 50;
    public static final int SPACE_BETWEEN_COLUMNS = 5;
    public static final int SPACE_BETWEEN_ROWS = 6;
    public static final int DEFAULT_TESTS_PER_ROW = 8;
@@ -28,10 +28,9 @@ public class GameTestRunner {
    }
 
    public static void runTest(GameTestInfo var0, BlockPos var1, GameTestTicker var2) {
-      var0.startExecution();
       var2.add(var0);
       var0.addListener(new ReportGameListener(var0, var2, var1));
-      var0.spawnStructure(var1, 2);
+      var0.prepareTestStructure(var1);
    }
 
    public static Collection<GameTestInfo> runTestBatches(
@@ -49,7 +48,7 @@ public class GameTestRunner {
    }
 
    public static Collection<GameTestBatch> groupTestsIntoBatches(Collection<TestFunction> var0) {
-      Map var1 = var0.stream().collect(Collectors.groupingBy(TestFunction::getBatchName));
+      Map var1 = var0.stream().collect(Collectors.groupingBy(TestFunction::getBatchName, LinkedHashMap::new, Collectors.toList()));
       return var1.entrySet()
          .stream()
          .flatMap(
@@ -59,7 +58,7 @@ public class GameTestRunner {
                Consumer var3 = GameTestRegistry.getAfterBatchFunction(var1x);
                MutableInt var4 = new MutableInt();
                Collection var5 = (Collection)var0x.getValue();
-               return Streams.stream(Iterables.partition(var5, 100))
+               return Streams.stream(Iterables.partition(var5, 50))
                   .map(var4x -> new GameTestBatch(var1x + ":" + var4.incrementAndGet(), ImmutableList.copyOf(var4x), var2, var3));
             }
          )
@@ -72,9 +71,8 @@ public class GameTestRunner {
       BlockPos var5 = var1.offset(var3, 0, var3);
       BlockPos.betweenClosedStream(var4, var5).filter(var1x -> var0.getBlockState(var1x).is(Blocks.STRUCTURE_BLOCK)).forEach(var1x -> {
          StructureBlockEntity var2x = (StructureBlockEntity)var0.getBlockEntity(var1x);
-         BlockPos var3x = var2x.getBlockPos();
-         BoundingBox var4x = StructureUtils.getStructureBoundingBox(var2x);
-         StructureUtils.clearSpaceForStructure(var4x, var3x.getY(), var0);
+         BoundingBox var3x = StructureUtils.getStructureBoundingBox(var2x);
+         StructureUtils.clearSpaceForStructure(var3x, var0);
       });
    }
 

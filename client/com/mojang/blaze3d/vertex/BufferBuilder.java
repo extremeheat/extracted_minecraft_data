@@ -14,9 +14,10 @@ import org.lwjgl.system.MemoryUtil;
 import org.slf4j.Logger;
 
 public class BufferBuilder extends DefaultedVertexConsumer implements BufferVertexConsumer {
-   private static final int GROWTH_SIZE = 2097152;
+   private static final int MAX_GROWTH_SIZE = 2097152;
    private static final Logger LOGGER = LogUtils.getLogger();
    private ByteBuffer buffer;
+   private boolean closed;
    private int renderedBufferCount;
    private int renderedBufferPointer;
    private int nextElementByte;
@@ -37,7 +38,7 @@ public class BufferBuilder extends DefaultedVertexConsumer implements BufferVert
 
    public BufferBuilder(int var1) {
       super();
-      this.buffer = MemoryTracker.create(var1 * 6);
+      this.buffer = MemoryTracker.create(var1);
    }
 
    private void ensureVertexCapacity() {
@@ -47,25 +48,13 @@ public class BufferBuilder extends DefaultedVertexConsumer implements BufferVert
    private void ensureCapacity(int var1) {
       if (this.nextElementByte + var1 > this.buffer.capacity()) {
          int var2 = this.buffer.capacity();
-         int var3 = var2 + roundUp(var1);
-         LOGGER.debug("Needed to grow BufferBuilder buffer: Old size {} bytes, new size {} bytes.", var2, var3);
-         ByteBuffer var4 = MemoryTracker.resize(this.buffer, var3);
-         var4.rewind();
-         this.buffer = var4;
-      }
-   }
-
-   private static int roundUp(int var0) {
-      int var1 = 2097152;
-      if (var0 == 0) {
-         return var1;
-      } else {
-         if (var0 < 0) {
-            var1 *= -1;
-         }
-
-         int var2 = var0 % var1;
-         return var2 == 0 ? var0 : var0 + var1 - var2;
+         int var3 = Math.min(var2, 2097152);
+         int var4 = var2 + var1;
+         int var5 = Math.max(var2 + var3, var4);
+         LOGGER.debug("Needed to grow BufferBuilder buffer: Old size {} bytes, new size {} bytes.", var2, var5);
+         ByteBuffer var6 = MemoryTracker.resize(this.buffer, var5);
+         var6.rewind();
+         this.buffer = var6;
       }
    }
 
@@ -82,7 +71,14 @@ public class BufferBuilder extends DefaultedVertexConsumer implements BufferVert
       return new BufferBuilder.SortState(this.mode, this.vertices, this.sortingPoints, this.sorting);
    }
 
+   private void checkOpen() {
+      if (this.closed) {
+         throw new IllegalStateException("This BufferBuilder has been closed");
+      }
+   }
+
    public void restoreSortState(BufferBuilder.SortState var1) {
+      this.checkOpen();
       this.buffer.rewind();
       this.mode = var1.mode;
       this.vertices = var1.vertices;
@@ -96,6 +92,7 @@ public class BufferBuilder extends DefaultedVertexConsumer implements BufferVert
       if (this.building) {
          throw new IllegalStateException("Already building!");
       } else {
+         this.checkOpen();
          this.building = true;
          this.mode = var1;
          this.switchFormat(var2);
@@ -199,7 +196,7 @@ public class BufferBuilder extends DefaultedVertexConsumer implements BufferVert
    private BufferBuilder.RenderedBuffer storeRenderedBuffer() {
       int var1 = this.mode.indexCount(this.vertices);
       int var2 = !this.indexOnly ? this.vertices * this.format.getVertexSize() : 0;
-      VertexFormat.IndexType var3 = VertexFormat.IndexType.least(var1);
+      VertexFormat.IndexType var3 = VertexFormat.IndexType.least(this.vertices);
       boolean var4;
       int var5;
       if (this.sortingPoints != null) {
@@ -358,6 +355,17 @@ public class BufferBuilder extends DefaultedVertexConsumer implements BufferVert
       this.nextElementByte = 0;
    }
 
+   public void release() {
+      if (this.renderedBufferCount > 0) {
+         throw new IllegalStateException("BufferBuilder closed with unused batches");
+      } else if (this.building) {
+         throw new IllegalStateException("Cannot close BufferBuilder while it is building");
+      } else if (!this.closed) {
+         this.closed = true;
+         MemoryTracker.free(this.buffer);
+      }
+   }
+
    @Override
    public VertexFormatElement currentElement() {
       if (this.currentElement == null) {
@@ -435,16 +443,26 @@ public class BufferBuilder extends DefaultedVertexConsumer implements BufferVert
          this.drawState = var3;
       }
 
+      @Nullable
       public ByteBuffer vertexBuffer() {
-         int var1 = this.pointer + this.drawState.vertexBufferStart();
-         int var2 = this.pointer + this.drawState.vertexBufferEnd();
-         return BufferBuilder.this.bufferSlice(var1, var2);
+         if (this.drawState.indexOnly()) {
+            return null;
+         } else {
+            int var1 = this.pointer + this.drawState.vertexBufferStart();
+            int var2 = this.pointer + this.drawState.vertexBufferEnd();
+            return BufferBuilder.this.bufferSlice(var1, var2);
+         }
       }
 
+      @Nullable
       public ByteBuffer indexBuffer() {
-         int var1 = this.pointer + this.drawState.indexBufferStart();
-         int var2 = this.pointer + this.drawState.indexBufferEnd();
-         return BufferBuilder.this.bufferSlice(var1, var2);
+         if (this.drawState.sequentialIndex()) {
+            return null;
+         } else {
+            int var1 = this.pointer + this.drawState.indexBufferStart();
+            int var2 = this.pointer + this.drawState.indexBufferEnd();
+            return BufferBuilder.this.bufferSlice(var1, var2);
+         }
       }
 
       public BufferBuilder.DrawState drawState() {

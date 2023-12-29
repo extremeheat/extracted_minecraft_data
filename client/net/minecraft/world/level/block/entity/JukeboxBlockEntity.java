@@ -1,10 +1,8 @@
 package net.minecraft.world.level.block.entity;
 
 import com.google.common.annotations.VisibleForTesting;
-import java.util.Objects;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.NonNullList;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -13,7 +11,6 @@ import net.minecraft.world.Clearable;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.RecordItem;
@@ -26,7 +23,7 @@ import net.minecraft.world.ticks.ContainerSingleItem;
 
 public class JukeboxBlockEntity extends BlockEntity implements Clearable, ContainerSingleItem {
    private static final int SONG_END_PADDING = 20;
-   private final NonNullList<ItemStack> items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
+   private ItemStack item = ItemStack.EMPTY;
    private int ticksSinceLastEvent;
    private long tickCount;
    private long recordStartedTick;
@@ -40,7 +37,7 @@ public class JukeboxBlockEntity extends BlockEntity implements Clearable, Contai
    public void load(CompoundTag var1) {
       super.load(var1);
       if (var1.contains("RecordItem", 10)) {
-         this.items.set(0, ItemStack.of(var1.getCompound("RecordItem")));
+         this.item = ItemStack.of(var1.getCompound("RecordItem"));
       }
 
       this.isPlaying = var1.getBoolean("IsPlaying");
@@ -51,8 +48,8 @@ public class JukeboxBlockEntity extends BlockEntity implements Clearable, Contai
    @Override
    protected void saveAdditional(CompoundTag var1) {
       super.saveAdditional(var1);
-      if (!this.getFirstItem().isEmpty()) {
-         var1.put("RecordItem", this.getFirstItem().save(new CompoundTag()));
+      if (!this.getTheItem().isEmpty()) {
+         var1.put("RecordItem", this.getTheItem().save(new CompoundTag()));
       }
 
       var1.putBoolean("IsPlaying", this.isPlaying);
@@ -61,7 +58,7 @@ public class JukeboxBlockEntity extends BlockEntity implements Clearable, Contai
    }
 
    public boolean isRecordPlaying() {
-      return !this.getFirstItem().isEmpty() && this.isPlaying;
+      return !this.getTheItem().isEmpty() && this.isPlaying;
    }
 
    private void setHasRecordBlockState(@Nullable Entity var1, boolean var2) {
@@ -76,7 +73,7 @@ public class JukeboxBlockEntity extends BlockEntity implements Clearable, Contai
       this.recordStartedTick = this.tickCount;
       this.isPlaying = true;
       this.level.updateNeighborsAt(this.getBlockPos(), this.getBlockState().getBlock());
-      this.level.levelEvent(null, 1010, this.getBlockPos(), Item.getId(this.getFirstItem().getItem()));
+      this.level.levelEvent(null, 1010, this.getBlockPos(), Item.getId(this.getTheItem().getItem()));
       this.setChanged();
    }
 
@@ -91,7 +88,7 @@ public class JukeboxBlockEntity extends BlockEntity implements Clearable, Contai
    private void tick(Level var1, BlockPos var2, BlockState var3) {
       ++this.ticksSinceLastEvent;
       if (this.isRecordPlaying()) {
-         Item var5 = this.getFirstItem().getItem();
+         Item var5 = this.getTheItem().getItem();
          if (var5 instanceof RecordItem var4) {
             if (this.shouldRecordStopPlaying((RecordItem)var4)) {
                this.stopPlaying();
@@ -115,30 +112,30 @@ public class JukeboxBlockEntity extends BlockEntity implements Clearable, Contai
    }
 
    @Override
-   public ItemStack getItem(int var1) {
-      return this.items.get(var1);
+   public ItemStack getTheItem() {
+      return this.item;
    }
 
    @Override
-   public ItemStack removeItem(int var1, int var2) {
-      ItemStack var3 = Objects.requireNonNullElse(this.items.get(var1), ItemStack.EMPTY);
-      this.items.set(var1, ItemStack.EMPTY);
-      if (!var3.isEmpty()) {
+   public ItemStack splitTheItem(int var1) {
+      ItemStack var2 = this.item;
+      this.item = ItemStack.EMPTY;
+      if (!var2.isEmpty()) {
          this.setHasRecordBlockState(null, false);
          this.stopPlaying();
       }
 
-      return var3;
+      return var2;
    }
 
    @Override
-   public void setItem(int var1, ItemStack var2) {
-      if (var2.is(ItemTags.MUSIC_DISCS) && this.level != null) {
-         this.items.set(var1, var2);
+   public void setTheItem(ItemStack var1) {
+      if (var1.is(ItemTags.MUSIC_DISCS) && this.level != null) {
+         this.item = var1;
          this.setHasRecordBlockState(null, true);
          this.startPlaying();
-      } else if (var2.isEmpty()) {
-         this.removeItem(var1, 1);
+      } else if (var1.isEmpty()) {
+         this.splitTheItem(1);
       }
    }
 
@@ -148,8 +145,8 @@ public class JukeboxBlockEntity extends BlockEntity implements Clearable, Contai
    }
 
    @Override
-   public boolean stillValid(Player var1) {
-      return Container.stillValidBlockEntity(this, var1);
+   public BlockEntity getContainerBlockEntity() {
+      return this;
    }
 
    @Override
@@ -175,9 +172,9 @@ public class JukeboxBlockEntity extends BlockEntity implements Clearable, Contai
    public void popOutRecord() {
       if (this.level != null && !this.level.isClientSide) {
          BlockPos var1 = this.getBlockPos();
-         ItemStack var2 = this.getFirstItem();
+         ItemStack var2 = this.getTheItem();
          if (!var2.isEmpty()) {
-            this.removeFirstItem();
+            this.removeTheItem();
             Vec3 var3 = Vec3.atLowerCornerWithOffset(var1, 0.5, 1.01, 0.5).offsetRandom(this.level.random, 0.7F);
             ItemStack var4 = var2.copy();
             ItemEntity var5 = new ItemEntity(this.level, var3.x(), var3.y(), var3.z(), var4);
@@ -193,7 +190,7 @@ public class JukeboxBlockEntity extends BlockEntity implements Clearable, Contai
 
    @VisibleForTesting
    public void setRecordWithoutPlaying(ItemStack var1) {
-      this.items.set(0, var1);
+      this.item = var1;
       this.level.updateNeighborsAt(this.getBlockPos(), this.getBlockState().getBlock());
       this.setChanged();
    }

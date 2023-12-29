@@ -22,6 +22,8 @@ public class JigsawBlockEntity extends BlockEntity {
    public static final String TARGET = "target";
    public static final String POOL = "pool";
    public static final String JOINT = "joint";
+   public static final String PLACEMENT_PRIORITY = "placement_priority";
+   public static final String SELECTION_PRIORITY = "selection_priority";
    public static final String NAME = "name";
    public static final String FINAL_STATE = "final_state";
    private ResourceLocation name = new ResourceLocation("empty");
@@ -29,6 +31,8 @@ public class JigsawBlockEntity extends BlockEntity {
    private ResourceKey<StructureTemplatePool> pool = ResourceKey.create(Registries.TEMPLATE_POOL, new ResourceLocation("empty"));
    private JigsawBlockEntity.JointType joint = JigsawBlockEntity.JointType.ROLLABLE;
    private String finalState = "minecraft:air";
+   private int placementPriority;
+   private int selectionPriority;
 
    public JigsawBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.JIGSAW, var1, var2);
@@ -54,6 +58,14 @@ public class JigsawBlockEntity extends BlockEntity {
       return this.joint;
    }
 
+   public int getPlacementPriority() {
+      return this.placementPriority;
+   }
+
+   public int getSelectionPriority() {
+      return this.selectionPriority;
+   }
+
    public void setName(ResourceLocation var1) {
       this.name = var1;
    }
@@ -74,6 +86,14 @@ public class JigsawBlockEntity extends BlockEntity {
       this.joint = var1;
    }
 
+   public void setPlacementPriority(int var1) {
+      this.placementPriority = var1;
+   }
+
+   public void setSelectionPriority(int var1) {
+      this.selectionPriority = var1;
+   }
+
    @Override
    protected void saveAdditional(CompoundTag var1) {
       super.saveAdditional(var1);
@@ -82,6 +102,8 @@ public class JigsawBlockEntity extends BlockEntity {
       var1.putString("pool", this.pool.location().toString());
       var1.putString("final_state", this.finalState);
       var1.putString("joint", this.joint.getSerializedName());
+      var1.putInt("placement_priority", this.placementPriority);
+      var1.putInt("selection_priority", this.selectionPriority);
    }
 
    @Override
@@ -97,6 +119,8 @@ public class JigsawBlockEntity extends BlockEntity {
                   ? JigsawBlockEntity.JointType.ALIGNED
                   : JigsawBlockEntity.JointType.ROLLABLE
          );
+      this.placementPriority = var1.getInt("placement_priority");
+      this.selectionPriority = var1.getInt("selection_priority");
    }
 
    public ClientboundBlockEntityDataPacket getUpdatePacket() {

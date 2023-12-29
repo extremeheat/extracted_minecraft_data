@@ -13,10 +13,11 @@ public class LogTestReporter implements TestReporter {
 
    @Override
    public void onTestFailed(GameTestInfo var1) {
+      String var2 = var1.getStructureBlockPos().toShortString();
       if (var1.isRequired()) {
-         LOGGER.error("{} failed! {}", var1.getTestName(), Util.describeError(var1.getError()));
+         LOGGER.error("{} failed at {}! {}", new Object[]{var1.getTestName(), var2, Util.describeError(var1.getError())});
       } else {
-         LOGGER.warn("(optional) {} failed. {}", var1.getTestName(), Util.describeError(var1.getError()));
+         LOGGER.warn("(optional) {} failed at {}. {}", new Object[]{var1.getTestName(), var2, Util.describeError(var1.getError())});
       }
    }
 

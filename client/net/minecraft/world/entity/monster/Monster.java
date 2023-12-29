@@ -104,7 +104,9 @@ public abstract class Monster extends PathfinderMob implements Enemy {
    public static boolean checkMonsterSpawnRules(
       EntityType<? extends Monster> var0, ServerLevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4
    ) {
-      return var1.getDifficulty() != Difficulty.PEACEFUL && isDarkEnoughToSpawn(var1, var3, var4) && checkMobSpawnRules(var0, var1, var2, var3, var4);
+      return var1.getDifficulty() != Difficulty.PEACEFUL
+         && (MobSpawnType.ignoresLightRequirements(var2) || isDarkEnoughToSpawn(var1, var3, var4))
+         && checkMobSpawnRules(var0, var1, var2, var3, var4);
    }
 
    public static boolean checkAnyLightMonsterSpawnRules(

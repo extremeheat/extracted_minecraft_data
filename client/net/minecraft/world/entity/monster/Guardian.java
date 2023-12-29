@@ -108,11 +108,6 @@ public class Guardian extends Monster {
    }
 
    @Override
-   public boolean canBreatheUnderwater() {
-      return true;
-   }
-
-   @Override
    public MobType getMobType() {
       return MobType.WATER;
    }
@@ -330,7 +325,7 @@ public class Guardian extends Monster {
    public static boolean checkGuardianSpawnRules(EntityType<? extends Guardian> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
       return (var4.nextInt(20) == 0 || !var1.canSeeSkyFromBelowWater(var3))
          && var1.getDifficulty() != Difficulty.PEACEFUL
-         && (var2 == MobSpawnType.SPAWNER || var1.getFluidState(var3).is(FluidTags.WATER))
+         && (MobSpawnType.isSpawner(var2) || var1.getFluidState(var3).is(FluidTags.WATER))
          && var1.getFluidState(var3.below()).is(FluidTags.WATER);
    }
 

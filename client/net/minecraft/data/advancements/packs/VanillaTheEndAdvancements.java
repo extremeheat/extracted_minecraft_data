@@ -4,7 +4,7 @@ import java.util.function.Consumer;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementRewards;
-import net.minecraft.advancements.FrameType;
+import net.minecraft.advancements.AdvancementType;
 import net.minecraft.advancements.critereon.ChangeDimensionTrigger;
 import net.minecraft.advancements.critereon.DistancePredicate;
 import net.minecraft.advancements.critereon.EnterBlockTrigger;
@@ -39,7 +39,7 @@ public class VanillaTheEndAdvancements implements AdvancementSubProvider {
             Component.translatable("advancements.end.root.title"),
             Component.translatable("advancements.end.root.description"),
             new ResourceLocation("textures/gui/advancements/backgrounds/end.png"),
-            FrameType.TASK,
+            AdvancementType.TASK,
             false,
             false,
             false
@@ -53,7 +53,7 @@ public class VanillaTheEndAdvancements implements AdvancementSubProvider {
             Component.translatable("advancements.end.kill_dragon.title"),
             Component.translatable("advancements.end.kill_dragon.description"),
             null,
-            FrameType.TASK,
+            AdvancementType.TASK,
             true,
             true,
             false
@@ -67,7 +67,7 @@ public class VanillaTheEndAdvancements implements AdvancementSubProvider {
             Component.translatable("advancements.end.enter_end_gateway.title"),
             Component.translatable("advancements.end.enter_end_gateway.description"),
             null,
-            FrameType.TASK,
+            AdvancementType.TASK,
             true,
             true,
             false
@@ -81,7 +81,7 @@ public class VanillaTheEndAdvancements implements AdvancementSubProvider {
             Component.translatable("advancements.end.respawn_dragon.title"),
             Component.translatable("advancements.end.respawn_dragon.description"),
             null,
-            FrameType.GOAL,
+            AdvancementType.GOAL,
             true,
             true,
             false
@@ -95,7 +95,7 @@ public class VanillaTheEndAdvancements implements AdvancementSubProvider {
             Component.translatable("advancements.end.find_end_city.title"),
             Component.translatable("advancements.end.find_end_city.description"),
             null,
-            FrameType.TASK,
+            AdvancementType.TASK,
             true,
             true,
             false
@@ -109,7 +109,7 @@ public class VanillaTheEndAdvancements implements AdvancementSubProvider {
             Component.translatable("advancements.end.dragon_breath.title"),
             Component.translatable("advancements.end.dragon_breath.description"),
             null,
-            FrameType.GOAL,
+            AdvancementType.GOAL,
             true,
             true,
             false
@@ -123,7 +123,7 @@ public class VanillaTheEndAdvancements implements AdvancementSubProvider {
             Component.translatable("advancements.end.levitate.title"),
             Component.translatable("advancements.end.levitate.description"),
             null,
-            FrameType.CHALLENGE,
+            AdvancementType.CHALLENGE,
             true,
             true,
             false
@@ -138,7 +138,7 @@ public class VanillaTheEndAdvancements implements AdvancementSubProvider {
             Component.translatable("advancements.end.elytra.title"),
             Component.translatable("advancements.end.elytra.description"),
             null,
-            FrameType.GOAL,
+            AdvancementType.GOAL,
             true,
             true,
             false
@@ -152,7 +152,7 @@ public class VanillaTheEndAdvancements implements AdvancementSubProvider {
             Component.translatable("advancements.end.dragon_egg.title"),
             Component.translatable("advancements.end.dragon_egg.description"),
             null,
-            FrameType.GOAL,
+            AdvancementType.GOAL,
             true,
             true,
             false

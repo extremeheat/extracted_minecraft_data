@@ -1,13 +1,7 @@
 package net.minecraft.advancements.critereon;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.JsonOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Optional;
-import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 
@@ -62,15 +56,5 @@ public record DistancePredicate(MinMaxBounds.Doubles b, MinMaxBounds.Doubles c, 
       } else {
          return this.absolute.matchesSqr((double)(var13 * var13 + var14 * var14 + var15 * var15));
       }
-   }
-
-   public static Optional<DistancePredicate> fromJson(@Nullable JsonElement var0) {
-      return var0 != null && !var0.isJsonNull()
-         ? Optional.of(Util.getOrThrow(CODEC.parse(JsonOps.INSTANCE, var0), JsonParseException::new))
-         : Optional.empty();
-   }
-
-   public JsonElement serializeToJson() {
-      return Util.getOrThrow(CODEC.encodeStart(JsonOps.INSTANCE, this), IllegalStateException::new);
    }
 }

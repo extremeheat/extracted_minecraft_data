@@ -17,10 +17,12 @@ import net.minecraft.util.random.SimpleWeightedRandomList;
 import net.minecraft.util.random.WeightedEntry;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnPlacements;
+import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.AABB;
 import org.slf4j.Logger;
@@ -126,8 +128,8 @@ public abstract class BaseSpawner {
                      return;
                   }
 
-                  int var19 = var1.getEntitiesOfClass(
-                        var21.getClass(),
+                  int var19 = var1.getEntities(
+                        EntityTypeTest.forExactClass(var21.getClass()),
                         new AABB(
                               (double)var2.getX(),
                               (double)var2.getY(),
@@ -136,7 +138,8 @@ public abstract class BaseSpawner {
                               (double)(var2.getY() + 1),
                               (double)(var2.getZ() + 1)
                            )
-                           .inflate((double)this.spawnRange)
+                           .inflate((double)this.spawnRange),
+                        EntitySelector.NO_SPECTATORS
                      )
                      .size();
                   if (var19 >= this.maxNearbyEntities) {
@@ -249,15 +252,15 @@ public abstract class BaseSpawner {
    }
 
    @Nullable
-   public Entity getOrCreateDisplayEntity(Level var1, RandomSource var2, BlockPos var3) {
+   public Entity getOrCreateDisplayEntity(Level var1, BlockPos var2) {
       if (this.displayEntity == null) {
-         CompoundTag var4 = this.getOrCreateNextSpawnData(var1, var2, var3).getEntityToSpawn();
-         if (!var4.contains("id", 8)) {
+         CompoundTag var3 = this.getOrCreateNextSpawnData(var1, var1.getRandom(), var2).getEntityToSpawn();
+         if (!var3.contains("id", 8)) {
             return null;
          }
 
-         this.displayEntity = EntityType.loadEntityRecursive(var4, var1, Function.identity());
-         if (var4.size() == 1 && this.displayEntity instanceof Mob) {
+         this.displayEntity = EntityType.loadEntityRecursive(var3, var1, Function.identity());
+         if (var3.size() == 1 && this.displayEntity instanceof Mob) {
          }
       }
 

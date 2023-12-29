@@ -3,6 +3,8 @@ package net.minecraft.server.commands;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import java.util.Collection;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -12,6 +14,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
 public class KickCommand {
+   private static final SimpleCommandExceptionType ERROR_KICKING_OWNER = new SimpleCommandExceptionType(Component.translatable("commands.kick.owner.failed"));
+   private static final SimpleCommandExceptionType ERROR_SINGLEPLAYER = new SimpleCommandExceptionType(
+      Component.translatable("commands.kick.singleplayer.failed")
+   );
+
    public KickCommand() {
       super();
    }
@@ -42,12 +49,25 @@ public class KickCommand {
       );
    }
 
-   private static int kickPlayers(CommandSourceStack var0, Collection<ServerPlayer> var1, Component var2) {
-      for(ServerPlayer var4 : var1) {
-         var4.connection.disconnect(var2);
-         var0.sendSuccess(() -> Component.translatable("commands.kick.success", var4.getDisplayName(), var2), true);
-      }
+   private static int kickPlayers(CommandSourceStack var0, Collection<ServerPlayer> var1, Component var2) throws CommandSyntaxException {
+      if (!var0.getServer().isPublished()) {
+         throw ERROR_SINGLEPLAYER.create();
+      } else {
+         int var3 = 0;
 
-      return var1.size();
+         for(ServerPlayer var5 : var1) {
+            if (!var0.getServer().isSingleplayerOwner(var5.getGameProfile())) {
+               var5.connection.disconnect(var2);
+               var0.sendSuccess(() -> Component.translatable("commands.kick.success", var5.getDisplayName(), var2), true);
+               ++var3;
+            }
+         }
+
+         if (var3 == 0) {
+            throw ERROR_KICKING_OWNER.create();
+         } else {
+            return var3;
+         }
+      }
    }
 }

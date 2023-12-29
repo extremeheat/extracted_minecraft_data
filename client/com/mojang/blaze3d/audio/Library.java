@@ -70,7 +70,7 @@ public class Library {
 
    public void init(@Nullable String var1, boolean var2) {
       this.currentDevice = openDeviceOrFallback(var1);
-      this.supportsDisconnections = ALC10.alcIsExtensionPresent(this.currentDevice, "ALC_EXT_disconnect");
+      this.supportsDisconnections = false;
       ALCCapabilities var3 = ALC.createCapabilities(this.currentDevice);
       if (OpenAlUtil.checkALCError(this.currentDevice, "Get capabilities")) {
          throw new IllegalStateException("Failed to get OpenAL capabilities");
@@ -99,23 +99,28 @@ public class Library {
             var4.close();
          }
 
-         ALC10.alcMakeContextCurrent(this.context);
-         int var10 = this.getChannelCount();
-         int var11 = Mth.clamp((int)Mth.sqrt((float)var10), 2, 8);
-         int var6 = Mth.clamp(var10 - var11, 8, 255);
-         this.staticChannels = new Library.CountingChannelPool(var6);
-         this.streamingChannels = new Library.CountingChannelPool(var11);
-         ALCapabilities var7 = AL.createCapabilities(var3);
-         OpenAlUtil.checkALError("Initialization");
-         if (!var7.AL_EXT_source_distance_model) {
-            throw new IllegalStateException("AL_EXT_source_distance_model is not supported");
+         if (OpenAlUtil.checkALCError(this.currentDevice, "Create context")) {
+            throw new IllegalStateException("Unable to create OpenAL context");
          } else {
-            AL10.alEnable(512);
-            if (!var7.AL_EXT_LINEAR_DISTANCE) {
-               throw new IllegalStateException("AL_EXT_LINEAR_DISTANCE is not supported");
+            ALC10.alcMakeContextCurrent(this.context);
+            int var10 = this.getChannelCount();
+            int var11 = Mth.clamp((int)Mth.sqrt((float)var10), 2, 8);
+            int var6 = Mth.clamp(var10 - var11, 8, 255);
+            this.staticChannels = new Library.CountingChannelPool(var6);
+            this.streamingChannels = new Library.CountingChannelPool(var11);
+            ALCapabilities var7 = AL.createCapabilities(var3);
+            OpenAlUtil.checkALError("Initialization");
+            if (!var7.AL_EXT_source_distance_model) {
+               throw new IllegalStateException("AL_EXT_source_distance_model is not supported");
             } else {
-               OpenAlUtil.checkALError("Enable per-source distance models");
-               LOGGER.info("OpenAL initialized on device {}", this.getCurrentDeviceName());
+               AL10.alEnable(512);
+               if (!var7.AL_EXT_LINEAR_DISTANCE) {
+                  throw new IllegalStateException("AL_EXT_LINEAR_DISTANCE is not supported");
+               } else {
+                  OpenAlUtil.checkALError("Enable per-source distance models");
+                  LOGGER.info("OpenAL initialized on device {}", this.getCurrentDeviceName());
+                  this.supportsDisconnections = ALC10.alcIsExtensionPresent(this.currentDevice, "ALC_EXT_disconnect");
+               }
             }
          }
       }

@@ -43,6 +43,10 @@ public class SimpleWeightedRandomList<E> extends WeightedRandomList<WeightedEntr
          super();
       }
 
+      public SimpleWeightedRandomList.Builder<E> add(E var1) {
+         return this.add((E)var1, 1);
+      }
+
       public SimpleWeightedRandomList.Builder<E> add(E var1, int var2) {
          this.result.add(WeightedEntry.wrap(var1, var2));
          return this;

@@ -44,22 +44,22 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 
 public class ItemCommands {
    static final Dynamic3CommandExceptionType ERROR_TARGET_NOT_A_CONTAINER = new Dynamic3CommandExceptionType(
-      (var0, var1, var2) -> Component.translatable("commands.item.target.not_a_container", var0, var1, var2)
+      (var0, var1, var2) -> Component.translatableEscape("commands.item.target.not_a_container", var0, var1, var2)
    );
    private static final Dynamic3CommandExceptionType ERROR_SOURCE_NOT_A_CONTAINER = new Dynamic3CommandExceptionType(
-      (var0, var1, var2) -> Component.translatable("commands.item.source.not_a_container", var0, var1, var2)
+      (var0, var1, var2) -> Component.translatableEscape("commands.item.source.not_a_container", var0, var1, var2)
    );
    static final DynamicCommandExceptionType ERROR_TARGET_INAPPLICABLE_SLOT = new DynamicCommandExceptionType(
-      var0 -> Component.translatable("commands.item.target.no_such_slot", var0)
+      var0 -> Component.translatableEscape("commands.item.target.no_such_slot", var0)
    );
    private static final DynamicCommandExceptionType ERROR_SOURCE_INAPPLICABLE_SLOT = new DynamicCommandExceptionType(
-      var0 -> Component.translatable("commands.item.source.no_such_slot", var0)
+      var0 -> Component.translatableEscape("commands.item.source.no_such_slot", var0)
    );
    private static final DynamicCommandExceptionType ERROR_TARGET_NO_CHANGES = new DynamicCommandExceptionType(
-      var0 -> Component.translatable("commands.item.target.no_changes", var0)
+      var0 -> Component.translatableEscape("commands.item.target.no_changes", var0)
    );
    private static final Dynamic2CommandExceptionType ERROR_TARGET_NO_CHANGES_KNOWN_ITEM = new Dynamic2CommandExceptionType(
-      (var0, var1) -> Component.translatable("commands.item.target.no_changed.known_item", var0, var1)
+      (var0, var1) -> Component.translatableEscape("commands.item.target.no_changed.known_item", var0, var1)
    );
    private static final SuggestionProvider<CommandSourceStack> SUGGEST_MODIFIER = (var0, var1) -> {
       LootDataManager var2 = ((CommandSourceStack)var0.getSource()).getServer().getLootData();

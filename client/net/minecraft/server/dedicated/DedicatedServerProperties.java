@@ -6,15 +6,16 @@ import com.google.gson.JsonObject;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.JsonOps;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
@@ -28,8 +29,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Difficulty;
-import net.minecraft.world.flag.FeatureFlagSet;
-import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.DataPackConfig;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.WorldDataConfiguration;
@@ -112,6 +111,7 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
          this.get("level-type", var0 -> var0.toLowerCase(Locale.ROOT), WorldPresets.NORMAL.location().toString())
       );
       this.serverResourcePackInfo = getServerPackInfo(
+         this.get("resource-pack-id", ""),
          this.get("resource-pack", ""),
          this.get("resource-pack-sha1", ""),
          this.getLegacyString("resource-pack-hash"),
@@ -146,34 +146,47 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
    }
 
    private static Optional<MinecraftServer.ServerResourcePackInfo> getServerPackInfo(
-      String var0, String var1, @Nullable String var2, boolean var3, String var4
+      String var0, String var1, String var2, @Nullable String var3, boolean var4, String var5
    ) {
-      if (var0.isEmpty()) {
+      if (var1.isEmpty()) {
          return Optional.empty();
       } else {
-         String var5;
-         if (!var1.isEmpty()) {
-            var5 = var1;
-            if (!Strings.isNullOrEmpty(var2)) {
+         String var6;
+         if (!var2.isEmpty()) {
+            var6 = var2;
+            if (!Strings.isNullOrEmpty(var3)) {
                LOGGER.warn("resource-pack-hash is deprecated and found along side resource-pack-sha1. resource-pack-hash will be ignored.");
             }
-         } else if (!Strings.isNullOrEmpty(var2)) {
+         } else if (!Strings.isNullOrEmpty(var3)) {
             LOGGER.warn("resource-pack-hash is deprecated. Please use resource-pack-sha1 instead.");
-            var5 = var2;
+            var6 = var3;
          } else {
-            var5 = "";
+            var6 = "";
          }
 
-         if (var5.isEmpty()) {
+         if (var6.isEmpty()) {
             LOGGER.warn(
                "You specified a resource pack without providing a sha1 hash. Pack will be updated on the client only if you change the name of the pack."
             );
-         } else if (!SHA1.matcher(var5).matches()) {
+         } else if (!SHA1.matcher(var6).matches()) {
             LOGGER.warn("Invalid sha1 for resource-pack-sha1");
          }
 
-         Component var6 = parseResourcePackPrompt(var4);
-         return Optional.of(new MinecraftServer.ServerResourcePackInfo(var0, var5, var3, var6));
+         Component var7 = parseResourcePackPrompt(var5);
+         UUID var8;
+         if (var0.isEmpty()) {
+            var8 = UUID.nameUUIDFromBytes(var1.getBytes(StandardCharsets.UTF_8));
+            LOGGER.warn("resource-pack-id missing, using default of {}", var8);
+         } else {
+            try {
+               var8 = UUID.fromString(var0);
+            } catch (IllegalArgumentException var10) {
+               LOGGER.warn("Failed to parse '{}' into UUID", var0);
+               return Optional.empty();
+            }
+         }
+
+         return Optional.of(new MinecraftServer.ServerResourcePackInfo(var8, var1, var6, var4, var7));
       }
    }
 
@@ -181,17 +194,6 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
       List var2 = COMMA_SPLITTER.splitToList(var0);
       List var3 = COMMA_SPLITTER.splitToList(var1);
       return new DataPackConfig(var2, var3);
-   }
-
-   private static FeatureFlagSet getFeatures(String var0) {
-      return FeatureFlags.REGISTRY.fromNames(COMMA_SPLITTER.splitToStream(var0).mapMulti((var0x, var1) -> {
-         ResourceLocation var2 = ResourceLocation.tryParse(var0x);
-         if (var2 == null) {
-            LOGGER.warn("Invalid resource location {}, ignoring", var0x);
-         } else {
-            var1.accept(var2);
-         }
-      }).collect(Collectors.toList()));
    }
 
    public WorldDimensions createDimensions(RegistryAccess var1) {

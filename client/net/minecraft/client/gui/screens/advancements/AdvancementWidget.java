@@ -64,7 +64,7 @@ public class AdvancementWidget {
       int var8 = 29 + var2.font.width(this.title) + var7;
       this.description = Language.getInstance()
          .getVisualOrder(
-            this.findOptimalLines(ComponentUtils.mergeStyles(var4.getDescription().copy(), Style.EMPTY.withColor(var4.getFrame().getChatColor())), var8)
+            this.findOptimalLines(ComponentUtils.mergeStyles(var4.getDescription().copy(), Style.EMPTY.withColor(var4.getType().getChatColor())), var8)
          );
 
       for(FormattedCharSequence var10 : this.description) {
@@ -147,7 +147,7 @@ public class AdvancementWidget {
             var5 = AdvancementWidgetType.UNOBTAINED;
          }
 
-         var1.blitSprite(var5.frameSprite(this.display.getFrame()), var2 + this.x + 3, var3 + this.y, 26, 26);
+         var1.blitSprite(var5.frameSprite(this.display.getType()), var2 + this.x + 3, var3 + this.y, 26, 26);
          var1.renderFakeItem(this.display.getIcon(), var2 + this.x + 8, var3 + this.y + 5);
       }
 
@@ -220,7 +220,7 @@ public class AdvancementWidget {
 
       var1.blitSprite(var12.boxSprite(), 200, 26, 0, 0, var18, var17, var15, 26);
       var1.blitSprite(var13.boxSprite(), 200, 26, 200 - var16, 0, var18 + var15, var17, var16, 26);
-      var1.blitSprite(var14.frameSprite(this.display.getFrame()), var2 + this.x + 3, var3 + this.y, 26, 26);
+      var1.blitSprite(var14.frameSprite(this.display.getType()), var2 + this.x + 3, var3 + this.y, 26, 26);
       if (var7) {
          var1.drawString(this.minecraft.font, this.title, var18 + 5, var3 + this.y + 9, -1);
          if (var8 != null) {

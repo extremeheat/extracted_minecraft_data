@@ -39,7 +39,7 @@ import org.slf4j.Logger;
 
 public class ServerStatusPinger {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final Component CANT_CONNECT_MESSAGE = Component.translatable("multiplayer.status.cannot_connect").withStyle(var0 -> var0.withColor(-65536));
+   private static final Component CANT_CONNECT_MESSAGE = Component.translatable("multiplayer.status.cannot_connect").withColor(-65536);
    private final List<Connection> connections = Collections.synchronizedList(Lists.newArrayList());
 
    public ServerStatusPinger() {

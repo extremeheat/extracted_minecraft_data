@@ -30,10 +30,6 @@ public class AABB {
       this((double)var1.getX(), (double)var1.getY(), (double)var1.getZ(), (double)(var1.getX() + 1), (double)(var1.getY() + 1), (double)(var1.getZ() + 1));
    }
 
-   public AABB(BlockPos var1, BlockPos var2) {
-      this((double)var1.getX(), (double)var1.getY(), (double)var1.getZ(), (double)var2.getX(), (double)var2.getY(), (double)var2.getZ());
-   }
-
    public AABB(Vec3 var1, Vec3 var2) {
       this(var1.x, var1.y, var1.z, var2.x, var2.y, var2.z);
    }
@@ -46,6 +42,17 @@ public class AABB {
 
    public static AABB unitCubeFromLowerCorner(Vec3 var0) {
       return new AABB(var0.x, var0.y, var0.z, var0.x + 1.0, var0.y + 1.0, var0.z + 1.0);
+   }
+
+   public static AABB encapsulatingFullBlocks(BlockPos var0, BlockPos var1) {
+      return new AABB(
+         (double)Math.min(var0.getX(), var1.getX()),
+         (double)Math.min(var0.getY(), var1.getY()),
+         (double)Math.min(var0.getZ(), var1.getZ()),
+         (double)(Math.max(var0.getX(), var1.getX()) + 1),
+         (double)(Math.max(var0.getY(), var1.getY()) + 1),
+         (double)(Math.max(var0.getZ(), var1.getZ()) + 1)
+      );
    }
 
    public AABB setMinX(double var1) {

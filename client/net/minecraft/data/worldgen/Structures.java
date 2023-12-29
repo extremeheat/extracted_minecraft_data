@@ -47,7 +47,7 @@ public class Structures {
       super();
    }
 
-   private static Structure.StructureSettings structure(
+   public static Structure.StructureSettings structure(
       HolderSet<Biome> var0, Map<MobCategory, StructureSpawnOverride> var1, GenerationStep.Decoration var2, TerrainAdjustment var3
    ) {
       return new Structure.StructureSettings(var0, var1, var2, var3);
@@ -330,7 +330,8 @@ public class Structures {
             ConstantHeight.of(VerticalAnchor.absolute(-27)),
             false,
             Optional.empty(),
-            116
+            116,
+            List.of()
          )
       );
       var0.register(

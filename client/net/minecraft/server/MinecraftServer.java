@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -102,6 +103,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.NativeModuleLister;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.SignatureValidator;
+import net.minecraft.util.TimeUtil;
 import net.minecraft.util.Unit;
 import net.minecraft.util.profiling.EmptyProfileResults;
 import net.minecraft.util.profiling.ProfileResults;
@@ -161,20 +163,22 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    public static final String VANILLA_BRAND = "vanilla";
    private static final float AVERAGE_TICK_TIME_SMOOTHING = 0.8F;
    private static final int TICK_STATS_SPAN = 100;
-   public static final int MS_PER_TICK = 50;
-   private static final int OVERLOADED_THRESHOLD = 2000;
-   private static final int OVERLOADED_WARNING_INTERVAL = 15000;
-   private static final long STATUS_EXPIRE_TIME_NS = 5000000000L;
+   private static final long OVERLOADED_THRESHOLD_NANOS = 20L * TimeUtil.NANOSECONDS_PER_SECOND / 20L;
+   private static final int OVERLOADED_TICKS_THRESHOLD = 20;
+   private static final long OVERLOADED_WARNING_INTERVAL_NANOS = 10L * TimeUtil.NANOSECONDS_PER_SECOND;
+   private static final int OVERLOADED_TICKS_WARNING_INTERVAL = 100;
+   private static final long STATUS_EXPIRE_TIME_NANOS = 5L * TimeUtil.NANOSECONDS_PER_SECOND;
+   private static final long PREPARE_LEVELS_DEFAULT_DELAY_NANOS = 10L * TimeUtil.NANOSECONDS_PER_MILLISECOND;
    private static final int MAX_STATUS_PLAYER_SAMPLE = 12;
    public static final int START_CHUNK_RADIUS = 11;
    private static final int START_TICKING_CHUNK_COUNT = 441;
    private static final int AUTOSAVE_INTERVAL = 6000;
+   private static final int MIMINUM_AUTOSAVE_TICKS = 100;
    private static final int MAX_TICK_LATENCY = 3;
    public static final int ABSOLUTE_MAX_WORLD_SIZE = 29999984;
    public static final LevelSettings DEMO_SETTINGS = new LevelSettings(
       "Demo World", GameType.SURVIVAL, false, Difficulty.NORMAL, false, new GameRules(), WorldDataConfiguration.DEFAULT
    );
-   private static final long DELAYED_TASKS_TICK_EXTENSION = 50L;
    public static final GameProfile ANONYMOUS_PLAYER_PROFILE = new GameProfile(Util.NIL_UUID, "Anonymous Player");
    protected final LevelStorageSource.LevelStorageAccess storageSource;
    protected final PlayerDataStorage playerDataStorage;
@@ -204,6 +208,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    private volatile boolean running = true;
    private boolean stopped;
    private int tickCount;
+   private int ticksUntilAutosave = 6000;
    protected final Proxy proxy;
    private boolean onlineMode;
    private boolean preventProxyConnections;
@@ -212,19 +217,20 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    @Nullable
    private String motd;
    private int playerIdleTimeout;
-   public final long[] tickTimes = new long[100];
+   private final long[] tickTimesNanos = new long[100];
+   private long aggregatedTickTimesNanos = 0L;
    @Nullable
    private KeyPair keyPair;
    @Nullable
    private GameProfile singleplayerProfile;
    private boolean isDemo;
    private volatile boolean isReady;
-   private long lastOverloadWarning;
+   private long lastOverloadWarningNanos;
    protected final Services services;
    private long lastServerStatus;
    private final Thread serverThread;
-   private long nextTickTime = Util.getMillis();
-   private long delayedTasksMaxNextTickTime;
+   private long nextTickTimeNanos = Util.getNanos();
+   private long delayedTasksMaxNextTickTimeNanos;
    private boolean mayHaveDelayedTasks;
    private final PackRepository packRepository;
    private final ServerScoreboard scoreboard = new ServerScoreboard(this);
@@ -233,12 +239,13 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    private final CustomBossEvents customBossEvents = new CustomBossEvents();
    private final ServerFunctionManager functionManager;
    private boolean enforceWhitelist;
-   private float averageTickTime;
+   private float smoothedTickTimeMillis;
    private final Executor executor;
    @Nullable
    private String serverId;
    private MinecraftServer.ReloadableResources resources;
    private final StructureTemplateManager structureTemplateManager;
+   private final ServerTickRateManager tickRateManager;
    protected final WorldData worldData;
    private volatile boolean isSaving;
 
@@ -281,6 +288,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          }
 
          this.connection = new ServerConnectionListener(this);
+         this.tickRateManager = new ServerTickRateManager(this);
          this.progressListenerFactory = var8;
          this.storageSource = var2;
          this.playerDataStorage = var2.createPlayerStorage();
@@ -451,15 +459,15 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       BlockPos var3 = var2.getSharedSpawnPos();
       var1.updateSpawnPos(new ChunkPos(var3));
       ServerChunkCache var4 = var2.getChunkSource();
-      this.nextTickTime = Util.getMillis();
+      this.nextTickTimeNanos = Util.getNanos();
       var4.addRegionTicket(TicketType.START, new ChunkPos(var3), 11, Unit.INSTANCE);
 
       while(var4.getTickingGenerated() != 441) {
-         this.nextTickTime = Util.getMillis() + 10L;
+         this.nextTickTimeNanos = Util.getNanos() + PREPARE_LEVELS_DEFAULT_DELAY_NANOS;
          this.waitUntilNextTick();
       }
 
-      this.nextTickTime = Util.getMillis() + 10L;
+      this.nextTickTimeNanos = Util.getNanos() + PREPARE_LEVELS_DEFAULT_DELAY_NANOS;
       this.waitUntilNextTick();
 
       for(ServerLevel var6 : this.levels.values()) {
@@ -475,7 +483,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          }
       }
 
-      this.nextTickTime = Util.getMillis() + 10L;
+      this.nextTickTimeNanos = Util.getNanos() + PREPARE_LEVELS_DEFAULT_DELAY_NANOS;
       this.waitUntilNextTick();
       var1.stop();
       this.updateMobSpawningFlags();
@@ -564,7 +572,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       }
 
       while(this.levels.values().stream().anyMatch(var0 -> var0.getChunkSource().chunkMap.hasWork())) {
-         this.nextTickTime = Util.getMillis() + 1L;
+         this.nextTickTimeNanos = Util.getNanos() + TimeUtil.NANOSECONDS_PER_MILLISECOND;
 
          for(ServerLevel var8 : this.getAllLevels()) {
             var8.getChunkSource().removeTicketsOnClosing();
@@ -625,40 +633,54 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
             throw new IllegalStateException("Failed to initialize server");
          }
 
-         this.nextTickTime = Util.getMillis();
+         this.nextTickTimeNanos = Util.getNanos();
          this.statusIcon = this.loadStatusIcon().orElse(null);
          this.status = this.buildServerStatus();
 
          while(this.running) {
-            long var1 = Util.getMillis() - this.nextTickTime;
-            if (var1 > 2000L && this.nextTickTime - this.lastOverloadWarning >= 15000L) {
-               long var46 = var1 / 50L;
-               LOGGER.warn("Can't keep up! Is the server overloaded? Running {}ms or {} ticks behind", var1, var46);
-               this.nextTickTime += var46 * 50L;
-               this.lastOverloadWarning = this.nextTickTime;
+            long var1;
+            if (!this.isPaused() && this.tickRateManager.isSprinting() && this.tickRateManager.checkShouldSprintThisTick()) {
+               var1 = 0L;
+               this.nextTickTimeNanos = Util.getNanos();
+               this.lastOverloadWarningNanos = this.nextTickTimeNanos;
+            } else {
+               var1 = this.tickRateManager.nanosecondsPerTick();
+               long var48 = Util.getNanos() - this.nextTickTimeNanos;
+               if (var48 > OVERLOADED_THRESHOLD_NANOS + 20L * var1
+                  && this.nextTickTimeNanos - this.lastOverloadWarningNanos >= OVERLOADED_WARNING_INTERVAL_NANOS + 100L * var1) {
+                  long var5 = var48 / var1;
+                  LOGGER.warn("Can't keep up! Is the server overloaded? Running {}ms or {} ticks behind", var48 / TimeUtil.NANOSECONDS_PER_MILLISECOND, var5);
+                  this.nextTickTimeNanos += var5 * var1;
+                  this.lastOverloadWarningNanos = this.nextTickTimeNanos;
+               }
             }
 
+            boolean var49 = var1 == 0L;
             if (this.debugCommandProfilerDelayStart) {
                this.debugCommandProfilerDelayStart = false;
                this.debugCommandProfiler = new MinecraftServer.TimeProfiler(Util.getNanos(), this.tickCount);
             }
 
-            this.nextTickTime += 50L;
+            this.nextTickTimeNanos += var1;
             this.startMetricsRecordingTick();
             this.profiler.push("tick");
-            this.tickServer(this::haveTime);
+            this.tickServer(var49 ? () -> false : this::haveTime);
             this.profiler.popPush("nextTickWait");
             this.mayHaveDelayedTasks = true;
-            this.delayedTasksMaxNextTickTime = Math.max(Util.getMillis() + 50L, this.nextTickTime);
+            this.delayedTasksMaxNextTickTimeNanos = Math.max(Util.getNanos() + var1, this.nextTickTimeNanos);
             this.waitUntilNextTick();
+            if (var49) {
+               this.tickRateManager.endTickWork();
+            }
+
             this.profiler.pop();
             this.endMetricsRecordingTick();
             this.isReady = true;
-            JvmProfiler.INSTANCE.onServerTick(this.averageTickTime);
+            JvmProfiler.INSTANCE.onServerTick(this.smoothedTickTimeMillis);
          }
-      } catch (Throwable var44) {
-         LOGGER.error("Encountered an unexpected exception", var44);
-         CrashReport var2 = constructOrExtractCrashReport(var44);
+      } catch (Throwable var46) {
+         LOGGER.error("Encountered an unexpected exception", var46);
+         CrashReport var2 = constructOrExtractCrashReport(var46);
          this.fillSystemReport(var2.getSystemReport());
          File var3 = new File(new File(this.getServerDirectory(), "crash-reports"), "crash-" + Util.getFilenameFormattedDateTime() + "-server.txt");
          if (var2.saveToFile(var3)) {
@@ -672,8 +694,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          try {
             this.stopped = true;
             this.stopServer();
-         } catch (Throwable var42) {
-            LOGGER.error("Exception stopping the server", var42);
+         } catch (Throwable var44) {
+            LOGGER.error("Exception stopping the server", var44);
          } finally {
             if (this.services.profileCache() != null) {
                this.services.profileCache().clearExecutor();
@@ -707,7 +729,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    }
 
    private boolean haveTime() {
-      return this.runningTask() || Util.getMillis() < (this.mayHaveDelayedTasks ? this.delayedTasksMaxNextTickTime : this.nextTickTime);
+      return this.runningTask() || Util.getNanos() < (this.mayHaveDelayedTasks ? this.delayedTasksMaxNextTickTimeNanos : this.nextTickTimeNanos);
    }
 
    protected void waitUntilNextTick() {
@@ -734,7 +756,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       if (super.pollTask()) {
          return true;
       } else {
-         if (this.haveTime()) {
+         if (this.tickRateManager.isSprinting() || this.haveTime()) {
             for(ServerLevel var2 : this.getAllLevels()) {
                if (var2.getChunkSource().pollTask()) {
                   return true;
@@ -784,16 +806,23 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    public void onServerExit() {
    }
 
+   public boolean isPaused() {
+      return false;
+   }
+
    public void tickServer(BooleanSupplier var1) {
       long var2 = Util.getNanos();
       ++this.tickCount;
+      this.tickRateManager.tick();
       this.tickChildren(var1);
-      if (var2 - this.lastServerStatus >= 5000000000L) {
+      if (var2 - this.lastServerStatus >= STATUS_EXPIRE_TIME_NANOS) {
          this.lastServerStatus = var2;
          this.status = this.buildServerStatus();
       }
 
-      if (this.tickCount % 6000 == 0) {
+      --this.ticksUntilAutosave;
+      if (this.ticksUntilAutosave <= 0) {
+         this.ticksUntilAutosave = this.computeNextAutosaveInterval();
          LOGGER.debug("Autosave started");
          this.profiler.push("save");
          this.saveEverything(true, false, false);
@@ -802,11 +831,35 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       }
 
       this.profiler.push("tallying");
-      long var4 = this.tickTimes[this.tickCount % 100] = Util.getNanos() - var2;
-      this.averageTickTime = this.averageTickTime * 0.8F + (float)var4 / 1000000.0F * 0.19999999F;
-      long var6 = Util.getNanos();
-      this.logTickTime(var6 - var2);
+      long var4 = Util.getNanos() - var2;
+      int var6 = this.tickCount % 100;
+      this.aggregatedTickTimesNanos -= this.tickTimesNanos[var6];
+      this.aggregatedTickTimesNanos += var4;
+      this.tickTimesNanos[var6] = var4;
+      this.smoothedTickTimeMillis = this.smoothedTickTimeMillis * 0.8F + (float)var4 / (float)TimeUtil.NANOSECONDS_PER_MILLISECOND * 0.19999999F;
+      long var7 = Util.getNanos();
+      this.logTickTime(var7 - var2);
       this.profiler.pop();
+   }
+
+   private int computeNextAutosaveInterval() {
+      float var1;
+      if (this.tickRateManager.isSprinting()) {
+         long var2 = this.getAverageTickTimeNanos() + 1L;
+         var1 = (float)TimeUtil.NANOSECONDS_PER_SECOND / (float)var2;
+      } else {
+         var1 = this.tickRateManager.tickrate();
+      }
+
+      boolean var4 = true;
+      return Math.max(100, (int)(var1 * 300.0F));
+   }
+
+   public void onTickRateChanged() {
+      int var1 = this.computeNextAutosaveInterval();
+      if (var1 < this.ticksUntilAutosave) {
+         this.ticksUntilAutosave = var1;
+      }
    }
 
    protected void logTickTime(long var1) {
@@ -875,7 +928,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       this.getConnection().tick();
       this.profiler.popPush("players");
       this.playerList.tick();
-      if (SharedConstants.IS_RUNNING_IN_IDE) {
+      if (SharedConstants.IS_RUNNING_IN_IDE && this.tickRateManager.runsNormally()) {
          GameTestTicker.SINGLETON.tick();
       }
 
@@ -1275,7 +1328,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    }
 
    public long getNextTickTime() {
-      return this.nextTickTime;
+      return this.nextTickTimeNanos;
    }
 
    public DataFixer getFixerUpper() {
@@ -1481,8 +1534,20 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       this.enforceWhitelist = var1;
    }
 
-   public float getAverageTickTime() {
-      return this.averageTickTime;
+   public float getCurrentSmoothedTickTime() {
+      return this.smoothedTickTimeMillis;
+   }
+
+   public ServerTickRateManager tickRateManager() {
+      return this.tickRateManager;
+   }
+
+   public long getAverageTickTimeNanos() {
+      return this.aggregatedTickTimesNanos / (long)Math.min(100, Math.max(this.tickCount, 1));
+   }
+
+   public long[] getTickTimesNanos() {
+      return this.tickTimesNanos;
    }
 
    public int getProfilePermissions(GameProfile var1) {
@@ -1536,8 +1601,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    private void dumpMiscStats(Path var1) throws IOException {
       try (BufferedWriter var2 = Files.newBufferedWriter(var1)) {
          var2.write(String.format(Locale.ROOT, "pending_tasks: %d\n", this.getPendingTasksCount()));
-         var2.write(String.format(Locale.ROOT, "average_tick_time: %f\n", this.getAverageTickTime()));
-         var2.write(String.format(Locale.ROOT, "tick_times: %s\n", Arrays.toString(this.tickTimes)));
+         var2.write(String.format(Locale.ROOT, "average_tick_time: %f\n", this.getCurrentSmoothedTickTime()));
+         var2.write(String.format(Locale.ROOT, "tick_times: %s\n", Arrays.toString(this.tickTimesNanos)));
          var2.write(String.format(Locale.ROOT, "queue: %s\n", Util.backgroundExecutor()));
       }
    }
@@ -1755,19 +1820,21 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       }
    }
 
-   public static record ServerResourcePackInfo(String a, String b, boolean c, @Nullable Component d) {
+   public static record ServerResourcePackInfo(UUID a, String b, String c, boolean d, @Nullable Component e) {
+      private final UUID id;
       private final String url;
       private final String hash;
       private final boolean isRequired;
       @Nullable
       private final Component prompt;
 
-      public ServerResourcePackInfo(String var1, String var2, boolean var3, @Nullable Component var4) {
+      public ServerResourcePackInfo(UUID var1, String var2, String var3, boolean var4, @Nullable Component var5) {
          super();
-         this.url = var1;
-         this.hash = var2;
-         this.isRequired = var3;
-         this.prompt = var4;
+         this.id = var1;
+         this.url = var2;
+         this.hash = var3;
+         this.isRequired = var4;
+         this.prompt = var5;
       }
    }
 

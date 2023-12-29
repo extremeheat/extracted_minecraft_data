@@ -23,7 +23,7 @@ public class SmithingTrimRecipe implements SmithingRecipe {
    final Ingredient base;
    final Ingredient addition;
 
-   SmithingTrimRecipe(Ingredient var1, Ingredient var2, Ingredient var3) {
+   public SmithingTrimRecipe(Ingredient var1, Ingredient var2, Ingredient var3) {
       super();
       this.template = var1;
       this.base = var2;

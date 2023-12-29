@@ -12,12 +12,12 @@ import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import java.util.Collection;
-import net.minecraft.commands.CommandFunction;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.TimeArgument;
 import net.minecraft.commands.arguments.item.FunctionArgument;
+import net.minecraft.commands.functions.CommandFunction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.timers.FunctionCallback;
@@ -27,7 +27,7 @@ import net.minecraft.world.level.timers.TimerQueue;
 public class ScheduleCommand {
    private static final SimpleCommandExceptionType ERROR_SAME_TICK = new SimpleCommandExceptionType(Component.translatable("commands.schedule.same_tick"));
    private static final DynamicCommandExceptionType ERROR_CANT_REMOVE = new DynamicCommandExceptionType(
-      var0 -> Component.translatable("commands.schedule.cleared.failure", var0)
+      var0 -> Component.translatableEscape("commands.schedule.cleared.failure", var0)
    );
    private static final SuggestionProvider<CommandSourceStack> SUGGEST_SCHEDULE = (var0, var1) -> SharedSuggestionProvider.suggest(
          ((CommandSourceStack)var0.getSource()).getServer().getWorldData().overworldData().getScheduledEvents().getEventsIds(), var1
@@ -92,7 +92,10 @@ public class ScheduleCommand {
    }
 
    private static int schedule(
-      CommandSourceStack var0, Pair<ResourceLocation, Either<CommandFunction, Collection<CommandFunction>>> var1, int var2, boolean var3
+      CommandSourceStack var0,
+      Pair<ResourceLocation, Either<CommandFunction<CommandSourceStack>, Collection<CommandFunction<CommandSourceStack>>>> var1,
+      int var2,
+      boolean var3
    ) throws CommandSyntaxException {
       if (var2 == 0) {
          throw ERROR_SAME_TICK.create();
@@ -107,7 +110,7 @@ public class ScheduleCommand {
             }
 
             var7.schedule(var8, var4, new FunctionCallback(var6));
-            var0.sendSuccess(() -> Component.translatable("commands.schedule.created.function", var6, var2, var4), true);
+            var0.sendSuccess(() -> Component.translatable("commands.schedule.created.function", Component.translationArg(var6), var2, var4), true);
          }).ifRight(var7x -> {
             String var8 = "#" + var6;
             if (var3) {
@@ -115,7 +118,7 @@ public class ScheduleCommand {
             }
 
             var7.schedule(var8, var4, new FunctionTagCallback(var6));
-            var0.sendSuccess(() -> Component.translatable("commands.schedule.created.tag", var6, var2, var4), true);
+            var0.sendSuccess(() -> Component.translatable("commands.schedule.created.tag", Component.translationArg(var6), var2, var4), true);
          });
          return Math.floorMod(var4, 2147483647);
       }

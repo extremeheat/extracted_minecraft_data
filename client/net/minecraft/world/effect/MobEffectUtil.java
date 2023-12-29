@@ -16,12 +16,12 @@ public final class MobEffectUtil {
       super();
    }
 
-   public static Component formatDuration(MobEffectInstance var0, float var1) {
+   public static Component formatDuration(MobEffectInstance var0, float var1, float var2) {
       if (var0.isInfiniteDuration()) {
          return Component.translatable("effect.duration.infinite");
       } else {
-         int var2 = Mth.floor((float)var0.getDuration() * var1);
-         return Component.literal(StringUtil.formatTickDuration(var2));
+         int var3 = Mth.floor((float)var0.getDuration() * var1);
+         return Component.literal(StringUtil.formatTickDuration(var3, var2));
       }
    }
 

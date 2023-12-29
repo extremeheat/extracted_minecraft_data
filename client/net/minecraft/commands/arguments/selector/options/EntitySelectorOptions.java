@@ -47,16 +47,16 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.scores.Objective;
-import net.minecraft.world.scores.Score;
-import net.minecraft.world.scores.Team;
+import net.minecraft.world.scores.PlayerTeam;
+import net.minecraft.world.scores.ReadOnlyScoreInfo;
 
 public class EntitySelectorOptions {
    private static final Map<String, EntitySelectorOptions.Option> OPTIONS = Maps.newHashMap();
    public static final DynamicCommandExceptionType ERROR_UNKNOWN_OPTION = new DynamicCommandExceptionType(
-      var0 -> Component.translatable("argument.entity.options.unknown", var0)
+      var0 -> Component.translatableEscape("argument.entity.options.unknown", var0)
    );
    public static final DynamicCommandExceptionType ERROR_INAPPLICABLE_OPTION = new DynamicCommandExceptionType(
-      var0 -> Component.translatable("argument.entity.options.inapplicable", var0)
+      var0 -> Component.translatableEscape("argument.entity.options.inapplicable", var0)
    );
    public static final SimpleCommandExceptionType ERROR_RANGE_NEGATIVE = new SimpleCommandExceptionType(
       Component.translatable("argument.entity.options.distance.negative")
@@ -68,13 +68,13 @@ public class EntitySelectorOptions {
       Component.translatable("argument.entity.options.limit.toosmall")
    );
    public static final DynamicCommandExceptionType ERROR_SORT_UNKNOWN = new DynamicCommandExceptionType(
-      var0 -> Component.translatable("argument.entity.options.sort.irreversible", var0)
+      var0 -> Component.translatableEscape("argument.entity.options.sort.irreversible", var0)
    );
    public static final DynamicCommandExceptionType ERROR_GAME_MODE_INVALID = new DynamicCommandExceptionType(
-      var0 -> Component.translatable("argument.entity.options.mode.invalid", var0)
+      var0 -> Component.translatableEscape("argument.entity.options.mode.invalid", var0)
    );
    public static final DynamicCommandExceptionType ERROR_ENTITY_TYPE_INVALID = new DynamicCommandExceptionType(
-      var0 -> Component.translatable("argument.entity.options.type.invalid", var0)
+      var0 -> Component.translatableEscape("argument.entity.options.type.invalid", var0)
    );
 
    public EntitySelectorOptions() {
@@ -263,7 +263,7 @@ public class EntitySelectorOptions {
                if (!(var2x instanceof LivingEntity)) {
                   return false;
                } else {
-                  Team var3 = var2x.getTeam();
+                  PlayerTeam var3 = var2x.getTeam();
                   String var4 = var3 == null ? "" : var3.getName();
                   return var4.equals(var2) != var1;
                }
@@ -365,21 +365,19 @@ public class EntitySelectorOptions {
             if (!var2.isEmpty()) {
                var0.addPredicate(var1x -> {
                   ServerScoreboard var2x = var1x.getServer().getScoreboard();
-                  String var3x = var1x.getScoreboardName();
 
-                  for(Entry var5 : var2.entrySet()) {
-                     Objective var6 = var2x.getObjective((String)var5.getKey());
+                  for(Entry var4x : var2.entrySet()) {
+                     Objective var5 = var2x.getObjective((String)var4x.getKey());
+                     if (var5 == null) {
+                        return false;
+                     }
+
+                     ReadOnlyScoreInfo var6 = var2x.getPlayerScoreInfo(var1x, var5);
                      if (var6 == null) {
                         return false;
                      }
 
-                     if (!var2x.hasPlayerScore(var3x, var6)) {
-                        return false;
-                     }
-
-                     Score var7 = var2x.getOrCreatePlayerScore(var3x, var6);
-                     int var8 = var7.getScore();
-                     if (!((MinMaxBounds.Ints)var5.getValue()).matches(var8)) {
+                     if (!((MinMaxBounds.Ints)var4x.getValue()).matches(var6.value())) {
                         return false;
                      }
                   }

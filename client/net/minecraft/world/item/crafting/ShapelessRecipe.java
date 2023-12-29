@@ -80,7 +80,7 @@ public class ShapelessRecipe implements CraftingRecipe {
          var0 -> var0.group(
                   ExtraCodecs.strictOptionalField(Codec.STRING, "group", "").forGetter(var0x -> var0x.group),
                   CraftingBookCategory.CODEC.fieldOf("category").orElse(CraftingBookCategory.MISC).forGetter(var0x -> var0x.category),
-                  CraftingRecipeCodecs.ITEMSTACK_OBJECT_CODEC.fieldOf("result").forGetter(var0x -> var0x.result),
+                  ItemStack.ITEM_WITH_COUNT_CODEC.fieldOf("result").forGetter(var0x -> var0x.result),
                   Ingredient.CODEC_NONEMPTY
                      .listOf()
                      .fieldOf("ingredients")

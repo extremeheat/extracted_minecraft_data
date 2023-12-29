@@ -273,7 +273,18 @@ public class RealmsSlotOptionsScreen extends RealmsScreen {
          this.parent
             .saveSlotSettings(
                new RealmsWorldOptions(
-                  this.pvp, this.spawnAnimals, var3, this.spawnNPCs, this.spawnProtection, this.commandBlocks, var1, var2, this.forceGameMode, this.worldName
+                  this.pvp,
+                  this.spawnAnimals,
+                  var3,
+                  this.spawnNPCs,
+                  this.spawnProtection,
+                  this.commandBlocks,
+                  var1,
+                  var2,
+                  this.forceGameMode,
+                  this.worldName,
+                  this.options.version,
+                  this.options.compatibility
                )
             );
       } else {
@@ -289,7 +300,9 @@ public class RealmsSlotOptionsScreen extends RealmsScreen {
                   var1,
                   var2,
                   this.options.forceGameMode,
-                  this.worldName
+                  this.worldName,
+                  this.options.version,
+                  this.options.compatibility
                )
             );
       }
@@ -324,14 +337,6 @@ public class RealmsSlotOptionsScreen extends RealmsScreen {
                   : Component.literal(String.valueOf(RealmsSlotOptionsScreen.this.spawnProtection)))
             )
          );
-      }
-
-      @Override
-      public void onClick(double var1, double var3) {
-      }
-
-      @Override
-      public void onRelease(double var1, double var3) {
       }
    }
 }

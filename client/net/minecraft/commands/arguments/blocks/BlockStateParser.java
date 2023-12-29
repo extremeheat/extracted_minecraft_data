@@ -39,25 +39,25 @@ public class BlockStateParser {
       Component.translatable("argument.block.tag.disallowed")
    );
    public static final DynamicCommandExceptionType ERROR_UNKNOWN_BLOCK = new DynamicCommandExceptionType(
-      var0 -> Component.translatable("argument.block.id.invalid", var0)
+      var0 -> Component.translatableEscape("argument.block.id.invalid", var0)
    );
    public static final Dynamic2CommandExceptionType ERROR_UNKNOWN_PROPERTY = new Dynamic2CommandExceptionType(
-      (var0, var1) -> Component.translatable("argument.block.property.unknown", var0, var1)
+      (var0, var1) -> Component.translatableEscape("argument.block.property.unknown", var0, var1)
    );
    public static final Dynamic2CommandExceptionType ERROR_DUPLICATE_PROPERTY = new Dynamic2CommandExceptionType(
-      (var0, var1) -> Component.translatable("argument.block.property.duplicate", var1, var0)
+      (var0, var1) -> Component.translatableEscape("argument.block.property.duplicate", var1, var0)
    );
    public static final Dynamic3CommandExceptionType ERROR_INVALID_VALUE = new Dynamic3CommandExceptionType(
-      (var0, var1, var2) -> Component.translatable("argument.block.property.invalid", var0, var2, var1)
+      (var0, var1, var2) -> Component.translatableEscape("argument.block.property.invalid", var0, var2, var1)
    );
    public static final Dynamic2CommandExceptionType ERROR_EXPECTED_VALUE = new Dynamic2CommandExceptionType(
-      (var0, var1) -> Component.translatable("argument.block.property.novalue", var0, var1)
+      (var0, var1) -> Component.translatableEscape("argument.block.property.novalue", var0, var1)
    );
    public static final SimpleCommandExceptionType ERROR_EXPECTED_END_OF_PROPERTIES = new SimpleCommandExceptionType(
       Component.translatable("argument.block.property.unclosed")
    );
    public static final DynamicCommandExceptionType ERROR_UNKNOWN_TAG = new DynamicCommandExceptionType(
-      var0 -> Component.translatable("arguments.block.tag.unknown", var0)
+      var0 -> Component.translatableEscape("arguments.block.tag.unknown", var0)
    );
    private static final char SYNTAX_START_PROPERTIES = '[';
    private static final char SYNTAX_START_NBT = '{';

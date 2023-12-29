@@ -6,6 +6,7 @@ import net.minecraft.world.damagesource.DamageType;
 
 public interface DamageTypeTags {
    TagKey<DamageType> DAMAGES_HELMET = create("damages_helmet");
+   TagKey<DamageType> BREEZE_IMMUNE_TO = create("breeze_immune_to");
    TagKey<DamageType> BYPASSES_ARMOR = create("bypasses_armor");
    TagKey<DamageType> BYPASSES_SHIELD = create("bypasses_shield");
    TagKey<DamageType> BYPASSES_INVULNERABILITY = create("bypasses_invulnerability");
@@ -32,6 +33,7 @@ public interface DamageTypeTags {
    TagKey<DamageType> ALWAYS_HURTS_ENDER_DRAGONS = create("always_hurts_ender_dragons");
    TagKey<DamageType> NO_KNOCKBACK = create("no_knockback");
    TagKey<DamageType> ALWAYS_KILLS_ARMOR_STANDS = create("always_kills_armor_stands");
+   TagKey<DamageType> CAN_BREAK_ARMOR_STAND = create("can_break_armor_stand");
 
    private static TagKey<DamageType> create(String var0) {
       return TagKey.create(Registries.DAMAGE_TYPE, new ResourceLocation(var0));

@@ -3,6 +3,11 @@ package net.minecraft.network.chat.contents;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.datafixers.util.Either;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -15,14 +20,31 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentContents;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.Entity;
 
 public class TranslatableContents implements ComponentContents {
    public static final Object[] NO_ARGS = new Object[0];
+   private static final Codec<Object> PRIMITIVE_ARG_CODEC = ExtraCodecs.validate(ExtraCodecs.JAVA, TranslatableContents::filterAllowedArguments);
+   private static final Codec<Object> ARG_CODEC = Codec.either(PRIMITIVE_ARG_CODEC, ComponentSerialization.CODEC)
+      .xmap(
+         var0 -> var0.map(var0x -> var0x, var0x -> Objects.requireNonNullElse(var0x.tryCollapseToString(), var0x)),
+         var0 -> var0 instanceof Component var1 ? Either.right(var1) : Either.left(var0)
+      );
+   public static final MapCodec<TranslatableContents> CODEC = RecordCodecBuilder.mapCodec(
+      var0 -> var0.group(
+               Codec.STRING.fieldOf("translate").forGetter(var0x -> var0x.key),
+               Codec.STRING.optionalFieldOf("fallback").forGetter(var0x -> Optional.ofNullable(var0x.fallback)),
+               ExtraCodecs.strictOptionalField(ARG_CODEC.listOf(), "with").forGetter(var0x -> adjustArgs(var0x.args))
+            )
+            .apply(var0, TranslatableContents::create)
+   );
+   public static final ComponentContents.Type<TranslatableContents> TYPE = new ComponentContents.Type<>(CODEC, "translatable");
    private static final FormattedText TEXT_PERCENT = FormattedText.of("%");
    private static final FormattedText TEXT_NULL = FormattedText.of("null");
    private final String key;
@@ -34,11 +56,36 @@ public class TranslatableContents implements ComponentContents {
    private List<FormattedText> decomposedParts = ImmutableList.of();
    private static final Pattern FORMAT_PATTERN = Pattern.compile("%(?:(\\d+)\\$)?([A-Za-z%]|$)");
 
+   private static DataResult<Object> filterAllowedArguments(@Nullable Object var0) {
+      return !isAllowedPrimitiveArgument(var0) ? DataResult.error(() -> "This value needs to be parsed as component") : DataResult.success(var0);
+   }
+
+   public static boolean isAllowedPrimitiveArgument(@Nullable Object var0) {
+      return var0 instanceof Number || var0 instanceof Boolean || var0 instanceof String;
+   }
+
+   private static Optional<List<Object>> adjustArgs(Object[] var0) {
+      return var0.length == 0 ? Optional.empty() : Optional.of(Arrays.asList(var0));
+   }
+
+   private static Object[] adjustArgs(Optional<List<Object>> var0) {
+      return var0.<Object[]>map(var0x -> var0x.isEmpty() ? NO_ARGS : var0x.toArray()).orElse(NO_ARGS);
+   }
+
+   private static TranslatableContents create(String var0, Optional<String> var1, Optional<List<Object>> var2) {
+      return new TranslatableContents(var0, (String)var1.orElse(null), adjustArgs(var2));
+   }
+
    public TranslatableContents(String var1, @Nullable String var2, Object[] var3) {
       super();
       this.key = var1;
       this.fallback = var2;
       this.args = var3;
+   }
+
+   @Override
+   public ComponentContents.Type<?> type() {
+      return TYPE;
    }
 
    private void decompose() {
@@ -152,8 +199,8 @@ public class TranslatableContents implements ComponentContents {
 
       for(int var5 = 0; var5 < var4.length; ++var5) {
          Object var6 = this.args[var5];
-         if (var6 instanceof Component) {
-            var4[var5] = ComponentUtils.updateForEntity(var1, (Component)var6, var2, var3);
+         if (var6 instanceof Component var7) {
+            var4[var5] = ComponentUtils.updateForEntity(var1, (Component)var7, var2, var3);
          } else {
             var4[var5] = var6;
          }

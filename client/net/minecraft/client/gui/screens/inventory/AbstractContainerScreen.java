@@ -182,7 +182,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
 
    protected abstract void renderBg(GuiGraphics var1, float var2, int var3, int var4);
 
-   private void renderSlot(GuiGraphics var1, Slot var2) {
+   protected void renderSlot(GuiGraphics var1, Slot var2) {
       int var3 = var2.x;
       int var4 = var2.y;
       ItemStack var5 = var2.getItem();
@@ -219,8 +219,8 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       if (var5.isEmpty() && var2.isActive()) {
          Pair var13 = var2.getNoItemIcon();
          if (var13 != null) {
-            TextureAtlasSprite var14 = this.minecraft.getTextureAtlas((ResourceLocation)var13.getFirst()).apply((ResourceLocation)var13.getSecond());
-            var1.blit(var3, var4, 0, 16, 16, var14);
+            TextureAtlasSprite var15 = this.minecraft.getTextureAtlas((ResourceLocation)var13.getFirst()).apply((ResourceLocation)var13.getSecond());
+            var1.blit(var3, var4, 0, 16, 16, var15);
             var7 = true;
          }
       }
@@ -230,7 +230,13 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
             var1.fill(var3, var4, var3 + 16, var4 + 16, -2130706433);
          }
 
-         var1.renderItem(var5, var3, var4, var2.x + var2.y * this.imageWidth);
+         int var14 = var2.x + var2.y * this.imageWidth;
+         if (var2.isFake()) {
+            var1.renderFakeItem(var5, var3, var4, var14);
+         } else {
+            var1.renderItem(var5, var3, var4, var14);
+         }
+
          var1.renderItemDecorations(this.font, var5, var3, var4, var9);
       }
 
@@ -545,6 +551,10 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       }
 
       this.minecraft.gameMode.handleInventoryMouseClick(this.menu.containerId, var2, var3, var4, this.minecraft.player);
+   }
+
+   protected void handleSlotStateChanged(int var1, int var2, boolean var3) {
+      this.minecraft.gameMode.handleSlotStateChanged(var1, var2, var3);
    }
 
    @Override

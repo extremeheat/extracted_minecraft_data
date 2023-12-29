@@ -5,11 +5,9 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SimpleParticleType;
 
 public class HugeExplosionSeedParticle extends NoRenderParticle {
-   private int life;
-   private final int lifeTime = 8;
-
    HugeExplosionSeedParticle(ClientLevel var1, double var2, double var4, double var6) {
       super(var1, var2, var4, var6, 0.0, 0.0, 0.0);
+      this.lifetime = 8;
    }
 
    @Override
@@ -18,11 +16,11 @@ public class HugeExplosionSeedParticle extends NoRenderParticle {
          double var2 = this.x + (this.random.nextDouble() - this.random.nextDouble()) * 4.0;
          double var4 = this.y + (this.random.nextDouble() - this.random.nextDouble()) * 4.0;
          double var6 = this.z + (this.random.nextDouble() - this.random.nextDouble()) * 4.0;
-         this.level.addParticle(ParticleTypes.EXPLOSION, var2, var4, var6, (double)((float)this.life / (float)this.lifeTime), 0.0, 0.0);
+         this.level.addParticle(ParticleTypes.EXPLOSION, var2, var4, var6, (double)((float)this.age / (float)this.lifetime), 0.0, 0.0);
       }
 
-      ++this.life;
-      if (this.life == this.lifeTime) {
+      ++this.age;
+      if (this.age == this.lifetime) {
          this.remove();
       }
    }

@@ -1,12 +1,12 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.Container;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -28,8 +28,14 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 
 public class BarrelBlock extends BaseEntityBlock {
+   public static final MapCodec<BarrelBlock> CODEC = simpleCodec(BarrelBlock::new);
    public static final DirectionProperty FACING = BlockStateProperties.FACING;
    public static final BooleanProperty OPEN = BlockStateProperties.OPEN;
+
+   @Override
+   public MapCodec<BarrelBlock> codec() {
+      return CODEC;
+   }
 
    public BarrelBlock(BlockBehaviour.Properties var1) {
       super(var1);
@@ -54,15 +60,8 @@ public class BarrelBlock extends BaseEntityBlock {
 
    @Override
    public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
-      if (!var1.is(var4.getBlock())) {
-         BlockEntity var6 = var2.getBlockEntity(var3);
-         if (var6 instanceof Container) {
-            Containers.dropContents(var2, var3, (Container)var6);
-            var2.updateNeighbourForOutputSignal(var3, this);
-         }
-
-         super.onRemove(var1, var2, var3, var4, var5);
-      }
+      Containers.dropContentsOnDestroy(var1, var4, var2, var3);
+      super.onRemove(var1, var2, var3, var4, var5);
    }
 
    @Override

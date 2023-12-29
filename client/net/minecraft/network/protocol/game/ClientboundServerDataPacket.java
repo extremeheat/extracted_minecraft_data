@@ -19,7 +19,7 @@ public class ClientboundServerDataPacket implements Packet<ClientGamePacketListe
 
    public ClientboundServerDataPacket(FriendlyByteBuf var1) {
       super();
-      this.motd = var1.readComponent();
+      this.motd = var1.readComponentTrusted();
       this.iconBytes = var1.readOptional(FriendlyByteBuf::readByteArray);
       this.enforcesSecureChat = var1.readBoolean();
    }

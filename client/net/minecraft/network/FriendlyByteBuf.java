@@ -61,9 +61,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.EndTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Crypt;
@@ -470,16 +471,15 @@ public class FriendlyByteBuf extends ByteBuf {
    }
 
    public Component readComponent() {
-      MutableComponent var1 = Component.Serializer.fromJson(this.readUtf(262144));
-      if (var1 == null) {
-         throw new DecoderException("Received unexpected null component");
-      } else {
-         return var1;
-      }
+      return this.readWithCodec(NbtOps.INSTANCE, ComponentSerialization.CODEC, NbtAccounter.create(2097152L));
+   }
+
+   public Component readComponentTrusted() {
+      return this.readWithCodecTrusted(NbtOps.INSTANCE, ComponentSerialization.CODEC);
    }
 
    public FriendlyByteBuf writeComponent(Component var1) {
-      return this.writeUtf(Component.Serializer.toJson(var1), 262144);
+      return this.writeWithCodec(NbtOps.INSTANCE, ComponentSerialization.CODEC, var1);
    }
 
    public <T extends Enum<T>> T readEnum(Class<T> var1) {

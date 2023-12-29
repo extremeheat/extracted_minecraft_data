@@ -24,7 +24,8 @@ import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.ClientboundDisconnectPacket;
 import net.minecraft.network.protocol.common.ClientboundKeepAlivePacket;
 import net.minecraft.network.protocol.common.ClientboundPingPacket;
-import net.minecraft.network.protocol.common.ClientboundResourcePackPacket;
+import net.minecraft.network.protocol.common.ClientboundResourcePackPopPacket;
+import net.minecraft.network.protocol.common.ClientboundResourcePackPushPacket;
 import net.minecraft.network.protocol.common.ClientboundUpdateTagsPacket;
 import net.minecraft.network.protocol.common.ServerboundClientInformationPacket;
 import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
@@ -94,6 +95,7 @@ import net.minecraft.network.protocol.game.ClientboundPlayerPositionPacket;
 import net.minecraft.network.protocol.game.ClientboundRecipePacket;
 import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket;
 import net.minecraft.network.protocol.game.ClientboundRemoveMobEffectPacket;
+import net.minecraft.network.protocol.game.ClientboundResetScorePacket;
 import net.minecraft.network.protocol.game.ClientboundRespawnPacket;
 import net.minecraft.network.protocol.game.ClientboundRotateHeadPacket;
 import net.minecraft.network.protocol.game.ClientboundSectionBlocksUpdatePacket;
@@ -135,6 +137,8 @@ import net.minecraft.network.protocol.game.ClientboundTabListPacket;
 import net.minecraft.network.protocol.game.ClientboundTagQueryPacket;
 import net.minecraft.network.protocol.game.ClientboundTakeItemEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundTeleportEntityPacket;
+import net.minecraft.network.protocol.game.ClientboundTickingStatePacket;
+import net.minecraft.network.protocol.game.ClientboundTickingStepPacket;
 import net.minecraft.network.protocol.game.ClientboundUpdateAdvancementsPacket;
 import net.minecraft.network.protocol.game.ClientboundUpdateAttributesPacket;
 import net.minecraft.network.protocol.game.ClientboundUpdateMobEffectPacket;
@@ -153,6 +157,7 @@ import net.minecraft.network.protocol.game.ServerboundConfigurationAcknowledgedP
 import net.minecraft.network.protocol.game.ServerboundContainerButtonClickPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClickPacket;
 import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
+import net.minecraft.network.protocol.game.ServerboundContainerSlotStateChangedPacket;
 import net.minecraft.network.protocol.game.ServerboundEditBookPacket;
 import net.minecraft.network.protocol.game.ServerboundEntityTagQuery;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
@@ -280,7 +285,9 @@ public enum ConnectionProtocol {
                .addPacket(ClientboundRecipePacket.class, ClientboundRecipePacket::new)
                .addPacket(ClientboundRemoveEntitiesPacket.class, ClientboundRemoveEntitiesPacket::new)
                .addPacket(ClientboundRemoveMobEffectPacket.class, ClientboundRemoveMobEffectPacket::new)
-               .addPacket(ClientboundResourcePackPacket.class, ClientboundResourcePackPacket::new)
+               .addPacket(ClientboundResetScorePacket.class, ClientboundResetScorePacket::new)
+               .addPacket(ClientboundResourcePackPopPacket.class, ClientboundResourcePackPopPacket::new)
+               .addPacket(ClientboundResourcePackPushPacket.class, ClientboundResourcePackPushPacket::new)
                .addPacket(ClientboundRespawnPacket.class, ClientboundRespawnPacket::new)
                .addPacket(ClientboundRotateHeadPacket.class, ClientboundRotateHeadPacket::new)
                .addPacket(ClientboundSectionBlocksUpdatePacket.class, ClientboundSectionBlocksUpdatePacket::new)
@@ -322,6 +329,8 @@ public enum ConnectionProtocol {
                .addPacket(ClientboundTagQueryPacket.class, ClientboundTagQueryPacket::new)
                .addPacket(ClientboundTakeItemEntityPacket.class, ClientboundTakeItemEntityPacket::new)
                .addPacket(ClientboundTeleportEntityPacket.class, ClientboundTeleportEntityPacket::new)
+               .addPacket(ClientboundTickingStatePacket.class, ClientboundTickingStatePacket::new)
+               .addPacket(ClientboundTickingStepPacket.class, ClientboundTickingStepPacket::new)
                .addPacket(ClientboundUpdateAdvancementsPacket.class, ClientboundUpdateAdvancementsPacket::new)
                .addPacket(ClientboundUpdateAttributesPacket.class, ClientboundUpdateAttributesPacket::new)
                .addPacket(ClientboundUpdateMobEffectPacket.class, ClientboundUpdateMobEffectPacket::new)
@@ -346,6 +355,7 @@ public enum ConnectionProtocol {
                .addPacket(ServerboundContainerButtonClickPacket.class, ServerboundContainerButtonClickPacket::new)
                .addPacket(ServerboundContainerClickPacket.class, ServerboundContainerClickPacket::new)
                .addPacket(ServerboundContainerClosePacket.class, ServerboundContainerClosePacket::new)
+               .addPacket(ServerboundContainerSlotStateChangedPacket.class, ServerboundContainerSlotStateChangedPacket::new)
                .addPacket(ServerboundCustomPayloadPacket.class, ServerboundCustomPayloadPacket::new)
                .addPacket(ServerboundEditBookPacket.class, ServerboundEditBookPacket::new)
                .addPacket(ServerboundEntityTagQuery.class, ServerboundEntityTagQuery::new)
@@ -436,7 +446,8 @@ public enum ConnectionProtocol {
                .addPacket(ClientboundKeepAlivePacket.class, ClientboundKeepAlivePacket::new)
                .addPacket(ClientboundPingPacket.class, ClientboundPingPacket::new)
                .addPacket(ClientboundRegistryDataPacket.class, ClientboundRegistryDataPacket::new)
-               .addPacket(ClientboundResourcePackPacket.class, ClientboundResourcePackPacket::new)
+               .addPacket(ClientboundResourcePackPopPacket.class, ClientboundResourcePackPopPacket::new)
+               .addPacket(ClientboundResourcePackPushPacket.class, ClientboundResourcePackPushPacket::new)
                .addPacket(ClientboundUpdateEnabledFeaturesPacket.class, ClientboundUpdateEnabledFeaturesPacket::new)
                .addPacket(ClientboundUpdateTagsPacket.class, ClientboundUpdateTagsPacket::new)
          )

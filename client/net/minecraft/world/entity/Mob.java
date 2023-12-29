@@ -1,5 +1,6 @@
 package net.minecraft.world.entity;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Maps;
 import java.util.Arrays;
 import java.util.Map;
@@ -1444,6 +1445,7 @@ public abstract class Mob extends LivingEntity implements Targeting {
       }
    }
 
+   @VisibleForTesting
    public void removeFreeWill() {
       this.removeAllGoals(var0 -> true);
       this.getBrain().removeAllBehaviors();

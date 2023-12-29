@@ -12,7 +12,7 @@ import net.minecraft.world.Difficulty;
 
 public class DifficultyCommand {
    private static final DynamicCommandExceptionType ERROR_ALREADY_DIFFICULT = new DynamicCommandExceptionType(
-      var0 -> Component.translatable("commands.difficulty.failure", var0)
+      var0 -> Component.translatableEscape("commands.difficulty.failure", var0)
    );
 
    public DifficultyCommand() {

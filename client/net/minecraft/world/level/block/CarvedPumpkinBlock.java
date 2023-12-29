@@ -1,5 +1,6 @@
 package net.minecraft.world.level.block;
 
+import com.mojang.serialization.MapCodec;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
@@ -23,6 +24,7 @@ import net.minecraft.world.level.block.state.predicate.BlockStatePredicate;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 
 public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
+   public static final MapCodec<CarvedPumpkinBlock> CODEC = simpleCodec(CarvedPumpkinBlock::new);
    public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
    @Nullable
    private BlockPattern snowGolemBase;
@@ -33,6 +35,11 @@ public class CarvedPumpkinBlock extends HorizontalDirectionalBlock {
    @Nullable
    private BlockPattern ironGolemFull;
    private static final Predicate<BlockState> PUMPKINS_PREDICATE = var0 -> var0 != null && (var0.is(Blocks.CARVED_PUMPKIN) || var0.is(Blocks.JACK_O_LANTERN));
+
+   @Override
+   public MapCodec<? extends CarvedPumpkinBlock> codec() {
+      return CODEC;
+   }
 
    protected CarvedPumpkinBlock(BlockBehaviour.Properties var1) {
       super(var1);

@@ -4,6 +4,7 @@ import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.exception.RealmsDefaultUncaughtExceptionHandler;
 import com.mojang.realmsclient.util.task.LongRunningTask;
 import java.time.Duration;
+import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.components.Button;
@@ -20,27 +21,43 @@ import org.slf4j.Logger;
 public class RealmsLongRunningMcoTaskScreen extends RealmsScreen {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final RepeatedNarrator REPEATED_NARRATOR = new RepeatedNarrator(Duration.ofSeconds(5L));
-   private LongRunningTask task;
+   private final List<LongRunningTask> queuedTasks;
    private final Screen lastScreen;
-   private volatile Component title = CommonComponents.EMPTY;
    private final LinearLayout layout = LinearLayout.vertical();
+   private volatile Component title;
    @Nullable
    private LoadingDotsWidget loadingDotsWidget;
 
-   public RealmsLongRunningMcoTaskScreen(Screen var1, LongRunningTask var2) {
+   public RealmsLongRunningMcoTaskScreen(Screen var1, LongRunningTask... var2) {
       super(GameNarrator.NO_TITLE);
       this.lastScreen = var1;
-      this.task = var2;
-      this.setTitle(var2.getTitle());
-      Thread var3 = new Thread(var2, "Realms-long-running-task");
-      var3.setUncaughtExceptionHandler(new RealmsDefaultUncaughtExceptionHandler(LOGGER));
-      var3.start();
+      this.queuedTasks = List.of(var2);
+      if (this.queuedTasks.isEmpty()) {
+         throw new IllegalArgumentException("No tasks added");
+      } else {
+         this.title = this.queuedTasks.get(0).getTitle();
+         Runnable var3 = () -> {
+            for(LongRunningTask var5 : var2) {
+               this.setTitle(var5.getTitle());
+               if (var5.aborted()) {
+                  break;
+               }
+
+               var5.run();
+            }
+         };
+         Thread var4 = new Thread(var3, "Realms-long-running-task");
+         var4.setUncaughtExceptionHandler(new RealmsDefaultUncaughtExceptionHandler(LOGGER));
+         var4.start();
+      }
    }
 
    @Override
    public void tick() {
       super.tick();
-      REPEATED_NARRATOR.narrate(this.minecraft.getNarrator(), this.loadingDotsWidget.getMessage());
+      if (this.loadingDotsWidget != null) {
+         REPEATED_NARRATOR.narrate(this.minecraft.getNarrator(), this.loadingDotsWidget.getMessage());
+      }
    }
 
    @Override
@@ -71,7 +88,10 @@ public class RealmsLongRunningMcoTaskScreen extends RealmsScreen {
    }
 
    protected void cancel() {
-      this.task.abortTask();
+      for(LongRunningTask var2 : this.queuedTasks) {
+         var2.abortTask();
+      }
+
       this.minecraft.setScreen(this.lastScreen);
    }
 

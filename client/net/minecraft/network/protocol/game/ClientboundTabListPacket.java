@@ -16,8 +16,8 @@ public class ClientboundTabListPacket implements Packet<ClientGamePacketListener
 
    public ClientboundTabListPacket(FriendlyByteBuf var1) {
       super();
-      this.header = var1.readComponent();
-      this.footer = var1.readComponent();
+      this.header = var1.readComponentTrusted();
+      this.footer = var1.readComponentTrusted();
    }
 
    @Override

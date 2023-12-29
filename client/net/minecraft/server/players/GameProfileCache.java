@@ -40,6 +40,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.UUIDUtil;
+import net.minecraft.world.entity.player.Player;
 import org.slf4j.Logger;
 
 public class GameProfileCache {
@@ -72,24 +73,27 @@ public class GameProfileCache {
    }
 
    private static Optional<GameProfile> lookupGameProfile(GameProfileRepository var0, String var1) {
-      final AtomicReference var2 = new AtomicReference();
-      ProfileLookupCallback var3 = new ProfileLookupCallback() {
-         public void onProfileLookupSucceeded(GameProfile var1) {
-            var2.set(var1);
-         }
-
-         public void onProfileLookupFailed(String var1, Exception var2x) {
-            var2.set(null);
-         }
-      };
-      var0.findProfilesByNames(new String[]{var1}, var3);
-      GameProfile var4 = (GameProfile)var2.get();
-      if (!usesAuthentication() && var4 == null) {
-         UUID var5 = UUIDUtil.createOfflinePlayerUUID(var1);
-         return Optional.of(new GameProfile(var5, var1));
+      if (!Player.isValidUsername(var1)) {
+         return createUnknownProfile(var1);
       } else {
-         return Optional.ofNullable(var4);
+         final AtomicReference var2 = new AtomicReference();
+         ProfileLookupCallback var3 = new ProfileLookupCallback() {
+            public void onProfileLookupSucceeded(GameProfile var1) {
+               var2.set(var1);
+            }
+
+            public void onProfileLookupFailed(String var1, Exception var2x) {
+               var2.set(null);
+            }
+         };
+         var0.findProfilesByNames(new String[]{var1}, var3);
+         GameProfile var4 = (GameProfile)var2.get();
+         return var4 != null ? Optional.of(var4) : createUnknownProfile(var1);
       }
+   }
+
+   private static Optional<GameProfile> createUnknownProfile(String var0) {
+      return usesAuthentication() ? Optional.empty() : Optional.of(UUIDUtil.createOfflineProfile(var0));
    }
 
    public static void setUsesAuthentication(boolean var0) {
