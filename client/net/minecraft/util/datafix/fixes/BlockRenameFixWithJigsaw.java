@@ -5,6 +5,7 @@ import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.TypeRewriteRule;
+import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.DSL.TypeReference;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
@@ -33,20 +34,20 @@ public abstract class BlockRenameFixWithJigsaw extends BlockRenameFix {
                var1xx -> var1xx.update(
                      DSL.remainderFinder(),
                      var1xxx -> var1xxx.update("final_state", var2xx -> (Dynamic)DataFixUtils.orElse(var2xx.asString().result().map(var1xxxxx -> {
-                              int var2xxx = var1xxxxx.indexOf(91);
-                              int var3xx = var1xxxxx.indexOf(123);
-                              int var4x = var1xxxxx.length();
-                              if (var2xxx > 0) {
-                                 var4x = Math.min(var4x, var2xxx);
+                              int var2xxxx = var1xxxxx.indexOf(91);
+                              int var3xxx = var1xxxxx.indexOf(123);
+                              int var4xx = var1xxxxx.length();
+                              if (var2xxxx > 0) {
+                                 var4xx = Math.min(var4xx, var2xxxx);
                               }
          
-                              if (var3xx > 0) {
-                                 var4x = Math.min(var4x, var3xx);
+                              if (var3xxx > 0) {
+                                 var4xx = Math.min(var4xx, var3xxx);
                               }
          
-                              String var5 = var1xxxxx.substring(0, var4x);
+                              String var5 = var1xxxxx.substring(0, var4xx);
                               String var6 = this.fixBlock(var5);
-                              return var6 + var1xxxxx.substring(var4x);
+                              return var6 + var1xxxxx.substring(var4xx);
                            }).map(var1xxx::createString), var2xx))
                   )
             )

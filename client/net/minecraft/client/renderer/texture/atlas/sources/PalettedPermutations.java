@@ -6,6 +6,7 @@ import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import java.io.IOException;
 import java.io.InputStream;
@@ -88,14 +89,14 @@ public class PalettedPermutations implements SpriteSource {
          }
 
          return var1x -> {
-            int var2x = FastColor.ABGR32.alpha(var1x);
-            if (var2x == 0) {
+            int var2xx = FastColor.ABGR32.alpha(var1x);
+            if (var2xx == 0) {
                return var1x;
             } else {
-               int var3x = FastColor.ABGR32.transparent(var1x);
-               int var4x = var2.getOrDefault(var3x, FastColor.ABGR32.opaque(var3x));
-               int var5 = FastColor.ABGR32.alpha(var4x);
-               return FastColor.ABGR32.color(var2x * var5 / 255, var4x);
+               int var3xx = FastColor.ABGR32.transparent(var1x);
+               int var4xx = var2.getOrDefault(var3xx, FastColor.ABGR32.opaque(var3xx));
+               int var5 = FastColor.ABGR32.alpha(var4xx);
+               return FastColor.ABGR32.color(var2xx * var5 / 255, var4xx);
             }
          };
       }

@@ -1,6 +1,7 @@
 package net.minecraft.client.gui.screens.worldselection;
 
 import com.google.common.collect.ImmutableList;
+import com.google.gson.JsonElement;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DataResult;
@@ -24,6 +25,7 @@ import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
@@ -37,6 +39,7 @@ import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.layouts.CommonLayouts;
 import net.minecraft.client.gui.layouts.FrameLayout;
 import net.minecraft.client.gui.layouts.GridLayout;
+import net.minecraft.client.gui.layouts.LayoutElement;
 import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
@@ -54,9 +57,11 @@ import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.RegistryLayer;
+import net.minecraft.server.ReloadableServerResources;
 import net.minecraft.server.WorldLoader;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.packs.repository.ServerPacksSource;
+import net.minecraft.server.packs.resources.CloseableResourceManager;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.flag.FeatureFlagSet;
@@ -369,11 +374,11 @@ public class CreateWorldScreen extends Screen {
                } else if (var1x.datapackWorldgen().registryOrThrow(Registries.BIOME).size() == 0) {
                   throw new IllegalStateException("Needs at least one biome continue");
                } else {
-                  WorldCreationContext var2x = this.uiState.getSettings();
-                  RegistryOps var3x = RegistryOps.create(JsonOps.INSTANCE, var2x.worldgenLoadContext());
-                  DataResult var4x = WorldGenSettings.encode(var3x, var2x.options(), var2x.selectedDimensions()).setLifecycle(Lifecycle.stable());
+                  WorldCreationContext var2xx = this.uiState.getSettings();
+                  RegistryOps var3xx = RegistryOps.create(JsonOps.INSTANCE, var2xx.worldgenLoadContext());
+                  DataResult var4xx = WorldGenSettings.encode(var3xx, var2xx.options(), var2xx.selectedDimensions()).setLifecycle(Lifecycle.stable());
                   RegistryOps var5 = RegistryOps.create(JsonOps.INSTANCE, var1x.datapackWorldgen());
-                  WorldGenSettings var6 = (WorldGenSettings)var4x.flatMap(var1xx -> WorldGenSettings.CODEC.parse(var5, var1xx))
+                  WorldGenSettings var6 = (WorldGenSettings)var4xx.flatMap(var1xx -> WorldGenSettings.CODEC.parse(var5, var1xx))
                      .getOrThrow(false, Util.prefix("Error parsing worldgen settings after loading data packs: ", LOGGER::error));
                   return new WorldLoader.DataLoadOutput<>(
                      new CreateWorldScreen.DataPackReloadCookie(var6, var1x.dataConfiguration()), var1x.datapackDimensions()
@@ -487,19 +492,19 @@ public class CreateWorldScreen extends Screen {
 
       try (Stream var3 = Files.walk(var0)) {
          var3.filter(var1x -> !var1x.equals(var0)).forEach(var2x -> {
-            Path var3x = (Path)var2.getValue();
-            if (var3x == null) {
+            Path var3xx = (Path)var2.getValue();
+            if (var3xx == null) {
                try {
-                  var3x = Files.createTempDirectory("mcworld-");
+                  var3xx = Files.createTempDirectory("mcworld-");
                } catch (IOException var5) {
                   LOGGER.warn("Failed to create temporary dir");
                   throw new UncheckedIOException(var5);
                }
 
-               var2.setValue(var3x);
+               var2.setValue(var3xx);
             }
 
-            copyBetweenDirs(var0, var3x, var2x);
+            copyBetweenDirs(var0, var3xx, var2x);
          });
       } catch (UncheckedIOException | IOException var8) {
          LOGGER.warn("Failed to copy datapacks from world {}", var0, var8);
@@ -669,9 +674,9 @@ public class CreateWorldScreen extends Screen {
          );
          var3.setValue(CreateWorldScreen.this.uiState.getWorldType());
          CreateWorldScreen.this.uiState.addListener(var2x -> {
-            WorldCreationUiState.WorldTypeEntry var3x = var2x.getWorldType();
-            var3.setValue(var3x);
-            if (var3x.isAmplified()) {
+            WorldCreationUiState.WorldTypeEntry var3xx = var2x.getWorldType();
+            var3.setValue(var3xx);
+            if (var3xx.isAmplified()) {
                var3.setTooltip(Tooltip.create(AMPLIFIED_HELP_TEXT));
             } else {
                var3.setTooltip(null);

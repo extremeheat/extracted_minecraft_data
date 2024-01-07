@@ -2,6 +2,7 @@ package net.minecraft.tags;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 
 public record TagFile(List<TagEntry> b, boolean c) {

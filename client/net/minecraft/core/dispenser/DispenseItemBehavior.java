@@ -64,6 +64,7 @@ import net.minecraft.world.level.block.WitherSkullBlock;
 import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.SkullBlockEntity;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.RotationSegment;
@@ -220,8 +221,8 @@ public interface DispenseItemBehavior {
                if (!(var0 instanceof Saddleable)) {
                   return false;
                } else {
-                  Saddleable var1x = (Saddleable)var0;
-                  return !var1x.isSaddled() && var1x.isSaddleable();
+                  Saddleable var1xx = (Saddleable)var0;
+                  return !var1xx.isSaddled() && var1xx.isSaddleable();
                }
             });
             if (!var4.isEmpty()) {
@@ -379,8 +380,8 @@ public interface DispenseItemBehavior {
          new DefaultDispenseItemBehavior() {
             private final DefaultDispenseItemBehavior defaultDispenseItemBehavior = new DefaultDispenseItemBehavior();
    
-            // $QF: Could not properly define all variable types!
-            // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+            // $VF: Could not properly define all variable types!
+            // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
             @Override
             public ItemStack execute(BlockSource var1, ItemStack var2) {
                ServerLevel var3 = var1.level();

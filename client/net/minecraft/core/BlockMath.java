@@ -3,6 +3,7 @@ package net.minecraft.core;
 import com.google.common.collect.Maps;
 import com.mojang.logging.LogUtils;
 import com.mojang.math.Transformation;
+import java.util.EnumMap;
 import java.util.Map;
 import java.util.function.Supplier;
 import net.minecraft.Util;

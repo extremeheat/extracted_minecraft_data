@@ -68,8 +68,8 @@ public class RealmsBackupScreen extends RealmsScreen {
                   RealmsBackupScreen.this.noBackups = RealmsBackupScreen.this.backups.isEmpty();
                   RealmsBackupScreen.this.backupObjectSelectionList.clear();
 
-                  for(Backup var3x : RealmsBackupScreen.this.backups) {
-                     RealmsBackupScreen.this.backupObjectSelectionList.addEntry(var3x);
+                  for(Backup var3xx : RealmsBackupScreen.this.backups) {
+                     RealmsBackupScreen.this.backupObjectSelectionList.addEntry(var3xx);
                   }
                });
             } catch (RealmsServiceException var3) {

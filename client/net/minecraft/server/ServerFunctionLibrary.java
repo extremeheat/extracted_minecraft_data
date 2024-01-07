@@ -71,28 +71,28 @@ public class ServerFunctionLibrary implements PreparableReloadListener {
       CompletableFuture var8 = CompletableFuture.<Map<ResourceLocation, Resource>>supplyAsync(() -> LISTER.listMatchingResources(var2), var5)
          .thenCompose(
             var2x -> {
-               HashMap var3x = Maps.newHashMap();
-               CommandSourceStack var4x = new CommandSourceStack(
+               HashMap var3xx = Maps.newHashMap();
+               CommandSourceStack var4xx = new CommandSourceStack(
                   CommandSource.NULL, Vec3.ZERO, Vec2.ZERO, null, this.functionCompilationLevel, "", CommonComponents.EMPTY, null, null
                );
       
-               for(Entry var6x : var2x.entrySet()) {
-                  ResourceLocation var7x = (ResourceLocation)var6x.getKey();
-                  ResourceLocation var8x = LISTER.fileToId(var7x);
-                  var3x.put(var8x, CompletableFuture.supplyAsync(() -> {
-                     List var4xx = readLines((Resource)var6x.getValue());
-                     return CommandFunction.fromLines(var8x, this.dispatcher, var4x, var4xx);
+               for(Entry var6xx : var2x.entrySet()) {
+                  ResourceLocation var7xx = (ResourceLocation)var6xx.getKey();
+                  ResourceLocation var8xx = LISTER.fileToId(var7xx);
+                  var3xx.put(var8xx, CompletableFuture.supplyAsync(() -> {
+                     List var4xxx = readLines((Resource)var6x.getValue());
+                     return CommandFunction.fromLines(var8x, this.dispatcher, var4x, var4xxx);
                   }, var5));
                }
       
-               CompletableFuture[] var9 = var3x.values().toArray(new CompletableFuture[0]);
+               CompletableFuture[] var9 = var3xx.values().toArray(new CompletableFuture[0]);
                return CompletableFuture.allOf(var9).handle((var1xx, var2xx) -> var3x);
             }
          );
       return var7.thenCombine(var8, Pair::of).thenCompose(var1::wait).thenAcceptAsync(var1x -> {
-         Map var2x = (Map)var1x.getSecond();
-         Builder var3x = ImmutableMap.builder();
-         var2x.forEach((var1xx, var2xx) -> var2xx.handle((var2xxx, var3xx) -> {
+         Map var2xx = (Map)var1x.getSecond();
+         Builder var3xx = ImmutableMap.builder();
+         var2xx.forEach((var1xx, var2xx) -> var2xx.handle((var2xxx, var3xx) -> {
                if (var3xx != null) {
                   LOGGER.error("Failed to load function {}", var1xx, var3xx);
                } else {
@@ -101,7 +101,7 @@ public class ServerFunctionLibrary implements PreparableReloadListener {
 
                return null;
             }).join());
-         this.functions = var3x.build();
+         this.functions = var3xx.build();
          this.tags = this.tagsLoader.build((Map<ResourceLocation, List<TagLoader.EntryWithSource>>)var1x.getFirst());
       }, var6);
    }

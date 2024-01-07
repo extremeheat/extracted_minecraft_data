@@ -538,16 +538,16 @@ public class PointedDripstoneBlock extends Block implements Fallable, SimpleWate
 
    private static Optional<PointedDripstoneBlock.FluidInfo> getFluidAboveStalactite(Level var0, BlockPos var1, BlockState var2) {
       return !isStalactite(var2) ? Optional.empty() : findRootBlock(var0, var1, var2, 11).map(var1x -> {
-         BlockPos var2x = var1x.above();
-         BlockState var3 = var0.getBlockState(var2x);
+         BlockPos var2xx = var1x.above();
+         BlockState var3 = var0.getBlockState(var2xx);
          Object var4;
          if (var3.is(Blocks.MUD) && !var0.dimensionType().ultraWarm()) {
             var4 = Fluids.WATER;
          } else {
-            var4 = var0.getFluidState(var2x).getType();
+            var4 = var0.getFluidState(var2xx).getType();
          }
 
-         return new PointedDripstoneBlock.FluidInfo(var2x, (Fluid)var4, var3);
+         return new PointedDripstoneBlock.FluidInfo(var2xx, (Fluid)var4, var3);
       });
    }
 

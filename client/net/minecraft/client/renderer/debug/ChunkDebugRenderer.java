@@ -22,7 +22,7 @@ import net.minecraft.world.level.chunk.LevelChunk;
 
 public class ChunkDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    final Minecraft minecraft;
-   private double lastUpdateTime = 4.9E-324;
+   private double lastUpdateTime = 5.0E-324;
    private final int radius = 12;
    @Nullable
    private ChunkDebugRenderer.ChunkData data;
@@ -111,17 +111,17 @@ public class ChunkDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
 
          this.clientData = var11.build();
          this.serverData = var2.submit(() -> {
-            ServerLevel var5x = var2.getLevel(var8);
-            if (var5x == null) {
+            ServerLevel var5xx = var2.getLevel(var8);
+            if (var5xx == null) {
                return ImmutableMap.of();
             } else {
                Builder var6 = ImmutableMap.builder();
-               ServerChunkCache var7x = var5x.getChunkSource();
+               ServerChunkCache var7xx = var5xx.getChunkSource();
 
-               for(int var8x = var9 - 12; var8x <= var9 + 12; ++var8x) {
-                  for(int var9x = var10 - 12; var9x <= var10 + 12; ++var9x) {
-                     ChunkPos var10x = new ChunkPos(var8x, var9x);
-                     var6.put(var10x, "Server: " + var7x.getChunkDebugData(var10x));
+               for(int var8xx = var9 - 12; var8xx <= var9 + 12; ++var8xx) {
+                  for(int var9xx = var10 - 12; var9xx <= var10 + 12; ++var9xx) {
+                     ChunkPos var10xx = new ChunkPos(var8xx, var9xx);
+                     var6.put(var10xx, "Server: " + var7xx.getChunkDebugData(var10xx));
                   }
                }
 

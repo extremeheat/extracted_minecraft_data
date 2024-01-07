@@ -5,6 +5,7 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.Sets;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.text.DecimalFormat;
 import java.util.HashSet;
 import java.util.List;
@@ -286,8 +287,8 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
                Util.wrapThreadWithTaskName("wgen_fill_noise", () -> this.doFill(var2, var4, var3, var5, var8, var9)), Util.backgroundExecutor()
             )
             .whenCompleteAsync((var1x, var2x) -> {
-               for(LevelChunkSection var4x : var12) {
-                  var4x.release();
+               for(LevelChunkSection var4xx : var12) {
+                  var4xx.release();
                }
             }, var1);
       }

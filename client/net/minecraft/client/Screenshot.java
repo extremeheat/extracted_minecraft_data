@@ -16,6 +16,7 @@ import net.minecraft.Util;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
 import org.slf4j.Logger;
 
 public class Screenshot {
@@ -56,10 +57,10 @@ public class Screenshot {
             () -> {
                try {
                   var4.writeToFile(var6);
-                  MutableComponent var3x = Component.literal(var6.getName())
+                  MutableComponent var3xx = Component.literal(var6.getName())
                      .withStyle(ChatFormatting.UNDERLINE)
                      .withStyle(var1xx -> var1xx.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, var6.getAbsolutePath())));
-                  var3.accept(Component.translatable("screenshot.success", var3x));
+                  var3.accept(Component.translatable("screenshot.success", var3xx));
                } catch (Exception var7) {
                   LOGGER.warn("Couldn't save screenshot", var7);
                   var3.accept(Component.translatable("screenshot.failure", var7.getMessage()));

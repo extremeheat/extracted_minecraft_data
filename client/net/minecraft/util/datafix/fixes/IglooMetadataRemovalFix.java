@@ -3,9 +3,11 @@ package net.minecraft.util.datafix.fixes;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.TypeRewriteRule;
+import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.serialization.Dynamic;
+import java.util.stream.Stream;
 
 public class IglooMetadataRemovalFix extends DataFix {
    public IglooMetadataRemovalFix(Schema var1, boolean var2) {

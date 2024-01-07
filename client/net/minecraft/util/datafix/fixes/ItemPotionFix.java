@@ -160,8 +160,8 @@ public class ItemPotionFix extends DataFix {
          "ItemPotionFix",
          var1,
          var2x -> {
-            Optional var3x = var2x.getOptional(var2);
-            if (var3x.isPresent() && Objects.equals(((Pair)var3x.get()).getSecond(), "minecraft:potion")) {
+            Optional var3xx = var2x.getOptional(var2);
+            if (var3xx.isPresent() && Objects.equals(((Pair)var3xx.get()).getSecond(), "minecraft:potion")) {
                Dynamic var4 = (Dynamic)var2x.get(DSL.remainderFinder());
                Optional var5 = var2x.getOptionalTyped(var3);
                short var6 = var4.get("Damage").asShort((short)0);

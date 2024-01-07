@@ -24,6 +24,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.nbt.visitors.CollectFields;
 import net.minecraft.nbt.visitors.FieldSelector;
 import net.minecraft.util.Unit;
+import net.minecraft.util.thread.ProcessorHandle;
 import net.minecraft.util.thread.ProcessorMailbox;
 import net.minecraft.util.thread.StrictQueue;
 import net.minecraft.world.level.ChunkPos;
@@ -95,17 +96,17 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
          ChunkPos var4 = ChunkPos.maxFromRegion(var1, var2);
          BitSet var5 = new BitSet();
          ChunkPos.rangeClosed(var3, var4).forEach(var2xx -> {
-            CollectFields var3x = new CollectFields(new FieldSelector(IntTag.TYPE, "DataVersion"), new FieldSelector(CompoundTag.TYPE, "blending_data"));
+            CollectFields var3xx = new CollectFields(new FieldSelector(IntTag.TYPE, "DataVersion"), new FieldSelector(CompoundTag.TYPE, "blending_data"));
 
             try {
-               this.scanChunk(var2xx, var3x).join();
+               this.scanChunk(var2xx, var3xx).join();
             } catch (Exception var7) {
                LOGGER.warn("Failed to scan chunk {}", var2xx, var7);
                return;
             }
 
-            Tag var4x = var3x.getResult();
-            if (var4x instanceof CompoundTag var5x && this.isOldChunk((CompoundTag)var5x)) {
+            Tag var4xx = var3xx.getResult();
+            if (var4xx instanceof CompoundTag var5xx && this.isOldChunk((CompoundTag)var5xx)) {
                int var6 = var2xx.getRegionLocalZ() * 32 + var2xx.getRegionLocalX();
                var5.set(var6);
             }
@@ -154,9 +155,9 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
             try {
                this.storage.flush();
                return Either.left(null);
-            } catch (Exception var2x) {
-               LOGGER.warn("Failed to synchronize chunks", var2x);
-               return Either.right(var2x);
+            } catch (Exception var2xx) {
+               LOGGER.warn("Failed to synchronize chunks", var2xx);
+               return Either.right(var2xx);
             }
          })) : var2.thenCompose(var1x -> this.submitTask(() -> Either.left(null)));
    }

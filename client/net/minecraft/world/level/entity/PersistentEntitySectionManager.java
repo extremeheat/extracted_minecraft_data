@@ -145,10 +145,10 @@ public class PersistentEntitySectionManager<T extends EntityAccess> implements A
       }
 
       this.sectionStorage.getExistingSectionsInChunk(var3).forEach(var2x -> {
-         Visibility var3x = var2x.updateChunkStatus(var2);
-         boolean var4 = var3x.isAccessible();
+         Visibility var3xx = var2x.updateChunkStatus(var2);
+         boolean var4 = var3xx.isAccessible();
          boolean var5 = var2.isAccessible();
-         boolean var6 = var3x.isTicking();
+         boolean var6 = var3xx.isTicking();
          boolean var7 = var2.isTicking();
          if (var6 && !var7) {
             var2x.getEntities().filter(var0 -> !var0.isAlwaysTicking()).forEach(this::stopTicking);

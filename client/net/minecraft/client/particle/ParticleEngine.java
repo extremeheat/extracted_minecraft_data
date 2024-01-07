@@ -46,6 +46,7 @@ import net.minecraft.core.particles.ParticleGroup;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.FileToIdConverter;
 import net.minecraft.resources.ResourceLocation;
@@ -228,12 +229,12 @@ public class ParticleEngine implements PreparableReloadListener {
    ) {
       CompletableFuture var7 = CompletableFuture.<Map<ResourceLocation, Resource>>supplyAsync(() -> PARTICLE_LISTER.listMatchingResources(var2), var5)
          .thenCompose(var2x -> {
-            ArrayList var3x = new ArrayList(var2x.size());
+            ArrayList var3xx = new ArrayList(var2x.size());
             var2x.forEach((var3xx, var4x) -> {
-               ResourceLocation var5x = PARTICLE_LISTER.fileToId(var3xx);
+               ResourceLocation var5xx = PARTICLE_LISTER.fileToId(var3xx);
                var3x.add(CompletableFuture.supplyAsync(() -> new 1ParticleDefinition(var5x, this.loadParticleDescription(var5x, var4x)), var5));
             });
-            return Util.sequence(var3x);
+            return Util.sequence(var3xx);
          });
       CompletableFuture var8 = SpriteLoader.create(this.textureAtlas)
          .loadAndStitch(var2, PARTICLES_ATLAS_INFO, 0, var5)
@@ -242,35 +243,35 @@ public class ParticleEngine implements PreparableReloadListener {
          this.clearParticles();
          var4.startTick();
          var4.push("upload");
-         SpriteLoader.Preparations var5x = (SpriteLoader.Preparations)var8.join();
-         this.textureAtlas.upload(var5x);
+         SpriteLoader.Preparations var5xx = (SpriteLoader.Preparations)var8.join();
+         this.textureAtlas.upload(var5xx);
          var4.popPush("bindSpriteSets");
-         HashSet var6x = new HashSet();
-         TextureAtlasSprite var7x = var5x.missing();
+         HashSet var6xx = new HashSet();
+         TextureAtlasSprite var7xx = var5xx.missing();
          ((List)var7.join()).forEach(var4xx -> {
-            Optional var5xx = var4xx.sprites();
-            if (!var5xx.isEmpty()) {
-               ArrayList var6xx = new ArrayList();
+            Optional var5xxx = var4xx.sprites();
+            if (!var5xxx.isEmpty()) {
+               ArrayList var6xxx = new ArrayList();
 
-               for(ResourceLocation var8x : (List)var5xx.get()) {
-                  TextureAtlasSprite var9 = var5x.regions().get(var8x);
+               for(ResourceLocation var8xx : (List)var5xxx.get()) {
+                  TextureAtlasSprite var9 = var5x.regions().get(var8xx);
                   if (var9 == null) {
-                     var6x.add(var8x);
-                     var6xx.add(var7x);
+                     var6x.add(var8xx);
+                     var6xxx.add(var7x);
                   } else {
-                     var6xx.add(var9);
+                     var6xxx.add(var9);
                   }
                }
 
-               if (var6xx.isEmpty()) {
-                  var6xx.add(var7x);
+               if (var6xxx.isEmpty()) {
+                  var6xxx.add(var7x);
                }
 
-               this.spriteSets.get(var4xx.id()).rebind(var6xx);
+               this.spriteSets.get(var4xx.id()).rebind(var6xxx);
             }
          });
-         if (!var6x.isEmpty()) {
-            LOGGER.warn("Missing particle sprites: {}", var6x.stream().sorted().map(ResourceLocation::toString).collect(Collectors.joining(",")));
+         if (!var6xx.isEmpty()) {
+            LOGGER.warn("Missing particle sprites: {}", var6xx.stream().sorted().map(ResourceLocation::toString).collect(Collectors.joining(",")));
          }
 
          var4.pop();
@@ -281,7 +282,7 @@ public class ParticleEngine implements PreparableReloadListener {
          private final ResourceLocation id;
          private final Optional<List<ResourceLocation>> sprites;
 
-         _ParticleDefinition/* $QF was: 1ParticleDefinition*/(ResourceLocation var1, Optional<List<ResourceLocation>> var2) {
+         _ParticleDefinition/* $VF was: 1ParticleDefinition*/(ResourceLocation var1, Optional<List<ResourceLocation>> var2) {
             super();
             this.id = var1;
             this.sprites = var2;

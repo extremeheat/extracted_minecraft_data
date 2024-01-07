@@ -11,6 +11,7 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.MapLike;
 import java.util.function.Function;
 
 public class ChunkRenamesFix extends DataFix {
@@ -25,16 +26,16 @@ public class ChunkRenamesFix extends DataFix {
       Type var4 = this.getOutputSchema().getType(References.CHUNK);
       Type var5 = var4.findFieldType("structures");
       return this.fixTypeEverywhereTyped("Chunk Renames; purge Level-tag", var1, var4, var3x -> {
-         Typed var4x = var3x.getTyped(var2);
-         Typed var5x = appendChunkName(var4x);
-         var5x = var5x.set(DSL.remainderFinder(), mergeRemainders(var3x, (Dynamic)var4x.get(DSL.remainderFinder())));
-         var5x = renameField(var5x, "TileEntities", "block_entities");
-         var5x = renameField(var5x, "TileTicks", "block_ticks");
-         var5x = renameField(var5x, "Entities", "entities");
-         var5x = renameField(var5x, "Sections", "sections");
-         var5x = var5x.updateTyped(var3, var5, var0x -> renameField(var0x, "Starts", "starts"));
-         var5x = renameField(var5x, "Structures", "structures");
-         return var5x.update(DSL.remainderFinder(), var0x -> var0x.remove("Level"));
+         Typed var4xx = var3x.getTyped(var2);
+         Typed var5xx = appendChunkName(var4xx);
+         var5xx = var5xx.set(DSL.remainderFinder(), mergeRemainders(var3x, (Dynamic)var4xx.get(DSL.remainderFinder())));
+         var5xx = renameField(var5xx, "TileEntities", "block_entities");
+         var5xx = renameField(var5xx, "TileTicks", "block_ticks");
+         var5xx = renameField(var5xx, "Entities", "entities");
+         var5xx = renameField(var5xx, "Sections", "sections");
+         var5xx = var5xx.updateTyped(var3, var5, var0x -> renameField(var0x, "Starts", "starts"));
+         var5xx = renameField(var5xx, "Structures", "structures");
+         return var5xx.update(DSL.remainderFinder(), var0x -> var0x.remove("Level"));
       });
    }
 

@@ -3,6 +3,7 @@ package net.minecraft.client.gui.font.providers;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.resources.ResourceLocation;
 
 public record ProviderReferenceDefinition(ResourceLocation c) implements GlyphProviderDefinition {

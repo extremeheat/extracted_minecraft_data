@@ -115,8 +115,8 @@ public abstract class BlockEntity {
             try {
                var2x.load(var2);
                return var2x;
-            } catch (Throwable var4x) {
-               LOGGER.error("Failed to load data for block entity {}", var3, var4x);
+            } catch (Throwable var4xx) {
+               LOGGER.error("Failed to load data for block entity {}", var3, var4xx);
                return null;
             }
          }).orElseGet(() -> {

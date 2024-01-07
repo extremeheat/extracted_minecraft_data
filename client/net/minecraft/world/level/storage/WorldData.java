@@ -37,8 +37,8 @@ public interface WorldData {
       var1.setDetail("Removed feature flags", () -> String.join(", ", this.getRemovedFeatureFlags()));
       var1.setDetail("Level was modded", () -> Boolean.toString(this.wasModded()));
       var1.setDetail("Level storage version", () -> {
-         int var1x = this.getVersion();
-         return String.format(Locale.ROOT, "0x%05X - %s", var1x, this.getStorageVersionName(var1x));
+         int var1xx = this.getVersion();
+         return String.format(Locale.ROOT, "0x%05X - %s", var1xx, this.getStorageVersionName(var1xx));
       });
    }
 

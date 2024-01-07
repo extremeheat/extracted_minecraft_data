@@ -3,9 +3,11 @@ package net.minecraft.world.entity.ai.behavior;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
+import net.minecraft.world.entity.ai.behavior.declarative.MemoryAccessor;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 
 public class StartAttacking {

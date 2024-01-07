@@ -301,20 +301,20 @@ public class V99 extends Schema {
 
    protected static <T> T addNames(Dynamic<T> var0, Map<String, String> var1, String var2) {
       return (T)var0.update("tag", var3 -> var3.update("BlockEntityTag", var2xx -> {
-            String var3x = var0.get("id").asString().result().map(NamespacedSchema::ensureNamespaced).orElse("minecraft:air");
-            if (!"minecraft:air".equals(var3x)) {
-               String var4 = (String)var1.get(var3x);
+            String var3xx = var0.get("id").asString().result().map(NamespacedSchema::ensureNamespaced).orElse("minecraft:air");
+            if (!"minecraft:air".equals(var3xx)) {
+               String var4 = (String)var1.get(var3xx);
                if (var4 != null) {
                   return var2xx.set("id", var0.createString(var4));
                }
 
-               LOGGER.warn("Unable to resolve BlockEntity for ItemStack: {}", var3x);
+               LOGGER.warn("Unable to resolve BlockEntity for ItemStack: {}", var3xx);
             }
 
             return var2xx;
          }).update("EntityTag", var2xx -> {
-            String var3x = var0.get("id").asString("");
-            return "minecraft:armor_stand".equals(NamespacedSchema.ensureNamespaced(var3x)) ? var2xx.set("id", var0.createString(var2)) : var2xx;
+            String var3xx = var0.get("id").asString("");
+            return "minecraft:armor_stand".equals(NamespacedSchema.ensureNamespaced(var3xx)) ? var2xx.set("id", var0.createString(var2)) : var2xx;
          })).getValue();
    }
 }

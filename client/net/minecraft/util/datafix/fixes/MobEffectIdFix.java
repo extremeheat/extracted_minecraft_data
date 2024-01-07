@@ -181,9 +181,9 @@ public class MobEffectIdFix extends DataFix {
          "ItemStackMobEffectIdFix",
          var2,
          var2x -> {
-            Optional var3x = var2x.getOptional(var1);
-            if (var3x.isPresent()) {
-               String var4 = (String)((Pair)var3x.get()).getSecond();
+            Optional var3xx = var2x.getOptional(var1);
+            if (var3xx.isPresent()) {
+               String var4 = (String)((Pair)var3xx.get()).getSecond();
                if (var4.equals("minecraft:suspicious_stew")) {
                   return var2x.updateTyped(var3, var0x -> var0x.update(DSL.remainderFinder(), MobEffectIdFix::fixSuspiciousStewTag));
                }

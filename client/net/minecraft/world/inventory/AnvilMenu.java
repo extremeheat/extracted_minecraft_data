@@ -5,6 +5,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.player.Inventory;
@@ -14,6 +15,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.AnvilBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import org.slf4j.Logger;
@@ -86,9 +88,9 @@ public class AnvilMenu extends ItemCombinerMenu {
 
       this.cost.set(0);
       this.access.execute((var1x, var2x) -> {
-         BlockState var3x = var1x.getBlockState(var2x);
-         if (!var1.getAbilities().instabuild && var3x.is(BlockTags.ANVIL) && var1.getRandom().nextFloat() < 0.12F) {
-            BlockState var4 = AnvilBlock.damage(var3x);
+         BlockState var3xx = var1x.getBlockState(var2x);
+         if (!var1.getAbilities().instabuild && var3xx.is(BlockTags.ANVIL) && var1.getRandom().nextFloat() < 0.12F) {
+            BlockState var4 = AnvilBlock.damage(var3xx);
             if (var4 == null) {
                var1x.removeBlock(var2x, false);
                var1x.levelEvent(1029, var2x, 0);

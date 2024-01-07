@@ -24,13 +24,13 @@ public class ProfiledReloadInstance extends SimpleReloadInstance<ProfiledReloadI
          ActiveProfiler var8 = new ActiveProfiler(Util.timeSource, () -> 0, false);
          ActiveProfiler var9 = new ActiveProfiler(Util.timeSource, () -> 0, false);
          CompletableFuture var10 = var3x.reload(var1x, var2x, var8, var9, var2xx -> var4x.execute(() -> {
-               long var2xxx = Util.getNanos();
+               long var2xxxx = Util.getNanos();
                var2xx.run();
-               var6.addAndGet(Util.getNanos() - var2xxx);
+               var6.addAndGet(Util.getNanos() - var2xxxx);
             }), var2xx -> var5x.execute(() -> {
-               long var2xxx = Util.getNanos();
+               long var2xxxx = Util.getNanos();
                var2xx.run();
-               var7.addAndGet(Util.getNanos() - var2xxx);
+               var7.addAndGet(Util.getNanos() - var2xxxx);
             }));
          return var10.thenApplyAsync(var5xx -> {
             LOGGER.debug("Finished reloading " + var3x.getName());

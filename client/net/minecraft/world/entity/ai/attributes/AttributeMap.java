@@ -132,9 +132,9 @@ public class AttributeMap {
          CompoundTag var3 = var1.getCompound(var2);
          String var4 = var3.getString("Name");
          Util.ifElse(BuiltInRegistries.ATTRIBUTE.getOptional(ResourceLocation.tryParse(var4)), var2x -> {
-            AttributeInstance var3x = this.getInstance(var2x);
-            if (var3x != null) {
-               var3x.load(var3);
+            AttributeInstance var3xx = this.getInstance(var2x);
+            if (var3xx != null) {
+               var3xx.load(var3);
             }
          }, () -> LOGGER.warn("Ignoring unknown attribute '{}'", var4));
       }

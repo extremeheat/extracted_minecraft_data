@@ -7,6 +7,7 @@ import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.TypeRewriteRule;
+import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.serialization.Dynamic;
@@ -237,16 +238,16 @@ public class StatsCounterFix extends DataFix {
       Type var1 = this.getInputSchema().getType(References.STATS);
       Type var2 = this.getOutputSchema().getType(References.STATS);
       return this.fixTypeEverywhereTyped("StatsCounterFix", var1, var2, var1x -> {
-         Dynamic var2x = (Dynamic)var1x.get(DSL.remainderFinder());
+         Dynamic var2xx = (Dynamic)var1x.get(DSL.remainderFinder());
          HashMap var3 = Maps.newHashMap();
-         Optional var4 = var2x.getMapValues().result();
+         Optional var4 = var2xx.getMapValues().result();
          if (var4.isPresent()) {
             for(Entry var6 : ((Map)var4.get()).entrySet()) {
                if (((Dynamic)var6.getValue()).asNumber().result().isPresent()) {
                   String var7 = ((Dynamic)var6.getKey()).asString("");
                   StatsCounterFix.StatType var8 = unpackLegacyKey(var7);
                   if (var8 != null) {
-                     Dynamic var9 = var2x.createString(var8.type());
+                     Dynamic var9 = var2xx.createString(var8.type());
                      Dynamic var10 = (Dynamic)var3.computeIfAbsent(var9, var1xx -> var2x.emptyMap());
                      var3.put(var9, var10.set(var8.typeKey(), (Dynamic)var6.getValue()));
                   }
@@ -254,7 +255,7 @@ public class StatsCounterFix extends DataFix {
             }
          }
 
-         return Util.readTypedOrThrow(var2, var2x.emptyMap().set("stats", var2x.createMap(var3)));
+         return Util.readTypedOrThrow(var2, var2xx.emptyMap().set("stats", var2xx.createMap(var3)));
       });
    }
 
@@ -262,13 +263,13 @@ public class StatsCounterFix extends DataFix {
       Type var1 = this.getInputSchema().getType(References.OBJECTIVE);
       Type var2 = this.getOutputSchema().getType(References.OBJECTIVE);
       return this.fixTypeEverywhereTyped("ObjectiveStatFix", var1, var2, var1x -> {
-         Dynamic var2x = (Dynamic)var1x.get(DSL.remainderFinder());
-         Dynamic var3 = var2x.update("CriteriaName", var0x -> (Dynamic)DataFixUtils.orElse(var0x.asString().result().map(var0xx -> {
+         Dynamic var2xx = (Dynamic)var1x.get(DSL.remainderFinder());
+         Dynamic var3 = var2xx.update("CriteriaName", var0x -> (Dynamic)DataFixUtils.orElse(var0x.asString().result().map(var0xx -> {
                if (SPECIAL_OBJECTIVE_CRITERIA.contains(var0xx)) {
                   return var0xx;
                } else {
-                  StatsCounterFix.StatType var1xx = unpackLegacyKey(var0xx);
-                  return var1xx == null ? "dummy" : V1451_6.packNamespacedWithDot(var1xx.type) + ":" + V1451_6.packNamespacedWithDot(var1xx.typeKey);
+                  StatsCounterFix.StatType var1xxx = unpackLegacyKey(var0xx);
+                  return var1xxx == null ? "dummy" : V1451_6.packNamespacedWithDot(var1xxx.type) + ":" + V1451_6.packNamespacedWithDot(var1xxx.typeKey);
                }
             }).map(var0x::createString), var0x));
          return Util.readTypedOrThrow(var2, var3);

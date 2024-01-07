@@ -2,6 +2,7 @@ package net.minecraft.advancements.critereon;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.util.ExtraCodecs;
@@ -57,8 +58,8 @@ public record EntityEquipmentPredicate(
       this.offhand = var6;
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public boolean matches(@Nullable Entity var1) {
       if (var1 instanceof LivingEntity var2) {
          if (this.head.isPresent() && !this.head.get().matches(var2.getItemBySlot(EquipmentSlot.HEAD))) {

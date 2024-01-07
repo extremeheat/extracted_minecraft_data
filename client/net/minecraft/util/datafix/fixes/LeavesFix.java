@@ -97,26 +97,26 @@ public class LeavesFix extends DataFix {
             var4x -> var4x.updateTyped(
                   var2,
                   var3xx -> {
-                     int[] var4xx = new int[]{0};
-                     Typed var5x = var3xx.updateTyped(
+                     int[] var4xxx = new int[]{0};
+                     Typed var5xx = var3xx.updateTyped(
                         var3,
                         var3xxx -> {
-                           Int2ObjectOpenHashMap var4xxx = new Int2ObjectOpenHashMap(
+                           Int2ObjectOpenHashMap var4xxxx = new Int2ObjectOpenHashMap(
                               var3xxx.getAllTyped(var6)
                                  .stream()
                                  .map(var1xxxx -> new LeavesFix.LeavesSection(var1xxxx, this.getInputSchema()))
                                  .collect(Collectors.toMap(LeavesFix.Section::getIndex, var0 -> var0))
                            );
-                           if (var4xxx.values().stream().allMatch(LeavesFix.Section::isSkippable)) {
+                           if (var4xxxx.values().stream().allMatch(LeavesFix.Section::isSkippable)) {
                               return var3xxx;
                            } else {
-                              ArrayList var5xx = Lists.newArrayList();
+                              ArrayList var5xxx = Lists.newArrayList();
          
-                              for(int var6x = 0; var6x < 7; ++var6x) {
-                                 var5xx.add(new IntOpenHashSet());
+                              for(int var6xx = 0; var6xx < 7; ++var6xx) {
+                                 var5xxx.add(new IntOpenHashSet());
                               }
          
-                              ObjectIterator var25 = var4xxx.values().iterator();
+                              ObjectIterator var25 = var4xxxx.values().iterator();
          
                               while(var25.hasNext()) {
                                  LeavesFix.LeavesSection var7 = (LeavesFix.LeavesSection)var25.next();
@@ -124,7 +124,7 @@ public class LeavesFix extends DataFix {
                                     for(int var8 = 0; var8 < 4096; ++var8) {
                                        int var9 = var7.getBlock(var8);
                                        if (var7.isLog(var9)) {
-                                          ((IntSet)var5xx.get(0)).add(var7.getIndex() << 12 | var8);
+                                          ((IntSet)var5xxx.get(0)).add(var7.getIndex() << 12 | var8);
                                        } else if (var7.isLeaf(var9)) {
                                           int var10 = this.getX(var8);
                                           int var11 = this.getZ(var8);
@@ -135,8 +135,8 @@ public class LeavesFix extends DataFix {
                               }
          
                               for(int var26 = 1; var26 < 7; ++var26) {
-                                 IntSet var27 = (IntSet)var5xx.get(var26 - 1);
-                                 IntSet var28 = (IntSet)var5xx.get(var26);
+                                 IntSet var27 = (IntSet)var5xxx.get(var26 - 1);
+                                 IntSet var28 = (IntSet)var5xxx.get(var26);
                                  IntIterator var29 = var27.iterator();
          
                                  while(var29.hasNext()) {
@@ -150,7 +150,7 @@ public class LeavesFix extends DataFix {
                                        int var19 = var12 + var17[1];
                                        int var20 = var13 + var17[2];
                                        if (var18 >= 0 && var18 <= 15 && var20 >= 0 && var20 <= 15 && var19 >= 0 && var19 <= 255) {
-                                          LeavesFix.LeavesSection var21 = (LeavesFix.LeavesSection)var4xxx.get(var19 >> 4);
+                                          LeavesFix.LeavesSection var21 = (LeavesFix.LeavesSection)var4xxxx.get(var19 >> 4);
                                           if (var21 != null && !var21.isSkippable()) {
                                              int var22 = getIndex(var18, var19 & 15, var20);
                                              int var23 = var21.getBlock(var22);
@@ -175,16 +175,16 @@ public class LeavesFix extends DataFix {
                            }
                         }
                      );
-                     if (var4xx[0] != 0) {
-                        var5x = var5x.update(DSL.remainderFinder(), var1xxx -> {
-                           Dynamic var2xxx = (Dynamic)DataFixUtils.orElse(var1xxx.get("UpgradeData").result(), var1xxx.emptyMap());
+                     if (var4xxx[0] != 0) {
+                        var5xx = var5xx.update(DSL.remainderFinder(), var1xxx -> {
+                           Dynamic var2xxxx = (Dynamic)DataFixUtils.orElse(var1xxx.get("UpgradeData").result(), var1xxx.emptyMap());
                            return var1xxx.set(
-                              "UpgradeData", var2xxx.set("Sides", var1xxx.createByte((byte)(var2xxx.get("Sides").asByte((byte)0) | var4xx[0])))
+                              "UpgradeData", var2xxxx.set("Sides", var1xxx.createByte((byte)(var2xxxx.get("Sides").asByte((byte)0) | var4xx[0])))
                            );
                         });
                      }
       
-                     return var5x;
+                     return var5xx;
                   }
                )
          );

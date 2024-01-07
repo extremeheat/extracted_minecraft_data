@@ -2,6 +2,7 @@ package net.minecraft.world.entity.ai.behavior;
 
 import com.mojang.datafixers.util.Pair;
 import java.util.List;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.behavior.declarative.Trigger;

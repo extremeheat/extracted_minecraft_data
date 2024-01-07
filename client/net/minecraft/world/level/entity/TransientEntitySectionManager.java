@@ -30,8 +30,8 @@ public class TransientEntitySectionManager<T extends EntityAccess> {
       long var2 = var1.toLong();
       this.tickingChunks.add(var2);
       this.sectionStorage.getExistingSectionsInChunk(var2).forEach(var1x -> {
-         Visibility var2x = var1x.updateChunkStatus(Visibility.TICKING);
-         if (!var2x.isTicking()) {
+         Visibility var2xx = var1x.updateChunkStatus(Visibility.TICKING);
+         if (!var2xx.isTicking()) {
             var1x.getEntities().filter(var0 -> !var0.isAlwaysTicking()).forEach(this.callbacks::onTickingStart);
          }
       });
@@ -41,8 +41,8 @@ public class TransientEntitySectionManager<T extends EntityAccess> {
       long var2 = var1.toLong();
       this.tickingChunks.remove(var2);
       this.sectionStorage.getExistingSectionsInChunk(var2).forEach(var1x -> {
-         Visibility var2x = var1x.updateChunkStatus(Visibility.TRACKED);
-         if (var2x.isTicking()) {
+         Visibility var2xx = var1x.updateChunkStatus(Visibility.TRACKED);
+         if (var2xx.isTicking()) {
             var1x.getEntities().filter(var0 -> !var0.isAlwaysTicking()).forEach(this.callbacks::onTickingEnd);
          }
       });

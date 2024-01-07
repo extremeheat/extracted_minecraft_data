@@ -8,6 +8,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -1369,8 +1370,8 @@ public class VillagerTrades {
          this.villagerXp = var3;
       }
 
-      // $QF: Could not properly define all variable types!
-      // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+      // $VF: Could not properly define all variable types!
+      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Nullable
       @Override
       public MerchantOffer getOffer(Entity var1, RandomSource var2) {
@@ -1658,8 +1659,8 @@ public class VillagerTrades {
          return new VillagerTrades.TypeSpecificTrade(Arrays.stream(var1).collect(Collectors.toMap(var0x -> var0x, var1x -> var0)));
       }
 
-      // $QF: Could not properly define all variable types!
-      // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+      // $VF: Could not properly define all variable types!
+      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Nullable
       @Override
       public MerchantOffer getOffer(Entity var1, RandomSource var2) {

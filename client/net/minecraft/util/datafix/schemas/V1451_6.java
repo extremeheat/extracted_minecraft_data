@@ -28,14 +28,14 @@ public class V1451_6 extends NamespacedSchema {
                   .get()
                   .left()
                   .map(var0 -> {
-                     int var1x = var0.indexOf(58);
-                     if (var1x < 0) {
+                     int var1xx = var0.indexOf(58);
+                     if (var1xx < 0) {
                         return Pair.of("_special", var0);
                      } else {
                         try {
-                           ResourceLocation var2x = ResourceLocation.of(var0.substring(0, var1x), '.');
-                           ResourceLocation var3x = ResourceLocation.of(var0.substring(var1x + 1), '.');
-                           return Pair.of(var2x.toString(), var3x.toString());
+                           ResourceLocation var2xx = ResourceLocation.of(var0.substring(0, var1xx), '.');
+                           ResourceLocation var3xx = ResourceLocation.of(var0.substring(var1xx + 1), '.');
+                           return Pair.of(var2xx.toString(), var3xx.toString());
                         } catch (Exception var4) {
                            return Pair.of("_special", var0);
                         }
@@ -68,13 +68,13 @@ public class V1451_6 extends NamespacedSchema {
             .left()
             .flatMap(
                var1x -> {
-                  Optional var2x = var1x.get("type").asString().get().left();
-                  Optional var3x = var1x.get("id").asString().get().left();
-                  if (var2x.isPresent() && var3x.isPresent()) {
-                     String var4x = (String)var2x.get();
-                     return var4x.equals("_special")
-                        ? Optional.of((T)var3.createString((String)var3x.get()))
-                        : Optional.of((T)var1x.createString(V1451_6.packNamespacedWithDot(var4x) + ":" + V1451_6.packNamespacedWithDot((String)var3x.get())));
+                  Optional var2xx = var1x.get("type").asString().get().left();
+                  Optional var3xx = var1x.get("id").asString().get().left();
+                  if (var2xx.isPresent() && var3xx.isPresent()) {
+                     String var4xx = (String)var2xx.get();
+                     return var4xx.equals("_special")
+                        ? Optional.of((T)var3.createString((String)var3xx.get()))
+                        : Optional.of((T)var1x.createString(V1451_6.packNamespacedWithDot(var4xx) + ":" + V1451_6.packNamespacedWithDot((String)var3xx.get())));
                   } else {
                      return Optional.empty();
                   }

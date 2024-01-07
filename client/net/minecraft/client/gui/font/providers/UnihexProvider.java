@@ -12,6 +12,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import it.unimi.dsi.fastutil.bytes.ByteList;
 import it.unimi.dsi.fastutil.ints.IntSet;
@@ -262,10 +263,10 @@ public class UnihexProvider implements GlyphProvider {
             }
 
             var2.forEach((var1x, var2x) -> {
-               int var3x = var2x.calculateWidth();
-               int var4x = UnihexProvider.Dimensions.left(var3x);
-               int var5x = UnihexProvider.Dimensions.right(var3x);
-               var16.put(var1x, new UnihexProvider.Glyph(var2x, var4x, var5x));
+               int var3xx = var2x.calculateWidth();
+               int var4xx = UnihexProvider.Dimensions.left(var3xx);
+               int var5xx = UnihexProvider.Dimensions.right(var3xx);
+               var16.put(var1x, new UnihexProvider.Glyph(var2x, var4xx, var5xx));
             });
             var17 = new UnihexProvider(var16);
          }

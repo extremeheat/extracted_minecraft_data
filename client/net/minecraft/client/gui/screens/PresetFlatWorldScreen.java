@@ -190,8 +190,8 @@ public class PresetFlatWorldScreen extends Screen {
       this.addWidget(this.export);
       this.list = this.addRenderableWidget(new PresetFlatWorldScreen.PresetsList(var2, var3));
       this.selectButton = this.addRenderableWidget(Button.builder(Component.translatable("createWorld.customize.presets.select"), var5x -> {
-         FlatLevelGeneratorSettings var6x = fromString(var7, var4, var5, var6, this.export.getValue(), this.settings);
-         this.parent.setConfig(var6x);
+         FlatLevelGeneratorSettings var6xx = fromString(var7, var4, var5, var6, this.export.getValue(), this.settings);
+         this.parent.setConfig(var6xx);
          this.minecraft.setScreen(this.parent);
       }).bounds(this.width / 2 - 155, this.height - 28, 150, 20).build());
       this.addRenderableWidget(

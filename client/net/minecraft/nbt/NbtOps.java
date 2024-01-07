@@ -154,11 +154,11 @@ public class NbtOps implements DynamicOps<Tag> {
 
          ArrayList var5 = Lists.newArrayList();
          var2.entries().forEach(var2x -> {
-            Tag var3x = (Tag)var2x.getFirst();
-            if (!(var3x instanceof StringTag)) {
-               var5.add(var3x);
+            Tag var3xx = (Tag)var2x.getFirst();
+            if (!(var3xx instanceof StringTag)) {
+               var5.add(var3xx);
             } else {
-               var3.put(var3x.getAsString(), (Tag)var2x.getSecond());
+               var3.put(var3xx.getAsString(), (Tag)var2x.getSecond());
             }
          });
          return !var5.isEmpty() ? DataResult.error(() -> "some keys are not strings: " + var5, var3) : DataResult.success(var3);
@@ -217,8 +217,8 @@ public class NbtOps implements DynamicOps<Tag> {
       return var0;
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public DataResult<Stream<Tag>> getStream(Tag var1) {
       if (var1 instanceof ListTag var3) {
          return var3.getElementType() == 10 ? DataResult.success(var3.stream().map(var0 -> tryUnwrap((CompoundTag)var0))) : DataResult.success(var3.stream());
@@ -287,8 +287,8 @@ public class NbtOps implements DynamicOps<Tag> {
       return new NbtOps.NbtRecordBuilder();
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private static Optional<NbtOps.ListCollector> createCollector(Tag var0) {
       if (var0 instanceof EndTag) {
          return Optional.of(NbtOps.InitialListCollector.INSTANCE);
@@ -336,8 +336,8 @@ public class NbtOps implements DynamicOps<Tag> {
          this.values.addElements(0, var1);
       }
 
-      // $QF: Could not properly define all variable types!
-      // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+      // $VF: Could not properly define all variable types!
+      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public NbtOps.ListCollector accept(Tag var1) {
          if (var1 instanceof ByteTag var2) {
@@ -447,8 +447,8 @@ public class NbtOps implements DynamicOps<Tag> {
          super();
       }
 
-      // $QF: Could not properly define all variable types!
-      // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+      // $VF: Could not properly define all variable types!
+      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public NbtOps.ListCollector accept(Tag var1) {
          if (var1 instanceof CompoundTag var5) {
@@ -483,8 +483,8 @@ public class NbtOps implements DynamicOps<Tag> {
          this.values.addElements(0, var1);
       }
 
-      // $QF: Could not properly define all variable types!
-      // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+      // $VF: Could not properly define all variable types!
+      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public NbtOps.ListCollector accept(Tag var1) {
          if (var1 instanceof IntTag var2) {
@@ -534,8 +534,8 @@ public class NbtOps implements DynamicOps<Tag> {
          this.values.addElements(0, var1);
       }
 
-      // $QF: Could not properly define all variable types!
-      // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+      // $VF: Could not properly define all variable types!
+      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public NbtOps.ListCollector accept(Tag var1) {
          if (var1 instanceof LongTag var2) {

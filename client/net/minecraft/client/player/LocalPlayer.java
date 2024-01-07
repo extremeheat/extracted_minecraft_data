@@ -848,8 +848,8 @@ public class LocalPlayer extends AbstractClientPlayer {
       this.processPortalCooldown();
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void rideTick() {
       super.rideTick();
@@ -941,7 +941,7 @@ public class LocalPlayer extends AbstractClientPlayer {
                   Vec3 var29 = var20.add(var25);
                   Iterable var30 = this.level().getCollisions(this, var23);
                   Iterator var31 = StreamSupport.<VoxelShape>stream(var30.spliterator(), false).flatMap(var0 -> var0.toAabbs().stream()).iterator();
-                  float var33 = 1.4E-45F;
+                  float var33 = 1.0E-45F;
 
                   while(var31.hasNext()) {
                      AABB var35 = (AABB)var31.next();
@@ -973,7 +973,7 @@ public class LocalPlayer extends AbstractClientPlayer {
                      }
                   }
 
-                  if (var33 != 1.4E-45F) {
+                  if (var33 != 1.0E-45F) {
                      float var48 = (float)((double)var33 - this.getY());
                      if (!(var48 <= 0.5F) && !(var48 > var17)) {
                         this.autoJumpTime = 1;

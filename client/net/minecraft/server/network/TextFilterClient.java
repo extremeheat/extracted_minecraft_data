@@ -109,38 +109,38 @@ public class TextFilterClient implements AutoCloseable {
                URL var13 = getEndpoint(var2, var9, "join", "v1/join");
                URL var14 = getEndpoint(var2, var9, "leave", "v1/leave");
                TextFilterClient.JoinOrLeaveEncoder var15 = var2x -> {
-                  JsonObject var3x = new JsonObject();
-                  var3x.addProperty("server", var5);
-                  var3x.addProperty("room", var6);
-                  var3x.addProperty("user_id", var2x.getId().toString());
-                  var3x.addProperty("user_display_name", var2x.getName());
-                  return var3x;
+                  JsonObject var3xx = new JsonObject();
+                  var3xx.addProperty("server", var5);
+                  var3xx.addProperty("room", var6);
+                  var3xx.addProperty("user_id", var2x.getId().toString());
+                  var3xx.addProperty("user_display_name", var2x.getName());
+                  return var3xx;
                };
                TextFilterClient.MessageEncoder var16;
                if (var11) {
                   var16 = (var3x, var4x) -> {
-                     JsonObject var5x = new JsonObject();
-                     var5x.addProperty("rule", var4);
-                     var5x.addProperty("server", var5);
-                     var5x.addProperty("room", var6);
-                     var5x.addProperty("player", var3x.getId().toString());
-                     var5x.addProperty("player_display_name", var3x.getName());
-                     var5x.addProperty("text", var4x);
-                     var5x.addProperty("language", "*");
-                     return var5x;
+                     JsonObject var5xx = new JsonObject();
+                     var5xx.addProperty("rule", var4);
+                     var5xx.addProperty("server", var5);
+                     var5xx.addProperty("room", var6);
+                     var5xx.addProperty("player", var3x.getId().toString());
+                     var5xx.addProperty("player_display_name", var3x.getName());
+                     var5xx.addProperty("text", var4x);
+                     var5xx.addProperty("language", "*");
+                     return var5xx;
                   };
                } else {
                   String var17 = String.valueOf(var4);
                   var16 = (var3x, var4x) -> {
-                     JsonObject var5x = new JsonObject();
-                     var5x.addProperty("rule_id", var17);
-                     var5x.addProperty("category", var5);
-                     var5x.addProperty("subcategory", var6);
-                     var5x.addProperty("user_id", var3x.getId().toString());
-                     var5x.addProperty("user_display_name", var3x.getName());
-                     var5x.addProperty("text", var4x);
-                     var5x.addProperty("language", "*");
-                     return var5x;
+                     JsonObject var5xx = new JsonObject();
+                     var5xx.addProperty("rule_id", var17);
+                     var5xx.addProperty("category", var5);
+                     var5xx.addProperty("subcategory", var6);
+                     var5xx.addProperty("user_id", var3x.getId().toString());
+                     var5xx.addProperty("user_display_name", var3x.getName());
+                     var5xx.addProperty("text", var4x);
+                     var5xx.addProperty("language", "*");
+                     return var5xx;
                   };
                }
 
@@ -157,10 +157,10 @@ public class TextFilterClient implements AutoCloseable {
 
    void processJoinOrLeave(GameProfile var1, URL var2, TextFilterClient.JoinOrLeaveEncoder var3, Executor var4) {
       var4.execute(() -> {
-         JsonObject var4x = var3.encode(var1);
+         JsonObject var4xx = var3.encode(var1);
 
          try {
-            this.processRequest(var4x, var2);
+            this.processRequest(var4xx, var2);
          } catch (Exception var6) {
             LOGGER.warn("Failed to send join/leave packet to {} for player {}", new Object[]{var2, var1, var6});
          }
@@ -169,10 +169,10 @@ public class TextFilterClient implements AutoCloseable {
 
    CompletableFuture<FilteredText> requestMessageProcessing(GameProfile var1, String var2, TextFilterClient.IgnoreStrategy var3, Executor var4) {
       return var2.isEmpty() ? CompletableFuture.completedFuture(FilteredText.EMPTY) : CompletableFuture.supplyAsync(() -> {
-         JsonObject var4x = this.chatEncoder.encode(var1, var2);
+         JsonObject var4xx = this.chatEncoder.encode(var1, var2);
 
          try {
-            JsonObject var5 = this.processRequestResponse(var4x, this.chatEndpoint);
+            JsonObject var5 = this.processRequestResponse(var4xx, this.chatEndpoint);
             boolean var6 = GsonHelper.getAsBoolean(var5, "response", false);
             if (var6) {
                return FilteredText.passThrough(var2);

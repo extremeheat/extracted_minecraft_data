@@ -3,6 +3,7 @@ package net.minecraft.world.inventory;
 import java.util.List;
 import java.util.OptionalInt;
 import javax.annotation.Nullable;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;

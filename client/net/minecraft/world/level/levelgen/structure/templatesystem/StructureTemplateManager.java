@@ -165,8 +165,8 @@ public class StructureTemplateManager {
             return Files.walk(var1).filter(var1x -> var1x.toString().endsWith(var3)).mapMulti((var4x, var5x) -> {
                try {
                   var5x.accept(new ResourceLocation(var2, (String)var5.apply(this.relativize(var1, var4x))));
-               } catch (ResourceLocationException var7x) {
-                  LOGGER.error("Invalid location while listing pack contents", var7x);
+               } catch (ResourceLocationException var7xx) {
+                  LOGGER.error("Invalid location while listing pack contents", var7xx);
                }
             });
          } catch (IOException var7) {

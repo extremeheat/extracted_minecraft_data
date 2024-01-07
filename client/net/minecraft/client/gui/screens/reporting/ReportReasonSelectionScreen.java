@@ -50,9 +50,9 @@ public class ReportReasonSelectionScreen extends Screen {
       );
       int var3 = this.width / 2 + 5;
       this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, var1x -> {
-         ReportReasonSelectionScreen.ReasonSelectionList.Entry var2x = this.reasonSelectionList.getSelected();
-         if (var2x != null) {
-            this.onSelectedReason.accept(var2x.getReason());
+         ReportReasonSelectionScreen.ReasonSelectionList.Entry var2xx = this.reasonSelectionList.getSelected();
+         if (var2xx != null) {
+            this.onSelectedReason.accept(var2xx.getReason());
          }
 
          this.minecraft.setScreen(this.lastScreen);

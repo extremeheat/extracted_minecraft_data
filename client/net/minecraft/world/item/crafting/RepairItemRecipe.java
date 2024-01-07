@@ -73,9 +73,9 @@ public class RepairItemRecipe extends CustomRecipe {
             Map var13 = EnchantmentHelper.getEnchantments(var15);
             Map var14 = EnchantmentHelper.getEnchantments(var16);
             BuiltInRegistries.ENCHANTMENT.stream().filter(Enchantment::isCurse).forEach(var3x -> {
-               int var4x = Math.max(var13.getOrDefault(var3x, 0), var14.getOrDefault(var3x, 0));
-               if (var4x > 0) {
-                  var12.put(var3x, var4x);
+               int var4xx = Math.max(var13.getOrDefault(var3x, 0), var14.getOrDefault(var3x, 0));
+               if (var4xx > 0) {
+                  var12.put(var3x, var4xx);
                }
             });
             if (!var12.isEmpty()) {

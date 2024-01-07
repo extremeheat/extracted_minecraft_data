@@ -181,14 +181,14 @@ class SwitchGrid {
          var2.addChild(var9, var1.rowCount, var3 + 1, var2.newCellSettings().alignHorizontallyRight());
          if (this.info != null) {
             var5.ifPresent(var4x -> {
-               MutableComponent var5x = this.info.copy().withStyle(ChatFormatting.GRAY);
-               Font var6x = Minecraft.getInstance().font;
-               MultiLineTextWidget var7x = new MultiLineTextWidget(var5x, var6x);
-               var7x.setMaxWidth(var1.width - var1.paddingLeft - this.buttonWidth);
-               var7x.setMaxRows(var4x.maxInfoRows());
+               MutableComponent var5xx = this.info.copy().withStyle(ChatFormatting.GRAY);
+               Font var6xx = Minecraft.getInstance().font;
+               MultiLineTextWidget var7xx = new MultiLineTextWidget(var5xx, var6xx);
+               var7xx.setMaxWidth(var1.width - var1.paddingLeft - this.buttonWidth);
+               var7xx.setMaxRows(var4x.maxInfoRows());
                var1.increaseRow();
-               int var8x = var4x.alwaysMaxHeight ? 9 * var4x.maxInfoRows - var7x.getHeight() : 0;
-               var2.addChild(var7x, var1.rowCount, var3, var2.newCellSettings().paddingTop(-var1.rowSpacing).paddingBottom(var8x));
+               int var8xx = var4x.alwaysMaxHeight ? 9 * var4x.maxInfoRows - var7xx.getHeight() : 0;
+               var2.addChild(var7xx, var1.rowCount, var3, var2.newCellSettings().paddingTop(-var1.rowSpacing).paddingBottom(var8xx));
             });
          }
 

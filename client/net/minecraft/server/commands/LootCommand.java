@@ -10,6 +10,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -376,8 +377,8 @@ public class LootCommand {
       }
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private static int entityReplace(Collection<? extends Entity> var0, int var1, int var2, List<ItemStack> var3, LootCommand.Callback var4) throws CommandSyntaxException {
       ArrayList var5 = Lists.newArrayListWithCapacity(var3.size());
 
@@ -397,9 +398,9 @@ public class LootCommand {
    private static int dropInWorld(CommandSourceStack var0, Vec3 var1, List<ItemStack> var2, LootCommand.Callback var3) throws CommandSyntaxException {
       ServerLevel var4 = var0.getLevel();
       var2.forEach(var2x -> {
-         ItemEntity var3x = new ItemEntity(var4, var1.x, var1.y, var1.z, var2x.copy());
-         var3x.setDefaultPickUpDelay();
-         var4.addFreshEntity(var3x);
+         ItemEntity var3xx = new ItemEntity(var4, var1.x, var1.y, var1.z, var2x.copy());
+         var3xx.setDefaultPickUpDelay();
+         var4.addFreshEntity(var3xx);
       });
       var3.accept(var2);
       return var2.size();

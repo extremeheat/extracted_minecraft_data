@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.longs.Long2FloatLinkedOpenHashMap;
 import java.util.Optional;
 import javax.annotation.Nullable;
@@ -64,12 +65,12 @@ public final class Biome {
    private final MobSpawnSettings mobSettings;
    private final BiomeSpecialEffects specialEffects;
    private final ThreadLocal<Long2FloatLinkedOpenHashMap> temperatureCache = ThreadLocal.withInitial(() -> Util.make(() -> {
-         Long2FloatLinkedOpenHashMap var1x = new Long2FloatLinkedOpenHashMap(1024, 0.25F) {
+         Long2FloatLinkedOpenHashMap var1xx = new Long2FloatLinkedOpenHashMap(1024, 0.25F) {
             protected void rehash(int var1) {
             }
          };
-         var1x.defaultReturnValue(0.0F / 0.0F);
-         return var1x;
+         var1xx.defaultReturnValue(0.0F / 0.0F);
+         return var1xx;
       }));
 
    Biome(Biome.ClimateSettings var1, BiomeSpecialEffects var2, BiomeGenerationSettings var3, MobSpawnSettings var4) {

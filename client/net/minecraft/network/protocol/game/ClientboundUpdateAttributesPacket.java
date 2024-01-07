@@ -30,8 +30,8 @@ public class ClientboundUpdateAttributesPacket implements Packet<ClientGamePacke
       this.entityId = var1.readVarInt();
       this.attributes = var1.readList(
          var0 -> {
-            ResourceLocation var1x = var0.readResourceLocation();
-            Attribute var2 = BuiltInRegistries.ATTRIBUTE.get(var1x);
+            ResourceLocation var1xx = var0.readResourceLocation();
+            Attribute var2 = BuiltInRegistries.ATTRIBUTE.get(var1xx);
             double var3 = var0.readDouble();
             List var5 = var0.readList(
                var0x -> new AttributeModifier(

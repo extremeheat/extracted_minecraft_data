@@ -16,9 +16,9 @@ public class LayeredRegistryAccess<T> {
 
    public LayeredRegistryAccess(List<T> var1) {
       this(var1, Util.make(() -> {
-         RegistryAccess.Frozen[] var1x = new RegistryAccess.Frozen[var1.size()];
-         Arrays.fill(var1x, RegistryAccess.EMPTY);
-         return Arrays.asList(var1x);
+         RegistryAccess.Frozen[] var1xx = new RegistryAccess.Frozen[var1.size()];
+         Arrays.fill(var1xx, RegistryAccess.EMPTY);
+         return Arrays.asList(var1xx);
       }));
    }
 

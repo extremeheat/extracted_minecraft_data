@@ -105,8 +105,8 @@ public class HashCache {
       HashSet var1 = new HashSet();
       this.caches.forEach((var2x, var3x) -> {
          if (this.cachesToWrite.contains(var2x)) {
-            Path var4x = this.getProviderCachePath(var2x);
-            var3x.save(this.rootDir, var4x, DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(LocalDateTime.now()) + "\t" + var2x);
+            Path var4xx = this.getProviderCachePath(var2x);
+            var3x.save(this.rootDir, var4xx, DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(LocalDateTime.now()) + "\t" + var2x);
          }
 
          var1.addAll(var3x.data().keySet());
@@ -210,8 +210,8 @@ public class HashCache {
             String var5 = var4[0];
             Builder var6 = ImmutableMap.builder();
             var2.lines().forEach(var2x -> {
-               int var3x = var2x.indexOf(32);
-               var6.put(var0.resolve(var2x.substring(var3x + 1)), HashCode.fromString(var2x.substring(0, var3x)));
+               int var3xx = var2x.indexOf(32);
+               var6.put(var0.resolve(var2x.substring(var3xx + 1)), HashCode.fromString(var2x.substring(0, var3xx)));
             });
             var7 = new HashCache.ProviderCache(var5, var6.build());
          }

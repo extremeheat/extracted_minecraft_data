@@ -3,6 +3,8 @@ package net.minecraft.world.level.storage.loot.entries;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import java.util.List;
+import java.util.function.Consumer;
+import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class EntryGroup extends CompositeEntryBase {

@@ -3,6 +3,7 @@ package net.minecraft.world.item.crafting;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.Util;
 import net.minecraft.core.RegistryAccess;

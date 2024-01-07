@@ -1,6 +1,7 @@
 package net.minecraft.client.renderer.entity;
 
 import com.google.common.collect.Maps;
+import java.util.HashMap;
 import java.util.Map;
 import net.minecraft.Util;
 import net.minecraft.client.model.CowModel;

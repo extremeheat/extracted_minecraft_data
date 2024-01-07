@@ -2,6 +2,7 @@ package net.minecraft.world.level.gameevent.vibrations;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
@@ -52,8 +53,8 @@ public record VibrationInfo(GameEvent b, float c, Vec3 d, @Nullable UUID e, @Nul
       this.entity = var6;
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Nullable
    private static UUID getProjectileOwner(@Nullable Entity var0) {
       if (var0 instanceof Projectile var1 && var1.getOwner() != null) {

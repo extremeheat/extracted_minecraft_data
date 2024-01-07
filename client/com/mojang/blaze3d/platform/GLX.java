@@ -67,8 +67,8 @@ public class GLX {
       });
       ArrayList var0 = Lists.newArrayList();
       GLFWErrorCallback var1 = GLFW.glfwSetErrorCallback((var1x, var2x) -> {
-         String var4x = var2x == 0L ? "" : MemoryUtil.memUTF8(var2x);
-         var0.add(String.format(Locale.ROOT, "GLFW error during init: [0x%X]%s", var1x, var4x));
+         String var4xx = var2x == 0L ? "" : MemoryUtil.memUTF8(var2x);
+         var0.add(String.format(Locale.ROOT, "GLFW error during init: [0x%X]%s", var1x, var4xx));
       });
       if (!GLFW.glfwInit()) {
          throw new IllegalStateException("Failed to initialize GLFW, errors: " + Joiner.on(",").join(var0));

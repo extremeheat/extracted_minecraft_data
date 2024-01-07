@@ -37,11 +37,11 @@ public class ToastComponent {
          });
          if (!this.queued.isEmpty() && this.freeSlots() > 0) {
             this.queued.removeIf(var1x -> {
-               int var2x = var1x.slotCount();
-               int var3 = this.findFreeIndex(var2x);
+               int var2xx = var1x.slotCount();
+               int var3 = this.findFreeIndex(var2xx);
                if (var3 != -1) {
-                  this.visible.add(new ToastComponent.ToastInstance<>(var1x, var3, var2x));
-                  this.occupiedSlots.set(var3, var3 + var2x);
+                  this.visible.add(new ToastComponent.ToastInstance<>(var1x, var3, var2xx));
+                  this.occupiedSlots.set(var3, var3 + var2xx);
                   return true;
                } else {
                   return false;

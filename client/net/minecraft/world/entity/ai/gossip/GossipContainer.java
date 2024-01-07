@@ -2,15 +2,16 @@ package net.minecraft.world.entity.ai.gossip;
 
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
-import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -20,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.Map.Entry;
 import java.util.function.DoublePredicate;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -97,9 +99,9 @@ public class GossipContainer {
    public void transferFrom(GossipContainer var1, RandomSource var2, int var3) {
       Collection var4 = var1.selectGossipsForTransfer(var2, var3);
       var4.forEach(var1x -> {
-         int var2x = var1x.value - var1x.type.decayPerTransfer;
-         if (var2x >= 2) {
-            this.getOrCreate(var1x.target).entries.mergeInt(var1x.type, var2x, GossipContainer::mergeValuesForTransfer);
+         int var2xx = var1x.value - var1x.type.decayPerTransfer;
+         if (var2xx >= 2) {
+            this.getOrCreate(var1x.target).entries.mergeInt(var1x.type, var2xx, GossipContainer::mergeValuesForTransfer);
          }
       });
    }
@@ -200,7 +202,7 @@ public class GossipContainer {
          ObjectIterator var1 = this.entries.object2IntEntrySet().iterator();
 
          while(var1.hasNext()) {
-            Entry var2 = (Entry)var1.next();
+            it.unimi.dsi.fastutil.objects.Object2IntMap.Entry var2 = (it.unimi.dsi.fastutil.objects.Object2IntMap.Entry)var1.next();
             int var3 = var2.getIntValue() - ((GossipType)var2.getKey()).decayPerDay;
             if (var3 < 2) {
                var1.remove();

@@ -51,16 +51,16 @@ public class GameEventListenerRenderer implements DebugRenderer.SimpleDebugRende
             var13.getPosition(var9)
                .ifPresent(
                   var9x -> {
-                     double var10x = var9x.x() - (double)var13.getListenerRadius();
+                     double var10xx = var9x.x() - (double)var13.getListenerRadius();
                      double var12 = var9x.y() - (double)var13.getListenerRadius();
-                     double var14x = var9x.z() - (double)var13.getListenerRadius();
-                     double var16x = var9x.x() + (double)var13.getListenerRadius();
-                     double var18x = var9x.y() + (double)var13.getListenerRadius();
-                     double var20x = var9x.z() + (double)var13.getListenerRadius();
+                     double var14xx = var9x.z() - (double)var13.getListenerRadius();
+                     double var16xx = var9x.x() + (double)var13.getListenerRadius();
+                     double var18xx = var9x.y() + (double)var13.getListenerRadius();
+                     double var20xx = var9x.z() + (double)var13.getListenerRadius();
                      LevelRenderer.renderVoxelShape(
                         var1,
                         var11,
-                        Shapes.create(new AABB(var10x, var12, var14x, var16x, var18x, var20x)),
+                        Shapes.create(new AABB(var10xx, var12, var14xx, var16xx, var18xx, var20xx)),
                         -var3,
                         -var5,
                         -var7,

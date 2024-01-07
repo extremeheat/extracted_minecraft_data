@@ -2,6 +2,7 @@ package net.minecraft.world.inventory;
 
 import com.google.common.collect.Lists;
 import java.util.List;
+import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
@@ -68,10 +69,10 @@ public class StonecutterMenu extends AbstractContainerMenu {
             }
 
             var3.execute((var1x, var2x) -> {
-               long var3xxx = var1x.getGameTime();
-               if (StonecutterMenu.this.lastSoundTime != var3xxx) {
+               long var3xxxx = var1x.getGameTime();
+               if (StonecutterMenu.this.lastSoundTime != var3xxxx) {
                   var1x.playSound(null, var2x, SoundEvents.UI_STONECUTTER_TAKE_RESULT, SoundSource.BLOCKS, 1.0F, 1.0F);
-                  StonecutterMenu.this.lastSoundTime = var3xxx;
+                  StonecutterMenu.this.lastSoundTime = var3xxxx;
                }
             });
             super.onTake(var1, var2);

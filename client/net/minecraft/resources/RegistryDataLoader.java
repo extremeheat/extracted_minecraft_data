@@ -86,12 +86,12 @@ public class RegistryDataLoader {
       RegistryOps.RegistryInfoLookup var5 = createContext(var1, var4);
       var4.forEach(var2x -> ((RegistryDataLoader.Loader)var2x.getSecond()).load(var0, var5));
       var4.forEach(var1x -> {
-         Registry var2x = (Registry)var1x.getFirst();
+         Registry var2xx = (Registry)var1x.getFirst();
 
          try {
-            var2x.freeze();
-         } catch (Exception var4x) {
-            var3.put(var2x.key(), var4x);
+            var2xx.freeze();
+         } catch (Exception var4xx) {
+            var3.put(var2xx.key(), var4xx);
          }
       });
       if (!var3.isEmpty()) {

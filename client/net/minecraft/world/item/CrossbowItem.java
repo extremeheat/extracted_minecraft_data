@@ -202,8 +202,8 @@ public class CrossbowItem extends ProjectileWeaponItem implements Vanishable {
       return getChargedProjectiles(var0).stream().anyMatch(var1x -> var1x.is(var1));
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private static void shootProjectile(
       Level var0, LivingEntity var1, InteractionHand var2, ItemStack var3, ItemStack var4, float var5, boolean var6, float var7, float var8, float var9
    ) {

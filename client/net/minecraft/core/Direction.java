@@ -310,7 +310,7 @@ public enum Direction implements StringRepresentable {
 
    public static Direction getNearest(float var0, float var1, float var2) {
       Direction var3 = NORTH;
-      float var4 = 1.4E-45F;
+      float var4 = 1.0E-45F;
 
       for(Direction var8 : VALUES) {
          float var9 = var0 * (float)var8.normal.getX() + var1 * (float)var8.normal.getY() + var2 * (float)var8.normal.getZ();

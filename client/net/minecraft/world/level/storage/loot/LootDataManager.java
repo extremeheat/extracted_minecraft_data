@@ -6,6 +6,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 import com.mojang.logging.LogUtils;
 import java.util.Collection;
 import java.util.HashMap;
@@ -50,9 +51,9 @@ public class LootDataManager implements PreparableReloadListener, LootDataResolv
       HashMap var4 = new HashMap();
       var3.put(var0, var4);
       return CompletableFuture.runAsync(() -> {
-         HashMap var3x = new HashMap();
-         SimpleJsonResourceReloadListener.scanDirectory(var1, var0.directory(), GSON, var3x);
-         var3x.forEach((var2xx, var3xx) -> var0.deserialize(var2xx, var3xx).ifPresent(var2xxx -> var4.put(var2xx, var2xxx)));
+         HashMap var3xx = new HashMap();
+         SimpleJsonResourceReloadListener.scanDirectory(var1, var0.directory(), GSON, var3xx);
+         var3xx.forEach((var2xx, var3xx) -> var0.deserialize(var2xx, var3xx).ifPresent(var2xxx -> var4.put(var2xx, var2xxx)));
       }, var2);
    }
 

@@ -144,8 +144,8 @@ public class AllayAi {
       return getLikedPlayer(var0).map(var0x -> new EntityTracker(var0x, true));
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public static Optional<ServerPlayer> getLikedPlayer(LivingEntity var0) {
       Level var1 = var0.level();
       if (!var1.isClientSide() && var1 instanceof ServerLevel var2) {

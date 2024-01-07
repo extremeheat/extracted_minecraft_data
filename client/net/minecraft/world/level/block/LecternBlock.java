@@ -169,8 +169,8 @@ public class LecternBlock extends BaseEntityBlock {
       }
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private static void placeBook(@Nullable Entity var0, Level var1, BlockPos var2, BlockState var3, ItemStack var4) {
       BlockEntity var5 = var1.getBlockEntity(var2);
       if (var5 instanceof LecternBlockEntity var6) {
@@ -222,8 +222,8 @@ public class LecternBlock extends BaseEntityBlock {
       }
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private void popBook(BlockState var1, Level var2, BlockPos var3) {
       BlockEntity var4 = var2.getBlockEntity(var3);
       if (var4 instanceof LecternBlockEntity var5) {

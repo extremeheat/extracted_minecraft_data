@@ -22,11 +22,13 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.util.CrudeIncrementalIntIdentityHashBiMap;
 import net.minecraft.util.datafix.PackedBitStorage;
@@ -739,14 +741,14 @@ public class ChunkPalettedStorageFix extends DataFix {
             .ifPresent(
                var1x -> var1x.forEach(
                      var1xx -> {
-                        int var2x = var1xx.get("x").asInt(0) - this.x & 15;
+                        int var2xx = var1xx.get("x").asInt(0) - this.x & 15;
                         int var3 = var1xx.get("y").asInt(0);
                         int var4 = var1xx.get("z").asInt(0) - this.z & 15;
-                        int var5 = var3 << 8 | var4 << 4 | var2x;
+                        int var5 = var3 << 8 | var4 << 4 | var2xx;
                         if (this.blockEntities.put(var5, var1xx) != null) {
                            ChunkPalettedStorageFix.LOGGER
                               .warn(
-                                 "In chunk: {}x{} found a duplicate block entity at position: [{}, {}, {}]", new Object[]{this.x, this.z, var2x, var3, var4}
+                                 "In chunk: {}x{} found a duplicate block entity at position: [{}, {}, {}]", new Object[]{this.x, this.z, var2xx, var3, var4}
                               );
                         }
                      }
@@ -754,9 +756,9 @@ public class ChunkPalettedStorageFix extends DataFix {
             );
          boolean var2 = var1.get("convertedFromAlphaFormat").asBoolean(false);
          var1.get("Sections").asStreamOpt().result().ifPresent(var1x -> var1x.forEach(var1xx -> {
-               ChunkPalettedStorageFix.Section var2x = new ChunkPalettedStorageFix.Section(var1xx);
-               this.sides = var2x.upgrade(this.sides);
-               this.sections[var2x.y] = var2x;
+               ChunkPalettedStorageFix.Section var2xx = new ChunkPalettedStorageFix.Section(var1xx);
+               this.sides = var2xx.upgrade(this.sides);
+               this.sections[var2xx.y] = var2xx;
             }));
 
          for(ChunkPalettedStorageFix.Section var6 : this.sections) {

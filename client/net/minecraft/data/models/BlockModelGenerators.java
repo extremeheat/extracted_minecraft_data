@@ -52,6 +52,7 @@ import net.minecraft.world.level.block.LayeredCauldronBlock;
 import net.minecraft.world.level.block.MangrovePropaguleBlock;
 import net.minecraft.world.level.block.PitcherCropBlock;
 import net.minecraft.world.level.block.SnifferEggBlock;
+import net.minecraft.world.level.block.entity.trialspawner.TrialSpawnerState;
 import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.BambooLeaves;
 import net.minecraft.world.level.block.state.properties.BellAttachType;
@@ -69,6 +70,7 @@ import net.minecraft.world.level.block.state.properties.RedstoneSide;
 import net.minecraft.world.level.block.state.properties.SculkSensorPhase;
 import net.minecraft.world.level.block.state.properties.SlabType;
 import net.minecraft.world.level.block.state.properties.StairsShape;
+import net.minecraft.world.level.block.state.properties.StructureMode;
 import net.minecraft.world.level.block.state.properties.Tilt;
 import net.minecraft.world.level.block.state.properties.WallSide;
 
@@ -1368,9 +1370,9 @@ public class BlockModelGenerators {
          throw new IllegalArgumentException("missing values for property: " + var3);
       } else {
          PropertyDispatch var5 = PropertyDispatch.property(var3).generate(var4x -> {
-            String var5x = "_stage" + var4[var4x];
-            TextureMapping var6 = TextureMapping.cross(TextureMapping.getBlockTexture(var1, var5x));
-            ResourceLocation var7 = var2.getCross().createWithSuffix(var1, var5x, var6, this.modelOutput);
+            String var5xx = "_stage" + var4[var4x];
+            TextureMapping var6 = TextureMapping.cross(TextureMapping.getBlockTexture(var1, var5xx));
+            ResourceLocation var7 = var2.getCross().createWithSuffix(var1, var5xx, var6, this.modelOutput);
             return Variant.variant().with(VariantProperties.MODEL, var7);
          });
          this.createSimpleFlatItemModel(var1.asItem());
@@ -1817,8 +1819,8 @@ public class BlockModelGenerators {
       Variant var4 = Variant.variant().with(VariantProperties.MODEL, var2);
       Variant var5 = Variant.variant().with(VariantProperties.MODEL, var3);
       return PropertyDispatch.property(var0).generate(var3x -> {
-         boolean var4x = var3x.compareTo(var1) >= 0;
-         return var4x ? var4 : var5;
+         boolean var4xx = var3x.compareTo(var1) >= 0;
+         return var4xx ? var4 : var5;
       });
    }
 
@@ -1843,9 +1845,9 @@ public class BlockModelGenerators {
          PropertyDispatch var5 = PropertyDispatch.property(var2)
             .generate(
                var4x -> {
-                  int var5x = var3[var4x];
+                  int var5xx = var3[var4x];
                   ResourceLocation var6 = (ResourceLocation)var4.computeIfAbsent(
-                     var5x, var3xx -> this.createSuffixedVariant(var1, "_stage" + var5x, ModelTemplates.CROP, TextureMapping::crop)
+                     var5xx, var3xx -> this.createSuffixedVariant(var1, "_stage" + var5x, ModelTemplates.CROP, TextureMapping::crop)
                   );
                   return Variant.variant().with(VariantProperties.MODEL, var6);
                }

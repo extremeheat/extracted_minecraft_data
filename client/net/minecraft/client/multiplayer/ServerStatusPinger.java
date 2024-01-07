@@ -82,17 +82,17 @@ public class ServerStatusPinger {
                      var1.status = ServerStatusPinger.formatPlayerCount(var1xxx.online(), var1xxx.max());
                      var1.players = var1xxx;
                      if (!var1xxx.sample().isEmpty()) {
-                        ArrayList var2xxx = new ArrayList(var1xxx.sample().size());
+                        ArrayList var2xxxx = new ArrayList(var1xxx.sample().size());
 
                         for(GameProfile var4 : var1xxx.sample()) {
-                           var2xxx.add(Component.literal(var4.getName()));
+                           var2xxxx.add(Component.literal(var4.getName()));
                         }
 
                         if (var1xxx.sample().size() < var1xxx.online()) {
-                           var2xxx.add(Component.translatable("multiplayer.status.and_more", var1xxx.online() - var1xxx.sample().size()));
+                           var2xxxx.add(Component.translatable("multiplayer.status.and_more", var1xxx.online() - var1xxx.sample().size()));
                         }
 
-                        var1.playerList = var2xxx;
+                        var1.playerList = var2xxxx;
                      } else {
                         var1.playerList = List.of();
                      }

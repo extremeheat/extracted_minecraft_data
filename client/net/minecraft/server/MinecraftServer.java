@@ -58,6 +58,7 @@ import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.core.Registry;
@@ -779,11 +780,11 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          .or(() -> this.storageSource.getIconFile().filter(var0 -> Files.isRegularFile(var0)));
       return var1.flatMap(var0 -> {
          try {
-            BufferedImage var1x = ImageIO.read(var0.toFile());
-            Preconditions.checkState(var1x.getWidth() == 64, "Must be 64 pixels wide");
-            Preconditions.checkState(var1x.getHeight() == 64, "Must be 64 pixels high");
+            BufferedImage var1xx = ImageIO.read(var0.toFile());
+            Preconditions.checkState(var1xx.getWidth() == 64, "Must be 64 pixels wide");
+            Preconditions.checkState(var1xx.getHeight() == 64, "Must be 64 pixels high");
             ByteArrayOutputStream var2 = new ByteArrayOutputStream();
-            ImageIO.write(var1x, "PNG", var2);
+            ImageIO.write(var1xx, "PNG", var2);
             return Optional.of(new ServerStatus.Favicon(var2.toByteArray()));
          } catch (Exception var3) {
             LOGGER.error("Couldn't load server icon", var3);
@@ -1354,9 +1355,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          )
          .thenCompose(
             var2x -> {
-               MultiPackResourceManager var3x = new MultiPackResourceManager(PackType.SERVER_DATA, var2x);
+               MultiPackResourceManager var3xx = new MultiPackResourceManager(PackType.SERVER_DATA, var2x);
                return ReloadableServerResources.loadResources(
-                     var3x,
+                     var3xx,
                      var2,
                      this.worldData.enabledFeatures(),
                      this.isDedicatedServer() ? Commands.CommandSelection.DEDICATED : Commands.CommandSelection.INTEGRATED,
@@ -1376,8 +1377,8 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
             this.resources.close();
             this.resources = var2x;
             this.packRepository.setSelected(var1);
-            WorldDataConfiguration var3x = new WorldDataConfiguration(getSelectedPacks(this.packRepository), this.worldData.enabledFeatures());
-            this.worldData.setDataConfiguration(var3x);
+            WorldDataConfiguration var3xx = new WorldDataConfiguration(getSelectedPacks(this.packRepository), this.worldData.enabledFeatures());
+            this.worldData.setDataConfiguration(var3xx);
             this.resources.managers.updateRegistryTags(this.registryAccess());
             this.getPlayerList().saveAll();
             this.getPlayerList().reloadResources();

@@ -57,7 +57,7 @@ public interface RegistryAccess extends HolderLookup.Provider {
 
    default RegistryAccess.Frozen freeze() {
       class 1FrozenAccess extends RegistryAccess.ImmutableRegistryAccess implements RegistryAccess.Frozen {
-         protected _FrozenAccess/* $QF was: 1FrozenAccess*/(Stream<RegistryAccess.RegistryEntry<?>> var2) {
+         protected _FrozenAccess/* $VF was: 1FrozenAccess*/(Stream<RegistryAccess.RegistryEntry<?>> var2) {
             super(var2);
          }
       }

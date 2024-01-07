@@ -5,6 +5,7 @@ import java.util.Optional;
 import net.minecraft.BlockUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.TicketType;
 import net.minecraft.util.Mth;
@@ -51,11 +52,11 @@ public class PortalForcer {
          .findFirst();
       return var6.map(
          var1x -> {
-            BlockPos var2x = var1x.getPos();
-            this.level.getChunkSource().addRegionTicket(TicketType.PORTAL, new ChunkPos(var2x), 3, var2x);
-            BlockState var3x = this.level.getBlockState(var2x);
+            BlockPos var2xx = var1x.getPos();
+            this.level.getChunkSource().addRegionTicket(TicketType.PORTAL, new ChunkPos(var2xx), 3, var2xx);
+            BlockState var3xx = this.level.getBlockState(var2xx);
             return BlockUtil.getLargestRectangleAround(
-               var2x, var3x.getValue(BlockStateProperties.HORIZONTAL_AXIS), 21, Direction.Axis.Y, 21, var2xx -> this.level.getBlockState(var2xx) == var3x
+               var2xx, var3xx.getValue(BlockStateProperties.HORIZONTAL_AXIS), 21, Direction.Axis.Y, 21, var2xx -> this.level.getBlockState(var2xx) == var3x
             );
          }
       );

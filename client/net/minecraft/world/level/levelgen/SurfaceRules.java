@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableList.Builder;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -187,7 +188,7 @@ public class SurfaceRules {
 
       public SurfaceRules.Condition apply(final SurfaceRules.Context var1) {
          class 1BiomeCondition extends SurfaceRules.LazyYCondition {
-            _BiomeCondition/* $QF was: 1BiomeCondition*/() {
+            _BiomeCondition/* $VF was: 1BiomeCondition*/() {
                super(var1);
             }
 
@@ -552,7 +553,7 @@ public class SurfaceRules {
          final NormalNoise var2 = var1.randomState.getOrCreateNoise(this.noise);
 
          class 1NoiseThresholdCondition extends SurfaceRules.LazyXZCondition {
-            _NoiseThresholdCondition/* $QF was: 1NoiseThresholdCondition*/() {
+            _NoiseThresholdCondition/* $VF was: 1NoiseThresholdCondition*/() {
                super(var1);
             }
 
@@ -734,7 +735,7 @@ public class SurfaceRules {
          final boolean var2 = this.surfaceType == CaveSurface.CEILING;
 
          class 1StoneDepthCondition extends SurfaceRules.LazyYCondition {
-            _StoneDepthCondition/* $QF was: 1StoneDepthCondition*/() {
+            _StoneDepthCondition/* $VF was: 1StoneDepthCondition*/() {
                super(var1);
             }
 
@@ -855,7 +856,7 @@ public class SurfaceRules {
          final PositionalRandomFactory var4 = var1.randomState.getOrCreateRandomFactory(this.randomName());
 
          class 1VerticalGradientCondition extends SurfaceRules.LazyYCondition {
-            _VerticalGradientCondition/* $QF was: 1VerticalGradientCondition*/() {
+            _VerticalGradientCondition/* $VF was: 1VerticalGradientCondition*/() {
                super(var1);
             }
 
@@ -907,7 +908,7 @@ public class SurfaceRules {
 
       public SurfaceRules.Condition apply(final SurfaceRules.Context var1) {
          class 1WaterCondition extends SurfaceRules.LazyYCondition {
-            _WaterCondition/* $QF was: 1WaterCondition*/() {
+            _WaterCondition/* $VF was: 1WaterCondition*/() {
                super(var1);
             }
 
@@ -954,7 +955,7 @@ public class SurfaceRules {
 
       public SurfaceRules.Condition apply(final SurfaceRules.Context var1) {
          class 1YCondition extends SurfaceRules.LazyYCondition {
-            _YCondition/* $QF was: 1YCondition*/() {
+            _YCondition/* $VF was: 1YCondition*/() {
                super(var1);
             }
 

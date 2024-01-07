@@ -26,12 +26,12 @@ public class FutureChain implements TaskChainer, AutoCloseable {
             var2.accept(var2x);
          }
       }, this.executor).exceptionally(var0 -> {
-         if (var0 instanceof CompletionException var1x) {
-            var0 = var1x.getCause();
+         if (var0 instanceof CompletionException var1xx) {
+            var0 = var1xx.getCause();
          }
 
-         if (var0 instanceof CancellationException var2x) {
-            throw var2x;
+         if (var0 instanceof CancellationException var2xx) {
+            throw var2xx;
          } else {
             LOGGER.error("Chain link failed, continuing to next one", var0);
             return null;

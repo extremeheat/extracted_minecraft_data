@@ -1,6 +1,7 @@
 package net.minecraft.client.multiplayer;
 
 import com.google.common.base.Strings;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.mojang.authlib.exceptions.MinecraftClientException;
 import com.mojang.authlib.minecraft.UserApiService;
@@ -116,8 +117,8 @@ public class AccountProfileKeyPairManager implements ProfileKeyPairManager {
                try {
                   Files.createDirectories(this.profileKeyPairPath.getParent());
                   Files.writeString(this.profileKeyPairPath, var1x.toString());
-               } catch (Exception var3x) {
-                  LOGGER.error("Failed to write profile key pair file {}", this.profileKeyPairPath, var3x);
+               } catch (Exception var3xx) {
+                  LOGGER.error("Failed to write profile key pair file {}", this.profileKeyPairPath, var3xx);
                }
             });
          }

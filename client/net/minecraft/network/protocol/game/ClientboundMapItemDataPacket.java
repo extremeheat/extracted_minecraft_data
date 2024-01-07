@@ -34,12 +34,12 @@ public class ClientboundMapItemDataPacket implements Packet<ClientGamePacketList
       this.scale = var1.readByte();
       this.locked = var1.readBoolean();
       this.decorations = var1.readNullable(var0 -> var0.readList(var0x -> {
-            MapDecoration.Type var1x = var0x.readEnum(MapDecoration.Type.class);
-            byte var2x = var0x.readByte();
-            byte var3x = var0x.readByte();
-            byte var4x = (byte)(var0x.readByte() & 15);
-            Component var5x = var0x.readNullable(FriendlyByteBuf::readComponentTrusted);
-            return new MapDecoration(var1x, var2x, var3x, var4x, var5x);
+            MapDecoration.Type var1xx = var0x.readEnum(MapDecoration.Type.class);
+            byte var2xx = var0x.readByte();
+            byte var3xx = var0x.readByte();
+            byte var4xx = (byte)(var0x.readByte() & 15);
+            Component var5xx = var0x.readNullable(FriendlyByteBuf::readComponentTrusted);
+            return new MapDecoration(var1xx, var2xx, var3xx, var4xx, var5xx);
          }));
       short var2 = var1.readUnsignedByte();
       if (var2 > 0) {

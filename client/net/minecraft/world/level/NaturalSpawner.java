@@ -74,9 +74,9 @@ public final class NaturalSpawner {
          if (var10 != MobCategory.MISC) {
             BlockPos var9 = var7.blockPosition();
             var2.query(ChunkPos.asLong(var9), var6 -> {
-               MobSpawnSettings.MobSpawnCost var7x = getRoughBiome(var9, var6).getMobSettings().getMobSpawnCost(var7.getType());
-               if (var7x != null) {
-                  var4.addCharge(var7.blockPosition(), var7x.charge());
+               MobSpawnSettings.MobSpawnCost var7xx = getRoughBiome(var9, var6).getMobSettings().getMobSpawnCost(var7.getType());
+               if (var7xx != null) {
+                  var4.addCharge(var7.blockPosition(), var7xx.charge());
                }
 
                if (var7 instanceof Mob) {

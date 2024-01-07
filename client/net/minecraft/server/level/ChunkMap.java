@@ -6,8 +6,10 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
 import com.google.common.collect.Sets;
 import com.google.common.collect.ImmutableList.Builder;
+import com.google.gson.JsonElement;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.datafixers.util.Either;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
@@ -136,8 +138,8 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
    private final Queue<Runnable> unloadQueue = Queues.newConcurrentLinkedQueue();
    private int serverViewDistance;
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public ChunkMap(
       ServerLevel var1,
       LevelStorageSource.LevelStorageAccess var2,
@@ -312,16 +314,16 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
 
          CompletableFuture var19 = Util.sequence(var4);
          CompletableFuture var20 = var19.thenApply(var4x -> {
-            ArrayList var5x = Lists.newArrayList();
-            final int var6x = 0;
+            ArrayList var5xx = Lists.newArrayList();
+            final int var6xx = 0;
 
-            for(final Either var8x : var4x) {
-               if (var8x == null) {
+            for(final Either var8xx : var4x) {
+               if (var8xx == null) {
                   throw this.debugFuturesAndCreateReportedException(new IllegalStateException("At least one of the chunk futures were null"), "n/a");
                }
 
-               Optional var9x = var8x.left();
-               if (var9x.isEmpty()) {
+               Optional var9xx = var8xx.left();
+               if (var9xx.isEmpty()) {
                   return Either.right(new ChunkHolder.ChunkLoadingFailure() {
                      @Override
                      public String toString() {
@@ -330,11 +332,11 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
                   });
                }
 
-               var5x.add((ChunkAccess)var9x.get());
-               ++var6x;
+               var5xx.add((ChunkAccess)var9xx.get());
+               ++var6xx;
             }
 
-            return Either.left(var5x);
+            return Either.left(var5xx);
          });
 
          for(ChunkHolder var22 : var5) {
@@ -348,10 +350,10 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
    public ReportedException debugFuturesAndCreateReportedException(IllegalStateException var1, String var2) {
       StringBuilder var3 = new StringBuilder();
       Consumer var4 = var1x -> var1x.getAllFutures().forEach(var2x -> {
-            ChunkStatus var3x = (ChunkStatus)var2x.getFirst();
-            CompletableFuture var4x = (CompletableFuture)var2x.getSecond();
-            if (var4x != null && var4x.isDone() && var4x.join() == null) {
-               var3.append(var1x.getPos()).append(" - status: ").append(var3x).append(" future: ").append(var4x).append(System.lineSeparator());
+            ChunkStatus var3xx = (ChunkStatus)var2x.getFirst();
+            CompletableFuture var4xx = (CompletableFuture)var2x.getSecond();
+            if (var4xx != null && var4xx.isDone() && var4xx.join() == null) {
+               var3.append(var1x.getPos()).append(" - status: ").append(var3xx).append(" future: ").append(var4xx).append(System.lineSeparator());
             }
          });
       var3.append("Updating:").append(System.lineSeparator());
@@ -581,8 +583,8 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
       return var0.contains("Status", 8);
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private Either<ChunkAccess, ChunkHolder.ChunkLoadingFailure> handleChunkLoadFailure(Throwable var1, ChunkPos var2) {
       if (var1 instanceof ReportedException var3) {
          Throwable var4 = var3.getCause();
@@ -693,7 +695,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
       return var2.thenApplyAsync(var2x -> {
          ChunkStatus var3 = ChunkLevel.generationStatus(var1.getTicketLevel());
          return !var3.isOrAfter(ChunkStatus.FULL) ? ChunkHolder.UNLOADED_CHUNK : var2x.mapLeft(var2xx -> {
-            ChunkPos var3x = var1.getPos();
+            ChunkPos var3xx = var1.getPos();
             ProtoChunk var4 = (ProtoChunk)var2xx;
             LevelChunk var5;
             if (var4 instanceof ImposterProtoChunk) {
@@ -705,7 +707,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
 
             var5.setFullStatus(() -> ChunkLevel.fullStatus(var1.getTicketLevel()));
             var5.runPostLoad();
-            if (this.entitiesInLevel.add(var3x.toLong())) {
+            if (this.entitiesInLevel.add(var3xx.toLong())) {
                var5.setLoaded(true);
                var5.registerAllBlockEntitiesAfterLevelLoad();
                var5.registerTickContainerInLevel(this.level);
@@ -725,11 +727,11 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
          .thenApplyAsync(var2x -> var2x.ifLeft(var2xx -> {
                var2xx.postProcessGeneration();
                this.level.startTickingChunk(var2xx);
-               CompletableFuture var3x = var1.getChunkSendSyncFuture();
-               if (var3x.isDone()) {
+               CompletableFuture var3xx = var1.getChunkSendSyncFuture();
+               if (var3xx.isDone()) {
                   this.onChunkReadyToSend(var2xx);
                } else {
-                  var3x.thenAcceptAsync(var2xxx -> this.onChunkReadyToSend(var2xx), this.mainThreadExecutor);
+                  var3xx.thenAcceptAsync(var2xxx -> this.onChunkReadyToSend(var2xx), this.mainThreadExecutor);
                }
             }), this.mainThreadExecutor);
       var3.handle((var1x, var2x) -> {
@@ -1082,8 +1084,8 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
       this.applyChunkTrackingView(var1, ChunkTrackingView.of(var2, var3));
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private void applyChunkTrackingView(ServerPlayer var1, ChunkTrackingView var2) {
       if (var1.level() == this.level) {
          ChunkTrackingView var3 = var1.getChunkTrackingView();
@@ -1244,9 +1246,9 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
    public void waitForLightBeforeSending(ChunkPos var1, int var2) {
       int var3 = var2 + 1;
       ChunkPos.rangeClosed(var1, var3).forEach(var1x -> {
-         ChunkHolder var2x = this.getVisibleChunkIfPresent(var1x.toLong());
-         if (var2x != null) {
-            var2x.addSendDependency(this.lightEngine.waitForPendingTasks(var1x.x, var1x.z));
+         ChunkHolder var2xx = this.getVisibleChunkIfPresent(var1x.toLong());
+         if (var2xx != null) {
+            var2xx.addSendDependency(this.lightEngine.waitForPendingTasks(var1x.x, var1x.z));
          }
       });
    }

@@ -1,5 +1,6 @@
 package net.minecraft.network.protocol.game;
 
+import com.mojang.brigadier.Message;
 import com.mojang.brigadier.context.StringRange;
 import com.mojang.brigadier.suggestion.Suggestion;
 import com.mojang.brigadier.suggestion.Suggestions;
@@ -26,9 +27,9 @@ public class ClientboundCommandSuggestionsPacket implements Packet<ClientGamePac
       int var3 = var1.readVarInt();
       StringRange var4 = StringRange.between(var2, var2 + var3);
       List var5 = var1.readList(var1x -> {
-         String var2x = var1x.readUtf();
-         Component var3x = var1x.readNullable(FriendlyByteBuf::readComponentTrusted);
-         return new Suggestion(var4, var2x, var3x);
+         String var2xx = var1x.readUtf();
+         Component var3xx = var1x.readNullable(FriendlyByteBuf::readComponentTrusted);
+         return new Suggestion(var4, var2xx, var3xx);
       });
       this.suggestions = new Suggestions(var4, var5);
    }

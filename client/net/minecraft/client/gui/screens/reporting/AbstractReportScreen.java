@@ -87,8 +87,8 @@ public abstract class AbstractReportScreen<B extends Report.Builder<?>> extends 
          );
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private void onReportSendError(Throwable var1) {
       LOGGER.error("Encountered error while sending abuse report", var1);
       Throwable var4 = var1.getCause();

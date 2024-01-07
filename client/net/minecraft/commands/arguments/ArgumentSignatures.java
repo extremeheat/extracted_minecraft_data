@@ -40,8 +40,8 @@ public record ArgumentSignatures(List<ArgumentSignatures.Entry> b) {
 
    public static ArgumentSignatures signCommand(SignableCommand<?> var0, ArgumentSignatures.Signer var1) {
       List var2 = var0.arguments().stream().map(var1x -> {
-         MessageSignature var2x = var1.sign(var1x.value());
-         return var2x != null ? new ArgumentSignatures.Entry(var1x.name(), var2x) : null;
+         MessageSignature var2xx = var1.sign(var1x.value());
+         return var2xx != null ? new ArgumentSignatures.Entry(var1x.name(), var2xx) : null;
       }).filter(Objects::nonNull).toList();
       return new ArgumentSignatures(var2);
    }

@@ -141,7 +141,7 @@ public class BehaviorUtils {
 
    public static Optional<LivingEntity> getLivingEntityFromUUIDMemory(LivingEntity var0, MemoryModuleType<UUID> var1) {
       Optional var2 = var0.getBrain().getMemory(var1);
-      return var2.<Entity>map(var1x -> ((ServerLevel)var0.level()).getEntity(var1x)).map(var0x -> var0x instanceof LivingEntity var1x ? var1x : null);
+      return var2.<Entity>map(var1x -> ((ServerLevel)var0.level()).getEntity(var1x)).map(var0x -> var0x instanceof LivingEntity var1xx ? var1xx : null);
    }
 
    @Nullable

@@ -2,6 +2,7 @@ package net.minecraft.world.inventory;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -20,6 +21,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BannerPattern;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -96,10 +98,10 @@ public class LoomMenu extends AbstractContainerMenu {
             }
 
             var3.execute((var1x, var2x) -> {
-               long var3x = var1x.getGameTime();
-               if (LoomMenu.this.lastSoundTime != var3x) {
+               long var3xx = var1x.getGameTime();
+               if (LoomMenu.this.lastSoundTime != var3xx) {
                   var1x.playSound(null, var2x, SoundEvents.UI_LOOM_TAKE_RESULT, SoundSource.BLOCKS, 1.0F, 1.0F);
-                  LoomMenu.this.lastSoundTime = var3x;
+                  LoomMenu.this.lastSoundTime = var3xx;
                }
             });
             super.onTake(var1, var2);

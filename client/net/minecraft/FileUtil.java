@@ -124,6 +124,22 @@ public class FileUtil {
                case "..":
                   return DataResult.error(() -> "Invalid segment '" + var5 + "' in path '" + var0 + "'");
             }
+
+            if (!isValidStrictPathSegment(var5)) {
+               return DataResult.error(() -> "Invalid segment '" + var5 + "' in path '" + var0 + "'");
+            }
+
+            var2.add(var5);
+            if (var4) {
+               return DataResult.success(var2);
+            }
+
+            var3 = var1 + 1;
+            var1 = var0.indexOf(47, var3);
+            if (var1 == -1) {
+               var1 = var0.length();
+               var4 = true;
+            }
          }
       }
    }

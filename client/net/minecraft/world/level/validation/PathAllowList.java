@@ -35,8 +35,8 @@ public class PathAllowList implements PathMatcher {
             case 0 -> var0 -> false;
             case 1 -> (PathMatcher)var3.get(0);
             default -> var1xx -> {
-            for(PathMatcher var3x : var3) {
-               if (var3x.matches(var1xx)) {
+            for(PathMatcher var3xx : var3) {
+               if (var3xx.matches(var1xx)) {
                   return true;
                }
             }

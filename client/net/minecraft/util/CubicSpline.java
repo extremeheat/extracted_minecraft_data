@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import it.unimi.dsi.fastutil.floats.FloatList;
 import java.util.List;
@@ -44,25 +45,25 @@ public interface CubicSpline<C, I extends ToFloatFunction<C>> extends ToFloatFun
                      )
                )
                .apply(var2x, (var0xx, var1xx) -> {
-                  float[] var2xx = new float[var1xx.size()];
-                  com.google.common.collect.ImmutableList.Builder var3x = ImmutableList.builder();
+                  float[] var2xxx = new float[var1xx.size()];
+                  com.google.common.collect.ImmutableList.Builder var3xx = ImmutableList.builder();
                   float[] var4 = new float[var1xx.size()];
       
                   for(int var5 = 0; var5 < var1xx.size(); ++var5) {
                      1Point var6 = (1Point)var1xx.get(var5);
-                     var2xx[var5] = var6.location();
-                     var3x.add(var6.value());
+                     var2xxx[var5] = var6.location();
+                     var3xx.add(var6.value());
                      var4[var5] = var6.derivative();
                   }
       
-                  return CubicSpline.Multipoint.create((I)var0xx, var2xx, var3x.build(), var4);
+                  return CubicSpline.Multipoint.create((I)var0xx, var2xxx, var3xx.build(), var4);
                })
       );
       var1.setValue(
          Codec.either(Codec.FLOAT, var3)
             .xmap(
                var0x -> (CubicSpline)var0x.map(CubicSpline.Constant::new, var0xx -> var0xx),
-               var0x -> var0x instanceof CubicSpline.Constant var1x ? Either.left(var1x.value()) : Either.right((CubicSpline.Multipoint)var0x)
+               var0x -> var0x instanceof CubicSpline.Constant var1xx ? Either.left(var1xx.value()) : Either.right((CubicSpline.Multipoint)var0x)
             )
       );
       return (Codec<CubicSpline<C, I>>)var1.getValue();
@@ -72,7 +73,7 @@ public interface CubicSpline<C, I extends ToFloatFunction<C>> extends ToFloatFun
          private final CubicSpline<C, I> value;
          private final float derivative;
 
-         _Point/* $QF was: 1Point*/(float var1, CubicSpline<C, I> var2, float var3) {
+         _Point/* $VF was: 1Point*/(float var1, CubicSpline<C, I> var2, float var3) {
             super();
             this.location = var1;
             this.value = var2;

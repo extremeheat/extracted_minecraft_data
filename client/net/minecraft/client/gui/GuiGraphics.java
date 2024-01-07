@@ -330,8 +330,8 @@ public class GuiGraphics {
       this.blitSprite(var1, var2, var3, 0, var4, var5);
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void blitSprite(ResourceLocation var1, int var2, int var3, int var4, int var5, int var6) {
       TextureAtlasSprite var7 = this.sprites.getSprite(var1);
       GuiSpriteScaling var8 = this.sprites.getSpriteScaling(var7);

@@ -657,7 +657,7 @@ public class Gui {
          final Component score;
          final int scoreWidth;
 
-         _DisplayEntry/* $QF was: 1DisplayEntry*/(Component var1, Component var2, int var3) {
+         _DisplayEntry/* $VF was: 1DisplayEntry*/(Component var1, Component var2, int var3) {
             super();
             this.name = var1;
             this.score = var2;
@@ -666,12 +666,12 @@ public class Gui {
       }
 
       1DisplayEntry[] var5 = var3.listPlayerScores(var2).stream().filter(var0 -> !var0.isHidden()).sorted(SCORE_DISPLAY_ORDER).limit(15L).map(var3x -> {
-         PlayerTeam var4x = var3.getPlayersTeam(var3x.owner());
-         Component var5x = var3x.ownerName();
-         MutableComponent var6x = PlayerTeam.formatNameForTeam(var4x, var5x);
-         MutableComponent var7x = var3x.formatValue(var4);
-         int var8x = this.getFont().width(var7x);
-         return new 1DisplayEntry(var6x, var7x, var8x);
+         PlayerTeam var4xx = var3.getPlayersTeam(var3x.owner());
+         Component var5xx = var3x.ownerName();
+         MutableComponent var6xx = PlayerTeam.formatNameForTeam(var4xx, var5xx);
+         MutableComponent var7xx = var3x.formatValue(var4);
+         int var8xx = this.getFont().width(var7xx);
+         return new 1DisplayEntry(var6xx, var7xx, var8xx);
       }).toArray(var0 -> new 1DisplayEntry[var0]);
       Component var6 = var2.getDisplayName();
       int var7 = this.getFont().width(var6);
@@ -684,22 +684,22 @@ public class Gui {
 
       int var14 = var8;
       var1.drawManaged(() -> {
-         int var6x = var5.length;
-         int var7x = var6x * 9;
-         int var8x = this.screenHeight / 2 + var7x / 3;
-         boolean var9x = true;
+         int var6xx = var5.length;
+         int var7xx = var6xx * 9;
+         int var8xx = this.screenHeight / 2 + var7xx / 3;
+         boolean var9xx = true;
          int var10 = this.screenWidth - var14 - 3;
          int var11 = this.screenWidth - 3 + 2;
          int var12 = this.minecraft.options.getBackgroundColor(0.3F);
-         int var13x = this.minecraft.options.getBackgroundColor(0.4F);
-         int var14x = var8x - var6x * 9;
-         var1.fill(var10 - 2, var14x - 9 - 1, var11, var14x - 1, var13x);
-         var1.fill(var10 - 2, var14x - 1, var11, var8x, var12);
-         var1.drawString(this.getFont(), var6, var10 + var14 / 2 - var7 / 2, var14x - 9, -1, false);
+         int var13xx = this.minecraft.options.getBackgroundColor(0.4F);
+         int var14xx = var8xx - var6xx * 9;
+         var1.fill(var10 - 2, var14xx - 9 - 1, var11, var14xx - 1, var13xx);
+         var1.fill(var10 - 2, var14xx - 1, var11, var8xx, var12);
+         var1.drawString(this.getFont(), var6, var10 + var14 / 2 - var7 / 2, var14xx - 9, -1, false);
 
-         for(int var15 = 0; var15 < var6x; ++var15) {
+         for(int var15 = 0; var15 < var6xx; ++var15) {
             1DisplayEntry var16 = var5[var15];
-            int var17 = var8x - (var6x - var15) * 9;
+            int var17 = var8xx - (var6xx - var15) * 9;
             var1.drawString(this.getFont(), var16.name, var10, var17, -1, false);
             var1.drawString(this.getFont(), var16.score, var11 - var16.scoreWidth, var17, -1, false);
          }

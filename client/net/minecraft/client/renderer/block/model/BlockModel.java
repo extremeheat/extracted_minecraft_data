@@ -184,9 +184,9 @@ public class BlockModel implements UnbakedModel {
       }
 
       this.overrides.forEach(var2x -> {
-         UnbakedModel var3x = (UnbakedModel)var1.apply(var2x.getModel());
-         if (!Objects.equals(var3x, this)) {
-            var3x.resolveParents(var1);
+         UnbakedModel var3xx = (UnbakedModel)var1.apply(var2x.getModel());
+         if (!Objects.equals(var3xx, this)) {
+            var3xx.resolveParents(var1);
          }
       });
    }

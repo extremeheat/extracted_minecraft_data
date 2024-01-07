@@ -6,6 +6,7 @@ import java.util.Optional;
 import net.minecraft.client.telemetry.TelemetryEventSender;
 import net.minecraft.client.telemetry.TelemetryEventType;
 import net.minecraft.client.telemetry.TelemetryProperty;
+import net.minecraft.client.telemetry.TelemetryPropertyMap;
 
 public class WorldUnloadEvent {
    private static final int NOT_TRACKING_TIME = -1;

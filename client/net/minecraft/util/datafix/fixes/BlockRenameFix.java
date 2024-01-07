@@ -3,8 +3,12 @@ package net.minecraft.util.datafix.fixes;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.TypeRewriteRule;
+import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
+import com.mojang.datafixers.util.Pair;
+import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.DynamicOps;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
@@ -27,8 +31,8 @@ public abstract class BlockRenameFix extends DataFix {
          TypeRewriteRule var3 = this.fixTypeEverywhere(this.name + " for block", var2, var1x -> var1xx -> var1xx.mapSecond(this::fixBlock));
          TypeRewriteRule var4 = this.fixTypeEverywhereTyped(
             this.name + " for block_state", this.getInputSchema().getType(References.BLOCK_STATE), var1x -> var1x.update(DSL.remainderFinder(), var1xx -> {
-                  Optional var2x = var1xx.get("Name").asString().result();
-                  return var2x.isPresent() ? var1xx.set("Name", var1xx.createString(this.fixBlock((String)var2x.get()))) : var1xx;
+                  Optional var2xx = var1xx.get("Name").asString().result();
+                  return var2xx.isPresent() ? var1xx.set("Name", var1xx.createString(this.fixBlock((String)var2xx.get()))) : var1xx;
                })
          );
          return TypeRewriteRule.seq(var3, var4);

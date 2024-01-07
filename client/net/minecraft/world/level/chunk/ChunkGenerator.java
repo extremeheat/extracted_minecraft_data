@@ -294,10 +294,10 @@ public abstract class ChunkGenerator {
          long var11 = var10.setDecorationSeed(var1.getSeed(), var6.getX(), var6.getZ());
          ObjectArraySet var13 = new ObjectArraySet();
          ChunkPos.rangeClosed(var5.chunk(), 1).forEach(var2x -> {
-            ChunkAccess var3x = var1.getChunk(var2x.x, var2x.z);
+            ChunkAccess var3xx = var1.getChunk(var2x.x, var2x.z);
 
-            for(LevelChunkSection var7x : var3x.getSections()) {
-               var7x.getBiomes().getAll(var13::add);
+            for(LevelChunkSection var7xx : var3xx.getSections()) {
+               var7xx.getBiomes().getAll(var13::add);
             }
          });
          var13.retainAll(this.biomeSource.possibleBiomes());

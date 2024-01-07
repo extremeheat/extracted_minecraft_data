@@ -524,14 +524,14 @@ public class BookEditScreen extends Screen {
          MutableBoolean var7 = new MutableBoolean();
          StringSplitter var8 = this.font.getSplitter();
          var8.splitLines(var1, 114, Style.EMPTY, true, (var6x, var7x, var8x) -> {
-            int var9x = var6.getAndIncrement();
-            String var10x = var1.substring(var7x, var8x);
-            var7.setValue(var10x.endsWith("\n"));
-            String var11x = StringUtils.stripEnd(var10x, " \n");
-            int var12x = var9x * 9;
-            BookEditScreen.Pos2i var13x = this.convertLocalToScreen(new BookEditScreen.Pos2i(0, var12x));
+            int var9xx = var6.getAndIncrement();
+            String var10xx = var1.substring(var7x, var8x);
+            var7.setValue(var10xx.endsWith("\n"));
+            String var11xx = StringUtils.stripEnd(var10xx, " \n");
+            int var12xx = var9xx * 9;
+            BookEditScreen.Pos2i var13xx = this.convertLocalToScreen(new BookEditScreen.Pos2i(0, var12xx));
             var4.add(var7x);
-            var5.add(new BookEditScreen.LineInfo(var6x, var11x, var13x.x, var13x.y));
+            var5.add(new BookEditScreen.LineInfo(var6x, var11xx, var13xx.x, var13xx.y));
          });
          int[] var9 = var4.toIntArray();
          boolean var10 = var2 == var1.length();

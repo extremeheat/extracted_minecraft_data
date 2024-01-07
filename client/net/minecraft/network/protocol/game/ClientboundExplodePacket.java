@@ -72,10 +72,10 @@ public class ClientboundExplodePacket implements Packet<ClientGamePacketListener
       int var3 = Mth.floor(this.y);
       int var4 = Mth.floor(this.z);
       this.toBlow = var1.readList(var3x -> {
-         int var4x = var3x.readByte() + var2;
+         int var4xx = var3x.readByte() + var2;
          int var5 = var3x.readByte() + var3;
          int var6 = var3x.readByte() + var4;
-         return new BlockPos(var4x, var5, var6);
+         return new BlockPos(var4xx, var5, var6);
       });
       this.knockbackX = var1.readFloat();
       this.knockbackY = var1.readFloat();

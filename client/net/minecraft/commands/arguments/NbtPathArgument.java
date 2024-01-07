@@ -219,8 +219,8 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
          }
       }
 
-      // $QF: Could not properly define all variable types!
-      // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+      // $VF: Could not properly define all variable types!
+      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public int removeTag(Tag var1) {
          if (var1 instanceof CollectionTag var2) {
@@ -253,8 +253,8 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
          }
       }
 
-      // $QF: Could not properly define all variable types!
-      // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+      // $VF: Could not properly define all variable types!
+      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public void getOrCreateTag(Tag var1, Supplier<Tag> var2, List<Tag> var3) {
          if (var1 instanceof CompoundTag var4) {
@@ -275,8 +275,8 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
          return new CompoundTag();
       }
 
-      // $QF: Could not properly define all variable types!
-      // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+      // $VF: Could not properly define all variable types!
+      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public int setTag(Tag var1, Supplier<Tag> var2) {
          if (var1 instanceof CompoundTag var3) {
@@ -290,8 +290,8 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
          return 0;
       }
 
-      // $QF: Could not properly define all variable types!
-      // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+      // $VF: Could not properly define all variable types!
+      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public int removeTag(Tag var1) {
          if (var1 instanceof CompoundTag var2 && var2.contains(this.name)) {
@@ -311,8 +311,8 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
          this.index = var1;
       }
 
-      // $QF: Could not properly define all variable types!
-      // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+      // $VF: Could not properly define all variable types!
+      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public void getTag(Tag var1, List<Tag> var2) {
          if (var1 instanceof CollectionTag var3) {
@@ -334,8 +334,8 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
          return new ListTag();
       }
 
-      // $QF: Could not properly define all variable types!
-      // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+      // $VF: Could not properly define all variable types!
+      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public int setTag(Tag var1, Supplier<Tag> var2) {
          if (var1 instanceof CollectionTag var3) {
@@ -353,8 +353,8 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
          return 0;
       }
 
-      // $QF: Could not properly define all variable types!
-      // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+      // $VF: Could not properly define all variable types!
+      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public int removeTag(Tag var1) {
          if (var1 instanceof CollectionTag var2) {
@@ -380,8 +380,8 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
          this.predicate = NbtPathArgument.createTagPredicate(var1);
       }
 
-      // $QF: Could not properly define all variable types!
-      // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+      // $VF: Could not properly define all variable types!
+      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public void getTag(Tag var1, List<Tag> var2) {
          if (var1 instanceof ListTag var3) {
@@ -389,8 +389,8 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
          }
       }
 
-      // $QF: Could not properly define all variable types!
-      // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+      // $VF: Could not properly define all variable types!
+      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public void getOrCreateTag(Tag var1, Supplier<Tag> var2, List<Tag> var3) {
          MutableBoolean var4 = new MutableBoolean();
@@ -412,8 +412,8 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
          return new ListTag();
       }
 
-      // $QF: Could not properly define all variable types!
-      // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+      // $VF: Could not properly define all variable types!
+      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public int setTag(Tag var1, Supplier<Tag> var2) {
          int var3 = 0;
@@ -438,8 +438,8 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
          return var3;
       }
 
-      // $QF: Could not properly define all variable types!
-      // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+      // $VF: Could not properly define all variable types!
+      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public int removeTag(Tag var1) {
          int var2 = 0;
@@ -478,8 +478,8 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
          }
       }
 
-      // $QF: Could not properly define all variable types!
-      // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+      // $VF: Could not properly define all variable types!
+      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public void getOrCreateTag(Tag var1, Supplier<Tag> var2, List<Tag> var3) {
          if (var1 instanceof CompoundTag var4) {
@@ -499,8 +499,8 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
          return new CompoundTag();
       }
 
-      // $QF: Could not properly define all variable types!
-      // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+      // $VF: Could not properly define all variable types!
+      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public int setTag(Tag var1, Supplier<Tag> var2) {
          if (var1 instanceof CompoundTag var3) {
@@ -517,8 +517,8 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
          return 0;
       }
 
-      // $QF: Could not properly define all variable types!
-      // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+      // $VF: Could not properly define all variable types!
+      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
       public int removeTag(Tag var1) {
          if (var1 instanceof CompoundTag var2) {
@@ -632,8 +632,8 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
          return var0.stream().<Integer>map(var1).reduce(0, (var0x, var1x) -> var0x + var1x);
       }
 
-      // $QF: Could not properly define all variable types!
-      // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+      // $VF: Could not properly define all variable types!
+      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       public static boolean isTooDeep(Tag var0, int var1) {
          if (var1 >= 512) {
             return true;

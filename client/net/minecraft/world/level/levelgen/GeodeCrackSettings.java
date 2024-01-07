@@ -2,6 +2,7 @@ package net.minecraft.world.level.levelgen;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.world.level.levelgen.feature.configurations.GeodeConfiguration;
 
 public class GeodeCrackSettings {

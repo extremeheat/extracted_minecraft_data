@@ -28,6 +28,7 @@ import com.mojang.serialization.DataResult.PartialResult;
 import com.mojang.serialization.MapCodec.MapCodecCodec;
 import com.mojang.serialization.codecs.BaseMapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.floats.FloatArrayList;
 import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
@@ -52,6 +53,7 @@ import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.LongStream;
 import java.util.stream.Stream;
 import net.minecraft.Util;
 import net.minecraft.core.HolderSet;
@@ -213,9 +215,9 @@ public class ExtraCodecs {
       Codec<P> var0, String var1, String var2, BiFunction<P, P, DataResult<I>> var3, Function<I, P> var4, Function<I, P> var5
    ) {
       Codec var6 = Codec.list(var0).comapFlatMap(var1x -> Util.fixedSize(var1x, 2).flatMap(var1xx -> {
-            Object var2x = var1xx.get(0);
-            Object var3x = var1xx.get(1);
-            return (DataResult)var3.apply(var2x, var3x);
+            Object var2xx = var1xx.get(0);
+            Object var3xx = var1xx.get(1);
+            return (DataResult)var3.apply(var2xx, var3xx);
          }), var2x -> ImmutableList.of(var4.apply(var2x), var5.apply(var2x)));
       Codec var7 = RecordCodecBuilder.create(
             var3x -> var3x.group(var0.fieldOf(var1).forGetter(Pair::getFirst), var0.fieldOf(var2).forGetter(Pair::getSecond)).apply(var3x, Pair::of)
@@ -224,9 +226,9 @@ public class ExtraCodecs {
       Codec var8 = withAlternative(var6, var7);
       return Codec.either(var0, var8)
          .comapFlatMap(var1x -> (DataResult)var1x.map(var1xx -> (DataResult)var3.apply(var1xx, var1xx), DataResult::success), var2x -> {
-            Object var3x = var4.apply(var2x);
-            Object var4x = var5.apply(var2x);
-            return Objects.equals(var3x, var4x) ? Either.left(var3x) : Either.right(var2x);
+            Object var3xx = var4.apply(var2x);
+            Object var4xx = var5.apply(var2x);
+            return Objects.equals(var3xx, var4xx) ? Either.left(var3xx) : Either.right(var2x);
          });
    }
 
@@ -391,7 +393,7 @@ public class ExtraCodecs {
 
    public static <E> MapCodec<E> retrieveContext(final Function<DynamicOps<?>, DataResult<E>> var0) {
       class 1ContextRetrievalCodec extends MapCodec<E> {
-         _ContextRetrievalCodec/* $QF was: 1ContextRetrievalCodec*/() {
+         _ContextRetrievalCodec/* $VF was: 1ContextRetrievalCodec*/() {
             super();
          }
 
@@ -659,15 +661,15 @@ public class ExtraCodecs {
             DataResult var8 = var6.apply2stable(Pair::of, var7);
             if (var8.error().isPresent()) {
                return DataResult.error(() -> {
-                  PartialResult var2x = (PartialResult)var8.error().get();
-                  String var3x;
+                  PartialResult var2xx = (PartialResult)var8.error().get();
+                  String var3xx;
                   if (var6.result().isPresent()) {
-                     var3x = "Map entry '" + var6.result().get() + "' : " + var2x.message();
+                     var3xx = "Map entry '" + var6.result().get() + "' : " + var2xx.message();
                   } else {
-                     var3x = var2x.message();
+                     var3xx = var2xx.message();
                   }
 
-                  return var3x;
+                  return var3xx;
                });
             }
 

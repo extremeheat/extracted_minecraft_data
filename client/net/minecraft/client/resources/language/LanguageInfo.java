@@ -2,6 +2,7 @@ package net.minecraft.client.resources.language;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.ExtraCodecs;
 

@@ -126,8 +126,8 @@ public class RealmsNotification {
                .setMessage(this.message.createComponent(CommonComponents.EMPTY));
             if (this.urlButton != null) {
                var4.addButton(this.urlButton.urlText.createComponent(RealmsNotification.BUTTON_TEXT_FALLBACK), var3x -> {
-                  Minecraft var4x = Minecraft.getInstance();
-                  var4x.setScreen(new ConfirmLinkScreen(var4xx -> {
+                  Minecraft var4xx = Minecraft.getInstance();
+                  var4xx.setScreen(new ConfirmLinkScreen(var4xx -> {
                      if (var4xx) {
                         Util.getPlatform().openUri(this.urlButton.url);
                         var4x.setScreen(var1);

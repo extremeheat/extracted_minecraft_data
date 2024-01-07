@@ -38,8 +38,8 @@ public class GameTestBatchRunner {
       this.testTicker = var5;
       this.testsPerRow = var6;
       this.batches = var1.stream().map(var2x -> {
-         Collection var3x = var2x.getTestFunctions().stream().map(var2xx -> new GameTestInfo(var2xx, var3, var4)).collect(ImmutableList.toImmutableList());
-         return Pair.of(var2x, var3x);
+         Collection var3xx = var2x.getTestFunctions().stream().map(var2xx -> new GameTestInfo(var2xx, var3, var4)).collect(ImmutableList.toImmutableList());
+         return Pair.of(var2x, var3xx);
       }).collect(ImmutableList.toImmutableList());
       this.allTestInfos = this.batches.stream().flatMap(var0 -> ((Collection)var0.getSecond()).stream()).collect(ImmutableList.toImmutableList());
    }
@@ -88,8 +88,8 @@ public class GameTestBatchRunner {
             }
          });
          var4.forEach(var2x -> {
-            BlockPos var3x = (BlockPos)var5.get(var2x);
-            GameTestRunner.runTest(var2x, var3x, this.testTicker);
+            BlockPos var3xx = (BlockPos)var5.get(var2x);
+            GameTestRunner.runTest(var2x, var3xx, this.testTicker);
          });
       }
    }

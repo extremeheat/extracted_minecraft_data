@@ -163,9 +163,9 @@ public class RealmsSlotOptionsScreen extends RealmsScreen {
             .create(this.column1X, row(5), this.columnWidth, 20, Component.translatable("options.difficulty"), (var2x, var3x) -> {
                this.difficulty = var3x;
                if (this.worldType == RealmsServer.WorldType.NORMAL) {
-                  boolean var4x = this.difficulty != Difficulty.PEACEFUL;
-                  var5.active = var4x;
-                  var5.setValue(var4x && this.spawnMonsters);
+                  boolean var4xx = this.difficulty != Difficulty.PEACEFUL;
+                  var5.active = var4xx;
+                  var5.setValue(var4xx && this.spawnMonsters);
                }
             })
       );

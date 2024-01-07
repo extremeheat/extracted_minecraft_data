@@ -59,15 +59,15 @@ public class SuffixArray<T> {
             : Integer.compare(var3[var2x], var3[var3x]);
       Swapper var7 = (var3x, var4x) -> {
          if (var3x != var4x) {
-            int var5x = var3[var3x];
+            int var5xx = var3[var3x];
             var3[var3x] = var3[var4x];
-            var3[var4x] = var5x;
-            var5x = var4[var3x];
+            var3[var4x] = var5xx;
+            var5xx = var4[var3x];
             var4[var3x] = var4[var4x];
-            var4[var4x] = var5x;
-            var5x = var5[var3x];
+            var4[var4x] = var5xx;
+            var5xx = var5[var3x];
             var5[var3x] = var5[var4x];
-            var5[var4x] = var5x;
+            var5[var4x] = var5xx;
          }
       };
 

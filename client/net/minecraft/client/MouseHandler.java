@@ -29,7 +29,7 @@ public class MouseHandler {
    private double accumulatedDY;
    private double accumulatedScrollX;
    private double accumulatedScrollY;
-   private double lastMouseEventTime = 4.9E-324;
+   private double lastMouseEventTime = 5.0E-324;
    private boolean mouseGrabbed;
 
    public MouseHandler(Minecraft var1) {

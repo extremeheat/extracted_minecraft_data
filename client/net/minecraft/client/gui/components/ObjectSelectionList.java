@@ -16,8 +16,8 @@ public abstract class ObjectSelectionList<E extends ObjectSelectionList.Entry<E>
       super(var1, var2, var3, var4, var5);
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Nullable
    @Override
    public ComponentPath nextFocusPath(FocusNavigationEvent var1) {

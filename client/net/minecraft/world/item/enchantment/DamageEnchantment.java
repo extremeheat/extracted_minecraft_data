@@ -60,8 +60,8 @@ public class DamageEnchantment extends Enchantment {
       return var1.getItem() instanceof AxeItem ? true : super.canEnchant(var1);
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void doPostAttack(LivingEntity var1, Entity var2, int var3) {
       if (var2 instanceof LivingEntity var4 && this.type == 2 && var3 > 0 && var4.getMobType() == MobType.ARTHROPOD) {

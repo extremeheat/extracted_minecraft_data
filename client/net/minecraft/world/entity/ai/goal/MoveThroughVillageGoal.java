@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.PoiTypeTags;
 import net.minecraft.world.entity.PathfinderMob;
@@ -67,9 +68,9 @@ public class MoveThroughVillageGoal extends Goal {
                      if (!var1.isVillage(var3x)) {
                         return -1.0 / 0.0;
                      } else {
-                        Optional var4x = var1.getPoiManager()
+                        Optional var4xx = var1.getPoiManager()
                            .find(var0 -> var0.is(PoiTypeTags.VILLAGE), this::hasNotVisited, var3x, 10, PoiManager.Occupancy.IS_OCCUPIED);
-                        return var4x.<Double>map(var1xx -> -var1xx.distSqr(var2)).orElse(-1.0 / 0.0);
+                        return var4xx.<Double>map(var1xx -> -var1xx.distSqr(var2)).orElse(-1.0 / 0.0);
                      }
                   }
                );

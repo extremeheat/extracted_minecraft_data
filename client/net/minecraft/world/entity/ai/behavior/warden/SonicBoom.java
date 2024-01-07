@@ -64,12 +64,12 @@ public class SonicBoom extends Behavior<Warden> {
             .filter(var2::canTargetEntity)
             .filter(var1x -> var2.closerThan(var1x, 15.0, 20.0))
             .ifPresent(var2x -> {
-               Vec3 var3x = var2.position().add(0.0, 1.600000023841858, 0.0);
-               Vec3 var4 = var2x.getEyePosition().subtract(var3x);
+               Vec3 var3xx = var2.position().add(0.0, 1.600000023841858, 0.0);
+               Vec3 var4 = var2x.getEyePosition().subtract(var3xx);
                Vec3 var5 = var4.normalize();
    
                for(int var6 = 1; var6 < Mth.floor(var4.length()) + 7; ++var6) {
-                  Vec3 var7 = var3x.add(var5.scale((double)var6));
+                  Vec3 var7 = var3xx.add(var5.scale((double)var6));
                   var1.sendParticles(ParticleTypes.SONIC_BOOM, var7.x, var7.y, var7.z, 1, 0.0, 0.0, 0.0, 0.0);
                }
    

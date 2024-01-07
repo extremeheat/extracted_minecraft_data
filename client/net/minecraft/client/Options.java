@@ -21,6 +21,7 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
+import com.mojang.serialization.DataResult.PartialResult;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -142,9 +143,9 @@ public class Options {
       CloudStatus.FANCY,
       var0 -> {
          if (Minecraft.useShaderTransparency()) {
-            RenderTarget var1x = Minecraft.getInstance().levelRenderer.getCloudsTarget();
-            if (var1x != null) {
-               var1x.clear(Minecraft.ON_OSX);
+            RenderTarget var1xx = Minecraft.getInstance().levelRenderer.getCloudsTarget();
+            if (var1xx != null) {
+               var1xx.clear(Minecraft.ON_OSX);
             }
          }
       }
@@ -164,21 +165,21 @@ public class Options {
          };
       },
       (var0, var1x) -> {
-         MutableComponent var2x = Component.translatable(var1x.getKey());
-         return var1x == GraphicsStatus.FABULOUS ? var2x.withStyle(ChatFormatting.ITALIC) : var2x;
+         MutableComponent var2xx = Component.translatable(var1x.getKey());
+         return var1x == GraphicsStatus.FABULOUS ? var2xx.withStyle(ChatFormatting.ITALIC) : var2xx;
       },
       new OptionInstance.AltEnum<>(
          Arrays.asList(GraphicsStatus.values()),
          Stream.of(GraphicsStatus.values()).filter(var0 -> var0 != GraphicsStatus.FABULOUS).collect(Collectors.toList()),
          () -> Minecraft.getInstance().isRunning() && Minecraft.getInstance().getGpuWarnlistManager().isSkippingFabulous(),
          (var0, var1x) -> {
-            Minecraft var2x = Minecraft.getInstance();
-            GpuWarnlistManager var3x = var2x.getGpuWarnlistManager();
-            if (var1x == GraphicsStatus.FABULOUS && var3x.willShowWarning()) {
-               var3x.showWarning();
+            Minecraft var2xx = Minecraft.getInstance();
+            GpuWarnlistManager var3xx = var2xx.getGpuWarnlistManager();
+            if (var1x == GraphicsStatus.FABULOUS && var3xx.willShowWarning()) {
+               var3xx.showWarning();
             } else {
                var0.set(var1x);
-               var2x.levelRenderer.allChanged();
+               var2xx.levelRenderer.allChanged();
             }
          },
          Codec.INT.xmap(GraphicsStatus::byId, GraphicsStatus::getId)
@@ -246,14 +247,14 @@ public class Options {
    private static final Component ACCESSIBILITY_TOOLTIP_CONTRAST_MODE = Component.translatable("options.accessibility.high_contrast.tooltip");
    private final OptionInstance<Boolean> highContrast = OptionInstance.createBoolean(
       "options.accessibility.high_contrast", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_CONTRAST_MODE), false, var1x -> {
-         PackRepository var2x = Minecraft.getInstance().getResourcePackRepository();
-         boolean var3x = var2x.getSelectedIds().contains("high_contrast");
-         if (!var3x && var1x) {
-            if (var2x.addPack("high_contrast")) {
-               this.updateResourcePacks(var2x);
+         PackRepository var2xx = Minecraft.getInstance().getResourcePackRepository();
+         boolean var3xx = var2xx.getSelectedIds().contains("high_contrast");
+         if (!var3xx && var1x) {
+            if (var2xx.addPack("high_contrast")) {
+               this.updateResourcePacks(var2xx);
             }
-         } else if (var3x && !var1x && var2x.removePack("high_contrast")) {
-            this.updateResourcePacks(var2x);
+         } else if (var3xx && !var1x && var2xx.removePack("high_contrast")) {
+            this.updateResourcePacks(var2xx);
          }
       }
    );
@@ -359,8 +360,8 @@ public class Options {
    public boolean joinedFirstServer = false;
    public boolean hideBundleTutorial = false;
    private final OptionInstance<Integer> biomeBlendRadius = new OptionInstance<>("options.biomeBlendRadius", OptionInstance.noTooltip(), (var0, var1x) -> {
-      int var2x = var1x * 2 + 1;
-      return genericValueLabel(var0, Component.translatable("options.biomeBlendRadius." + var2x));
+      int var2xx = var1x * 2 + 1;
+      return genericValueLabel(var0, Component.translatable("options.biomeBlendRadius." + var2xx));
    }, new OptionInstance.IntRange(0, 7), 2, var0 -> Minecraft.getInstance().levelRenderer.allChanged());
    private final OptionInstance<Double> mouseWheelSensitivity = new OptionInstance<>(
       "options.mouseWheelSensitivity",
@@ -373,9 +374,9 @@ public class Options {
       }
    );
    private final OptionInstance<Boolean> rawMouseInput = OptionInstance.createBoolean("options.rawMouseInput", true, var0 -> {
-      Window var1x = Minecraft.getInstance().getWindow();
-      if (var1x != null) {
-         var1x.updateRawMouseInput(var0);
+      Window var1xx = Minecraft.getInstance().getWindow();
+      if (var1xx != null) {
+         var1xx.updateRawMouseInput(var0);
       }
    });
    public int glDebugVerbosity = 1;
@@ -392,10 +393,10 @@ public class Options {
    });
    private final OptionInstance<Boolean> entityShadows = OptionInstance.createBoolean("options.entityShadows", true);
    private final OptionInstance<Boolean> forceUnicodeFont = OptionInstance.createBoolean("options.forceUnicodeFont", false, var0 -> {
-      Minecraft var1x = Minecraft.getInstance();
-      if (var1x.getWindow() != null) {
-         var1x.selectMainFont(var0);
-         var1x.resizeDisplay();
+      Minecraft var1xx = Minecraft.getInstance();
+      if (var1xx.getWindow() != null) {
+         var1xx.selectMainFont(var0);
+         var1xx.resizeDisplay();
       }
    });
    private final OptionInstance<Boolean> invertYMouse = OptionInstance.createBoolean("options.invertMouse", false);
@@ -419,9 +420,9 @@ public class Options {
       var0 -> var0 ? Tooltip.create(DIRECTIONAL_AUDIO_TOOLTIP_ON) : Tooltip.create(DIRECTIONAL_AUDIO_TOOLTIP_OFF),
       false,
       var0 -> {
-         SoundManager var1x = Minecraft.getInstance().getSoundManager();
-         var1x.reload();
-         var1x.play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+         SoundManager var1xx = Minecraft.getInstance().getSoundManager();
+         var1xx.reload();
+         var1xx.play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
       }
    );
    private final OptionInstance<Boolean> backgroundForChatOnly = new OptionInstance<>(
@@ -437,10 +438,10 @@ public class Options {
    );
    private final OptionInstance<Boolean> touchscreen = OptionInstance.createBoolean("options.touchscreen", false);
    private final OptionInstance<Boolean> fullscreen = OptionInstance.createBoolean("options.fullscreen", false, var1x -> {
-      Minecraft var2x = Minecraft.getInstance();
-      if (var2x.getWindow() != null && var2x.getWindow().isFullscreen() != var1x) {
-         var2x.getWindow().toggleFullScreen();
-         this.fullscreen().set(var2x.getWindow().isFullscreen());
+      Minecraft var2xx = Minecraft.getInstance();
+      if (var2xx.getWindow() != null && var2xx.getWindow().isFullscreen() != var1x) {
+         var2xx.getWindow().toggleFullScreen();
+         this.fullscreen().set(var2xx.getWindow().isFullscreen());
       }
    });
    private final OptionInstance<Boolean> bobView = OptionInstance.createBoolean("options.viewBobbing", true);
@@ -559,11 +560,11 @@ public class Options {
       "options.telemetry.button",
       OptionInstance.cachedConstantTooltip(TELEMETRY_TOOLTIP),
       (var0, var1x) -> {
-         Minecraft var2x = Minecraft.getInstance();
-         if (!var2x.allowsTelemetry()) {
+         Minecraft var2xx = Minecraft.getInstance();
+         if (!var2xx.allowsTelemetry()) {
             return Component.translatable("options.telemetry.state.none");
          } else {
-            return var1x && var2x.extraTelemetryAvailable()
+            return var1x && var2xx.extraTelemetryAvailable()
                ? Component.translatable("options.telemetry.state.all")
                : Component.translatable("options.telemetry.state.minimal");
          }
@@ -633,13 +634,13 @@ public class Options {
       }
    );
    private final OptionInstance<Double> gamma = new OptionInstance<>("options.gamma", OptionInstance.noTooltip(), (var0, var1x) -> {
-      int var2x = (int)(var1x * 100.0);
-      if (var2x == 0) {
+      int var2xx = (int)(var1x * 100.0);
+      if (var2xx == 0) {
          return genericValueLabel(var0, Component.translatable("options.gamma.min"));
-      } else if (var2x == 50) {
+      } else if (var2xx == 50) {
          return genericValueLabel(var0, Component.translatable("options.gamma.default"));
       } else {
-         return var2x == 100 ? genericValueLabel(var0, Component.translatable("options.gamma.max")) : genericValueLabel(var0, var2x);
+         return var2xx == 100 ? genericValueLabel(var0, Component.translatable("options.gamma.max")) : genericValueLabel(var0, var2xx);
       }
    }, OptionInstance.UnitDouble.INSTANCE, 0.5, var0 -> {
    });
@@ -694,9 +695,9 @@ public class Options {
       ),
       "",
       var0 -> {
-         SoundManager var1x = Minecraft.getInstance().getSoundManager();
-         var1x.reload();
-         var1x.play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+         SoundManager var1xx = Minecraft.getInstance().getSoundManager();
+         var1xx.reload();
+         var1xx.play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
       }
    );
    public boolean onboardAccessibility = true;
@@ -1191,8 +1192,8 @@ public class Options {
          try (BufferedReader var2 = Files.newReader(this.optionsFile, Charsets.UTF_8)) {
             var2.lines().forEach(var1x -> {
                try {
-                  Iterator var2x = OPTION_SPLITTER.split(var1x).iterator();
-                  var1.putString((String)var2x.next(), (String)var2x.next());
+                  Iterator var2xx = OPTION_SPLITTER.split(var1x).iterator();
+                  var1.putString((String)var2xx.next(), (String)var2xx.next());
                } catch (Exception var3) {
                   LOGGER.warn("Skipping bad option: {}", var1x);
                }

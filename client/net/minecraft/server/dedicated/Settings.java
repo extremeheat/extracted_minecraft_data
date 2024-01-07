@@ -125,8 +125,8 @@ public abstract class Settings<T extends Settings<T>> {
 
    protected <V> V get(String var1, Function<String, V> var2, UnaryOperator<V> var3, Function<V, String> var4, V var5) {
       return this.get(var1, var2x -> {
-         Object var3x = var2.apply(var2x);
-         return (V)(var3x != null ? var3.apply(var3x) : null);
+         Object var3xx = var2.apply(var2x);
+         return (V)(var3xx != null ? var3.apply(var3xx) : null);
       }, var4, (V)var5);
    }
 

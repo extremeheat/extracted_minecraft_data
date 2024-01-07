@@ -2,6 +2,7 @@ package net.minecraft.client;
 
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.client.RealmsClient;
+import com.mojang.realmsclient.dto.RealmsServer;
 import com.mojang.realmsclient.exception.RealmsServiceException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;

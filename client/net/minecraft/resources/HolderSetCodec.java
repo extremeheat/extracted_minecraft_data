@@ -42,8 +42,8 @@ public class HolderSetCodec<E> implements Codec<HolderSet<E>> {
       this.registryAwareCodec = Codec.either(TagKey.hashedCodec(var1), this.homogenousListCodec);
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public <T> DataResult<Pair<HolderSet<E>, T>> decode(DynamicOps<T> var1, T var2) {
       if (var1 instanceof RegistryOps var3) {
          Optional var4 = var3.getter(this.registryKey);
@@ -58,8 +58,8 @@ public class HolderSetCodec<E> implements Codec<HolderSet<E>> {
       return this.decodeWithoutRegistry(var1, (T)var2);
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public <T> DataResult<T> encode(HolderSet<E> var1, DynamicOps<T> var2, T var3) {
       if (var2 instanceof RegistryOps var4) {
          Optional var5 = var4.owner(this.registryKey);
@@ -77,7 +77,7 @@ public class HolderSetCodec<E> implements Codec<HolderSet<E>> {
 
    private <T> DataResult<Pair<HolderSet<E>, T>> decodeWithoutRegistry(DynamicOps<T> var1, T var2) {
       return this.elementCodec.listOf().decode(var1, var2).flatMap(var0 -> {
-         ArrayList var1x = new ArrayList();
+         ArrayList var1xx = new ArrayList();
 
          for(Holder var3 : (List)var0.getFirst()) {
             if (!(var3 instanceof Holder.Direct)) {
@@ -85,10 +85,10 @@ public class HolderSetCodec<E> implements Codec<HolderSet<E>> {
             }
 
             Holder.Direct var4 = (Holder.Direct)var3;
-            var1x.add(var4);
+            var1xx.add(var4);
          }
 
-         return DataResult.success(new Pair(HolderSet.direct(var1x), var0.getSecond()));
+         return DataResult.success(new Pair(HolderSet.direct(var1xx), var0.getSecond()));
       });
    }
 

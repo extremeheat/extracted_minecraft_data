@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.DataFix;
 import com.mojang.datafixers.TypeRewriteRule;
+import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
 import java.util.Map;
@@ -26,8 +27,8 @@ public class JigsawRotationFix extends DataFix {
    private static Dynamic<?> fix(Dynamic<?> var0) {
       Optional var1 = var0.get("Name").asString().result();
       return var1.equals(Optional.of("minecraft:jigsaw")) ? var0.update("Properties", var0x -> {
-         String var1x = var0x.get("facing").asString("north");
-         return var0x.remove("facing").set("orientation", var0x.createString(RENAMES.getOrDefault(var1x, var1x)));
+         String var1xx = var0x.get("facing").asString("north");
+         return var0x.remove("facing").set("orientation", var0x.createString(RENAMES.getOrDefault(var1xx, var1xx)));
       }) : var0;
    }
 

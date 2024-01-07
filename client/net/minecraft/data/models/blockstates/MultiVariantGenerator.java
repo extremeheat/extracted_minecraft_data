@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.Map.Entry;
 import java.util.stream.Stream;
 import net.minecraft.Util;
 import net.minecraft.world.level.block.Block;
@@ -47,8 +48,8 @@ public class MultiVariantGenerator implements BlockStateGenerator {
          Map var4 = var3.getEntries();
          var1 = var1.flatMap(var1x -> var4.entrySet().stream().map(var1xx -> {
                Selector var2 = ((Selector)var1x.getFirst()).extend((Selector)var1xx.getKey());
-               List var3x = mergeVariants((List<Variant>)var1x.getSecond(), (List<Variant>)var1xx.getValue());
-               return Pair.of(var2, var3x);
+               List var3xx = mergeVariants((List<Variant>)var1x.getSecond(), (List<Variant>)var1xx.getValue());
+               return Pair.of(var2, var3xx);
             }));
       }
 

@@ -114,7 +114,7 @@ public class LevelChunkSection {
          public int tickingBlockCount;
          public int tickingFluidCount;
 
-         _BlockCounter/* $QF was: 1BlockCounter*/() {
+         _BlockCounter/* $VF was: 1BlockCounter*/() {
             super();
          }
 

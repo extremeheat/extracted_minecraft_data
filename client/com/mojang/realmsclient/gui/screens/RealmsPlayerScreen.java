@@ -156,10 +156,10 @@ public class RealmsPlayerScreen extends RealmsScreen {
          PlayerInfo var2 = this.serverData.players.get(var1);
          RealmsConfirmScreen var3 = new RealmsConfirmScreen(var2x -> {
             if (var2x) {
-               RealmsClient var3x = RealmsClient.create();
+               RealmsClient var3xx = RealmsClient.create();
 
                try {
-                  var3x.uninvite(this.serverData.id, var2.getUuid());
+                  var3xx.uninvite(this.serverData.id, var2.getUuid());
                } catch (RealmsServiceException var5) {
                   LOGGER.error("Couldn't uninvite user", var5);
                }

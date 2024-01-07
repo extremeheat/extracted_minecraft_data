@@ -286,8 +286,8 @@ public class SectionRenderDispatcher {
       private boolean dirty = true;
       final BlockPos.MutableBlockPos origin = new BlockPos.MutableBlockPos(-1, -1, -1);
       private final BlockPos.MutableBlockPos[] relativeOrigins = Util.make(new BlockPos.MutableBlockPos[6], var0 -> {
-         for(int var1x = 0; var1x < var0.length; ++var1x) {
-            var0[var1x] = new BlockPos.MutableBlockPos();
+         for(int var1xx = 0; var1xx < var0.length; ++var1xx) {
+            var0[var1xx] = new BlockPos.MutableBlockPos();
          }
       });
       private boolean playerChanged;

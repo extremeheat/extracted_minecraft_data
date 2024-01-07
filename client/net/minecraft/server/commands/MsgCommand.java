@@ -2,6 +2,7 @@ package net.minecraft.server.commands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import java.util.Collection;
 import net.minecraft.commands.CommandSourceStack;
@@ -23,12 +24,12 @@ public class MsgCommand {
       LiteralCommandNode var1 = var0.register(
          (LiteralArgumentBuilder)Commands.literal("msg")
             .then(Commands.argument("targets", EntityArgument.players()).then(Commands.argument("message", MessageArgument.message()).executes(var0x -> {
-               Collection var1x = EntityArgument.getPlayers(var0x, "targets");
-               if (!var1x.isEmpty()) {
+               Collection var1xx = EntityArgument.getPlayers(var0x, "targets");
+               if (!var1xx.isEmpty()) {
                   MessageArgument.resolveChatMessage(var0x, "message", var2 -> sendMessage((CommandSourceStack)var0x.getSource(), var1x, var2));
                }
       
-               return var1x.size();
+               return var1xx.size();
             })))
       );
       var0.register((LiteralArgumentBuilder)Commands.literal("tell").redirect(var1));

@@ -3,6 +3,7 @@ package net.minecraft.world.level.levelgen.structure.placement;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import net.minecraft.core.Vec3i;
 import net.minecraft.util.ExtraCodecs;

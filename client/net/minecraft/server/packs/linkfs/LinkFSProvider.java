@@ -86,8 +86,8 @@ class LinkFSProvider extends FileSystemProvider {
                return var3.children().values().stream().filter(var1 -> {
                   try {
                      return var2.accept(var1);
-                  } catch (IOException var3x) {
-                     throw new DirectoryIteratorException(var3x);
+                  } catch (IOException var3xx) {
+                     throw new DirectoryIteratorException(var3xx);
                   }
                }).map(var0 -> var0).iterator();
             }

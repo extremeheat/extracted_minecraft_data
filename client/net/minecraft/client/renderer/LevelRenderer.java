@@ -74,6 +74,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.BlockDestructionProgress;
+import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.sounds.SoundEvent;
@@ -193,11 +194,11 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
    private int lastCameraSectionX = -2147483648;
    private int lastCameraSectionY = -2147483648;
    private int lastCameraSectionZ = -2147483648;
-   private double prevCamX = 4.9E-324;
-   private double prevCamY = 4.9E-324;
-   private double prevCamZ = 4.9E-324;
-   private double prevCamRotX = 4.9E-324;
-   private double prevCamRotY = 4.9E-324;
+   private double prevCamX = 5.0E-324;
+   private double prevCamY = 5.0E-324;
+   private double prevCamZ = 5.0E-324;
+   private double prevCamRotX = 5.0E-324;
+   private double prevCamRotY = 5.0E-324;
    private int prevCloudX = -2147483648;
    private int prevCloudY = -2147483648;
    private int prevCloudZ = -2147483648;
@@ -1037,8 +1038,8 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
                         this.renderBuffers.crumblingBufferSource().getBuffer(ModelBakery.DESTROY_TYPES.get(var35)), var36.pose(), var36.normal(), 1.0F
                      );
                      var33 = var2x -> {
-                        VertexConsumer var3x = var26.getBuffer(var2x);
-                        return var2x.affectsCrumbling() ? VertexMultiConsumer.create(var37, var3x) : var3x;
+                        VertexConsumer var3xx = var26.getBuffer(var2x);
+                        return var2x.affectsCrumbling() ? VertexMultiConsumer.create(var37, var3xx) : var3xx;
                      };
                   }
                }
@@ -2542,8 +2543,8 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       }
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void levelEvent(int var1, BlockPos var2, int var3) {
       RandomSource var4 = this.level.random;
       switch(var1) {

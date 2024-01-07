@@ -5,6 +5,7 @@ import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
@@ -53,12 +54,12 @@ public abstract class CoralFeature extends Feature<NoneFeatureConfiguration> {
                BlockPos var9 = var3.relative(var8);
                if (var1.getBlockState(var9).is(Blocks.WATER)) {
                   BuiltInRegistries.BLOCK.getTag(BlockTags.WALL_CORALS).flatMap(var1x -> var1x.getRandomElement(var2)).map(Holder::value).ifPresent(var3x -> {
-                     BlockState var4x = var3x.defaultBlockState();
-                     if (var4x.hasProperty(BaseCoralWallFanBlock.FACING)) {
-                        var4x = var4x.setValue(BaseCoralWallFanBlock.FACING, var8);
+                     BlockState var4xx = var3x.defaultBlockState();
+                     if (var4xx.hasProperty(BaseCoralWallFanBlock.FACING)) {
+                        var4xx = var4xx.setValue(BaseCoralWallFanBlock.FACING, var8);
                      }
 
-                     var1.setBlock(var9, var4x, 2);
+                     var1.setBlock(var9, var4xx, 2);
                   });
                }
             }

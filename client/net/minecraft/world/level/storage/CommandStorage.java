@@ -2,6 +2,7 @@ package net.minecraft.world.level.storage;
 
 import com.google.common.collect.Maps;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Stream;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;

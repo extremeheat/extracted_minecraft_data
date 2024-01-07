@@ -15,6 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.IntStream;
 import net.minecraft.Util;
 
 public final class UUIDUtil {

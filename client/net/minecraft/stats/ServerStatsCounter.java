@@ -104,18 +104,18 @@ public class ServerStatsCounter extends StatsCounter {
                         Util.ifElse(
                            BuiltInRegistries.STAT_TYPE.getOptional(new ResourceLocation(var8)),
                            var3x -> {
-                              CompoundTag var4x = var6.getCompound(var8);
+                              CompoundTag var4xx = var6.getCompound(var8);
    
-                              for(String var6x : var4x.getAllKeys()) {
-                                 if (var4x.contains(var6x, 99)) {
+                              for(String var6xx : var4xx.getAllKeys()) {
+                                 if (var4xx.contains(var6xx, 99)) {
                                     Util.ifElse(
-                                       this.getStat(var3x, var6x),
+                                       this.getStat(var3x, var6xx),
                                        var3xx -> this.stats.put(var3xx, var4x.getInt(var6x)),
                                        () -> LOGGER.warn("Invalid statistic in {}: Don't know what {} is", this.file, var6x)
                                     );
                                  } else {
                                     LOGGER.warn(
-                                       "Invalid statistic value in {}: Don't know what {} is for key {}", new Object[]{this.file, var4x.get(var6x), var6x}
+                                       "Invalid statistic value in {}: Don't know what {} is for key {}", new Object[]{this.file, var4xx.get(var6xx), var6xx}
                                     );
                                  }
                               }

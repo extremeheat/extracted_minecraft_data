@@ -112,10 +112,10 @@ public class JigsawPlacement {
             new Structure.GenerationStub(
                new BlockPos(var23, var27, var24),
                (Consumer<StructurePiecesBuilder>)(var15x -> {
-                  ArrayList var16x = Lists.newArrayList();
-                  var16x.add(var21);
+                  ArrayList var16xx = Lists.newArrayList();
+                  var16xx.add(var21);
                   if (var3 > 0) {
-                     AABB var17x = new AABB(
+                     AABB var17xx = new AABB(
                         (double)(var23 - var7),
                         (double)(var27 - var7),
                         (double)(var24 - var7),
@@ -123,9 +123,9 @@ public class JigsawPlacement {
                         (double)(var27 + var7 + 1),
                         (double)(var24 + var7 + 1)
                      );
-                     VoxelShape var18x = Shapes.join(Shapes.create(var17x), Shapes.create(AABB.of(var22)), BooleanOp.ONLY_FIRST);
-                     addPieces(var0.randomState(), var3, var5, var10, var11, var12, var13, var14, var21, var16x, var18x, var8);
-                     var16x.forEach(var15x::addPiece);
+                     VoxelShape var18xx = Shapes.join(Shapes.create(var17xx), Shapes.create(AABB.of(var22)), BooleanOp.ONLY_FIRST);
+                     addPieces(var0.randomState(), var3, var5, var10, var11, var12, var13, var14, var21, var16xx, var18xx, var8);
+                     var16xx.forEach(var15x::addPiece);
                   }
                })
             )
@@ -173,8 +173,8 @@ public class JigsawPlacement {
       }
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public static boolean generateJigsaw(ServerLevel var0, Holder<StructureTemplatePool> var1, ResourceLocation var2, int var3, BlockPos var4, boolean var5) {
       ChunkGenerator var6 = var0.getChunkSource().getGenerator();
       StructureTemplateManager var7 = var0.getStructureManager();
@@ -320,18 +320,18 @@ public class JigsawPlacement {
                                        if (!var36.isInside(var3x.pos().relative(JigsawBlock.getFrontFacing(var3x.state())))) {
                                           return 0;
                                        } else {
-                                          ResourceKey var4x = readPoolKey(var3x, var7);
-                                          Optional var5x = this.pools.getHolder(var4x);
-                                          Optional var6x = var5x.map(var0 -> ((StructureTemplatePool)var0.value()).getFallback());
-                                          int var7x = var5x.<Integer>map(
+                                          ResourceKey var4xx = readPoolKey(var3x, var7);
+                                          Optional var5xx = this.pools.getHolder(var4xx);
+                                          Optional var6xx = var5xx.map(var0 -> ((StructureTemplatePool)var0.value()).getFallback());
+                                          int var7xx = var5xx.<Integer>map(
                                                 var1xx -> ((StructureTemplatePool)var1xx.value()).getMaxSize(this.structureTemplateManager)
                                              )
                                              .orElse(0);
-                                          int var8x = var6x.<Integer>map(
+                                          int var8xx = var6xx.<Integer>map(
                                                 var1xx -> ((StructureTemplatePool)var1xx.value()).getMaxSize(this.structureTemplateManager)
                                              )
                                              .orElse(0);
-                                          return Math.max(var7x, var8x);
+                                          return Math.max(var7xx, var8xx);
                                        }
                                     }
                                  )

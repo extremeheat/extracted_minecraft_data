@@ -3,6 +3,7 @@ package net.minecraft.network.chat;
 import com.google.common.primitives.Ints;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.security.SignatureException;
 import java.util.UUID;
 import javax.annotation.Nullable;

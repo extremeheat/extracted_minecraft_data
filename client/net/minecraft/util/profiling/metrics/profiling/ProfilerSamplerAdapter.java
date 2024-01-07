@@ -9,6 +9,7 @@ import net.minecraft.util.profiling.ActiveProfiler;
 import net.minecraft.util.profiling.ProfileCollector;
 import net.minecraft.util.profiling.metrics.MetricCategory;
 import net.minecraft.util.profiling.metrics.MetricSampler;
+import org.apache.commons.lang3.tuple.Pair;
 
 public class ProfilerSamplerAdapter {
    private final Set<String> previouslyFoundSamplerNames = new ObjectOpenHashSet();
@@ -34,8 +35,8 @@ public class ProfilerSamplerAdapter {
 
    private static MetricSampler samplerForProfilingPath(Supplier<ProfileCollector> var0, String var1, MetricCategory var2) {
       return MetricSampler.create(var1, var2, () -> {
-         ActiveProfiler.PathEntry var2x = ((ProfileCollector)var0.get()).getEntry(var1);
-         return var2x == null ? 0.0 : (double)var2x.getMaxDuration() / (double)TimeUtil.NANOSECONDS_PER_MILLISECOND;
+         ActiveProfiler.PathEntry var2xx = ((ProfileCollector)var0.get()).getEntry(var1);
+         return var2xx == null ? 0.0 : (double)var2xx.getMaxDuration() / (double)TimeUtil.NANOSECONDS_PER_MILLISECOND;
       });
    }
 }

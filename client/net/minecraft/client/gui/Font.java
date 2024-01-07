@@ -115,12 +115,12 @@ public class Font {
                int var14 = var11;
                int var15 = var12;
                var1.accept((var7x, var8x, var9x) -> {
-                  boolean var10x = var8x.isBold();
-                  FontSet var11x = this.getFontSet(var8x.getFont());
-                  GlyphInfo var12x = var11x.getGlyphInfo(var9x, this.filterFishyGlyphs);
-                  var10.x = var13[0] + (float)var14 * var12x.getShadowOffset();
-                  var10.y = var3 + (float)var15 * var12x.getShadowOffset();
-                  var13[0] += var12x.getAdvance(var10x);
+                  boolean var10xx = var8x.isBold();
+                  FontSet var11xx = this.getFontSet(var8x.getFont());
+                  GlyphInfo var12xx = var11xx.getGlyphInfo(var9x, this.filterFishyGlyphs);
+                  var10.x = var13[0] + (float)var14 * var12xx.getShadowOffset();
+                  var10.y = var3 + (float)var15 * var12xx.getShadowOffset();
+                  var13[0] += var12xx.getAdvance(var10xx);
                   return var10.accept(var7x, var8x.withColor(var9), var9x);
                });
             }

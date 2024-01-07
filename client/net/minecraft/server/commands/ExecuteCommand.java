@@ -16,6 +16,7 @@ import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
+import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import com.mojang.brigadier.tree.CommandNode;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import java.util.ArrayList;
@@ -146,13 +147,13 @@ public class ExecuteCommand {
                                                 .then(addConditionals(var2, Commands.literal("if"), true, var1)))
                                              .then(addConditionals(var2, Commands.literal("unless"), false, var1)))
                                           .then(Commands.literal("as").then(Commands.argument("targets", EntityArgument.entities()).fork(var2, var0x -> {
-                                             ArrayList var1x = Lists.newArrayList();
+                                             ArrayList var1xx = Lists.newArrayList();
                                     
                                              for(Entity var3 : EntityArgument.getOptionalEntities(var0x, "targets")) {
-                                                var1x.add(((CommandSourceStack)var0x.getSource()).withEntity(var3));
+                                                var1xx.add(((CommandSourceStack)var0x.getSource()).withEntity(var3));
                                              }
                                     
-                                             return var1x;
+                                             return var1xx;
                                           }))))
                                        .then(
                                           Commands.literal("at")
@@ -161,10 +162,10 @@ public class ExecuteCommand {
                                                    .fork(
                                                       var2,
                                                       var0x -> {
-                                                         ArrayList var1x = Lists.newArrayList();
+                                                         ArrayList var1xx = Lists.newArrayList();
                                                 
                                                          for(Entity var3 : EntityArgument.getOptionalEntities(var0x, "targets")) {
-                                                            var1x.add(
+                                                            var1xx.add(
                                                                ((CommandSourceStack)var0x.getSource())
                                                                   .withLevel((ServerLevel)var3.level())
                                                                   .withPosition(var3.position())
@@ -172,7 +173,7 @@ public class ExecuteCommand {
                                                             );
                                                          }
                                                 
-                                                         return var1x;
+                                                         return var1xx;
                                                       }
                                                    )
                                              )
@@ -193,25 +194,25 @@ public class ExecuteCommand {
                                                    )
                                              ))
                                           .then(Commands.literal("as").then(Commands.argument("targets", EntityArgument.entities()).fork(var2, var0x -> {
-                                             ArrayList var1x = Lists.newArrayList();
+                                             ArrayList var1xx = Lists.newArrayList();
                                     
                                              for(Entity var3 : EntityArgument.getOptionalEntities(var0x, "targets")) {
-                                                var1x.add(((CommandSourceStack)var0x.getSource()).withPosition(var3.position()));
+                                                var1xx.add(((CommandSourceStack)var0x.getSource()).withPosition(var3.position()));
                                              }
                                     
-                                             return var1x;
+                                             return var1xx;
                                           }))))
                                        .then(
                                           Commands.literal("over")
                                              .then(Commands.argument("heightmap", HeightmapTypeArgument.heightmap()).redirect(var2, var0x -> {
-                                                Vec3 var1x = ((CommandSourceStack)var0x.getSource()).getPosition();
-                                                ServerLevel var2x = ((CommandSourceStack)var0x.getSource()).getLevel();
-                                                double var3 = var1x.x();
-                                                double var5 = var1x.z();
-                                                if (!var2x.hasChunk(SectionPos.blockToSectionCoord(var3), SectionPos.blockToSectionCoord(var5))) {
+                                                Vec3 var1xx = ((CommandSourceStack)var0x.getSource()).getPosition();
+                                                ServerLevel var2xx = ((CommandSourceStack)var0x.getSource()).getLevel();
+                                                double var3 = var1xx.x();
+                                                double var5 = var1xx.z();
+                                                if (!var2xx.hasChunk(SectionPos.blockToSectionCoord(var3), SectionPos.blockToSectionCoord(var5))) {
                                                    throw BlockPosArgument.ERROR_NOT_LOADED.create();
                                                 } else {
-                                                   int var7 = var2x.getHeight(
+                                                   int var7 = var2xx.getHeight(
                                                       HeightmapTypeArgument.getHeightmap(var0x, "heightmap"), Mth.floor(var3), Mth.floor(var5)
                                                    );
                                                    return ((CommandSourceStack)var0x.getSource()).withPosition(new Vec3(var3, (double)var7, var5));
@@ -232,13 +233,13 @@ public class ExecuteCommand {
                                              )
                                        ))
                                     .then(Commands.literal("as").then(Commands.argument("targets", EntityArgument.entities()).fork(var2, var0x -> {
-                                       ArrayList var1x = Lists.newArrayList();
+                                       ArrayList var1xx = Lists.newArrayList();
                               
                                        for(Entity var3 : EntityArgument.getOptionalEntities(var0x, "targets")) {
-                                          var1x.add(((CommandSourceStack)var0x.getSource()).withRotation(var3.getRotationVector()));
+                                          var1xx.add(((CommandSourceStack)var0x.getSource()).withRotation(var3.getRotationVector()));
                                        }
                               
-                                       return var1x;
+                                       return var1xx;
                                     })))
                               ))
                            .then(
@@ -248,14 +249,14 @@ public class ExecuteCommand {
                                           .then(
                                              Commands.argument("targets", EntityArgument.entities())
                                                 .then(Commands.argument("anchor", EntityAnchorArgument.anchor()).fork(var2, var0x -> {
-                                                   ArrayList var1x = Lists.newArrayList();
-                                                   EntityAnchorArgument.Anchor var2x = EntityAnchorArgument.getAnchor(var0x, "anchor");
+                                                   ArrayList var1xx = Lists.newArrayList();
+                                                   EntityAnchorArgument.Anchor var2xx = EntityAnchorArgument.getAnchor(var0x, "anchor");
                                           
                                                    for(Entity var4 : EntityArgument.getOptionalEntities(var0x, "targets")) {
-                                                      var1x.add(((CommandSourceStack)var0x.getSource()).facing(var4, var2x));
+                                                      var1xx.add(((CommandSourceStack)var0x.getSource()).facing(var4, var2xx));
                                                    }
                                           
-                                                   return var1x;
+                                                   return var1xx;
                                                 }))
                                           )
                                     ))
@@ -904,7 +905,7 @@ public class ExecuteCommand {
                                  .fork(
                                     var0,
                                     expandOneToOneEntityRelation(
-                                       var0x -> var0x instanceof OwnableEntity var1x ? Optional.ofNullable(var1x.getOwner()) : Optional.empty()
+                                       var0x -> var0x instanceof OwnableEntity var1xx ? Optional.ofNullable(var1xx.getOwner()) : Optional.empty()
                                     )
                                  )
                            ))
@@ -913,7 +914,7 @@ public class ExecuteCommand {
                                  .fork(
                                     var0,
                                     expandOneToOneEntityRelation(
-                                       var0x -> var0x instanceof Mob var1x ? Optional.ofNullable(var1x.getLeashHolder()) : Optional.empty()
+                                       var0x -> var0x instanceof Mob var1xx ? Optional.ofNullable(var1xx.getLeashHolder()) : Optional.empty()
                                     )
                                  )
                            ))
@@ -922,7 +923,7 @@ public class ExecuteCommand {
                               .fork(
                                  var0,
                                  expandOneToOneEntityRelation(
-                                    var0x -> var0x instanceof Targeting var1x ? Optional.ofNullable(var1x.getTarget()) : Optional.empty()
+                                    var0x -> var0x instanceof Targeting var1xx ? Optional.ofNullable(var1xx.getTarget()) : Optional.empty()
                                  )
                               )
                         ))
@@ -931,7 +932,7 @@ public class ExecuteCommand {
                            .fork(
                               var0,
                               expandOneToOneEntityRelation(
-                                 var0x -> var0x instanceof Attackable var1x ? Optional.ofNullable(var1x.getLastAttacker()) : Optional.empty()
+                                 var0x -> var0x instanceof Attackable var1xx ? Optional.ofNullable(var1xx.getLastAttacker()) : Optional.empty()
                               )
                            )
                      ))
@@ -941,7 +942,7 @@ public class ExecuteCommand {
                Commands.literal("origin")
                   .fork(
                      var0,
-                     expandOneToOneEntityRelation(var0x -> var0x instanceof TraceableEntity var1x ? Optional.ofNullable(var1x.getOwner()) : Optional.empty())
+                     expandOneToOneEntityRelation(var0x -> var0x instanceof TraceableEntity var1xx ? Optional.ofNullable(var1xx.getOwner()) : Optional.empty())
                   )
             ))
          .then(Commands.literal("passengers").fork(var0, expandOneToManyEntityRelation(var0x -> var0x.getPassengers().stream())));
@@ -997,8 +998,8 @@ public class ExecuteCommand {
                }
             };
             var6.queueNext(new IsolatedCall<>(var2x -> {
-               for(InstantiatedFunction var4x : var12) {
-                  var2x.queueNext(new CallFunction<T>(var4x, var2x.currentFrame().returnValueConsumer(), true).bind((T)var15));
+               for(InstantiatedFunction var4xx : var12) {
+                  var2x.queueNext(new CallFunction<T>(var4xx, var2x.currentFrame().returnValueConsumer(), true).bind((T)var15));
                }
 
                var2x.queueNext(FallthroughTask.instance());

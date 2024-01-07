@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.core.DefaultedRegistry;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.CachedOutput;
@@ -39,10 +40,10 @@ public class RegistryDumpReport implements DataProvider {
       var1.addProperty("protocol_id", var4);
       JsonObject var3 = new JsonObject();
       var0.holders().forEach(var2x -> {
-         Object var3x = var2x.value();
-         int var4x = var0.getId(var3x);
+         Object var3xx = var2x.value();
+         int var4xx = var0.getId(var3xx);
          JsonObject var5 = new JsonObject();
-         var5.addProperty("protocol_id", var4x);
+         var5.addProperty("protocol_id", var4xx);
          var3.add(var2x.key().location().toString(), var5);
       });
       var1.add("entries", var3);

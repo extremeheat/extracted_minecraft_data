@@ -205,8 +205,8 @@ public class FogRenderer {
       return var0 instanceof LivingEntity var2 ? MOB_EFFECT_FOG.stream().filter(var2x -> var2x.isEnabled(var2, var1)).findFirst().orElse(null) : null;
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public static void setupFog(Camera var0, FogRenderer.FogMode var1, float var2, boolean var3, float var4) {
       FogType var5 = var0.getFluidInCamera();
       Entity var6 = var0.getEntity();

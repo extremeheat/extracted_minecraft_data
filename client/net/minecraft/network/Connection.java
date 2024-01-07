@@ -28,6 +28,7 @@ import io.netty.handler.flow.FlowControlHandler;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.handler.timeout.TimeoutException;
 import io.netty.util.AttributeKey;
+import io.netty.util.concurrent.Future;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Objects;
@@ -278,10 +279,10 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
             if (var2x.isSuccess()) {
                var2.onSuccess();
             } else {
-               Packet var3x = var2.onFailure();
-               if (var3x != null) {
-                  ChannelFuture var4x = this.channel.writeAndFlush(var3x);
-                  var4x.addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
+               Packet var3xx = var2.onFailure();
+               if (var3xx != null) {
+                  ChannelFuture var4xx = this.channel.writeAndFlush(var3xx);
+                  var4xx.addListener(ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE);
                }
             }
          });
@@ -324,8 +325,8 @@ public class Connection extends SimpleChannelInboundHandler<Packet<?>> {
       }
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void tick() {
       this.flushQueue();
       PacketListener var2 = this.packetListener;

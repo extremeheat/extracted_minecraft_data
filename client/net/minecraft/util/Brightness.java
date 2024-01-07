@@ -2,6 +2,7 @@ package net.minecraft.util;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 
 public record Brightness(int d, int e) {
    private final int block;

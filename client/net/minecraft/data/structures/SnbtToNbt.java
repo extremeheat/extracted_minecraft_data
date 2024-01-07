@@ -62,8 +62,8 @@ public class SnbtToNbt implements DataProvider {
                CompletableFuture var5x;
                try (Stream var4 = Files.walk(var5)) {
                   var5x = CompletableFuture.allOf(var4.filter(var0 -> var0.toString().endsWith(".snbt")).map(var4x -> CompletableFuture.runAsync(() -> {
-                        SnbtToNbt.TaskResult var5xx = this.readStructure(var4x, this.getName(var5, var4x));
-                        this.storeStructureIfChanged(var1, var5xx, var2);
+                        SnbtToNbt.TaskResult var5xxx = this.readStructure(var4x, this.getName(var5, var4x));
+                        this.storeStructureIfChanged(var1, var5xxx, var2);
                      }, Util.backgroundExecutor())).toArray(var0 -> new CompletableFuture[var0]));
                }
 

@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet.Builder;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -101,8 +102,8 @@ public class IntRange {
       return this.predicate.test(var1, var2);
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    private OptionalInt unpackExact() {
       if (Objects.equals(this.min, this.max)) {
          NumberProvider var2 = this.min;

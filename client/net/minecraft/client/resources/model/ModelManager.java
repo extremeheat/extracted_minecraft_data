@@ -7,6 +7,7 @@ import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import java.io.BufferedReader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -121,8 +122,8 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
                   var2.add(CompletableFuture.supplyAsync(() -> {
                      try {
                         Pair var2x;
-                        try (BufferedReader var1xx = ((Resource)var4.getValue()).openAsReader()) {
-                           var2x = Pair.of((ResourceLocation)var4.getKey(), BlockModel.fromStream(var1xx));
+                        try (BufferedReader var1xxx = ((Resource)var4.getValue()).openAsReader()) {
+                           var2x = Pair.of((ResourceLocation)var4.getKey(), BlockModel.fromStream(var1xxx));
                         }
       
                         return var2x;
@@ -147,19 +148,19 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
       
                for(Entry var4 : var1x.entrySet()) {
                   var2.add(CompletableFuture.supplyAsync(() -> {
-                     List var1xx = (List)var4.getValue();
-                     ArrayList var2x = new ArrayList(var1xx.size());
+                     List var1xxx = (List)var4.getValue();
+                     ArrayList var2xx = new ArrayList(var1xxx.size());
       
-                     for(Resource var4x : var1xx) {
-                        try (BufferedReader var5 = var4x.openAsReader()) {
+                     for(Resource var4xx : var1xxx) {
+                        try (BufferedReader var5 = var4xx.openAsReader()) {
                            JsonObject var6 = GsonHelper.parse(var5);
-                           var2x.add(new ModelBakery.LoadedJson(var4x.sourcePackId(), var6));
+                           var2xx.add(new ModelBakery.LoadedJson(var4xx.sourcePackId(), var6));
                         } catch (Exception var10) {
-                           LOGGER.error("Failed to load blockstate {} from pack {}", new Object[]{var4.getKey(), var4x.sourcePackId(), var10});
+                           LOGGER.error("Failed to load blockstate {} from pack {}", new Object[]{var4.getKey(), var4xx.sourcePackId(), var10});
                         }
                      }
       
-                     return Pair.of((ResourceLocation)var4.getKey(), var2x);
+                     return Pair.of((ResourceLocation)var4.getKey(), var2xx);
                   }, var1));
                }
       
@@ -174,13 +175,13 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
       var1.popPush("baking");
       HashMultimap var4 = HashMultimap.create();
       var3.bakeModels((var2x, var3x) -> {
-         AtlasSet.StitchResult var4x = (AtlasSet.StitchResult)var2.get(var3x.atlasLocation());
-         TextureAtlasSprite var5x = var4x.getSprite(var3x.texture());
-         if (var5x != null) {
-            return var5x;
+         AtlasSet.StitchResult var4xx = (AtlasSet.StitchResult)var2.get(var3x.atlasLocation());
+         TextureAtlasSprite var5xx = var4xx.getSprite(var3x.texture());
+         if (var5xx != null) {
+            return var5xx;
          } else {
             var4.put(var2x, var3x);
-            return var4x.missing();
+            return var4xx.missing();
          }
       });
       var4.asMap()
@@ -201,9 +202,9 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
 
       for(Block var9 : BuiltInRegistries.BLOCK) {
          var9.getStateDefinition().getPossibleStates().forEach(var3x -> {
-            ResourceLocation var4x = var3x.getBlock().builtInRegistryHolder().key().location();
-            BakedModel var5x = var5.getOrDefault(BlockModelShaper.stateToModelLocation(var4x, var3x), var6);
-            var7.put(var3x, var5x);
+            ResourceLocation var4xx = var3x.getBlock().builtInRegistryHolder().key().location();
+            BakedModel var5xx = var5.getOrDefault(BlockModelShaper.stateToModelLocation(var4xx, var3x), var6);
+            var7.put(var3x, var5xx);
          });
       }
 

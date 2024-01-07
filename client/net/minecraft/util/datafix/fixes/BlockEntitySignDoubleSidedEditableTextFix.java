@@ -33,8 +33,8 @@ public class BlockEntitySignDoubleSidedEditableTextFix extends NamedEntityFix {
       List var4 = getLines(var0, "FilteredText").toList();
       if (var4.stream().anyMatch(Optional::isPresent)) {
          var3 = var3.set("filtered_messages", var0.createList(Streams.mapWithIndex(var4.stream(), (var1x, var2x) -> {
-            Dynamic var4x = (Dynamic)var2.get((int)var2x);
-            return (Dynamic)var1x.orElse((T)var4x);
+            Dynamic var4xx = (Dynamic)var2.get((int)var2x);
+            return (Dynamic)var1x.orElse((T)var4xx);
          })));
       }
 

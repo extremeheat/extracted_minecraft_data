@@ -12,6 +12,7 @@ import java.util.function.Function;
 import net.minecraft.client.telemetry.TelemetryEventSender;
 import net.minecraft.client.telemetry.TelemetryEventType;
 import net.minecraft.client.telemetry.TelemetryProperty;
+import net.minecraft.client.telemetry.TelemetryPropertyMap;
 import org.slf4j.Logger;
 
 public class GameLoadTimesEvent {

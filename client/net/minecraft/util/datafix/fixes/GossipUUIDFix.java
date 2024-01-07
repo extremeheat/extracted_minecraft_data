@@ -5,6 +5,7 @@ import com.mojang.datafixers.DataFixUtils;
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
+import java.util.stream.Stream;
 
 public class GossipUUIDFix extends NamedEntityFix {
    public GossipUUIDFix(Schema var1, String var2) {

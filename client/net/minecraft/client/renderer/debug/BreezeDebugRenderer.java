@@ -9,9 +9,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.common.custom.BreezeDebugPayload;
 import net.minecraft.util.FastColor;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.monster.breeze.Breeze;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
@@ -44,10 +47,10 @@ public class BreezeDebugRenderer {
                   .map(var1xx -> var1xx.getPosition(this.minecraft.getFrameTime()))
                   .ifPresent(var9x -> {
                      drawLine(var1, var2, var3, var5, var7, var10.position(), var9x, TARGET_LINE_COLOR);
-                     Vec3 var10x = var9x.add(0.0, 0.009999999776482582, 0.0);
-                     drawCircle(var1.last().pose(), var3, var5, var7, var2.getBuffer(RenderType.debugLineStrip(2.0)), var10x, 4.0F, INNER_CIRCLE_COLOR);
-                     drawCircle(var1.last().pose(), var3, var5, var7, var2.getBuffer(RenderType.debugLineStrip(2.0)), var10x, 8.0F, MIDDLE_CIRCLE_COLOR);
-                     drawCircle(var1.last().pose(), var3, var5, var7, var2.getBuffer(RenderType.debugLineStrip(2.0)), var10x, 20.0F, OUTER_CIRCLE_COLOR);
+                     Vec3 var10xx = var9x.add(0.0, 0.009999999776482582, 0.0);
+                     drawCircle(var1.last().pose(), var3, var5, var7, var2.getBuffer(RenderType.debugLineStrip(2.0)), var10xx, 4.0F, INNER_CIRCLE_COLOR);
+                     drawCircle(var1.last().pose(), var3, var5, var7, var2.getBuffer(RenderType.debugLineStrip(2.0)), var10xx, 8.0F, MIDDLE_CIRCLE_COLOR);
+                     drawCircle(var1.last().pose(), var3, var5, var7, var2.getBuffer(RenderType.debugLineStrip(2.0)), var10xx, 20.0F, OUTER_CIRCLE_COLOR);
                   });
                var11.map(BreezeDebugPayload.BreezeInfo::jumpTarget)
                   .ifPresent(

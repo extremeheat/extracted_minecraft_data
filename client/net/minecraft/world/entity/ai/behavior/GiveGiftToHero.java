@@ -3,6 +3,7 @@ package net.minecraft.world.entity.ai.behavior;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;

@@ -1015,8 +1015,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
       }
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public void sendEffectToPassengers(MobEffectInstance var1) {
       for(Entity var3 : this.getPassengers()) {
          if (var3 instanceof ServerPlayer var4) {
@@ -1039,8 +1039,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
       }
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    protected void onEffectRemoved(MobEffectInstance var1) {
       this.effectsDirty = true;
       if (!this.level().isClientSide) {
@@ -1094,8 +1094,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
       return this.getHealth() <= 0.0F;
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public boolean hurt(DamageSource var1, float var2) {
       if (this.isInvulnerableTo(var1)) {
@@ -1649,8 +1649,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
       }
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    protected void actuallyHurt(DamageSource var1, float var2) {
       if (!this.isInvulnerableTo(var1)) {
          var2 = this.getDamageAfterArmorAbsorb(var1, var2);
@@ -3118,8 +3118,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
       return this.fallFlyTicks;
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public boolean randomTeleport(double var1, double var3, double var5, boolean var7) {
       double var8 = this.getX();
       double var10 = this.getY();
@@ -3255,8 +3255,8 @@ public abstract class LivingEntity extends Entity implements Attackable {
             Direction var3 = var2.getValue(BedBlock.FACING);
             this.level().setBlock(var1x, var2.setValue(BedBlock.OCCUPIED, Boolean.valueOf(false)), 3);
             Vec3 var4 = BedBlock.findStandUpPosition(this.getType(), this.level(), var1x, var3, this.getYRot()).orElseGet(() -> {
-               BlockPos var1xx = var1x.above();
-               return new Vec3((double)var1xx.getX() + 0.5, (double)var1xx.getY() + 0.1, (double)var1xx.getZ() + 0.5);
+               BlockPos var1xxx = var1x.above();
+               return new Vec3((double)var1xxx.getX() + 0.5, (double)var1xxx.getY() + 0.1, (double)var1xxx.getZ() + 0.5);
             });
             Vec3 var5 = Vec3.atBottomCenterOf(var1x).subtract(var4).normalize();
             float var6 = (float)Mth.wrapDegrees(Mth.atan2(var5.z, var5.x) * 57.2957763671875 - 90.0);

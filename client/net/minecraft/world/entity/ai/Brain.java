@@ -27,6 +27,7 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.VisibleForDebug;
 import net.minecraft.world.entity.LivingEntity;
@@ -78,8 +79,8 @@ public class Brain<E extends LivingEntity> {
                public <T> DataResult<Brain<E>> decode(DynamicOps<T> var1x, MapLike<T> var2x) {
                   MutableObject var3 = new MutableObject(DataResult.success(ImmutableList.builder()));
                   var2x.entries().forEach(var3x -> {
-                     DataResult var4x = BuiltInRegistries.MEMORY_MODULE_TYPE.byNameCodec().parse(var1x, var3x.getFirst());
-                     DataResult var5 = var4x.flatMap(var3xx -> this.captureRead(var3xx, var1x, (T)var3x.getSecond()));
+                     DataResult var4xx = BuiltInRegistries.MEMORY_MODULE_TYPE.byNameCodec().parse(var1x, var3x.getFirst());
+                     DataResult var5 = var4xx.flatMap(var3xx -> this.captureRead(var3xx, var1x, (T)var3x.getSecond()));
                      var3.setValue(((DataResult)var3.getValue()).apply2(Builder::add, var5));
                   });
                   ImmutableList var4 = (ImmutableList)((DataResult)var3.getValue())

@@ -14,6 +14,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.StringWidget;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.layouts.FrameLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
@@ -75,20 +76,20 @@ public class EditWorldScreen extends Screen {
       this.layout
          .addChild(Button.builder(FOLDER_BUTTON, var1x -> Util.getPlatform().openFile(var2.getLevelPath(LevelResource.ROOT).toFile())).width(200).build());
       this.layout.addChild(Button.builder(BACKUP_BUTTON, var2x -> {
-         boolean var3x = makeBackupAndShowToast(var2);
-         this.callback.accept(!var3x);
+         boolean var3xx = makeBackupAndShowToast(var2);
+         this.callback.accept(!var3xx);
       }).width(200).build());
       this.layout.addChild(Button.builder(BACKUP_FOLDER_BUTTON, var1x -> {
-         LevelStorageSource var2x = var1.getLevelSource();
-         Path var3x = var2x.getBackupPath();
+         LevelStorageSource var2xx = var1.getLevelSource();
+         Path var3xx = var2xx.getBackupPath();
 
          try {
-            FileUtil.createDirectoriesSafe(var3x);
-         } catch (IOException var5x) {
-            throw new RuntimeException(var5x);
+            FileUtil.createDirectoriesSafe(var3xx);
+         } catch (IOException var5xx) {
+            throw new RuntimeException(var5xx);
          }
 
-         Util.getPlatform().openFile(var3x.toFile());
+         Util.getPlatform().openFile(var3xx.toFile());
       }).width(200).build());
       this.layout.addChild(Button.builder(OPTIMIZE_BUTTON, var3x -> var1.setScreen(new BackupConfirmScreen(() -> var1.setScreen(this), (var3xx, var4x) -> {
             if (var3xx) {

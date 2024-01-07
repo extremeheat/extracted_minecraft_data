@@ -8,6 +8,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -295,14 +296,14 @@ public class Climate {
             return (Climate.RTree.Node<T>)var1.get(0);
          } else if (var1.size() <= 6) {
             var1.sort(Comparator.comparingLong(var1x -> {
-               long var2x = 0L;
+               long var2xx = 0L;
 
-               for(int var4x = 0; var4x < var0; ++var4x) {
-                  Climate.Parameter var5x = var1x.parameterSpace[var4x];
-                  var2x += Math.abs((var5x.min() + var5x.max()) / 2L);
+               for(int var4xx = 0; var4xx < var0; ++var4xx) {
+                  Climate.Parameter var5xx = var1x.parameterSpace[var4xx];
+                  var2xx += Math.abs((var5xx.min() + var5xx.max()) / 2L);
                }
 
-               return var2x;
+               return var2xx;
             }));
             return new Climate.RTree.SubTree<>(var1);
          } else {

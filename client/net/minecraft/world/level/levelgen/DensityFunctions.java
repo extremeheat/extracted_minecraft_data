@@ -5,6 +5,7 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.doubles.Double2DoubleFunction;
 import java.util.Arrays;
 import java.util.Optional;
@@ -236,8 +237,8 @@ public final class DensityFunctions {
       return DensityFunctions.BlendOffset.INSTANCE;
    }
 
-   // $QF: Could not properly define all variable types!
-   // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public static DensityFunction lerp(DensityFunction var0, DensityFunction var1, DensityFunction var2) {
       if (var1 instanceof DensityFunctions.Constant var5) {
          return lerp(var0, var5.value, var2);
@@ -1306,8 +1307,8 @@ public final class DensityFunctions {
    interface TwoArgumentSimpleFunction extends DensityFunction {
       Logger LOGGER = LogUtils.getLogger();
 
-      // $QF: Could not properly define all variable types!
-      // Please report this to the Quiltflower issue tracker, at https://github.com/QuiltMC/quiltflower/issues with a copy of the class file (if you have the rights to distribute it!)
+      // $VF: Could not properly define all variable types!
+      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       static DensityFunctions.TwoArgumentSimpleFunction create(
          DensityFunctions.TwoArgumentSimpleFunction.Type var0, DensityFunction var1, DensityFunction var2
       ) {

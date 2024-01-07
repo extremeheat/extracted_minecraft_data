@@ -1,5 +1,6 @@
 package net.minecraft.util;
 
+import com.mojang.authlib.yggdrasil.ServicesKeyInfo;
 import com.mojang.authlib.yggdrasil.ServicesKeySet;
 import com.mojang.authlib.yggdrasil.ServicesKeyType;
 import com.mojang.logging.LogUtils;
