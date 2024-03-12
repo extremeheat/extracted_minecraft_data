@@ -1,0 +1,15 @@
+{
+  "name": "extracted_minecraft_data updator",
+  "version": "1.0.0",
+  "description": "Updator for extracted_minecraft_data",
+  "main": "update.js",
+  "scripts": {
+    "test": "standard",
+    "fix": "standard --fix"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "standard": "^17.1.0"
+  }
+}
