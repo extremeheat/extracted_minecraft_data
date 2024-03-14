@@ -31,6 +31,8 @@ async function main () {
   const latestRelease = latestManifest.versions.find(v => v.type === 'release')
   const latestSnapshot = latestManifest.versions.find(v => v.type === 'snapshot')
 
+  exec('git config user.name "github-actions[bot]"')
+  exec('git config user.email "41898282+github-actions[bot]@users.noreply.github.com"')
   decomp('24w11a')
   return
 
