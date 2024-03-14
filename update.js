@@ -1,7 +1,7 @@
 const fs = require('fs')
 const cp = require('child_process')
 function exec (a, b) {
-  console.log('$', a, b)
+  console.log('$', [a, b])
   return cp.execSync(a, { ...b, stdio: 'inherit' })
 }
 
@@ -13,7 +13,7 @@ function decomp (version) {
   exec('cd DecompilerMC && git pull')
   exec(`cd DecompilerMC && python main.py -mcv ${version} -d fernflower`)
   console.log('Done decompiling!', fs.readdirSync('DecompilerMC/src'))
-  exec('git checkout -b clientlatest')
+  exec('git checkout clientlatest')
   exec('mv client client_old')
   exec(`mv DecompilerMC/src/${version}/client ./client`)
   exec('git add client/*.java client/version.json')
