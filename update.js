@@ -27,6 +27,8 @@ async function main () {
     currentManifest.latest.snapshot = latestSnapshot.id
     fs.writeFileSync('version_manifest.json', JSON.stringify(currentManifest, null, 2))
     exec('git checkout updator')
+    exec('git config user.name "github-actions[bot]"')
+    exec('git config user.email "41898282+github-actions[bot]@users.noreply.github.com"')
     exec('git add version_manifest.json')
     exec('git commit -m "Update version manifest"')
     exec('git push origin updator')
