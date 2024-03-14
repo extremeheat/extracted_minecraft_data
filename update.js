@@ -15,7 +15,7 @@ function decomp (version) {
   console.log('Done decompiling!', fs.readdirSync('DecompilerMC/src'))
   exec('git checkout clientlatest')
   exec('mv client client_old')
-  exec('mv DecompilerMC/src/client ./client')
+  exec(`mv DecompilerMC/src/${version}/client ./client`)
   exec('git add client/*.java')
   exec('git status')
   exec(`git commit -m "Add '${version}' sources"`)
