@@ -29,14 +29,14 @@ public class SpongeBlock extends Block {
    }
 
    @Override
-   public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var4.is(var1.getBlock())) {
          this.tryAbsorbWater(var2, var3);
       }
    }
 
    @Override
-   public void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
+   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
       this.tryAbsorbWater(var2, var3);
       super.neighborChanged(var1, var2, var3, var4, var5, var6);
    }

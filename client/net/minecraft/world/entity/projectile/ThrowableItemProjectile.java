@@ -28,41 +28,34 @@ public abstract class ThrowableItemProjectile extends ThrowableProjectile implem
    }
 
    public void setItem(ItemStack var1) {
-      if (!var1.is(this.getDefaultItem()) || var1.hasTag()) {
-         this.getEntityData().set(DATA_ITEM_STACK, var1.copyWithCount(1));
-      }
+      this.getEntityData().set(DATA_ITEM_STACK, var1.copyWithCount(1));
    }
 
    protected abstract Item getDefaultItem();
 
-   protected ItemStack getItemRaw() {
+   @Override
+   public ItemStack getItem() {
       return this.getEntityData().get(DATA_ITEM_STACK);
    }
 
    @Override
-   public ItemStack getItem() {
-      ItemStack var1 = this.getItemRaw();
-      return var1.isEmpty() ? new ItemStack(this.getDefaultItem()) : var1;
-   }
-
-   @Override
-   protected void defineSynchedData() {
-      this.getEntityData().define(DATA_ITEM_STACK, ItemStack.EMPTY);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      var1.define(DATA_ITEM_STACK, new ItemStack(this.getDefaultItem()));
    }
 
    @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      ItemStack var2 = this.getItemRaw();
-      if (!var2.isEmpty()) {
-         var1.put("Item", var2.save(new CompoundTag()));
-      }
+      var1.put("Item", this.getItem().save(this.registryAccess()));
    }
 
    @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      ItemStack var2 = ItemStack.of(var1.getCompound("Item"));
-      this.setItem(var2);
+      if (var1.contains("Item", 10)) {
+         this.setItem(ItemStack.parse(this.registryAccess(), var1.getCompound("Item")).orElseGet(() -> new ItemStack(this.getDefaultItem())));
+      } else {
+         this.setItem(new ItemStack(this.getDefaultItem()));
+      }
    }
 }

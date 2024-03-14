@@ -30,7 +30,14 @@ public class SocialInteractionsPlayerList extends ContainerObjectSelectionList<P
    public SocialInteractionsPlayerList(SocialInteractionsScreen var1, Minecraft var2, int var3, int var4, int var5, int var6) {
       super(var2, var3, var4, var5, var6);
       this.socialInteractionsScreen = var1;
-      this.setRenderBackground(false);
+   }
+
+   @Override
+   protected void renderListBackground(GuiGraphics var1) {
+   }
+
+   @Override
+   protected void renderListSeparators(GuiGraphics var1) {
    }
 
    @Override

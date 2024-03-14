@@ -107,7 +107,7 @@ public class StructureRenderer implements DebugRenderer.SimpleDebugRenderer {
 
    public void addBoundingBox(BoundingBox var1, List<StructuresDebugPayload.PieceInfo> var2, ResourceKey<Level> var3) {
       this.postMainBoxes.computeIfAbsent(var3, var0 -> new HashMap()).put(var1.toString(), var1);
-      Map var4 = this.postPieces.computeIfAbsent(var3, var0 -> new HashMap());
+      Map var4 = this.postPieces.computeIfAbsent(var3, var0 -> new HashMap<>());
 
       for(StructuresDebugPayload.PieceInfo var6 : var2) {
          var4.put(var6.boundingBox().toString(), var6);

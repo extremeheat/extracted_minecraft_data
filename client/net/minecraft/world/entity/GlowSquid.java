@@ -29,9 +29,9 @@ public class GlowSquid extends Squid {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_DARK_TICKS_REMAINING, 0);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_DARK_TICKS_REMAINING, 0);
    }
 
    @Override

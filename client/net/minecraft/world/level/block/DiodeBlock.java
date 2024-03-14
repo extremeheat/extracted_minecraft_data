@@ -33,12 +33,12 @@ public abstract class DiodeBlock extends HorizontalDirectionalBlock {
    protected abstract MapCodec<? extends DiodeBlock> codec();
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       BlockPos var4 = var3.below();
       return this.canSurviveOn(var2, var4, var2.getBlockState(var4));
    }
@@ -48,7 +48,7 @@ public abstract class DiodeBlock extends HorizontalDirectionalBlock {
    }
 
    @Override
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (!this.isLocked(var2, var3, var1)) {
          boolean var5 = var1.getValue(POWERED);
          boolean var6 = this.shouldTurnOn(var2, var3, var1);
@@ -64,12 +64,12 @@ public abstract class DiodeBlock extends HorizontalDirectionalBlock {
    }
 
    @Override
-   public int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
+   protected int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       return var1.getSignal(var2, var3, var4);
    }
 
    @Override
-   public int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
+   protected int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       if (!var1.getValue(POWERED)) {
          return 0;
       } else {
@@ -78,7 +78,7 @@ public abstract class DiodeBlock extends HorizontalDirectionalBlock {
    }
 
    @Override
-   public void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
+   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
       if (var1.canSurvive(var2, var3)) {
          this.checkTickOnNeighbor(var2, var3, var1);
       } else {
@@ -138,7 +138,7 @@ public abstract class DiodeBlock extends HorizontalDirectionalBlock {
    }
 
    @Override
-   public boolean isSignalSource(BlockState var1) {
+   protected boolean isSignalSource(BlockState var1) {
       return true;
    }
 
@@ -155,12 +155,12 @@ public abstract class DiodeBlock extends HorizontalDirectionalBlock {
    }
 
    @Override
-   public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       this.updateNeighborsInFront(var2, var3, var1);
    }
 
    @Override
-   public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var5 && !var1.is(var4.getBlock())) {
          super.onRemove(var1, var2, var3, var4, var5);
          this.updateNeighborsInFront(var2, var3, var1);

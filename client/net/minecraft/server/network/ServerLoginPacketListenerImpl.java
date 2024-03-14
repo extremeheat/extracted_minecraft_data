@@ -22,6 +22,8 @@ import net.minecraft.network.Connection;
 import net.minecraft.network.PacketSendListener;
 import net.minecraft.network.TickablePacketListener;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.configuration.ConfigurationProtocols;
+import net.minecraft.network.protocol.cookie.ServerboundCookieResponsePacket;
 import net.minecraft.network.protocol.login.ClientboundGameProfilePacket;
 import net.minecraft.network.protocol.login.ClientboundHelloPacket;
 import net.minecraft.network.protocol.login.ClientboundLoginCompressionPacket;
@@ -36,7 +38,7 @@ import net.minecraft.server.players.PlayerList;
 import net.minecraft.util.Crypt;
 import net.minecraft.util.CryptException;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.util.StringUtil;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 
@@ -44,7 +46,6 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
    private static final AtomicInteger UNIQUE_THREAD_ID = new AtomicInteger(0);
    static final Logger LOGGER = LogUtils.getLogger();
    private static final int MAX_TICKS_BEFORE_LOGIN = 600;
-   private static final Component DISCONNECT_UNEXPECTED_QUERY = Component.translatable("multiplayer.disconnect.unexpected_query_response");
    private final byte[] challenge;
    final MinecraftServer server;
    final Connection connection;
@@ -55,12 +56,14 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
    @Nullable
    private GameProfile authenticatedProfile;
    private final String serverId = "";
+   private final boolean transferred;
 
-   public ServerLoginPacketListenerImpl(MinecraftServer var1, Connection var2) {
+   public ServerLoginPacketListenerImpl(MinecraftServer var1, Connection var2, boolean var3) {
       super();
       this.server = var1;
       this.connection = var2;
       this.challenge = Ints.toByteArray(RandomSource.create().nextInt());
+      this.transferred = var3;
    }
 
    @Override
@@ -111,7 +114,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
    @Override
    public void handleHello(ServerboundHelloPacket var1) {
       Validate.validState(this.state == ServerLoginPacketListenerImpl.State.HELLO, "Unexpected hello packet", new Object[0]);
-      Validate.validState(Player.isValidUsername(var1.name()), "Invalid characters in username", new Object[0]);
+      Validate.validState(StringUtil.isValidPlayerName(var1.name()), "Invalid characters in username", new Object[0]);
       this.requestedUsername = var1.name();
       GameProfile var2 = this.server.getSingleplayerProfile();
       if (var2 != null && this.requestedUsername.equalsIgnoreCase(var2.getName())) {
@@ -119,7 +122,7 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
       } else {
          if (this.server.usesAuthentication() && !this.connection.isMemoryConnection()) {
             this.state = ServerLoginPacketListenerImpl.State.KEY;
-            this.connection.send(new ClientboundHelloPacket("", this.server.getKeyPair().getPublic().getEncoded(), this.challenge));
+            this.connection.send(new ClientboundHelloPacket("", this.server.getKeyPair().getPublic().getEncoded(), this.challenge, true));
          } else {
             this.startClientVerification(UUIDUtil.createOfflineProfile(this.requestedUsername));
          }
@@ -223,15 +226,16 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
 
    @Override
    public void handleCustomQueryPacket(ServerboundCustomQueryAnswerPacket var1) {
-      this.disconnect(DISCONNECT_UNEXPECTED_QUERY);
+      this.disconnect(ServerCommonPacketListenerImpl.DISCONNECT_UNEXPECTED_QUERY);
    }
 
    @Override
    public void handleLoginAcknowledgement(ServerboundLoginAcknowledgedPacket var1) {
       Validate.validState(this.state == ServerLoginPacketListenerImpl.State.PROTOCOL_SWITCHING, "Unexpected login acknowledgement packet", new Object[0]);
-      CommonListenerCookie var2 = CommonListenerCookie.createInitial(Objects.requireNonNull(this.authenticatedProfile));
+      this.connection.setupOutboundProtocol(ConfigurationProtocols.CLIENTBOUND);
+      CommonListenerCookie var2 = CommonListenerCookie.createInitial(Objects.requireNonNull(this.authenticatedProfile), this.transferred);
       ServerConfigurationPacketListenerImpl var3 = new ServerConfigurationPacketListenerImpl(this.server, this.connection, var2);
-      this.connection.setListener(var3);
+      this.connection.setupInboundProtocol(ConfigurationProtocols.SERVERBOUND, var3);
       var3.startConfiguration();
       this.state = ServerLoginPacketListenerImpl.State.ACCEPTED;
    }
@@ -239,6 +243,11 @@ public class ServerLoginPacketListenerImpl implements ServerLoginPacketListener,
    @Override
    public void fillListenerSpecificCrashDetails(CrashReportCategory var1) {
       var1.setDetail("Login phase", () -> this.state.toString());
+   }
+
+   @Override
+   public void handleCookieResponse(ServerboundCookieResponsePacket var1) {
+      this.disconnect(ServerCommonPacketListenerImpl.DISCONNECT_UNEXPECTED_QUERY);
    }
 
    static enum State {

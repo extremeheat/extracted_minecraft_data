@@ -37,9 +37,7 @@ public class StatsComponent extends JComponent {
    private void tick() {
       long var1 = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
       this.msgs[0] = "Memory use: " + var1 / 1024L / 1024L + " mb (" + Runtime.getRuntime().freeMemory() * 100L / Runtime.getRuntime().maxMemory() + "% free)";
-      this.msgs[1] = "Avg tick: "
-         + DECIMAL_FORMAT.format((double)this.server.getAverageTickTimeNanos() / (double)TimeUtil.NANOSECONDS_PER_MILLISECOND)
-         + " ms";
+      this.msgs[1] = "Avg tick: " + DECIMAL_FORMAT.format((double)this.server.getAverageTickTimeNanos() / (double)TimeUtil.NANOSECONDS_PER_MILLISECOND) + " ms";
       this.values[this.vp++ & 0xFF] = (int)(var1 * 100L / Runtime.getRuntime().maxMemory());
       this.repaint();
    }

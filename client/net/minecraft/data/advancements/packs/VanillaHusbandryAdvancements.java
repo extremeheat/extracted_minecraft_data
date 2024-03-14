@@ -20,11 +20,13 @@ import net.minecraft.advancements.critereon.EffectsChangedTrigger;
 import net.minecraft.advancements.critereon.EnchantmentPredicate;
 import net.minecraft.advancements.critereon.EntityFlagsPredicate;
 import net.minecraft.advancements.critereon.EntityPredicate;
-import net.minecraft.advancements.critereon.EntitySubPredicate;
+import net.minecraft.advancements.critereon.EntitySubPredicates;
 import net.minecraft.advancements.critereon.FilledBucketTrigger;
 import net.minecraft.advancements.critereon.FishingRodHookedTrigger;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
+import net.minecraft.advancements.critereon.ItemEnchantmentsPredicate;
 import net.minecraft.advancements.critereon.ItemPredicate;
+import net.minecraft.advancements.critereon.ItemSubPredicates;
 import net.minecraft.advancements.critereon.ItemUsedOnLocationTrigger;
 import net.minecraft.advancements.critereon.LocationPredicate;
 import net.minecraft.advancements.critereon.MinMaxBounds;
@@ -42,6 +44,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.animal.CatVariant;
+import net.minecraft.world.entity.animal.FrogVariant;
 import net.minecraft.world.item.HoneycombItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
@@ -70,7 +74,8 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
       EntityType.STRIDER,
       EntityType.GOAT,
       EntityType.AXOLOTL,
-      EntityType.CAMEL
+      EntityType.CAMEL,
+      EntityType.ARMADILLO
    );
    public static final List<EntityType<?>> INDIRECTLY_BREEDABLE_ANIMALS = List.of(EntityType.TURTLE, EntityType.FROG, EntityType.SNIFFER);
    private static final Item[] FISH = new Item[]{Items.COD, Items.TROPICAL_FISH, Items.PUFFERFISH, Items.SALMON};
@@ -406,7 +411,11 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
             "silk_touch_nest",
             BeeNestDestroyedTrigger.TriggerInstance.destroyedBeeNest(
                Blocks.BEE_NEST,
-               ItemPredicate.Builder.item().hasEnchantment(new EnchantmentPredicate(Enchantments.SILK_TOUCH, MinMaxBounds.Ints.atLeast(1))),
+               ItemPredicate.Builder.item()
+                  .withSubPredicate(
+                     ItemSubPredicates.ENCHANTMENTS,
+                     ItemEnchantmentsPredicate.enchantments(List.of(new EnchantmentPredicate(Enchantments.SILK_TOUCH, MinMaxBounds.Ints.atLeast(1))))
+                  ),
                MinMaxBounds.Ints.exactly(3)
             )
          )
@@ -495,8 +504,7 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
          .addCriterion(
             "allay_deliver_cake_to_note_block",
             ItemUsedOnLocationTrigger.TriggerInstance.allayDropItemOnBlock(
-               LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of(Blocks.NOTE_BLOCK)),
-               ItemPredicate.Builder.item().of(Items.CAKE)
+               LocationPredicate.Builder.location().setBlock(BlockPredicate.Builder.block().of(Blocks.NOTE_BLOCK)), ItemPredicate.Builder.item().of(Items.CAKE)
             )
          )
          .save(var2, "husbandry/allay_deliver_cake_to_note_block");
@@ -582,7 +590,9 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
                   PlayerInteractTrigger.TriggerInstance.itemUsedOnEntity(
                      ItemPredicate.Builder.item().of(Items.LEAD),
                      Optional.of(
-                        EntityPredicate.wrap(EntityPredicate.Builder.entity().of(EntityType.FROG).subPredicate(EntitySubPredicate.variant(var1.value())))
+                        EntityPredicate.wrap(
+                           EntityPredicate.Builder.entity().of(EntityType.FROG).subPredicate(EntitySubPredicates.variant((FrogVariant)var1.value()))
+                        )
                      )
                   )
                )
@@ -645,8 +655,10 @@ public class VanillaHusbandryAdvancements implements AdvancementSubProvider {
          .sorted(Entry.comparingByKey(Comparator.comparing(ResourceKey::location)))
          .forEach(
             var1 -> var0.addCriterion(
-                  var1.getKey().location().toString(),
-                  TameAnimalTrigger.TriggerInstance.tamedAnimal(EntityPredicate.Builder.entity().subPredicate(EntitySubPredicate.variant(var1.getValue())))
+                  ((ResourceKey)var1.getKey()).location().toString(),
+                  TameAnimalTrigger.TriggerInstance.tamedAnimal(
+                     EntityPredicate.Builder.entity().subPredicate(EntitySubPredicates.variant((CatVariant)var1.getValue()))
+                  )
                )
          );
       return var0;

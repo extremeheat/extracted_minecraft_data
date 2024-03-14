@@ -38,17 +38,17 @@ public class TrappedChestBlock extends ChestBlock {
    }
 
    @Override
-   public boolean isSignalSource(BlockState var1) {
+   protected boolean isSignalSource(BlockState var1) {
       return true;
    }
 
    @Override
-   public int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
+   protected int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       return Mth.clamp(ChestBlockEntity.getOpenCount(var2, var3), 0, 15);
    }
 
    @Override
-   public int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
+   protected int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       return var4 == Direction.UP ? var1.getSignal(var2, var3, var4) : 0;
    }
 }

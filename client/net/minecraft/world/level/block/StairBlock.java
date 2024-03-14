@@ -94,12 +94,12 @@ public class StairBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    @Override
-   public boolean useShapeForLightOcclusion(BlockState var1) {
+   protected boolean useShapeForLightOcclusion(BlockState var1) {
       return true;
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return (var1.getValue(HALF) == Half.TOP ? TOP_SHAPES : BOTTOM_SHAPES)[SHAPE_BY_STATE[this.getShapeIndex(var1)]];
    }
 
@@ -125,7 +125,7 @@ public class StairBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var1.getValue(WATERLOGGED)) {
          var4.scheduleTick(var5, Fluids.WATER, Fluids.WATER.getTickDelay(var4));
       }
@@ -172,12 +172,12 @@ public class StairBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    @Override
-   public BlockState rotate(BlockState var1, Rotation var2) {
+   protected BlockState rotate(BlockState var1, Rotation var2) {
       return var1.setValue(FACING, var2.rotate(var1.getValue(FACING)));
    }
 
    @Override
-   public BlockState mirror(BlockState var1, Mirror var2) {
+   protected BlockState mirror(BlockState var1, Mirror var2) {
       Direction var3 = var1.getValue(FACING);
       StairsShape var4 = var1.getValue(SHAPE);
       switch(var2) {
@@ -223,12 +223,12 @@ public class StairBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    @Override
-   public FluidState getFluidState(BlockState var1) {
+   protected FluidState getFluidState(BlockState var1) {
       return var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
    }
 
    @Override
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
+   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
    }
 }

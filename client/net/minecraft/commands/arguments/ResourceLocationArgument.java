@@ -54,7 +54,7 @@ public class ResourceLocationArgument implements ArgumentType<ResourceLocation> 
    public static RecipeHolder<?> getRecipe(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {
       RecipeManager var2 = ((CommandSourceStack)var0.getSource()).getServer().getRecipeManager();
       ResourceLocation var3 = getId(var0, var1);
-      return var2.byKey(var3).orElseThrow(() -> ERROR_UNKNOWN_RECIPE.create(var3));
+      return (RecipeHolder<?>)var2.byKey(var3).orElseThrow(() -> ERROR_UNKNOWN_RECIPE.create(var3));
    }
 
    public static LootItemCondition getPredicate(CommandContext<CommandSourceStack> var0, String var1) throws CommandSyntaxException {

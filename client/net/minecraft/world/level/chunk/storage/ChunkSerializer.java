@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Map.Entry;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
@@ -45,7 +46,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.CarvingMask;
 import net.minecraft.world.level.chunk.ChunkAccess;
-import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.DataLayer;
 import net.minecraft.world.level.chunk.ImposterProtoChunk;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -54,6 +54,8 @@ import net.minecraft.world.level.chunk.PalettedContainer;
 import net.minecraft.world.level.chunk.PalettedContainerRO;
 import net.minecraft.world.level.chunk.ProtoChunk;
 import net.minecraft.world.level.chunk.UpgradeData;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
+import net.minecraft.world.level.chunk.status.ChunkType;
 import net.minecraft.world.level.levelgen.BelowZeroRetrogen;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -112,18 +114,20 @@ public class ChunkSerializer {
          if (var19 >= 0 && var19 < var9.length) {
             PalettedContainer var20;
             if (var17.contains("block_states", 10)) {
-               var20 = (PalettedContainer)BLOCK_STATE_CODEC.parse(NbtOps.INSTANCE, var17.getCompound("block_states"))
-                  .promotePartial(var2x -> logErrors(var2, var18, var2x))
-                  .getOrThrow(false, LOGGER::error);
+               var20 = Util.getOrThrow(
+                  BLOCK_STATE_CODEC.parse(NbtOps.INSTANCE, var17.getCompound("block_states")).promotePartial(var2x -> logErrors(var2, var18, var2x)),
+                  ChunkSerializer.ChunkReadException::new
+               );
             } else {
                var20 = new PalettedContainer<>(Block.BLOCK_STATE_REGISTRY, Blocks.AIR.defaultBlockState(), PalettedContainer.Strategy.SECTION_STATES);
             }
 
             Object var21;
             if (var17.contains("biomes", 10)) {
-               var21 = (PalettedContainerRO)var14.parse(NbtOps.INSTANCE, var17.getCompound("biomes"))
-                  .promotePartial(var2x -> logErrors(var2, var18, var2x))
-                  .getOrThrow(false, LOGGER::error);
+               var21 = (PalettedContainerRO)Util.getOrThrow(
+                  var14.parse(NbtOps.INSTANCE, var17.getCompound("biomes")).promotePartial(var2x -> logErrors(var2, var18, var2x)),
+                  ChunkSerializer.ChunkReadException::new
+               );
             } else {
                var21 = new PalettedContainer<>(var13.asHolderIdMap(), var13.getHolderOrThrow(Biomes.PLAINS), PalettedContainer.Strategy.SECTION_BIOMES);
             }
@@ -153,7 +157,7 @@ public class ChunkSerializer {
       }
 
       long var32 = var3.getLong("InhabitedTime");
-      ChunkStatus.ChunkType var33 = getChunkTypeFromTag(var3);
+      ChunkType var33 = getChunkTypeFromTag(var3);
       BlendingData var34;
       if (var3.contains("blending_data", 10)) {
          var34 = (BlendingData)BlendingData.CODEC
@@ -165,7 +169,7 @@ public class ChunkSerializer {
       }
 
       Object var36;
-      if (var33 == ChunkStatus.ChunkType.LEVELCHUNK) {
+      if (var33 == ChunkType.LEVELCHUNK) {
          LevelChunkTicks var38 = LevelChunkTicks.load(
             var3.getList("block_ticks", 10), var0x -> BuiltInRegistries.BLOCK.getOptional(ResourceLocation.tryParse(var0x)), var2
          );
@@ -228,7 +232,7 @@ public class ChunkSerializer {
          }
       }
 
-      if (var33 == ChunkStatus.ChunkType.LEVELCHUNK) {
+      if (var33 == ChunkType.LEVELCHUNK) {
          return new ImposterProtoChunk((LevelChunk)var36, false);
       } else {
          ProtoChunk var50 = (ProtoChunk)var36;
@@ -333,14 +337,14 @@ public class ChunkSerializer {
       ListTag var22 = new ListTag();
 
       for(BlockPos var26 : var1.getBlockEntitiesPos()) {
-         CompoundTag var29 = var1.getBlockEntityNbtForSaving(var26);
+         CompoundTag var29 = var1.getBlockEntityNbtForSaving(var26, var0.registryAccess());
          if (var29 != null) {
             var22.add(var29);
          }
       }
 
       var3.put("block_entities", var22);
-      if (var1.getStatus().getChunkType() == ChunkStatus.ChunkType.PROTOCHUNK) {
+      if (var1.getStatus().getChunkType() == ChunkType.PROTOCHUNK) {
          ProtoChunk var24 = (ProtoChunk)var1;
          ListTag var27 = new ListTag();
          var27.addAll(var24.getEntities());
@@ -378,8 +382,8 @@ public class ChunkSerializer {
       var1.put("fluid_ticks", var2.fluids().save(var3, var0x -> BuiltInRegistries.FLUID.getKey(var0x).toString()));
    }
 
-   public static ChunkStatus.ChunkType getChunkTypeFromTag(@Nullable CompoundTag var0) {
-      return var0 != null ? ChunkStatus.byName(var0.getString("Status")).getChunkType() : ChunkStatus.ChunkType.PROTOCHUNK;
+   public static ChunkType getChunkTypeFromTag(@Nullable CompoundTag var0) {
+      return var0 != null ? ChunkStatus.byName(var0.getString("Status")).getChunkType() : ChunkType.PROTOCHUNK;
    }
 
    @Nullable
@@ -399,7 +403,7 @@ public class ChunkSerializer {
                   var3x.setBlockEntityNbt(var5);
                } else {
                   BlockPos var7 = BlockEntity.getPosFromTag(var5);
-                  BlockEntity var8 = BlockEntity.loadStatic(var7, var3x.getBlockState(var7), var5);
+                  BlockEntity var8 = BlockEntity.loadStatic(var7, var3x.getBlockState(var7), var5, var0.registryAccess());
                   if (var8 != null) {
                      var3x.setBlockEntity(var8);
                   }
@@ -509,5 +513,11 @@ public class ChunkSerializer {
       }
 
       return var1;
+   }
+
+   public static class ChunkReadException extends RuntimeException {
+      public ChunkReadException(String var1) {
+         super(var1);
+      }
    }
 }

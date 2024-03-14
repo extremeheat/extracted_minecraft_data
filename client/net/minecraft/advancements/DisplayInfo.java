@@ -4,9 +4,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
@@ -14,7 +15,7 @@ import net.minecraft.world.item.ItemStack;
 public class DisplayInfo {
    public static final Codec<DisplayInfo> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               ItemStack.ADVANCEMENT_ICON_CODEC.fieldOf("icon").forGetter(DisplayInfo::getIcon),
+               ItemStack.CODEC.fieldOf("icon").forGetter(DisplayInfo::getIcon),
                ComponentSerialization.CODEC.fieldOf("title").forGetter(DisplayInfo::getTitle),
                ComponentSerialization.CODEC.fieldOf("description").forGetter(DisplayInfo::getDescription),
                ExtraCodecs.strictOptionalField(ResourceLocation.CODEC, "background").forGetter(DisplayInfo::getBackground),
@@ -24,6 +25,9 @@ public class DisplayInfo {
                ExtraCodecs.strictOptionalField(Codec.BOOL, "hidden", false).forGetter(DisplayInfo::isHidden)
             )
             .apply(var0, DisplayInfo::new)
+   );
+   public static final StreamCodec<RegistryFriendlyByteBuf, DisplayInfo> STREAM_CODEC = StreamCodec.ofMember(
+      DisplayInfo::serializeToNetwork, DisplayInfo::fromNetwork
    );
    private final Component title;
    private final Component description;
@@ -95,10 +99,10 @@ public class DisplayInfo {
       return this.hidden;
    }
 
-   public void serializeToNetwork(FriendlyByteBuf var1) {
-      var1.writeComponent(this.title);
-      var1.writeComponent(this.description);
-      var1.writeItem(this.icon);
+   private void serializeToNetwork(RegistryFriendlyByteBuf var1) {
+      ComponentSerialization.TRUSTED_STREAM_CODEC.encode(var1, this.title);
+      ComponentSerialization.TRUSTED_STREAM_CODEC.encode(var1, this.description);
+      ItemStack.STREAM_CODEC.encode(var1, this.icon);
       var1.writeEnum(this.type);
       int var2 = 0;
       if (this.background.isPresent()) {
@@ -119,10 +123,10 @@ public class DisplayInfo {
       var1.writeFloat(this.y);
    }
 
-   public static DisplayInfo fromNetwork(FriendlyByteBuf var0) {
-      Component var1 = var0.readComponentTrusted();
-      Component var2 = var0.readComponentTrusted();
-      ItemStack var3 = var0.readItem();
+   private static DisplayInfo fromNetwork(RegistryFriendlyByteBuf var0) {
+      Component var1 = ComponentSerialization.TRUSTED_STREAM_CODEC.decode(var0);
+      Component var2 = ComponentSerialization.TRUSTED_STREAM_CODEC.decode(var0);
+      ItemStack var3 = ItemStack.STREAM_CODEC.decode(var0);
       AdvancementType var4 = var0.readEnum(AdvancementType.class);
       int var5 = var0.readInt();
       Optional var6 = (var5 & 1) != 0 ? Optional.of(var0.readResourceLocation()) : Optional.empty();

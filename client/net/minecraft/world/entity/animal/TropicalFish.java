@@ -6,6 +6,7 @@ import java.util.function.IntFunction;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -27,6 +28,7 @@ import net.minecraft.world.entity.VariantHolder;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -86,9 +88,9 @@ public class TropicalFish extends AbstractSchoolingFish implements VariantHolder
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_ID_TYPE_VARIANT, 0);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_ID_TYPE_VARIANT, 0);
    }
 
    @Override
@@ -138,8 +140,7 @@ public class TropicalFish extends AbstractSchoolingFish implements VariantHolder
    @Override
    public void saveToBucketTag(ItemStack var1) {
       super.saveToBucketTag(var1);
-      CompoundTag var2 = var1.getOrCreateTag();
-      var2.putInt("BucketVariantTag", this.getPackedVariant());
+      CustomData.update(DataComponents.BUCKET_ENTITY_DATA, var1, var1x -> var1x.putInt("BucketVariantTag", this.getPackedVariant()));
    }
 
    @Override
@@ -167,38 +168,39 @@ public class TropicalFish extends AbstractSchoolingFish implements VariantHolder
       return SoundEvents.TROPICAL_FISH_FLOP;
    }
 
+   @Override
+   public void loadFromBucketTag(CompoundTag var1) {
+      super.loadFromBucketTag(var1);
+      if (var1.contains("BucketVariantTag", 3)) {
+         this.setPackedVariant(var1.getInt("BucketVariantTag"));
+      }
+   }
+
    // $VF: Could not properly define all variable types!
    // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
-      var4 = super.finalizeSpawn(var1, var2, var3, var4, var5);
-      if (var3 == MobSpawnType.BUCKET && var5 != null && var5.contains("BucketVariantTag", 3)) {
-         this.setPackedVariant(var5.getInt("BucketVariantTag"));
-         return var4;
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+      var4 = super.finalizeSpawn(var1, var2, var3, var4);
+      RandomSource var6 = var1.getRandom();
+      TropicalFish.Variant var5;
+      if (var4 instanceof TropicalFish.TropicalFishGroupData var7) {
+         var5 = var7.variant;
+      } else if ((double)var6.nextFloat() < 0.9) {
+         var5 = Util.getRandom(COMMON_VARIANTS, var6);
+         var4 = new TropicalFish.TropicalFishGroupData(this, var5);
       } else {
-         RandomSource var7 = var1.getRandom();
-         TropicalFish.Variant var6;
-         if (var4 instanceof TropicalFish.TropicalFishGroupData var8) {
-            var6 = var8.variant;
-         } else if ((double)var7.nextFloat() < 0.9) {
-            var6 = Util.getRandom(COMMON_VARIANTS, var7);
-            var4 = new TropicalFish.TropicalFishGroupData(this, var6);
-         } else {
-            this.isSchool = false;
-            TropicalFish.Pattern[] var9 = TropicalFish.Pattern.values();
-            DyeColor[] var10 = DyeColor.values();
-            TropicalFish.Pattern var11 = Util.getRandom(var9, var7);
-            DyeColor var12 = Util.getRandom(var10, var7);
-            DyeColor var13 = Util.getRandom(var10, var7);
-            var6 = new TropicalFish.Variant(var11, var12, var13);
-         }
-
-         this.setPackedVariant(var6.getPackedId());
-         return var4;
+         this.isSchool = false;
+         TropicalFish.Pattern[] var8 = TropicalFish.Pattern.values();
+         DyeColor[] var9 = DyeColor.values();
+         TropicalFish.Pattern var10 = Util.getRandom(var8, var6);
+         DyeColor var11 = Util.getRandom(var9, var6);
+         DyeColor var12 = Util.getRandom(var9, var6);
+         var5 = new TropicalFish.Variant(var10, var11, var12);
       }
+
+      this.setPackedVariant(var5.getPackedId());
+      return var4;
    }
 
    public static boolean checkTropicalFishSpawnRules(EntityType<TropicalFish> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
@@ -280,10 +282,15 @@ public class TropicalFish extends AbstractSchoolingFish implements VariantHolder
       }
    }
 
-   public static record Variant(TropicalFish.Pattern a, DyeColor b, DyeColor c) {
+   public static record Variant(TropicalFish.Pattern b, DyeColor c, DyeColor d) {
       private final TropicalFish.Pattern pattern;
       private final DyeColor baseColor;
       private final DyeColor patternColor;
+      public static final Codec<TropicalFish.Variant> CODEC = Codec.INT.xmap(TropicalFish.Variant::new, TropicalFish.Variant::getPackedId);
+
+      public Variant(int var1) {
+         this(TropicalFish.getPattern(var1), TropicalFish.getBaseColor(var1), TropicalFish.getPatternColor(var1));
+      }
 
       public Variant(TropicalFish.Pattern var1, DyeColor var2, DyeColor var3) {
          super();

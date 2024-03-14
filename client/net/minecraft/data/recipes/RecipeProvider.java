@@ -20,6 +20,7 @@ import net.minecraft.advancements.critereon.EnterBlockTrigger;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.advancements.critereon.MinMaxBounds;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.BlockFamilies;
 import net.minecraft.data.BlockFamily;
@@ -47,6 +48,7 @@ import net.minecraft.world.level.block.Blocks;
 public abstract class RecipeProvider implements DataProvider {
    final PackOutput.PathProvider recipePathProvider;
    final PackOutput.PathProvider advancementPathProvider;
+   private final CompletableFuture<HolderLookup.Provider> registries;
    private static final Map<BlockFamily.Variant, BiFunction<ItemLike, ItemLike, RecipeBuilder>> SHAPE_BUILDERS = ImmutableMap.builder()
       .put(BlockFamily.Variant.BUTTON, (BiFunction<ItemLike, ItemLike, RecipeBuilder>)(var0, var1) -> buttonBuilder(var0, Ingredient.of(var1)))
       .put(
@@ -83,25 +85,30 @@ public abstract class RecipeProvider implements DataProvider {
       )
       .build();
 
-   public RecipeProvider(PackOutput var1) {
+   public RecipeProvider(PackOutput var1, CompletableFuture<HolderLookup.Provider> var2) {
       super();
       this.recipePathProvider = var1.createPathProvider(PackOutput.Target.DATA_PACK, "recipes");
       this.advancementPathProvider = var1.createPathProvider(PackOutput.Target.DATA_PACK, "advancements");
+      this.registries = var2;
    }
 
    @Override
-   public CompletableFuture<?> run(final CachedOutput var1) {
-      final HashSet var2 = Sets.newHashSet();
-      final ArrayList var3 = new ArrayList();
+   public final CompletableFuture<?> run(CachedOutput var1) {
+      return this.registries.thenCompose(var2 -> this.run(var1, var2));
+   }
+
+   protected CompletableFuture<?> run(final CachedOutput var1, final HolderLookup.Provider var2) {
+      final HashSet var3 = Sets.newHashSet();
+      final ArrayList var4 = new ArrayList();
       this.buildRecipes(new RecipeOutput() {
          @Override
          public void accept(ResourceLocation var1x, Recipe<?> var2x, @Nullable AdvancementHolder var3x) {
-            if (!var2.add(var1x)) {
+            if (!var3.add(var1x)) {
                throw new IllegalStateException("Duplicate recipe " + var1x);
             } else {
-               var3.add(DataProvider.saveStable(var1, Recipe.CODEC, var2x, RecipeProvider.this.recipePathProvider.json(var1x)));
+               var4.add(DataProvider.saveStable(var1, var2, Recipe.CODEC, var2x, RecipeProvider.this.recipePathProvider.json(var1x)));
                if (var3x != null) {
-                  var3.add(DataProvider.saveStable(var1, Advancement.CODEC, var3x.value(), RecipeProvider.this.advancementPathProvider.json(var3x.id())));
+                  var4.add(DataProvider.saveStable(var1, var2, Advancement.CODEC, var3x.value(), RecipeProvider.this.advancementPathProvider.json(var3x.id())));
                }
             }
          }
@@ -111,11 +118,11 @@ public abstract class RecipeProvider implements DataProvider {
             return Advancement.Builder.recipeAdvancement().parent(RecipeBuilder.ROOT_RECIPE_ADVANCEMENT);
          }
       });
-      return CompletableFuture.allOf(var3.toArray(var0 -> new CompletableFuture[var0]));
+      return CompletableFuture.allOf(var4.toArray(var0 -> new CompletableFuture[var0]));
    }
 
-   protected CompletableFuture<?> buildAdvancement(CachedOutput var1, AdvancementHolder var2) {
-      return DataProvider.saveStable(var1, Advancement.CODEC, var2.value(), this.advancementPathProvider.json(var2.id()));
+   protected CompletableFuture<?> buildAdvancement(CachedOutput var1, HolderLookup.Provider var2, AdvancementHolder var3) {
+      return DataProvider.saveStable(var1, var2, Advancement.CODEC, var3.value(), this.advancementPathProvider.json(var3.id()));
    }
 
    protected abstract void buildRecipes(RecipeOutput var1);
@@ -484,11 +491,7 @@ public abstract class RecipeProvider implements DataProvider {
       String var7,
       @Nullable String var8
    ) {
-      ShapelessRecipeBuilder.shapeless(var1, var2, 9)
-         .requires(var4)
-         .group(var8)
-         .unlockedBy(getHasName(var4), has(var4))
-         .save(var0, new ResourceLocation(var7));
+      ShapelessRecipeBuilder.shapeless(var1, var2, 9).requires(var4).group(var8).unlockedBy(getHasName(var4), has(var4)).save(var0, new ResourceLocation(var7));
       ShapedRecipeBuilder.shaped(var3, var4)
          .define('#', var2)
          .pattern("###")

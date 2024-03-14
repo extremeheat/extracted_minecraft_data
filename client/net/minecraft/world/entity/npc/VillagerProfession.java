@@ -68,7 +68,6 @@ public record VillagerProfession(
       this.workSound = var6;
    }
 
-   @Override
    public String toString() {
       return this.name;
    }

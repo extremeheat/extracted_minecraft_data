@@ -1,10 +1,6 @@
 package net.minecraft.world.entity.animal;
 
-import com.google.common.collect.ImmutableList;
-import java.util.Comparator;
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -19,6 +15,7 @@ import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.Crackiness;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -61,7 +58,6 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
 
    public IronGolem(EntityType<? extends IronGolem> var1, Level var2) {
       super(var1, var2);
-      this.setMaxUpStep(1.0F);
    }
 
    @Override
@@ -82,9 +78,9 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_FLAGS_ID, (byte)0);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_FLAGS_ID, (byte)0);
    }
 
    public static AttributeSupplier.Builder createAttributes() {
@@ -92,7 +88,8 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
          .add(Attributes.MAX_HEALTH, 100.0)
          .add(Attributes.MOVEMENT_SPEED, 0.25)
          .add(Attributes.KNOCKBACK_RESISTANCE, 1.0)
-         .add(Attributes.ATTACK_DAMAGE, 15.0);
+         .add(Attributes.ATTACK_DAMAGE, 15.0)
+         .add(Attributes.STEP_HEIGHT, 1.0);
    }
 
    @Override
@@ -203,7 +200,7 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
 
    @Override
    public boolean hurt(DamageSource var1, float var2) {
-      IronGolem.Crackiness var3 = this.getCrackiness();
+      Crackiness.Level var3 = this.getCrackiness();
       boolean var4 = super.hurt(var1, var2);
       if (var4 && this.getCrackiness() != var3) {
          this.playSound(SoundEvents.IRON_GOLEM_DAMAGE, 1.0F, 1.0F);
@@ -212,8 +209,8 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
       return var4;
    }
 
-   public IronGolem.Crackiness getCrackiness() {
-      return IronGolem.Crackiness.byFraction(this.getHealth() / this.getMaxHealth());
+   public Crackiness.Level getCrackiness() {
+      return Crackiness.GOLEM.byFraction(this.getHealth() / this.getMaxHealth());
    }
 
    @Override
@@ -267,10 +264,7 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
          } else {
             float var5 = 1.0F + (this.random.nextFloat() - this.random.nextFloat()) * 0.2F;
             this.playSound(SoundEvents.IRON_GOLEM_REPAIR, 1.0F, var5);
-            if (!var1.getAbilities().instabuild) {
-               var3.shrink(1);
-            }
-
+            var3.consume(1, var1);
             return InteractionResult.sidedSuccess(this.level().isClientSide);
          }
       }
@@ -327,31 +321,5 @@ public class IronGolem extends AbstractGolem implements NeutralMob {
    @Override
    public Vec3 getLeashOffset() {
       return new Vec3(0.0, (double)(0.875F * this.getEyeHeight()), (double)(this.getBbWidth() * 0.4F));
-   }
-
-   public static enum Crackiness {
-      NONE(1.0F),
-      LOW(0.75F),
-      MEDIUM(0.5F),
-      HIGH(0.25F);
-
-      private static final List<IronGolem.Crackiness> BY_DAMAGE = Stream.of(values())
-         .sorted(Comparator.comparingDouble(var0 -> (double)var0.fraction))
-         .collect(ImmutableList.toImmutableList());
-      private final float fraction;
-
-      private Crackiness(float var3) {
-         this.fraction = var3;
-      }
-
-      public static IronGolem.Crackiness byFraction(float var0) {
-         for(IronGolem.Crackiness var2 : BY_DAMAGE) {
-            if (var0 < var2.fraction) {
-               return var2;
-            }
-         }
-
-         return NONE;
-      }
    }
 }

@@ -51,11 +51,23 @@ public class HolderSetCodec<E> implements Codec<HolderSet<E>> {
             HolderGetter var5 = (HolderGetter)var4.get();
             return this.registryAwareCodec
                .decode(var1, var2)
-               .map(var1x -> var1x.mapFirst(var1xx -> (HolderSet)var1xx.map(var5::getOrThrow, HolderSet::direct)));
+               .flatMap(
+                  var1x -> {
+                     DataResult var2xx = (DataResult)((Either)var1x.getFirst())
+                        .map(var1xx -> lookupTag(var5, var1xx), var0x -> DataResult.success(HolderSet.direct(var0x)));
+                     return var2xx.map(var1xx -> Pair.of(var1xx, var1x.getSecond()));
+                  }
+               );
          }
       }
 
       return this.decodeWithoutRegistry(var1, (T)var2);
+   }
+
+   private static <E> DataResult<HolderSet<E>> lookupTag(HolderGetter<E> var0, TagKey<E> var1) {
+      return (DataResult<HolderSet<E>>)var0.get(var1)
+         .map(DataResult::success)
+         .orElseGet(() -> DataResult.error(() -> "Missing tag: '" + var1.location() + "' in '" + var1.registry().location() + "'"));
    }
 
    // $VF: Could not properly define all variable types!

@@ -4,10 +4,9 @@ import java.util.Map;
 import java.util.Optional;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
-import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.biome.Biome;
@@ -43,7 +42,7 @@ public class WorldPresets {
       super();
    }
 
-   public static void bootstrap(BootstapContext<WorldPreset> var0) {
+   public static void bootstrap(BootstrapContext<WorldPreset> var0) {
       new WorldPresets.Bootstrap(var0).bootstrap();
    }
 
@@ -51,8 +50,8 @@ public class WorldPresets {
       return ResourceKey.create(Registries.WORLD_PRESET, new ResourceLocation(var0));
    }
 
-   public static Optional<ResourceKey<WorldPreset>> fromSettings(Registry<LevelStem> var0) {
-      return var0.getOptional(LevelStem.OVERWORLD).flatMap(var0x -> {
+   public static Optional<ResourceKey<WorldPreset>> fromSettings(WorldDimensions var0) {
+      return var0.get(LevelStem.OVERWORLD).flatMap(var0x -> {
          ChunkGenerator var1 = var0x.generator();
          if (var1 instanceof FlatLevelSource) {
             return Optional.of(FLAT);
@@ -67,11 +66,11 @@ public class WorldPresets {
    }
 
    public static LevelStem getNormalOverworld(RegistryAccess var0) {
-      return var0.registryOrThrow(Registries.WORLD_PRESET).getHolderOrThrow(NORMAL).value().overworld().orElseThrow();
+      return (LevelStem)var0.registryOrThrow(Registries.WORLD_PRESET).getHolderOrThrow(NORMAL).value().overworld().orElseThrow();
    }
 
    static class Bootstrap {
-      private final BootstapContext<WorldPreset> context;
+      private final BootstrapContext<WorldPreset> context;
       private final HolderGetter<NoiseGeneratorSettings> noiseSettings;
       private final HolderGetter<Biome> biomes;
       private final HolderGetter<PlacedFeature> placedFeatures;
@@ -81,7 +80,7 @@ public class WorldPresets {
       private final LevelStem netherStem;
       private final LevelStem endStem;
 
-      Bootstrap(BootstapContext<WorldPreset> var1) {
+      Bootstrap(BootstrapContext<WorldPreset> var1) {
          super();
          this.context = var1;
          HolderGetter var2 = var1.lookup(Registries.DIMENSION_TYPE);

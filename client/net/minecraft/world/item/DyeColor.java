@@ -1,10 +1,13 @@
 package net.minecraft.world.item;
 
+import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import java.util.Arrays;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.material.MapColor;
@@ -33,6 +36,7 @@ public enum DyeColor implements StringRepresentable {
       Arrays.stream(values()).collect(Collectors.toMap(var0 -> var0.fireworkColor, var0 -> var0))
    );
    public static final StringRepresentable.EnumCodec<DyeColor> CODEC = StringRepresentable.fromEnum(DyeColor::values);
+   public static final StreamCodec<ByteBuf, DyeColor> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, DyeColor::getId);
    private final int id;
    private final String name;
    private final MapColor mapColor;

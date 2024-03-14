@@ -32,6 +32,7 @@ import net.minecraft.client.resources.sounds.UnderwaterAmbientSoundHandler;
 import net.minecraft.client.resources.sounds.UnderwaterAmbientSoundInstances;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundClientCommandPacket;
@@ -364,9 +365,7 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    protected void sendRidingJump() {
       this.connection
-         .send(
-            new ServerboundPlayerCommandPacket(this, ServerboundPlayerCommandPacket.Action.START_RIDING_JUMP, Mth.floor(this.getJumpRidingScale() * 100.0F))
-         );
+         .send(new ServerboundPlayerCommandPacket(this, ServerboundPlayerCommandPacket.Action.START_RIDING_JUMP, Mth.floor(this.getJumpRidingScale() * 100.0F)));
    }
 
    public void sendOpenInventory() {
@@ -867,8 +866,8 @@ public class LocalPlayer extends AbstractClientPlayer {
 
    @Nullable
    @Override
-   public MobEffectInstance removeEffectNoUpdate(@Nullable MobEffect var1) {
-      if (var1 == MobEffects.CONFUSION) {
+   public MobEffectInstance removeEffectNoUpdate(Holder<MobEffect> var1) {
+      if (var1.is(MobEffects.CONFUSION)) {
          this.oSpinningEffectIntensity = 0.0F;
          this.spinningEffectIntensity = 0.0F;
       }

@@ -61,7 +61,7 @@ public class Structures {
       return structure(var0, Map.of(), GenerationStep.Decoration.SURFACE_STRUCTURES, var1);
    }
 
-   public static void bootstrap(BootstapContext<Structure> var0) {
+   public static void bootstrap(BootstrapContext<Structure> var0) {
       HolderGetter var1 = var0.lookup(Registries.BIOME);
       HolderGetter var2 = var0.lookup(Registries.TEMPLATE_POOL);
       var0.register(
@@ -103,17 +103,14 @@ public class Structures {
       var0.register(
          BuiltinStructures.WOODLAND_MANSION, new WoodlandMansionStructure(structure(var1.getOrThrow(BiomeTags.HAS_WOODLAND_MANSION), TerrainAdjustment.NONE))
       );
-      var0.register(
-         BuiltinStructures.JUNGLE_TEMPLE, new JungleTempleStructure(structure(var1.getOrThrow(BiomeTags.HAS_JUNGLE_TEMPLE), TerrainAdjustment.NONE))
-      );
+      var0.register(BuiltinStructures.JUNGLE_TEMPLE, new JungleTempleStructure(structure(var1.getOrThrow(BiomeTags.HAS_JUNGLE_TEMPLE), TerrainAdjustment.NONE)));
       var0.register(
          BuiltinStructures.DESERT_PYRAMID, new DesertPyramidStructure(structure(var1.getOrThrow(BiomeTags.HAS_DESERT_PYRAMID), TerrainAdjustment.NONE))
       );
       var0.register(BuiltinStructures.IGLOO, new IglooStructure(structure(var1.getOrThrow(BiomeTags.HAS_IGLOO), TerrainAdjustment.NONE)));
       var0.register(BuiltinStructures.SHIPWRECK, new ShipwreckStructure(structure(var1.getOrThrow(BiomeTags.HAS_SHIPWRECK), TerrainAdjustment.NONE), false));
       var0.register(
-         BuiltinStructures.SHIPWRECK_BEACHED,
-         new ShipwreckStructure(structure(var1.getOrThrow(BiomeTags.HAS_SHIPWRECK_BEACHED), TerrainAdjustment.NONE), true)
+         BuiltinStructures.SHIPWRECK_BEACHED, new ShipwreckStructure(structure(var1.getOrThrow(BiomeTags.HAS_SHIPWRECK_BEACHED), TerrainAdjustment.NONE), true)
       );
       var0.register(
          BuiltinStructures.SWAMP_HUT,

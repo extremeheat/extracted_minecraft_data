@@ -22,14 +22,12 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.MoverType;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.VariantHolder;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -59,7 +57,7 @@ import org.joml.Vector3f;
 public class Shulker extends AbstractGolem implements VariantHolder<Optional<DyeColor>>, Enemy {
    private static final UUID COVERED_ARMOR_MODIFIER_UUID = UUID.fromString("7E0292F2-9434-48D5-A29F-9583AF7DF27F");
    private static final AttributeModifier COVERED_ARMOR_MODIFIER = new AttributeModifier(
-      COVERED_ARMOR_MODIFIER_UUID, "Covered armor bonus", 20.0, AttributeModifier.Operation.ADDITION
+      COVERED_ARMOR_MODIFIER_UUID, "Covered armor bonus", 20.0, AttributeModifier.Operation.ADD_VALUE
    );
    protected static final EntityDataAccessor<Direction> DATA_ATTACH_FACE_ID = SynchedEntityData.defineId(Shulker.class, EntityDataSerializers.DIRECTION);
    protected static final EntityDataAccessor<Byte> DATA_PEEK_ID = SynchedEntityData.defineId(Shulker.class, EntityDataSerializers.BYTE);
@@ -75,6 +73,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
       Vec3i var0 = Direction.SOUTH.getNormal();
       return new Vector3f((float)var0.getX(), (float)var0.getY(), (float)var0.getZ());
    });
+   private static final float MAX_SCALE = 3.0F;
    private float currentPeekAmountO;
    private float currentPeekAmount;
    @Nullable
@@ -132,11 +131,11 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_ATTACH_FACE_ID, Direction.DOWN);
-      this.entityData.define(DATA_PEEK_ID, (byte)0);
-      this.entityData.define(DATA_COLOR_ID, (byte)16);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_ATTACH_FACE_ID, Direction.DOWN);
+      var1.define(DATA_PEEK_ID, (byte)0);
+      var1.define(DATA_COLOR_ID, (byte)16);
    }
 
    public static AttributeSupplier.Builder createAttributes() {
@@ -199,8 +198,8 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
    protected AABB makeBoundingBox() {
       float var1 = getPhysicalPeek(this.currentPeekAmount);
       Direction var2 = this.getAttachFace().getOpposite();
-      float var3 = this.getType().getWidth() / 2.0F;
-      return getProgressAabb(var2, var1).move(this.getX() - (double)var3, this.getY(), this.getZ() - (double)var3);
+      float var3 = this.getBbWidth() / 2.0F;
+      return getProgressAabb(this.getScale(), var2, var1).move(this.getX() - (double)var3, this.getY(), this.getZ() - (double)var3);
    }
 
    private static float getPhysicalPeek(float var0) {
@@ -228,12 +227,12 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
       float var1 = getPhysicalPeek(this.currentPeekAmount);
       float var2 = getPhysicalPeek(this.currentPeekAmountO);
       Direction var3 = this.getAttachFace().getOpposite();
-      float var4 = var1 - var2;
+      float var4 = (var1 - var2) * this.getScale();
       if (!(var4 <= 0.0F)) {
          for(Entity var7 : this.level()
             .getEntities(
                this,
-               getProgressDeltaAabb(var3, var2, var1).move(this.getX() - 0.5, this.getY(), this.getZ() - 0.5),
+               getProgressDeltaAabb(this.getScale(), var3, var2, var1).move(this.getX() - 0.5, this.getY(), this.getZ() - 0.5),
                EntitySelector.NO_SPECTATORS.and(var1x -> !var1x.isPassengerOfSameVehicle(this))
             )) {
             if (!(var7 instanceof Shulker) && !var7.noPhysics) {
@@ -246,16 +245,22 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
       }
    }
 
-   public static AABB getProgressAabb(Direction var0, float var1) {
-      return getProgressDeltaAabb(var0, -1.0F, var1);
+   public static AABB getProgressAabb(float var0, Direction var1, float var2) {
+      return getProgressDeltaAabb(var0, var1, -1.0F, var2);
    }
 
-   public static AABB getProgressDeltaAabb(Direction var0, float var1, float var2) {
-      double var3 = (double)Math.max(var1, var2);
-      double var5 = (double)Math.min(var1, var2);
-      return new AABB(BlockPos.ZERO)
-         .expandTowards((double)var0.getStepX() * var3, (double)var0.getStepY() * var3, (double)var0.getStepZ() * var3)
-         .contract((double)(-var0.getStepX()) * (1.0 + var5), (double)(-var0.getStepY()) * (1.0 + var5), (double)(-var0.getStepZ()) * (1.0 + var5));
+   public static AABB getProgressDeltaAabb(float var0, Direction var1, float var2, float var3) {
+      AABB var4 = new AABB(0.0, 0.0, 0.0, (double)var0, (double)var0, (double)var0);
+      double var5 = (double)Math.max(var2, var3);
+      double var7 = (double)Math.min(var2, var3);
+      return var4.expandTowards(
+            (double)var1.getStepX() * var5 * (double)var0, (double)var1.getStepY() * var5 * (double)var0, (double)var1.getStepZ() * var5 * (double)var0
+         )
+         .contract(
+            (double)(-var1.getStepX()) * (1.0 + var7) * (double)var0,
+            (double)(-var1.getStepY()) * (1.0 + var7) * (double)var0,
+            (double)(-var1.getStepZ()) * (1.0 + var7) * (double)var0
+         );
    }
 
    @Override
@@ -282,13 +287,11 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
       this.setYRot(0.0F);
       this.yHeadRot = this.getYRot();
       this.setOldPosAndRot();
-      return super.finalizeSpawn(var1, var2, var3, var4, var5);
+      return super.finalizeSpawn(var1, var2, var3, var4);
    }
 
    @Override
@@ -353,7 +356,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
          if (!this.level().loadedAndEntityCanStandOnFace(var1.relative(var2), this, var3)) {
             return false;
          } else {
-            AABB var4 = getProgressAabb(var3, 1.0F).move(var1).deflate(1.0E-6);
+            AABB var4 = getProgressAabb(this.getScale(), var3, 1.0F).move(var1).deflate(1.0E-6);
             return this.level().noCollision(this, var4);
          }
       }
@@ -482,7 +485,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
 
    void setRawPeekAmount(int var1) {
       if (!this.level().isClientSide) {
-         this.getAttribute(Attributes.ARMOR).removeModifier(COVERED_ARMOR_MODIFIER.getId());
+         this.getAttribute(Attributes.ARMOR).removeModifier(COVERED_ARMOR_MODIFIER.id());
          if (var1 == 0) {
             this.getAttribute(Attributes.ARMOR).addPermanentModifier(COVERED_ARMOR_MODIFIER);
             this.playSound(SoundEvents.SHULKER_CLOSE, 1.0F, 1.0F);
@@ -498,11 +501,6 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
 
    public float getClientPeekAmount(float var1) {
       return Mth.lerp(var1, this.currentPeekAmountO, this.currentPeekAmount);
-   }
-
-   @Override
-   protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
-      return 0.5F;
    }
 
    @Override
@@ -538,6 +536,11 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
       } else {
          return Optional.empty();
       }
+   }
+
+   @Override
+   protected float sanitizeScale(float var1) {
+      return Math.min(var1, 3.0F);
    }
 
    public void setVariant(Optional<DyeColor> var1) {
@@ -638,9 +641,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
          if (var3.getAxis() == Direction.Axis.X) {
             return this.mob.getBoundingBox().inflate(4.0, var1, var1);
          } else {
-            return var3.getAxis() == Direction.Axis.Z
-               ? this.mob.getBoundingBox().inflate(var1, var1, 4.0)
-               : this.mob.getBoundingBox().inflate(var1, 4.0, var1);
+            return var3.getAxis() == Direction.Axis.Z ? this.mob.getBoundingBox().inflate(var1, var1, 4.0) : this.mob.getBoundingBox().inflate(var1, 4.0, var1);
          }
       }
    }
@@ -694,9 +695,7 @@ public class Shulker extends AbstractGolem implements VariantHolder<Optional<Dye
          if (var3.getAxis() == Direction.Axis.X) {
             return this.mob.getBoundingBox().inflate(4.0, var1, var1);
          } else {
-            return var3.getAxis() == Direction.Axis.Z
-               ? this.mob.getBoundingBox().inflate(var1, var1, 4.0)
-               : this.mob.getBoundingBox().inflate(var1, 4.0, var1);
+            return var3.getAxis() == Direction.Axis.Z ? this.mob.getBoundingBox().inflate(var1, var1, 4.0) : this.mob.getBoundingBox().inflate(var1, 4.0, var1);
          }
       }
    }

@@ -7,6 +7,7 @@ import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.features.EndFeatures;
@@ -27,6 +28,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.configurations.EndGatewayConfiguration;
 import net.minecraft.world.phys.AABB;
@@ -51,11 +53,11 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
    }
 
    @Override
-   protected void saveAdditional(CompoundTag var1) {
-      super.saveAdditional(var1);
+   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.saveAdditional(var1, var2);
       var1.putLong("Age", this.age);
       if (this.exitPortal != null) {
-         var1.put("ExitPortal", NbtUtils.writeBlockPos(this.exitPortal));
+         var1.put("exit_portal", NbtUtils.writeBlockPos(this.exitPortal));
       }
 
       if (this.exactTeleport) {
@@ -64,16 +66,10 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
    }
 
    @Override
-   public void load(CompoundTag var1) {
-      super.load(var1);
+   public void load(CompoundTag var1, HolderLookup.Provider var2) {
+      super.load(var1, var2);
       this.age = var1.getLong("Age");
-      if (var1.contains("ExitPortal", 10)) {
-         BlockPos var2 = NbtUtils.readBlockPos(var1.getCompound("ExitPortal"));
-         if (Level.isInSpawnableBounds(var2)) {
-            this.exitPortal = var2;
-         }
-      }
-
+      NbtUtils.readBlockPos(var1, "exit_portal").filter(Level::isInSpawnableBounds).ifPresent(var1x -> this.exitPortal = var1x);
       this.exactTeleport = var1.getBoolean("ExactTeleport");
    }
 
@@ -131,8 +127,8 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
    }
 
    @Override
-   public CompoundTag getUpdateTag() {
-      return this.saveWithoutMetadata();
+   public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
+      return this.saveWithoutMetadata(var1);
    }
 
    private static void triggerCooldown(Level var0, BlockPos var1, BlockState var2, TheEndGatewayBlockEntity var3) {
@@ -207,7 +203,7 @@ public class TheEndGatewayBlockEntity extends TheEndPortalBlockEntity {
          var0.registryAccess()
             .registry(Registries.CONFIGURED_FEATURE)
             .flatMap(var0x -> var0x.getHolder(EndFeatures.END_ISLAND))
-            .ifPresent(var2x -> var2x.value().place(var0, var0.getChunkSource().getGenerator(), RandomSource.create(var5.asLong()), var5));
+            .ifPresent(var2x -> ((ConfiguredFeature)var2x.value()).place(var0, var0.getChunkSource().getGenerator(), RandomSource.create(var5.asLong()), var5));
          var4 = var5;
       } else {
          LOGGER.debug("Found suitable block to teleport to: {}", var4);

@@ -28,14 +28,13 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
 
    protected TamableAnimal(EntityType<? extends TamableAnimal> var1, Level var2) {
       super(var1, var2);
-      this.reassessTameGoals();
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_FLAGS_ID, (byte)0);
-      this.entityData.define(DATA_OWNERUUID_ID, Optional.empty());
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_FLAGS_ID, (byte)0);
+      var1.define(DATA_OWNERUUID_ID, Optional.empty());
    }
 
    @Override
@@ -62,9 +61,9 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
       if (var2 != null) {
          try {
             this.setOwnerUUID(var2);
-            this.setTame(true);
+            this.setTame(true, false);
          } catch (Throwable var4) {
-            this.setTame(false);
+            this.setTame(false, true);
          }
       }
 
@@ -106,18 +105,20 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
       return (this.entityData.get(DATA_FLAGS_ID) & 4) != 0;
    }
 
-   public void setTame(boolean var1) {
-      byte var2 = this.entityData.get(DATA_FLAGS_ID);
+   public void setTame(boolean var1, boolean var2) {
+      byte var3 = this.entityData.get(DATA_FLAGS_ID);
       if (var1) {
-         this.entityData.set(DATA_FLAGS_ID, (byte)(var2 | 4));
+         this.entityData.set(DATA_FLAGS_ID, (byte)(var3 | 4));
       } else {
-         this.entityData.set(DATA_FLAGS_ID, (byte)(var2 & -5));
+         this.entityData.set(DATA_FLAGS_ID, (byte)(var3 & -5));
       }
 
-      this.reassessTameGoals();
+      if (var2) {
+         this.applyTamingSideEffects();
+      }
    }
 
-   protected void reassessTameGoals() {
+   protected void applyTamingSideEffects() {
    }
 
    public boolean isInSittingPose() {
@@ -144,10 +145,10 @@ public abstract class TamableAnimal extends Animal implements OwnableEntity {
    }
 
    public void tame(Player var1) {
-      this.setTame(true);
+      this.setTame(true, true);
       this.setOwnerUUID(var1.getUUID());
-      if (var1 instanceof ServerPlayer) {
-         CriteriaTriggers.TAME_ANIMAL.trigger((ServerPlayer)var1, this);
+      if (var1 instanceof ServerPlayer var2) {
+         CriteriaTriggers.TAME_ANIMAL.trigger((ServerPlayer)var2, this);
       }
    }
 

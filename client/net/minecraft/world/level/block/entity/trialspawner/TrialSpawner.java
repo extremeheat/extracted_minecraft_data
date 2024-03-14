@@ -49,26 +49,28 @@ public final class TrialSpawner {
    private final TrialSpawnerData data;
    private final TrialSpawner.StateAccessor stateAccessor;
    private PlayerDetector playerDetector;
+   private final PlayerDetector.EntitySelector entitySelector;
    private boolean overridePeacefulAndMobSpawnRule;
 
    public Codec<TrialSpawner> codec() {
       return RecordCodecBuilder.create(
          var1 -> var1.group(TrialSpawnerConfig.MAP_CODEC.forGetter(TrialSpawner::getConfig), TrialSpawnerData.MAP_CODEC.forGetter(TrialSpawner::getData))
-               .apply(var1, (var1x, var2) -> new TrialSpawner(var1x, var2, this.stateAccessor, this.playerDetector))
+               .apply(var1, (var1x, var2) -> new TrialSpawner(var1x, var2, this.stateAccessor, this.playerDetector, this.entitySelector))
       );
    }
 
-   public TrialSpawner(TrialSpawner.StateAccessor var1, PlayerDetector var2) {
-      this(TrialSpawnerConfig.DEFAULT, new TrialSpawnerData(), var1, var2);
+   public TrialSpawner(TrialSpawner.StateAccessor var1, PlayerDetector var2, PlayerDetector.EntitySelector var3) {
+      this(TrialSpawnerConfig.DEFAULT, new TrialSpawnerData(), var1, var2, var3);
    }
 
-   public TrialSpawner(TrialSpawnerConfig var1, TrialSpawnerData var2, TrialSpawner.StateAccessor var3, PlayerDetector var4) {
+   public TrialSpawner(TrialSpawnerConfig var1, TrialSpawnerData var2, TrialSpawner.StateAccessor var3, PlayerDetector var4, PlayerDetector.EntitySelector var5) {
       super();
       this.config = var1;
       this.data = var2;
       this.data.setSpawnPotentialsFromConfig(var1);
       this.stateAccessor = var3;
       this.playerDetector = var4;
+      this.entitySelector = var5;
    }
 
    public TrialSpawnerConfig getConfig() {
@@ -93,6 +95,10 @@ public final class TrialSpawner {
 
    public PlayerDetector getPlayerDetector() {
       return this.playerDetector;
+   }
+
+   public PlayerDetector.EntitySelector getEntitySelector() {
+      return this.entitySelector;
    }
 
    public boolean canSpawnInLevel(Level var1) {
@@ -129,31 +135,40 @@ public final class TrialSpawner {
                if (!SpawnPlacements.checkSpawnRules((EntityType)var7.get(), var1, MobSpawnType.TRIAL_SPAWNER, var16, var1.getRandom())) {
                   return Optional.empty();
                } else {
-                  Entity var17 = EntityType.loadEntityRecursive(var5, var1, var7x -> {
+                  if (var4.getCustomSpawnRules().isPresent()) {
+                     SpawnData.CustomSpawnRules var17 = (SpawnData.CustomSpawnRules)var4.getCustomSpawnRules().get();
+                     if (!var17.isValidPosition(var16, var1)) {
+                        return Optional.empty();
+                     }
+                  }
+
+                  Entity var20 = EntityType.loadEntityRecursive(var5, var1, var7x -> {
                      var7x.moveTo(var9, var11, var13, var3.nextFloat() * 360.0F, 0.0F);
                      return var7x;
                   });
-                  if (var17 == null) {
+                  if (var20 == null) {
                      return Optional.empty();
                   } else {
-                     if (var17 instanceof Mob var18) {
+                     if (var20 instanceof Mob var18) {
                         if (!var18.checkSpawnObstruction(var1)) {
                            return Optional.empty();
                         }
 
-                        if (var4.getEntityToSpawn().size() == 1 && var4.getEntityToSpawn().contains("id", 8)) {
-                           var18.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var18.blockPosition()), MobSpawnType.TRIAL_SPAWNER, null, null);
-                           var18.setPersistenceRequired();
+                        boolean var19 = var4.getEntityToSpawn().size() == 1 && var4.getEntityToSpawn().contains("id", 8);
+                        if (var19) {
+                           var18.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var18.blockPosition()), MobSpawnType.TRIAL_SPAWNER, null);
                         }
+
+                        var18.setPersistenceRequired();
                      }
 
-                     if (!var1.tryAddFreshEntityWithPassengers(var17)) {
+                     if (!var1.tryAddFreshEntityWithPassengers(var20)) {
                         return Optional.empty();
                      } else {
                         var1.levelEvent(3011, var2, 0);
                         var1.levelEvent(3012, var16, 0);
-                        var1.gameEvent(var17, GameEvent.ENTITY_PLACE, var16);
-                        return Optional.of(var17.getUUID());
+                        var1.gameEvent(var20, GameEvent.ENTITY_PLACE, var16);
+                        return Optional.of(var20.getUUID());
                      }
                   }
                }

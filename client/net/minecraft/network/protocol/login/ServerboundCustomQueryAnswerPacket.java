@@ -2,14 +2,19 @@ package net.minecraft.network.protocol.login;
 
 import javax.annotation.Nullable;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.network.protocol.login.custom.CustomQueryAnswerPayload;
 import net.minecraft.network.protocol.login.custom.DiscardedQueryAnswerPayload;
 
-public record ServerboundCustomQueryAnswerPacket(int a, @Nullable CustomQueryAnswerPayload b) implements Packet<ServerLoginPacketListener> {
+public record ServerboundCustomQueryAnswerPacket(int b, @Nullable CustomQueryAnswerPayload c) implements Packet<ServerLoginPacketListener> {
    private final int transactionId;
    @Nullable
    private final CustomQueryAnswerPayload payload;
+   public static final StreamCodec<FriendlyByteBuf, ServerboundCustomQueryAnswerPacket> STREAM_CODEC = Packet.codec(
+      ServerboundCustomQueryAnswerPacket::write, ServerboundCustomQueryAnswerPacket::read
+   );
    private static final int MAX_PAYLOAD_SIZE = 1048576;
 
    public ServerboundCustomQueryAnswerPacket(int var1, @Nullable CustomQueryAnswerPayload var2) {
@@ -18,7 +23,7 @@ public record ServerboundCustomQueryAnswerPacket(int a, @Nullable CustomQueryAns
       this.payload = var2;
    }
 
-   public static ServerboundCustomQueryAnswerPacket read(FriendlyByteBuf var0) {
+   private static ServerboundCustomQueryAnswerPacket read(FriendlyByteBuf var0) {
       int var1 = var0.readVarInt();
       return new ServerboundCustomQueryAnswerPacket(var1, readPayload(var1, var0));
    }
@@ -37,10 +42,14 @@ public record ServerboundCustomQueryAnswerPacket(int a, @Nullable CustomQueryAns
       }
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       var1.writeVarInt(this.transactionId);
       var1.writeNullable(this.payload, (var0, var1x) -> var1x.write(var0));
+   }
+
+   @Override
+   public PacketType<ServerboundCustomQueryAnswerPacket> type() {
+      return LoginPacketTypes.SERVERBOUND_CUSTOM_QUERY_ANSWER;
    }
 
    public void handle(ServerLoginPacketListener var1) {

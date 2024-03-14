@@ -357,7 +357,7 @@ public class TextFilterClient implements AutoCloseable {
          List var2 = var1.stream()
             .map(var1x -> TextFilterClient.this.requestMessageProcessing(this.profile, var1x, TextFilterClient.this.chatIgnoreStrategy, this.streamExecutor))
             .collect(ImmutableList.toImmutableList());
-         return Util.<FilteredText>sequenceFailFast(var2).exceptionally(var0 -> ImmutableList.of());
+         return Util.sequenceFailFast(var2).exceptionally(var0 -> ImmutableList.of());
       }
 
       @Override

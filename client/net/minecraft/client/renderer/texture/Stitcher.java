@@ -9,11 +9,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 
 public class Stitcher<T extends Stitcher.Entry> {
-   private static final Comparator<Stitcher.Holder<?>> HOLDER_COMPARATOR = Comparator.<Stitcher.Holder<?>, Integer>comparing(var0 -> -var0.height)
+   private static final Comparator<Stitcher.Holder<?>> HOLDER_COMPARATOR = Comparator.comparing(var0 -> -var0.height)
       .thenComparing(var0 -> -var0.width)
       .thenComparing(var0 -> var0.entry.name());
    private final int mipLevel;
-   private final List<Stitcher.Holder<T>> texturesToBeStitched = new ArrayList<>();
+   private final List<Stitcher.Holder<T>> texturesToBeStitched = new ArrayList();
    private final List<Stitcher.Region<T>> storage = new ArrayList<>();
    private int storageX;
    private int storageY;
@@ -41,7 +41,7 @@ public class Stitcher<T extends Stitcher.Entry> {
    }
 
    public void stitch() {
-      ArrayList var1 = new ArrayList<>(this.texturesToBeStitched);
+      ArrayList var1 = new ArrayList(this.texturesToBeStitched);
       var1.sort(HOLDER_COMPARATOR);
 
       for(Stitcher.Holder var3 : var1) {

@@ -32,12 +32,15 @@ public class NbtIo {
    }
 
    public static CompoundTag readCompressed(Path var0, NbtAccounter var1) throws IOException {
-      CompoundTag var3;
-      try (InputStream var2 = Files.newInputStream(var0)) {
-         var3 = readCompressed(var2, var1);
+      CompoundTag var4;
+      try (
+         InputStream var2 = Files.newInputStream(var0);
+         FastBufferedInputStream var3 = new FastBufferedInputStream(var2);
+      ) {
+         var4 = readCompressed(var3, var1);
       }
 
-      return var3;
+      return var4;
    }
 
    private static DataInputStream createDecompressorStream(InputStream var0) throws IOException {
@@ -58,8 +61,11 @@ public class NbtIo {
    }
 
    public static void parseCompressed(Path var0, StreamTagVisitor var1, NbtAccounter var2) throws IOException {
-      try (InputStream var3 = Files.newInputStream(var0)) {
-         parseCompressed(var3, var1, var2);
+      try (
+         InputStream var3 = Files.newInputStream(var0);
+         FastBufferedInputStream var4 = new FastBufferedInputStream(var3);
+      ) {
+         parseCompressed(var4, var1, var2);
       }
    }
 

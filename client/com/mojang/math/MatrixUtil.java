@@ -147,4 +147,12 @@ public class MatrixUtil {
       Vector3f var18 = new Vector3f(var17.m00, var17.m11, var17.m22);
       return Triple.of(var9, var18, var2.conjugate());
    }
+
+   public static boolean isPureTranslation(Matrix4f var0) {
+      return (var0.properties() & 8) != 0;
+   }
+
+   public static boolean isOrthonormal(Matrix4f var0) {
+      return (var0.properties() & 16) != 0;
+   }
 }

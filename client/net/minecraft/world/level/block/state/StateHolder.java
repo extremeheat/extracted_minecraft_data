@@ -2,15 +2,13 @@ package net.minecraft.world.level.block.state;
 
 import com.google.common.collect.ArrayTable;
 import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
-import com.google.common.collect.UnmodifiableIterator;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
@@ -40,11 +38,11 @@ public abstract class StateHolder<O, S> {
       }
    };
    protected final O owner;
-   private final ImmutableMap<Property<?>, Comparable<?>> values;
+   private final Reference2ObjectArrayMap<Property<?>, Comparable<?>> values;
    private Table<Property<?>, Comparable<?>, S> neighbours;
    protected final MapCodec<S> propertiesCodec;
 
-   protected StateHolder(O var1, ImmutableMap<Property<?>, Comparable<?>> var2, MapCodec<S> var3) {
+   protected StateHolder(O var1, Reference2ObjectArrayMap<Property<?>, Comparable<?>> var2, MapCodec<S> var3) {
       super();
       this.owner = (O)var1;
       this.values = var2;
@@ -141,7 +139,7 @@ public abstract class StateHolder<O, S> {
          throw new IllegalStateException();
       } else {
          HashBasedTable var2 = HashBasedTable.create();
-         UnmodifiableIterator var3 = this.values.entrySet().iterator();
+         ObjectIterator var3 = this.values.entrySet().iterator();
 
          while(var3.hasNext()) {
             Entry var4 = (Entry)var3.next();
@@ -159,12 +157,12 @@ public abstract class StateHolder<O, S> {
    }
 
    private Map<Property<?>, Comparable<?>> makeNeighbourValues(Property<?> var1, Comparable<?> var2) {
-      HashMap var3 = Maps.newHashMap(this.values);
+      Reference2ObjectArrayMap var3 = new Reference2ObjectArrayMap(this.values);
       var3.put(var1, var2);
       return var3;
    }
 
-   public ImmutableMap<Property<?>, Comparable<?>> getValues() {
+   public Map<Property<?>, Comparable<?>> getValues() {
       return this.values;
    }
 

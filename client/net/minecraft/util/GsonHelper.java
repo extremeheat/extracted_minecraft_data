@@ -25,8 +25,6 @@ import java.util.Map.Entry;
 import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import org.apache.commons.lang3.StringUtils;
@@ -118,7 +116,7 @@ public class GsonHelper {
       if (var0.isJsonPrimitive()) {
          String var2 = var0.getAsString();
          return BuiltInRegistries.ITEM
-            .getHolder(ResourceKey.create(Registries.ITEM, new ResourceLocation(var2)))
+            .getHolder(new ResourceLocation(var2))
             .orElseThrow(() -> new JsonSyntaxException("Expected " + var1 + " to be an item, was unknown string '" + var2 + "'"));
       } else {
          throw new JsonSyntaxException("Expected " + var1 + " to be an item, was " + getType(var0));

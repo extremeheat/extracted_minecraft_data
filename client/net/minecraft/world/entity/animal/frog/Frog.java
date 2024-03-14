@@ -29,7 +29,6 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.AnimationState;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -54,17 +53,16 @@ import net.minecraft.world.entity.monster.Slime;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.AmphibiousNodeEvaluator;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.PathFinder;
+import net.minecraft.world.level.pathfinder.PathType;
+import net.minecraft.world.level.pathfinder.PathfindingContext;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Vector3f;
 
 public class Frog extends Animal implements VariantHolder<FrogVariant> {
    public static final Ingredient TEMPTATION_ITEM = Ingredient.of(Items.SLIME_BALL);
@@ -109,10 +107,9 @@ public class Frog extends Animal implements VariantHolder<FrogVariant> {
    public Frog(EntityType<? extends Animal> var1, Level var2) {
       super(var1, var2);
       this.lookControl = new Frog.FrogLookControl(this);
-      this.setPathfindingMalus(BlockPathTypes.WATER, 4.0F);
-      this.setPathfindingMalus(BlockPathTypes.TRAPDOOR, -1.0F);
+      this.setPathfindingMalus(PathType.WATER, 4.0F);
+      this.setPathfindingMalus(PathType.TRAPDOOR, -1.0F);
       this.moveControl = new SmoothSwimmingMoveControl(this, 85, 10, 0.02F, 0.1F, true);
-      this.setMaxUpStep(1.0F);
    }
 
    @Override
@@ -131,10 +128,10 @@ public class Frog extends Animal implements VariantHolder<FrogVariant> {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_VARIANT_ID, FrogVariant.TEMPERATE);
-      this.entityData.define(DATA_TONGUE_TARGET_ID, OptionalInt.empty());
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_VARIANT_ID, FrogVariant.TEMPERATE);
+      var1.define(DATA_TONGUE_TARGET_ID, OptionalInt.empty());
    }
 
    public void eraseTongueTarget() {
@@ -176,7 +173,7 @@ public class Frog extends Animal implements VariantHolder<FrogVariant> {
    @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      FrogVariant var2 = BuiltInRegistries.FROG_VARIANT.get(ResourceLocation.tryParse(var1.getString("variant")));
+      FrogVariant var2 = (FrogVariant)BuiltInRegistries.FROG_VARIANT.get(ResourceLocation.tryParse(var1.getString("variant")));
       if (var2 != null) {
          this.setVariant(var2);
       }
@@ -267,24 +264,26 @@ public class Frog extends Animal implements VariantHolder<FrogVariant> {
    }
 
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
-      Holder var6 = var1.getBiome(this.blockPosition());
-      if (var6.is(BiomeTags.SPAWNS_COLD_VARIANT_FROGS)) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+      Holder var5 = var1.getBiome(this.blockPosition());
+      if (var5.is(BiomeTags.SPAWNS_COLD_VARIANT_FROGS)) {
          this.setVariant(FrogVariant.COLD);
-      } else if (var6.is(BiomeTags.SPAWNS_WARM_VARIANT_FROGS)) {
+      } else if (var5.is(BiomeTags.SPAWNS_WARM_VARIANT_FROGS)) {
          this.setVariant(FrogVariant.WARM);
       } else {
          this.setVariant(FrogVariant.TEMPERATE);
       }
 
       FrogAi.initMemories(this, var1.getRandom());
-      return super.finalizeSpawn(var1, var2, var3, var4, var5);
+      return super.finalizeSpawn(var1, var2, var3, var4);
    }
 
    public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes().add(Attributes.MOVEMENT_SPEED, 1.0).add(Attributes.MAX_HEALTH, 10.0).add(Attributes.ATTACK_DAMAGE, 10.0);
+      return Mob.createMobAttributes()
+         .add(Attributes.MOVEMENT_SPEED, 1.0)
+         .add(Attributes.MAX_HEALTH, 10.0)
+         .add(Attributes.ATTACK_DAMAGE, 10.0)
+         .add(Attributes.STEP_HEIGHT, 1.0);
    }
 
    @Nullable
@@ -351,11 +350,6 @@ public class Frog extends Animal implements VariantHolder<FrogVariant> {
    }
 
    @Override
-   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      return new Vector3f(0.0F, var2.height - 0.125F * var3, -0.25F * var3);
-   }
-
-   @Override
    public boolean isFood(ItemStack var1) {
       return TEMPTATION_ITEM.test(var1);
    }
@@ -392,10 +386,10 @@ public class Frog extends Animal implements VariantHolder<FrogVariant> {
       }
 
       @Override
-      public BlockPathTypes getBlockPathType(BlockGetter var1, int var2, int var3, int var4) {
+      public PathType getPathType(PathfindingContext var1, int var2, int var3, int var4) {
          this.belowPos.set(var2, var3 - 1, var4);
          BlockState var5 = var1.getBlockState(this.belowPos);
-         return var5.is(BlockTags.FROG_PREFER_JUMP_TO) ? BlockPathTypes.OPEN : super.getBlockPathType(var1, var2, var3, var4);
+         return var5.is(BlockTags.FROG_PREFER_JUMP_TO) ? PathType.OPEN : super.getPathType(var1, var2, var3, var4);
       }
    }
 
@@ -405,8 +399,8 @@ public class Frog extends Animal implements VariantHolder<FrogVariant> {
       }
 
       @Override
-      public boolean canCutCorner(BlockPathTypes var1) {
-         return var1 != BlockPathTypes.WATER_BORDER && super.canCutCorner(var1);
+      public boolean canCutCorner(PathType var1) {
+         return var1 != PathType.WATER_BORDER && super.canCutCorner(var1);
       }
 
       @Override

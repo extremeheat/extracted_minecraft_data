@@ -97,9 +97,7 @@ public class IglooPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          ResourceLocation var8 = new ResourceLocation(this.templateName);
          StructurePlaceSettings var9 = makeSettings(this.placeSettings.getRotation(), var8);
          BlockPos var10 = IglooPieces.OFFSETS.get(var8);

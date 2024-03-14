@@ -69,7 +69,7 @@ public class KelpBlock extends GrowingPlantHeadBlock implements LiquidBlockConta
    }
 
    @Override
-   public FluidState getFluidState(BlockState var1) {
+   protected FluidState getFluidState(BlockState var1) {
       return Fluids.WATER.getSource(false);
    }
 }

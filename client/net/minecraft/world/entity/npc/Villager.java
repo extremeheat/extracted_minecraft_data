@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import java.util.List;
@@ -349,7 +348,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    private void setUnhappy() {
       this.setUnhappyCounter(40);
       if (!this.level().isClientSide()) {
-         this.playSound(SoundEvents.VILLAGER_NO, this.getSoundVolume(), this.getVoicePitch());
+         this.makeSound(SoundEvents.VILLAGER_NO);
       }
    }
 
@@ -488,9 +487,9 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_VILLAGER_DATA, new VillagerData(VillagerType.PLAINS, VillagerProfession.NONE, 1));
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_VILLAGER_DATA, new VillagerData(VillagerType.PLAINS, VillagerProfession.NONE, 1));
    }
 
    @Override
@@ -515,20 +514,18 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       if (var1.contains("VillagerData", 10)) {
-         DataResult var2 = VillagerData.CODEC.parse(new Dynamic(NbtOps.INSTANCE, var1.get("VillagerData")));
-         var2.resultOrPartial(LOGGER::error).ifPresent(this::setVillagerData);
-      }
-
-      if (var1.contains("Offers", 10)) {
-         this.offers = new MerchantOffers(var1.getCompound("Offers"));
+         VillagerData.CODEC
+            .parse(NbtOps.INSTANCE, var1.get("VillagerData"))
+            .resultOrPartial(LOGGER::error)
+            .ifPresent(var1x -> this.entityData.set(DATA_VILLAGER_DATA, var1x));
       }
 
       if (var1.contains("FoodLevel", 1)) {
          this.foodLevel = var1.getByte("FoodLevel");
       }
 
-      ListTag var3 = var1.getList("Gossips", 10);
-      this.gossips.update(new Dynamic(NbtOps.INSTANCE, var3));
+      ListTag var2 = var1.getList("Gossips", 10);
+      this.gossips.update(new Dynamic(NbtOps.INSTANCE, var2));
       if (var1.contains("Xp", 3)) {
          this.villagerXp = var1.getInt("Xp");
       }
@@ -572,10 +569,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    }
 
    public void playWorkSound() {
-      SoundEvent var1 = this.getVillagerData().getProfession().workSound();
-      if (var1 != null) {
-         this.playSound(var1, this.getSoundVolume(), this.getVoicePitch());
-      }
+      this.makeSound(this.getVillagerData().getProfession().workSound());
    }
 
    @Override
@@ -663,7 +657,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    public void releasePoi(MemoryModuleType<GlobalPos> var1) {
       if (this.level() instanceof ServerLevel) {
          MinecraftServer var2 = ((ServerLevel)this.level()).getServer();
-         this.brain.<GlobalPos>getMemory(var1).ifPresent(var3 -> {
+         this.brain.getMemory(var1).ifPresent(var3 -> {
             ServerLevel var4 = var2.getLevel(var3.dimension());
             if (var4 != null) {
                PoiManager var5 = var4.getPoiManager();
@@ -760,9 +754,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
       if (var3 == MobSpawnType.BREEDING) {
          this.setVillagerData(this.getVillagerData().setProfession(VillagerProfession.NONE));
       }
@@ -775,7 +767,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
          this.assignProfessionWhenSpawned = true;
       }
 
-      return super.finalizeSpawn(var1, var2, var3, var4, var5);
+      return super.finalizeSpawn(var1, var2, var3, var4);
    }
 
    @Nullable
@@ -791,7 +783,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
       }
 
       Villager var6 = new Villager(EntityType.VILLAGER, var1, var3);
-      var6.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var6.blockPosition()), MobSpawnType.BREEDING, null, null);
+      var6.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var6.blockPosition()), MobSpawnType.BREEDING, null);
       return var6;
    }
 
@@ -802,7 +794,7 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
          Witch var3 = EntityType.WITCH.create(var1);
          if (var3 != null) {
             var3.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), this.getXRot());
-            var3.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var3.blockPosition()), MobSpawnType.CONVERSION, null, null);
+            var3.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var3.blockPosition()), MobSpawnType.CONVERSION, null);
             var3.setNoAi(this.isNoAi());
             if (this.hasCustomName()) {
                var3.setCustomName(this.getCustomName());

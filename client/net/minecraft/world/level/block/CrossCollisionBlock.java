@@ -90,17 +90,17 @@ public abstract class CrossCollisionBlock extends Block implements SimpleWaterlo
    }
 
    @Override
-   public boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
       return !var1.getValue(WATERLOGGED);
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return this.shapeByIndex[this.getAABBIndex(var1)];
    }
 
    @Override
-   public VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return this.collisionShapeByIndex[this.getAABBIndex(var1)];
    }
 
@@ -132,17 +132,17 @@ public abstract class CrossCollisionBlock extends Block implements SimpleWaterlo
    }
 
    @Override
-   public FluidState getFluidState(BlockState var1) {
+   protected FluidState getFluidState(BlockState var1) {
       return var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
    }
 
    @Override
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
+   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
    }
 
    @Override
-   public BlockState rotate(BlockState var1, Rotation var2) {
+   protected BlockState rotate(BlockState var1, Rotation var2) {
       switch(var2) {
          case CLOCKWISE_180:
             return var1.setValue(NORTH, var1.getValue(SOUTH))
@@ -165,7 +165,7 @@ public abstract class CrossCollisionBlock extends Block implements SimpleWaterlo
    }
 
    @Override
-   public BlockState mirror(BlockState var1, Mirror var2) {
+   protected BlockState mirror(BlockState var1, Mirror var2) {
       switch(var2) {
          case LEFT_RIGHT:
             return var1.setValue(NORTH, var1.getValue(SOUTH)).setValue(SOUTH, var1.getValue(NORTH));

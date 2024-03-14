@@ -22,7 +22,7 @@ public class UpdateOneTwentyOneStructures {
       super();
    }
 
-   public static void bootstrap(BootstapContext<Structure> var0) {
+   public static void bootstrap(BootstrapContext<Structure> var0) {
       HolderGetter var1 = var0.lookup(Registries.BIOME);
       HolderGetter var2 = var0.lookup(Registries.TEMPLATE_POOL);
       var0.register(

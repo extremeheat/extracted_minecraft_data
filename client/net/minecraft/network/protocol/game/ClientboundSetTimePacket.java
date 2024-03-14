@@ -1,9 +1,14 @@
 package net.minecraft.network.protocol.game;
 
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 
 public class ClientboundSetTimePacket implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ClientboundSetTimePacket> STREAM_CODEC = Packet.codec(
+      ClientboundSetTimePacket::write, ClientboundSetTimePacket::new
+   );
    private final long gameTime;
    private final long dayTime;
 
@@ -21,16 +26,20 @@ public class ClientboundSetTimePacket implements Packet<ClientGamePacketListener
       this.dayTime = var6;
    }
 
-   public ClientboundSetTimePacket(FriendlyByteBuf var1) {
+   private ClientboundSetTimePacket(FriendlyByteBuf var1) {
       super();
       this.gameTime = var1.readLong();
       this.dayTime = var1.readLong();
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       var1.writeLong(this.gameTime);
       var1.writeLong(this.dayTime);
+   }
+
+   @Override
+   public PacketType<ClientboundSetTimePacket> type() {
+      return GamePacketTypes.CLIENTBOUND_SET_TIME;
    }
 
    public void handle(ClientGamePacketListener var1) {

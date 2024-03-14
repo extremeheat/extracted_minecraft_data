@@ -1,9 +1,12 @@
 package net.minecraft.network.protocol.common;
 
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 
 public class ClientboundPingPacket implements Packet<ClientCommonPacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ClientboundPingPacket> STREAM_CODEC = Packet.codec(ClientboundPingPacket::write, ClientboundPingPacket::new);
    private final int id;
 
    public ClientboundPingPacket(int var1) {
@@ -11,14 +14,18 @@ public class ClientboundPingPacket implements Packet<ClientCommonPacketListener>
       this.id = var1;
    }
 
-   public ClientboundPingPacket(FriendlyByteBuf var1) {
+   private ClientboundPingPacket(FriendlyByteBuf var1) {
       super();
       this.id = var1.readInt();
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       var1.writeInt(this.id);
+   }
+
+   @Override
+   public PacketType<ClientboundPingPacket> type() {
+      return CommonPacketTypes.CLIENTBOUND_PING;
    }
 
    public void handle(ClientCommonPacketListener var1) {

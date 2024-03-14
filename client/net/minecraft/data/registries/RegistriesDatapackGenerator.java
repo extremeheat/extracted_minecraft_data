@@ -34,7 +34,7 @@ public class RegistriesDatapackGenerator implements DataProvider {
       return this.registries
          .thenCompose(
             var2 -> {
-               RegistryOps var3 = RegistryOps.create(JsonOps.INSTANCE, var2);
+               RegistryOps var3 = var2.createSerializationContext(JsonOps.INSTANCE);
                return CompletableFuture.allOf(
                   RegistryDataLoader.WORLDGEN_REGISTRIES
                      .stream()

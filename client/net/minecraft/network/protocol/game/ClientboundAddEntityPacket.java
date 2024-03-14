@@ -2,15 +2,21 @@ package net.minecraft.network.protocol.game;
 
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.phys.Vec3;
 
 public class ClientboundAddEntityPacket implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundAddEntityPacket> STREAM_CODEC = Packet.codec(
+      ClientboundAddEntityPacket::write, ClientboundAddEntityPacket::new
+   );
    private static final double MAGICAL_QUANTIZATION = 8000.0;
    private static final double LIMIT = 3.9;
    private final int id;
@@ -82,11 +88,11 @@ public class ClientboundAddEntityPacket implements Packet<ClientGamePacketListen
       this.za = (int)(Mth.clamp(var13.z, -3.9, 3.9) * 8000.0);
    }
 
-   public ClientboundAddEntityPacket(FriendlyByteBuf var1) {
+   private ClientboundAddEntityPacket(RegistryFriendlyByteBuf var1) {
       super();
       this.id = var1.readVarInt();
       this.uuid = var1.readUUID();
-      this.type = var1.readById(BuiltInRegistries.ENTITY_TYPE);
+      this.type = ByteBufCodecs.registry(Registries.ENTITY_TYPE).decode(var1);
       this.x = var1.readDouble();
       this.y = var1.readDouble();
       this.z = var1.readDouble();
@@ -99,11 +105,10 @@ public class ClientboundAddEntityPacket implements Packet<ClientGamePacketListen
       this.za = var1.readShort();
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(RegistryFriendlyByteBuf var1) {
       var1.writeVarInt(this.id);
       var1.writeUUID(this.uuid);
-      var1.writeId(BuiltInRegistries.ENTITY_TYPE, this.type);
+      ByteBufCodecs.registry(Registries.ENTITY_TYPE).encode(var1, this.type);
       var1.writeDouble(this.x);
       var1.writeDouble(this.y);
       var1.writeDouble(this.z);
@@ -114,6 +119,11 @@ public class ClientboundAddEntityPacket implements Packet<ClientGamePacketListen
       var1.writeShort(this.xa);
       var1.writeShort(this.ya);
       var1.writeShort(this.za);
+   }
+
+   @Override
+   public PacketType<ClientboundAddEntityPacket> type() {
+      return GamePacketTypes.CLIENTBOUND_ADD_ENTITY;
    }
 
    public void handle(ClientGamePacketListener var1) {

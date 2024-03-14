@@ -1,7 +1,7 @@
 package net.minecraft.data.worldgen.features;
 
 import com.google.common.collect.ImmutableList;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
@@ -20,7 +20,7 @@ public class EndFeatures {
       super();
    }
 
-   public static void bootstrap(BootstapContext<ConfiguredFeature<?, ?>> var0) {
+   public static void bootstrap(BootstrapContext<ConfiguredFeature<?, ?>> var0) {
       FeatureUtils.register(var0, END_SPIKE, Feature.END_SPIKE, new SpikeConfiguration(false, ImmutableList.of(), null));
       FeatureUtils.register(var0, END_GATEWAY_RETURN, Feature.END_GATEWAY, EndGatewayConfiguration.knownExit(ServerLevel.END_SPAWN_POINT, true));
       FeatureUtils.register(var0, END_GATEWAY_DELAYED, Feature.END_GATEWAY, EndGatewayConfiguration.delayedExitSearch());

@@ -3,7 +3,8 @@ package net.minecraft.world.level.gameevent.vibrations;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2IntOpenHashMap;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.ToIntFunction;
 import javax.annotation.Nullable;
@@ -11,7 +12,9 @@ import net.minecraft.Util;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.particles.VibrationParticleOption;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
@@ -31,65 +34,66 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 public interface VibrationSystem {
-   GameEvent[] RESONANCE_EVENTS = new GameEvent[]{
-      GameEvent.RESONATE_1,
-      GameEvent.RESONATE_2,
-      GameEvent.RESONATE_3,
-      GameEvent.RESONATE_4,
-      GameEvent.RESONATE_5,
-      GameEvent.RESONATE_6,
-      GameEvent.RESONATE_7,
-      GameEvent.RESONATE_8,
-      GameEvent.RESONATE_9,
-      GameEvent.RESONATE_10,
-      GameEvent.RESONATE_11,
-      GameEvent.RESONATE_12,
-      GameEvent.RESONATE_13,
-      GameEvent.RESONATE_14,
-      GameEvent.RESONATE_15
-   };
-   ToIntFunction<GameEvent> VIBRATION_FREQUENCY_FOR_EVENT = Util.make(new Object2IntOpenHashMap(), var0 -> {
+   List<ResourceKey<GameEvent>> RESONANCE_EVENTS = List.of(
+      GameEvent.RESONATE_1.key(),
+      GameEvent.RESONATE_2.key(),
+      GameEvent.RESONATE_3.key(),
+      GameEvent.RESONATE_4.key(),
+      GameEvent.RESONATE_5.key(),
+      GameEvent.RESONATE_6.key(),
+      GameEvent.RESONATE_7.key(),
+      GameEvent.RESONATE_8.key(),
+      GameEvent.RESONATE_9.key(),
+      GameEvent.RESONATE_10.key(),
+      GameEvent.RESONATE_11.key(),
+      GameEvent.RESONATE_12.key(),
+      GameEvent.RESONATE_13.key(),
+      GameEvent.RESONATE_14.key(),
+      GameEvent.RESONATE_15.key()
+   );
+   int DEFAULT_VIBRATION_FREQUENCY = 0;
+   ToIntFunction<ResourceKey<GameEvent>> VIBRATION_FREQUENCY_FOR_EVENT = Util.make(new Reference2IntOpenHashMap(), var0 -> {
       var0.defaultReturnValue(0);
-      var0.put(GameEvent.STEP, 1);
-      var0.put(GameEvent.SWIM, 1);
-      var0.put(GameEvent.FLAP, 1);
-      var0.put(GameEvent.PROJECTILE_LAND, 2);
-      var0.put(GameEvent.HIT_GROUND, 2);
-      var0.put(GameEvent.SPLASH, 2);
-      var0.put(GameEvent.ITEM_INTERACT_FINISH, 3);
-      var0.put(GameEvent.PROJECTILE_SHOOT, 3);
-      var0.put(GameEvent.INSTRUMENT_PLAY, 3);
-      var0.put(GameEvent.ENTITY_ACTION, 4);
-      var0.put(GameEvent.ELYTRA_GLIDE, 4);
-      var0.put(GameEvent.UNEQUIP, 4);
-      var0.put(GameEvent.ENTITY_DISMOUNT, 5);
-      var0.put(GameEvent.EQUIP, 5);
-      var0.put(GameEvent.ENTITY_INTERACT, 6);
-      var0.put(GameEvent.SHEAR, 6);
-      var0.put(GameEvent.ENTITY_MOUNT, 6);
-      var0.put(GameEvent.ENTITY_DAMAGE, 7);
-      var0.put(GameEvent.DRINK, 8);
-      var0.put(GameEvent.EAT, 8);
-      var0.put(GameEvent.CONTAINER_CLOSE, 9);
-      var0.put(GameEvent.BLOCK_CLOSE, 9);
-      var0.put(GameEvent.BLOCK_DEACTIVATE, 9);
-      var0.put(GameEvent.BLOCK_DETACH, 9);
-      var0.put(GameEvent.CONTAINER_OPEN, 10);
-      var0.put(GameEvent.BLOCK_OPEN, 10);
-      var0.put(GameEvent.BLOCK_ACTIVATE, 10);
-      var0.put(GameEvent.BLOCK_ATTACH, 10);
-      var0.put(GameEvent.PRIME_FUSE, 10);
-      var0.put(GameEvent.NOTE_BLOCK_PLAY, 10);
-      var0.put(GameEvent.BLOCK_CHANGE, 11);
-      var0.put(GameEvent.BLOCK_DESTROY, 12);
-      var0.put(GameEvent.FLUID_PICKUP, 12);
-      var0.put(GameEvent.BLOCK_PLACE, 13);
-      var0.put(GameEvent.FLUID_PLACE, 13);
-      var0.put(GameEvent.ENTITY_PLACE, 14);
-      var0.put(GameEvent.LIGHTNING_STRIKE, 14);
-      var0.put(GameEvent.TELEPORT, 14);
-      var0.put(GameEvent.ENTITY_DIE, 15);
-      var0.put(GameEvent.EXPLODE, 15);
+      var0.put(GameEvent.STEP.key(), 1);
+      var0.put(GameEvent.SWIM.key(), 1);
+      var0.put(GameEvent.FLAP.key(), 1);
+      var0.put(GameEvent.PROJECTILE_LAND.key(), 2);
+      var0.put(GameEvent.HIT_GROUND.key(), 2);
+      var0.put(GameEvent.SPLASH.key(), 2);
+      var0.put(GameEvent.ITEM_INTERACT_FINISH.key(), 3);
+      var0.put(GameEvent.PROJECTILE_SHOOT.key(), 3);
+      var0.put(GameEvent.INSTRUMENT_PLAY.key(), 3);
+      var0.put(GameEvent.ENTITY_ACTION.key(), 4);
+      var0.put(GameEvent.ELYTRA_GLIDE.key(), 4);
+      var0.put(GameEvent.UNEQUIP.key(), 4);
+      var0.put(GameEvent.ENTITY_DISMOUNT.key(), 5);
+      var0.put(GameEvent.EQUIP.key(), 5);
+      var0.put(GameEvent.ENTITY_INTERACT.key(), 6);
+      var0.put(GameEvent.SHEAR.key(), 6);
+      var0.put(GameEvent.ENTITY_MOUNT.key(), 6);
+      var0.put(GameEvent.ENTITY_DAMAGE.key(), 7);
+      var0.put(GameEvent.DRINK.key(), 8);
+      var0.put(GameEvent.EAT.key(), 8);
+      var0.put(GameEvent.CONTAINER_CLOSE.key(), 9);
+      var0.put(GameEvent.BLOCK_CLOSE.key(), 9);
+      var0.put(GameEvent.BLOCK_DEACTIVATE.key(), 9);
+      var0.put(GameEvent.BLOCK_DETACH.key(), 9);
+      var0.put(GameEvent.CONTAINER_OPEN.key(), 10);
+      var0.put(GameEvent.BLOCK_OPEN.key(), 10);
+      var0.put(GameEvent.BLOCK_ACTIVATE.key(), 10);
+      var0.put(GameEvent.BLOCK_ATTACH.key(), 10);
+      var0.put(GameEvent.PRIME_FUSE.key(), 10);
+      var0.put(GameEvent.NOTE_BLOCK_PLAY.key(), 10);
+      var0.put(GameEvent.BLOCK_CHANGE.key(), 11);
+      var0.put(GameEvent.BLOCK_DESTROY.key(), 12);
+      var0.put(GameEvent.FLUID_PICKUP.key(), 12);
+      var0.put(GameEvent.BLOCK_PLACE.key(), 13);
+      var0.put(GameEvent.FLUID_PLACE.key(), 13);
+      var0.put(GameEvent.ENTITY_PLACE.key(), 14);
+      var0.put(GameEvent.LIGHTNING_STRIKE.key(), 14);
+      var0.put(GameEvent.TELEPORT.key(), 14);
+      var0.put(GameEvent.ENTITY_DIE.key(), 15);
+      var0.put(GameEvent.EXPLODE.key(), 15);
 
       for(int var1 = 1; var1 <= 15; ++var1) {
          var0.put(getResonanceEventByFrequency(var1), var1);
@@ -100,12 +104,16 @@ public interface VibrationSystem {
 
    VibrationSystem.User getVibrationUser();
 
-   static int getGameEventFrequency(GameEvent var0) {
+   static int getGameEventFrequency(Holder<GameEvent> var0) {
+      return var0.unwrapKey().map(VibrationSystem::getGameEventFrequency).orElse(0);
+   }
+
+   static int getGameEventFrequency(ResourceKey<GameEvent> var0) {
       return VIBRATION_FREQUENCY_FOR_EVENT.applyAsInt(var0);
    }
 
-   static GameEvent getResonanceEventByFrequency(int var0) {
-      return RESONANCE_EVENTS[var0 - 1];
+   static ResourceKey<GameEvent> getResonanceEventByFrequency(int var0) {
+      return RESONANCE_EVENTS.get(var0 - 1);
    }
 
    static int getRedstoneStrengthForDistance(float var0, int var1) {
@@ -194,7 +202,7 @@ public interface VibrationSystem {
       }
 
       @Override
-      public boolean handleGameEvent(ServerLevel var1, GameEvent var2, GameEvent.Context var3, Vec3 var4) {
+      public boolean handleGameEvent(ServerLevel var1, Holder<GameEvent> var2, GameEvent.Context var3, Vec3 var4) {
          VibrationSystem.Data var5 = this.system.getVibrationData();
          VibrationSystem.User var6 = this.system.getVibrationUser();
          if (var5.getCurrentVibration() != null) {
@@ -219,7 +227,7 @@ public interface VibrationSystem {
          }
       }
 
-      public void forceScheduleVibration(ServerLevel var1, GameEvent var2, GameEvent.Context var3, Vec3 var4) {
+      public void forceScheduleVibration(ServerLevel var1, Holder<GameEvent> var2, GameEvent.Context var3, Vec3 var4) {
          this.system
             .getVibrationUser()
             .getPositionSource()
@@ -227,7 +235,7 @@ public interface VibrationSystem {
             .ifPresent(var5 -> this.scheduleVibration(var1, this.system.getVibrationData(), var2, var3, var4, var5));
       }
 
-      private void scheduleVibration(ServerLevel var1, VibrationSystem.Data var2, GameEvent var3, GameEvent.Context var4, Vec3 var5, Vec3 var6) {
+      private void scheduleVibration(ServerLevel var1, VibrationSystem.Data var2, Holder<GameEvent> var3, GameEvent.Context var4, Vec3 var5, Vec3 var6) {
          var2.selectionStrategy.addCandidate(new VibrationInfo(var3, (float)var5.distanceTo(var6), var5, var4.sourceEntity()), var1.getGameTime());
       }
 
@@ -351,9 +359,9 @@ public interface VibrationSystem {
 
       PositionSource getPositionSource();
 
-      boolean canReceiveVibration(ServerLevel var1, BlockPos var2, GameEvent var3, GameEvent.Context var4);
+      boolean canReceiveVibration(ServerLevel var1, BlockPos var2, Holder<GameEvent> var3, GameEvent.Context var4);
 
-      void onReceiveVibration(ServerLevel var1, BlockPos var2, GameEvent var3, @Nullable Entity var4, @Nullable Entity var5, float var6);
+      void onReceiveVibration(ServerLevel var1, BlockPos var2, Holder<GameEvent> var3, @Nullable Entity var4, @Nullable Entity var5, float var6);
 
       default TagKey<GameEvent> getListenableEvents() {
          return GameEventTags.VIBRATIONS;
@@ -371,7 +379,7 @@ public interface VibrationSystem {
          return Mth.floor(var1);
       }
 
-      default boolean isValidVibration(GameEvent var1, GameEvent.Context var2) {
+      default boolean isValidVibration(Holder<GameEvent> var1, GameEvent.Context var2) {
          if (!var1.is(this.getListenableEvents())) {
             return false;
          } else {

@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Dynamic;
 import javax.annotation.Nullable;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.DebugPackets;
@@ -32,6 +33,7 @@ import net.minecraft.world.entity.animal.Bucketable;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 
@@ -171,8 +173,7 @@ public class Tadpole extends AbstractFish {
    @Override
    public void saveToBucketTag(ItemStack var1) {
       Bucketable.saveDefaultDataToBucketTag(this, var1);
-      CompoundTag var2 = var1.getOrCreateTag();
-      var2.putInt("Age", this.getAge());
+      CustomData.update(DataComponents.BUCKET_ENTITY_DATA, var1, var1x -> var1x.putInt("Age", this.getAge()));
    }
 
    @Override
@@ -204,9 +205,7 @@ public class Tadpole extends AbstractFish {
    }
 
    private void usePlayerItem(Player var1, ItemStack var2) {
-      if (!var1.getAbilities().instabuild) {
-         var2.shrink(1);
-      }
+      var2.consume(1, var1);
    }
 
    private int getAge() {
@@ -230,7 +229,7 @@ public class Tadpole extends AbstractFish {
          Frog var3 = EntityType.FROG.create(this.level());
          if (var3 != null) {
             var3.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), this.getXRot());
-            var3.finalizeSpawn((ServerLevelAccessor)var1, this.level().getCurrentDifficultyAt(var3.blockPosition()), MobSpawnType.CONVERSION, null, null);
+            var3.finalizeSpawn((ServerLevelAccessor)var1, this.level().getCurrentDifficultyAt(var3.blockPosition()), MobSpawnType.CONVERSION, null);
             var3.setNoAi(this.isNoAi());
             if (this.hasCustomName()) {
                var3.setCustomName(this.getCustomName());

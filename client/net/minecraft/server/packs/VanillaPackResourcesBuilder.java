@@ -171,15 +171,15 @@ public class VanillaPackResourcesBuilder {
       return this;
    }
 
-   public VanillaPackResources build() {
-      EnumMap var1 = new EnumMap<>(PackType.class);
+   public VanillaPackResources build(PackLocationInfo var1) {
+      EnumMap var2 = new EnumMap<>(PackType.class);
 
-      for(PackType var5 : PackType.values()) {
-         List var6 = copyAndReverse(this.pathsForType.getOrDefault(var5, Set.of()));
-         var1.put(var5, var6);
+      for(PackType var6 : PackType.values()) {
+         List var7 = copyAndReverse(this.pathsForType.getOrDefault(var6, Set.of()));
+         var2.put(var6, var7);
       }
 
-      return new VanillaPackResources(this.metadata, Set.copyOf(this.namespaces), copyAndReverse(this.rootPaths), var1);
+      return new VanillaPackResources(var1, this.metadata, Set.copyOf(this.namespaces), copyAndReverse(this.rootPaths), var2);
    }
 
    private static List<Path> copyAndReverse(Collection<Path> var0) {

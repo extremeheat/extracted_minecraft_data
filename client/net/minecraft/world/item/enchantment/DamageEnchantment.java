@@ -1,37 +1,39 @@
 package net.minecraft.world.item.enchantment;
 
+import java.util.Optional;
+import javax.annotation.Nullable;
+import net.minecraft.tags.EntityTypeTags;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobType;
-import net.minecraft.world.item.AxeItem;
-import net.minecraft.world.item.ItemStack;
 
 public class DamageEnchantment extends Enchantment {
-   public static final int ALL = 0;
-   public static final int UNDEAD = 1;
-   public static final int ARTHROPODS = 2;
-   private static final String[] NAMES = new String[]{"all", "undead", "arthropods"};
-   private static final int[] MIN_COST = new int[]{1, 5, 5};
-   private static final int[] LEVEL_COST = new int[]{11, 8, 8};
-   private static final int[] LEVEL_COST_SPAN = new int[]{20, 20, 20};
-   public final int type;
+   private final int minCost;
+   private final int levelCost;
+   private final int levelCostSpan;
+   private final Optional<TagKey<EntityType<?>>> targets;
 
-   public DamageEnchantment(Enchantment.Rarity var1, int var2, EquipmentSlot... var3) {
-      super(var1, EnchantmentCategory.WEAPON, var3);
-      this.type = var2;
+   public DamageEnchantment(Enchantment.Rarity var1, int var2, int var3, int var4, Optional<TagKey<EntityType<?>>> var5, EquipmentSlot... var6) {
+      super(var1, ItemTags.WEAPON_ENCHANTABLE, var6);
+      this.minCost = var2;
+      this.levelCost = var3;
+      this.levelCostSpan = var4;
+      this.targets = var5;
    }
 
    @Override
    public int getMinCost(int var1) {
-      return MIN_COST[this.type] + (var1 - 1) * LEVEL_COST[this.type];
+      return this.minCost + (var1 - 1) * this.levelCost;
    }
 
    @Override
    public int getMaxCost(int var1) {
-      return this.getMinCost(var1) + LEVEL_COST_SPAN[this.type];
+      return this.getMinCost(var1) + this.levelCostSpan;
    }
 
    @Override
@@ -40,13 +42,11 @@ public class DamageEnchantment extends Enchantment {
    }
 
    @Override
-   public float getDamageBonus(int var1, MobType var2) {
-      if (this.type == 0) {
+   public float getDamageBonus(int var1, @Nullable EntityType<?> var2) {
+      if (this.targets.isEmpty()) {
          return 1.0F + (float)Math.max(0, var1 - 1) * 0.5F;
-      } else if (this.type == 1 && var2 == MobType.UNDEAD) {
-         return (float)var1 * 2.5F;
       } else {
-         return this.type == 2 && var2 == MobType.ARTHROPOD ? (float)var1 * 2.5F : 0.0F;
+         return var2 != null && var2.is((TagKey<EntityType<?>>)this.targets.get()) ? (float)var1 * 2.5F : 0.0F;
       }
    }
 
@@ -55,16 +55,15 @@ public class DamageEnchantment extends Enchantment {
       return !(var1 instanceof DamageEnchantment);
    }
 
-   @Override
-   public boolean canEnchant(ItemStack var1) {
-      return var1.getItem() instanceof AxeItem ? true : super.canEnchant(var1);
-   }
-
    // $VF: Could not properly define all variable types!
    // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void doPostAttack(LivingEntity var1, Entity var2, int var3) {
-      if (var2 instanceof LivingEntity var4 && this.type == 2 && var3 > 0 && var4.getMobType() == MobType.ARTHROPOD) {
+      if (this.targets.isPresent()
+         && var2 instanceof LivingEntity var4
+         && this.targets.get() == EntityTypeTags.ARTHROPOD
+         && var3 > 0
+         && var4.getType().is((TagKey<EntityType<?>>)this.targets.get())) {
          int var5 = 20 + var1.getRandom().nextInt(10 * var3);
          var4.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, var5, 3));
       }

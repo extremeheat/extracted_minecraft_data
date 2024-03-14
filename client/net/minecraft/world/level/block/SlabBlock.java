@@ -43,7 +43,7 @@ public class SlabBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    @Override
-   public boolean useShapeForLightOcclusion(BlockState var1) {
+   protected boolean useShapeForLightOcclusion(BlockState var1) {
       return var1.getValue(TYPE) != SlabType.DOUBLE;
    }
 
@@ -53,7 +53,7 @@ public class SlabBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       SlabType var5 = var1.getValue(TYPE);
       switch(var5) {
          case DOUBLE:
@@ -83,7 +83,7 @@ public class SlabBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    @Override
-   public boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
+   protected boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
       ItemStack var3 = var2.getItemInHand();
       SlabType var4 = var1.getValue(TYPE);
       if (var4 == SlabType.DOUBLE || !var3.is(this.asItem())) {
@@ -102,7 +102,7 @@ public class SlabBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    @Override
-   public FluidState getFluidState(BlockState var1) {
+   protected FluidState getFluidState(BlockState var1) {
       return var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
    }
 
@@ -117,7 +117,7 @@ public class SlabBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var1.getValue(WATERLOGGED)) {
          var4.scheduleTick(var5, Fluids.WATER, Fluids.WATER.getTickDelay(var4));
       }
@@ -126,12 +126,12 @@ public class SlabBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    @Override
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
-      switch(var4) {
+   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
+      switch(var2) {
          case LAND:
             return false;
          case WATER:
-            return var2.getFluidState(var3).is(FluidTags.WATER);
+            return var1.getFluidState().is(FluidTags.WATER);
          case AIR:
             return false;
          default:

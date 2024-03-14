@@ -1,5 +1,6 @@
 package net.minecraft.client.gui.components;
 
+import java.time.Duration;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -35,8 +36,7 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
    protected float alpha = 1.0F;
    private int tabOrderGroup;
    private boolean focused;
-   @Nullable
-   private Tooltip tooltip;
+   private final WidgetTooltipHolder tooltip = new WidgetTooltipHolder();
 
    public AbstractWidget(int var1, int var2, int var3, int var4, Component var5) {
       super();
@@ -55,27 +55,27 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
    @Override
    public final void render(GuiGraphics var1, int var2, int var3, float var4) {
       if (this.visible) {
-         this.isHovered = var2 >= this.getX() && var3 >= this.getY() && var2 < this.getX() + this.width && var3 < this.getY() + this.height;
+         this.isHovered = var1.containsPointInScissor(var2, var3)
+            && var2 >= this.getX()
+            && var3 >= this.getY()
+            && var2 < this.getX() + this.width
+            && var3 < this.getY() + this.height;
          this.renderWidget(var1, var2, var3, var4);
-         if (this.tooltip != null) {
-            this.tooltip.refreshTooltipForNextRenderPass(this.isHovered(), this.isFocused(), this.getRectangle());
-         }
+         this.tooltip.refreshTooltipForNextRenderPass(this.isHovered(), this.isFocused(), this.getRectangle());
       }
    }
 
    public void setTooltip(@Nullable Tooltip var1) {
-      this.tooltip = var1;
+      this.tooltip.set(var1);
    }
 
    @Nullable
    public Tooltip getTooltip() {
-      return this.tooltip;
+      return this.tooltip.get();
    }
 
-   public void setTooltipDelay(int var1) {
-      if (this.tooltip != null) {
-         this.tooltip.setDelay(var1);
-      }
+   public void setTooltipDelay(Duration var1) {
+      this.tooltip.setDelay(var1);
    }
 
    protected MutableComponent createNarrationMessage() {
@@ -261,9 +261,7 @@ public abstract class AbstractWidget implements Renderable, GuiEventListener, La
    @Override
    public final void updateNarration(NarrationElementOutput var1) {
       this.updateWidgetNarration(var1);
-      if (this.tooltip != null) {
-         this.tooltip.updateNarration(var1);
-      }
+      this.tooltip.updateNarration(var1);
    }
 
    protected abstract void updateWidgetNarration(NarrationElementOutput var1);

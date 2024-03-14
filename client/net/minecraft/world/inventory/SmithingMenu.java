@@ -42,9 +42,9 @@ public class SmithingMenu extends ItemCombinerMenu {
    @Override
    protected ItemCombinerMenuSlotDefinition createInputSlotDefinitions() {
       return ItemCombinerMenuSlotDefinition.create()
-         .withSlot(0, 8, 48, var1 -> this.recipes.stream().anyMatch(var1x -> var1x.value().isTemplateIngredient(var1)))
-         .withSlot(1, 26, 48, var1 -> this.recipes.stream().anyMatch(var1x -> var1x.value().isBaseIngredient(var1)))
-         .withSlot(2, 44, 48, var1 -> this.recipes.stream().anyMatch(var1x -> var1x.value().isAdditionIngredient(var1)))
+         .withSlot(0, 8, 48, var1 -> this.recipes.stream().anyMatch(var1x -> ((SmithingRecipe)var1x.value()).isTemplateIngredient(var1)))
+         .withSlot(1, 26, 48, var1 -> this.recipes.stream().anyMatch(var1x -> ((SmithingRecipe)var1x.value()).isBaseIngredient(var1)))
+         .withSlot(2, 44, 48, var1 -> this.recipes.stream().anyMatch(var1x -> ((SmithingRecipe)var1x.value()).isAdditionIngredient(var1)))
          .withResultSlot(3, 98, 48)
          .build();
    }
@@ -125,7 +125,7 @@ public class SmithingMenu extends ItemCombinerMenu {
    private OptionalInt findSlotToQuickMoveTo(ItemStack var1) {
       return this.recipes
          .stream()
-         .flatMapToInt(var1x -> findSlotMatchingIngredient(var1x.value(), var1).stream())
+         .flatMapToInt(var1x -> findSlotMatchingIngredient((SmithingRecipe)var1x.value(), var1).stream())
          .filter(var1x -> !this.getSlot(var1x).hasItem())
          .findFirst();
    }

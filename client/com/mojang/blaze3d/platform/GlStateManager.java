@@ -13,7 +13,6 @@ import javax.annotation.Nullable;
 import net.minecraft.Util;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL13;
@@ -433,20 +432,18 @@ public class GlStateManager {
 
    public static void setupLevelDiffuseLighting(Vector3f var0, Vector3f var1, Matrix4f var2) {
       RenderSystem.assertOnRenderThread();
-      Vector4f var3 = var2.transform(new Vector4f(var0, 1.0F));
-      Vector4f var4 = var2.transform(new Vector4f(var1, 1.0F));
-      RenderSystem.setShaderLights(new Vector3f(var3.x(), var3.y(), var3.z()), new Vector3f(var4.x(), var4.y(), var4.z()));
+      RenderSystem.setShaderLights(var2.transformDirection(var0, new Vector3f()), var2.transformDirection(var1, new Vector3f()));
    }
 
    public static void setupGuiFlatDiffuseLighting(Vector3f var0, Vector3f var1) {
       RenderSystem.assertOnRenderThread();
-      Matrix4f var2 = new Matrix4f().scaling(1.0F, -1.0F, 1.0F).rotateY(-0.3926991F).rotateX(2.3561945F);
+      Matrix4f var2 = new Matrix4f().rotationY(-0.3926991F).rotateX(2.3561945F);
       setupLevelDiffuseLighting(var0, var1, var2);
    }
 
    public static void setupGui3DDiffuseLighting(Vector3f var0, Vector3f var1) {
       RenderSystem.assertOnRenderThread();
-      Matrix4f var2 = new Matrix4f().rotationYXZ(1.0821041F, 3.2375858F, 0.0F).rotateYXZ(-0.3926991F, 2.3561945F, 0.0F);
+      Matrix4f var2 = new Matrix4f().scaling(1.0F, -1.0F, 1.0F).rotateYXZ(1.0821041F, 3.2375858F, 0.0F).rotateYXZ(-0.3926991F, 2.3561945F, 0.0F);
       setupLevelDiffuseLighting(var0, var1, var2);
    }
 

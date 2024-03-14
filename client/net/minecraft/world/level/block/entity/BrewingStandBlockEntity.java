@@ -4,15 +4,14 @@ import java.util.Arrays;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.Containers;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.BrewingStandMenu;
 import net.minecraft.world.inventory.ContainerData;
@@ -42,14 +41,11 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
    protected final ContainerData dataAccess = new ContainerData() {
       @Override
       public int get(int var1) {
-         switch(var1) {
-            case 0:
-               return BrewingStandBlockEntity.this.brewTime;
-            case 1:
-               return BrewingStandBlockEntity.this.fuel;
-            default:
-               return 0;
-         }
+         return switch(var1) {
+            case 0 -> BrewingStandBlockEntity.this.brewTime;
+            case 1 -> BrewingStandBlockEntity.this.fuel;
+            default -> 0;
+         };
       }
 
       @Override
@@ -84,14 +80,13 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
    }
 
    @Override
-   public boolean isEmpty() {
-      for(ItemStack var2 : this.items) {
-         if (!var2.isEmpty()) {
-            return false;
-         }
-      }
+   protected NonNullList<ItemStack> getItems() {
+      return this.items;
+   }
 
-      return true;
+   @Override
+   protected void setItems(NonNullList<ItemStack> var1) {
+      this.items = var1;
    }
 
    public static void serverTick(Level var0, BlockPos var1, BlockState var2, BrewingStandBlockEntity var3) {
@@ -190,47 +185,20 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
    }
 
    @Override
-   public void load(CompoundTag var1) {
-      super.load(var1);
+   public void load(CompoundTag var1, HolderLookup.Provider var2) {
+      super.load(var1, var2);
       this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
-      ContainerHelper.loadAllItems(var1, this.items);
+      ContainerHelper.loadAllItems(var1, this.items, var2);
       this.brewTime = var1.getShort("BrewTime");
       this.fuel = var1.getByte("Fuel");
    }
 
    @Override
-   protected void saveAdditional(CompoundTag var1) {
-      super.saveAdditional(var1);
+   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.saveAdditional(var1, var2);
       var1.putShort("BrewTime", (short)this.brewTime);
-      ContainerHelper.saveAllItems(var1, this.items);
+      ContainerHelper.saveAllItems(var1, this.items, var2);
       var1.putByte("Fuel", (byte)this.fuel);
-   }
-
-   @Override
-   public ItemStack getItem(int var1) {
-      return var1 >= 0 && var1 < this.items.size() ? this.items.get(var1) : ItemStack.EMPTY;
-   }
-
-   @Override
-   public ItemStack removeItem(int var1, int var2) {
-      return ContainerHelper.removeItem(this.items, var1, var2);
-   }
-
-   @Override
-   public ItemStack removeItemNoUpdate(int var1) {
-      return ContainerHelper.takeItem(this.items, var1);
-   }
-
-   @Override
-   public void setItem(int var1, ItemStack var2) {
-      if (var1 >= 0 && var1 < this.items.size()) {
-         this.items.set(var1, var2);
-      }
-   }
-
-   @Override
-   public boolean stillValid(Player var1) {
-      return Container.stillValidBlockEntity(this, var1);
    }
 
    @Override
@@ -262,11 +230,6 @@ public class BrewingStandBlockEntity extends BaseContainerBlockEntity implements
    @Override
    public boolean canTakeItemThroughFace(int var1, ItemStack var2, Direction var3) {
       return var1 == 3 ? var2.is(Items.GLASS_BOTTLE) : true;
-   }
-
-   @Override
-   public void clearContent() {
-      this.items.clear();
    }
 
    @Override

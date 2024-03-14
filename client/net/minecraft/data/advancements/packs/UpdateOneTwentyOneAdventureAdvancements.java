@@ -17,7 +17,9 @@ public class UpdateOneTwentyOneAdventureAdvancements implements AdvancementSubPr
    public void generate(HolderLookup.Provider var1, Consumer<AdvancementHolder> var2) {
       AdvancementHolder var3 = AdvancementSubProvider.createPlaceholder("adventure/root");
       VanillaAdventureAdvancements.createMonsterHunterAdvancement(
-         var3, var2, Stream.concat(VanillaAdventureAdvancements.MOBS_TO_KILL.stream(), Stream.of(EntityType.BREEZE)).collect(Collectors.toList())
+         var3,
+         var2,
+         Stream.concat(VanillaAdventureAdvancements.MOBS_TO_KILL.stream(), Stream.of(EntityType.BREEZE, EntityType.BOGGED)).collect(Collectors.toList())
       );
    }
 }

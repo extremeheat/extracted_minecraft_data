@@ -54,7 +54,7 @@ public class EntityHurtPlayerTrigger extends SimpleCriterionTrigger<EntityHurtPl
       }
 
       public boolean matches(ServerPlayer var1, DamageSource var2, float var3, float var4, boolean var5) {
-         return !this.damage.isPresent() || this.damage.get().matches(var1, var2, var3, var4, var5);
+         return !this.damage.isPresent() || ((DamagePredicate)this.damage.get()).matches(var1, var2, var3, var4, var5);
       }
    }
 }

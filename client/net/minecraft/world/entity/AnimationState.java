@@ -49,6 +49,12 @@ public class AnimationState {
       }
    }
 
+   public void fastForward(int var1, float var2) {
+      if (this.isStarted()) {
+         this.accumulatedTime += (long)((float)(var1 * 1000) * var2) / 20L;
+      }
+   }
+
    public long getAccumulatedTime() {
       return this.accumulatedTime;
    }

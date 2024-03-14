@@ -30,12 +30,12 @@ public class AdvancementProvider implements DataProvider {
       return this.registries.thenCompose(var2 -> {
          HashSet var3 = new HashSet();
          ArrayList var4 = new ArrayList();
-         Consumer var5 = var4x -> {
-            if (!var3.add(var4x.id())) {
-               throw new IllegalStateException("Duplicate advancement " + var4x.id());
+         Consumer var5 = var5x -> {
+            if (!var3.add(var5x.id())) {
+               throw new IllegalStateException("Duplicate advancement " + var5x.id());
             } else {
-               Path var5xx = this.pathProvider.json(var4x.id());
-               var4.add(DataProvider.saveStable(var1, Advancement.CODEC, var4x.value(), var5xx));
+               Path var6 = this.pathProvider.json(var5x.id());
+               var4.add(DataProvider.saveStable(var1, var2, Advancement.CODEC, var5x.value(), var6));
             }
          };
 

@@ -3,17 +3,21 @@ package net.minecraft.network.protocol.game;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.dimension.DimensionType;
 
 public record CommonPlayerSpawnInfo(
-   ResourceKey<DimensionType> a, ResourceKey<Level> b, long c, GameType d, @Nullable GameType e, boolean f, boolean g, Optional<GlobalPos> h, int i
+   Holder<DimensionType> a, ResourceKey<Level> b, long c, GameType d, @Nullable GameType e, boolean f, boolean g, Optional<GlobalPos> h, int i
 ) {
-   private final ResourceKey<DimensionType> dimensionType;
+   private final Holder<DimensionType> dimensionType;
    private final ResourceKey<Level> dimension;
    private final long seed;
    private final GameType gameType;
@@ -23,10 +27,13 @@ public record CommonPlayerSpawnInfo(
    private final boolean isFlat;
    private final Optional<GlobalPos> lastDeathLocation;
    private final int portalCooldown;
+   private static final StreamCodec<RegistryFriendlyByteBuf, Holder<DimensionType>> DIMENSION_TYPE_ID_STREAM_CODEC = ByteBufCodecs.holderRegistry(
+      Registries.DIMENSION_TYPE
+   );
 
-   public CommonPlayerSpawnInfo(FriendlyByteBuf var1) {
+   public CommonPlayerSpawnInfo(RegistryFriendlyByteBuf var1) {
       this(
-         var1.readResourceKey(Registries.DIMENSION_TYPE),
+         DIMENSION_TYPE_ID_STREAM_CODEC.decode(var1),
          var1.readResourceKey(Registries.DIMENSION),
          var1.readLong(),
          GameType.byId(var1.readByte()),
@@ -39,7 +46,7 @@ public record CommonPlayerSpawnInfo(
    }
 
    public CommonPlayerSpawnInfo(
-      ResourceKey<DimensionType> var1,
+      Holder<DimensionType> var1,
       ResourceKey<Level> var2,
       long var3,
       GameType var5,
@@ -61,8 +68,8 @@ public record CommonPlayerSpawnInfo(
       this.portalCooldown = var10;
    }
 
-   public void write(FriendlyByteBuf var1) {
-      var1.writeResourceKey(this.dimensionType);
+   public void write(RegistryFriendlyByteBuf var1) {
+      DIMENSION_TYPE_ID_STREAM_CODEC.encode(var1, this.dimensionType);
       var1.writeResourceKey(this.dimension);
       var1.writeLong(this.seed);
       var1.writeByte(this.gameType.getId());

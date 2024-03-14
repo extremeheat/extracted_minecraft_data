@@ -1,5 +1,7 @@
 package net.minecraft.world.item;
 
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
@@ -11,13 +13,16 @@ public class NameTagItem extends Item {
       super(var1);
    }
 
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public InteractionResult interactLivingEntity(ItemStack var1, Player var2, LivingEntity var3, InteractionHand var4) {
-      if (var1.hasCustomHoverName() && !(var3 instanceof Player)) {
+      Component var5 = var1.get(DataComponents.CUSTOM_NAME);
+      if (var5 != null && !(var3 instanceof Player)) {
          if (!var2.level().isClientSide && var3.isAlive()) {
-            var3.setCustomName(var1.getHoverName());
-            if (var3 instanceof Mob) {
-               ((Mob)var3).setPersistenceRequired();
+            var3.setCustomName(var5);
+            if (var3 instanceof Mob var6) {
+               var6.setPersistenceRequired();
             }
 
             var1.shrink(1);

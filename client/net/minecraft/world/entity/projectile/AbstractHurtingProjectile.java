@@ -8,6 +8,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -37,12 +38,7 @@ public abstract class AbstractHurtingProjectile extends Projectile {
       this(var1, var14);
       this.moveTo(var2, var4, var6, this.getYRot(), this.getXRot());
       this.reapplyPosition();
-      double var15 = Math.sqrt(var8 * var8 + var10 * var10 + var12 * var12);
-      if (var15 != 0.0) {
-         this.xPower = var8 / var15 * 0.1;
-         this.yPower = var10 / var15 * 0.1;
-         this.zPower = var12 / var15 * 0.1;
-      }
+      this.assignPower(var8, var10, var12);
    }
 
    public AbstractHurtingProjectile(EntityType<? extends AbstractHurtingProjectile> var1, LivingEntity var2, double var3, double var5, double var7, Level var9) {
@@ -52,7 +48,7 @@ public abstract class AbstractHurtingProjectile extends Projectile {
    }
 
    @Override
-   protected void defineSynchedData() {
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
    }
 
    @Override
@@ -76,7 +72,7 @@ public abstract class AbstractHurtingProjectile extends Projectile {
       if (this.level().isClientSide || (var1 == null || !var1.isRemoved()) && this.level().hasChunkAt(this.blockPosition())) {
          super.tick();
          if (this.shouldBurn()) {
-            this.setSecondsOnFire(1);
+            this.igniteForSeconds(1);
          }
 
          HitResult var2 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity, this.getClipType());
@@ -112,6 +108,12 @@ public abstract class AbstractHurtingProjectile extends Projectile {
       } else {
          this.discard();
       }
+   }
+
+   @Override
+   public void lerpMotion(double var1, double var3, double var5) {
+      super.lerpMotion(var1, var3, var5);
+      this.assignPower(var1, var3, var5);
    }
 
    @Override
@@ -219,11 +221,15 @@ public abstract class AbstractHurtingProjectile extends Projectile {
       double var2 = var1.getXa();
       double var4 = var1.getYa();
       double var6 = var1.getZa();
-      double var8 = Math.sqrt(var2 * var2 + var4 * var4 + var6 * var6);
-      if (var8 != 0.0) {
-         this.xPower = var2 / var8 * 0.1;
-         this.yPower = var4 / var8 * 0.1;
-         this.zPower = var6 / var8 * 0.1;
+      this.assignPower(var2, var4, var6);
+   }
+
+   private void assignPower(double var1, double var3, double var5) {
+      double var7 = Math.sqrt(var1 * var1 + var3 * var3 + var5 * var5);
+      if (var7 != 0.0) {
+         this.xPower = var1 / var7 * 0.1;
+         this.yPower = var3 / var7 * 0.1;
+         this.zPower = var5 / var7 * 0.1;
       }
    }
 }

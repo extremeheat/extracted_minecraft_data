@@ -9,11 +9,9 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.TraceableEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -46,9 +44,9 @@ public class PrimedTnt extends Entity implements TraceableEntity {
    }
 
    @Override
-   protected void defineSynchedData() {
-      this.entityData.define(DATA_FUSE_ID, 80);
-      this.entityData.define(DATA_BLOCK_STATE_ID, Blocks.TNT.defaultBlockState());
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      var1.define(DATA_FUSE_ID, 80);
+      var1.define(DATA_BLOCK_STATE_ID, Blocks.TNT.defaultBlockState());
    }
 
    @Override
@@ -62,11 +60,13 @@ public class PrimedTnt extends Entity implements TraceableEntity {
    }
 
    @Override
-   public void tick() {
-      if (!this.isNoGravity()) {
-         this.setDeltaMovement(this.getDeltaMovement().add(0.0, -0.04, 0.0));
-      }
+   protected double getDefaultGravity() {
+      return 0.04;
+   }
 
+   @Override
+   public void tick() {
+      this.applyGravity();
       this.move(MoverType.SELF, this.getDeltaMovement());
       this.setDeltaMovement(this.getDeltaMovement().scale(0.98));
       if (this.onGround()) {
@@ -120,11 +120,6 @@ public class PrimedTnt extends Entity implements TraceableEntity {
       if (var1 instanceof PrimedTnt var2) {
          this.owner = var2.owner;
       }
-   }
-
-   @Override
-   protected float getEyeHeight(Pose var1, EntityDimensions var2) {
-      return 0.15F;
    }
 
    public void setFuse(int var1) {

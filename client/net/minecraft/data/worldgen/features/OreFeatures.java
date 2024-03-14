@@ -1,7 +1,7 @@
 package net.minecraft.data.worldgen.features;
 
 import java.util.List;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.block.Blocks;
@@ -49,7 +49,7 @@ public class OreFeatures {
       super();
    }
 
-   public static void bootstrap(BootstapContext<ConfiguredFeature<?, ?>> var0) {
+   public static void bootstrap(BootstrapContext<ConfiguredFeature<?, ?>> var0) {
       TagMatchTest var1 = new TagMatchTest(BlockTags.BASE_STONE_OVERWORLD);
       TagMatchTest var2 = new TagMatchTest(BlockTags.STONE_ORE_REPLACEABLES);
       TagMatchTest var3 = new TagMatchTest(BlockTags.DEEPSLATE_ORE_REPLACEABLES);
@@ -62,8 +62,7 @@ public class OreFeatures {
          OreConfiguration.target(var2, Blocks.GOLD_ORE.defaultBlockState()), OreConfiguration.target(var3, Blocks.DEEPSLATE_GOLD_ORE.defaultBlockState())
       );
       List var8 = List.of(
-         OreConfiguration.target(var2, Blocks.DIAMOND_ORE.defaultBlockState()),
-         OreConfiguration.target(var3, Blocks.DEEPSLATE_DIAMOND_ORE.defaultBlockState())
+         OreConfiguration.target(var2, Blocks.DIAMOND_ORE.defaultBlockState()), OreConfiguration.target(var3, Blocks.DEEPSLATE_DIAMOND_ORE.defaultBlockState())
       );
       List var9 = List.of(
          OreConfiguration.target(var2, Blocks.LAPIS_ORE.defaultBlockState()), OreConfiguration.target(var3, Blocks.DEEPSLATE_LAPIS_ORE.defaultBlockState())

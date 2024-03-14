@@ -9,12 +9,14 @@ import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.datafixers.types.templates.TypeTemplate;
 import com.mojang.datafixers.types.templates.Hook.HookFunction;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
+import net.minecraft.util.datafix.ExtraDataFixUtils;
 import net.minecraft.util.datafix.fixes.References;
 
 public class V704 extends Schema {
@@ -141,7 +143,7 @@ public class V704 extends Schema {
    });
    protected static final HookFunction ADD_NAMES = new HookFunction() {
       public <T> T apply(DynamicOps<T> var1, T var2) {
-         return V99.addNames(new Dynamic(var1, var2), V704.ITEM_TO_BLOCKENTITY, "ArmorStand");
+         return V99.addNames(new Dynamic(var1, var2), V704.ITEM_TO_BLOCKENTITY, V99.ITEM_TO_ENTITY);
       }
    };
 
@@ -198,17 +200,13 @@ public class V704 extends Schema {
                   "id",
                   References.ITEM_NAME.in(var1),
                   "tag",
-                  DSL.optionalFields(
-                     "EntityTag",
-                     References.ENTITY_TREE.in(var1),
-                     "BlockEntityTag",
-                     References.BLOCK_ENTITY.in(var1),
-                     "CanDestroy",
-                     DSL.list(References.BLOCK_NAME.in(var1)),
-                     "CanPlaceOn",
-                     DSL.list(References.BLOCK_NAME.in(var1)),
-                     "Items",
-                     DSL.list(References.ITEM_STACK.in(var1))
+                  ExtraDataFixUtils.optionalFields(
+                     Pair.of("EntityTag", References.ENTITY_TREE.in(var1)),
+                     Pair.of("BlockEntityTag", References.BLOCK_ENTITY.in(var1)),
+                     Pair.of("CanDestroy", DSL.list(References.BLOCK_NAME.in(var1))),
+                     Pair.of("CanPlaceOn", DSL.list(References.BLOCK_NAME.in(var1))),
+                     Pair.of("Items", DSL.list(References.ITEM_STACK.in(var1))),
+                     Pair.of("ChargedProjectiles", DSL.list(References.ITEM_STACK.in(var1)))
                   )
                ),
                ADD_NAMES,

@@ -120,7 +120,7 @@ public class KilledTrigger extends SimpleCriterionTrigger<KilledTrigger.TriggerI
       }
 
       public boolean matches(ServerPlayer var1, LootContext var2, DamageSource var3) {
-         if (this.killingBlow.isPresent() && !this.killingBlow.get().matches(var1, var3)) {
+         if (this.killingBlow.isPresent() && !((DamageSourcePredicate)this.killingBlow.get()).matches(var1, var3)) {
             return false;
          } else {
             return this.entityPredicate.isEmpty() || this.entityPredicate.get().matches(var2);

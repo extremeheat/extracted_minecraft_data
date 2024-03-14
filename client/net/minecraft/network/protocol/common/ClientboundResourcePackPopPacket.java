@@ -2,14 +2,20 @@ package net.minecraft.network.protocol.common;
 
 import java.util.Optional;
 import java.util.UUID;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 
-public record ClientboundResourcePackPopPacket(Optional<UUID> a) implements Packet<ClientCommonPacketListener> {
+public record ClientboundResourcePackPopPacket(Optional<UUID> b) implements Packet<ClientCommonPacketListener> {
    private final Optional<UUID> id;
+   public static final StreamCodec<FriendlyByteBuf, ClientboundResourcePackPopPacket> STREAM_CODEC = Packet.codec(
+      ClientboundResourcePackPopPacket::write, ClientboundResourcePackPopPacket::new
+   );
 
-   public ClientboundResourcePackPopPacket(FriendlyByteBuf var1) {
-      this(var1.readOptional(FriendlyByteBuf::readUUID));
+   private ClientboundResourcePackPopPacket(FriendlyByteBuf var1) {
+      this(var1.readOptional(UUIDUtil.STREAM_CODEC));
    }
 
    public ClientboundResourcePackPopPacket(Optional<UUID> var1) {
@@ -17,9 +23,13 @@ public record ClientboundResourcePackPopPacket(Optional<UUID> a) implements Pack
       this.id = var1;
    }
 
+   private void write(FriendlyByteBuf var1) {
+      var1.writeOptional(this.id, UUIDUtil.STREAM_CODEC);
+   }
+
    @Override
-   public void write(FriendlyByteBuf var1) {
-      var1.writeOptional(this.id, FriendlyByteBuf::writeUUID);
+   public PacketType<ClientboundResourcePackPopPacket> type() {
+      return CommonPacketTypes.CLIENTBOUND_RESOURCE_PACK_POP;
    }
 
    public void handle(ClientCommonPacketListener var1) {

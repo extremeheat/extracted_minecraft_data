@@ -1,10 +1,11 @@
 package net.minecraft.world.item.enchantment;
 
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.EquipmentSlot;
 
 public class MendingEnchantment extends Enchantment {
    public MendingEnchantment(Enchantment.Rarity var1, EquipmentSlot... var2) {
-      super(var1, EnchantmentCategory.BREAKABLE, var2);
+      super(var1, ItemTags.DURABILITY_ENCHANTABLE, var2);
    }
 
    @Override

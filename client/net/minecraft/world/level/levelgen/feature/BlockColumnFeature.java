@@ -21,7 +21,7 @@ public class BlockColumnFeature extends Feature<BlockColumnConfiguration> {
       int var7 = 0;
 
       for(int var8 = 0; var8 < var5; ++var8) {
-         var6[var8] = var3.layers().get(var8).height().sample(var4);
+         var6[var8] = ((BlockColumnConfiguration.Layer)var3.layers().get(var8)).height().sample(var4);
          var7 += var6[var8];
       }
 
@@ -43,7 +43,7 @@ public class BlockColumnFeature extends Feature<BlockColumnConfiguration> {
          for(int var15 = 0; var15 < var5; ++var15) {
             int var11 = var6[var15];
             if (var11 != 0) {
-               BlockColumnConfiguration.Layer var12 = var3.layers().get(var15);
+               BlockColumnConfiguration.Layer var12 = (BlockColumnConfiguration.Layer)var3.layers().get(var15);
 
                for(int var13 = 0; var13 < var11; ++var13) {
                   var2.setBlock(var14, var12.state().getState(var4, var14), 2);

@@ -41,7 +41,7 @@ public class BreezeDebugRenderer {
          .getEntities(EntityType.BREEZE, var9.getBoundingBox().inflate(100.0), var0 -> true)
          .forEach(
             var10 -> {
-               Optional var11 = Optional.ofNullable(this.perEntity.get(var10.getId()));
+               Optional var11 = Optional.ofNullable((BreezeDebugPayload.BreezeInfo)this.perEntity.get(var10.getId()));
                var11.map(BreezeDebugPayload.BreezeInfo::attackTarget)
                   .map(var1xx -> var9.level().getEntity(var1xx))
                   .map(var1xx -> var1xx.getPosition(this.minecraft.getFrameTime()))
@@ -67,8 +67,8 @@ public class BreezeDebugRenderer {
 
    private static void drawLine(PoseStack var0, MultiBufferSource var1, double var2, double var4, double var6, Vec3 var8, Vec3 var9, int var10) {
       VertexConsumer var11 = var1.getBuffer(RenderType.debugLineStrip(2.0));
-      var11.vertex(var0.last().pose(), (float)(var8.x - var2), (float)(var8.y - var4), (float)(var8.z - var6)).color(var10).endVertex();
-      var11.vertex(var0.last().pose(), (float)(var9.x - var2), (float)(var9.y - var4), (float)(var9.z - var6)).color(var10).endVertex();
+      var11.vertex(var0.last(), (float)(var8.x - var2), (float)(var8.y - var4), (float)(var8.z - var6)).color(var10).endVertex();
+      var11.vertex(var0.last(), (float)(var9.x - var2), (float)(var9.y - var4), (float)(var9.z - var6)).color(var10).endVertex();
    }
 
    private static void drawCircle(Matrix4f var0, double var1, double var3, double var5, VertexConsumer var7, Vec3 var8, float var9, int var10) {

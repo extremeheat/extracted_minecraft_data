@@ -1,5 +1,6 @@
 package net.minecraft.client.gui.components;
 
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
@@ -32,11 +33,13 @@ public class LogoRenderer {
 
    public void renderLogo(GuiGraphics var1, int var2, float var3, int var4) {
       var1.setColor(1.0F, 1.0F, 1.0F, this.keepLogoThroughFade ? 1.0F : var3);
+      RenderSystem.enableBlend();
       int var5 = var2 / 2 - 128;
       var1.blit(this.showEasterEgg ? EASTER_EGG_LOGO : MINECRAFT_LOGO, var5, var4, 0.0F, 0.0F, 256, 44, 256, 64);
       int var6 = var2 / 2 - 64;
       int var7 = var4 + 44 - 7;
       var1.blit(MINECRAFT_EDITION, var6, var7, 0.0F, 0.0F, 128, 14, 128, 16);
       var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+      RenderSystem.disableBlend();
    }
 }

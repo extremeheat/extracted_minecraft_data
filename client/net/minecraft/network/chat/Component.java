@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.contents.DataSource;
 import net.minecraft.network.chat.contents.KeybindContents;
 import net.minecraft.network.chat.contents.NbtContents;
@@ -225,53 +226,52 @@ public interface Component extends Message, FormattedText {
          super();
       }
 
-      static MutableComponent deserialize(JsonElement var0) {
-         return Util.getOrThrow(ComponentSerialization.CODEC.parse(JsonOps.INSTANCE, var0), JsonParseException::new);
+      static MutableComponent deserialize(JsonElement var0, HolderLookup.Provider var1) {
+         return Util.getOrThrow(ComponentSerialization.CODEC.parse(var1.createSerializationContext(JsonOps.INSTANCE), var0), JsonParseException::new);
       }
 
-      static JsonElement serialize(Component var0) {
-         return Util.getOrThrow(ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, var0), JsonParseException::new);
+      static JsonElement serialize(Component var0, HolderLookup.Provider var1) {
+         return Util.getOrThrow(ComponentSerialization.CODEC.encodeStart(var1.createSerializationContext(JsonOps.INSTANCE), var0), JsonParseException::new);
       }
 
-      public static String toJson(Component var0) {
-         return GSON.toJson(serialize(var0));
-      }
-
-      public static JsonElement toJsonTree(Component var0) {
-         return serialize(var0);
+      public static String toJson(Component var0, HolderLookup.Provider var1) {
+         return GSON.toJson(serialize(var0, var1));
       }
 
       @Nullable
-      public static MutableComponent fromJson(String var0) {
-         JsonElement var1 = JsonParser.parseString(var0);
-         return var1 == null ? null : deserialize(var1);
+      public static MutableComponent fromJson(String var0, HolderLookup.Provider var1) {
+         JsonElement var2 = JsonParser.parseString(var0);
+         return var2 == null ? null : deserialize(var2, var1);
       }
 
       @Nullable
-      public static MutableComponent fromJson(@Nullable JsonElement var0) {
-         return var0 == null ? null : deserialize(var0);
+      public static MutableComponent fromJson(@Nullable JsonElement var0, HolderLookup.Provider var1) {
+         return var0 == null ? null : deserialize(var0, var1);
       }
 
       @Nullable
-      public static MutableComponent fromJsonLenient(String var0) {
-         JsonReader var1 = new JsonReader(new StringReader(var0));
-         var1.setLenient(true);
-         JsonElement var2 = JsonParser.parseReader(var1);
-         return var2 == null ? null : deserialize(var2);
+      public static MutableComponent fromJsonLenient(String var0, HolderLookup.Provider var1) {
+         JsonReader var2 = new JsonReader(new StringReader(var0));
+         var2.setLenient(true);
+         JsonElement var3 = JsonParser.parseReader(var2);
+         return var3 == null ? null : deserialize(var3, var1);
       }
    }
 
    public static class SerializerAdapter implements JsonDeserializer<MutableComponent>, JsonSerializer<Component> {
-      public SerializerAdapter() {
+      private final HolderLookup.Provider registries;
+
+      public SerializerAdapter(HolderLookup.Provider var1) {
          super();
+         this.registries = var1;
       }
 
       public MutableComponent deserialize(JsonElement var1, Type var2, JsonDeserializationContext var3) throws JsonParseException {
-         return Component.Serializer.deserialize(var1);
+         return Component.Serializer.deserialize(var1, this.registries);
       }
 
       public JsonElement serialize(Component var1, Type var2, JsonSerializationContext var3) {
-         return Component.Serializer.serialize(var1);
+         return Component.Serializer.serialize(var1, this.registries);
       }
    }
 }

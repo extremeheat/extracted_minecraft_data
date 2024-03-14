@@ -2,7 +2,6 @@ package net.minecraft.client.gui.screens.inventory;
 
 import com.mojang.blaze3d.platform.Lighting;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.datafixers.util.Pair;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
@@ -14,8 +13,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.Holder;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
@@ -24,14 +22,10 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.LoomMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.BannerItem;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.level.block.entity.BannerBlockEntity;
 import net.minecraft.world.level.block.entity.BannerPattern;
-import net.minecraft.world.level.block.entity.BannerPatterns;
-import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.BannerPatternLayers;
 
 public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
    private static final ResourceLocation BANNER_SLOT_SPRITE = new ResourceLocation("container/loom/banner_slot");
@@ -54,7 +48,7 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
    private static final int PATTERNS_Y = 13;
    private ModelPart flag;
    @Nullable
-   private List<Pair<Holder<BannerPattern>, DyeColor>> resultBannerPatterns;
+   private BannerPatternLayers resultBannerPatterns;
    private ItemStack bannerStack = ItemStack.EMPTY;
    private ItemStack dyeStack = ItemStack.EMPTY;
    private ItemStack patternStack = ItemStack.EMPTY;
@@ -114,14 +108,15 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
       if (this.resultBannerPatterns != null && !this.hasMaxPatterns) {
          var1.pose().pushPose();
          var1.pose().translate((float)(var5 + 139), (float)(var6 + 52), 0.0F);
-         var1.pose().scale(24.0F, -24.0F, 1.0F);
-         var1.pose().translate(0.5F, 0.5F, 0.5F);
+         var1.pose().scale(24.0F, 24.0F, 1.0F);
+         var1.pose().translate(0.5F, -0.5F, 0.5F);
          float var13 = 0.6666667F;
-         var1.pose().scale(0.6666667F, -0.6666667F, -0.6666667F);
+         var1.pose().scale(0.6666667F, 0.6666667F, -0.6666667F);
          this.flag.xRot = 0.0F;
          this.flag.y = -32.0F;
+         DyeColor var14 = ((BannerItem)var10.getItem().getItem()).getColor();
          BannerRenderer.renderPatterns(
-            var1.pose(), var1.bufferSource(), 15728880, OverlayTexture.NO_OVERLAY, this.flag, ModelBakery.BANNER_BASE, true, this.resultBannerPatterns
+            var1.pose(), var1.bufferSource(), 15728880, OverlayTexture.NO_OVERLAY, this.flag, ModelBakery.BANNER_BASE, true, var14, this.resultBannerPatterns
          );
          var1.pose().popPose();
          var1.flush();
@@ -131,7 +126,7 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
 
       if (this.displayPatterns) {
          int var24 = var5 + 60;
-         int var14 = var6 + 13;
+         int var25 = var6 + 13;
          List var15 = this.menu.getSelectablePatterns();
 
          label64:
@@ -144,7 +139,7 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
                }
 
                int var20 = var24 + var17 * 14;
-               int var21 = var14 + var16 * 14;
+               int var21 = var25 + var16 * 14;
                boolean var22 = var3 >= var20 && var4 >= var21 && var3 < var20 + 14 && var4 < var21 + 14;
                ResourceLocation var23;
                if (var19 == this.menu.getSelectedBannerPatternIndex()) {
@@ -165,24 +160,21 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
    }
 
    private void renderPattern(GuiGraphics var1, Holder<BannerPattern> var2, int var3, int var4) {
-      CompoundTag var5 = new CompoundTag();
-      ListTag var6 = new BannerPattern.Builder().addPattern(BannerPatterns.BASE, DyeColor.GRAY).addPattern(var2, DyeColor.WHITE).toListTag();
-      var5.put("Patterns", var6);
-      ItemStack var7 = new ItemStack(Items.GRAY_BANNER);
-      BlockItem.setBlockEntityData(var7, BlockEntityType.BANNER, var5);
-      PoseStack var8 = new PoseStack();
-      var8.pushPose();
-      var8.translate((float)var3 + 0.5F, (float)(var4 + 16), 0.0F);
-      var8.scale(6.0F, -6.0F, 1.0F);
-      var8.translate(0.5F, 0.5F, 0.0F);
-      var8.translate(0.5F, 0.5F, 0.5F);
-      float var9 = 0.6666667F;
-      var8.scale(0.6666667F, -0.6666667F, -0.6666667F);
+      PoseStack var5 = new PoseStack();
+      var5.pushPose();
+      var5.translate((float)var3 + 0.5F, (float)(var4 + 16), 0.0F);
+      var5.scale(6.0F, -6.0F, 1.0F);
+      var5.translate(0.5F, 0.5F, 0.0F);
+      var5.translate(0.5F, 0.5F, 0.5F);
+      float var6 = 0.6666667F;
+      var5.scale(0.6666667F, -0.6666667F, -0.6666667F);
       this.flag.xRot = 0.0F;
       this.flag.y = -32.0F;
-      List var10 = BannerBlockEntity.createPatterns(DyeColor.GRAY, BannerBlockEntity.getItemPatterns(var7));
-      BannerRenderer.renderPatterns(var8, var1.bufferSource(), 15728880, OverlayTexture.NO_OVERLAY, this.flag, ModelBakery.BANNER_BASE, true, var10);
-      var8.popPose();
+      BannerPatternLayers var7 = new BannerPatternLayers.Builder().add(var2, DyeColor.WHITE).build();
+      BannerRenderer.renderPatterns(
+         var5, var1.bufferSource(), 15728880, OverlayTexture.NO_OVERLAY, this.flag, ModelBakery.BANNER_BASE, true, DyeColor.GRAY, var7
+      );
+      var5.popPose();
       var1.flush();
    }
 
@@ -254,14 +246,14 @@ public class LoomScreen extends AbstractContainerScreen<LoomMenu> {
       if (var1.isEmpty()) {
          this.resultBannerPatterns = null;
       } else {
-         this.resultBannerPatterns = BannerBlockEntity.createPatterns(((BannerItem)var1.getItem()).getColor(), BannerBlockEntity.getItemPatterns(var1));
+         this.resultBannerPatterns = var1.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
       }
 
       ItemStack var2 = this.menu.getBannerSlot().getItem();
       ItemStack var3 = this.menu.getDyeSlot().getItem();
       ItemStack var4 = this.menu.getPatternSlot().getItem();
-      CompoundTag var5 = BlockItem.getBlockEntityData(var2);
-      this.hasMaxPatterns = var5 != null && var5.contains("Patterns", 9) && !var2.isEmpty() && var5.getList("Patterns", 10).size() >= 6;
+      BannerPatternLayers var5 = var2.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
+      this.hasMaxPatterns = var5.layers().size() >= 6;
       if (this.hasMaxPatterns) {
          this.resultBannerPatterns = null;
       }

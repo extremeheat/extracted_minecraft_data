@@ -4,9 +4,9 @@ import com.google.common.collect.ImmutableList;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.core.HolderGetter;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BannerPatternTags;
@@ -16,7 +16,6 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BannerItem;
 import net.minecraft.world.item.BannerPatternItem;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.Item;
@@ -24,7 +23,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BannerPattern;
-import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.entity.BannerPatternLayers;
 
 public class LoomMenu extends AbstractContainerMenu {
    private static final int PATTERN_NOT_SET = -1;
@@ -37,6 +36,7 @@ public class LoomMenu extends AbstractContainerMenu {
    private List<Holder<BannerPattern>> selectablePatterns = List.of();
    Runnable slotUpdateListener = () -> {
    };
+   private final HolderGetter<BannerPattern> patternGetter;
    final Slot bannerSlot;
    final Slot dyeSlot;
    private final Slot patternSlot;
@@ -119,6 +119,7 @@ public class LoomMenu extends AbstractContainerMenu {
       }
 
       this.addDataSlot(this.selectedBannerPatternIndex);
+      this.patternGetter = var2.player.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN);
    }
 
    @Override
@@ -139,17 +140,11 @@ public class LoomMenu extends AbstractContainerMenu {
 
    private List<Holder<BannerPattern>> getSelectablePatterns(ItemStack var1) {
       if (var1.isEmpty()) {
-         return BuiltInRegistries.BANNER_PATTERN
-            .getTag(BannerPatternTags.NO_ITEM_REQUIRED)
-            .<List<Holder<BannerPattern>>>map(ImmutableList::copyOf)
-            .orElse(ImmutableList.of());
+         return this.patternGetter.get(BannerPatternTags.NO_ITEM_REQUIRED).<List<Holder<BannerPattern>>>map(ImmutableList::copyOf).orElse(ImmutableList.of());
       } else {
          Item var3 = var1.getItem();
          return var3 instanceof BannerPatternItem var2
-            ? BuiltInRegistries.BANNER_PATTERN
-               .getTag(var2.getBannerPattern())
-               .<List<Holder<BannerPattern>>>map(ImmutableList::copyOf)
-               .orElse(ImmutableList.of())
+            ? this.patternGetter.get(var2.getBannerPattern()).<List<Holder<BannerPattern>>>map(ImmutableList::copyOf).orElse(ImmutableList.of())
             : List.of();
       }
    }
@@ -188,8 +183,8 @@ public class LoomMenu extends AbstractContainerMenu {
          }
 
          if (var8 != null) {
-            CompoundTag var11 = BlockItem.getBlockEntityData(var2);
-            boolean var12 = var11 != null && var11.contains("Patterns", 9) && !var2.isEmpty() && var11.getList("Patterns", 10).size() >= 6;
+            BannerPatternLayers var11 = var2.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
+            boolean var12 = var11.layers().size() >= 6;
             if (var12) {
                this.selectedBannerPatternIndex.set(-1);
                this.resultSlot.set(ItemStack.EMPTY);
@@ -286,24 +281,9 @@ public class LoomMenu extends AbstractContainerMenu {
       if (!var2.isEmpty() && !var3.isEmpty()) {
          var4 = var2.copyWithCount(1);
          DyeColor var5 = ((DyeItem)var3.getItem()).getDyeColor();
-         CompoundTag var6 = BlockItem.getBlockEntityData(var4);
-         ListTag var7;
-         if (var6 != null && var6.contains("Patterns", 9)) {
-            var7 = var6.getList("Patterns", 10);
-         } else {
-            var7 = new ListTag();
-            if (var6 == null) {
-               var6 = new CompoundTag();
-            }
-
-            var6.put("Patterns", var7);
-         }
-
-         CompoundTag var8 = new CompoundTag();
-         var8.putString("Pattern", ((BannerPattern)var1.value()).getHashname());
-         var8.putInt("Color", var5.getId());
-         var7.add(var8);
-         BlockItem.setBlockEntityData(var4, BlockEntityType.BANNER, var6);
+         var4.update(
+            DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY, var2x -> new BannerPatternLayers.Builder().addAll(var2x).add(var1, var5).build()
+         );
       }
 
       if (!ItemStack.matches(var4, this.resultSlot.getItem())) {

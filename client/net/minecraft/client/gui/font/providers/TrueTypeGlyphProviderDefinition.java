@@ -16,9 +16,11 @@ import net.minecraft.Util;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.util.ExtraCodecs;
-import org.lwjgl.stb.STBTTFontinfo;
-import org.lwjgl.stb.STBTruetype;
+import org.lwjgl.PointerBuffer;
+import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
+import org.lwjgl.util.freetype.FT_Face;
+import org.lwjgl.util.freetype.FreeType;
 
 public record TrueTypeGlyphProviderDefinition(ResourceLocation c, float d, float e, TrueTypeGlyphProviderDefinition.Shift f, String g)
    implements GlyphProviderDefinition {
@@ -61,30 +63,53 @@ public record TrueTypeGlyphProviderDefinition(ResourceLocation c, float d, float
    }
 
    private GlyphProvider load(ResourceManager var1) throws IOException {
-      STBTTFontinfo var2 = null;
+      FT_Face var2 = null;
       ByteBuffer var3 = null;
 
       try {
-         TrueTypeGlyphProvider var5;
+         TrueTypeGlyphProvider var14;
          try (InputStream var4 = var1.open(this.location.withPrefix("font/"))) {
-            var2 = STBTTFontinfo.malloc();
             var3 = TextureUtil.readResource(var4);
             var3.flip();
-            if (!STBTruetype.stbtt_InitFont(var2, var3)) {
-               throw new IOException("Invalid ttf");
+            MemoryStack var5 = MemoryStack.stackPush();
+
+            try {
+               PointerBuffer var6 = var5.mallocPointer(1);
+               FreeTypeUtil.checkError(FreeType.FT_New_Memory_Face(FreeTypeUtil.getLibrary(), var3, 0L, var6), "Initializing font face");
+               var2 = FT_Face.create(var6.get());
+            } catch (Throwable var10) {
+               if (var5 != null) {
+                  try {
+                     var5.close();
+                  } catch (Throwable var9) {
+                     var10.addSuppressed(var9);
+                  }
+               }
+
+               throw var10;
             }
 
-            var5 = new TrueTypeGlyphProvider(var3, var2, this.size, this.oversample, this.shift.x, this.shift.y, this.skip);
+            if (var5 != null) {
+               var5.close();
+            }
+
+            String var13 = FreeType.FT_Get_Font_Format(var2);
+            if (!"TrueType".equals(var13)) {
+               throw new IOException("Font is not in TTF format, was " + var13);
+            }
+
+            FreeTypeUtil.checkError(FreeType.FT_Select_Charmap(var2, FreeType.FT_ENCODING_UNICODE), "Find unicode charmap");
+            var14 = new TrueTypeGlyphProvider(var3, var2, this.size, this.oversample, this.shift.x, this.shift.y, this.skip);
          }
 
-         return var5;
-      } catch (Exception var9) {
+         return var14;
+      } catch (Exception var12) {
          if (var2 != null) {
-            var2.free();
+            FreeType.FT_Done_Face(var2);
          }
 
          MemoryUtil.memFree(var3);
-         throw var9;
+         throw var12;
       }
    }
 

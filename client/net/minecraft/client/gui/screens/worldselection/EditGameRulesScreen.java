@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
@@ -21,7 +22,8 @@ import net.minecraft.client.gui.components.ContainerObjectSelectionList;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.gui.layouts.GridLayout;
+import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
+import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -34,30 +36,41 @@ import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.world.level.GameRules;
 
 public class EditGameRulesScreen extends Screen {
+   private static final Component TITLE = Component.translatable("editGamerule.title");
+   private static final int SPACING = 8;
+   final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
    private final Consumer<Optional<GameRules>> exitCallback;
-   private EditGameRulesScreen.RuleList rules;
    private final Set<EditGameRulesScreen.RuleEntry> invalidEntries = Sets.newHashSet();
-   private Button doneButton;
-   @Nullable
-   private List<FormattedCharSequence> tooltip;
    private final GameRules gameRules;
+   @Nullable
+   private EditGameRulesScreen.RuleList ruleList;
+   @Nullable
+   private Button doneButton;
 
    public EditGameRulesScreen(GameRules var1, Consumer<Optional<GameRules>> var2) {
-      super(Component.translatable("editGamerule.title"));
+      super(TITLE);
       this.gameRules = var1;
       this.exitCallback = var2;
    }
 
    @Override
    protected void init() {
-      this.rules = this.addRenderableWidget(new EditGameRulesScreen.RuleList(this.gameRules));
-      GridLayout.RowHelper var1 = new GridLayout().columnSpacing(10).createRowHelper(2);
+      this.layout.addTitleHeader(TITLE, this.font);
+      this.ruleList = this.layout.addToContents(new EditGameRulesScreen.RuleList(this.gameRules));
+      LinearLayout var1 = this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
       this.doneButton = var1.addChild(Button.builder(CommonComponents.GUI_DONE, var1x -> this.exitCallback.accept(Optional.of(this.gameRules))).build());
-      var1.addChild(Button.builder(CommonComponents.GUI_CANCEL, var1x -> this.exitCallback.accept(Optional.empty())).build());
-      var1.getGrid().visitWidgets(var1x -> {
+      var1.addChild(Button.builder(CommonComponents.GUI_CANCEL, var1x -> this.onClose()).build());
+      this.layout.visitWidgets(var1x -> {
       });
-      var1.getGrid().setPosition(this.width / 2 - 155, this.height - 28);
-      var1.getGrid().arrangeElements();
+      this.repositionElements();
+   }
+
+   @Override
+   protected void repositionElements() {
+      this.layout.arrangeElements();
+      if (this.ruleList != null) {
+         this.ruleList.updateSize(this.width, this.layout);
+      }
    }
 
    @Override
@@ -65,15 +78,10 @@ public class EditGameRulesScreen extends Screen {
       this.exitCallback.accept(Optional.empty());
    }
 
-   @Override
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      this.tooltip = null;
-      var1.drawCenteredString(this.font, this.title, this.width / 2, 20, 16777215);
-   }
-
    private void updateDoneButton() {
-      this.doneButton.active = this.invalidEntries.isEmpty();
+      if (this.doneButton != null) {
+         this.doneButton.active = this.invalidEntries.isEmpty();
+      }
    }
 
    void markInvalid(EditGameRulesScreen.RuleEntry var1) {
@@ -117,7 +125,7 @@ public class EditGameRulesScreen extends Screen {
 
       @Override
       public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         var1.drawCenteredString(EditGameRulesScreen.this.minecraft.font, this.label, var4 + var5 / 2, var3 + 5, 16777215);
+         var1.drawCenteredString(EditGameRulesScreen.this.minecraft.font, this.label, var4 + var5 / 2, var3 + 5, -1);
       }
 
       @Override
@@ -167,10 +175,10 @@ public class EditGameRulesScreen extends Screen {
 
       protected void renderLabel(GuiGraphics var1, int var2, int var3) {
          if (this.label.size() == 1) {
-            var1.drawString(EditGameRulesScreen.this.minecraft.font, this.label.get(0), var3, var2 + 5, 16777215, false);
+            var1.drawString(EditGameRulesScreen.this.minecraft.font, this.label.get(0), var3, var2 + 5, -1, false);
          } else if (this.label.size() >= 2) {
-            var1.drawString(EditGameRulesScreen.this.minecraft.font, this.label.get(0), var3, var2, 16777215, false);
-            var1.drawString(EditGameRulesScreen.this.minecraft.font, this.label.get(1), var3, var2 + 10, 16777215, false);
+            var1.drawString(EditGameRulesScreen.this.minecraft.font, this.label.get(0), var3, var2, -1, false);
+            var1.drawString(EditGameRulesScreen.this.minecraft.font, this.label.get(1), var3, var2 + 10, -1, false);
          }
       }
    }
@@ -187,7 +195,7 @@ public class EditGameRulesScreen extends Screen {
                this.input.setTextColor(14737632);
                EditGameRulesScreen.this.clearInvalid(this);
             } else {
-               this.input.setTextColor(16711680);
+               this.input.setTextColor(-65536);
                EditGameRulesScreen.this.markInvalid(this);
             }
          });
@@ -214,8 +222,16 @@ public class EditGameRulesScreen extends Screen {
    }
 
    public class RuleList extends ContainerObjectSelectionList<EditGameRulesScreen.RuleEntry> {
+      private static final int ITEM_HEIGHT = 24;
+
       public RuleList(final GameRules var2) {
-         super(EditGameRulesScreen.this.minecraft, EditGameRulesScreen.this.width, EditGameRulesScreen.this.height - 75, 43, 24);
+         super(
+            Minecraft.getInstance(),
+            EditGameRulesScreen.this.width,
+            EditGameRulesScreen.this.layout.getContentHeight(),
+            EditGameRulesScreen.this.layout.getHeaderHeight(),
+            24
+         );
          final HashMap var3 = Maps.newHashMap();
          GameRules.visitGameRuleTypes(new GameRules.GameRuleTypeVisitor() {
             @Override

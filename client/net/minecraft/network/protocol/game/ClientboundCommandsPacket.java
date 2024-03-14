@@ -30,10 +30,15 @@ import net.minecraft.commands.synchronization.ArgumentTypeInfos;
 import net.minecraft.commands.synchronization.SuggestionProviders;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.resources.ResourceLocation;
 
 public class ClientboundCommandsPacket implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ClientboundCommandsPacket> STREAM_CODEC = Packet.codec(
+      ClientboundCommandsPacket::write, ClientboundCommandsPacket::new
+   );
    private static final byte MASK_TYPE = 3;
    private static final byte FLAG_EXECUTABLE = 4;
    private static final byte FLAG_REDIRECT = 8;
@@ -51,15 +56,14 @@ public class ClientboundCommandsPacket implements Packet<ClientGamePacketListene
       this.rootIndex = var2.getInt(var1);
    }
 
-   public ClientboundCommandsPacket(FriendlyByteBuf var1) {
+   private ClientboundCommandsPacket(FriendlyByteBuf var1) {
       super();
       this.entries = var1.readList(ClientboundCommandsPacket::readNode);
       this.rootIndex = var1.readVarInt();
       validateEntries(this.entries);
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       var1.writeCollection(this.entries, (var0, var1x) -> var1x.write(var0));
       var1.writeVarInt(this.rootIndex);
    }
@@ -181,6 +185,11 @@ public class ClientboundCommandsPacket implements Packet<ClientGamePacketListene
 
       int[] var8 = var0.getChildren().stream().mapToInt(var1::getInt).toArray();
       return new ClientboundCommandsPacket.Entry((ClientboundCommandsPacket.NodeStub)var4, var2, var3, var8);
+   }
+
+   @Override
+   public PacketType<ClientboundCommandsPacket> type() {
+      return GamePacketTypes.CLIENTBOUND_COMMANDS;
    }
 
    public void handle(ClientGamePacketListener var1) {

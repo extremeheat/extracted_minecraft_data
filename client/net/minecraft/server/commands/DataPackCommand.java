@@ -35,6 +35,9 @@ public class DataPackCommand {
    private static final DynamicCommandExceptionType ERROR_PACK_ALREADY_DISABLED = new DynamicCommandExceptionType(
       var0 -> Component.translatableEscape("commands.datapack.disable.failed", var0)
    );
+   private static final DynamicCommandExceptionType ERROR_CANNOT_DISABLE_FEATURE = new DynamicCommandExceptionType(
+      var0 -> Component.translatableEscape("commands.datapack.disable.failed.feature", var0)
+   );
    private static final Dynamic2CommandExceptionType ERROR_PACK_FEATURES_NOT_ENABLED = new Dynamic2CommandExceptionType(
       (var0, var1) -> Component.translatableEscape("commands.datapack.enable.failed.no_flags", var0, var1)
    );
@@ -75,7 +78,7 @@ public class DataPackCommand {
                                              var0x -> enablePack(
                                                    (CommandSourceStack)var0x.getSource(),
                                                    getPack(var0x, "name", true),
-                                                   (var0xx, var1) -> var1.getDefaultPosition().insert(var0xx, var1, var0xxx -> var0xxx, false)
+                                                   (var0xx, var1) -> var1.getDefaultPosition().insert(var0xx, var1, Pack::selectionConfig, false)
                                                 )
                                           ))
                                        .then(
@@ -212,7 +215,9 @@ public class DataPackCommand {
          } else {
             FeatureFlagSet var7 = ((CommandSourceStack)var0.getSource()).enabledFeatures();
             FeatureFlagSet var8 = var5.getRequestedFeatures();
-            if (!var8.isSubsetOf(var7)) {
+            if (!var2 && var8.isSubsetOf(var7)) {
+               throw ERROR_CANNOT_DISABLE_FEATURE.create(var3);
+            } else if (!var8.isSubsetOf(var7)) {
                throw ERROR_PACK_FEATURES_NOT_ENABLED.create(var3, FeatureFlags.printMissingFlags(var7, var8));
             } else {
                return var5;

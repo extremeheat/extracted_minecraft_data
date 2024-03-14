@@ -67,12 +67,12 @@ public class AttachedStemBlock extends BushBlock {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return AABBS.get(var1.getValue(FACING));
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (!var3.is(this.fruit) && var2 == var1.getValue(FACING)) {
          Optional var7 = var4.registryAccess().registryOrThrow(Registries.BLOCK).getOptional(this.stem);
          if (var7.isPresent()) {
@@ -94,12 +94,12 @@ public class AttachedStemBlock extends BushBlock {
    }
 
    @Override
-   public BlockState rotate(BlockState var1, Rotation var2) {
+   protected BlockState rotate(BlockState var1, Rotation var2) {
       return var1.setValue(FACING, var2.rotate(var1.getValue(FACING)));
    }
 
    @Override
-   public BlockState mirror(BlockState var1, Mirror var2) {
+   protected BlockState mirror(BlockState var1, Mirror var2) {
       return var1.rotate(var2.getRotation(var1.getValue(FACING)));
    }
 

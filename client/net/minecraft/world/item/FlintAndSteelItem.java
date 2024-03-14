@@ -6,6 +6,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
@@ -38,7 +39,7 @@ public class FlintAndSteelItem extends Item {
             ItemStack var8 = var1.getItemInHand();
             if (var2 instanceof ServerPlayer) {
                CriteriaTriggers.PLACED_BLOCK.trigger((ServerPlayer)var2, var6, var8);
-               var8.hurtAndBreak(1, var2, var1x -> var1x.broadcastBreakEvent(var1.getHand()));
+               var8.hurtAndBreak(1, var2, LivingEntity.getSlotForHand(var1.getHand()));
             }
 
             return InteractionResult.sidedSuccess(var3.isClientSide());
@@ -50,7 +51,7 @@ public class FlintAndSteelItem extends Item {
          var3.setBlock(var4, var5.setValue(BlockStateProperties.LIT, Boolean.valueOf(true)), 11);
          var3.gameEvent(var2, GameEvent.BLOCK_CHANGE, var4);
          if (var2 != null) {
-            var1.getItemInHand().hurtAndBreak(1, var2, var1x -> var1x.broadcastBreakEvent(var1.getHand()));
+            var1.getItemInHand().hurtAndBreak(1, var2, LivingEntity.getSlotForHand(var1.getHand()));
          }
 
          return InteractionResult.sidedSuccess(var3.isClientSide());

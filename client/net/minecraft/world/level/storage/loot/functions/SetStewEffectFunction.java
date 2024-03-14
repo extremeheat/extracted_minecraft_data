@@ -11,13 +11,13 @@ import java.util.List;
 import java.util.Set;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.SuspiciousStewItem;
-import net.minecraft.world.level.block.SuspiciousEffectHolder;
+import net.minecraft.world.item.component.SuspiciousStewEffects;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
@@ -64,13 +64,14 @@ public class SetStewEffectFunction extends LootItemConditionalFunction {
    public ItemStack run(ItemStack var1, LootContext var2) {
       if (var1.is(Items.SUSPICIOUS_STEW) && !this.effects.isEmpty()) {
          SetStewEffectFunction.EffectEntry var3 = Util.getRandom(this.effects, var2.getRandom());
-         MobEffect var4 = var3.effect().value();
+         Holder var4 = var3.effect();
          int var5 = var3.duration().getInt(var2);
-         if (!var4.isInstantenous()) {
+         if (!((MobEffect)var4.value()).isInstantenous()) {
             var5 *= 20;
          }
 
-         SuspiciousStewItem.appendMobEffects(var1, List.of(new SuspiciousEffectHolder.EffectEntry(var4, var5)));
+         SuspiciousStewEffects.Entry var6 = new SuspiciousStewEffects.Entry(var4, var5);
+         var1.update(DataComponents.SUSPICIOUS_STEW_EFFECTS, SuspiciousStewEffects.EMPTY, var6, SuspiciousStewEffects::withEffectAdded);
          return var1;
       } else {
          return var1;
@@ -92,8 +93,8 @@ public class SetStewEffectFunction extends LootItemConditionalFunction {
          return this;
       }
 
-      public SetStewEffectFunction.Builder withEffect(MobEffect var1, NumberProvider var2) {
-         this.effects.add(new SetStewEffectFunction.EffectEntry(var1.builtInRegistryHolder(), var2));
+      public SetStewEffectFunction.Builder withEffect(Holder<MobEffect> var1, NumberProvider var2) {
+         this.effects.add(new SetStewEffectFunction.EffectEntry(var1, var2));
          return this;
       }
 

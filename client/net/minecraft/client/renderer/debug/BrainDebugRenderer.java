@@ -116,7 +116,7 @@ public class BrainDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
 
    private void clearRemovedEntities() {
       this.brainDumpsPerEntity.entrySet().removeIf(var1 -> {
-         Entity var2 = this.minecraft.level.getEntity(var1.getValue().id());
+         Entity var2 = this.minecraft.level.getEntity(((BrainDebugPayload.BrainDump)var1.getValue()).id());
          return var2 == null || var2.isRemoved();
       });
    }

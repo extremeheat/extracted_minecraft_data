@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
@@ -194,14 +195,17 @@ public class BrushableBlockEntity extends BlockEntity {
    }
 
    @Override
-   public CompoundTag getUpdateTag() {
-      CompoundTag var1 = super.getUpdateTag();
+   public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
+      CompoundTag var2 = super.getUpdateTag(var1);
       if (this.hitDirection != null) {
-         var1.putInt("hit_direction", this.hitDirection.ordinal());
+         var2.putInt("hit_direction", this.hitDirection.ordinal());
       }
 
-      var1.put("item", this.item.save(new CompoundTag()));
-      return var1;
+      if (!this.item.isEmpty()) {
+         var2.put("item", this.item.save(var1));
+      }
+
+      return var2;
    }
 
    public ClientboundBlockEntityDataPacket getUpdatePacket() {
@@ -209,9 +213,11 @@ public class BrushableBlockEntity extends BlockEntity {
    }
 
    @Override
-   public void load(CompoundTag var1) {
+   public void load(CompoundTag var1, HolderLookup.Provider var2) {
       if (!this.tryLoadLootTable(var1) && var1.contains("item")) {
-         this.item = ItemStack.of(var1.getCompound("item"));
+         this.item = ItemStack.parse(var2, var1.getCompound("item")).orElse(ItemStack.EMPTY);
+      } else {
+         this.item = ItemStack.EMPTY;
       }
 
       if (var1.contains("hit_direction")) {
@@ -220,9 +226,9 @@ public class BrushableBlockEntity extends BlockEntity {
    }
 
    @Override
-   protected void saveAdditional(CompoundTag var1) {
-      if (!this.trySaveLootTable(var1)) {
-         var1.put("item", this.item.save(new CompoundTag()));
+   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      if (!this.trySaveLootTable(var1) && !this.item.isEmpty()) {
+         var1.put("item", this.item.save(var2));
       }
    }
 

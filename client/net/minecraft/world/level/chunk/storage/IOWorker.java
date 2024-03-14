@@ -39,10 +39,10 @@ public class IOWorker implements ChunkScanAccess, AutoCloseable {
    private final Long2ObjectLinkedOpenHashMap<CompletableFuture<BitSet>> regionCacheForBlender = new Long2ObjectLinkedOpenHashMap();
    private static final int REGION_CACHE_SIZE = 1024;
 
-   protected IOWorker(Path var1, boolean var2, String var3) {
+   protected IOWorker(RegionStorageInfo var1, Path var2, boolean var3) {
       super();
-      this.storage = new RegionFileStorage(var1, var2);
-      this.mailbox = new ProcessorMailbox<>(new StrictQueue.FixedPriorityQueue(IOWorker.Priority.values().length), Util.ioPool(), "IOWorker-" + var3);
+      this.storage = new RegionFileStorage(var1, var2, var3);
+      this.mailbox = new ProcessorMailbox<>(new StrictQueue.FixedPriorityQueue(IOWorker.Priority.values().length), Util.ioPool(), "IOWorker-" + var1.type());
    }
 
    public boolean isOldChunkAround(ChunkPos var1, int var2) {

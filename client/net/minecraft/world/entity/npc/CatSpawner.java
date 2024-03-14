@@ -15,7 +15,6 @@ import net.minecraft.world.entity.ai.village.poi.PoiTypes;
 import net.minecraft.world.entity.animal.Cat;
 import net.minecraft.world.level.CustomSpawner;
 import net.minecraft.world.level.GameRules;
-import net.minecraft.world.level.NaturalSpawner;
 import net.minecraft.world.phys.AABB;
 
 public class CatSpawner implements CustomSpawner {
@@ -46,7 +45,7 @@ public class CatSpawner implements CustomSpawner {
                if (!var1.hasChunksAt(var8.getX() - 10, var8.getZ() - 10, var8.getX() + 10, var8.getZ() + 10)) {
                   return 0;
                } else {
-                  if (NaturalSpawner.isSpawnPositionOk(SpawnPlacements.Type.ON_GROUND, var1, var8, EntityType.CAT)) {
+                  if (SpawnPlacements.isSpawnPositionOk(EntityType.CAT, var1, var8)) {
                      if (var1.isCloseToVillage(var8, 2)) {
                         return this.spawnInVillage(var1, var8);
                      }
@@ -88,7 +87,7 @@ public class CatSpawner implements CustomSpawner {
       if (var3 == null) {
          return 0;
       } else {
-         var3.finalizeSpawn(var2, var2.getCurrentDifficultyAt(var1), MobSpawnType.NATURAL, null, null);
+         var3.finalizeSpawn(var2, var2.getCurrentDifficultyAt(var1), MobSpawnType.NATURAL, null);
          var3.moveTo(var1, 0.0F, 0.0F);
          var2.addFreshEntityWithPassengers(var3);
          return 1;

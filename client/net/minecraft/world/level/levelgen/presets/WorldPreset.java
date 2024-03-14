@@ -1,5 +1,7 @@
 package net.minecraft.world.level.levelgen.presets;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Lifecycle;
@@ -8,8 +10,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Map;
 import java.util.Optional;
 import net.minecraft.core.Holder;
-import net.minecraft.core.MappedRegistry;
-import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.resources.ResourceKey;
@@ -35,23 +35,23 @@ public class WorldPreset {
       this.dimensions = var1;
    }
 
-   private Registry<LevelStem> createRegistry() {
-      MappedRegistry var1 = new MappedRegistry<>(Registries.LEVEL_STEM, Lifecycle.experimental());
+   private ImmutableMap<ResourceKey<LevelStem>, LevelStem> dimensionsInOrder() {
+      Builder var1 = ImmutableMap.builder();
       WorldDimensions.keysInOrder(this.dimensions.keySet().stream()).forEach(var2 -> {
-         LevelStem var3 = this.dimensions.get(var2);
+         LevelStem var3 = (LevelStem)this.dimensions.get(var2);
          if (var3 != null) {
-            var1.register(var2, var3, Lifecycle.stable());
+            var1.put(var2, var3);
          }
       });
-      return var1.freeze();
+      return var1.build();
    }
 
    public WorldDimensions createWorldDimensions() {
-      return new WorldDimensions(this.createRegistry());
+      return new WorldDimensions(this.dimensionsInOrder());
    }
 
    public Optional<LevelStem> overworld() {
-      return Optional.ofNullable(this.dimensions.get(LevelStem.OVERWORLD));
+      return Optional.ofNullable((LevelStem)this.dimensions.get(LevelStem.OVERWORLD));
    }
 
    private static DataResult<WorldPreset> requireOverworld(WorldPreset var0) {

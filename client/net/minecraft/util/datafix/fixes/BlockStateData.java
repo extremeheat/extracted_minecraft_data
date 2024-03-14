@@ -906,9 +906,7 @@ public class BlockStateData {
          705, "{Name:'minecraft:sandstone_slab',Properties:{type:'bottom'}}", "{Name:'minecraft:stone_slab',Properties:{half:'bottom',variant:'sandstone'}}"
       );
       register(
-         706,
-         "{Name:'minecraft:petrified_oak_slab',Properties:{type:'bottom'}}",
-         "{Name:'minecraft:stone_slab',Properties:{half:'bottom',variant:'wood_old'}}"
+         706, "{Name:'minecraft:petrified_oak_slab',Properties:{type:'bottom'}}", "{Name:'minecraft:stone_slab',Properties:{half:'bottom',variant:'wood_old'}}"
       );
       register(
          707,
@@ -929,9 +927,7 @@ public class BlockStateData {
       register(711, "{Name:'minecraft:quartz_slab',Properties:{type:'bottom'}}", "{Name:'minecraft:stone_slab',Properties:{half:'bottom',variant:'quartz'}}");
       register(712, "{Name:'minecraft:stone_slab',Properties:{type:'top'}}", "{Name:'minecraft:stone_slab',Properties:{half:'top',variant:'stone'}}");
       register(713, "{Name:'minecraft:sandstone_slab',Properties:{type:'top'}}", "{Name:'minecraft:stone_slab',Properties:{half:'top',variant:'sandstone'}}");
-      register(
-         714, "{Name:'minecraft:petrified_oak_slab',Properties:{type:'top'}}", "{Name:'minecraft:stone_slab',Properties:{half:'top',variant:'wood_old'}}"
-      );
+      register(714, "{Name:'minecraft:petrified_oak_slab',Properties:{type:'top'}}", "{Name:'minecraft:stone_slab',Properties:{half:'top',variant:'wood_old'}}");
       register(
          715, "{Name:'minecraft:cobblestone_slab',Properties:{type:'top'}}", "{Name:'minecraft:stone_slab',Properties:{half:'top',variant:'cobblestone'}}"
       );
@@ -3460,14 +3456,10 @@ public class BlockStateData {
          1218, "{Name:'minecraft:redstone_wall_torch',Properties:{facing:'west',lit:'true'}}", "{Name:'minecraft:redstone_torch',Properties:{facing:'west'}}"
       );
       register(
-         1219,
-         "{Name:'minecraft:redstone_wall_torch',Properties:{facing:'south',lit:'true'}}",
-         "{Name:'minecraft:redstone_torch',Properties:{facing:'south'}}"
+         1219, "{Name:'minecraft:redstone_wall_torch',Properties:{facing:'south',lit:'true'}}", "{Name:'minecraft:redstone_torch',Properties:{facing:'south'}}"
       );
       register(
-         1220,
-         "{Name:'minecraft:redstone_wall_torch',Properties:{facing:'north',lit:'true'}}",
-         "{Name:'minecraft:redstone_torch',Properties:{facing:'north'}}"
+         1220, "{Name:'minecraft:redstone_wall_torch',Properties:{facing:'north',lit:'true'}}", "{Name:'minecraft:redstone_torch',Properties:{facing:'north'}}"
       );
       register(1221, "{Name:'minecraft:redstone_torch',Properties:{lit:'true'}}", "{Name:'minecraft:redstone_torch',Properties:{facing:'up'}}");
       register(
@@ -5058,8 +5050,7 @@ public class BlockStateData {
          "{Name:'minecraft:tripwire',Properties:{attached:'true',disarmed:'false',east:'false',north:'false',powered:'false',south:'false',west:'false'}}"
       );
       register(
-         2119,
-         "{Name:'minecraft:tripwire',Properties:{attached:'true',disarmed:'false',east:'false',north:'false',powered:'true',south:'false',west:'false'}}"
+         2119, "{Name:'minecraft:tripwire',Properties:{attached:'true',disarmed:'false',east:'false',north:'false',powered:'true',south:'false',west:'false'}}"
       );
       register(
          2120,
@@ -5106,8 +5097,7 @@ public class BlockStateData {
          "{Name:'minecraft:tripwire',Properties:{attached:'false',disarmed:'true',east:'false',north:'false',powered:'false',south:'false',west:'false'}}"
       );
       register(
-         2123,
-         "{Name:'minecraft:tripwire',Properties:{attached:'false',disarmed:'true',east:'false',north:'false',powered:'true',south:'false',west:'false'}}"
+         2123, "{Name:'minecraft:tripwire',Properties:{attached:'false',disarmed:'true',east:'false',north:'false',powered:'true',south:'false',west:'false'}}"
       );
       register(
          2124,
@@ -5150,8 +5140,7 @@ public class BlockStateData {
          "{Name:'minecraft:tripwire',Properties:{attached:'true',disarmed:'true',east:'true',north:'true',powered:'true',south:'true',west:'true'}}"
       );
       register(
-         2126,
-         "{Name:'minecraft:tripwire',Properties:{attached:'true',disarmed:'true',east:'false',north:'false',powered:'false',south:'false',west:'false'}}"
+         2126, "{Name:'minecraft:tripwire',Properties:{attached:'true',disarmed:'true',east:'false',north:'false',powered:'false',south:'false',west:'false'}}"
       );
       register(2128, "{Name:'minecraft:emerald_block'}", "{Name:'minecraft:emerald_block'}");
       register(
@@ -6000,12 +5989,8 @@ public class BlockStateData {
    static void bootstrap9() {
       register(2304, "{Name:'%%FILTER_ME%%',Properties:{facing:'down',nodrop:'false'}}", "{Name:'minecraft:skull',Properties:{facing:'down',nodrop:'false'}}");
       register(2305, "{Name:'%%FILTER_ME%%',Properties:{facing:'up',nodrop:'false'}}", "{Name:'minecraft:skull',Properties:{facing:'up',nodrop:'false'}}");
-      register(
-         2306, "{Name:'%%FILTER_ME%%',Properties:{facing:'north',nodrop:'false'}}", "{Name:'minecraft:skull',Properties:{facing:'north',nodrop:'false'}}"
-      );
-      register(
-         2307, "{Name:'%%FILTER_ME%%',Properties:{facing:'south',nodrop:'false'}}", "{Name:'minecraft:skull',Properties:{facing:'south',nodrop:'false'}}"
-      );
+      register(2306, "{Name:'%%FILTER_ME%%',Properties:{facing:'north',nodrop:'false'}}", "{Name:'minecraft:skull',Properties:{facing:'north',nodrop:'false'}}");
+      register(2307, "{Name:'%%FILTER_ME%%',Properties:{facing:'south',nodrop:'false'}}", "{Name:'minecraft:skull',Properties:{facing:'south',nodrop:'false'}}");
       register(2308, "{Name:'%%FILTER_ME%%',Properties:{facing:'west',nodrop:'false'}}", "{Name:'minecraft:skull',Properties:{facing:'west',nodrop:'false'}}");
       register(2309, "{Name:'%%FILTER_ME%%',Properties:{facing:'east',nodrop:'false'}}", "{Name:'minecraft:skull',Properties:{facing:'east',nodrop:'false'}}");
       register(2312, "{Name:'%%FILTER_ME%%',Properties:{facing:'down',nodrop:'true'}}", "{Name:'minecraft:skull',Properties:{facing:'down',nodrop:'true'}}");
@@ -6032,12 +6017,8 @@ public class BlockStateData {
       register(
          2339, "{Name:'minecraft:trapped_chest',Properties:{facing:'south',type:'single'}}", "{Name:'minecraft:trapped_chest',Properties:{facing:'south'}}"
       );
-      register(
-         2340, "{Name:'minecraft:trapped_chest',Properties:{facing:'west',type:'single'}}", "{Name:'minecraft:trapped_chest',Properties:{facing:'west'}}"
-      );
-      register(
-         2341, "{Name:'minecraft:trapped_chest',Properties:{facing:'east',type:'single'}}", "{Name:'minecraft:trapped_chest',Properties:{facing:'east'}}"
-      );
+      register(2340, "{Name:'minecraft:trapped_chest',Properties:{facing:'west',type:'single'}}", "{Name:'minecraft:trapped_chest',Properties:{facing:'west'}}");
+      register(2341, "{Name:'minecraft:trapped_chest',Properties:{facing:'east',type:'single'}}", "{Name:'minecraft:trapped_chest',Properties:{facing:'east'}}");
       register(
          2352,
          "{Name:'minecraft:light_weighted_pressure_plate',Properties:{power:'0'}}",
@@ -6427,14 +6408,10 @@ public class BlockStateData {
          2472, "{Name:'minecraft:hopper',Properties:{enabled:'false',facing:'down'}}", "{Name:'minecraft:hopper',Properties:{enabled:'false',facing:'down'}}"
       );
       register(
-         2474,
-         "{Name:'minecraft:hopper',Properties:{enabled:'false',facing:'north'}}",
-         "{Name:'minecraft:hopper',Properties:{enabled:'false',facing:'north'}}"
+         2474, "{Name:'minecraft:hopper',Properties:{enabled:'false',facing:'north'}}", "{Name:'minecraft:hopper',Properties:{enabled:'false',facing:'north'}}"
       );
       register(
-         2475,
-         "{Name:'minecraft:hopper',Properties:{enabled:'false',facing:'south'}}",
-         "{Name:'minecraft:hopper',Properties:{enabled:'false',facing:'south'}}"
+         2475, "{Name:'minecraft:hopper',Properties:{enabled:'false',facing:'south'}}", "{Name:'minecraft:hopper',Properties:{enabled:'false',facing:'south'}}"
       );
       register(
          2476, "{Name:'minecraft:hopper',Properties:{enabled:'false',facing:'west'}}", "{Name:'minecraft:hopper',Properties:{enabled:'false',facing:'west'}}"
@@ -6585,9 +6562,7 @@ public class BlockStateData {
          "{Name:'minecraft:dropper',Properties:{facing:'down',triggered:'false'}}"
       );
       register(
-         2529,
-         "{Name:'minecraft:dropper',Properties:{facing:'up',triggered:'false'}}",
-         "{Name:'minecraft:dropper',Properties:{facing:'up',triggered:'false'}}"
+         2529, "{Name:'minecraft:dropper',Properties:{facing:'up',triggered:'false'}}", "{Name:'minecraft:dropper',Properties:{facing:'up',triggered:'false'}}"
       );
       register(
          2530,
@@ -8858,9 +8833,7 @@ public class BlockStateData {
          "{Name:'minecraft:purpur_stairs',Properties:{facing:'north',half:'top',shape:'straight'}}"
       );
       register(3264, "{Name:'minecraft:purpur_slab',Properties:{type:'double'}}", "{Name:'minecraft:purpur_double_slab',Properties:{variant:'default'}}");
-      register(
-         3280, "{Name:'minecraft:purpur_slab',Properties:{type:'bottom'}}", "{Name:'minecraft:purpur_slab',Properties:{half:'bottom',variant:'default'}}"
-      );
+      register(3280, "{Name:'minecraft:purpur_slab',Properties:{type:'bottom'}}", "{Name:'minecraft:purpur_slab',Properties:{half:'bottom',variant:'default'}}");
       register(3288, "{Name:'minecraft:purpur_slab',Properties:{type:'top'}}", "{Name:'minecraft:purpur_slab',Properties:{half:'top',variant:'default'}}");
       register(3296, "{Name:'minecraft:end_stone_bricks'}", "{Name:'minecraft:end_bricks'}");
       register(3312, "{Name:'minecraft:beetroots',Properties:{age:'0'}}", "{Name:'minecraft:beetroots',Properties:{age:'0'}}");
@@ -9032,9 +9005,7 @@ public class BlockStateData {
          "{Name:'minecraft:observer',Properties:{facing:'east',powered:'false'}}"
       );
       register(
-         3496,
-         "{Name:'minecraft:observer',Properties:{facing:'down',powered:'true'}}",
-         "{Name:'minecraft:observer',Properties:{facing:'down',powered:'true'}}"
+         3496, "{Name:'minecraft:observer',Properties:{facing:'down',powered:'true'}}", "{Name:'minecraft:observer',Properties:{facing:'down',powered:'true'}}"
       );
       register(
          3497, "{Name:'minecraft:observer',Properties:{facing:'up',powered:'true'}}", "{Name:'minecraft:observer',Properties:{facing:'up',powered:'true'}}"
@@ -9050,14 +9021,10 @@ public class BlockStateData {
          "{Name:'minecraft:observer',Properties:{facing:'south',powered:'true'}}"
       );
       register(
-         3500,
-         "{Name:'minecraft:observer',Properties:{facing:'west',powered:'true'}}",
-         "{Name:'minecraft:observer',Properties:{facing:'west',powered:'true'}}"
+         3500, "{Name:'minecraft:observer',Properties:{facing:'west',powered:'true'}}", "{Name:'minecraft:observer',Properties:{facing:'west',powered:'true'}}"
       );
       register(
-         3501,
-         "{Name:'minecraft:observer',Properties:{facing:'east',powered:'true'}}",
-         "{Name:'minecraft:observer',Properties:{facing:'east',powered:'true'}}"
+         3501, "{Name:'minecraft:observer',Properties:{facing:'east',powered:'true'}}", "{Name:'minecraft:observer',Properties:{facing:'east',powered:'true'}}"
       );
       register(3504, "{Name:'minecraft:white_shulker_box',Properties:{facing:'down'}}", "{Name:'minecraft:white_shulker_box',Properties:{facing:'down'}}");
       register(3505, "{Name:'minecraft:white_shulker_box',Properties:{facing:'up'}}", "{Name:'minecraft:white_shulker_box',Properties:{facing:'up'}}");
@@ -9073,29 +9040,19 @@ public class BlockStateData {
       register(3525, "{Name:'minecraft:orange_shulker_box',Properties:{facing:'east'}}", "{Name:'minecraft:orange_shulker_box',Properties:{facing:'east'}}");
       register(3536, "{Name:'minecraft:magenta_shulker_box',Properties:{facing:'down'}}", "{Name:'minecraft:magenta_shulker_box',Properties:{facing:'down'}}");
       register(3537, "{Name:'minecraft:magenta_shulker_box',Properties:{facing:'up'}}", "{Name:'minecraft:magenta_shulker_box',Properties:{facing:'up'}}");
-      register(
-         3538, "{Name:'minecraft:magenta_shulker_box',Properties:{facing:'north'}}", "{Name:'minecraft:magenta_shulker_box',Properties:{facing:'north'}}"
-      );
-      register(
-         3539, "{Name:'minecraft:magenta_shulker_box',Properties:{facing:'south'}}", "{Name:'minecraft:magenta_shulker_box',Properties:{facing:'south'}}"
-      );
+      register(3538, "{Name:'minecraft:magenta_shulker_box',Properties:{facing:'north'}}", "{Name:'minecraft:magenta_shulker_box',Properties:{facing:'north'}}");
+      register(3539, "{Name:'minecraft:magenta_shulker_box',Properties:{facing:'south'}}", "{Name:'minecraft:magenta_shulker_box',Properties:{facing:'south'}}");
       register(3540, "{Name:'minecraft:magenta_shulker_box',Properties:{facing:'west'}}", "{Name:'minecraft:magenta_shulker_box',Properties:{facing:'west'}}");
       register(3541, "{Name:'minecraft:magenta_shulker_box',Properties:{facing:'east'}}", "{Name:'minecraft:magenta_shulker_box',Properties:{facing:'east'}}");
       register(
          3552, "{Name:'minecraft:light_blue_shulker_box',Properties:{facing:'down'}}", "{Name:'minecraft:light_blue_shulker_box',Properties:{facing:'down'}}"
       );
+      register(3553, "{Name:'minecraft:light_blue_shulker_box',Properties:{facing:'up'}}", "{Name:'minecraft:light_blue_shulker_box',Properties:{facing:'up'}}");
       register(
-         3553, "{Name:'minecraft:light_blue_shulker_box',Properties:{facing:'up'}}", "{Name:'minecraft:light_blue_shulker_box',Properties:{facing:'up'}}"
+         3554, "{Name:'minecraft:light_blue_shulker_box',Properties:{facing:'north'}}", "{Name:'minecraft:light_blue_shulker_box',Properties:{facing:'north'}}"
       );
       register(
-         3554,
-         "{Name:'minecraft:light_blue_shulker_box',Properties:{facing:'north'}}",
-         "{Name:'minecraft:light_blue_shulker_box',Properties:{facing:'north'}}"
-      );
-      register(
-         3555,
-         "{Name:'minecraft:light_blue_shulker_box',Properties:{facing:'south'}}",
-         "{Name:'minecraft:light_blue_shulker_box',Properties:{facing:'south'}}"
+         3555, "{Name:'minecraft:light_blue_shulker_box',Properties:{facing:'south'}}", "{Name:'minecraft:light_blue_shulker_box',Properties:{facing:'south'}}"
       );
       register(
          3556, "{Name:'minecraft:light_blue_shulker_box',Properties:{facing:'west'}}", "{Name:'minecraft:light_blue_shulker_box',Properties:{facing:'west'}}"
@@ -9130,9 +9087,7 @@ public class BlockStateData {
       register(3619, "{Name:'minecraft:gray_shulker_box',Properties:{facing:'south'}}", "{Name:'minecraft:gray_shulker_box',Properties:{facing:'south'}}");
       register(3620, "{Name:'minecraft:gray_shulker_box',Properties:{facing:'west'}}", "{Name:'minecraft:gray_shulker_box',Properties:{facing:'west'}}");
       register(3621, "{Name:'minecraft:gray_shulker_box',Properties:{facing:'east'}}", "{Name:'minecraft:gray_shulker_box',Properties:{facing:'east'}}");
-      register(
-         3632, "{Name:'minecraft:light_gray_shulker_box',Properties:{facing:'down'}}", "{Name:'minecraft:silver_shulker_box',Properties:{facing:'down'}}"
-      );
+      register(3632, "{Name:'minecraft:light_gray_shulker_box',Properties:{facing:'down'}}", "{Name:'minecraft:silver_shulker_box',Properties:{facing:'down'}}");
       register(3633, "{Name:'minecraft:light_gray_shulker_box',Properties:{facing:'up'}}", "{Name:'minecraft:silver_shulker_box',Properties:{facing:'up'}}");
       register(
          3634, "{Name:'minecraft:light_gray_shulker_box',Properties:{facing:'north'}}", "{Name:'minecraft:silver_shulker_box',Properties:{facing:'north'}}"
@@ -9140,12 +9095,8 @@ public class BlockStateData {
       register(
          3635, "{Name:'minecraft:light_gray_shulker_box',Properties:{facing:'south'}}", "{Name:'minecraft:silver_shulker_box',Properties:{facing:'south'}}"
       );
-      register(
-         3636, "{Name:'minecraft:light_gray_shulker_box',Properties:{facing:'west'}}", "{Name:'minecraft:silver_shulker_box',Properties:{facing:'west'}}"
-      );
-      register(
-         3637, "{Name:'minecraft:light_gray_shulker_box',Properties:{facing:'east'}}", "{Name:'minecraft:silver_shulker_box',Properties:{facing:'east'}}"
-      );
+      register(3636, "{Name:'minecraft:light_gray_shulker_box',Properties:{facing:'west'}}", "{Name:'minecraft:silver_shulker_box',Properties:{facing:'west'}}");
+      register(3637, "{Name:'minecraft:light_gray_shulker_box',Properties:{facing:'east'}}", "{Name:'minecraft:silver_shulker_box',Properties:{facing:'east'}}");
       register(3648, "{Name:'minecraft:cyan_shulker_box',Properties:{facing:'down'}}", "{Name:'minecraft:cyan_shulker_box',Properties:{facing:'down'}}");
       register(3649, "{Name:'minecraft:cyan_shulker_box',Properties:{facing:'up'}}", "{Name:'minecraft:cyan_shulker_box',Properties:{facing:'up'}}");
       register(3650, "{Name:'minecraft:cyan_shulker_box',Properties:{facing:'north'}}", "{Name:'minecraft:cyan_shulker_box',Properties:{facing:'north'}}");
@@ -9194,9 +9145,7 @@ public class BlockStateData {
          "{Name:'minecraft:white_glazed_terracotta',Properties:{facing:'south'}}"
       );
       register(
-         3761,
-         "{Name:'minecraft:white_glazed_terracotta',Properties:{facing:'west'}}",
-         "{Name:'minecraft:white_glazed_terracotta',Properties:{facing:'west'}}"
+         3761, "{Name:'minecraft:white_glazed_terracotta',Properties:{facing:'west'}}", "{Name:'minecraft:white_glazed_terracotta',Properties:{facing:'west'}}"
       );
       register(
          3762,
@@ -9204,9 +9153,7 @@ public class BlockStateData {
          "{Name:'minecraft:white_glazed_terracotta',Properties:{facing:'north'}}"
       );
       register(
-         3763,
-         "{Name:'minecraft:white_glazed_terracotta',Properties:{facing:'east'}}",
-         "{Name:'minecraft:white_glazed_terracotta',Properties:{facing:'east'}}"
+         3763, "{Name:'minecraft:white_glazed_terracotta',Properties:{facing:'east'}}", "{Name:'minecraft:white_glazed_terracotta',Properties:{facing:'east'}}"
       );
       register(
          3776,
@@ -9292,49 +9239,37 @@ public class BlockStateData {
 
    static void bootstrap15() {
       register(
-         3840,
-         "{Name:'minecraft:lime_glazed_terracotta',Properties:{facing:'south'}}",
-         "{Name:'minecraft:lime_glazed_terracotta',Properties:{facing:'south'}}"
+         3840, "{Name:'minecraft:lime_glazed_terracotta',Properties:{facing:'south'}}", "{Name:'minecraft:lime_glazed_terracotta',Properties:{facing:'south'}}"
       );
       register(
          3841, "{Name:'minecraft:lime_glazed_terracotta',Properties:{facing:'west'}}", "{Name:'minecraft:lime_glazed_terracotta',Properties:{facing:'west'}}"
       );
       register(
-         3842,
-         "{Name:'minecraft:lime_glazed_terracotta',Properties:{facing:'north'}}",
-         "{Name:'minecraft:lime_glazed_terracotta',Properties:{facing:'north'}}"
+         3842, "{Name:'minecraft:lime_glazed_terracotta',Properties:{facing:'north'}}", "{Name:'minecraft:lime_glazed_terracotta',Properties:{facing:'north'}}"
       );
       register(
          3843, "{Name:'minecraft:lime_glazed_terracotta',Properties:{facing:'east'}}", "{Name:'minecraft:lime_glazed_terracotta',Properties:{facing:'east'}}"
       );
       register(
-         3856,
-         "{Name:'minecraft:pink_glazed_terracotta',Properties:{facing:'south'}}",
-         "{Name:'minecraft:pink_glazed_terracotta',Properties:{facing:'south'}}"
+         3856, "{Name:'minecraft:pink_glazed_terracotta',Properties:{facing:'south'}}", "{Name:'minecraft:pink_glazed_terracotta',Properties:{facing:'south'}}"
       );
       register(
          3857, "{Name:'minecraft:pink_glazed_terracotta',Properties:{facing:'west'}}", "{Name:'minecraft:pink_glazed_terracotta',Properties:{facing:'west'}}"
       );
       register(
-         3858,
-         "{Name:'minecraft:pink_glazed_terracotta',Properties:{facing:'north'}}",
-         "{Name:'minecraft:pink_glazed_terracotta',Properties:{facing:'north'}}"
+         3858, "{Name:'minecraft:pink_glazed_terracotta',Properties:{facing:'north'}}", "{Name:'minecraft:pink_glazed_terracotta',Properties:{facing:'north'}}"
       );
       register(
          3859, "{Name:'minecraft:pink_glazed_terracotta',Properties:{facing:'east'}}", "{Name:'minecraft:pink_glazed_terracotta',Properties:{facing:'east'}}"
       );
       register(
-         3872,
-         "{Name:'minecraft:gray_glazed_terracotta',Properties:{facing:'south'}}",
-         "{Name:'minecraft:gray_glazed_terracotta',Properties:{facing:'south'}}"
+         3872, "{Name:'minecraft:gray_glazed_terracotta',Properties:{facing:'south'}}", "{Name:'minecraft:gray_glazed_terracotta',Properties:{facing:'south'}}"
       );
       register(
          3873, "{Name:'minecraft:gray_glazed_terracotta',Properties:{facing:'west'}}", "{Name:'minecraft:gray_glazed_terracotta',Properties:{facing:'west'}}"
       );
       register(
-         3874,
-         "{Name:'minecraft:gray_glazed_terracotta',Properties:{facing:'north'}}",
-         "{Name:'minecraft:gray_glazed_terracotta',Properties:{facing:'north'}}"
+         3874, "{Name:'minecraft:gray_glazed_terracotta',Properties:{facing:'north'}}", "{Name:'minecraft:gray_glazed_terracotta',Properties:{facing:'north'}}"
       );
       register(
          3875, "{Name:'minecraft:gray_glazed_terracotta',Properties:{facing:'east'}}", "{Name:'minecraft:gray_glazed_terracotta',Properties:{facing:'east'}}"
@@ -9360,17 +9295,13 @@ public class BlockStateData {
          "{Name:'minecraft:silver_glazed_terracotta',Properties:{facing:'east'}}"
       );
       register(
-         3904,
-         "{Name:'minecraft:cyan_glazed_terracotta',Properties:{facing:'south'}}",
-         "{Name:'minecraft:cyan_glazed_terracotta',Properties:{facing:'south'}}"
+         3904, "{Name:'minecraft:cyan_glazed_terracotta',Properties:{facing:'south'}}", "{Name:'minecraft:cyan_glazed_terracotta',Properties:{facing:'south'}}"
       );
       register(
          3905, "{Name:'minecraft:cyan_glazed_terracotta',Properties:{facing:'west'}}", "{Name:'minecraft:cyan_glazed_terracotta',Properties:{facing:'west'}}"
       );
       register(
-         3906,
-         "{Name:'minecraft:cyan_glazed_terracotta',Properties:{facing:'north'}}",
-         "{Name:'minecraft:cyan_glazed_terracotta',Properties:{facing:'north'}}"
+         3906, "{Name:'minecraft:cyan_glazed_terracotta',Properties:{facing:'north'}}", "{Name:'minecraft:cyan_glazed_terracotta',Properties:{facing:'north'}}"
       );
       register(
          3907, "{Name:'minecraft:cyan_glazed_terracotta',Properties:{facing:'east'}}", "{Name:'minecraft:cyan_glazed_terracotta',Properties:{facing:'east'}}"
@@ -9396,17 +9327,13 @@ public class BlockStateData {
          "{Name:'minecraft:purple_glazed_terracotta',Properties:{facing:'east'}}"
       );
       register(
-         3936,
-         "{Name:'minecraft:blue_glazed_terracotta',Properties:{facing:'south'}}",
-         "{Name:'minecraft:blue_glazed_terracotta',Properties:{facing:'south'}}"
+         3936, "{Name:'minecraft:blue_glazed_terracotta',Properties:{facing:'south'}}", "{Name:'minecraft:blue_glazed_terracotta',Properties:{facing:'south'}}"
       );
       register(
          3937, "{Name:'minecraft:blue_glazed_terracotta',Properties:{facing:'west'}}", "{Name:'minecraft:blue_glazed_terracotta',Properties:{facing:'west'}}"
       );
       register(
-         3938,
-         "{Name:'minecraft:blue_glazed_terracotta',Properties:{facing:'north'}}",
-         "{Name:'minecraft:blue_glazed_terracotta',Properties:{facing:'north'}}"
+         3938, "{Name:'minecraft:blue_glazed_terracotta',Properties:{facing:'north'}}", "{Name:'minecraft:blue_glazed_terracotta',Properties:{facing:'north'}}"
       );
       register(
          3939, "{Name:'minecraft:blue_glazed_terracotta',Properties:{facing:'east'}}", "{Name:'minecraft:blue_glazed_terracotta',Properties:{facing:'east'}}"
@@ -9417,9 +9344,7 @@ public class BlockStateData {
          "{Name:'minecraft:brown_glazed_terracotta',Properties:{facing:'south'}}"
       );
       register(
-         3953,
-         "{Name:'minecraft:brown_glazed_terracotta',Properties:{facing:'west'}}",
-         "{Name:'minecraft:brown_glazed_terracotta',Properties:{facing:'west'}}"
+         3953, "{Name:'minecraft:brown_glazed_terracotta',Properties:{facing:'west'}}", "{Name:'minecraft:brown_glazed_terracotta',Properties:{facing:'west'}}"
       );
       register(
          3954,
@@ -9427,9 +9352,7 @@ public class BlockStateData {
          "{Name:'minecraft:brown_glazed_terracotta',Properties:{facing:'north'}}"
       );
       register(
-         3955,
-         "{Name:'minecraft:brown_glazed_terracotta',Properties:{facing:'east'}}",
-         "{Name:'minecraft:brown_glazed_terracotta',Properties:{facing:'east'}}"
+         3955, "{Name:'minecraft:brown_glazed_terracotta',Properties:{facing:'east'}}", "{Name:'minecraft:brown_glazed_terracotta',Properties:{facing:'east'}}"
       );
       register(
          3968,
@@ -9437,9 +9360,7 @@ public class BlockStateData {
          "{Name:'minecraft:green_glazed_terracotta',Properties:{facing:'south'}}"
       );
       register(
-         3969,
-         "{Name:'minecraft:green_glazed_terracotta',Properties:{facing:'west'}}",
-         "{Name:'minecraft:green_glazed_terracotta',Properties:{facing:'west'}}"
+         3969, "{Name:'minecraft:green_glazed_terracotta',Properties:{facing:'west'}}", "{Name:'minecraft:green_glazed_terracotta',Properties:{facing:'west'}}"
       );
       register(
          3970,
@@ -9447,9 +9368,7 @@ public class BlockStateData {
          "{Name:'minecraft:green_glazed_terracotta',Properties:{facing:'north'}}"
       );
       register(
-         3971,
-         "{Name:'minecraft:green_glazed_terracotta',Properties:{facing:'east'}}",
-         "{Name:'minecraft:green_glazed_terracotta',Properties:{facing:'east'}}"
+         3971, "{Name:'minecraft:green_glazed_terracotta',Properties:{facing:'east'}}", "{Name:'minecraft:green_glazed_terracotta',Properties:{facing:'east'}}"
       );
       register(
          3984, "{Name:'minecraft:red_glazed_terracotta',Properties:{facing:'south'}}", "{Name:'minecraft:red_glazed_terracotta',Properties:{facing:'south'}}"
@@ -9469,9 +9388,7 @@ public class BlockStateData {
          "{Name:'minecraft:black_glazed_terracotta',Properties:{facing:'south'}}"
       );
       register(
-         4001,
-         "{Name:'minecraft:black_glazed_terracotta',Properties:{facing:'west'}}",
-         "{Name:'minecraft:black_glazed_terracotta',Properties:{facing:'west'}}"
+         4001, "{Name:'minecraft:black_glazed_terracotta',Properties:{facing:'west'}}", "{Name:'minecraft:black_glazed_terracotta',Properties:{facing:'west'}}"
       );
       register(
          4002,
@@ -9479,9 +9396,7 @@ public class BlockStateData {
          "{Name:'minecraft:black_glazed_terracotta',Properties:{facing:'north'}}"
       );
       register(
-         4003,
-         "{Name:'minecraft:black_glazed_terracotta',Properties:{facing:'east'}}",
-         "{Name:'minecraft:black_glazed_terracotta',Properties:{facing:'east'}}"
+         4003, "{Name:'minecraft:black_glazed_terracotta',Properties:{facing:'east'}}", "{Name:'minecraft:black_glazed_terracotta',Properties:{facing:'east'}}"
       );
       register(4016, "{Name:'minecraft:white_concrete'}", "{Name:'minecraft:concrete',Properties:{color:'white'}}");
       register(4017, "{Name:'minecraft:orange_concrete'}", "{Name:'minecraft:concrete',Properties:{color:'orange'}}");

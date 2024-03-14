@@ -37,7 +37,7 @@ public class OperationArgument implements ArgumentType<OperationArgument.Operati
 
    public OperationArgument.Operation parse(StringReader var1) throws CommandSyntaxException {
       if (!var1.canRead()) {
-         throw ERROR_INVALID_OPERATION.create();
+         throw ERROR_INVALID_OPERATION.createWithContext(var1);
       } else {
          int var2 = var1.getCursor();
 

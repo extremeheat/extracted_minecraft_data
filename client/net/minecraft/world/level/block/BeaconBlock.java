@@ -4,12 +4,10 @@ import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.stats.Stats;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BeaconBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -48,13 +46,13 @@ public class BeaconBlock extends BaseEntityBlock implements BeaconBeamBlock {
    }
 
    @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       if (var2.isClientSide) {
          return InteractionResult.SUCCESS;
       } else {
          BlockEntity var7 = var2.getBlockEntity(var3);
-         if (var7 instanceof BeaconBlockEntity) {
-            var4.openMenu((BeaconBlockEntity)var7);
+         if (var7 instanceof BeaconBlockEntity var6) {
+            var4.openMenu((MenuProvider)var6);
             var4.awardStat(Stats.INTERACT_WITH_BEACON);
          }
 
@@ -63,17 +61,7 @@ public class BeaconBlock extends BaseEntityBlock implements BeaconBeamBlock {
    }
 
    @Override
-   public RenderShape getRenderShape(BlockState var1) {
+   protected RenderShape getRenderShape(BlockState var1) {
       return RenderShape.MODEL;
-   }
-
-   @Override
-   public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, LivingEntity var4, ItemStack var5) {
-      if (var5.hasCustomHoverName()) {
-         BlockEntity var6 = var1.getBlockEntity(var2);
-         if (var6 instanceof BeaconBlockEntity) {
-            ((BeaconBlockEntity)var6).setCustomName(var5.getHoverName());
-         }
-      }
    }
 }

@@ -3,13 +3,18 @@ package net.minecraft.network.protocol.game;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.phys.Vec3;
 
 public class ServerboundInteractPacket implements Packet<ServerGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ServerboundInteractPacket> STREAM_CODEC = Packet.codec(
+      ServerboundInteractPacket::write, ServerboundInteractPacket::new
+   );
    private final int entityId;
    private final ServerboundInteractPacket.Action action;
    private final boolean usingSecondaryAction;
@@ -48,7 +53,7 @@ public class ServerboundInteractPacket implements Packet<ServerGamePacketListene
       return new ServerboundInteractPacket(var0.getId(), var1, new ServerboundInteractPacket.InteractionAtLocationAction(var2, var3));
    }
 
-   public ServerboundInteractPacket(FriendlyByteBuf var1) {
+   private ServerboundInteractPacket(FriendlyByteBuf var1) {
       super();
       this.entityId = var1.readVarInt();
       ServerboundInteractPacket.ActionType var2 = var1.readEnum(ServerboundInteractPacket.ActionType.class);
@@ -56,12 +61,16 @@ public class ServerboundInteractPacket implements Packet<ServerGamePacketListene
       this.usingSecondaryAction = var1.readBoolean();
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       var1.writeVarInt(this.entityId);
       var1.writeEnum(this.action.getType());
       this.action.write(var1);
       var1.writeBoolean(this.usingSecondaryAction);
+   }
+
+   @Override
+   public PacketType<ServerboundInteractPacket> type() {
+      return GamePacketTypes.SERVERBOUND_INTERACT;
    }
 
    public void handle(ServerGamePacketListener var1) {

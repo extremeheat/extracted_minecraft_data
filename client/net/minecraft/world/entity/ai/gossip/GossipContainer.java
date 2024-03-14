@@ -63,7 +63,7 @@ public class GossipContainer {
    }
 
    private Stream<GossipContainer.GossipEntry> unpack() {
-      return this.gossips.entrySet().stream().flatMap(var0 -> var0.getValue().unpack(var0.getKey()));
+      return this.gossips.entrySet().stream().flatMap(var0 -> ((GossipContainer.EntityGossips)var0.getValue()).unpack((UUID)var0.getKey()));
    }
 
    private Collection<GossipContainer.GossipEntry> selectGossipsForTransfer(RandomSource var1, int var2) {
@@ -192,10 +192,7 @@ public class GossipContainer {
       }
 
       public Stream<GossipContainer.GossipEntry> unpack(UUID var1) {
-         return this.entries
-            .object2IntEntrySet()
-            .stream()
-            .map(var1x -> new GossipContainer.GossipEntry(var1, (GossipType)var1x.getKey(), var1x.getIntValue()));
+         return this.entries.object2IntEntrySet().stream().map(var1x -> new GossipContainer.GossipEntry(var1, (GossipType)var1x.getKey(), var1x.getIntValue()));
       }
 
       public void decay() {

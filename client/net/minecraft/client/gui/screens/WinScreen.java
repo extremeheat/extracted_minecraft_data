@@ -17,6 +17,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.LogoRenderer;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.Music;
@@ -29,7 +30,7 @@ import org.slf4j.Logger;
 
 public class WinScreen extends Screen {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private static final ResourceLocation VIGNETTE_LOCATION = new ResourceLocation("textures/misc/vignette.png");
+   private static final ResourceLocation VIGNETTE_LOCATION = new ResourceLocation("textures/misc/credits_vignette.png");
    private static final Component SECTION_HEADING = Component.literal("============").withStyle(ChatFormatting.WHITE);
    private static final String NAME_PREFIX = "           ";
    private static final String OBFUSCATE_TOKEN = "" + ChatFormatting.WHITE + ChatFormatting.OBFUSCATED + ChatFormatting.GREEN + ChatFormatting.AQUA;
@@ -224,8 +225,9 @@ public class WinScreen extends Screen {
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      this.scroll = Math.max(0.0F, this.scroll + var4 * this.scrollSpeed);
       super.render(var1, var2, var3, var4);
+      this.renderVignette(var1);
+      this.scroll = Math.max(0.0F, this.scroll + var4 * this.scrollSpeed);
       int var5 = this.width / 2 - 128;
       int var6 = this.height + 50;
       float var7 = -this.scroll;
@@ -245,9 +247,9 @@ public class WinScreen extends Screen {
          if ((float)var8 + var7 + 12.0F + 8.0F > 0.0F && (float)var8 + var7 < (float)this.height) {
             FormattedCharSequence var11 = this.lines.get(var9);
             if (this.centeredLines.contains(var9)) {
-               var1.drawCenteredString(this.font, var11, var5 + 128, var8, 16777215);
+               var1.drawCenteredString(this.font, var11, var5 + 128, var8, -1);
             } else {
-               var1.drawString(this.font, var11, var5, var8, 16777215);
+               var1.drawString(this.font, var11, var5, var8, -1);
             }
          }
 
@@ -255,6 +257,9 @@ public class WinScreen extends Screen {
       }
 
       var1.pose().popPose();
+   }
+
+   private void renderVignette(GuiGraphics var1) {
       RenderSystem.enableBlend();
       RenderSystem.blendFunc(GlStateManager.SourceFactor.ZERO, GlStateManager.DestFactor.ONE_MINUS_SRC_COLOR);
       var1.blit(VIGNETTE_LOCATION, 0, 0, 0, 0.0F, 0.0F, this.width, this.height, this.width, this.height);
@@ -264,26 +269,22 @@ public class WinScreen extends Screen {
 
    @Override
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      int var5 = this.width;
+      if (this.poem) {
+         var1.fillRenderType(RenderType.endPortal(), 0, 0, this.width, this.height, 0);
+      } else {
+         super.renderBackground(var1, var2, var3, var4);
+      }
+   }
+
+   @Override
+   protected void renderMenuBackground(GuiGraphics var1, int var2, int var3, int var4, int var5) {
       float var6 = this.scroll * 0.5F;
-      boolean var7 = true;
-      float var8 = this.scroll / this.unmodifiedScrollSpeed;
-      float var9 = var8 * 0.02F;
-      float var10 = (float)(this.totalScrollLength + this.height + this.height + 24) / this.unmodifiedScrollSpeed;
-      float var11 = (var10 - 20.0F - var8) * 0.005F;
-      if (var11 < var9) {
-         var9 = var11;
-      }
+      Screen.renderMenuBackgroundTexture(var1, Screen.MENU_BACKGROUND, 0, 0, 0.0F, var6, var4, var5);
+   }
 
-      if (var9 > 1.0F) {
-         var9 = 1.0F;
-      }
-
-      var9 *= var9;
-      var9 = var9 * 96.0F / 255.0F;
-      var1.setColor(var9, var9, var9, 1.0F);
-      var1.blit(BACKGROUND_LOCATION, 0, 0, 0, 0.0F, var6, var5, this.height, 64, 64);
-      var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
+   @Override
+   public boolean isPauseScreen() {
+      return false;
    }
 
    @Override

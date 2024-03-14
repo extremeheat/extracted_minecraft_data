@@ -4,7 +4,6 @@ import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -40,10 +39,10 @@ public class StructureBlock extends BaseEntityBlock implements GameMasterBlock {
    }
 
    @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
-      BlockEntity var7 = var2.getBlockEntity(var3);
-      if (var7 instanceof StructureBlockEntity) {
-         return ((StructureBlockEntity)var7).usedBy(var4) ? InteractionResult.sidedSuccess(var2.isClientSide) : InteractionResult.PASS;
+   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
+      BlockEntity var6 = var2.getBlockEntity(var3);
+      if (var6 instanceof StructureBlockEntity) {
+         return ((StructureBlockEntity)var6).usedBy(var4) ? InteractionResult.sidedSuccess(var2.isClientSide) : InteractionResult.PASS;
       } else {
          return InteractionResult.PASS;
       }
@@ -62,7 +61,7 @@ public class StructureBlock extends BaseEntityBlock implements GameMasterBlock {
    }
 
    @Override
-   public RenderShape getRenderShape(BlockState var1) {
+   protected RenderShape getRenderShape(BlockState var1) {
       return RenderShape.MODEL;
    }
 
@@ -72,7 +71,7 @@ public class StructureBlock extends BaseEntityBlock implements GameMasterBlock {
    }
 
    @Override
-   public void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
+   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
       if (var2 instanceof ServerLevel) {
          BlockEntity var7 = var2.getBlockEntity(var3);
          if (var7 instanceof StructureBlockEntity) {

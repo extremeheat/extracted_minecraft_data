@@ -24,7 +24,7 @@ public class UpdateOneTwentyOneProcessorLists {
       super();
    }
 
-   public static void bootstrap(BootstapContext<StructureProcessorList> var0) {
+   public static void bootstrap(BootstrapContext<StructureProcessorList> var0) {
       register(
          var0,
          TRIAL_CHAMBERS_COPPER_BULB_DEGRADATION,
@@ -34,17 +34,17 @@ public class UpdateOneTwentyOneProcessorLists {
                   new ProcessorRule(
                      new RandomBlockMatchTest(Blocks.WAXED_COPPER_BULB, 0.1F),
                      AlwaysTrueTest.INSTANCE,
-                     Blocks.OXIDIZED_COPPER_BULB.defaultBlockState().setValue(CopperBulbBlock.LIT, Boolean.valueOf(true))
+                     Blocks.WAXED_OXIDIZED_COPPER_BULB.defaultBlockState().setValue(CopperBulbBlock.LIT, Boolean.valueOf(true))
                   ),
                   new ProcessorRule(
                      new RandomBlockMatchTest(Blocks.WAXED_COPPER_BULB, 0.33333334F),
                      AlwaysTrueTest.INSTANCE,
-                     Blocks.WEATHERED_COPPER_BULB.defaultBlockState().setValue(CopperBulbBlock.LIT, Boolean.valueOf(true))
+                     Blocks.WAXED_WEATHERED_COPPER_BULB.defaultBlockState().setValue(CopperBulbBlock.LIT, Boolean.valueOf(true))
                   ),
                   new ProcessorRule(
                      new RandomBlockMatchTest(Blocks.WAXED_COPPER_BULB, 0.5F),
                      AlwaysTrueTest.INSTANCE,
-                     Blocks.EXPOSED_COPPER_BULB.defaultBlockState().setValue(CopperBulbBlock.LIT, Boolean.valueOf(true))
+                     Blocks.WAXED_EXPOSED_COPPER_BULB.defaultBlockState().setValue(CopperBulbBlock.LIT, Boolean.valueOf(true))
                   )
                )
             ),
@@ -53,7 +53,7 @@ public class UpdateOneTwentyOneProcessorLists {
       );
    }
 
-   private static void register(BootstapContext<StructureProcessorList> var0, ResourceKey<StructureProcessorList> var1, List<StructureProcessor> var2) {
+   private static void register(BootstrapContext<StructureProcessorList> var0, ResourceKey<StructureProcessorList> var1, List<StructureProcessor> var2) {
       var0.register(var1, new StructureProcessorList(var2));
    }
 }

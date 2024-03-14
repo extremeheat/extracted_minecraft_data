@@ -36,19 +36,19 @@ public class SugarCaneBlock extends Block {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 
    @Override
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (!var1.canSurvive(var2, var3)) {
          var2.destroyBlock(var3, true);
       }
    }
 
    @Override
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (var2.isEmptyBlock(var3.above())) {
          int var5 = 1;
 
@@ -69,7 +69,7 @@ public class SugarCaneBlock extends Block {
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (!var1.canSurvive(var4, var5)) {
          var4.scheduleTick(var5, this, 1);
       }
@@ -78,7 +78,7 @@ public class SugarCaneBlock extends Block {
    }
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       BlockState var4 = var2.getBlockState(var3.below());
       if (var4.is(this)) {
          return true;

@@ -4,7 +4,7 @@ import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.random.SimpleWeightedRandomList;
@@ -42,7 +42,7 @@ public class PlacementUtils {
       super();
    }
 
-   public static void bootstrap(BootstapContext<PlacedFeature> var0) {
+   public static void bootstrap(BootstrapContext<PlacedFeature> var0) {
       AquaticPlacements.bootstrap(var0);
       CavePlacements.bootstrap(var0);
       EndPlacements.bootstrap(var0);
@@ -59,13 +59,13 @@ public class PlacementUtils {
    }
 
    public static void register(
-      BootstapContext<PlacedFeature> var0, ResourceKey<PlacedFeature> var1, Holder<ConfiguredFeature<?, ?>> var2, List<PlacementModifier> var3
+      BootstrapContext<PlacedFeature> var0, ResourceKey<PlacedFeature> var1, Holder<ConfiguredFeature<?, ?>> var2, List<PlacementModifier> var3
    ) {
       var0.register(var1, new PlacedFeature(var2, List.copyOf(var3)));
    }
 
    public static void register(
-      BootstapContext<PlacedFeature> var0, ResourceKey<PlacedFeature> var1, Holder<ConfiguredFeature<?, ?>> var2, PlacementModifier... var3
+      BootstrapContext<PlacedFeature> var0, ResourceKey<PlacedFeature> var1, Holder<ConfiguredFeature<?, ?>> var2, PlacementModifier... var3
    ) {
       register(var0, var1, var2, List.of(var3));
    }
@@ -96,7 +96,7 @@ public class PlacementUtils {
    }
 
    public static <FC extends FeatureConfiguration, F extends Feature<FC>> Holder<PlacedFeature> inlinePlaced(F var0, FC var1, PlacementModifier... var2) {
-      return inlinePlaced(Holder.direct(new ConfiguredFeature<>((F)var0, var1)), var2);
+      return inlinePlaced(Holder.direct(new ConfiguredFeature((F)var0, var1)), var2);
    }
 
    public static <FC extends FeatureConfiguration, F extends Feature<FC>> Holder<PlacedFeature> onlyWhenEmpty(F var0, FC var1) {

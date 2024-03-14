@@ -87,7 +87,7 @@ public class DeathScreen extends Screen {
          this.minecraft.level.disconnect();
       }
 
-      this.minecraft.disconnect(new GenericDirtMessageScreen(Component.translatable("menu.savingLevel")));
+      this.minecraft.disconnect(new GenericMessageScreen(Component.translatable("menu.savingLevel")));
       this.minecraft.setScreen(new TitleScreen());
    }
 
@@ -109,9 +109,7 @@ public class DeathScreen extends Screen {
       }
 
       if (this.exitToTitleButton != null && this.minecraft.getReportingContext().hasDraftReport()) {
-         var1.blitSprite(
-            DRAFT_REPORT_SPRITE, this.exitToTitleButton.getX() + this.exitToTitleButton.getWidth() - 17, this.exitToTitleButton.getY() + 3, 15, 15
-         );
+         var1.blitSprite(DRAFT_REPORT_SPRITE, this.exitToTitleButton.getX() + this.exitToTitleButton.getWidth() - 17, this.exitToTitleButton.getY() + 3, 15, 15);
       }
    }
 

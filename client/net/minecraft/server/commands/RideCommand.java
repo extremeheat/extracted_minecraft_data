@@ -58,8 +58,7 @@ public class RideCommand {
                            )
                      ))
                   .then(
-                     Commands.literal("dismount")
-                        .executes(var0x -> dismount((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target")))
+                     Commands.literal("dismount").executes(var0x -> dismount((CommandSourceStack)var0x.getSource(), EntityArgument.getEntity(var0x, "target")))
                   )
             )
       );

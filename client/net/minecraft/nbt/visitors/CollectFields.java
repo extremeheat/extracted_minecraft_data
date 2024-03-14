@@ -12,7 +12,7 @@ import net.minecraft.nbt.TagType;
 public class CollectFields extends CollectToTag {
    private int fieldsToGetCount;
    private final Set<TagType<?>> wantedTypes;
-   private final Deque<FieldTree> stack = new ArrayDeque<>();
+   private final Deque<FieldTree> stack = new ArrayDeque();
 
    public CollectFields(FieldSelector... var1) {
       super();
@@ -37,7 +37,7 @@ public class CollectFields extends CollectToTag {
 
    @Override
    public StreamTagVisitor.EntryResult visitEntry(TagType<?> var1) {
-      FieldTree var2 = this.stack.element();
+      FieldTree var2 = (FieldTree)this.stack.element();
       if (this.depth() > var2.depth()) {
          return super.visitEntry(var1);
       } else if (this.fieldsToGetCount <= 0) {
@@ -49,7 +49,7 @@ public class CollectFields extends CollectToTag {
 
    @Override
    public StreamTagVisitor.EntryResult visitEntry(TagType<?> var1, String var2) {
-      FieldTree var3 = this.stack.element();
+      FieldTree var3 = (FieldTree)this.stack.element();
       if (this.depth() > var3.depth()) {
          return super.visitEntry(var1, var2);
       } else if (var3.selectedFields().remove(var2, var1)) {
@@ -57,7 +57,7 @@ public class CollectFields extends CollectToTag {
          return super.visitEntry(var1, var2);
       } else {
          if (var1 == CompoundTag.TYPE) {
-            FieldTree var4 = var3.fieldsToRecurse().get(var2);
+            FieldTree var4 = (FieldTree)var3.fieldsToRecurse().get(var2);
             if (var4 != null) {
                this.stack.push(var4);
                return super.visitEntry(var1, var2);
@@ -70,7 +70,7 @@ public class CollectFields extends CollectToTag {
 
    @Override
    public StreamTagVisitor.ValueResult visitContainerEnd() {
-      if (this.depth() == this.stack.element().depth()) {
+      if (this.depth() == ((FieldTree)this.stack.element()).depth()) {
          this.stack.pop();
       }
 

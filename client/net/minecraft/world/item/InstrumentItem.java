@@ -7,14 +7,11 @@ import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderSet;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
@@ -27,7 +24,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 
 public class InstrumentItem extends Item {
-   private static final String TAG_INSTRUMENT = "instrument";
    private final TagKey<Instrument> instruments;
 
    public InstrumentItem(Item.Properties var1, TagKey<Instrument> var2) {
@@ -47,26 +43,21 @@ public class InstrumentItem extends Item {
 
    public static ItemStack create(Item var0, Holder<Instrument> var1) {
       ItemStack var2 = new ItemStack(var0);
-      setSoundVariantId(var2, var1);
+      var2.set(DataComponents.INSTRUMENT, var1);
       return var2;
    }
 
    public static void setRandom(ItemStack var0, TagKey<Instrument> var1, RandomSource var2) {
-      Optional var3 = BuiltInRegistries.INSTRUMENT.getTag(var1).flatMap(var1x -> var1x.getRandomElement(var2));
-      var3.ifPresent(var1x -> setSoundVariantId(var0, var1x));
-   }
-
-   private static void setSoundVariantId(ItemStack var0, Holder<Instrument> var1) {
-      CompoundTag var2 = var0.getOrCreateTag();
-      var2.putString("instrument", ((ResourceKey)var1.unwrapKey().orElseThrow(() -> new IllegalStateException("Invalid instrument"))).location().toString());
+      Optional var3 = BuiltInRegistries.INSTRUMENT.getRandomElementOf(var1, var2);
+      var3.ifPresent(var1x -> var0.set(DataComponents.INSTRUMENT, var1x));
    }
 
    @Override
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
-      Optional var5 = this.getInstrument(var4);
-      if (var5.isPresent()) {
-         Instrument var6 = (Instrument)((Holder)var5.get()).value();
+      Holder var5 = var4.get(DataComponents.INSTRUMENT);
+      if (var5 != null) {
+         Instrument var6 = (Instrument)var5.value();
          var2.startUsingItem(var3);
          play(var1, var2, var6);
          var2.getCooldowns().addCooldown(this, var6.useDuration());
@@ -83,17 +74,14 @@ public class InstrumentItem extends Item {
       return var2.<Integer>map(var0 -> ((Instrument)var0.value()).useDuration()).orElse(0);
    }
 
-   private Optional<? extends Holder<Instrument>> getInstrument(ItemStack var1) {
-      CompoundTag var2 = var1.getTag();
-      if (var2 != null && var2.contains("instrument", 8)) {
-         ResourceLocation var3 = ResourceLocation.tryParse(var2.getString("instrument"));
-         if (var3 != null) {
-            return BuiltInRegistries.INSTRUMENT.getHolder(ResourceKey.create(Registries.INSTRUMENT, var3));
-         }
+   private Optional<Holder<Instrument>> getInstrument(ItemStack var1) {
+      Holder var2 = var1.get(DataComponents.INSTRUMENT);
+      if (var2 != null) {
+         return Optional.of(var2);
+      } else {
+         Iterator var3 = BuiltInRegistries.INSTRUMENT.getTagOrEmpty(this.instruments).iterator();
+         return var3.hasNext() ? Optional.of((Holder<Instrument>)var3.next()) : Optional.empty();
       }
-
-      Iterator var4 = BuiltInRegistries.INSTRUMENT.getTagOrEmpty(this.instruments).iterator();
-      return var4.hasNext() ? Optional.of((Holder<Instrument>)var4.next()) : Optional.empty();
    }
 
    @Override

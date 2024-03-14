@@ -63,6 +63,11 @@ public class EnderEyeItem extends Item {
       }
    }
 
+   @Override
+   public int getUseDuration(ItemStack var1) {
+      return 0;
+   }
+
    // $VF: Could not properly define all variable types!
    // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
@@ -96,10 +101,7 @@ public class EnderEyeItem extends Item {
                   0.4F / (var1.getRandom().nextFloat() * 0.4F + 0.8F)
                );
                var1.levelEvent(null, 1003, var2.blockPosition(), 0);
-               if (!var2.getAbilities().instabuild) {
-                  var4.shrink(1);
-               }
-
+               var4.consume(1, var2);
                var2.awardStat(Stats.ITEM_USED.get(this));
                var2.swing(var3, true);
                return InteractionResultHolder.success(var4);

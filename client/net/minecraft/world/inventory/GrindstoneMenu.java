@@ -1,9 +1,9 @@
 package net.minecraft.world.inventory;
 
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.stream.Collectors;
+import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -15,6 +15,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
@@ -48,13 +49,13 @@ public class GrindstoneMenu extends AbstractContainerMenu {
       this.addSlot(new Slot(this.repairSlots, 0, 49, 19) {
          @Override
          public boolean mayPlace(ItemStack var1) {
-            return var1.isDamageableItem() || var1.is(Items.ENCHANTED_BOOK) || var1.isEnchanted();
+            return var1.isDamageableItem() || EnchantmentHelper.hasAnyEnchantments(var1);
          }
       });
       this.addSlot(new Slot(this.repairSlots, 1, 49, 40) {
          @Override
          public boolean mayPlace(ItemStack var1) {
-            return var1.isDamageableItem() || var1.is(Items.ENCHANTED_BOOK) || var1.isEnchanted();
+            return var1.isDamageableItem() || EnchantmentHelper.hasAnyEnchantments(var1);
          }
       });
       this.addSlot(new Slot(this.resultSlots, 2, 129, 34) {
@@ -90,11 +91,11 @@ public class GrindstoneMenu extends AbstractContainerMenu {
 
          private int getExperienceFromItem(ItemStack var1) {
             int var2 = 0;
-            Map var3x = EnchantmentHelper.getEnchantments(var1);
+            ItemEnchantments var3x = EnchantmentHelper.getEnchantmentsForCrafting(var1);
 
             for(Entry var5 : var3x.entrySet()) {
-               Enchantment var6 = (Enchantment)var5.getKey();
-               Integer var7 = (Integer)var5.getValue();
+               Enchantment var6 = (Enchantment)((Holder)var5.getKey()).value();
+               int var7 = var5.getIntValue();
                if (!var6.isCurse()) {
                   var2 += var6.getMinCost(var7);
                }
@@ -124,101 +125,82 @@ public class GrindstoneMenu extends AbstractContainerMenu {
    }
 
    private void createResult() {
-      ItemStack var1 = this.repairSlots.getItem(0);
-      ItemStack var2 = this.repairSlots.getItem(1);
-      boolean var3 = !var1.isEmpty() || !var2.isEmpty();
-      boolean var4 = !var1.isEmpty() && !var2.isEmpty();
-      if (!var3) {
-         this.resultSlots.setItem(0, ItemStack.EMPTY);
-      } else {
-         boolean var5 = !var1.isEmpty() && !var1.is(Items.ENCHANTED_BOOK) && !var1.isEnchanted()
-            || !var2.isEmpty() && !var2.is(Items.ENCHANTED_BOOK) && !var2.isEnchanted();
-         if (var1.getCount() > 1 || var2.getCount() > 1 || !var4 && var5) {
-            this.resultSlots.setItem(0, ItemStack.EMPTY);
-            this.broadcastChanges();
-            return;
-         }
-
-         byte var7 = 1;
-         int var6;
-         ItemStack var8;
-         if (var4) {
-            if (!var1.is(var2.getItem())) {
-               this.resultSlots.setItem(0, ItemStack.EMPTY);
-               this.broadcastChanges();
-               return;
-            }
-
-            Item var9 = var1.getItem();
-            int var10 = var9.getMaxDamage() - var1.getDamageValue();
-            int var11 = var9.getMaxDamage() - var2.getDamageValue();
-            int var12 = var10 + var11 + var9.getMaxDamage() * 5 / 100;
-            var6 = Math.max(var9.getMaxDamage() - var12, 0);
-            var8 = this.mergeEnchants(var1, var2);
-            if (!var8.isDamageableItem()) {
-               if (!ItemStack.matches(var1, var2)) {
-                  this.resultSlots.setItem(0, ItemStack.EMPTY);
-                  this.broadcastChanges();
-                  return;
-               }
-
-               var7 = 2;
-            }
-         } else {
-            boolean var13 = !var1.isEmpty();
-            var6 = var13 ? var1.getDamageValue() : var2.getDamageValue();
-            var8 = var13 ? var1 : var2;
-         }
-
-         this.resultSlots.setItem(0, this.removeNonCurses(var8, var6, var7));
-      }
-
+      this.resultSlots.setItem(0, this.computeResult(this.repairSlots.getItem(0), this.repairSlots.getItem(1)));
       this.broadcastChanges();
    }
 
-   private ItemStack mergeEnchants(ItemStack var1, ItemStack var2) {
-      ItemStack var3 = var1.copy();
-      Map var4 = EnchantmentHelper.getEnchantments(var2);
-
-      for(Entry var6 : var4.entrySet()) {
-         Enchantment var7 = (Enchantment)var6.getKey();
-         if (!var7.isCurse() || EnchantmentHelper.getItemEnchantmentLevel(var7, var3) == 0) {
-            var3.enchant(var7, var6.getValue());
+   private ItemStack computeResult(ItemStack var1, ItemStack var2) {
+      boolean var3 = !var1.isEmpty() || !var2.isEmpty();
+      if (!var3) {
+         return ItemStack.EMPTY;
+      } else if (var1.getCount() <= 1 && var2.getCount() <= 1) {
+         boolean var4 = !var1.isEmpty() && !var2.isEmpty();
+         if (!var4) {
+            ItemStack var5 = !var1.isEmpty() ? var1 : var2;
+            return !EnchantmentHelper.hasAnyEnchantments(var5) ? ItemStack.EMPTY : this.removeNonCursesFrom(var5.copy());
+         } else {
+            return this.mergeItems(var1, var2);
          }
+      } else {
+         return ItemStack.EMPTY;
       }
-
-      return var3;
    }
 
-   private ItemStack removeNonCurses(ItemStack var1, int var2, int var3) {
-      ItemStack var4 = var1.copyWithCount(var3);
-      var4.removeTagKey("Enchantments");
-      var4.removeTagKey("StoredEnchantments");
-      if (var2 > 0) {
-         var4.setDamageValue(var2);
+   private ItemStack mergeItems(ItemStack var1, ItemStack var2) {
+      if (!var1.is(var2.getItem())) {
+         return ItemStack.EMPTY;
       } else {
-         var4.removeTagKey("Damage");
-      }
+         Item var3 = var1.getItem();
+         int var4 = var3.getMaxDamage() - var1.getDamageValue();
+         int var5 = var3.getMaxDamage() - var2.getDamageValue();
+         int var6 = var4 + var5 + var3.getMaxDamage() * 5 / 100;
+         int var7 = Math.max(var3.getMaxDamage() - var6, 0);
+         byte var8 = 1;
+         if (!var1.isDamageableItem()) {
+            if (var1.getMaxStackSize() < 2 || !ItemStack.matches(var1, var2)) {
+               return ItemStack.EMPTY;
+            }
 
-      Map var5 = EnchantmentHelper.getEnchantments(var1)
-         .entrySet()
-         .stream()
-         .filter(var0 -> var0.getKey().isCurse())
-         .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
-      EnchantmentHelper.setEnchantments(var5, var4);
-      var4.setRepairCost(0);
-      if (var4.is(Items.ENCHANTED_BOOK) && var5.size() == 0) {
-         var4 = new ItemStack(Items.BOOK);
-         if (var1.hasCustomHoverName()) {
-            var4.setHoverName(var1.getHoverName());
+            var8 = 2;
          }
+
+         ItemStack var9 = var1.copyWithCount(var8);
+         if (var9.isDamageableItem()) {
+            var9.setDamageValue(var7);
+         }
+
+         this.mergeEnchantsFrom(var1, var2);
+         return this.removeNonCursesFrom(var9);
+      }
+   }
+
+   private void mergeEnchantsFrom(ItemStack var1, ItemStack var2) {
+      EnchantmentHelper.updateEnchantments(var1, var1x -> {
+         ItemEnchantments var2xx = EnchantmentHelper.getEnchantmentsForCrafting(var2);
+
+         for(Entry var4 : var2xx.entrySet()) {
+            Enchantment var5 = (Enchantment)((Holder)var4.getKey()).value();
+            if (!var5.isCurse() || var1x.getLevel(var5) == 0) {
+               var1x.upgrade(var5, var4.getIntValue());
+            }
+         }
+      });
+   }
+
+   private ItemStack removeNonCursesFrom(ItemStack var1) {
+      ItemEnchantments var2 = EnchantmentHelper.updateEnchantments(var1, var0 -> var0.removeIf(var0x -> !var0x.value().isCurse()));
+      if (var1.is(Items.ENCHANTED_BOOK) && var2.isEmpty()) {
+         var1 = var1.transmuteCopy(Items.BOOK, var1.getCount());
       }
 
-      for(int var6 = 0; var6 < var5.size(); ++var6) {
-         var4.setRepairCost(AnvilMenu.calculateIncreasedRepairCost(var4.getBaseRepairCost()));
+      int var3 = 0;
+
+      for(int var4 = 0; var4 < var2.size(); ++var4) {
+         var3 = AnvilMenu.calculateIncreasedRepairCost(var3);
       }
 
-      return var4;
+      var1.set(DataComponents.REPAIR_COST, var3);
+      return var1;
    }
 
    @Override

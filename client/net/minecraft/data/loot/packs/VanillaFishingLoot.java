@@ -4,6 +4,9 @@ import java.util.function.BiConsumer;
 import net.minecraft.advancements.critereon.EntityPredicate;
 import net.minecraft.advancements.critereon.FishingHookPredicate;
 import net.minecraft.advancements.critereon.LocationPredicate;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.loot.LootTableSubProvider;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Items;
@@ -16,41 +19,33 @@ import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.entries.LootPoolSingletonContainer;
-import net.minecraft.world.level.storage.loot.entries.LootTableReference;
+import net.minecraft.world.level.storage.loot.entries.NestedLootTable;
 import net.minecraft.world.level.storage.loot.functions.EnchantWithLevelsFunction;
 import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
 import net.minecraft.world.level.storage.loot.functions.SetItemDamageFunction;
 import net.minecraft.world.level.storage.loot.functions.SetPotionFunction;
 import net.minecraft.world.level.storage.loot.predicates.LocationCheck;
-import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemEntityPropertyCondition;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 
 public class VanillaFishingLoot implements LootTableSubProvider {
-   public static final LootItemCondition.Builder IN_JUNGLE = LocationCheck.checkLocation(LocationPredicate.Builder.location().setBiome(Biomes.JUNGLE));
-   public static final LootItemCondition.Builder IN_SPARSE_JUNGLE = LocationCheck.checkLocation(
-      LocationPredicate.Builder.location().setBiome(Biomes.SPARSE_JUNGLE)
-   );
-   public static final LootItemCondition.Builder IN_BAMBOO_JUNGLE = LocationCheck.checkLocation(
-      LocationPredicate.Builder.location().setBiome(Biomes.BAMBOO_JUNGLE)
-   );
-
    public VanillaFishingLoot() {
       super();
    }
 
    @Override
-   public void generate(BiConsumer<ResourceLocation, LootTable.Builder> var1) {
-      var1.accept(
+   public void generate(HolderLookup.Provider var1, BiConsumer<ResourceLocation, LootTable.Builder> var2) {
+      HolderLookup.RegistryLookup var3 = var1.lookupOrThrow(Registries.BIOME);
+      var2.accept(
          BuiltInLootTables.FISHING,
          LootTable.lootTable()
             .withPool(
                LootPool.lootPool()
                   .setRolls(ConstantValue.exactly(1.0F))
-                  .add(LootTableReference.lootTableReference(BuiltInLootTables.FISHING_JUNK).setWeight(10).setQuality(-2))
+                  .add(NestedLootTable.lootTableReference(BuiltInLootTables.FISHING_JUNK).setWeight(10).setQuality(-2))
                   .add(
-                     LootTableReference.lootTableReference(BuiltInLootTables.FISHING_TREASURE)
+                     NestedLootTable.lootTableReference(BuiltInLootTables.FISHING_TREASURE)
                         .setWeight(5)
                         .setQuality(2)
                         .when(
@@ -59,11 +54,11 @@ public class VanillaFishingLoot implements LootTableSubProvider {
                            )
                         )
                   )
-                  .add(LootTableReference.lootTableReference(BuiltInLootTables.FISHING_FISH).setWeight(85).setQuality(-1))
+                  .add(NestedLootTable.lootTableReference(BuiltInLootTables.FISHING_FISH).setWeight(85).setQuality(-1))
             )
       );
-      var1.accept(BuiltInLootTables.FISHING_FISH, fishingFishLootTable());
-      var1.accept(
+      var2.accept(BuiltInLootTables.FISHING_FISH, fishingFishLootTable());
+      var2.accept(
          BuiltInLootTables.FISHING_JUNK,
          LootTable.lootTable()
             .withPool(
@@ -81,12 +76,22 @@ public class VanillaFishingLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Blocks.TRIPWIRE_HOOK).setWeight(10))
                   .add(LootItem.lootTableItem(Items.ROTTEN_FLESH).setWeight(10))
                   .add(
-                     ((LootPoolSingletonContainer.Builder)LootItem.lootTableItem(Blocks.BAMBOO).when(IN_JUNGLE.or(IN_SPARSE_JUNGLE).or(IN_BAMBOO_JUNGLE)))
+                     ((LootPoolSingletonContainer.Builder)LootItem.lootTableItem(Blocks.BAMBOO)
+                           .when(
+                              LocationCheck.checkLocation(
+                                 LocationPredicate.Builder.location()
+                                    .setBiomes(
+                                       HolderSet.direct(
+                                          var3.getOrThrow(Biomes.JUNGLE), var3.getOrThrow(Biomes.SPARSE_JUNGLE), var3.getOrThrow(Biomes.BAMBOO_JUNGLE)
+                                       )
+                                    )
+                              )
+                           ))
                         .setWeight(10)
                   )
             )
       );
-      var1.accept(
+      var2.accept(
          BuiltInLootTables.FISHING_TREASURE,
          LootTable.lootTable()
             .withPool(

@@ -214,7 +214,16 @@ public class StructureBlockEditScreen extends Screen {
       this.addWidget(this.dataEdit);
       this.updateDirectionButtons();
       this.updateMode(this.initialMode);
+   }
+
+   @Override
+   protected void setInitialFocus() {
       this.setInitialFocus(this.nameEdit);
+   }
+
+   @Override
+   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
+      this.renderTransparentBackground(var1);
    }
 
    @Override

@@ -64,6 +64,7 @@ public final class BlockTags {
    public static final TagKey<Block> CANDLES = create("candles");
    public static final TagKey<Block> DIRT = create("dirt");
    public static final TagKey<Block> TERRACOTTA = create("terracotta");
+   public static final TagKey<Block> BADLANDS_TERRACOTTA = create("badlands_terracotta");
    public static final TagKey<Block> CONCRETE_POWDER = create("concrete_powder");
    public static final TagKey<Block> COMPLETES_FIND_TREE_TUTORIAL = create("completes_find_tree_tutorial");
    public static final TagKey<Block> FLOWER_POTS = create("flower_pots");
@@ -151,6 +152,7 @@ public final class BlockTags {
    public static final TagKey<Block> ANCIENT_CITY_REPLACEABLE = create("ancient_city_replaceable");
    public static final TagKey<Block> VIBRATION_RESONATORS = create("vibration_resonators");
    public static final TagKey<Block> ANIMALS_SPAWNABLE_ON = create("animals_spawnable_on");
+   public static final TagKey<Block> ARMADILLO_SPAWNABLE_ON = create("armadillo_spawnable_on");
    public static final TagKey<Block> AXOLOTLS_SPAWNABLE_ON = create("axolotls_spawnable_on");
    public static final TagKey<Block> GOATS_SPAWNABLE_ON = create("goats_spawnable_on");
    public static final TagKey<Block> MOOSHROOMS_SPAWNABLE_ON = create("mooshrooms_spawnable_on");
@@ -177,6 +179,8 @@ public final class BlockTags {
    public static final TagKey<Block> ENCHANTMENT_POWER_PROVIDER = create("enchantment_power_provider");
    public static final TagKey<Block> ENCHANTMENT_POWER_TRANSMITTER = create("enchantment_power_transmitter");
    public static final TagKey<Block> MAINTAINS_FARMLAND = create("maintains_farmland");
+   public static final TagKey<Block> BLOCKS_WIND_CHARGE_EXPLOSIONS = create("blocks_wind_charge_explosions");
+   public static final TagKey<Block> DOES_NOT_BLOCK_HOPPERS = create("does_not_block_hoppers");
 
    private BlockTags() {
       super();

@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.BlockUtil;
@@ -27,6 +28,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.SectionPos;
+import net.minecraft.core.particles.BlockParticleOption;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
@@ -100,11 +103,15 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.RelativeMovement;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Pig;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -161,6 +168,13 @@ public class ServerPlayer extends Player {
    private static final int NEUTRAL_MOB_DEATH_NOTIFICATION_RADII_XZ = 32;
    private static final int NEUTRAL_MOB_DEATH_NOTIFICATION_RADII_Y = 10;
    private static final int FLY_STAT_RECORDING_SPEED = 25;
+   public static final double INTERACTION_DISTANCE_VERIFICATION_BUFFER = 1.0;
+   private static final AttributeModifier CREATIVE_BLOCK_INTERACTION_RANGE_MODIFIER = new AttributeModifier(
+      UUID.fromString("736565d2-e1a7-403d-a3f8-1aeb3e302542"), "Creative block interaction range modifier", 0.5, AttributeModifier.Operation.ADD_VALUE
+   );
+   private static final AttributeModifier CREATIVE_ENTITY_INTERACTION_RANGE_MODIFIER = new AttributeModifier(
+      UUID.fromString("98491ef6-97b1-4584-ae82-71a8cc85cf73"), "Creative entity interaction range modifier", 2.0, AttributeModifier.Operation.ADD_VALUE
+   );
    public ServerGamePacketListenerImpl connection;
    public final MinecraftServer server;
    public final ServerPlayerGameMode gameMode;
@@ -207,6 +221,7 @@ public class ServerPlayer extends Player {
    private final TextFilter textFilter;
    private boolean textFilteringEnabled;
    private boolean allowsListing;
+   private boolean spawnExtraParticlesOnFall;
    private WardenSpawnTracker wardenSpawnTracker = new WardenSpawnTracker(0, 0, 0);
    private final ContainerSynchronizer containerSynchronizer = new ContainerSynchronizer() {
       @Override
@@ -254,6 +269,8 @@ public class ServerPlayer extends Player {
    };
    @Nullable
    private RemoteChatSession chatSession;
+   @Nullable
+   public final Object object;
    private int containerCounter;
    public boolean wonGame;
 
@@ -264,9 +281,9 @@ public class ServerPlayer extends Player {
       this.server = var1;
       this.stats = var1.getPlayerList().getPlayerStats(this);
       this.advancements = var1.getPlayerList().getPlayerAdvancements(this);
-      this.setMaxUpStep(1.0F);
       this.fudgeSpawnLocation(var2);
       this.updateOptions(var4);
+      this.object = null;
    }
 
    private void fudgeSpawnLocation(ServerLevel var1) {
@@ -348,6 +365,8 @@ public class ServerPlayer extends Player {
                .orElse(Level.OVERWORLD);
          }
       }
+
+      this.spawnExtraParticlesOnFall = var1.getBoolean("spawn_extra_particles_on_fall");
    }
 
    @Override
@@ -391,6 +410,8 @@ public class ServerPlayer extends Player {
             .resultOrPartial(LOGGER::error)
             .ifPresent(var1x -> var1.put("SpawnDimension", var1x));
       }
+
+      var1.putBoolean("spawn_extra_particles_on_fall", this.spawnExtraParticlesOnFall);
    }
 
    public void setExperiencePoints(int var1) {
@@ -429,7 +450,7 @@ public class ServerPlayer extends Player {
    @Override
    public void onEnterCombat() {
       super.onEnterCombat();
-      this.connection.send(new ClientboundPlayerCombatEnterPacket());
+      this.connection.send(ClientboundPlayerCombatEnterPacket.INSTANCE);
    }
 
    @Override
@@ -483,7 +504,28 @@ public class ServerPlayer extends Player {
 
       this.trackStartFallingPosition();
       this.trackEnteredOrExitedLavaOnVehicle();
+      this.updatePlayerAttributes();
       this.advancements.flushDirty(this);
+   }
+
+   private void updatePlayerAttributes() {
+      AttributeInstance var1 = this.getAttribute(Attributes.BLOCK_INTERACTION_RANGE);
+      if (var1 != null) {
+         if (this.isCreative()) {
+            var1.addOrUpdateTransientModifier(CREATIVE_BLOCK_INTERACTION_RANGE_MODIFIER);
+         } else {
+            var1.removeModifier(CREATIVE_BLOCK_INTERACTION_RANGE_MODIFIER);
+         }
+      }
+
+      AttributeInstance var2 = this.getAttribute(Attributes.ENTITY_INTERACTION_RANGE);
+      if (var2 != null) {
+         if (this.isCreative()) {
+            var2.addOrUpdateTransientModifier(CREATIVE_ENTITY_INTERACTION_RANGE_MODIFIER);
+         } else {
+            var2.removeModifier(CREATIVE_ENTITY_INTERACTION_RANGE_MODIFIER);
+         }
+      }
    }
 
    public void doTick() {
@@ -786,7 +828,7 @@ public class ServerPlayer extends Player {
             var5.sendAllPlayerInfo(this);
 
             for(MobEffectInstance var8 : this.getActiveEffects()) {
-               this.connection.send(new ClientboundUpdateMobEffectPacket(this.getId(), var8));
+               this.connection.send(new ClientboundUpdateMobEffectPacket(this.getId(), var8, false));
             }
 
             this.connection.send(new ClientboundLevelEventPacket(1032, BlockPos.ZERO, 0, false));
@@ -958,8 +1000,35 @@ public class ServerPlayer extends Player {
    public void doCheckFallDamage(double var1, double var3, double var5, boolean var7) {
       if (!this.touchingUnloadedChunk()) {
          this.checkSupportingBlock(var7, new Vec3(var1, var3, var5));
-         BlockPos var8 = this.getOnPosLegacy();
-         super.checkFallDamage(var3, var7, this.level().getBlockState(var8), var8);
+         BlockPos var8 = this.getOnPos();
+         BlockState var9 = this.level().getBlockState(var8);
+         if (this.spawnExtraParticlesOnFall && var7 && this.fallDistance > 0.0F) {
+            Vec3 var10 = var8.getCenter().add(0.0, 0.5, 0.0);
+            int var11 = (int)(50.0F * this.fallDistance);
+            ((ServerLevel)this.level())
+               .sendParticles(
+                  new BlockParticleOption(ParticleTypes.BLOCK, var9),
+                  var10.x,
+                  var10.y,
+                  var10.z,
+                  var11,
+                  0.30000001192092896,
+                  0.30000001192092896,
+                  0.30000001192092896,
+                  0.15000000596046448
+               );
+            this.spawnExtraParticlesOnFall = false;
+         }
+
+         super.checkFallDamage(var3, var7, var9, var8);
+      }
+   }
+
+   @Override
+   public void onExplosionHit(@Nullable Entity var1) {
+      super.onExplosionHit(var1);
+      if (var1 != null && var1.getType() == EntityType.WIND_CHARGE) {
+         this.ignoreFallDamageAboveY = this.getY();
       }
    }
 
@@ -1277,8 +1346,8 @@ public class ServerPlayer extends Player {
    @Override
    protected void onEffectAdded(MobEffectInstance var1, @Nullable Entity var2) {
       super.onEffectAdded(var1, var2);
-      this.connection.send(new ClientboundUpdateMobEffectPacket(this.getId(), var1));
-      if (var1.getEffect() == MobEffects.LEVITATION) {
+      this.connection.send(new ClientboundUpdateMobEffectPacket(this.getId(), var1, true));
+      if (var1.is(MobEffects.LEVITATION)) {
          this.levitationStartTime = this.tickCount;
          this.levitationStartPos = this.position();
       }
@@ -1289,7 +1358,7 @@ public class ServerPlayer extends Player {
    @Override
    protected void onEffectUpdated(MobEffectInstance var1, boolean var2, @Nullable Entity var3) {
       super.onEffectUpdated(var1, var2, var3);
-      this.connection.send(new ClientboundUpdateMobEffectPacket(this.getId(), var1));
+      this.connection.send(new ClientboundUpdateMobEffectPacket(this.getId(), var1, false));
       CriteriaTriggers.EFFECTS_CHANGED.trigger(this, var3);
    }
 
@@ -1297,7 +1366,7 @@ public class ServerPlayer extends Player {
    protected void onEffectRemoved(MobEffectInstance var1) {
       super.onEffectRemoved(var1);
       this.connection.send(new ClientboundRemoveMobEffectPacket(this.getId(), var1.getEffect()));
-      if (var1.getEffect() == MobEffects.LEVITATION) {
+      if (var1.is(MobEffects.LEVITATION)) {
          this.levitationStartPos = null;
       }
 
@@ -1460,8 +1529,7 @@ public class ServerPlayer extends Player {
    }
 
    public void sendServerStatus(ServerStatus var1) {
-      this.connection
-         .send(new ClientboundServerDataPacket(var1.description(), var1.favicon().map(ServerStatus.Favicon::iconBytes), var1.enforcesSecureChat()));
+      this.connection.send(new ClientboundServerDataPacket(var1.description(), var1.favicon().map(ServerStatus.Favicon::iconBytes)));
    }
 
    @Override
@@ -1737,6 +1805,10 @@ public class ServerPlayer extends Player {
       return Optional.of(this.wardenSpawnTracker);
    }
 
+   public void setSpawnExtraParticlesOnFall(boolean var1) {
+      this.spawnExtraParticlesOnFall = var1;
+   }
+
    @Override
    public void onItemPickup(ItemEntity var1) {
       super.onItemPickup(var1);
@@ -1770,7 +1842,7 @@ public class ServerPlayer extends Player {
          this.connection.teleport(this.getX(), this.getY(), this.getZ(), this.getYRot(), this.getXRot());
          if (var1 instanceof LivingEntity var3) {
             for(MobEffectInstance var5 : var3.getActiveEffects()) {
-               this.connection.send(new ClientboundUpdateMobEffectPacket(var1.getId(), var5));
+               this.connection.send(new ClientboundUpdateMobEffectPacket(var1.getId(), var5, false));
             }
          }
 
@@ -1791,7 +1863,7 @@ public class ServerPlayer extends Player {
 
    public CommonPlayerSpawnInfo createCommonSpawnInfo(ServerLevel var1) {
       return new CommonPlayerSpawnInfo(
-         var1.dimensionTypeId(),
+         var1.dimensionTypeRegistration(),
          var1.dimension(),
          BiomeManager.obfuscateSeed(var1.getSeed()),
          this.gameMode.getGameModeForPlayer(),

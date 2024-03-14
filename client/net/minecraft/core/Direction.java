@@ -3,20 +3,26 @@ package net.minecraft.core;
 import com.google.common.collect.Iterators;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import io.netty.buffer.ByteBuf;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.ByIdMap;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -32,6 +38,8 @@ public enum Direction implements StringRepresentable {
 
    public static final StringRepresentable.EnumCodec<Direction> CODEC = StringRepresentable.fromEnum(Direction::values);
    public static final Codec<Direction> VERTICAL_CODEC = ExtraCodecs.validate(CODEC, Direction::verifyVertical);
+   public static final IntFunction<Direction> BY_ID = ByIdMap.continuous(Direction::get3DDataValue, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
+   public static final StreamCodec<ByteBuf, Direction> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Direction::get3DDataValue);
    private final int data3d;
    private final int oppositeIndex;
    private final int data2d;
@@ -323,6 +331,10 @@ public enum Direction implements StringRepresentable {
       return var3;
    }
 
+   public static Direction getNearest(Vec3 var0) {
+      return getNearest(var0.x, var0.y, var0.z);
+   }
+
    @Override
    public String toString() {
       return this.name;
@@ -513,6 +525,10 @@ public enum Direction implements StringRepresentable {
 
       public List<Direction> shuffledCopy(RandomSource var1) {
          return Util.shuffledCopy(this.faces, var1);
+      }
+
+      public int length() {
+         return this.faces.length;
       }
    }
 }

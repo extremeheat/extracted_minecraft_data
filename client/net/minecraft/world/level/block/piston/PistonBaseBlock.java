@@ -70,7 +70,7 @@ public class PistonBaseBlock extends DirectionalBlock {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       if (var1.getValue(EXTENDED)) {
          switch((Direction)var1.getValue(FACING)) {
             case DOWN:
@@ -100,14 +100,14 @@ public class PistonBaseBlock extends DirectionalBlock {
    }
 
    @Override
-   public void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
+   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
       if (!var2.isClientSide) {
          this.checkIfExtend(var2, var3, var1);
       }
    }
 
    @Override
-   public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var4.is(var1.getBlock())) {
          if (!var2.isClientSide && var2.getBlockEntity(var3) == null) {
             this.checkIfExtend(var2, var3, var1);
@@ -169,7 +169,7 @@ public class PistonBaseBlock extends DirectionalBlock {
    // $VF: Could not properly define all variable types!
    // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
-   public boolean triggerEvent(BlockState var1, Level var2, BlockPos var3, int var4, int var5) {
+   protected boolean triggerEvent(BlockState var1, Level var2, BlockPos var3, int var4, int var5) {
       Direction var6 = var1.getValue(FACING);
       BlockState var7 = var1.setValue(EXTENDED, Boolean.valueOf(true));
       if (!var2.isClientSide) {
@@ -374,12 +374,12 @@ public class PistonBaseBlock extends DirectionalBlock {
    }
 
    @Override
-   public BlockState rotate(BlockState var1, Rotation var2) {
+   protected BlockState rotate(BlockState var1, Rotation var2) {
       return var1.setValue(FACING, var2.rotate(var1.getValue(FACING)));
    }
 
    @Override
-   public BlockState mirror(BlockState var1, Mirror var2) {
+   protected BlockState mirror(BlockState var1, Mirror var2) {
       return var1.rotate(var2.getRotation(var1.getValue(FACING)));
    }
 
@@ -389,12 +389,12 @@ public class PistonBaseBlock extends DirectionalBlock {
    }
 
    @Override
-   public boolean useShapeForLightOcclusion(BlockState var1) {
+   protected boolean useShapeForLightOcclusion(BlockState var1) {
       return var1.getValue(EXTENDED);
    }
 
    @Override
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
+   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
    }
 }

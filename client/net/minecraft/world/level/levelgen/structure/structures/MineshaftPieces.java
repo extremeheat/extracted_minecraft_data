@@ -295,13 +295,9 @@ public class MineshaftPieces {
                for(int var7 = this.boundingBox.minZ() + 3; var7 + 3 <= this.boundingBox.maxZ(); var7 += 5) {
                   int var8 = var3.nextInt(5);
                   if (var8 == 0) {
-                     MineshaftPieces.generateAndAddPiece(
-                        var1, var2, var3, this.boundingBox.minX() - 1, this.boundingBox.minY(), var7, Direction.WEST, var4 + 1
-                     );
+                     MineshaftPieces.generateAndAddPiece(var1, var2, var3, this.boundingBox.minX() - 1, this.boundingBox.minY(), var7, Direction.WEST, var4 + 1);
                   } else if (var8 == 1) {
-                     MineshaftPieces.generateAndAddPiece(
-                        var1, var2, var3, this.boundingBox.maxX() + 1, this.boundingBox.minY(), var7, Direction.EAST, var4 + 1
-                     );
+                     MineshaftPieces.generateAndAddPiece(var1, var2, var3, this.boundingBox.maxX() + 1, this.boundingBox.minY(), var7, Direction.EAST, var4 + 1);
                   }
                }
             }
@@ -326,9 +322,7 @@ public class MineshaftPieces {
       // $VF: Could not properly define all variable types!
       // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          if (!this.isInInvalidLocation(var1, var5)) {
             boolean var8 = false;
             boolean var9 = true;
@@ -649,9 +643,7 @@ public class MineshaftPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          if (!this.isInInvalidLocation(var1, var5)) {
             BlockState var8 = this.type.getPlanksState();
             if (this.isTwoFloored) {
@@ -994,9 +986,7 @@ public class MineshaftPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          if (!this.isInInvalidLocation(var1, var5)) {
             this.generateBox(
                var1,
@@ -1104,9 +1094,7 @@ public class MineshaftPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          if (!this.isInInvalidLocation(var1, var5)) {
             this.generateBox(var1, var5, 0, 5, 0, 2, 7, 1, CAVE_AIR, CAVE_AIR, false);
             this.generateBox(var1, var5, 0, 0, 7, 2, 2, 8, CAVE_AIR, CAVE_AIR, false);

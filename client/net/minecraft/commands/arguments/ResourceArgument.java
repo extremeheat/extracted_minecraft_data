@@ -49,7 +49,7 @@ public class ResourceArgument<T> implements ArgumentType<Holder.Reference<T>> {
    public ResourceArgument(CommandBuildContext var1, ResourceKey<? extends Registry<T>> var2) {
       super();
       this.registryKey = var2;
-      this.registryLookup = var1.holderLookup(var2);
+      this.registryLookup = var1.lookupOrThrow(var2);
    }
 
    public static <T> ResourceArgument<T> resource(CommandBuildContext var0, ResourceKey<? extends Registry<T>> var1) {
@@ -102,7 +102,7 @@ public class ResourceArgument<T> implements ArgumentType<Holder.Reference<T>> {
    public Holder.Reference<T> parse(StringReader var1) throws CommandSyntaxException {
       ResourceLocation var2 = ResourceLocation.read(var1);
       ResourceKey var3 = ResourceKey.create(this.registryKey, var2);
-      return this.registryLookup.get(var3).orElseThrow(() -> ERROR_UNKNOWN_RESOURCE.create(var2, this.registryKey.location()));
+      return this.registryLookup.get(var3).orElseThrow(() -> ERROR_UNKNOWN_RESOURCE.createWithContext(var1, var2, this.registryKey.location()));
    }
 
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {

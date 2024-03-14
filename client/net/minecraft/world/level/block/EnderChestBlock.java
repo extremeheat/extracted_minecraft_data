@@ -9,7 +9,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.monster.piglin.PiglinAi;
@@ -62,12 +61,12 @@ public class EnderChestBlock extends AbstractChestBlock<EnderChestBlockEntity> i
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 
    @Override
-   public RenderShape getRenderShape(BlockState var1) {
+   protected RenderShape getRenderShape(BlockState var1) {
       return RenderShape.ENTITYBLOCK_ANIMATED;
    }
 
@@ -80,19 +79,19 @@ public class EnderChestBlock extends AbstractChestBlock<EnderChestBlockEntity> i
    }
 
    @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
-      PlayerEnderChestContainer var7 = var4.getEnderChestInventory();
-      BlockEntity var8 = var2.getBlockEntity(var3);
-      if (var7 != null && var8 instanceof EnderChestBlockEntity) {
-         BlockPos var9 = var3.above();
-         if (var2.getBlockState(var9).isRedstoneConductor(var2, var9)) {
+   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
+      PlayerEnderChestContainer var6 = var4.getEnderChestInventory();
+      BlockEntity var7 = var2.getBlockEntity(var3);
+      if (var6 != null && var7 instanceof EnderChestBlockEntity) {
+         BlockPos var8 = var3.above();
+         if (var2.getBlockState(var8).isRedstoneConductor(var2, var8)) {
             return InteractionResult.sidedSuccess(var2.isClientSide);
          } else if (var2.isClientSide) {
             return InteractionResult.SUCCESS;
          } else {
-            EnderChestBlockEntity var10 = (EnderChestBlockEntity)var8;
-            var7.setActiveChest(var10);
-            var4.openMenu(new SimpleMenuProvider((var1x, var2x, var3x) -> ChestMenu.threeRows(var1x, var2x, var7), CONTAINER_TITLE));
+            EnderChestBlockEntity var9 = (EnderChestBlockEntity)var7;
+            var6.setActiveChest(var9);
+            var4.openMenu(new SimpleMenuProvider((var1x, var2x, var3x) -> ChestMenu.threeRows(var1x, var2x, var6), CONTAINER_TITLE));
             var4.awardStat(Stats.OPEN_ENDERCHEST);
             PiglinAi.angerNearbyPiglins(var4, true);
             return InteractionResult.CONSUME;
@@ -129,12 +128,12 @@ public class EnderChestBlock extends AbstractChestBlock<EnderChestBlockEntity> i
    }
 
    @Override
-   public BlockState rotate(BlockState var1, Rotation var2) {
+   protected BlockState rotate(BlockState var1, Rotation var2) {
       return var1.setValue(FACING, var2.rotate(var1.getValue(FACING)));
    }
 
    @Override
-   public BlockState mirror(BlockState var1, Mirror var2) {
+   protected BlockState mirror(BlockState var1, Mirror var2) {
       return var1.rotate(var2.getRotation(var1.getValue(FACING)));
    }
 
@@ -144,12 +143,12 @@ public class EnderChestBlock extends AbstractChestBlock<EnderChestBlockEntity> i
    }
 
    @Override
-   public FluidState getFluidState(BlockState var1) {
+   protected FluidState getFluidState(BlockState var1) {
       return var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var1.getValue(WATERLOGGED)) {
          var4.scheduleTick(var5, Fluids.WATER, Fluids.WATER.getTickDelay(var4));
       }
@@ -158,12 +157,12 @@ public class EnderChestBlock extends AbstractChestBlock<EnderChestBlockEntity> i
    }
 
    @Override
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
+   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
    }
 
    @Override
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       BlockEntity var5 = var2.getBlockEntity(var3);
       if (var5 instanceof EnderChestBlockEntity) {
          ((EnderChestBlockEntity)var5).recheckOpen();

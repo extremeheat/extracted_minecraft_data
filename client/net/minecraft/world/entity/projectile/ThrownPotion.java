@@ -5,7 +5,8 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -17,8 +18,7 @@ import net.minecraft.world.entity.animal.axolotl.Axolotl;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.alchemy.Potion;
-import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.AbstractCandleBlock;
@@ -52,8 +52,8 @@ public class ThrownPotion extends ThrowableItemProjectile implements ItemSupplie
    }
 
    @Override
-   protected float getGravity() {
-      return 0.05F;
+   protected double getDefaultGravity() {
+      return 0.05;
    }
 
    @Override
@@ -61,18 +61,16 @@ public class ThrownPotion extends ThrowableItemProjectile implements ItemSupplie
       super.onHitBlock(var1);
       if (!this.level().isClientSide) {
          ItemStack var2 = this.getItem();
-         Potion var3 = PotionUtils.getPotion(var2);
-         List var4 = PotionUtils.getMobEffects(var2);
-         boolean var5 = var3 == Potions.WATER && var4.isEmpty();
-         Direction var6 = var1.getDirection();
-         BlockPos var7 = var1.getBlockPos();
-         BlockPos var8 = var7.relative(var6);
-         if (var5) {
-            this.dowseFire(var8);
-            this.dowseFire(var8.relative(var6.getOpposite()));
+         Direction var3 = var1.getDirection();
+         BlockPos var4 = var1.getBlockPos();
+         BlockPos var5 = var4.relative(var3);
+         PotionContents var6 = var2.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
+         if (var6.is(Potions.WATER)) {
+            this.dowseFire(var5);
+            this.dowseFire(var5.relative(var3.getOpposite()));
 
-            for(Direction var10 : Direction.Plane.HORIZONTAL) {
-               this.dowseFire(var8.relative(var10));
+            for(Direction var8 : Direction.Plane.HORIZONTAL) {
+               this.dowseFire(var5.relative(var8));
             }
          }
       }
@@ -83,21 +81,19 @@ public class ThrownPotion extends ThrowableItemProjectile implements ItemSupplie
       super.onHit(var1);
       if (!this.level().isClientSide) {
          ItemStack var2 = this.getItem();
-         Potion var3 = PotionUtils.getPotion(var2);
-         List var4 = PotionUtils.getMobEffects(var2);
-         boolean var5 = var3 == Potions.WATER && var4.isEmpty();
-         if (var5) {
+         PotionContents var3 = var2.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
+         if (var3.is(Potions.WATER)) {
             this.applyWater();
-         } else if (!var4.isEmpty()) {
+         } else if (var3.hasEffects()) {
             if (this.isLingering()) {
-               this.makeAreaOfEffectCloud(var2, var3);
+               this.makeAreaOfEffectCloud(var3);
             } else {
-               this.applySplash(var4, var1.getType() == HitResult.Type.ENTITY ? ((EntityHitResult)var1).getEntity() : null);
+               this.applySplash(var3.getAllEffects(), var1.getType() == HitResult.Type.ENTITY ? ((EntityHitResult)var1).getEntity() : null);
             }
          }
 
-         int var6 = var3.hasInstantEffects() ? 2007 : 2002;
-         this.level().levelEvent(var6, this.blockPosition(), PotionUtils.getColor(var2));
+         int var4 = var3.potion().isPresent() && var3.potion().get().value().hasInstantEffects() ? 2007 : 2002;
+         this.level().levelEvent(var4, this.blockPosition(), var3.getColor());
          this.discard();
       }
    }
@@ -123,7 +119,7 @@ public class ThrownPotion extends ThrowableItemProjectile implements ItemSupplie
       }
    }
 
-   private void applySplash(List<MobEffectInstance> var1, @Nullable Entity var2) {
+   private void applySplash(Iterable<MobEffectInstance> var1, @Nullable Entity var2) {
       AABB var3 = this.getBoundingBox().inflate(4.0, 2.0, 4.0);
       List var4 = this.level().getEntitiesOfClass(LivingEntity.class, var3);
       if (!var4.isEmpty()) {
@@ -141,9 +137,9 @@ public class ThrownPotion extends ThrowableItemProjectile implements ItemSupplie
                   }
 
                   for(MobEffectInstance var13 : var1) {
-                     MobEffect var14 = var13.getEffect();
-                     if (var14.isInstantenous()) {
-                        var14.applyInstantenousEffect(this, this.getOwner(), var7, var13.getAmplifier(), var10);
+                     Holder var14 = var13.getEffect();
+                     if (((MobEffect)var14.value()).isInstantenous()) {
+                        ((MobEffect)var14.value()).applyInstantenousEffect(this, this.getOwner(), var7, var13.getAmplifier(), var10);
                      } else {
                         int var15 = var13.mapDuration(var2x -> (int)(var10 * (double)var2x + 0.5));
                         MobEffectInstance var16 = new MobEffectInstance(var14, var15, var13.getAmplifier(), var13.isAmbient(), var13.isVisible());
@@ -158,29 +154,19 @@ public class ThrownPotion extends ThrowableItemProjectile implements ItemSupplie
       }
    }
 
-   private void makeAreaOfEffectCloud(ItemStack var1, Potion var2) {
-      AreaEffectCloud var3 = new AreaEffectCloud(this.level(), this.getX(), this.getY(), this.getZ());
+   private void makeAreaOfEffectCloud(PotionContents var1) {
+      AreaEffectCloud var2 = new AreaEffectCloud(this.level(), this.getX(), this.getY(), this.getZ());
       Entity var4 = this.getOwner();
-      if (var4 instanceof LivingEntity) {
-         var3.setOwner((LivingEntity)var4);
+      if (var4 instanceof LivingEntity var3) {
+         var2.setOwner((LivingEntity)var3);
       }
 
-      var3.setRadius(3.0F);
-      var3.setRadiusOnUse(-0.5F);
-      var3.setWaitTime(10);
-      var3.setRadiusPerTick(-var3.getRadius() / (float)var3.getDuration());
-      var3.setPotion(var2);
-
-      for(MobEffectInstance var6 : PotionUtils.getCustomEffects(var1)) {
-         var3.addEffect(new MobEffectInstance(var6));
-      }
-
-      CompoundTag var7 = var1.getTag();
-      if (var7 != null && var7.contains("CustomPotionColor", 99)) {
-         var3.setFixedColor(var7.getInt("CustomPotionColor"));
-      }
-
-      this.level().addFreshEntity(var3);
+      var2.setRadius(3.0F);
+      var2.setRadiusOnUse(-0.5F);
+      var2.setWaitTime(10);
+      var2.setRadiusPerTick(-var2.getRadius() / (float)var2.getDuration());
+      var2.setPotionContents(var1);
+      this.level().addFreshEntity(var2);
    }
 
    private boolean isLingering() {

@@ -3,7 +3,7 @@ package net.minecraft.data.worldgen.placement;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.features.PileFeatures;
 import net.minecraft.data.worldgen.features.TreeFeatures;
 import net.minecraft.data.worldgen.features.VegetationFeatures;
@@ -30,7 +30,7 @@ public class VillagePlacements {
       super();
    }
 
-   public static void bootstrap(BootstapContext<PlacedFeature> var0) {
+   public static void bootstrap(BootstrapContext<PlacedFeature> var0) {
       HolderGetter var1 = var0.lookup(Registries.CONFIGURED_FEATURE);
       Holder.Reference var2 = var1.getOrThrow(PileFeatures.PILE_HAY);
       Holder.Reference var3 = var1.getOrThrow(PileFeatures.PILE_MELON);

@@ -13,7 +13,14 @@ public class V100 extends Schema {
    }
 
    protected static TypeTemplate equipment(Schema var0) {
-      return DSL.optionalFields("ArmorItems", DSL.list(References.ITEM_STACK.in(var0)), "HandItems", DSL.list(References.ITEM_STACK.in(var0)));
+      return DSL.optionalFields(
+         "ArmorItems",
+         DSL.list(References.ITEM_STACK.in(var0)),
+         "HandItems",
+         DSL.list(References.ITEM_STACK.in(var0)),
+         "body_armor_item",
+         References.ITEM_STACK.in(var0)
+      );
    }
 
    protected static void registerMob(Schema var0, Map<String, Supplier<TypeTemplate>> var1, String var2) {
@@ -103,5 +110,6 @@ public class V100 extends Schema {
             )
       );
       var1.registerType(false, References.BLOCK_STATE, DSL::remainder);
+      var1.registerType(false, References.FLAT_BLOCK_STATE, DSL::remainder);
    }
 }

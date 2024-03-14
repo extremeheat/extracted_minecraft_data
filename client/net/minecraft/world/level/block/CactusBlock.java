@@ -40,14 +40,14 @@ public class CactusBlock extends Block {
    }
 
    @Override
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (!var1.canSurvive(var2, var3)) {
          var2.destroyBlock(var3, true);
       }
    }
 
    @Override
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       BlockPos var5 = var3.above();
       if (var2.isEmptyBlock(var5)) {
          int var6 = 1;
@@ -71,17 +71,17 @@ public class CactusBlock extends Block {
    }
 
    @Override
-   public VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return COLLISION_SHAPE;
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return OUTLINE_SHAPE;
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (!var1.canSurvive(var4, var5)) {
          var4.scheduleTick(var5, this, 1);
       }
@@ -90,7 +90,7 @@ public class CactusBlock extends Block {
    }
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       for(Direction var5 : Direction.Plane.HORIZONTAL) {
          BlockState var6 = var2.getBlockState(var3.relative(var5));
          if (var6.isSolid() || var2.getFluidState(var3.relative(var5)).is(FluidTags.LAVA)) {
@@ -103,7 +103,7 @@ public class CactusBlock extends Block {
    }
 
    @Override
-   public void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
       var4.hurt(var2.damageSources().cactus(), 1.0F);
    }
 
@@ -113,7 +113,7 @@ public class CactusBlock extends Block {
    }
 
    @Override
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
+   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
    }
 }

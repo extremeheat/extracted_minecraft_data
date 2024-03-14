@@ -16,17 +16,14 @@ class BadOmenMobEffect extends MobEffect {
    }
 
    @Override
-   public void applyEffectTick(LivingEntity var1, int var2) {
-      super.applyEffectTick(var1, var2);
+   public boolean applyEffectTick(LivingEntity var1, int var2) {
       if (var1 instanceof ServerPlayer var3 && !var1.isSpectator()) {
          ServerLevel var4 = ((ServerPlayer)var3).serverLevel();
-         if (var4.getDifficulty() == Difficulty.PEACEFUL) {
-            return;
-         }
-
-         if (var4.isVillage(var1.blockPosition())) {
+         if (var4.getDifficulty() != Difficulty.PEACEFUL && var4.isVillage(var1.blockPosition())) {
             var4.getRaids().createOrExtendRaid((ServerPlayer)var3);
          }
       }
+
+      return true;
    }
 }

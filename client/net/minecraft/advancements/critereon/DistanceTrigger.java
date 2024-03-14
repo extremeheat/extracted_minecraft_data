@@ -64,10 +64,10 @@ public class DistanceTrigger extends SimpleCriterionTrigger<DistanceTrigger.Trig
       }
 
       public boolean matches(ServerLevel var1, Vec3 var2, Vec3 var3) {
-         if (this.startPosition.isPresent() && !this.startPosition.get().matches(var1, var2.x, var2.y, var2.z)) {
+         if (this.startPosition.isPresent() && !((LocationPredicate)this.startPosition.get()).matches(var1, var2.x, var2.y, var2.z)) {
             return false;
          } else {
-            return !this.distance.isPresent() || this.distance.get().matches(var2.x, var2.y, var2.z, var3.x, var3.y, var3.z);
+            return !this.distance.isPresent() || ((DistancePredicate)this.distance.get()).matches(var2.x, var2.y, var2.z, var3.x, var3.y, var3.z);
          }
       }
    }

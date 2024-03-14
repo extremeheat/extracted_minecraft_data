@@ -1,12 +1,16 @@
 package net.minecraft.network.protocol.game;
 
 import net.minecraft.core.particles.ParticleOptions;
-import net.minecraft.core.particles.ParticleType;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 
 public class ClientboundLevelParticlesPacket implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundLevelParticlesPacket> STREAM_CODEC = Packet.codec(
+      ClientboundLevelParticlesPacket::write, ClientboundLevelParticlesPacket::new
+   );
    private final double x;
    private final double y;
    private final double z;
@@ -34,9 +38,8 @@ public class ClientboundLevelParticlesPacket implements Packet<ClientGamePacketL
       this.count = var13;
    }
 
-   public ClientboundLevelParticlesPacket(FriendlyByteBuf var1) {
+   private ClientboundLevelParticlesPacket(RegistryFriendlyByteBuf var1) {
       super();
-      ParticleType var2 = var1.readById(BuiltInRegistries.PARTICLE_TYPE);
       this.overrideLimiter = var1.readBoolean();
       this.x = var1.readDouble();
       this.y = var1.readDouble();
@@ -46,16 +49,10 @@ public class ClientboundLevelParticlesPacket implements Packet<ClientGamePacketL
       this.zDist = var1.readFloat();
       this.maxSpeed = var1.readFloat();
       this.count = var1.readInt();
-      this.particle = this.readParticle(var1, var2);
+      this.particle = ParticleTypes.STREAM_CODEC.decode(var1);
    }
 
-   private <T extends ParticleOptions> T readParticle(FriendlyByteBuf var1, ParticleType<T> var2) {
-      return (T)var2.getDeserializer().fromNetwork(var2, var1);
-   }
-
-   @Override
-   public void write(FriendlyByteBuf var1) {
-      var1.writeId(BuiltInRegistries.PARTICLE_TYPE, this.particle.getType());
+   private void write(RegistryFriendlyByteBuf var1) {
       var1.writeBoolean(this.overrideLimiter);
       var1.writeDouble(this.x);
       var1.writeDouble(this.y);
@@ -65,7 +62,16 @@ public class ClientboundLevelParticlesPacket implements Packet<ClientGamePacketL
       var1.writeFloat(this.zDist);
       var1.writeFloat(this.maxSpeed);
       var1.writeInt(this.count);
-      this.particle.writeToNetwork(var1);
+      ParticleTypes.STREAM_CODEC.encode(var1, this.particle);
+   }
+
+   @Override
+   public PacketType<ClientboundLevelParticlesPacket> type() {
+      return GamePacketTypes.CLIENTBOUND_LEVEL_PARTICLES;
+   }
+
+   public void handle(ClientGamePacketListener var1) {
+      var1.handleParticleEvent(this);
    }
 
    public boolean isOverrideLimiter() {
@@ -106,9 +112,5 @@ public class ClientboundLevelParticlesPacket implements Packet<ClientGamePacketL
 
    public ParticleOptions getParticle() {
       return this.particle;
-   }
-
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleParticleEvent(this);
    }
 }

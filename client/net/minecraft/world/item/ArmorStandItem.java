@@ -38,7 +38,7 @@ public class ArmorStandItem extends Item {
          if (var3.noCollision(null, var8) && var3.getEntities(null, var8).isEmpty()) {
             if (var3 instanceof ServerLevel var9) {
                Consumer var10 = EntityType.createDefaultStackConfig((ServerLevel)var9, var6, var1.getPlayer());
-               ArmorStand var11 = EntityType.ARMOR_STAND.create((ServerLevel)var9, var6.getTag(), var10, var5, MobSpawnType.SPAWN_EGG, true, true);
+               ArmorStand var11 = EntityType.ARMOR_STAND.create((ServerLevel)var9, var10, var5, MobSpawnType.SPAWN_EGG, true, true);
                if (var11 == null) {
                   return InteractionResult.FAIL;
                }

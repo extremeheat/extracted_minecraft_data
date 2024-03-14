@@ -57,8 +57,6 @@ public class ShaderInstance implements Shader, AutoCloseable {
    private final String name;
    private boolean dirty;
    private final BlendMode blend;
-   private final List<Integer> attributes;
-   private final List<String> attributeNames;
    private final Program vertexProgram;
    private final Program fragmentProgram;
    private final VertexFormat vertexFormat;
@@ -66,8 +64,6 @@ public class ShaderInstance implements Shader, AutoCloseable {
    public final Uniform MODEL_VIEW_MATRIX;
    @Nullable
    public final Uniform PROJECTION_MATRIX;
-   @Nullable
-   public final Uniform INVERSE_VIEW_ROTATION_MATRIX;
    @Nullable
    public final Uniform TEXTURE_MATRIX;
    @Nullable
@@ -103,7 +99,7 @@ public class ShaderInstance implements Shader, AutoCloseable {
 
       try (BufferedReader var6 = var1.openAsReader(var4)) {
          JsonObject var5 = GsonHelper.parse(var6);
-         String var23 = GsonHelper.getAsString(var5, "vertex");
+         String var21 = GsonHelper.getAsString(var5, "vertex");
          String var8 = GsonHelper.getAsString(var5, "fragment");
          JsonArray var9 = GsonHelper.getAsJsonArray(var5, "samplers", null);
          if (var9 != null) {
@@ -112,8 +108,8 @@ public class ShaderInstance implements Shader, AutoCloseable {
             for(JsonElement var12 : var9) {
                try {
                   this.parseSamplerNode(var12);
-               } catch (Exception var20) {
-                  ChainedJsonException var14 = ChainedJsonException.forException(var20);
+               } catch (Exception var18) {
+                  ChainedJsonException var14 = ChainedJsonException.forException(var18);
                   var14.prependJsonKey("samplers[" + var10 + "]");
                   throw var14;
                }
@@ -122,63 +118,38 @@ public class ShaderInstance implements Shader, AutoCloseable {
             }
          }
 
-         JsonArray var24 = GsonHelper.getAsJsonArray(var5, "attributes", null);
-         if (var24 != null) {
-            int var25 = 0;
-            this.attributes = Lists.newArrayListWithCapacity(var24.size());
-            this.attributeNames = Lists.newArrayListWithCapacity(var24.size());
+         JsonArray var22 = GsonHelper.getAsJsonArray(var5, "uniforms", null);
+         if (var22 != null) {
+            int var23 = 0;
 
-            for(JsonElement var13 : var24) {
+            for(JsonElement var13 : var22) {
                try {
-                  this.attributeNames.add(GsonHelper.convertToString(var13, "attribute"));
-               } catch (Exception var19) {
-                  ChainedJsonException var15 = ChainedJsonException.forException(var19);
-                  var15.prependJsonKey("attributes[" + var25 + "]");
+                  this.parseUniformNode(var13);
+               } catch (Exception var17) {
+                  ChainedJsonException var15 = ChainedJsonException.forException(var17);
+                  var15.prependJsonKey("uniforms[" + var23 + "]");
                   throw var15;
                }
 
-               ++var25;
-            }
-         } else {
-            this.attributes = null;
-            this.attributeNames = null;
-         }
-
-         JsonArray var26 = GsonHelper.getAsJsonArray(var5, "uniforms", null);
-         if (var26 != null) {
-            int var28 = 0;
-
-            for(JsonElement var32 : var26) {
-               try {
-                  this.parseUniformNode(var32);
-               } catch (Exception var18) {
-                  ChainedJsonException var16 = ChainedJsonException.forException(var18);
-                  var16.prependJsonKey("uniforms[" + var28 + "]");
-                  throw var16;
-               }
-
-               ++var28;
+               ++var23;
             }
          }
 
          this.blend = parseBlendNode(GsonHelper.getAsJsonObject(var5, "blend", null));
-         this.vertexProgram = getOrCreate(var1, Program.Type.VERTEX, var23);
+         this.vertexProgram = getOrCreate(var1, Program.Type.VERTEX, var21);
          this.fragmentProgram = getOrCreate(var1, Program.Type.FRAGMENT, var8);
          this.programId = ProgramManager.createProgram();
-         if (this.attributeNames != null) {
-            int var29 = 0;
+         int var24 = 0;
 
-            for(UnmodifiableIterator var31 = var3.getElementAttributeNames().iterator(); var31.hasNext(); ++var29) {
-               String var33 = (String)var31.next();
-               Uniform.glBindAttribLocation(this.programId, var29, var33);
-               this.attributes.add(var29);
-            }
+         for(UnmodifiableIterator var26 = var3.getElementAttributeNames().iterator(); var26.hasNext(); ++var24) {
+            String var27 = (String)var26.next();
+            Uniform.glBindAttribLocation(this.programId, var24, var27);
          }
 
          ProgramManager.linkShader(this);
          this.updateLocations();
-      } catch (Exception var22) {
-         ChainedJsonException var7 = ChainedJsonException.forException(var22);
+      } catch (Exception var20) {
+         ChainedJsonException var7 = ChainedJsonException.forException(var20);
          var7.setFilenameAndFlush(var4.getPath());
          throw var7;
       }
@@ -186,7 +157,6 @@ public class ShaderInstance implements Shader, AutoCloseable {
       this.markDirty();
       this.MODEL_VIEW_MATRIX = this.getUniform("ModelViewMat");
       this.PROJECTION_MATRIX = this.getUniform("ProjMat");
-      this.INVERSE_VIEW_ROTATION_MATRIX = this.getUniform("IViewRotMat");
       this.TEXTURE_MATRIX = this.getUniform("TextureMat");
       this.SCREEN_SIZE = this.getUniform("ScreenSize");
       this.COLOR_MODULATOR = this.getUniform("ColorModulator");

@@ -14,7 +14,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -136,7 +135,7 @@ public class RedStoneWireBlock extends Block {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPES_CACHE.get(var1.setValue(POWER, Integer.valueOf(0)));
    }
 
@@ -191,7 +190,7 @@ public class RedStoneWireBlock extends Block {
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var2 == Direction.DOWN) {
          return !this.canSurviveOn(var4, var6, var3) ? Blocks.AIR.defaultBlockState() : var1;
       } else if (var2 == Direction.UP) {
@@ -205,10 +204,7 @@ public class RedStoneWireBlock extends Block {
    }
 
    private static boolean isCross(BlockState var0) {
-      return var0.getValue(NORTH).isConnected()
-         && var0.getValue(SOUTH).isConnected()
-         && var0.getValue(EAST).isConnected()
-         && var0.getValue(WEST).isConnected();
+      return var0.getValue(NORTH).isConnected() && var0.getValue(SOUTH).isConnected() && var0.getValue(EAST).isConnected() && var0.getValue(WEST).isConnected();
    }
 
    private static boolean isDot(BlockState var0) {
@@ -219,7 +215,7 @@ public class RedStoneWireBlock extends Block {
    }
 
    @Override
-   public void updateIndirectNeighbourShapes(BlockState var1, LevelAccessor var2, BlockPos var3, int var4, int var5) {
+   protected void updateIndirectNeighbourShapes(BlockState var1, LevelAccessor var2, BlockPos var3, int var4, int var5) {
       BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos();
 
       for(Direction var8 : Direction.Plane.HORIZONTAL) {
@@ -266,7 +262,7 @@ public class RedStoneWireBlock extends Block {
    }
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       BlockPos var4 = var3.below();
       BlockState var5 = var2.getBlockState(var4);
       return this.canSurviveOn(var2, var4, var5);
@@ -333,7 +329,7 @@ public class RedStoneWireBlock extends Block {
    }
 
    @Override
-   public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var4.is(var1.getBlock()) && !var2.isClientSide) {
          this.updatePowerStrength(var2, var3, var1);
 
@@ -346,7 +342,7 @@ public class RedStoneWireBlock extends Block {
    }
 
    @Override
-   public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var5 && !var1.is(var4.getBlock())) {
          super.onRemove(var1, var2, var3, var4, var5);
          if (!var2.isClientSide) {
@@ -376,7 +372,7 @@ public class RedStoneWireBlock extends Block {
    }
 
    @Override
-   public void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
+   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
       if (!var2.isClientSide) {
          if (var1.canSurvive(var2, var3)) {
             this.updatePowerStrength(var2, var3, var1);
@@ -388,12 +384,12 @@ public class RedStoneWireBlock extends Block {
    }
 
    @Override
-   public int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
+   protected int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       return !this.shouldSignal ? 0 : var1.getSignal(var2, var3, var4);
    }
 
    @Override
-   public int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
+   protected int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       if (this.shouldSignal && var4 != Direction.DOWN) {
          int var5 = var1.getValue(POWER);
          if (var5 == 0) {
@@ -426,7 +422,7 @@ public class RedStoneWireBlock extends Block {
    }
 
    @Override
-   public boolean isSignalSource(BlockState var1) {
+   protected boolean isSignalSource(BlockState var1) {
       return this.shouldSignal;
    }
 
@@ -476,7 +472,7 @@ public class RedStoneWireBlock extends Block {
    }
 
    @Override
-   public BlockState rotate(BlockState var1, Rotation var2) {
+   protected BlockState rotate(BlockState var1, Rotation var2) {
       switch(var2) {
          case CLOCKWISE_180:
             return var1.setValue(NORTH, var1.getValue(SOUTH))
@@ -499,7 +495,7 @@ public class RedStoneWireBlock extends Block {
    }
 
    @Override
-   public BlockState mirror(BlockState var1, Mirror var2) {
+   protected BlockState mirror(BlockState var1, Mirror var2) {
       switch(var2) {
          case LEFT_RIGHT:
             return var1.setValue(NORTH, var1.getValue(SOUTH)).setValue(SOUTH, var1.getValue(NORTH));
@@ -516,17 +512,17 @@ public class RedStoneWireBlock extends Block {
    }
 
    @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       if (!var4.getAbilities().mayBuild) {
          return InteractionResult.PASS;
       } else {
          if (isCross(var1) || isDot(var1)) {
-            BlockState var7 = isCross(var1) ? this.defaultBlockState() : this.crossState;
-            var7 = var7.setValue(POWER, var1.getValue(POWER));
-            var7 = this.getConnectionState(var2, var7, var3);
-            if (var7 != var1) {
-               var2.setBlock(var3, var7, 3);
-               this.updatesOnShapeChange(var2, var3, var1, var7);
+            BlockState var6 = isCross(var1) ? this.defaultBlockState() : this.crossState;
+            var6 = var6.setValue(POWER, var1.getValue(POWER));
+            var6 = this.getConnectionState(var2, var6, var3);
+            if (var6 != var1) {
+               var2.setBlock(var3, var6, 3);
+               this.updatesOnShapeChange(var2, var3, var1, var6);
                return InteractionResult.SUCCESS;
             }
          }

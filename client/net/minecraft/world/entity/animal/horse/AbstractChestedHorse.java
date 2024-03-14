@@ -9,8 +9,11 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EntityAttachment;
+import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -23,10 +26,14 @@ import net.minecraft.world.level.block.Blocks;
 public abstract class AbstractChestedHorse extends AbstractHorse {
    private static final EntityDataAccessor<Boolean> DATA_ID_CHEST = SynchedEntityData.defineId(AbstractChestedHorse.class, EntityDataSerializers.BOOLEAN);
    public static final int INV_CHEST_COUNT = 15;
+   private final EntityDimensions babyDimensions;
 
    protected AbstractChestedHorse(EntityType<? extends AbstractChestedHorse> var1, Level var2) {
       super(var1, var2);
       this.canGallop = false;
+      this.babyDimensions = var1.getDimensions()
+         .withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, var1.getHeight() - 0.15625F, 0.0F))
+         .scale(0.5F);
    }
 
    @Override
@@ -35,9 +42,9 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_ID_CHEST, false);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_ID_CHEST, false);
    }
 
    public static AttributeSupplier.Builder createBaseChestedHorseAttributes() {
@@ -54,12 +61,12 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
 
    @Override
    protected int getInventorySize() {
-      return this.hasChest() ? 17 : super.getInventorySize();
+      return this.hasChest() ? 16 : super.getInventorySize();
    }
 
    @Override
-   protected float getPassengersRidingOffsetY(EntityDimensions var1, float var2) {
-      return var1.height - (this.isBaby() ? 0.15625F : 0.3875F) * var2;
+   public EntityDimensions getDefaultDimensions(Pose var1) {
+      return this.isBaby() ? this.babyDimensions : super.getDefaultDimensions(var1);
    }
 
    @Override
@@ -81,13 +88,12 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
       if (this.hasChest()) {
          ListTag var2 = new ListTag();
 
-         for(int var3 = 2; var3 < this.inventory.getContainerSize(); ++var3) {
+         for(int var3 = 1; var3 < this.inventory.getContainerSize(); ++var3) {
             ItemStack var4 = this.inventory.getItem(var3);
             if (!var4.isEmpty()) {
                CompoundTag var5 = new CompoundTag();
-               var5.putByte("Slot", (byte)var3);
-               var4.save(var5);
-               var2.add(var5);
+               var5.putByte("Slot", (byte)(var3 - 1));
+               var2.add(var4.save(this.registryAccess(), var5));
             }
          }
 
@@ -106,13 +112,13 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
          for(int var3 = 0; var3 < var2.size(); ++var3) {
             CompoundTag var4 = var2.getCompound(var3);
             int var5 = var4.getByte("Slot") & 255;
-            if (var5 >= 2 && var5 < this.inventory.getContainerSize()) {
-               this.inventory.setItem(var5, ItemStack.of(var4));
+            if (var5 < this.inventory.getContainerSize() - 1) {
+               this.inventory.setItem(var5 + 1, ItemStack.parse(this.registryAccess(), var4).orElse(ItemStack.EMPTY));
             }
          }
       }
 
-      this.updateContainerEquipment();
+      this.syncSaddleToClients();
    }
 
    @Override
@@ -176,10 +182,7 @@ public abstract class AbstractChestedHorse extends AbstractHorse {
    private void equipChest(Player var1, ItemStack var2) {
       this.setChest(true);
       this.playChestEquipsSound();
-      if (!var1.getAbilities().instabuild) {
-         var2.shrink(1);
-      }
-
+      var2.consume(1, var1);
       this.createInventory();
    }
 

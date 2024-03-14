@@ -44,6 +44,11 @@ public class TelemetryEventWidget extends AbstractScrollWidget {
       this.setScrollAmount(this.scrollAmount());
    }
 
+   public void updateLayout() {
+      this.content = this.buildContent(Minecraft.getInstance().telemetryOptInExtra());
+      this.setScrollAmount(this.scrollAmount());
+   }
+
    private TelemetryEventWidget.Content buildContent(boolean var1) {
       TelemetryEventWidget.ContentBuilder var2 = new TelemetryEventWidget.ContentBuilder(this.containerWidth());
       ArrayList var3 = new ArrayList<>(TelemetryEventType.values());
@@ -157,8 +162,7 @@ public class TelemetryEventWidget extends AbstractScrollWidget {
       public void addHeader(Font var1, Component var2) {
          this.layout
             .addChild(
-               new MultiLineTextWidget(var2, var1).setMaxWidth(this.width - 64).setCentered(true),
-               var0 -> var0.alignHorizontallyCenter().paddingHorizontal(32)
+               new MultiLineTextWidget(var2, var1).setMaxWidth(this.width - 64).setCentered(true), var0 -> var0.alignHorizontallyCenter().paddingHorizontal(32)
             );
          this.narration.append(var2).append("\n");
       }

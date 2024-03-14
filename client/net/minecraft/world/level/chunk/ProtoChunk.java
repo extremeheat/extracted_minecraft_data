@@ -9,6 +9,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
@@ -20,6 +21,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.levelgen.BelowZeroRetrogen;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -265,9 +267,9 @@ public class ProtoChunk extends ChunkAccess {
 
    @Nullable
    @Override
-   public CompoundTag getBlockEntityNbtForSaving(BlockPos var1) {
-      BlockEntity var2 = this.getBlockEntity(var1);
-      return var2 != null ? var2.saveWithFullMetadata() : this.pendingBlockEntities.get(var1);
+   public CompoundTag getBlockEntityNbtForSaving(BlockPos var1, HolderLookup.Provider var2) {
+      BlockEntity var3 = this.getBlockEntity(var1);
+      return var3 != null ? var3.saveWithFullMetadata(var2) : this.pendingBlockEntities.get(var1);
    }
 
    @Override

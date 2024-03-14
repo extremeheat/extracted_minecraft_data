@@ -49,9 +49,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
    private final WorldOptions worldOptions;
    private final PrimaryLevelData.SpecialWorldProperty specialWorldProperty;
    private final Lifecycle worldGenSettingsLifecycle;
-   private int xSpawn;
-   private int ySpawn;
-   private int zSpawn;
+   private BlockPos spawnPos;
    private float spawnAngle;
    private long gameTime;
    private long dayTime;
@@ -81,73 +79,67 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
    private PrimaryLevelData(
       @Nullable CompoundTag var1,
       boolean var2,
-      int var3,
-      int var4,
-      int var5,
-      float var6,
+      BlockPos var3,
+      float var4,
+      long var5,
       long var7,
-      long var9,
+      int var9,
+      int var10,
       int var11,
-      int var12,
+      boolean var12,
       int var13,
       boolean var14,
-      int var15,
+      boolean var15,
       boolean var16,
-      boolean var17,
-      boolean var18,
-      WorldBorder.Settings var19,
-      int var20,
-      int var21,
-      @Nullable UUID var22,
-      Set<String> var23,
-      Set<String> var24,
-      TimerQueue<MinecraftServer> var25,
-      @Nullable CompoundTag var26,
-      EndDragonFight.Data var27,
-      LevelSettings var28,
-      WorldOptions var29,
-      PrimaryLevelData.SpecialWorldProperty var30,
-      Lifecycle var31
+      WorldBorder.Settings var17,
+      int var18,
+      int var19,
+      @Nullable UUID var20,
+      Set<String> var21,
+      Set<String> var22,
+      TimerQueue<MinecraftServer> var23,
+      @Nullable CompoundTag var24,
+      EndDragonFight.Data var25,
+      LevelSettings var26,
+      WorldOptions var27,
+      PrimaryLevelData.SpecialWorldProperty var28,
+      Lifecycle var29
    ) {
       super();
       this.wasModded = var2;
-      this.xSpawn = var3;
-      this.ySpawn = var4;
-      this.zSpawn = var5;
-      this.spawnAngle = var6;
-      this.gameTime = var7;
-      this.dayTime = var9;
-      this.version = var11;
-      this.clearWeatherTime = var12;
-      this.rainTime = var13;
-      this.raining = var14;
-      this.thunderTime = var15;
-      this.thundering = var16;
-      this.initialized = var17;
-      this.difficultyLocked = var18;
-      this.worldBorder = var19;
-      this.wanderingTraderSpawnDelay = var20;
-      this.wanderingTraderSpawnChance = var21;
-      this.wanderingTraderId = var22;
-      this.knownServerBrands = var23;
-      this.removedFeatureFlags = var24;
+      this.spawnPos = var3;
+      this.spawnAngle = var4;
+      this.gameTime = var5;
+      this.dayTime = var7;
+      this.version = var9;
+      this.clearWeatherTime = var10;
+      this.rainTime = var11;
+      this.raining = var12;
+      this.thunderTime = var13;
+      this.thundering = var14;
+      this.initialized = var15;
+      this.difficultyLocked = var16;
+      this.worldBorder = var17;
+      this.wanderingTraderSpawnDelay = var18;
+      this.wanderingTraderSpawnChance = var19;
+      this.wanderingTraderId = var20;
+      this.knownServerBrands = var21;
+      this.removedFeatureFlags = var22;
       this.loadedPlayerTag = var1;
-      this.scheduledEvents = var25;
-      this.customBossEvents = var26;
-      this.endDragonFightData = var27;
-      this.settings = var28;
-      this.worldOptions = var29;
-      this.specialWorldProperty = var30;
-      this.worldGenSettingsLifecycle = var31;
+      this.scheduledEvents = var23;
+      this.customBossEvents = var24;
+      this.endDragonFightData = var25;
+      this.settings = var26;
+      this.worldOptions = var27;
+      this.specialWorldProperty = var28;
+      this.worldGenSettingsLifecycle = var29;
    }
 
    public PrimaryLevelData(LevelSettings var1, WorldOptions var2, PrimaryLevelData.SpecialWorldProperty var3, Lifecycle var4) {
       this(
          null,
          false,
-         0,
-         0,
-         0,
+         BlockPos.ZERO,
          0.0F,
          0L,
          0L,
@@ -180,9 +172,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       return new PrimaryLevelData(
          (CompoundTag)CompoundTag.CODEC.parse(var0.get("Player").orElseEmptyMap()).result().orElse((T)null),
          var0.get("WasModded").asBoolean(false),
-         var0.get("SpawnX").asInt(0),
-         var0.get("SpawnY").asInt(0),
-         var0.get("SpawnZ").asInt(0),
+         new BlockPos(var0.get("SpawnX").asInt(0), var0.get("SpawnY").asInt(0), var0.get("SpawnZ").asInt(0)),
          var0.get("SpawnAngle").asFloat(0.0F),
          var5,
          var0.get("DayTime").asLong(var5),
@@ -202,7 +192,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
          var0.get("removed_features").asStream().flatMap(var0x -> var0x.asString().result().stream()).collect(Collectors.toSet()),
          new TimerQueue<>(TimerCallbacks.SERVER_CALLBACKS, var0.get("ScheduledEvents").asStream()),
          (CompoundTag)var0.get("CustomBossEvents").orElseEmptyMap().getValue(),
-         var0.get("DragonFight").read(EndDragonFight.Data.CODEC).resultOrPartial(LOGGER::error).orElse(EndDragonFight.Data.DEFAULT),
+         (EndDragonFight.Data)var0.get("DragonFight").read(EndDragonFight.Data.CODEC).resultOrPartial(LOGGER::error).orElse((T)EndDragonFight.Data.DEFAULT),
          var1,
          var3,
          var2,
@@ -235,14 +225,14 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
       var4.putString("Series", SharedConstants.getCurrentVersion().getDataVersion().getSeries());
       var2.put("Version", var4);
       NbtUtils.addCurrentDataVersion(var2);
-      RegistryOps var5 = RegistryOps.create(NbtOps.INSTANCE, var1);
+      RegistryOps var5 = var1.createSerializationContext(NbtOps.INSTANCE);
       WorldGenSettings.encode(var5, this.worldOptions, var1)
          .resultOrPartial(Util.prefix("WorldGenSettings: ", LOGGER::error))
          .ifPresent(var1x -> var2.put("WorldGenSettings", var1x));
       var2.putInt("GameType", this.settings.gameType().getId());
-      var2.putInt("SpawnX", this.xSpawn);
-      var2.putInt("SpawnY", this.ySpawn);
-      var2.putInt("SpawnZ", this.zSpawn);
+      var2.putInt("SpawnX", this.spawnPos.getX());
+      var2.putInt("SpawnY", this.spawnPos.getY());
+      var2.putInt("SpawnZ", this.spawnPos.getZ());
       var2.putFloat("SpawnAngle", this.spawnAngle);
       var2.putLong("Time", this.gameTime);
       var2.putLong("DayTime", this.dayTime);
@@ -287,18 +277,8 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
    }
 
    @Override
-   public int getXSpawn() {
-      return this.xSpawn;
-   }
-
-   @Override
-   public int getYSpawn() {
-      return this.ySpawn;
-   }
-
-   @Override
-   public int getZSpawn() {
-      return this.zSpawn;
+   public BlockPos getSpawnPos() {
+      return this.spawnPos;
    }
 
    @Override
@@ -323,26 +303,6 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
    }
 
    @Override
-   public void setXSpawn(int var1) {
-      this.xSpawn = var1;
-   }
-
-   @Override
-   public void setYSpawn(int var1) {
-      this.ySpawn = var1;
-   }
-
-   @Override
-   public void setZSpawn(int var1) {
-      this.zSpawn = var1;
-   }
-
-   @Override
-   public void setSpawnAngle(float var1) {
-      this.spawnAngle = var1;
-   }
-
-   @Override
    public void setGameTime(long var1) {
       this.gameTime = var1;
    }
@@ -354,9 +314,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
 
    @Override
    public void setSpawn(BlockPos var1, float var2) {
-      this.xSpawn = var1.getX();
-      this.ySpawn = var1.getY();
-      this.zSpawn = var1.getZ();
+      this.spawnPos = var1.immutable();
       this.spawnAngle = var2;
    }
 
@@ -436,7 +394,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
    }
 
    @Override
-   public boolean getAllowCommands() {
+   public boolean isAllowCommands() {
       return this.settings.allowCommands();
    }
 

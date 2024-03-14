@@ -7,6 +7,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.DecoratedPotBlockEntity;
+import net.minecraft.world.level.block.entity.PotDecorations;
 
 public class DecoratedPotRecipe extends CustomRecipe {
    public DecoratedPotRecipe(CraftingBookCategory var1) {
@@ -43,9 +44,7 @@ public class DecoratedPotRecipe extends CustomRecipe {
    }
 
    public ItemStack assemble(CraftingContainer var1, RegistryAccess var2) {
-      DecoratedPotBlockEntity.Decorations var3 = new DecoratedPotBlockEntity.Decorations(
-         var1.getItem(1).getItem(), var1.getItem(3).getItem(), var1.getItem(5).getItem(), var1.getItem(7).getItem()
-      );
+      PotDecorations var3 = new PotDecorations(var1.getItem(1).getItem(), var1.getItem(3).getItem(), var1.getItem(5).getItem(), var1.getItem(7).getItem());
       return DecoratedPotBlockEntity.createDecoratedPotItem(var3);
    }
 

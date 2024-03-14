@@ -2,17 +2,24 @@ package net.minecraft.world.level.block.entity;
 
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
+import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.LockCode;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.Nameable;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.block.state.BlockState;
 
 public abstract class BaseContainerBlockEntity extends BlockEntity implements Container, MenuProvider, Nameable {
@@ -25,25 +32,21 @@ public abstract class BaseContainerBlockEntity extends BlockEntity implements Co
    }
 
    @Override
-   public void load(CompoundTag var1) {
-      super.load(var1);
+   public void load(CompoundTag var1, HolderLookup.Provider var2) {
+      super.load(var1, var2);
       this.lockKey = LockCode.fromTag(var1);
       if (var1.contains("CustomName", 8)) {
-         this.name = Component.Serializer.fromJson(var1.getString("CustomName"));
+         this.name = Component.Serializer.fromJson(var1.getString("CustomName"), var2);
       }
    }
 
    @Override
-   protected void saveAdditional(CompoundTag var1) {
-      super.saveAdditional(var1);
+   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.saveAdditional(var1, var2);
       this.lockKey.addToTag(var1);
       if (this.name != null) {
-         var1.putString("CustomName", Component.Serializer.toJson(this.name));
+         var1.putString("CustomName", Component.Serializer.toJson(this.name, var2));
       }
-   }
-
-   public void setCustomName(Component var1) {
-      this.name = var1;
    }
 
    @Override
@@ -78,6 +81,61 @@ public abstract class BaseContainerBlockEntity extends BlockEntity implements Co
       }
    }
 
+   protected abstract NonNullList<ItemStack> getItems();
+
+   protected abstract void setItems(NonNullList<ItemStack> var1);
+
+   @Override
+   public boolean isEmpty() {
+      for(ItemStack var2 : this.getItems()) {
+         if (!var2.isEmpty()) {
+            return false;
+         }
+      }
+
+      return true;
+   }
+
+   @Override
+   public ItemStack getItem(int var1) {
+      return this.getItems().get(var1);
+   }
+
+   @Override
+   public ItemStack removeItem(int var1, int var2) {
+      ItemStack var3 = ContainerHelper.removeItem(this.getItems(), var1, var2);
+      if (!var3.isEmpty()) {
+         this.setChanged();
+      }
+
+      return var3;
+   }
+
+   @Override
+   public ItemStack removeItemNoUpdate(int var1) {
+      return ContainerHelper.takeItem(this.getItems(), var1);
+   }
+
+   @Override
+   public void setItem(int var1, ItemStack var2) {
+      this.getItems().set(var1, var2);
+      if (var2.getCount() > this.getMaxStackSize()) {
+         var2.setCount(this.getMaxStackSize());
+      }
+
+      this.setChanged();
+   }
+
+   @Override
+   public boolean stillValid(Player var1) {
+      return Container.stillValidBlockEntity(this, var1);
+   }
+
+   @Override
+   public void clearContent() {
+      this.getItems().clear();
+   }
+
    @Nullable
    @Override
    public AbstractContainerMenu createMenu(int var1, Inventory var2, Player var3) {
@@ -85,4 +143,28 @@ public abstract class BaseContainerBlockEntity extends BlockEntity implements Co
    }
 
    protected abstract AbstractContainerMenu createMenu(int var1, Inventory var2);
+
+   @Override
+   public void applyComponents(DataComponentMap var1) {
+      this.name = var1.get(DataComponents.CUSTOM_NAME);
+      this.lockKey = var1.getOrDefault(DataComponents.LOCK, LockCode.NO_LOCK);
+      var1.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY).copyInto(this.getItems());
+   }
+
+   @Override
+   public void collectComponents(DataComponentMap.Builder var1) {
+      var1.set(DataComponents.CUSTOM_NAME, this.name);
+      if (!this.lockKey.equals(LockCode.NO_LOCK)) {
+         var1.set(DataComponents.LOCK, this.lockKey);
+      }
+
+      var1.set(DataComponents.CONTAINER, ItemContainerContents.copyOf(this.getItems()));
+   }
+
+   @Override
+   public void removeComponentsFromTag(CompoundTag var1) {
+      var1.remove("CustomName");
+      var1.remove("Lock");
+      var1.remove("Items");
+   }
 }

@@ -40,7 +40,7 @@ public record DamageSourceCondition(Optional<DamageSourcePredicate> b) implement
       DamageSource var2 = var1.getParamOrNull(LootContextParams.DAMAGE_SOURCE);
       Vec3 var3 = var1.getParamOrNull(LootContextParams.ORIGIN);
       if (var3 != null && var2 != null) {
-         return this.predicate.isEmpty() || this.predicate.get().matches(var1.getLevel(), var3, var2);
+         return this.predicate.isEmpty() || ((DamageSourcePredicate)this.predicate.get()).matches(var1.getLevel(), var3, var2);
       } else {
          return false;
       }

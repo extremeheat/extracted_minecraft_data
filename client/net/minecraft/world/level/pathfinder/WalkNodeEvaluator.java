@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanMap;
 import it.unimi.dsi.fastutil.objects.Object2BooleanOpenHashMap;
 import java.util.EnumSet;
+import java.util.Set;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -13,11 +14,11 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.CollisionGetter;
 import net.minecraft.world.level.PathNavigationRegion;
 import net.minecraft.world.level.block.BaseRailBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.level.block.DoorBlock;
 import net.minecraft.world.level.block.FenceGateBlock;
 import net.minecraft.world.level.block.LeavesBlock;
@@ -31,8 +32,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class WalkNodeEvaluator extends NodeEvaluator {
    public static final double SPACE_BETWEEN_WALL_POSTS = 0.5;
    private static final double DEFAULT_MOB_JUMP_HEIGHT = 1.125;
-   private final Long2ObjectMap<BlockPathTypes> pathTypesByPosCache = new Long2ObjectOpenHashMap();
+   private final Long2ObjectMap<PathType> pathTypesByPosCacheByMob = new Long2ObjectOpenHashMap();
    private final Object2BooleanMap<AABB> collisionCache = new Object2BooleanOpenHashMap();
+   private final Node[] reusableNeighbors = new Node[Direction.Plane.HORIZONTAL.length()];
 
    public WalkNodeEvaluator() {
       super();
@@ -47,7 +49,7 @@ public class WalkNodeEvaluator extends NodeEvaluator {
    @Override
    public void done() {
       this.mob.onPathfindingDone();
-      this.pathTypesByPosCache.clear();
+      this.pathTypesByPosCacheByMob.clear();
       this.collisionCache.clear();
       super.done();
    }
@@ -56,7 +58,7 @@ public class WalkNodeEvaluator extends NodeEvaluator {
    public Node getStart() {
       BlockPos.MutableBlockPos var2 = new BlockPos.MutableBlockPos();
       int var1 = this.mob.getBlockY();
-      BlockState var3 = this.level.getBlockState(var2.set(this.mob.getX(), (double)var1, this.mob.getZ()));
+      BlockState var3 = this.currentContext.getBlockState(var2.set(this.mob.getX(), (double)var1, this.mob.getZ()));
       if (!this.mob.canStandOnFluid(var3.getFluidState())) {
          if (this.canFloat() && this.mob.isInWater()) {
             while(true) {
@@ -65,32 +67,32 @@ public class WalkNodeEvaluator extends NodeEvaluator {
                   break;
                }
 
-               var3 = this.level.getBlockState(var2.set(this.mob.getX(), (double)(++var1), this.mob.getZ()));
+               var3 = this.currentContext.getBlockState(var2.set(this.mob.getX(), (double)(++var1), this.mob.getZ()));
             }
          } else if (this.mob.onGround()) {
             var1 = Mth.floor(this.mob.getY() + 0.5);
          } else {
-            BlockPos var4 = this.mob.blockPosition();
+            var2.set(this.mob.getX(), this.mob.getY() + 1.0, this.mob.getZ());
 
-            while(
-               (this.level.getBlockState(var4).isAir() || this.level.getBlockState(var4).isPathfindable(this.level, var4, PathComputationType.LAND))
-                  && var4.getY() > this.mob.level().getMinBuildHeight()
-            ) {
-               var4 = var4.below();
+            while(var2.getY() > this.currentContext.level().getMinBuildHeight()) {
+               var1 = var2.getY();
+               var2.setY(var2.getY() - 1);
+               BlockState var4 = this.currentContext.getBlockState(var2);
+               if (!var4.isAir() && !var4.isPathfindable(PathComputationType.LAND)) {
+                  break;
+               }
             }
-
-            var1 = var4.above().getY();
          }
       } else {
          while(this.mob.canStandOnFluid(var3.getFluidState())) {
-            var3 = this.level.getBlockState(var2.set(this.mob.getX(), (double)(++var1), this.mob.getZ()));
+            var3 = this.currentContext.getBlockState(var2.set(this.mob.getX(), (double)(++var1), this.mob.getZ()));
          }
 
          --var1;
       }
 
-      BlockPos var7 = this.mob.blockPosition();
-      if (!this.canStartAt(var2.set(var7.getX(), var1, var7.getZ()))) {
+      BlockPos var6 = this.mob.blockPosition();
+      if (!this.canStartAt(var2.set(var6.getX(), var1, var6.getZ()))) {
          AABB var5 = this.mob.getBoundingBox();
          if (this.canStartAt(var2.set(var5.minX, (double)var1, var5.minZ))
             || this.canStartAt(var2.set(var5.minX, (double)var1, var5.maxZ))
@@ -100,75 +102,56 @@ public class WalkNodeEvaluator extends NodeEvaluator {
          }
       }
 
-      return this.getStartNode(new BlockPos(var7.getX(), var1, var7.getZ()));
+      return this.getStartNode(new BlockPos(var6.getX(), var1, var6.getZ()));
    }
 
    protected Node getStartNode(BlockPos var1) {
       Node var2 = this.getNode(var1);
-      var2.type = this.getBlockPathType(this.mob, var2.asBlockPos());
+      var2.type = this.getCachedPathType(var2.x, var2.y, var2.z);
       var2.costMalus = this.mob.getPathfindingMalus(var2.type);
       return var2;
    }
 
    protected boolean canStartAt(BlockPos var1) {
-      BlockPathTypes var2 = this.getBlockPathType(this.mob, var1);
-      return var2 != BlockPathTypes.OPEN && this.mob.getPathfindingMalus(var2) >= 0.0F;
+      PathType var2 = this.getCachedPathType(var1.getX(), var1.getY(), var1.getZ());
+      return var2 != PathType.OPEN && this.mob.getPathfindingMalus(var2) >= 0.0F;
    }
 
    @Override
-   public Target getGoal(double var1, double var3, double var5) {
-      return this.getTargetFromNode(this.getNode(Mth.floor(var1), Mth.floor(var3), Mth.floor(var5)));
+   public Target getTarget(double var1, double var3, double var5) {
+      return this.getTargetNodeAt(var1, var3, var5);
    }
 
    @Override
    public int getNeighbors(Node[] var1, Node var2) {
       int var3 = 0;
       int var4 = 0;
-      BlockPathTypes var5 = this.getCachedBlockType(this.mob, var2.x, var2.y + 1, var2.z);
-      BlockPathTypes var6 = this.getCachedBlockType(this.mob, var2.x, var2.y, var2.z);
-      if (this.mob.getPathfindingMalus(var5) >= 0.0F && var6 != BlockPathTypes.STICKY_HONEY) {
+      PathType var5 = this.getCachedPathType(var2.x, var2.y + 1, var2.z);
+      PathType var6 = this.getCachedPathType(var2.x, var2.y, var2.z);
+      if (this.mob.getPathfindingMalus(var5) >= 0.0F && var6 != PathType.STICKY_HONEY) {
          var4 = Mth.floor(Math.max(1.0F, this.mob.maxUpStep()));
       }
 
       double var7 = this.getFloorLevel(new BlockPos(var2.x, var2.y, var2.z));
-      Node var9 = this.findAcceptedNode(var2.x, var2.y, var2.z + 1, var4, var7, Direction.SOUTH, var6);
-      if (this.isNeighborValid(var9, var2)) {
-         var1[var3++] = var9;
+
+      for(Direction var10 : Direction.Plane.HORIZONTAL) {
+         Node var11 = this.findAcceptedNode(var2.x + var10.getStepX(), var2.y, var2.z + var10.getStepZ(), var4, var7, var10, var6);
+         this.reusableNeighbors[var10.get2DDataValue()] = var11;
+         if (this.isNeighborValid(var11, var2)) {
+            var1[var3++] = var11;
+         }
       }
 
-      Node var10 = this.findAcceptedNode(var2.x - 1, var2.y, var2.z, var4, var7, Direction.WEST, var6);
-      if (this.isNeighborValid(var10, var2)) {
-         var1[var3++] = var10;
-      }
-
-      Node var11 = this.findAcceptedNode(var2.x + 1, var2.y, var2.z, var4, var7, Direction.EAST, var6);
-      if (this.isNeighborValid(var11, var2)) {
-         var1[var3++] = var11;
-      }
-
-      Node var12 = this.findAcceptedNode(var2.x, var2.y, var2.z - 1, var4, var7, Direction.NORTH, var6);
-      if (this.isNeighborValid(var12, var2)) {
-         var1[var3++] = var12;
-      }
-
-      Node var13 = this.findAcceptedNode(var2.x - 1, var2.y, var2.z - 1, var4, var7, Direction.NORTH, var6);
-      if (this.isDiagonalValid(var2, var10, var12, var13)) {
-         var1[var3++] = var13;
-      }
-
-      Node var14 = this.findAcceptedNode(var2.x + 1, var2.y, var2.z - 1, var4, var7, Direction.NORTH, var6);
-      if (this.isDiagonalValid(var2, var11, var12, var14)) {
-         var1[var3++] = var14;
-      }
-
-      Node var15 = this.findAcceptedNode(var2.x - 1, var2.y, var2.z + 1, var4, var7, Direction.SOUTH, var6);
-      if (this.isDiagonalValid(var2, var10, var9, var15)) {
-         var1[var3++] = var15;
-      }
-
-      Node var16 = this.findAcceptedNode(var2.x + 1, var2.y, var2.z + 1, var4, var7, Direction.SOUTH, var6);
-      if (this.isDiagonalValid(var2, var11, var9, var16)) {
-         var1[var3++] = var16;
+      for(Direction var14 : Direction.Plane.HORIZONTAL) {
+         Direction var15 = var14.getClockWise();
+         if (this.isDiagonalValid(var2, this.reusableNeighbors[var14.get2DDataValue()], this.reusableNeighbors[var15.get2DDataValue()])) {
+            Node var12 = this.findAcceptedNode(
+               var2.x + var14.getStepX() + var15.getStepX(), var2.y, var2.z + var14.getStepZ() + var15.getStepZ(), var4, var7, var14, var6
+            );
+            if (this.isDiagonalValid(var12)) {
+               var1[var3++] = var12;
+            }
+         }
       }
 
       return var3;
@@ -178,23 +161,29 @@ public class WalkNodeEvaluator extends NodeEvaluator {
       return var1 != null && !var1.closed && (var1.costMalus >= 0.0F || var2.costMalus < 0.0F);
    }
 
-   protected boolean isDiagonalValid(Node var1, @Nullable Node var2, @Nullable Node var3, @Nullable Node var4) {
-      if (var4 == null || var3 == null || var2 == null) {
+   protected boolean isDiagonalValid(Node var1, @Nullable Node var2, @Nullable Node var3) {
+      if (var3 == null || var2 == null || var3.y > var1.y || var2.y > var1.y) {
          return false;
-      } else if (var4.closed) {
-         return false;
-      } else if (var3.y > var1.y || var2.y > var1.y) {
-         return false;
-      } else if (var2.type != BlockPathTypes.WALKABLE_DOOR && var3.type != BlockPathTypes.WALKABLE_DOOR && var4.type != BlockPathTypes.WALKABLE_DOOR) {
-         boolean var5 = var3.type == BlockPathTypes.FENCE && var2.type == BlockPathTypes.FENCE && (double)this.mob.getBbWidth() < 0.5;
-         return var4.costMalus >= 0.0F && (var3.y < var1.y || var3.costMalus >= 0.0F || var5) && (var2.y < var1.y || var2.costMalus >= 0.0F || var5);
+      } else if (var2.type != PathType.WALKABLE_DOOR && var3.type != PathType.WALKABLE_DOOR) {
+         boolean var4 = var3.type == PathType.FENCE && var2.type == PathType.FENCE && (double)this.mob.getBbWidth() < 0.5;
+         return (var3.y < var1.y || var3.costMalus >= 0.0F || var4) && (var2.y < var1.y || var2.costMalus >= 0.0F || var4);
       } else {
          return false;
       }
    }
 
-   private static boolean doesBlockHavePartialCollision(BlockPathTypes var0) {
-      return var0 == BlockPathTypes.FENCE || var0 == BlockPathTypes.DOOR_WOOD_CLOSED || var0 == BlockPathTypes.DOOR_IRON_CLOSED;
+   protected boolean isDiagonalValid(@Nullable Node var1) {
+      if (var1 == null || var1.closed) {
+         return false;
+      } else if (var1.type == PathType.WALKABLE_DOOR) {
+         return false;
+      } else {
+         return var1.costMalus >= 0.0F;
+      }
+   }
+
+   private static boolean doesBlockHavePartialCollision(PathType var0) {
+      return var0 == PathType.FENCE || var0 == PathType.DOOR_WOOD_CLOSED || var0 == PathType.DOOR_IRON_CLOSED;
    }
 
    private boolean canReachWithoutCollision(Node var1) {
@@ -218,9 +207,8 @@ public class WalkNodeEvaluator extends NodeEvaluator {
    }
 
    protected double getFloorLevel(BlockPos var1) {
-      return (this.canFloat() || this.isAmphibious()) && this.level.getFluidState(var1).is(FluidTags.WATER)
-         ? (double)var1.getY() + 0.5
-         : getFloorLevel(this.level, var1);
+      CollisionGetter var2 = this.currentContext.level();
+      return (this.canFloat() || this.isAmphibious()) && var2.getFluidState(var1).is(FluidTags.WATER) ? (double)var1.getY() + 0.5 : getFloorLevel(var2, var1);
    }
 
    public static double getFloorLevel(BlockGetter var0, BlockPos var1) {
@@ -234,16 +222,15 @@ public class WalkNodeEvaluator extends NodeEvaluator {
    }
 
    @Nullable
-   protected Node findAcceptedNode(int var1, int var2, int var3, int var4, double var5, Direction var7, BlockPathTypes var8) {
+   protected Node findAcceptedNode(int var1, int var2, int var3, int var4, double var5, Direction var7, PathType var8) {
       Node var9 = null;
       BlockPos.MutableBlockPos var10 = new BlockPos.MutableBlockPos();
       double var11 = this.getFloorLevel(var10.set(var1, var2, var3));
       if (var11 - var5 > this.getMobJumpHeight()) {
          return null;
       } else {
-         BlockPathTypes var13 = this.getCachedBlockType(this.mob, var1, var2, var3);
+         PathType var13 = this.getCachedPathType(var1, var2, var3);
          float var14 = this.mob.getPathfindingMalus(var13);
-         double var15 = (double)this.mob.getBbWidth() / 2.0;
          if (var14 >= 0.0F) {
             var9 = this.getNodeAndUpdateCostToMax(var1, var2, var3, var13, var14);
          }
@@ -252,77 +239,20 @@ public class WalkNodeEvaluator extends NodeEvaluator {
             var9 = null;
          }
 
-         if (var13 != BlockPathTypes.WALKABLE && (!this.isAmphibious() || var13 != BlockPathTypes.WATER)) {
+         if (var13 != PathType.WALKABLE && (!this.isAmphibious() || var13 != PathType.WATER)) {
             if ((var9 == null || var9.costMalus < 0.0F)
                && var4 > 0
-               && (var13 != BlockPathTypes.FENCE || this.canWalkOverFences())
-               && var13 != BlockPathTypes.UNPASSABLE_RAIL
-               && var13 != BlockPathTypes.TRAPDOOR
-               && var13 != BlockPathTypes.POWDER_SNOW) {
-               var9 = this.findAcceptedNode(var1, var2 + 1, var3, var4 - 1, var5, var7, var8);
-               if (var9 != null && (var9.type == BlockPathTypes.OPEN || var9.type == BlockPathTypes.WALKABLE) && this.mob.getBbWidth() < 1.0F) {
-                  double var17 = (double)(var1 - var7.getStepX()) + 0.5;
-                  double var19 = (double)(var3 - var7.getStepZ()) + 0.5;
-                  AABB var21 = new AABB(
-                     var17 - var15,
-                     this.getFloorLevel(var10.set(var17, (double)(var2 + 1), var19)) + 0.001,
-                     var19 - var15,
-                     var17 + var15,
-                     (double)this.mob.getBbHeight() + this.getFloorLevel(var10.set((double)var9.x, (double)var9.y, (double)var9.z)) - 0.002,
-                     var19 + var15
-                  );
-                  if (this.hasCollisions(var21)) {
-                     var9 = null;
-                  }
-               }
-            }
-
-            if (!this.isAmphibious() && var13 == BlockPathTypes.WATER && !this.canFloat()) {
-               if (this.getCachedBlockType(this.mob, var1, var2 - 1, var3) != BlockPathTypes.WATER) {
-                  return var9;
-               }
-
-               while(var2 > this.mob.level().getMinBuildHeight()) {
-                  var13 = this.getCachedBlockType(this.mob, var1, --var2, var3);
-                  if (var13 != BlockPathTypes.WATER) {
-                     return var9;
-                  }
-
-                  var9 = this.getNodeAndUpdateCostToMax(var1, var2, var3, var13, this.mob.getPathfindingMalus(var13));
-               }
-            }
-
-            if (var13 == BlockPathTypes.OPEN) {
-               int var23 = 0;
-               int var18 = var2;
-
-               while(var13 == BlockPathTypes.OPEN) {
-                  if (--var2 < this.mob.level().getMinBuildHeight()) {
-                     return this.getBlockedNode(var1, var18, var3);
-                  }
-
-                  if (var23++ >= this.mob.getMaxFallDistance()) {
-                     return this.getBlockedNode(var1, var2, var3);
-                  }
-
-                  var13 = this.getCachedBlockType(this.mob, var1, var2, var3);
-                  var14 = this.mob.getPathfindingMalus(var13);
-                  if (var13 != BlockPathTypes.OPEN && var14 >= 0.0F) {
-                     var9 = this.getNodeAndUpdateCostToMax(var1, var2, var3, var13, var14);
-                     break;
-                  }
-
-                  if (var14 < 0.0F) {
-                     return this.getBlockedNode(var1, var2, var3);
-                  }
-               }
-            }
-
-            if (doesBlockHavePartialCollision(var13) && var9 == null) {
-               var9 = this.getNode(var1, var2, var3);
-               var9.closed = true;
-               var9.type = var13;
-               var9.costMalus = var13.getMalus();
+               && (var13 != PathType.FENCE || this.canWalkOverFences())
+               && var13 != PathType.UNPASSABLE_RAIL
+               && var13 != PathType.TRAPDOOR
+               && var13 != PathType.POWDER_SNOW) {
+               var9 = this.tryJumpOn(var1, var2, var3, var4, var5, var7, var8, var10);
+            } else if (!this.isAmphibious() && var13 == PathType.WATER && !this.canFloat()) {
+               var9 = this.tryFindFirstNonWaterBelow(var1, var2, var3, var9);
+            } else if (var13 == PathType.OPEN) {
+               var9 = this.tryFindFirstGroundNodeBelow(var1, var2, var3);
+            } else if (doesBlockHavePartialCollision(var13) && var9 == null) {
+               var9 = this.getClosedNode(var1, var2, var3, var13);
             }
 
             return var9;
@@ -336,7 +266,7 @@ public class WalkNodeEvaluator extends NodeEvaluator {
       return Math.max(1.125, (double)this.mob.maxUpStep());
    }
 
-   private Node getNodeAndUpdateCostToMax(int var1, int var2, int var3, BlockPathTypes var4, float var5) {
+   private Node getNodeAndUpdateCostToMax(int var1, int var2, int var3, PathType var4, float var5) {
       Node var6 = this.getNode(var1, var2, var3);
       var6.type = var4;
       var6.costMalus = Math.max(var6.costMalus, var5);
@@ -345,202 +275,256 @@ public class WalkNodeEvaluator extends NodeEvaluator {
 
    private Node getBlockedNode(int var1, int var2, int var3) {
       Node var4 = this.getNode(var1, var2, var3);
-      var4.type = BlockPathTypes.BLOCKED;
+      var4.type = PathType.BLOCKED;
       var4.costMalus = -1.0F;
       return var4;
    }
 
-   private boolean hasCollisions(AABB var1) {
-      return this.collisionCache.computeIfAbsent(var1, var2 -> !this.level.noCollision(this.mob, var1));
+   private Node getClosedNode(int var1, int var2, int var3, PathType var4) {
+      Node var5 = this.getNode(var1, var2, var3);
+      var5.closed = true;
+      var5.type = var4;
+      var5.costMalus = var4.getMalus();
+      return var5;
    }
 
-   @Override
-   public BlockPathTypes getBlockPathType(BlockGetter var1, int var2, int var3, int var4, Mob var5) {
-      EnumSet var6 = EnumSet.noneOf(BlockPathTypes.class);
-      BlockPathTypes var7 = BlockPathTypes.BLOCKED;
-      var7 = this.getBlockPathTypes(var1, var2, var3, var4, var6, var7, var5.blockPosition());
-      if (var6.contains(BlockPathTypes.FENCE)) {
-         return BlockPathTypes.FENCE;
-      } else if (var6.contains(BlockPathTypes.UNPASSABLE_RAIL)) {
-         return BlockPathTypes.UNPASSABLE_RAIL;
+   @Nullable
+   private Node tryJumpOn(int var1, int var2, int var3, int var4, double var5, Direction var7, PathType var8, BlockPos.MutableBlockPos var9) {
+      Node var10 = this.findAcceptedNode(var1, var2 + 1, var3, var4 - 1, var5, var7, var8);
+      if (var10 == null) {
+         return null;
+      } else if (this.mob.getBbWidth() >= 1.0F) {
+         return var10;
+      } else if (var10.type != PathType.OPEN && var10.type != PathType.WALKABLE) {
+         return var10;
       } else {
-         BlockPathTypes var8 = BlockPathTypes.BLOCKED;
-
-         for(BlockPathTypes var10 : var6) {
-            if (var5.getPathfindingMalus(var10) < 0.0F) {
-               return var10;
-            }
-
-            if (var5.getPathfindingMalus(var10) >= var5.getPathfindingMalus(var8)) {
-               var8 = var10;
-            }
-         }
-
-         return var7 == BlockPathTypes.OPEN && var5.getPathfindingMalus(var8) == 0.0F && this.entityWidth <= 1 ? BlockPathTypes.OPEN : var8;
+         double var11 = (double)(var1 - var7.getStepX()) + 0.5;
+         double var13 = (double)(var3 - var7.getStepZ()) + 0.5;
+         double var15 = (double)this.mob.getBbWidth() / 2.0;
+         AABB var17 = new AABB(
+            var11 - var15,
+            this.getFloorLevel(var9.set(var11, (double)(var2 + 1), var13)) + 0.001,
+            var13 - var15,
+            var11 + var15,
+            (double)this.mob.getBbHeight() + this.getFloorLevel(var9.set((double)var10.x, (double)var10.y, (double)var10.z)) - 0.002,
+            var13 + var15
+         );
+         return this.hasCollisions(var17) ? null : var10;
       }
    }
 
-   public BlockPathTypes getBlockPathTypes(BlockGetter var1, int var2, int var3, int var4, EnumSet<BlockPathTypes> var5, BlockPathTypes var6, BlockPos var7) {
-      for(int var8 = 0; var8 < this.entityWidth; ++var8) {
-         for(int var9 = 0; var9 < this.entityHeight; ++var9) {
-            for(int var10 = 0; var10 < this.entityDepth; ++var10) {
-               int var11 = var8 + var2;
-               int var12 = var9 + var3;
-               int var13 = var10 + var4;
-               BlockPathTypes var14 = this.getBlockPathType(var1, var11, var12, var13);
-               var14 = this.evaluateBlockPathType(var1, var7, var14);
-               if (var8 == 0 && var9 == 0 && var10 == 0) {
-                  var6 = var14;
+   @Nullable
+   private Node tryFindFirstNonWaterBelow(int var1, int var2, int var3, @Nullable Node var4) {
+      --var2;
+
+      while(var2 > this.mob.level().getMinBuildHeight()) {
+         PathType var5 = this.getCachedPathType(var1, var2, var3);
+         if (var5 != PathType.WATER) {
+            return var4;
+         }
+
+         var4 = this.getNodeAndUpdateCostToMax(var1, var2, var3, var5, this.mob.getPathfindingMalus(var5));
+         --var2;
+      }
+
+      return var4;
+   }
+
+   private Node tryFindFirstGroundNodeBelow(int var1, int var2, int var3) {
+      for(int var4 = var2 - 1; var4 >= this.mob.level().getMinBuildHeight(); --var4) {
+         if (var2 - var4 > this.mob.getMaxFallDistance()) {
+            return this.getBlockedNode(var1, var4, var3);
+         }
+
+         PathType var5 = this.getCachedPathType(var1, var4, var3);
+         float var6 = this.mob.getPathfindingMalus(var5);
+         if (var5 != PathType.OPEN) {
+            if (var6 >= 0.0F) {
+               return this.getNodeAndUpdateCostToMax(var1, var4, var3, var5, var6);
+            }
+
+            return this.getBlockedNode(var1, var4, var3);
+         }
+      }
+
+      return this.getBlockedNode(var1, var2, var3);
+   }
+
+   private boolean hasCollisions(AABB var1) {
+      return this.collisionCache.computeIfAbsent(var1, var2 -> !this.currentContext.level().noCollision(this.mob, var1));
+   }
+
+   protected PathType getCachedPathType(int var1, int var2, int var3) {
+      return (PathType)this.pathTypesByPosCacheByMob
+         .computeIfAbsent(BlockPos.asLong(var1, var2, var3), var4 -> this.getPathTypeOfMob(this.currentContext, var1, var2, var3, this.mob));
+   }
+
+   @Override
+   public PathType getPathTypeOfMob(PathfindingContext var1, int var2, int var3, int var4, Mob var5) {
+      Set var6 = this.getPathTypeWithinMobBB(var1, var2, var3, var4);
+      if (var6.contains(PathType.FENCE)) {
+         return PathType.FENCE;
+      } else if (var6.contains(PathType.UNPASSABLE_RAIL)) {
+         return PathType.UNPASSABLE_RAIL;
+      } else {
+         PathType var7 = PathType.BLOCKED;
+
+         for(PathType var9 : var6) {
+            if (var5.getPathfindingMalus(var9) < 0.0F) {
+               return var9;
+            }
+
+            if (var5.getPathfindingMalus(var9) >= var5.getPathfindingMalus(var7)) {
+               var7 = var9;
+            }
+         }
+
+         return this.entityWidth <= 1
+               && var7 != PathType.OPEN
+               && var5.getPathfindingMalus(var7) == 0.0F
+               && this.getPathType(var1, var2, var3, var4) == PathType.OPEN
+            ? PathType.OPEN
+            : var7;
+      }
+   }
+
+   public Set<PathType> getPathTypeWithinMobBB(PathfindingContext var1, int var2, int var3, int var4) {
+      EnumSet var5 = EnumSet.noneOf(PathType.class);
+
+      for(int var6 = 0; var6 < this.entityWidth; ++var6) {
+         for(int var7 = 0; var7 < this.entityHeight; ++var7) {
+            for(int var8 = 0; var8 < this.entityDepth; ++var8) {
+               int var9 = var6 + var2;
+               int var10 = var7 + var3;
+               int var11 = var8 + var4;
+               PathType var12 = this.getPathType(var1, var9, var10, var11);
+               BlockPos var13 = this.mob.blockPosition();
+               boolean var14 = this.canPassDoors();
+               if (var12 == PathType.DOOR_WOOD_CLOSED && this.canOpenDoors() && var14) {
+                  var12 = PathType.WALKABLE_DOOR;
                }
 
-               var5.add(var14);
+               if (var12 == PathType.DOOR_OPEN && !var14) {
+                  var12 = PathType.BLOCKED;
+               }
+
+               if (var12 == PathType.RAIL
+                  && this.getPathType(var1, var13.getX(), var13.getY(), var13.getZ()) != PathType.RAIL
+                  && this.getPathType(var1, var13.getX(), var13.getY() - 1, var13.getZ()) != PathType.RAIL) {
+                  var12 = PathType.UNPASSABLE_RAIL;
+               }
+
+               var5.add(var12);
             }
          }
       }
 
-      return var6;
-   }
-
-   protected BlockPathTypes evaluateBlockPathType(BlockGetter var1, BlockPos var2, BlockPathTypes var3) {
-      boolean var4 = this.canPassDoors();
-      if (var3 == BlockPathTypes.DOOR_WOOD_CLOSED && this.canOpenDoors() && var4) {
-         var3 = BlockPathTypes.WALKABLE_DOOR;
-      }
-
-      if (var3 == BlockPathTypes.DOOR_OPEN && !var4) {
-         var3 = BlockPathTypes.BLOCKED;
-      }
-
-      if (var3 == BlockPathTypes.RAIL
-         && !(var1.getBlockState(var2).getBlock() instanceof BaseRailBlock)
-         && !(var1.getBlockState(var2.below()).getBlock() instanceof BaseRailBlock)) {
-         var3 = BlockPathTypes.UNPASSABLE_RAIL;
-      }
-
-      return var3;
-   }
-
-   protected BlockPathTypes getBlockPathType(Mob var1, BlockPos var2) {
-      return this.getCachedBlockType(var1, var2.getX(), var2.getY(), var2.getZ());
-   }
-
-   protected BlockPathTypes getCachedBlockType(Mob var1, int var2, int var3, int var4) {
-      return (BlockPathTypes)this.pathTypesByPosCache
-         .computeIfAbsent(BlockPos.asLong(var2, var3, var4), var5 -> this.getBlockPathType(this.level, var2, var3, var4, var1));
+      return var5;
    }
 
    @Override
-   public BlockPathTypes getBlockPathType(BlockGetter var1, int var2, int var3, int var4) {
-      return getBlockPathTypeStatic(var1, new BlockPos.MutableBlockPos(var2, var3, var4));
+   public PathType getPathType(PathfindingContext var1, int var2, int var3, int var4) {
+      return getPathTypeStatic(var1, new BlockPos.MutableBlockPos(var2, var3, var4));
    }
 
-   public static BlockPathTypes getBlockPathTypeStatic(BlockGetter var0, BlockPos.MutableBlockPos var1) {
+   public static PathType getPathTypeStatic(Mob var0, BlockPos var1) {
+      return getPathTypeStatic(new PathfindingContext(var0.level(), var0), var1.mutable());
+   }
+
+   public static PathType getPathTypeStatic(PathfindingContext var0, BlockPos.MutableBlockPos var1) {
       int var2 = var1.getX();
       int var3 = var1.getY();
       int var4 = var1.getZ();
-      BlockPathTypes var5 = getBlockPathTypeRaw(var0, var1);
-      if (var5 == BlockPathTypes.OPEN && var3 >= var0.getMinBuildHeight() + 1) {
-         return switch(getBlockPathTypeRaw(var0, var1.set(var2, var3 - 1, var4))) {
-            case OPEN, WATER, LAVA, WALKABLE -> BlockPathTypes.OPEN;
-            case DAMAGE_FIRE -> BlockPathTypes.DAMAGE_FIRE;
-            case DAMAGE_OTHER -> BlockPathTypes.DAMAGE_OTHER;
-            case STICKY_HONEY -> BlockPathTypes.STICKY_HONEY;
-            case POWDER_SNOW -> BlockPathTypes.DANGER_POWDER_SNOW;
-            case DAMAGE_CAUTIOUS -> BlockPathTypes.DAMAGE_CAUTIOUS;
-            case TRAPDOOR -> BlockPathTypes.DANGER_TRAPDOOR;
-            default -> checkNeighbourBlocks(var0, var1.set(var2, var3, var4), BlockPathTypes.WALKABLE);
+      PathType var5 = var0.getPathTypeFromState(var2, var3, var4);
+      if (var5 == PathType.OPEN && var3 >= var0.level().getMinBuildHeight() + 1) {
+         return switch(var0.getPathTypeFromState(var2, var3 - 1, var4)) {
+            case OPEN, WATER, LAVA, WALKABLE -> PathType.OPEN;
+            case DAMAGE_FIRE -> PathType.DAMAGE_FIRE;
+            case DAMAGE_OTHER -> PathType.DAMAGE_OTHER;
+            case STICKY_HONEY -> PathType.STICKY_HONEY;
+            case POWDER_SNOW -> PathType.DANGER_POWDER_SNOW;
+            case DAMAGE_CAUTIOUS -> PathType.DAMAGE_CAUTIOUS;
+            case TRAPDOOR -> PathType.DANGER_TRAPDOOR;
+            default -> checkNeighbourBlocks(var0, var2, var3, var4, PathType.WALKABLE);
          };
       } else {
          return var5;
       }
    }
 
-   public static BlockPathTypes checkNeighbourBlocks(BlockGetter var0, BlockPos.MutableBlockPos var1, BlockPathTypes var2) {
-      int var3 = var1.getX();
-      int var4 = var1.getY();
-      int var5 = var1.getZ();
-
-      for(int var6 = -1; var6 <= 1; ++var6) {
-         for(int var7 = -1; var7 <= 1; ++var7) {
-            for(int var8 = -1; var8 <= 1; ++var8) {
-               if (var6 != 0 || var8 != 0) {
-                  var1.set(var3 + var6, var4 + var7, var5 + var8);
-                  BlockState var9 = var0.getBlockState(var1);
-                  if (var9.is(Blocks.CACTUS) || var9.is(Blocks.SWEET_BERRY_BUSH)) {
-                     return BlockPathTypes.DANGER_OTHER;
+   public static PathType checkNeighbourBlocks(PathfindingContext var0, int var1, int var2, int var3, PathType var4) {
+      for(int var5 = -1; var5 <= 1; ++var5) {
+         for(int var6 = -1; var6 <= 1; ++var6) {
+            for(int var7 = -1; var7 <= 1; ++var7) {
+               if (var5 != 0 || var7 != 0) {
+                  PathType var8 = var0.getPathTypeFromState(var1 + var5, var2 + var6, var3 + var7);
+                  if (var8 == PathType.DAMAGE_OTHER) {
+                     return PathType.DANGER_OTHER;
                   }
 
-                  if (isBurningBlock(var9)) {
-                     return BlockPathTypes.DANGER_FIRE;
+                  if (var8 == PathType.DAMAGE_FIRE || var8 == PathType.LAVA) {
+                     return PathType.DANGER_FIRE;
                   }
 
-                  if (var0.getFluidState(var1).is(FluidTags.WATER)) {
-                     return BlockPathTypes.WATER_BORDER;
+                  if (var8 == PathType.WATER) {
+                     return PathType.WATER_BORDER;
                   }
 
-                  if (var9.is(Blocks.WITHER_ROSE) || var9.is(Blocks.POINTED_DRIPSTONE)) {
-                     return BlockPathTypes.DAMAGE_CAUTIOUS;
+                  if (var8 == PathType.DAMAGE_CAUTIOUS) {
+                     return PathType.DAMAGE_CAUTIOUS;
                   }
                }
             }
          }
       }
 
-      return var2;
+      return var4;
    }
 
    // $VF: Could not properly define all variable types!
    // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   protected static BlockPathTypes getBlockPathTypeRaw(BlockGetter var0, BlockPos var1) {
+   protected static PathType getPathTypeFromState(BlockGetter var0, BlockPos var1) {
       BlockState var2 = var0.getBlockState(var1);
       Block var3 = var2.getBlock();
       if (var2.isAir()) {
-         return BlockPathTypes.OPEN;
+         return PathType.OPEN;
       } else if (var2.is(BlockTags.TRAPDOORS) || var2.is(Blocks.LILY_PAD) || var2.is(Blocks.BIG_DRIPLEAF)) {
-         return BlockPathTypes.TRAPDOOR;
+         return PathType.TRAPDOOR;
       } else if (var2.is(Blocks.POWDER_SNOW)) {
-         return BlockPathTypes.POWDER_SNOW;
+         return PathType.POWDER_SNOW;
       } else if (var2.is(Blocks.CACTUS) || var2.is(Blocks.SWEET_BERRY_BUSH)) {
-         return BlockPathTypes.DAMAGE_OTHER;
+         return PathType.DAMAGE_OTHER;
       } else if (var2.is(Blocks.HONEY_BLOCK)) {
-         return BlockPathTypes.STICKY_HONEY;
+         return PathType.STICKY_HONEY;
       } else if (var2.is(Blocks.COCOA)) {
-         return BlockPathTypes.COCOA;
+         return PathType.COCOA;
       } else if (!var2.is(Blocks.WITHER_ROSE) && !var2.is(Blocks.POINTED_DRIPSTONE)) {
-         FluidState var4 = var0.getFluidState(var1);
+         FluidState var4 = var2.getFluidState();
          if (var4.is(FluidTags.LAVA)) {
-            return BlockPathTypes.LAVA;
+            return PathType.LAVA;
          } else if (isBurningBlock(var2)) {
-            return BlockPathTypes.DAMAGE_FIRE;
+            return PathType.DAMAGE_FIRE;
          } else if (var3 instanceof DoorBlock var5) {
             if (var2.getValue(DoorBlock.OPEN)) {
-               return BlockPathTypes.DOOR_OPEN;
+               return PathType.DOOR_OPEN;
             } else {
-               return var5.type().canOpenByHand() ? BlockPathTypes.DOOR_WOOD_CLOSED : BlockPathTypes.DOOR_IRON_CLOSED;
+               return var5.type().canOpenByHand() ? PathType.DOOR_WOOD_CLOSED : PathType.DOOR_IRON_CLOSED;
             }
          } else if (var3 instanceof BaseRailBlock) {
-            return BlockPathTypes.RAIL;
+            return PathType.RAIL;
          } else if (var3 instanceof LeavesBlock) {
-            return BlockPathTypes.LEAVES;
+            return PathType.LEAVES;
          } else if (!var2.is(BlockTags.FENCES) && !var2.is(BlockTags.WALLS) && (!(var3 instanceof FenceGateBlock) || var2.getValue(FenceGateBlock.OPEN))) {
-            if (!var2.isPathfindable(var0, var1, PathComputationType.LAND)) {
-               return BlockPathTypes.BLOCKED;
+            if (!var2.isPathfindable(PathComputationType.LAND)) {
+               return PathType.BLOCKED;
             } else {
-               return var4.is(FluidTags.WATER) ? BlockPathTypes.WATER : BlockPathTypes.OPEN;
+               return var4.is(FluidTags.WATER) ? PathType.WATER : PathType.OPEN;
             }
          } else {
-            return BlockPathTypes.FENCE;
+            return PathType.FENCE;
          }
       } else {
-         return BlockPathTypes.DAMAGE_CAUTIOUS;
+         return PathType.DAMAGE_CAUTIOUS;
       }
-   }
-
-   public static boolean isBurningBlock(BlockState var0) {
-      return var0.is(BlockTags.FIRE)
-         || var0.is(Blocks.LAVA)
-         || var0.is(Blocks.MAGMA_BLOCK)
-         || CampfireBlock.isLitCampfire(var0)
-         || var0.is(Blocks.LAVA_CAULDRON);
    }
 }

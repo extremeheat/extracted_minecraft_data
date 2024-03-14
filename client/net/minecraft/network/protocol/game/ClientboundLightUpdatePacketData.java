@@ -1,17 +1,21 @@
 package net.minecraft.network.protocol.game;
 
 import com.google.common.collect.Lists;
+import io.netty.buffer.ByteBuf;
 import java.util.BitSet;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.SectionPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.chunk.DataLayer;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 
 public class ClientboundLightUpdatePacketData {
+   private static final StreamCodec<ByteBuf, byte[]> DATA_LAYER_STREAM_CODEC = ByteBufCodecs.byteArray(2048);
    private final BitSet skyYMask;
    private final BitSet blockYMask;
    private final BitSet emptySkyYMask;
@@ -45,8 +49,8 @@ public class ClientboundLightUpdatePacketData {
       this.blockYMask = var1.readBitSet();
       this.emptySkyYMask = var1.readBitSet();
       this.emptyBlockYMask = var1.readBitSet();
-      this.skyUpdates = var1.readList(var0 -> var0.readByteArray(2048));
-      this.blockUpdates = var1.readList(var0 -> var0.readByteArray(2048));
+      this.skyUpdates = var1.readList(DATA_LAYER_STREAM_CODEC);
+      this.blockUpdates = var1.readList(DATA_LAYER_STREAM_CODEC);
    }
 
    public void write(FriendlyByteBuf var1) {
@@ -54,8 +58,8 @@ public class ClientboundLightUpdatePacketData {
       var1.writeBitSet(this.blockYMask);
       var1.writeBitSet(this.emptySkyYMask);
       var1.writeBitSet(this.emptyBlockYMask);
-      var1.writeCollection(this.skyUpdates, FriendlyByteBuf::writeByteArray);
-      var1.writeCollection(this.blockUpdates, FriendlyByteBuf::writeByteArray);
+      var1.writeCollection(this.skyUpdates, DATA_LAYER_STREAM_CODEC);
+      var1.writeCollection(this.blockUpdates, DATA_LAYER_STREAM_CODEC);
    }
 
    private void prepareSectionData(ChunkPos var1, LevelLightEngine var2, LightLayer var3, int var4, BitSet var5, BitSet var6, List<byte[]> var7) {

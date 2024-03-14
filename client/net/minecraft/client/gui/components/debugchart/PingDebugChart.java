@@ -3,7 +3,7 @@ package net.minecraft.client.gui.components.debugchart;
 import java.util.Locale;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.util.SampleLogger;
+import net.minecraft.util.debugchart.SampleStorage;
 
 public class PingDebugChart extends AbstractDebugChart {
    private static final int RED = -65536;
@@ -11,7 +11,7 @@ public class PingDebugChart extends AbstractDebugChart {
    private static final int GREEN = -16711936;
    private static final int CHART_TOP_VALUE = 500;
 
-   public PingDebugChart(Font var1, SampleLogger var2) {
+   public PingDebugChart(Font var1, SampleStorage var2) {
       super(var1, var2);
    }
 

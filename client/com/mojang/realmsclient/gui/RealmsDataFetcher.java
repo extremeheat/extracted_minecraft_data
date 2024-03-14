@@ -29,7 +29,7 @@ public class RealmsDataFetcher {
          .createTask(
             "server list",
             () -> {
-               com.mojang.realmsclient.dto.RealmsServerList var1xx = var1.listWorlds();
+               com.mojang.realmsclient.dto.RealmsServerList var1xx = var1.listRealms();
                return RealmsMainScreen.isSnapshot()
                   ? new RealmsDataFetcher.ServerListData(var1xx.servers, var1.listSnapshotEligibleRealms())
                   : new RealmsDataFetcher.ServerListData(var1xx.servers, List.of());

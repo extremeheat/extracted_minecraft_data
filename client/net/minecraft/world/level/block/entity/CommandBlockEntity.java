@@ -3,6 +3,9 @@ package net.minecraft.world.level.block.entity;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.BaseCommandBlock;
@@ -67,18 +70,18 @@ public class CommandBlockEntity extends BlockEntity {
    }
 
    @Override
-   protected void saveAdditional(CompoundTag var1) {
-      super.saveAdditional(var1);
-      this.commandBlock.save(var1);
+   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.saveAdditional(var1, var2);
+      this.commandBlock.save(var1, var2);
       var1.putBoolean("powered", this.isPowered());
       var1.putBoolean("conditionMet", this.wasConditionMet());
       var1.putBoolean("auto", this.isAutomatic());
    }
 
    @Override
-   public void load(CompoundTag var1) {
-      super.load(var1);
-      this.commandBlock.load(var1);
+   public void load(CompoundTag var1, HolderLookup.Provider var2) {
+      super.load(var1, var2);
+      this.commandBlock.load(var1, var2);
       this.powered = var1.getBoolean("powered");
       this.conditionMet = var1.getBoolean("conditionMet");
       this.setAutomatic(var1.getBoolean("auto"));
@@ -161,6 +164,23 @@ public class CommandBlockEntity extends BlockEntity {
    public boolean isConditional() {
       BlockState var1 = this.level.getBlockState(this.getBlockPos());
       return var1.getBlock() instanceof CommandBlock ? var1.getValue(CommandBlock.CONDITIONAL) : false;
+   }
+
+   @Override
+   public void applyComponents(DataComponentMap var1) {
+      this.commandBlock.setCustomName(var1.get(DataComponents.CUSTOM_NAME));
+   }
+
+   @Override
+   public void collectComponents(DataComponentMap.Builder var1) {
+      super.collectComponents(var1);
+      var1.set(DataComponents.CUSTOM_NAME, this.commandBlock.getCustomName());
+   }
+
+   @Override
+   public void removeComponentsFromTag(CompoundTag var1) {
+      super.removeComponentsFromTag(var1);
+      var1.remove("CustomName");
    }
 
    public static enum Mode {

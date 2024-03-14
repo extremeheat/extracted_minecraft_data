@@ -14,6 +14,7 @@ import net.minecraft.CrashReport;
 import net.minecraft.SharedConstants;
 import net.minecraft.SystemReport;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.Services;
@@ -23,8 +24,10 @@ import net.minecraft.server.level.progress.ChunkProgressListenerFactory;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.ModCheck;
+import net.minecraft.util.debugchart.LocalSampleLogger;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.entity.player.ProfileKeyPair;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import org.slf4j.Logger;
@@ -114,9 +117,13 @@ public class IntegratedServer extends MinecraftServer {
       }
    }
 
+   protected LocalSampleLogger getTickTimeLogger() {
+      return this.minecraft.getDebugOverlay().getTickTimeLogger();
+   }
+
    @Override
-   public void logTickTime(long var1) {
-      this.minecraft.getDebugOverlay().logTickDuration(var1);
+   public boolean isTickTimeLoggingEnabled() {
+      return true;
    }
 
    private void tickPaused() {
@@ -189,7 +196,7 @@ public class IntegratedServer extends MinecraftServer {
          this.lanPinger = new LanServerPinger(this.getMotd(), var3 + "");
          this.lanPinger.start();
          this.publishedGameType = var1;
-         this.getPlayerList().setAllowCheatsForAllPlayers(var2);
+         this.getPlayerList().setAllowCommandsForAllPlayers(var2);
          int var4 = this.getProfilePermissions(this.minecraft.player.getGameProfile());
          this.minecraft.player.setPermissionLevel(var4);
 
@@ -282,5 +289,30 @@ public class IntegratedServer extends MinecraftServer {
    @Override
    public GameType getForcedGameType() {
       return this.isPublished() ? (GameType)MoreObjects.firstNonNull(this.publishedGameType, this.worldData.getGameType()) : null;
+   }
+
+   @Override
+   public boolean saveEverything(boolean var1, boolean var2, boolean var3) {
+      boolean var4 = super.saveEverything(var1, var2, var3);
+      this.warnOnLowDiskSpace();
+      return var4;
+   }
+
+   private void warnOnLowDiskSpace() {
+      if (this.storageSource.checkForLowDiskSpace()) {
+         SystemToast.onLowDiskSpace(this.minecraft);
+      }
+   }
+
+   @Override
+   public void reportChunkLoadFailure(ChunkPos var1) {
+      this.warnOnLowDiskSpace();
+      SystemToast.onChunkLoadFailure(this.minecraft, var1);
+   }
+
+   @Override
+   public void reportChunkSaveFailure(ChunkPos var1) {
+      this.warnOnLowDiskSpace();
+      SystemToast.onChunkSaveFailure(this.minecraft, var1);
    }
 }

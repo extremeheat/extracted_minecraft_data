@@ -17,6 +17,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.IdMapper;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -198,10 +199,6 @@ public class Block extends BlockBehaviour implements ItemLike {
          || var0.is(BlockTags.SHULKER_BOXES);
    }
 
-   public boolean isRandomlyTicking(BlockState var1) {
-      return this.isRandomlyTicking;
-   }
-
    public static boolean shouldRenderFace(BlockState var0, BlockGetter var1, BlockPos var2, Direction var3, BlockPos var4) {
       BlockState var5 = var1.getBlockState(var4);
       if (var0.skipRendering(var5, var3)) {
@@ -248,10 +245,6 @@ public class Block extends BlockBehaviour implements ItemLike {
 
    public static boolean isShapeFullBlock(VoxelShape var0) {
       return SHAPE_FULL_BLOCK_CACHE.getUnchecked(var0);
-   }
-
-   public boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return !isShapeFullBlock(var1.getShape(var2, var3)) && var1.getFluidState().isEmpty();
    }
 
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
@@ -451,10 +444,6 @@ public class Block extends BlockBehaviour implements ItemLike {
       return var1.setValue(var2, var0.getValue(var2));
    }
 
-   public SoundType getSoundType(BlockState var1) {
-      return this.soundType;
-   }
-
    @Override
    public Item asItem() {
       if (this.item == null) {
@@ -473,7 +462,7 @@ public class Block extends BlockBehaviour implements ItemLike {
       return "Block{" + BuiltInRegistries.BLOCK.getKey(this) + "}";
    }
 
-   public void appendHoverText(ItemStack var1, @Nullable BlockGetter var2, List<Component> var3, TooltipFlag var4) {
+   public void appendHoverText(ItemStack var1, @Nullable BlockGetter var2, List<Component> var3, TooltipFlag var4, @Nullable RegistryAccess var5) {
    }
 
    @Override

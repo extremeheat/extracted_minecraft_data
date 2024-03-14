@@ -30,7 +30,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.RandomSource;
-import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 
 public class MappedRegistry<T> implements WritableRegistry<T> {
@@ -41,15 +40,12 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
    private final Map<ResourceLocation, Holder.Reference<T>> byLocation = new HashMap<>();
    private final Map<ResourceKey<T>, Holder.Reference<T>> byKey = new HashMap<>();
    private final Map<T, Holder.Reference<T>> byValue = new IdentityHashMap<>();
-   private final Map<T, Lifecycle> lifecycles = new IdentityHashMap<>();
+   private final Map<ResourceKey<T>, RegistrationInfo> registrationInfos = new IdentityHashMap<>();
    private Lifecycle registryLifecycle;
    private volatile Map<TagKey<T>, HolderSet.Named<T>> tags = new IdentityHashMap<>();
    private boolean frozen;
    @Nullable
    private Map<T, Holder.Reference<T>> unregisteredIntrusiveHolders;
-   @Nullable
-   private List<Holder.Reference<T>> holdersInOrder;
-   private int nextId;
    private final HolderLookup.RegistryLookup<T> lookup = new HolderLookup.RegistryLookup<T>() {
       @Override
       public ResourceKey<? extends Registry<? extends T>> key() {
@@ -105,14 +101,6 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
       return "Registry[" + this.key + " (" + this.registryLifecycle + ")]";
    }
 
-   private List<Holder.Reference<T>> holdersInOrder() {
-      if (this.holdersInOrder == null) {
-         this.holdersInOrder = this.byId.stream().filter(Objects::nonNull).toList();
-      }
-
-      return this.holdersInOrder;
-   }
-
    private void validateWrite() {
       if (this.frozen) {
          throw new IllegalStateException("Registry is already frozen");
@@ -125,49 +113,40 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
       }
    }
 
-   public Holder.Reference<T> registerMapping(int var1, ResourceKey<T> var2, T var3, Lifecycle var4) {
-      this.validateWrite(var2);
-      Validate.notNull(var2);
-      Validate.notNull(var3);
-      if (this.byLocation.containsKey(var2.location())) {
-         Util.pauseInIde(new IllegalStateException("Adding duplicate key '" + var2 + "' to registry"));
+   @Override
+   public Holder.Reference<T> register(ResourceKey<T> var1, T var2, RegistrationInfo var3) {
+      this.validateWrite(var1);
+      Objects.requireNonNull(var1);
+      Objects.requireNonNull(var2);
+      if (this.byLocation.containsKey(var1.location())) {
+         Util.pauseInIde(new IllegalStateException("Adding duplicate key '" + var1 + "' to registry"));
       }
 
-      if (this.byValue.containsKey(var3)) {
-         Util.pauseInIde(new IllegalStateException("Adding duplicate value '" + var3 + "' to registry"));
+      if (this.byValue.containsKey(var2)) {
+         Util.pauseInIde(new IllegalStateException("Adding duplicate value '" + var2 + "' to registry"));
       }
 
-      Holder.Reference var5;
+      Holder.Reference var4;
       if (this.unregisteredIntrusiveHolders != null) {
-         var5 = this.unregisteredIntrusiveHolders.remove(var3);
-         if (var5 == null) {
-            throw new AssertionError("Missing intrusive holder for " + var2 + ":" + var3);
+         var4 = this.unregisteredIntrusiveHolders.remove(var2);
+         if (var4 == null) {
+            throw new AssertionError("Missing intrusive holder for " + var1 + ":" + var2);
          }
 
-         var5.bindKey(var2);
+         var4.bindKey(var1);
       } else {
-         var5 = this.byKey.computeIfAbsent(var2, var1x -> Holder.Reference.createStandAlone(this.holderOwner(), var1x));
+         var4 = this.byKey.computeIfAbsent(var1, var1x -> Holder.Reference.createStandAlone(this.holderOwner(), var1x));
       }
 
-      this.byKey.put(var2, var5);
-      this.byLocation.put(var2.location(), var5);
-      this.byValue.put((T)var3, var5);
-      this.byId.size(Math.max(this.byId.size(), var1 + 1));
-      this.byId.set(var1, var5);
-      this.toId.put(var3, var1);
-      if (this.nextId <= var1) {
-         this.nextId = var1 + 1;
-      }
-
-      this.lifecycles.put((T)var3, var4);
-      this.registryLifecycle = this.registryLifecycle.add(var4);
-      this.holdersInOrder = null;
-      return var5;
-   }
-
-   @Override
-   public Holder.Reference<T> register(ResourceKey<T> var1, T var2, Lifecycle var3) {
-      return this.registerMapping(this.nextId, var1, (T)var2, var3);
+      this.byKey.put(var1, var4);
+      this.byLocation.put(var1.location(), var4);
+      this.byValue.put((T)var2, var4);
+      int var5 = this.byId.size();
+      this.byId.add(var4);
+      this.toId.put(var2, var5);
+      this.registrationInfos.put(var1, var3);
+      this.registryLifecycle = this.registryLifecycle.add(var3.lifecycle());
+      return var4;
    }
 
    @Nullable
@@ -196,12 +175,17 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
    @Nullable
    @Override
    public T byId(int var1) {
-      return var1 >= 0 && var1 < this.byId.size() ? getValueFromNullable((Holder.Reference<T>)this.byId.get(var1)) : null;
+      return (T)(var1 >= 0 && var1 < this.byId.size() ? ((Holder.Reference)this.byId.get(var1)).value() : null);
    }
 
    @Override
    public Optional<Holder.Reference<T>> getHolder(int var1) {
       return var1 >= 0 && var1 < this.byId.size() ? Optional.ofNullable((Holder.Reference<T>)this.byId.get(var1)) : Optional.empty();
+   }
+
+   @Override
+   public Optional<Holder.Reference<T>> getHolder(ResourceLocation var1) {
+      return Optional.ofNullable(this.byLocation.get(var1));
    }
 
    @Override
@@ -232,8 +216,8 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
    }
 
    @Override
-   public Lifecycle lifecycle(T var1) {
-      return (Lifecycle)this.lifecycles.get(var1);
+   public Optional<RegistrationInfo> registrationInfo(ResourceKey<T> var1) {
+      return Optional.ofNullable((RegistrationInfo)this.registrationInfos.get(var1));
    }
 
    @Override
@@ -243,7 +227,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
 
    @Override
    public Iterator<T> iterator() {
-      return Iterators.transform(this.holdersInOrder().iterator(), Holder::value);
+      return Iterators.transform(this.byId.iterator(), Holder::value);
    }
 
    @Nullable
@@ -275,7 +259,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
 
    @Override
    public Stream<Holder.Reference<T>> holders() {
-      return this.holdersInOrder().stream();
+      return this.byId.stream();
    }
 
    @Override
@@ -312,7 +296,7 @@ public class MappedRegistry<T> implements WritableRegistry<T> {
 
    @Override
    public Optional<Holder.Reference<T>> getRandom(RandomSource var1) {
-      return Util.getRandomSafe(this.holdersInOrder(), var1);
+      return Util.getRandomSafe(this.byId, var1);
    }
 
    @Override

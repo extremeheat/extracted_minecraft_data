@@ -241,8 +241,8 @@ public class BitmapProvider implements GlyphProvider {
             }
 
             @Override
-            public float getBearingY() {
-               return SheetGlyphInfo.super.getBearingY() + 7.0F - (float)Glyph.this.ascent;
+            public float getBearingTop() {
+               return (float)Glyph.this.ascent;
             }
 
             @Override

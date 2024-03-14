@@ -2,21 +2,20 @@ package net.minecraft.world.level.pathfinder;
 
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import java.util.EnumSet;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.PathNavigationRegion;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 
 public class FlyNodeEvaluator extends WalkNodeEvaluator {
-   private final Long2ObjectMap<BlockPathTypes> pathTypeByPosCache = new Long2ObjectOpenHashMap();
-   private static final float SMALL_MOB_INFLATED_START_NODE_BOUNDING_BOX = 1.5F;
+   private final Long2ObjectMap<PathType> pathTypeByPosCache = new Long2ObjectOpenHashMap();
+   private static final float SMALL_MOB_SIZE = 1.0F;
+   private static final float SMALL_MOB_INFLATED_START_NODE_BOUNDING_BOX = 1.1F;
    private static final int MAX_START_NODE_CANDIDATES = 10;
 
    public FlyNodeEvaluator() {
@@ -44,7 +43,7 @@ public class FlyNodeEvaluator extends WalkNodeEvaluator {
          var1 = this.mob.getBlockY();
          BlockPos.MutableBlockPos var2 = new BlockPos.MutableBlockPos(this.mob.getX(), (double)var1, this.mob.getZ());
 
-         for(BlockState var3 = this.level.getBlockState(var2); var3.is(Blocks.WATER); var3 = this.level.getBlockState(var2)) {
+         for(BlockState var3 = this.currentContext.getBlockState(var2); var3.is(Blocks.WATER); var3 = this.currentContext.getBlockState(var2)) {
             var2.set(this.mob.getX(), (double)(++var1), this.mob.getZ());
          }
       } else {
@@ -65,13 +64,13 @@ public class FlyNodeEvaluator extends WalkNodeEvaluator {
 
    @Override
    protected boolean canStartAt(BlockPos var1) {
-      BlockPathTypes var2 = this.getBlockPathType(this.mob, var1);
+      PathType var2 = this.getCachedPathType(var1.getX(), var1.getY(), var1.getZ());
       return this.mob.getPathfindingMalus(var2) >= 0.0F;
    }
 
    @Override
-   public Target getGoal(double var1, double var3, double var5) {
-      return this.getTargetFromNode(this.getNode(Mth.floor(var1), Mth.floor(var3), Mth.floor(var5)));
+   public Target getTarget(double var1, double var3, double var5) {
+      return this.getTargetNodeAt(var1, var3, var5);
    }
 
    @Override
@@ -269,13 +268,13 @@ public class FlyNodeEvaluator extends WalkNodeEvaluator {
    @Nullable
    protected Node findAcceptedNode(int var1, int var2, int var3) {
       Node var4 = null;
-      BlockPathTypes var5 = this.getCachedBlockPathType(var1, var2, var3);
+      PathType var5 = this.getCachedPathType(var1, var2, var3);
       float var6 = this.mob.getPathfindingMalus(var5);
       if (var6 >= 0.0F) {
          var4 = this.getNode(var1, var2, var3);
          var4.type = var5;
          var4.costMalus = Math.max(var4.costMalus, var6);
-         if (var5 == BlockPathTypes.WALKABLE) {
+         if (var5 == PathType.WALKABLE) {
             ++var4.costMalus;
          }
       }
@@ -283,91 +282,64 @@ public class FlyNodeEvaluator extends WalkNodeEvaluator {
       return var4;
    }
 
-   private BlockPathTypes getCachedBlockPathType(int var1, int var2, int var3) {
-      return (BlockPathTypes)this.pathTypeByPosCache
-         .computeIfAbsent(BlockPos.asLong(var1, var2, var3), var4 -> this.getBlockPathType(this.level, var1, var2, var3, this.mob));
+   @Override
+   protected PathType getCachedPathType(int var1, int var2, int var3) {
+      return (PathType)this.pathTypeByPosCache
+         .computeIfAbsent(BlockPos.asLong(var1, var2, var3), var4 -> this.getPathTypeOfMob(this.currentContext, var1, var2, var3, this.mob));
    }
 
    @Override
-   public BlockPathTypes getBlockPathType(BlockGetter var1, int var2, int var3, int var4, Mob var5) {
-      EnumSet var6 = EnumSet.noneOf(BlockPathTypes.class);
-      BlockPathTypes var7 = BlockPathTypes.BLOCKED;
-      BlockPos var8 = var5.blockPosition();
-      var7 = super.getBlockPathTypes(var1, var2, var3, var4, var6, var7, var8);
-      if (var6.contains(BlockPathTypes.FENCE)) {
-         return BlockPathTypes.FENCE;
-      } else {
-         BlockPathTypes var9 = BlockPathTypes.BLOCKED;
-
-         for(BlockPathTypes var11 : var6) {
-            if (var5.getPathfindingMalus(var11) < 0.0F) {
-               return var11;
-            }
-
-            if (var5.getPathfindingMalus(var11) >= var5.getPathfindingMalus(var9)) {
-               var9 = var11;
-            }
-         }
-
-         return var7 == BlockPathTypes.OPEN && var5.getPathfindingMalus(var9) == 0.0F ? BlockPathTypes.OPEN : var9;
-      }
-   }
-
-   @Override
-   public BlockPathTypes getBlockPathType(BlockGetter var1, int var2, int var3, int var4) {
-      BlockPos.MutableBlockPos var5 = new BlockPos.MutableBlockPos();
-      BlockPathTypes var6 = getBlockPathTypeRaw(var1, var5.set(var2, var3, var4));
-      if (var6 == BlockPathTypes.OPEN && var3 >= var1.getMinBuildHeight() + 1) {
-         BlockPathTypes var7 = getBlockPathTypeRaw(var1, var5.set(var2, var3 - 1, var4));
-         if (var7 == BlockPathTypes.DAMAGE_FIRE || var7 == BlockPathTypes.LAVA) {
-            var6 = BlockPathTypes.DAMAGE_FIRE;
-         } else if (var7 == BlockPathTypes.DAMAGE_OTHER) {
-            var6 = BlockPathTypes.DAMAGE_OTHER;
-         } else if (var7 == BlockPathTypes.COCOA) {
-            var6 = BlockPathTypes.COCOA;
-         } else if (var7 == BlockPathTypes.FENCE) {
-            if (!var5.equals(this.mob.blockPosition())) {
-               var6 = BlockPathTypes.FENCE;
+   public PathType getPathType(PathfindingContext var1, int var2, int var3, int var4) {
+      PathType var5 = var1.getPathTypeFromState(var2, var3, var4);
+      if (var5 == PathType.OPEN && var3 >= var1.level().getMinBuildHeight() + 1) {
+         BlockPos var6 = new BlockPos(var2, var3 - 1, var4);
+         PathType var7 = var1.getPathTypeFromState(var6.getX(), var6.getY(), var6.getZ());
+         if (var7 == PathType.DAMAGE_FIRE || var7 == PathType.LAVA) {
+            var5 = PathType.DAMAGE_FIRE;
+         } else if (var7 == PathType.DAMAGE_OTHER) {
+            var5 = PathType.DAMAGE_OTHER;
+         } else if (var7 == PathType.COCOA) {
+            var5 = PathType.COCOA;
+         } else if (var7 == PathType.FENCE) {
+            if (!var6.equals(var1.mobPosition())) {
+               var5 = PathType.FENCE;
             }
          } else {
-            var6 = var7 != BlockPathTypes.WALKABLE && var7 != BlockPathTypes.OPEN && var7 != BlockPathTypes.WATER
-               ? BlockPathTypes.WALKABLE
-               : BlockPathTypes.OPEN;
+            var5 = var7 != PathType.WALKABLE && var7 != PathType.OPEN && var7 != PathType.WATER ? PathType.WALKABLE : PathType.OPEN;
          }
       }
 
-      if (var6 == BlockPathTypes.WALKABLE || var6 == BlockPathTypes.OPEN) {
-         var6 = checkNeighbourBlocks(var1, var5.set(var2, var3, var4), var6);
+      if (var5 == PathType.WALKABLE || var5 == PathType.OPEN) {
+         var5 = checkNeighbourBlocks(var1, var2, var3, var4, var5);
       }
 
-      return var6;
+      return var5;
    }
 
    private Iterable<BlockPos> iteratePathfindingStartNodeCandidatePositions(Mob var1) {
-      float var2 = 1.0F;
-      AABB var3 = var1.getBoundingBox();
-      boolean var4 = var3.getSize() < 1.0;
-      if (!var4) {
+      AABB var2 = var1.getBoundingBox();
+      boolean var3 = var2.getSize() < 1.0;
+      if (!var3) {
          return List.of(
-            BlockPos.containing(var3.minX, (double)var1.getBlockY(), var3.minZ),
-            BlockPos.containing(var3.minX, (double)var1.getBlockY(), var3.maxZ),
-            BlockPos.containing(var3.maxX, (double)var1.getBlockY(), var3.minZ),
-            BlockPos.containing(var3.maxX, (double)var1.getBlockY(), var3.maxZ)
+            BlockPos.containing(var2.minX, (double)var1.getBlockY(), var2.minZ),
+            BlockPos.containing(var2.minX, (double)var1.getBlockY(), var2.maxZ),
+            BlockPos.containing(var2.maxX, (double)var1.getBlockY(), var2.minZ),
+            BlockPos.containing(var2.maxX, (double)var1.getBlockY(), var2.maxZ)
          );
       } else {
-         double var5 = Math.max(0.0, (1.5 - var3.getZsize()) / 2.0);
-         double var7 = Math.max(0.0, (1.5 - var3.getXsize()) / 2.0);
-         double var9 = Math.max(0.0, (1.5 - var3.getYsize()) / 2.0);
-         AABB var11 = var3.inflate(var7, var9, var5);
+         double var4 = Math.max(0.0, 1.100000023841858 - var2.getZsize());
+         double var6 = Math.max(0.0, 1.100000023841858 - var2.getXsize());
+         double var8 = Math.max(0.0, 1.100000023841858 - var2.getYsize());
+         AABB var10 = var2.inflate(var6, var8, var4);
          return BlockPos.randomBetweenClosed(
             var1.getRandom(),
             10,
-            Mth.floor(var11.minX),
-            Mth.floor(var11.minY),
-            Mth.floor(var11.minZ),
-            Mth.floor(var11.maxX),
-            Mth.floor(var11.maxY),
-            Mth.floor(var11.maxZ)
+            Mth.floor(var10.minX),
+            Mth.floor(var10.minY),
+            Mth.floor(var10.minZ),
+            Mth.floor(var10.maxX),
+            Mth.floor(var10.maxY),
+            Mth.floor(var10.maxZ)
          );
       }
    }

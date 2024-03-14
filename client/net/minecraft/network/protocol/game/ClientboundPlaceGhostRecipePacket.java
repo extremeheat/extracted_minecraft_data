@@ -1,11 +1,16 @@
 package net.minecraft.network.protocol.game;
 
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeHolder;
 
 public class ClientboundPlaceGhostRecipePacket implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ClientboundPlaceGhostRecipePacket> STREAM_CODEC = Packet.codec(
+      ClientboundPlaceGhostRecipePacket::write, ClientboundPlaceGhostRecipePacket::new
+   );
    private final int containerId;
    private final ResourceLocation recipe;
 
@@ -15,16 +20,20 @@ public class ClientboundPlaceGhostRecipePacket implements Packet<ClientGamePacke
       this.recipe = var2.id();
    }
 
-   public ClientboundPlaceGhostRecipePacket(FriendlyByteBuf var1) {
+   private ClientboundPlaceGhostRecipePacket(FriendlyByteBuf var1) {
       super();
       this.containerId = var1.readByte();
       this.recipe = var1.readResourceLocation();
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       var1.writeByte(this.containerId);
       var1.writeResourceLocation(this.recipe);
+   }
+
+   @Override
+   public PacketType<ClientboundPlaceGhostRecipePacket> type() {
+      return GamePacketTypes.CLIENTBOUND_PLACE_GHOST_RECIPE;
    }
 
    public void handle(ClientGamePacketListener var1) {

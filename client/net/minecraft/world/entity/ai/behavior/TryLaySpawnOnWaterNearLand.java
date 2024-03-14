@@ -21,9 +21,7 @@ public class TryLaySpawnOnWaterNearLand {
 
    public static BehaviorControl<LivingEntity> create(Block var0) {
       return BehaviorBuilder.create(
-         var1 -> var1.group(
-                  var1.absent(MemoryModuleType.ATTACK_TARGET), var1.present(MemoryModuleType.WALK_TARGET), var1.present(MemoryModuleType.IS_PREGNANT)
-               )
+         var1 -> var1.group(var1.absent(MemoryModuleType.ATTACK_TARGET), var1.present(MemoryModuleType.WALK_TARGET), var1.present(MemoryModuleType.IS_PREGNANT))
                .apply(
                   var1,
                   (var1x, var2, var3) -> (var2x, var3x, var4) -> {

@@ -24,8 +24,7 @@ import net.minecraft.resources.ResourceLocation;
 public class MultiNoiseBiomeSourceParameterList {
    public static final Codec<MultiNoiseBiomeSourceParameterList> DIRECT_CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               MultiNoiseBiomeSourceParameterList.Preset.CODEC.fieldOf("preset").forGetter(var0x -> var0x.preset),
-               RegistryOps.retrieveGetter(Registries.BIOME)
+               MultiNoiseBiomeSourceParameterList.Preset.CODEC.fieldOf("preset").forGetter(var0x -> var0x.preset), RegistryOps.retrieveGetter(Registries.BIOME)
             )
             .apply(var0, MultiNoiseBiomeSourceParameterList::new)
    );
@@ -84,7 +83,7 @@ public class MultiNoiseBiomeSourceParameterList {
          .collect(Collectors.toMap(MultiNoiseBiomeSourceParameterList.Preset::id, var0 -> var0));
       public static final Codec<MultiNoiseBiomeSourceParameterList.Preset> CODEC = ResourceLocation.CODEC
          .flatXmap(
-            var0 -> (DataResult)Optional.ofNullable(BY_NAME.get(var0))
+            var0 -> (DataResult)Optional.ofNullable((MultiNoiseBiomeSourceParameterList.Preset)BY_NAME.get(var0))
                   .map(DataResult::success)
                   .orElseGet(() -> DataResult.error(() -> "Unknown preset: " + var0)),
             var0 -> DataResult.success(var0.id)

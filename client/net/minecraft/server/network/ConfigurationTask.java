@@ -16,7 +16,6 @@ public interface ConfigurationTask {
          this.id = var1;
       }
 
-      @Override
       public String toString() {
          return this.id;
       }

@@ -12,21 +12,22 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.StructureAccess;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.StructureCheck;
 import net.minecraft.world.level.levelgen.structure.StructureCheckResult;
 import net.minecraft.world.level.levelgen.structure.StructurePiece;
 import net.minecraft.world.level.levelgen.structure.StructureStart;
+import net.minecraft.world.level.levelgen.structure.placement.StructurePlacement;
 
 public class StructureManager {
    private final LevelAccessor level;
@@ -109,17 +110,18 @@ public class StructureManager {
       return StructureStart.INVALID_START;
    }
 
-   public StructureStart getStructureWithPieceAt(BlockPos var1, ResourceKey<Structure> var2) {
-      Structure var3 = this.registryAccess().registryOrThrow(Registries.STRUCTURE).get(var2);
-      return var3 == null ? StructureStart.INVALID_START : this.getStructureWithPieceAt(var1, var3);
+   public StructureStart getStructureWithPieceAt(BlockPos var1, TagKey<Structure> var2) {
+      return this.getStructureWithPieceAt(var1, var1x -> var1x.is(var2));
    }
 
-   public StructureStart getStructureWithPieceAt(BlockPos var1, TagKey<Structure> var2) {
+   public StructureStart getStructureWithPieceAt(BlockPos var1, HolderSet<Structure> var2) {
+      return this.getStructureWithPieceAt(var1, var2::contains);
+   }
+
+   public StructureStart getStructureWithPieceAt(BlockPos var1, Predicate<Holder<Structure>> var2) {
       Registry var3 = this.registryAccess().registryOrThrow(Registries.STRUCTURE);
 
-      for(StructureStart var5 : this.startsForStructure(
-         new ChunkPos(var1), var2x -> var3.getHolder(var3.getId(var2x)).map(var1xx -> var1xx.is(var2)).orElse(false)
-      )) {
+      for(StructureStart var5 : this.startsForStructure(new ChunkPos(var1), var2x -> var3.getHolder(var3.getId(var2x)).map(var2::test).orElse(false))) {
          if (this.structureHasPieceAt(var1, var5)) {
             return var5;
          }
@@ -158,8 +160,8 @@ public class StructureManager {
       return this.level.getChunk(var2.x(), var2.z(), ChunkStatus.STRUCTURE_REFERENCES).getAllReferences();
    }
 
-   public StructureCheckResult checkStructurePresence(ChunkPos var1, Structure var2, boolean var3) {
-      return this.structureCheck.checkStart(var1, var2, var3);
+   public StructureCheckResult checkStructurePresence(ChunkPos var1, Structure var2, StructurePlacement var3, boolean var4) {
+      return this.structureCheck.checkStart(var1, var2, var3, var4);
    }
 
    public void addReference(StructureStart var1) {

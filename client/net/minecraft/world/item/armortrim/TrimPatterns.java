@@ -6,7 +6,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -31,12 +31,14 @@ public class TrimPatterns {
    public static final ResourceKey<TrimPattern> SILENCE = registryKey("silence");
    public static final ResourceKey<TrimPattern> RAISER = registryKey("raiser");
    public static final ResourceKey<TrimPattern> HOST = registryKey("host");
+   public static final ResourceKey<TrimPattern> FLOW = registryKey("flow");
+   public static final ResourceKey<TrimPattern> BOLT = registryKey("bolt");
 
    public TrimPatterns() {
       super();
    }
 
-   public static void bootstrap(BootstapContext<TrimPattern> var0) {
+   public static void bootstrap(BootstrapContext<TrimPattern> var0) {
       register(var0, Items.SENTRY_ARMOR_TRIM_SMITHING_TEMPLATE, SENTRY);
       register(var0, Items.DUNE_ARMOR_TRIM_SMITHING_TEMPLATE, DUNE);
       register(var0, Items.COAST_ARMOR_TRIM_SMITHING_TEMPLATE, COAST);
@@ -56,10 +58,10 @@ public class TrimPatterns {
    }
 
    public static Optional<Holder.Reference<TrimPattern>> getFromTemplate(RegistryAccess var0, ItemStack var1) {
-      return var0.registryOrThrow(Registries.TRIM_PATTERN).holders().filter(var1x -> var1.is(var1x.value().templateItem())).findFirst();
+      return var0.registryOrThrow(Registries.TRIM_PATTERN).holders().filter(var1x -> var1.is(((TrimPattern)var1x.value()).templateItem())).findFirst();
    }
 
-   private static void register(BootstapContext<TrimPattern> var0, Item var1, ResourceKey<TrimPattern> var2) {
+   public static void register(BootstrapContext<TrimPattern> var0, Item var1, ResourceKey<TrimPattern> var2) {
       TrimPattern var3 = new TrimPattern(
          var2.location(), BuiltInRegistries.ITEM.wrapAsHolder(var1), Component.translatable(Util.makeDescriptionId("trim_pattern", var2.location())), false
       );

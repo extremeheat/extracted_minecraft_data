@@ -24,12 +24,9 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.Shearable;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -52,6 +49,7 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -62,7 +60,6 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
-import org.joml.Vector3f;
 
 public class Sheep extends Animal implements Shearable {
    private static final int EAT_ANIMATION_TICKS = 40;
@@ -143,9 +140,9 @@ public class Sheep extends Animal implements Shearable {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_WOOL_ID, (byte)0);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_WOOL_ID, (byte)0);
    }
 
    @Override
@@ -209,7 +206,7 @@ public class Sheep extends Animal implements Shearable {
          if (!this.level().isClientSide && this.readyForShearing()) {
             this.shear(SoundSource.PLAYERS);
             this.gameEvent(GameEvent.SHEAR, var1);
-            var3.hurtAndBreak(1, var1, var1x -> var1x.broadcastBreakEvent(var2));
+            var3.hurtAndBreak(1, var1, getSlotForHand(var2));
             return InteractionResult.SUCCESS;
          } else {
             return InteractionResult.CONSUME;
@@ -337,11 +334,9 @@ public class Sheep extends Animal implements Shearable {
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
       this.setColor(getRandomSheepColor(var1.getRandom()));
-      return super.finalizeSpawn(var1, var2, var3, var4, var5);
+      return super.finalizeSpawn(var1, var2, var3, var4);
    }
 
    private DyeColor getOffspringColor(Animal var1, Animal var2) {
@@ -351,7 +346,7 @@ public class Sheep extends Animal implements Shearable {
       return this.level()
          .getRecipeManager()
          .getRecipeFor(RecipeType.CRAFTING, var5, this.level())
-         .map(var2x -> var2x.value().assemble(var5, this.level().registryAccess()))
+         .map(var2x -> ((CraftingRecipe)var2x.value()).assemble(var5, this.level().registryAccess()))
          .map(ItemStack::getItem)
          .filter(DyeItem.class::isInstance)
          .map(DyeItem.class::cast)
@@ -374,15 +369,5 @@ public class Sheep extends Animal implements Shearable {
       var2.setItem(0, new ItemStack(DyeItem.byColor(var0)));
       var2.setItem(1, new ItemStack(DyeItem.byColor(var1)));
       return var2;
-   }
-
-   @Override
-   protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
-      return 0.95F * var2.height;
-   }
-
-   @Override
-   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      return new Vector3f(0.0F, var2.height - 0.0625F * var3, 0.0F);
    }
 }

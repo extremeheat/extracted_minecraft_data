@@ -1,15 +1,13 @@
 package net.minecraft.world.entity.monster;
 
+import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.ai.goal.OpenDoorGoal;
 import net.minecraft.world.entity.npc.AbstractVillager;
 import net.minecraft.world.entity.raid.Raider;
 import net.minecraft.world.level.Level;
-import org.joml.Vector3f;
 
 public abstract class AbstractIllager extends Raider {
    protected AbstractIllager(EntityType<? extends AbstractIllager> var1, Level var2) {
@@ -19,11 +17,6 @@ public abstract class AbstractIllager extends Raider {
    @Override
    protected void registerGoals() {
       super.registerGoals();
-   }
-
-   @Override
-   public MobType getMobType() {
-      return MobType.ILLAGER;
    }
 
    public AbstractIllager.IllagerArmPose getArmPose() {
@@ -36,13 +29,14 @@ public abstract class AbstractIllager extends Raider {
    }
 
    @Override
-   protected float ridingOffset(Entity var1) {
-      return -0.6F;
-   }
-
-   @Override
-   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      return new Vector3f(0.0F, var2.height + 0.05F * var3, 0.0F);
+   public boolean isAlliedTo(Entity var1) {
+      if (super.isAlliedTo(var1)) {
+         return true;
+      } else if (!var1.getType().is(EntityTypeTags.ILLAGER_FRIENDS)) {
+         return false;
+      } else {
+         return this.getTeam() == null && var1.getTeam() == null;
+      }
    }
 
    public static enum IllagerArmPose {

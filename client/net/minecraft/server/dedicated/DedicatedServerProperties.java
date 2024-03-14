@@ -86,6 +86,7 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
    public final boolean broadcastConsoleToOps = this.get("broadcast-console-to-ops", true);
    public final int maxWorldSize = this.get("max-world-size", var0 -> Mth.clamp(var0, 1, 29999984), 29999984);
    public final boolean syncChunkWrites = this.get("sync-chunk-writes", true);
+   public final String regionFileComression = this.get("region-file-compression", "deflate");
    public final boolean enableJmxMonitoring = this.get("enable-jmx-monitoring", false);
    public final boolean enableStatus = this.get("enable-status", true);
    public final boolean hideOnlinePlayers = this.get("hide-online-players", false);
@@ -99,6 +100,7 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
    public final boolean logIPs = this.get("log-ips", true);
    private final DedicatedServerProperties.WorldDimensionData worldDimensionData;
    public final WorldOptions worldOptions;
+   public boolean acceptsTransfers = this.get("accepts-transfers", false);
 
    public DedicatedServerProperties(Properties var1) {
       super(var1);
@@ -136,7 +138,7 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
    private static Component parseResourcePackPrompt(String var0) {
       if (!Strings.isNullOrEmpty(var0)) {
          try {
-            return Component.Serializer.fromJson(var0);
+            return Component.Serializer.fromJson(var0, RegistryAccess.EMPTY);
          } catch (Exception var2) {
             LOGGER.warn("Failed to parse resource pack prompt '{}'", var0, var2);
          }
@@ -228,7 +230,7 @@ public class DedicatedServerProperties extends Settings<DedicatedServerPropertie
             });
          WorldDimensions var5 = ((WorldPreset)var4.value()).createWorldDimensions();
          if (var4.is(WorldPresets.FLAT)) {
-            RegistryOps var6 = RegistryOps.create(JsonOps.INSTANCE, var1);
+            RegistryOps var6 = var1.createSerializationContext(JsonOps.INSTANCE);
             Optional var7 = FlatLevelGeneratorSettings.CODEC
                .parse(new Dynamic(var6, this.generatorSettings()))
                .resultOrPartial(DedicatedServerProperties.LOGGER::error);

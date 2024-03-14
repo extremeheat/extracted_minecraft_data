@@ -1,9 +1,14 @@
 package net.minecraft.network.protocol.login;
 
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 
 public class ClientboundLoginCompressionPacket implements Packet<ClientLoginPacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ClientboundLoginCompressionPacket> STREAM_CODEC = Packet.codec(
+      ClientboundLoginCompressionPacket::write, ClientboundLoginCompressionPacket::new
+   );
    private final int compressionThreshold;
 
    public ClientboundLoginCompressionPacket(int var1) {
@@ -11,14 +16,18 @@ public class ClientboundLoginCompressionPacket implements Packet<ClientLoginPack
       this.compressionThreshold = var1;
    }
 
-   public ClientboundLoginCompressionPacket(FriendlyByteBuf var1) {
+   private ClientboundLoginCompressionPacket(FriendlyByteBuf var1) {
       super();
       this.compressionThreshold = var1.readVarInt();
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       var1.writeVarInt(this.compressionThreshold);
+   }
+
+   @Override
+   public PacketType<ClientboundLoginCompressionPacket> type() {
+      return LoginPacketTypes.CLIENTBOUND_LOGIN_COMPRESSION;
    }
 
    public void handle(ClientLoginPacketListener var1) {

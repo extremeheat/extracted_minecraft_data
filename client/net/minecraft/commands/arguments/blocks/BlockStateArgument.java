@@ -21,7 +21,7 @@ public class BlockStateArgument implements ArgumentType<BlockInput> {
 
    public BlockStateArgument(CommandBuildContext var1) {
       super();
-      this.blocks = var1.holderLookup(Registries.BLOCK);
+      this.blocks = var1.lookupOrThrow(Registries.BLOCK);
    }
 
    public static BlockStateArgument block(CommandBuildContext var0) {

@@ -72,9 +72,7 @@ public class NetherFossilPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          var5.encapsulate(this.template.getBoundingBox(this.placeSettings, this.templatePosition));
          super.postProcess(var1, var2, var3, var4, var5, var6, var7);
       }

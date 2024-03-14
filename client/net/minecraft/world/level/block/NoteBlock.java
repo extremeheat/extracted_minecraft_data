@@ -13,6 +13,7 @@ import net.minecraft.stats.Stats;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -47,11 +48,7 @@ public class NoteBlock extends Block {
    public NoteBlock(BlockBehaviour.Properties var1) {
       super(var1);
       this.registerDefaultState(
-         this.stateDefinition
-            .any()
-            .setValue(INSTRUMENT, NoteBlockInstrument.HARP)
-            .setValue(NOTE, Integer.valueOf(0))
-            .setValue(POWERED, Boolean.valueOf(false))
+         this.stateDefinition.any().setValue(INSTRUMENT, NoteBlockInstrument.HARP).setValue(NOTE, Integer.valueOf(0)).setValue(POWERED, Boolean.valueOf(false))
       );
    }
 
@@ -72,13 +69,13 @@ public class NoteBlock extends Block {
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       boolean var7 = var2.getAxis() == Direction.Axis.Y;
       return var7 ? this.setInstrument(var4, var5, var1) : super.updateShape(var1, var2, var3, var4, var5, var6);
    }
 
    @Override
-   public void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
+   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
       boolean var7 = var2.hasNeighborSignal(var3);
       if (var7 != var1.getValue(POWERED)) {
          if (var7) {
@@ -97,11 +94,15 @@ public class NoteBlock extends Block {
    }
 
    @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
-      ItemStack var7 = var4.getItemInHand(var5);
-      if (var7.is(ItemTags.NOTE_BLOCK_TOP_INSTRUMENTS) && var6.getDirection() == Direction.UP) {
-         return InteractionResult.PASS;
-      } else if (var2.isClientSide) {
+   protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
+      return var1.is(ItemTags.NOTE_BLOCK_TOP_INSTRUMENTS) && var7.getDirection() == Direction.UP
+         ? ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION
+         : super.useItemOn(var1, var2, var3, var4, var5, var6, var7);
+   }
+
+   @Override
+   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
+      if (var2.isClientSide) {
          return InteractionResult.SUCCESS;
       } else {
          var1 = var1.cycle(NOTE);
@@ -113,7 +114,7 @@ public class NoteBlock extends Block {
    }
 
    @Override
-   public void attack(BlockState var1, Level var2, BlockPos var3, Player var4) {
+   protected void attack(BlockState var1, Level var2, BlockPos var3, Player var4) {
       if (!var2.isClientSide) {
          this.playNote(var4, var1, var2, var3);
          var4.awardStat(Stats.PLAY_NOTEBLOCK);
@@ -125,7 +126,7 @@ public class NoteBlock extends Block {
    }
 
    @Override
-   public boolean triggerEvent(BlockState var1, Level var2, BlockPos var3, int var4, int var5) {
+   protected boolean triggerEvent(BlockState var1, Level var2, BlockPos var3, int var4, int var5) {
       NoteBlockInstrument var7 = var1.getValue(INSTRUMENT);
       float var6;
       if (var7.isTunable()) {

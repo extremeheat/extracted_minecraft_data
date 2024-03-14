@@ -11,14 +11,11 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.PathfinderMob;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -47,6 +44,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
 public abstract class AbstractSkeleton extends Monster implements RangedAttackMob {
+   private static final int HARD_ATTACK_INTERVAL = 20;
+   private static final int NORMAL_ATTACK_INTERVAL = 40;
    private final RangedBowAttackGoal<AbstractSkeleton> bowGoal = new RangedBowAttackGoal<>(this, 1.0, 20, 15.0F);
    private final MeleeAttackGoal meleeGoal = new MeleeAttackGoal(this, 1.2, false) {
       @Override
@@ -93,11 +92,6 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
    abstract SoundEvent getStepSound();
 
    @Override
-   public MobType getMobType() {
-      return MobType.UNDEAD;
-   }
-
-   @Override
    public void aiStep() {
       boolean var1 = this.isSunBurnTick();
       if (var1) {
@@ -115,7 +109,7 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
          }
 
          if (var1) {
-            this.setSecondsOnFire(8);
+            this.igniteForSeconds(8);
          }
       }
 
@@ -141,21 +135,19 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
-      var4 = super.finalizeSpawn(var1, var2, var3, var4, var5);
-      RandomSource var6 = var1.getRandom();
-      this.populateDefaultEquipmentSlots(var6, var2);
-      this.populateDefaultEquipmentEnchantments(var6, var2);
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+      var4 = super.finalizeSpawn(var1, var2, var3, var4);
+      RandomSource var5 = var1.getRandom();
+      this.populateDefaultEquipmentSlots(var5, var2);
+      this.populateDefaultEquipmentEnchantments(var5, var2);
       this.reassessWeaponGoal();
-      this.setCanPickUpLoot(var6.nextFloat() < 0.55F * var2.getSpecialMultiplier());
+      this.setCanPickUpLoot(var5.nextFloat() < 0.55F * var2.getSpecialMultiplier());
       if (this.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
-         LocalDate var7 = LocalDate.now();
-         int var8 = var7.get(ChronoField.DAY_OF_MONTH);
-         int var9 = var7.get(ChronoField.MONTH_OF_YEAR);
-         if (var9 == 10 && var8 == 31 && var6.nextFloat() < 0.25F) {
-            this.setItemSlot(EquipmentSlot.HEAD, new ItemStack(var6.nextFloat() < 0.1F ? Blocks.JACK_O_LANTERN : Blocks.CARVED_PUMPKIN));
+         LocalDate var6 = LocalDate.now();
+         int var7 = var6.get(ChronoField.DAY_OF_MONTH);
+         int var8 = var6.get(ChronoField.MONTH_OF_YEAR);
+         if (var8 == 10 && var7 == 31 && var5.nextFloat() < 0.25F) {
+            this.setItemSlot(EquipmentSlot.HEAD, new ItemStack(var5.nextFloat() < 0.1F ? Blocks.JACK_O_LANTERN : Blocks.CARVED_PUMPKIN));
             this.armorDropChances[EquipmentSlot.HEAD.getIndex()] = 0.0F;
          }
       }
@@ -169,9 +161,9 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
          this.goalSelector.removeGoal(this.bowGoal);
          ItemStack var1 = this.getItemInHand(ProjectileUtil.getWeaponHoldingHand(this, Items.BOW));
          if (var1.is(Items.BOW)) {
-            byte var2 = 20;
+            int var2 = this.getHardAttackInterval();
             if (this.level().getDifficulty() != Difficulty.HARD) {
-               var2 = 40;
+               var2 = this.getAttackInterval();
             }
 
             this.bowGoal.setMinAttackInterval(var2);
@@ -180,6 +172,14 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
             this.goalSelector.addGoal(4, this.meleeGoal);
          }
       }
+   }
+
+   protected int getHardAttackInterval() {
+      return 20;
+   }
+
+   protected int getAttackInterval() {
+      return 40;
    }
 
    @Override
@@ -216,16 +216,6 @@ public abstract class AbstractSkeleton extends Monster implements RangedAttackMo
       if (!this.level().isClientSide) {
          this.reassessWeaponGoal();
       }
-   }
-
-   @Override
-   protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
-      return 1.74F;
-   }
-
-   @Override
-   protected float ridingOffset(Entity var1) {
-      return -0.7F;
    }
 
    public boolean isShaking() {

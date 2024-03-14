@@ -19,7 +19,6 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -49,7 +48,6 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Vector3f;
 
 public class Ocelot extends Animal {
    public static final double CROUCH_SPEED_MOD = 0.6;
@@ -89,9 +87,9 @@ public class Ocelot extends Animal {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_TRUSTING, false);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_TRUSTING, false);
    }
 
    @Override
@@ -258,14 +256,12 @@ public class Ocelot extends Animal {
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
       if (var4 == null) {
          var4 = new AgeableMob.AgeableMobGroupData(1.0F);
       }
 
-      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4, var5);
+      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4);
    }
 
    @Override
@@ -276,11 +272,6 @@ public class Ocelot extends Animal {
    @Override
    public boolean isSteppingCarefully() {
       return this.isCrouching() || super.isSteppingCarefully();
-   }
-
-   @Override
-   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      return new Vector3f(0.0F, var2.height - 0.0625F * var3, 0.0F);
    }
 
    static class OcelotAvoidEntityGoal<T extends LivingEntity> extends AvoidEntityGoal<T> {

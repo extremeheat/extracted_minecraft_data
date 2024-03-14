@@ -14,8 +14,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
+import java.util.stream.Stream;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Rotation;
 
@@ -24,7 +23,7 @@ public class GameTestRegistry {
    private static final Set<String> TEST_CLASS_NAMES = Sets.newHashSet();
    private static final Map<String, Consumer<ServerLevel>> BEFORE_BATCH_FUNCTIONS = Maps.newHashMap();
    private static final Map<String, Consumer<ServerLevel>> AFTER_BATCH_FUNCTIONS = Maps.newHashMap();
-   private static final Collection<TestFunction> LAST_FAILED_TESTS = Sets.newHashSet();
+   private static final Set<TestFunction> LAST_FAILED_TESTS = Sets.newHashSet();
 
    public GameTestRegistry() {
       super();
@@ -65,8 +64,8 @@ public class GameTestRegistry {
       }
    }
 
-   public static Collection<TestFunction> getTestFunctionsForClassName(String var0) {
-      return TEST_FUNCTIONS.stream().filter(var1 -> isTestFunctionPartOfClass(var1, var0)).collect(Collectors.toList());
+   public static Stream<TestFunction> getTestFunctionsForClassName(String var0) {
+      return TEST_FUNCTIONS.stream().filter(var1 -> isTestFunctionPartOfClass(var1, var0));
    }
 
    public static Collection<TestFunction> getAllTestFunctions() {
@@ -81,18 +80,18 @@ public class GameTestRegistry {
       return TEST_CLASS_NAMES.contains(var0);
    }
 
-   @Nullable
    public static Consumer<ServerLevel> getBeforeBatchFunction(String var0) {
-      return BEFORE_BATCH_FUNCTIONS.get(var0);
+      return BEFORE_BATCH_FUNCTIONS.getOrDefault(var0, var0x -> {
+      });
    }
 
-   @Nullable
    public static Consumer<ServerLevel> getAfterBatchFunction(String var0) {
-      return AFTER_BATCH_FUNCTIONS.get(var0);
+      return AFTER_BATCH_FUNCTIONS.getOrDefault(var0, var0x -> {
+      });
    }
 
    public static Optional<TestFunction> findTestFunction(String var0) {
-      return getAllTestFunctions().stream().filter(var1 -> var1.getTestName().equalsIgnoreCase(var0)).findFirst();
+      return getAllTestFunctions().stream().filter(var1 -> var1.testName().equalsIgnoreCase(var0)).findFirst();
    }
 
    public static TestFunction getTestFunction(String var0) {
@@ -129,8 +128,10 @@ public class GameTestRegistry {
          var1.timeoutTicks(),
          var1.setupTicks(),
          var1.required(),
+         var1.manualOnly(),
          var1.requiredSuccesses(),
          var1.attempts(),
+         var1.skyAccess(),
          turnMethodIntoConsumer(var0)
       );
    }
@@ -153,11 +154,11 @@ public class GameTestRegistry {
    }
 
    private static boolean isTestFunctionPartOfClass(TestFunction var0, String var1) {
-      return var0.getTestName().toLowerCase().startsWith(var1.toLowerCase() + ".");
+      return var0.testName().toLowerCase().startsWith(var1.toLowerCase() + ".");
    }
 
-   public static Collection<TestFunction> getLastFailedTests() {
-      return LAST_FAILED_TESTS;
+   public static Stream<TestFunction> getLastFailedTests() {
+      return LAST_FAILED_TESTS.stream();
    }
 
    public static void rememberFailedTest(TestFunction var0) {

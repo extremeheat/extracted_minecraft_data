@@ -133,24 +133,24 @@ public class BigDripleafBlock extends HorizontalDirectionalBlock implements Bone
    }
 
    @Override
-   public void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
+   protected void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
       this.setTiltAndScheduleTick(var2, var1, var3.getBlockPos(), Tilt.FULL, SoundEvents.BIG_DRIPLEAF_TILT_DOWN);
    }
 
    @Override
-   public FluidState getFluidState(BlockState var1) {
+   protected FluidState getFluidState(BlockState var1) {
       return var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
    }
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       BlockPos var4 = var3.below();
       BlockState var5 = var2.getBlockState(var4);
       return var5.is(this) || var5.is(Blocks.BIG_DRIPLEAF_STEM) || var5.is(BlockTags.BIG_DRIPLEAF_PLACEABLE);
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var2 == Direction.DOWN && !var1.canSurvive(var4, var5)) {
          return Blocks.AIR.defaultBlockState();
       } else {
@@ -158,9 +158,7 @@ public class BigDripleafBlock extends HorizontalDirectionalBlock implements Bone
             var4.scheduleTick(var5, Fluids.WATER, Fluids.WATER.getTickDelay(var4));
          }
 
-         return var2 == Direction.UP && var3.is(this)
-            ? Blocks.BIG_DRIPLEAF_STEM.withPropertiesOf(var1)
-            : super.updateShape(var1, var2, var3, var4, var5, var6);
+         return var2 == Direction.UP && var3.is(this) ? Blocks.BIG_DRIPLEAF_STEM.withPropertiesOf(var1) : super.updateShape(var1, var2, var3, var4, var5, var6);
       }
    }
 
@@ -187,7 +185,7 @@ public class BigDripleafBlock extends HorizontalDirectionalBlock implements Bone
    }
 
    @Override
-   public void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
       if (!var2.isClientSide) {
          if (var1.getValue(TILT) == Tilt.NONE && canEntityTilt(var3, var4) && !var2.hasNeighborSignal(var3)) {
             this.setTiltAndScheduleTick(var1, var2, var3, Tilt.UNSTABLE, null);
@@ -196,7 +194,7 @@ public class BigDripleafBlock extends HorizontalDirectionalBlock implements Bone
    }
 
    @Override
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (var2.hasNeighborSignal(var3)) {
          resetTilt(var1, var2, var3);
       } else {
@@ -212,7 +210,7 @@ public class BigDripleafBlock extends HorizontalDirectionalBlock implements Bone
    }
 
    @Override
-   public void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
+   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
       if (var2.hasNeighborSignal(var3)) {
          resetTilt(var1, var2, var3);
       }
@@ -255,12 +253,12 @@ public class BigDripleafBlock extends HorizontalDirectionalBlock implements Bone
    }
 
    @Override
-   public VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return LEAF_SHAPES.get(var1.getValue(TILT));
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return this.shapesCache.get(var1);
    }
 

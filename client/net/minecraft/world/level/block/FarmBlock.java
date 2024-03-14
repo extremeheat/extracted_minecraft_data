@@ -45,7 +45,7 @@ public class FarmBlock extends Block {
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var2 == Direction.UP && !var1.canSurvive(var4, var5)) {
          var4.scheduleTick(var5, this, 1);
       }
@@ -54,7 +54,7 @@ public class FarmBlock extends Block {
    }
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       BlockState var4 = var2.getBlockState(var3.above());
       return !var4.isSolid() || var4.getBlock() instanceof FenceGateBlock || var4.getBlock() instanceof MovingPistonBlock;
    }
@@ -65,24 +65,24 @@ public class FarmBlock extends Block {
    }
 
    @Override
-   public boolean useShapeForLightOcclusion(BlockState var1) {
+   protected boolean useShapeForLightOcclusion(BlockState var1) {
       return true;
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 
    @Override
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (!var1.canSurvive(var2, var3)) {
          turnToDirt(null, var1, var2, var3);
       }
    }
 
    @Override
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       int var5 = var1.getValue(MOISTURE);
       if (!isNearWater(var2, var3) && !var2.isRainingAt(var3.above())) {
          if (var5 > 0) {
@@ -134,7 +134,7 @@ public class FarmBlock extends Block {
    }
 
    @Override
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
+   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
    }
 }

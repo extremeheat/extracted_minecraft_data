@@ -8,11 +8,12 @@ class PoisonMobEffect extends MobEffect {
    }
 
    @Override
-   public void applyEffectTick(LivingEntity var1, int var2) {
-      super.applyEffectTick(var1, var2);
+   public boolean applyEffectTick(LivingEntity var1, int var2) {
       if (var1.getHealth() > 1.0F) {
          var1.hurt(var1.damageSources().magic(), 1.0F);
       }
+
+      return true;
    }
 
    @Override

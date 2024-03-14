@@ -8,7 +8,9 @@ import com.mojang.brigadier.StringReader;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
 import java.lang.reflect.Field;
+import net.minecraft.CharPredicate;
 import net.minecraft.Util;
+import net.minecraft.core.HolderLookup;
 
 public class ParserUtils {
    private static final Field JSON_READER_POS = Util.make(() -> {
@@ -36,26 +38,36 @@ public class ParserUtils {
 
    private static int getPos(JsonReader var0) {
       try {
-         return JSON_READER_POS.getInt(var0) - JSON_READER_LINESTART.getInt(var0) + 1;
+         return JSON_READER_POS.getInt(var0) - JSON_READER_LINESTART.getInt(var0);
       } catch (IllegalAccessException var2) {
          throw new IllegalStateException("Couldn't read position of JsonReader", var2);
       }
    }
 
-   public static <T> T parseJson(StringReader var0, Codec<T> var1) {
-      JsonReader var2 = new JsonReader(new java.io.StringReader(var0.getRemaining()));
-      var2.setLenient(false);
+   public static <T> T parseJson(HolderLookup.Provider var0, StringReader var1, Codec<T> var2) {
+      JsonReader var3 = new JsonReader(new java.io.StringReader(var1.getRemaining()));
+      var3.setLenient(false);
 
-      Object var4;
+      Object var5;
       try {
-         JsonElement var3 = Streams.parse(var2);
-         var4 = Util.getOrThrow(var1.parse(JsonOps.INSTANCE, var3), JsonParseException::new);
-      } catch (StackOverflowError var8) {
-         throw new JsonParseException(var8);
+         JsonElement var4 = Streams.parse(var3);
+         var5 = Util.getOrThrow(var2.parse(var0.createSerializationContext(JsonOps.INSTANCE), var4), JsonParseException::new);
+      } catch (StackOverflowError var9) {
+         throw new JsonParseException(var9);
       } finally {
-         var0.setCursor(var0.getCursor() + getPos(var2));
+         var1.setCursor(var1.getCursor() + getPos(var3));
       }
 
-      return (T)var4;
+      return (T)var5;
+   }
+
+   public static String readWhile(StringReader var0, CharPredicate var1) {
+      int var2 = var0.getCursor();
+
+      while(var0.canRead() && var1.test(var0.peek())) {
+         var0.skip();
+      }
+
+      return var0.getString().substring(var2, var0.getCursor());
    }
 }

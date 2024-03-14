@@ -7,11 +7,10 @@ import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import net.minecraft.core.Holder;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.ContainerHelper;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -53,16 +52,7 @@ public class SetContainerContents extends LootItemConditionalFunction {
       } else {
          NonNullList var3 = NonNullList.create();
          this.entries.forEach(var2x -> var2x.expand(var2, var2xx -> var2xx.createItemStack(LootTable.createStackSplitter(var2.getLevel(), var3::add), var2)));
-         CompoundTag var4 = new CompoundTag();
-         ContainerHelper.saveAllItems(var4, var3);
-         CompoundTag var5 = BlockItem.getBlockEntityData(var1);
-         if (var5 == null) {
-            var5 = var4;
-         } else {
-            var5.merge(var4);
-         }
-
-         BlockItem.setBlockEntityData(var1, this.type.value(), var5);
+         var1.set(DataComponents.CONTAINER, ItemContainerContents.copyOf(var3));
          return var1;
       }
    }

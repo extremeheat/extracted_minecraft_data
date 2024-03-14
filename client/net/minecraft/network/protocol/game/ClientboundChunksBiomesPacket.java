@@ -4,16 +4,21 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import java.util.List;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 
-public record ClientboundChunksBiomesPacket(List<ClientboundChunksBiomesPacket.ChunkBiomeData> a) implements Packet<ClientGamePacketListener> {
+public record ClientboundChunksBiomesPacket(List<ClientboundChunksBiomesPacket.ChunkBiomeData> b) implements Packet<ClientGamePacketListener> {
    private final List<ClientboundChunksBiomesPacket.ChunkBiomeData> chunkBiomeData;
+   public static final StreamCodec<FriendlyByteBuf, ClientboundChunksBiomesPacket> STREAM_CODEC = Packet.codec(
+      ClientboundChunksBiomesPacket::write, ClientboundChunksBiomesPacket::new
+   );
    private static final int TWO_MEGABYTES = 2097152;
 
-   public ClientboundChunksBiomesPacket(FriendlyByteBuf var1) {
+   private ClientboundChunksBiomesPacket(FriendlyByteBuf var1) {
       this(var1.readList(ClientboundChunksBiomesPacket.ChunkBiomeData::new));
    }
 
@@ -26,9 +31,13 @@ public record ClientboundChunksBiomesPacket(List<ClientboundChunksBiomesPacket.C
       return new ClientboundChunksBiomesPacket(var0.stream().map(ClientboundChunksBiomesPacket.ChunkBiomeData::new).toList());
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       var1.writeCollection(this.chunkBiomeData, (var0, var1x) -> var1x.write(var0));
+   }
+
+   @Override
+   public PacketType<ClientboundChunksBiomesPacket> type() {
+      return GamePacketTypes.CLIENTBOUND_CHUNKS_BIOMES;
    }
 
    public void handle(ClientGamePacketListener var1) {

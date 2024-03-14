@@ -53,9 +53,10 @@ import net.minecraft.world.level.block.state.pattern.BlockPattern;
 import net.minecraft.world.level.block.state.pattern.BlockPatternBuilder;
 import net.minecraft.world.level.block.state.predicate.BlockPredicate;
 import net.minecraft.world.level.chunk.ChunkAccess;
-import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.EndPodiumFeature;
 import net.minecraft.world.level.levelgen.feature.SpikeFeature;
 import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
@@ -374,8 +375,7 @@ public class EndDragonFight {
          if (!this.previouslyKilled) {
             this.level
                .setBlockAndUpdate(
-                  this.level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, EndPodiumFeature.getLocation(this.origin)),
-                  Blocks.DRAGON_EGG.defaultBlockState()
+                  this.level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING, EndPodiumFeature.getLocation(this.origin)), Blocks.DRAGON_EGG.defaultBlockState()
                );
          }
 
@@ -405,7 +405,7 @@ public class EndDragonFight {
          .registryAccess()
          .registry(Registries.CONFIGURED_FEATURE)
          .flatMap(var0 -> var0.getHolder(EndFeatures.END_GATEWAY_DELAYED))
-         .ifPresent(var2 -> var2.value().place(this.level, this.level.getChunkSource().getGenerator(), RandomSource.create(), var1));
+         .ifPresent(var2 -> ((ConfiguredFeature)var2.value()).place(this.level, this.level.getChunkSource().getGenerator(), RandomSource.create(), var1));
    }
 
    private void spawnExitPortal(boolean var1) {
@@ -563,9 +563,7 @@ public class EndDragonFight {
                )
                .apply(var0, EndDragonFight.Data::new)
       );
-      public static final EndDragonFight.Data DEFAULT = new EndDragonFight.Data(
-         true, false, false, false, Optional.empty(), Optional.empty(), Optional.empty()
-      );
+      public static final EndDragonFight.Data DEFAULT = new EndDragonFight.Data(true, false, false, false, Optional.empty(), Optional.empty(), Optional.empty());
 
       public Data(boolean var1, boolean var2, boolean var3, boolean var4, Optional<UUID> var5, Optional<BlockPos> var6, Optional<List<Integer>> var7) {
          super();

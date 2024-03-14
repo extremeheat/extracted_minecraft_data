@@ -10,7 +10,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.SectionPos;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.resources.ResourceKey;
@@ -21,6 +21,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.component.MapPostProcessing;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -29,15 +30,12 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 
 public class MapItem extends ComplexItem {
    public static final int IMAGE_WIDTH = 128;
    public static final int IMAGE_HEIGHT = 128;
-   private static final int DEFAULT_MAP_COLOR = -12173266;
-   private static final String TAG_MAP = "map";
-   public static final String MAP_SCALE_TAG = "map_scale_direction";
-   public static final String MAP_LOCK_TAG = "map_to_lock";
 
    public MapItem(Item.Properties var1) {
       super(var1);
@@ -45,45 +43,27 @@ public class MapItem extends ComplexItem {
 
    public static ItemStack create(Level var0, int var1, int var2, byte var3, boolean var4, boolean var5) {
       ItemStack var6 = new ItemStack(Items.FILLED_MAP);
-      createAndStoreSavedData(var6, var0, var1, var2, var3, var4, var5, var0.dimension());
+      MapId var7 = createNewSavedData(var0, var1, var2, var3, var4, var5, var0.dimension());
+      var6.set(DataComponents.MAP_ID, var7);
       return var6;
    }
 
    @Nullable
-   public static MapItemSavedData getSavedData(@Nullable Integer var0, Level var1) {
-      return var0 == null ? null : var1.getMapData(makeKey(var0));
+   public static MapItemSavedData getSavedData(@Nullable MapId var0, Level var1) {
+      return var0 == null ? null : var1.getMapData(var0);
    }
 
    @Nullable
    public static MapItemSavedData getSavedData(ItemStack var0, Level var1) {
-      Integer var2 = getMapId(var0);
+      MapId var2 = var0.get(DataComponents.MAP_ID);
       return getSavedData(var2, var1);
    }
 
-   @Nullable
-   public static Integer getMapId(ItemStack var0) {
-      CompoundTag var1 = var0.getTag();
-      return var1 != null && var1.contains("map", 99) ? var1.getInt("map") : null;
-   }
-
-   private static int createNewSavedData(Level var0, int var1, int var2, int var3, boolean var4, boolean var5, ResourceKey<Level> var6) {
+   private static MapId createNewSavedData(Level var0, int var1, int var2, int var3, boolean var4, boolean var5, ResourceKey<Level> var6) {
       MapItemSavedData var7 = MapItemSavedData.createFresh((double)var1, (double)var2, (byte)var3, var4, var5, var6);
-      int var8 = var0.getFreeMapId();
-      var0.setMapData(makeKey(var8), var7);
+      MapId var8 = var0.getFreeMapId();
+      var0.setMapData(var8, var7);
       return var8;
-   }
-
-   private static void storeMapData(ItemStack var0, int var1) {
-      var0.getOrCreateTag().putInt("map", var1);
-   }
-
-   private static void createAndStoreSavedData(ItemStack var0, Level var1, int var2, int var3, int var4, boolean var5, boolean var6, ResourceKey<Level> var7) {
-      int var8 = createNewSavedData(var1, var2, var3, var4, var5, var6, var7);
-      storeMapData(var0, var8);
-   }
-
-   public static String makeKey(int var0) {
-      return "map_" + var0;
    }
 
    public void update(Level var1, Entity var2, MapItemSavedData var3) {
@@ -304,93 +284,71 @@ public class MapItem extends ComplexItem {
    @Nullable
    @Override
    public Packet<?> getUpdatePacket(ItemStack var1, Level var2, Player var3) {
-      Integer var4 = getMapId(var1);
+      MapId var4 = var1.get(DataComponents.MAP_ID);
       MapItemSavedData var5 = getSavedData(var4, var2);
       return var5 != null ? var5.getUpdatePacket(var4, var3) : null;
    }
 
    @Override
    public void onCraftedPostProcess(ItemStack var1, Level var2) {
-      CompoundTag var3 = var1.getTag();
-      if (var3 != null && var3.contains("map_scale_direction", 99)) {
-         scaleMap(var1, var2, var3.getInt("map_scale_direction"));
-         var3.remove("map_scale_direction");
-      } else if (var3 != null && var3.contains("map_to_lock", 1) && var3.getBoolean("map_to_lock")) {
-         lockMap(var2, var1);
-         var3.remove("map_to_lock");
+      MapPostProcessing var3 = var1.remove(DataComponents.MAP_POST_PROCESSING);
+      if (var3 != null) {
+         switch(var3) {
+            case LOCK:
+               lockMap(var2, var1);
+               break;
+            case SCALE:
+               scaleMap(var1, var2);
+         }
       }
    }
 
-   private static void scaleMap(ItemStack var0, Level var1, int var2) {
-      MapItemSavedData var3 = getSavedData(var0, var1);
-      if (var3 != null) {
-         int var4 = var1.getFreeMapId();
-         var1.setMapData(makeKey(var4), var3.scaled(var2));
-         storeMapData(var0, var4);
+   private static void scaleMap(ItemStack var0, Level var1) {
+      MapItemSavedData var2 = getSavedData(var0, var1);
+      if (var2 != null) {
+         MapId var3 = var1.getFreeMapId();
+         var1.setMapData(var3, var2.scaled());
+         var0.set(DataComponents.MAP_ID, var3);
       }
    }
 
    public static void lockMap(Level var0, ItemStack var1) {
       MapItemSavedData var2 = getSavedData(var1, var0);
       if (var2 != null) {
-         int var3 = var0.getFreeMapId();
-         String var4 = makeKey(var3);
-         MapItemSavedData var5 = var2.locked();
-         var0.setMapData(var4, var5);
-         storeMapData(var1, var3);
+         MapId var3 = var0.getFreeMapId();
+         MapItemSavedData var4 = var2.locked();
+         var0.setMapData(var3, var4);
+         var1.set(DataComponents.MAP_ID, var3);
       }
    }
 
    @Override
    public void appendHoverText(ItemStack var1, @Nullable Level var2, List<Component> var3, TooltipFlag var4) {
-      Integer var5 = getMapId(var1);
+      MapId var5 = var1.get(DataComponents.MAP_ID);
       MapItemSavedData var6 = var2 == null ? null : getSavedData(var5, var2);
-      CompoundTag var7 = var1.getTag();
-      boolean var8;
-      byte var9;
-      if (var7 != null) {
-         var8 = var7.getBoolean("map_to_lock");
-         var9 = var7.getByte("map_scale_direction");
-      } else {
-         var8 = false;
-         var9 = 0;
-      }
-
-      if (var6 != null && (var6.locked || var8)) {
-         var3.add(Component.translatable("filled_map.locked", var5).withStyle(ChatFormatting.GRAY));
+      MapPostProcessing var7 = var1.get(DataComponents.MAP_POST_PROCESSING);
+      if (var6 != null && (var6.locked || var7 == MapPostProcessing.LOCK)) {
+         var3.add(Component.translatable("filled_map.locked", var5.id()).withStyle(ChatFormatting.GRAY));
       }
 
       if (var4.isAdvanced()) {
          if (var6 != null) {
-            if (!var8 && var9 == 0) {
+            if (var7 == null) {
                var3.add(getTooltipForId(var5));
             }
 
-            int var10 = Math.min(var6.scale + var9, 4);
-            var3.add(Component.translatable("filled_map.scale", 1 << var10).withStyle(ChatFormatting.GRAY));
-            var3.add(Component.translatable("filled_map.level", var10, 4).withStyle(ChatFormatting.GRAY));
+            int var8 = var7 == MapPostProcessing.SCALE ? 1 : 0;
+            int var9 = Math.min(var6.scale + var8, 4);
+            var3.add(Component.translatable("filled_map.scale", 1 << var9).withStyle(ChatFormatting.GRAY));
+            var3.add(Component.translatable("filled_map.level", var9, 4).withStyle(ChatFormatting.GRAY));
          } else {
             var3.add(Component.translatable("filled_map.unknown").withStyle(ChatFormatting.GRAY));
          }
       }
    }
 
-   private static Component getTooltipForId(int var0) {
-      return Component.translatable("filled_map.id", var0).withStyle(ChatFormatting.GRAY);
-   }
-
-   public static Component getTooltipForId(ItemStack var0) {
-      return getTooltipForId(getMapId(var0));
-   }
-
-   public static int getColor(ItemStack var0) {
-      CompoundTag var1 = var0.getTagElement("display");
-      if (var1 != null && var1.contains("MapColor", 99)) {
-         int var2 = var1.getInt("MapColor");
-         return 0xFF000000 | var2 & 16777215;
-      } else {
-         return -12173266;
-      }
+   public static Component getTooltipForId(MapId var0) {
+      return Component.translatable("filled_map.id", var0.id()).withStyle(ChatFormatting.GRAY);
    }
 
    @Override

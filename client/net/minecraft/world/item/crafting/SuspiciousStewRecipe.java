@@ -1,11 +1,11 @@
 package net.minecraft.world.item.crafting;
 
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.SuspiciousStewItem;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SuspiciousEffectHolder;
@@ -51,7 +51,7 @@ public class SuspiciousStewRecipe extends CustomRecipe {
          if (!var5.isEmpty()) {
             SuspiciousEffectHolder var6 = SuspiciousEffectHolder.tryGet(var5.getItem());
             if (var6 != null) {
-               SuspiciousStewItem.saveMobEffects(var3, var6.getSuspiciousEffects());
+               var3.set(DataComponents.SUSPICIOUS_STEW_EFFECTS, var6.getSuspiciousEffects());
                break;
             }
          }

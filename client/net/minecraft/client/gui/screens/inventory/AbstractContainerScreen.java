@@ -148,7 +148,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
 
    @Override
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      super.renderBackground(var1, var2, var3, var4);
+      this.renderTransparentBackground(var1);
       this.renderBg(var1, var4, var2, var3);
    }
 

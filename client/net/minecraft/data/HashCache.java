@@ -10,8 +10,11 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
@@ -25,7 +28,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.WorldVersion;
 import org.apache.commons.lang3.mutable.MutableInt;
@@ -39,7 +41,7 @@ public class HashCache {
    private final String versionId;
    private final Map<String, HashCache.ProviderCache> caches;
    private final Set<String> cachesToWrite = new HashSet<>();
-   private final Set<Path> cachePaths = new HashSet<>();
+   final Set<Path> cachePaths = new HashSet<>();
    private final int initialCount;
    private int writes;
 
@@ -81,12 +83,12 @@ public class HashCache {
    }
 
    public boolean shouldRunInThisVersion(String var1) {
-      HashCache.ProviderCache var2 = this.caches.get(var1);
+      HashCache.ProviderCache var2 = (HashCache.ProviderCache)this.caches.get(var1);
       return var2 == null || !var2.version.equals(this.versionId);
    }
 
    public CompletableFuture<HashCache.UpdateResult> generateUpdate(String var1, HashCache.UpdateFunction var2) {
-      HashCache.ProviderCache var3 = this.caches.get(var1);
+      HashCache.ProviderCache var3 = (HashCache.ProviderCache)this.caches.get(var1);
       if (var3 == null) {
          throw new IllegalStateException("Provider not registered: " + var1);
       } else {
@@ -102,38 +104,39 @@ public class HashCache {
    }
 
    public void purgeStaleAndWrite() throws IOException {
-      HashSet var1 = new HashSet();
+      final HashSet var1 = new HashSet();
       this.caches.forEach((var2x, var3x) -> {
          if (this.cachesToWrite.contains(var2x)) {
-            Path var4xx = this.getProviderCachePath(var2x);
-            var3x.save(this.rootDir, var4xx, DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(LocalDateTime.now()) + "\t" + var2x);
+            Path var4 = this.getProviderCachePath(var2x);
+            var3x.save(this.rootDir, var4, DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(LocalDateTime.now()) + "\t" + var2x);
          }
 
          var1.addAll(var3x.data().keySet());
       });
       var1.add(this.rootDir.resolve("version.json"));
-      MutableInt var2 = new MutableInt();
-      MutableInt var3 = new MutableInt();
-
-      try (Stream var4 = Files.walk(this.rootDir)) {
-         var4.forEach(var4x -> {
-            if (!Files.isDirectory(var4x)) {
-               if (!this.cachePaths.contains(var4x)) {
-                  var2.increment();
-                  if (!var1.contains(var4x)) {
-                     try {
-                        Files.delete(var4x);
-                     } catch (IOException var6) {
-                        LOGGER.warn("Failed to delete file {}", var4x, var6);
-                     }
-
-                     var3.increment();
+      final MutableInt var2 = new MutableInt();
+      final MutableInt var3 = new MutableInt();
+      Files.walkFileTree(this.rootDir, new SimpleFileVisitor<Path>() {
+         public FileVisitResult visitFile(Path var1x, BasicFileAttributes var2x) {
+            if (HashCache.this.cachePaths.contains(var1x)) {
+               return FileVisitResult.CONTINUE;
+            } else {
+               var2.increment();
+               if (var1.contains(var1x)) {
+                  return FileVisitResult.CONTINUE;
+               } else {
+                  try {
+                     Files.delete(var1x);
+                  } catch (IOException var4) {
+                     HashCache.LOGGER.warn("Failed to delete file {}", var1x, var4);
                   }
+
+                  var3.increment();
+                  return FileVisitResult.CONTINUE;
                }
             }
-         });
-      }
-
+         }
+      });
       LOGGER.info(
          "Caching: total files: {}, old count: {}, new count: {}, removed stale: {}, written: {}",
          new Object[]{var2, this.initialCount, var1.size(), var3, this.writes}

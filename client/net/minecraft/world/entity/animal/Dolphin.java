@@ -25,13 +25,11 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.MoverType;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -79,12 +77,10 @@ public class Dolphin extends WaterAnimal {
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
       this.setAirSupply(this.getMaxAirSupply());
       this.setXRot(0.0F);
-      return super.finalizeSpawn(var1, var2, var3, var4, var5);
+      return super.finalizeSpawn(var1, var2, var3, var4);
    }
 
    @Override
@@ -116,11 +112,11 @@ public class Dolphin extends WaterAnimal {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(TREASURE_POS, BlockPos.ZERO);
-      this.entityData.define(GOT_FISH, false);
-      this.entityData.define(MOISTNESS_LEVEL, 2400);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(TREASURE_POS, BlockPos.ZERO);
+      var1.define(GOT_FISH, false);
+      var1.define(MOISTNESS_LEVEL, 2400);
    }
 
    @Override
@@ -189,11 +185,6 @@ public class Dolphin extends WaterAnimal {
    @Override
    protected int increaseAirSupply(int var1) {
       return this.getMaxAirSupply();
-   }
-
-   @Override
-   protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
-      return 0.3F;
    }
 
    @Override
@@ -319,10 +310,7 @@ public class Dolphin extends WaterAnimal {
          }
 
          this.setGotFish(true);
-         if (!var1.getAbilities().instabuild) {
-            var3.shrink(1);
-         }
-
+         var3.consume(1, var1);
          return InteractionResult.sidedSuccess(this.level().isClientSide);
       } else {
          return super.mobInteract(var1, var2);
@@ -428,9 +416,7 @@ public class Dolphin extends WaterAnimal {
       @Override
       public void stop() {
          BlockPos var1 = this.dolphin.getTreasurePos();
-         if (BlockPos.containing((double)var1.getX(), this.dolphin.getY(), (double)var1.getZ()).closerToCenterThan(this.dolphin.position(), 4.0) || this.stuck
-            )
-          {
+         if (BlockPos.containing((double)var1.getX(), this.dolphin.getY(), (double)var1.getZ()).closerToCenterThan(this.dolphin.position(), 4.0) || this.stuck) {
             this.dolphin.setGotFish(false);
          }
       }
@@ -447,7 +433,7 @@ public class Dolphin extends WaterAnimal {
 
             if (var3 != null) {
                BlockPos var4 = BlockPos.containing(var3);
-               if (!var1.getFluidState(var4).is(FluidTags.WATER) || !var1.getBlockState(var4).isPathfindable(var1, var4, PathComputationType.WATER)) {
+               if (!var1.getFluidState(var4).is(FluidTags.WATER) || !var1.getBlockState(var4).isPathfindable(PathComputationType.WATER)) {
                   var3 = DefaultRandomPos.getPosTowards(this.dolphin, 8, 5, var2, 1.5707963705062866);
                }
             }

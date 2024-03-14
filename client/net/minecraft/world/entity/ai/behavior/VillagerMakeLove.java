@@ -18,8 +18,6 @@ import net.minecraft.world.entity.npc.Villager;
 import net.minecraft.world.level.pathfinder.Path;
 
 public class VillagerMakeLove extends Behavior<Villager> {
-   private static final int INTERACT_DIST_SQR = 5;
-   private static final float SPEED_MODIFIER = 0.5F;
    private long birthTimestamp;
 
    public VillagerMakeLove() {
@@ -42,7 +40,7 @@ public class VillagerMakeLove extends Behavior<Villager> {
 
    protected void start(ServerLevel var1, Villager var2, long var3) {
       AgeableMob var5 = var2.getBrain().getMemory(MemoryModuleType.BREED_TARGET).get();
-      BehaviorUtils.lockGazeAndWalkToEachOther(var2, var5, 0.5F);
+      BehaviorUtils.lockGazeAndWalkToEachOther(var2, var5, 0.5F, 2);
       var1.broadcastEntityEvent(var5, (byte)18);
       var1.broadcastEntityEvent(var2, (byte)18);
       int var6 = 275 + var2.getRandom().nextInt(50);
@@ -52,7 +50,7 @@ public class VillagerMakeLove extends Behavior<Villager> {
    protected void tick(ServerLevel var1, Villager var2, long var3) {
       Villager var5 = (Villager)var2.getBrain().getMemory(MemoryModuleType.BREED_TARGET).get();
       if (!(var2.distanceToSqr(var5) > 5.0)) {
-         BehaviorUtils.lockGazeAndWalkToEachOther(var2, var5, 0.5F);
+         BehaviorUtils.lockGazeAndWalkToEachOther(var2, var5, 0.5F, 2);
          if (var3 >= this.birthTimestamp) {
             var2.eatAndDigestFood();
             var5.eatAndDigestFood();
@@ -90,9 +88,7 @@ public class VillagerMakeLove extends Behavior<Villager> {
       if (var3.isEmpty()) {
          return false;
       } else {
-         return BehaviorUtils.targetIsValid(var2, MemoryModuleType.BREED_TARGET, EntityType.VILLAGER)
-            && var1.canBreed()
-            && ((AgeableMob)var3.get()).canBreed();
+         return BehaviorUtils.targetIsValid(var2, MemoryModuleType.BREED_TARGET, EntityType.VILLAGER) && var1.canBreed() && ((AgeableMob)var3.get()).canBreed();
       }
    }
 

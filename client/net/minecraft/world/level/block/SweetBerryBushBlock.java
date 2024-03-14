@@ -8,6 +8,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -52,7 +53,7 @@ public class SweetBerryBushBlock extends BushBlock implements BonemealableBlock 
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       if (var1.getValue(AGE) == 0) {
          return SAPLING_SHAPE;
       } else {
@@ -61,12 +62,12 @@ public class SweetBerryBushBlock extends BushBlock implements BonemealableBlock 
    }
 
    @Override
-   public boolean isRandomlyTicking(BlockState var1) {
+   protected boolean isRandomlyTicking(BlockState var1) {
       return var1.getValue(AGE) < 3;
    }
 
    @Override
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       int var5 = var1.getValue(AGE);
       if (var5 < 3 && var4.nextInt(5) == 0 && var2.getRawBrightness(var3.above(), 0) >= 9) {
          BlockState var6 = var1.setValue(AGE, Integer.valueOf(var5 + 1));
@@ -76,7 +77,7 @@ public class SweetBerryBushBlock extends BushBlock implements BonemealableBlock 
    }
 
    @Override
-   public void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
       if (var4 instanceof LivingEntity && var4.getType() != EntityType.FOX && var4.getType() != EntityType.BEE) {
          var4.makeStuckInBlock(var1, new Vec3(0.800000011920929, 0.75, 0.800000011920929));
          if (!var2.isClientSide && var1.getValue(AGE) > 0 && (var4.xOld != var4.getX() || var4.zOld != var4.getZ())) {
@@ -90,21 +91,28 @@ public class SweetBerryBushBlock extends BushBlock implements BonemealableBlock 
    }
 
    @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
-      int var7 = var1.getValue(AGE);
-      boolean var8 = var7 == 3;
-      if (!var8 && var4.getItemInHand(var5).is(Items.BONE_MEAL)) {
-         return InteractionResult.PASS;
-      } else if (var7 > 1) {
-         int var9 = 1 + var2.random.nextInt(2);
-         popResource(var2, var3, new ItemStack(Items.SWEET_BERRIES, var9 + (var8 ? 1 : 0)));
+   protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
+      int var8 = var2.getValue(AGE);
+      boolean var9 = var8 == 3;
+      return !var9 && var1.is(Items.BONE_MEAL)
+         ? ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION
+         : super.useItemOn(var1, var2, var3, var4, var5, var6, var7);
+   }
+
+   @Override
+   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
+      int var6 = var1.getValue(AGE);
+      boolean var7 = var6 == 3;
+      if (var6 > 1) {
+         int var8 = 1 + var2.random.nextInt(2);
+         popResource(var2, var3, new ItemStack(Items.SWEET_BERRIES, var8 + (var7 ? 1 : 0)));
          var2.playSound(null, var3, SoundEvents.SWEET_BERRY_BUSH_PICK_BERRIES, SoundSource.BLOCKS, 1.0F, 0.8F + var2.random.nextFloat() * 0.4F);
-         BlockState var10 = var1.setValue(AGE, Integer.valueOf(1));
-         var2.setBlock(var3, var10, 2);
-         var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var4, var10));
+         BlockState var9 = var1.setValue(AGE, Integer.valueOf(1));
+         var2.setBlock(var3, var9, 2);
+         var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var4, var9));
          return InteractionResult.sidedSuccess(var2.isClientSide);
       } else {
-         return super.use(var1, var2, var3, var4, var5, var6);
+         return super.useWithoutItem(var1, var2, var3, var4, var5);
       }
    }
 

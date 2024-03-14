@@ -27,10 +27,10 @@ public class FilePackResources extends AbstractPackResources {
    private final FilePackResources.SharedZipFileAccess zipFileAccess;
    private final String prefix;
 
-   FilePackResources(String var1, FilePackResources.SharedZipFileAccess var2, boolean var3, String var4) {
-      super(var1, var3);
+   FilePackResources(PackLocationInfo var1, FilePackResources.SharedZipFileAccess var2, String var3) {
+      super(var1);
       this.zipFileAccess = var2;
-      this.prefix = var4;
+      this.prefix = var3;
    }
 
    private static String getPathFromLocation(PackType var0, ResourceLocation var1) {
@@ -134,28 +134,26 @@ public class FilePackResources extends AbstractPackResources {
 
    public static class FileResourcesSupplier implements Pack.ResourcesSupplier {
       private final File content;
-      private final boolean isBuiltin;
 
-      public FileResourcesSupplier(Path var1, boolean var2) {
-         this(var1.toFile(), var2);
+      public FileResourcesSupplier(Path var1) {
+         this(var1.toFile());
       }
 
-      public FileResourcesSupplier(File var1, boolean var2) {
+      public FileResourcesSupplier(File var1) {
          super();
-         this.isBuiltin = var2;
          this.content = var1;
       }
 
       @Override
-      public PackResources openPrimary(String var1) {
+      public PackResources openPrimary(PackLocationInfo var1) {
          FilePackResources.SharedZipFileAccess var2 = new FilePackResources.SharedZipFileAccess(this.content);
-         return new FilePackResources(var1, var2, this.isBuiltin, "");
+         return new FilePackResources(var1, var2, "");
       }
 
       @Override
-      public PackResources openFull(String var1, Pack.Info var2) {
+      public PackResources openFull(PackLocationInfo var1, Pack.Metadata var2) {
          FilePackResources.SharedZipFileAccess var3 = new FilePackResources.SharedZipFileAccess(this.content);
-         FilePackResources var4 = new FilePackResources(var1, var3, this.isBuiltin, "");
+         FilePackResources var4 = new FilePackResources(var1, var3, "");
          List var5 = var2.overlays();
          if (var5.isEmpty()) {
             return var4;
@@ -163,7 +161,7 @@ public class FilePackResources extends AbstractPackResources {
             ArrayList var6 = new ArrayList(var5.size());
 
             for(String var8 : var5) {
-               var6.add(new FilePackResources(var1, var3, this.isBuiltin, var8));
+               var6.add(new FilePackResources(var1, var3, var8));
             }
 
             return new CompositePackResources(var4, var6);

@@ -1,18 +1,24 @@
 package net.minecraft.data.recipes.packs;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Stream;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
+import net.minecraft.data.recipes.ShapelessRecipeBuilder;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
 
 public class UpdateOneTwentyOneRecipeProvider extends RecipeProvider {
-   public UpdateOneTwentyOneRecipeProvider(PackOutput var1) {
-      super(var1);
+   public UpdateOneTwentyOneRecipeProvider(PackOutput var1, CompletableFuture<HolderLookup.Provider> var2) {
+      super(var1, var2);
    }
 
    @Override
@@ -93,6 +99,26 @@ public class UpdateOneTwentyOneRecipeProvider extends RecipeProvider {
       stonecutterResultFromBase(var1, RecipeCategory.BUILDING_BLOCKS, Blocks.WAXED_EXPOSED_COPPER_GRATE, Blocks.WAXED_EXPOSED_COPPER, 4);
       stonecutterResultFromBase(var1, RecipeCategory.BUILDING_BLOCKS, Blocks.WAXED_WEATHERED_COPPER_GRATE, Blocks.WAXED_WEATHERED_COPPER, 4);
       stonecutterResultFromBase(var1, RecipeCategory.BUILDING_BLOCKS, Blocks.WAXED_OXIDIZED_COPPER_GRATE, Blocks.WAXED_OXIDIZED_COPPER, 4);
+      smithingTrims().forEach(var1x -> trimSmithing(var1, var1x.template(), var1x.id()));
+      copySmithingTemplate(var1, Items.FLOW_ARMOR_TRIM_SMITHING_TEMPLATE, Items.BREEZE_ROD);
+      copySmithingTemplate(var1, Items.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE, Items.COPPER_BLOCK);
+      ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, Items.WIND_CHARGE, 4)
+         .requires(Items.BREEZE_ROD)
+         .unlockedBy("has_breeze_rod", has(Items.BREEZE_ROD))
+         .save(var1);
+      ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, Items.MACE, 1)
+         .define('A', Items.BREEZE_ROD)
+         .define('B', Blocks.HEAVY_CORE)
+         .pattern(" B ")
+         .pattern(" A ")
+         .unlockedBy("has_breeze_rod", has(Items.BREEZE_ROD))
+         .unlockedBy("has_heavy_core", has(Blocks.HEAVY_CORE))
+         .save(var1);
       waxRecipes(var1, FeatureFlagSet.of(FeatureFlags.UPDATE_1_21));
+   }
+
+   public static Stream<VanillaRecipeProvider.TrimTemplate> smithingTrims() {
+      return Stream.of(Items.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE, Items.FLOW_ARMOR_TRIM_SMITHING_TEMPLATE)
+         .map(var0 -> new VanillaRecipeProvider.TrimTemplate(var0, new ResourceLocation(getItemName(var0) + "_smithing_trim")));
    }
 }

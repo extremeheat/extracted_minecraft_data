@@ -19,7 +19,7 @@ public record PlainTextFunction<T>(ResourceLocation a, List<UnboundEntryAction<T
    }
 
    @Override
-   public InstantiatedFunction<T> instantiate(@Nullable CompoundTag var1, CommandDispatcher<T> var2, T var3) throws FunctionInstantiationException {
+   public InstantiatedFunction<T> instantiate(@Nullable CompoundTag var1, CommandDispatcher<T> var2) throws FunctionInstantiationException {
       return this;
    }
 }

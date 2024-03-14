@@ -18,8 +18,7 @@ public class SetItemCountFunction extends LootItemConditionalFunction {
       var0 -> commonFields(var0)
             .and(
                var0.group(
-                  NumberProviders.CODEC.fieldOf("count").forGetter(var0x -> var0x.value),
-                  Codec.BOOL.fieldOf("add").orElse(false).forGetter(var0x -> var0x.add)
+                  NumberProviders.CODEC.fieldOf("count").forGetter(var0x -> var0x.value), Codec.BOOL.fieldOf("add").orElse(false).forGetter(var0x -> var0x.add)
                )
             )
             .apply(var0, SetItemCountFunction::new)

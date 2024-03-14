@@ -166,7 +166,7 @@ public class ResourceOrTagKeyArgument<T> implements ArgumentType<ResourceOrTagKe
 
       @Override
       public <E> Optional<ResourceOrTagKeyArgument.Result<E>> cast(ResourceKey<? extends Registry<E>> var1) {
-         return this.key.<T>cast(var1).map(ResourceOrTagKeyArgument.TagResult::new);
+         return this.key.cast(var1).map(ResourceOrTagKeyArgument.TagResult::new);
       }
 
       public boolean test(Holder<T> var1) {

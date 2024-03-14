@@ -19,13 +19,15 @@ public final class RegionFileStorage implements AutoCloseable {
    public static final String ANVIL_EXTENSION = ".mca";
    private static final int MAX_CACHE_SIZE = 256;
    private final Long2ObjectLinkedOpenHashMap<RegionFile> regionCache = new Long2ObjectLinkedOpenHashMap();
+   private final RegionStorageInfo info;
    private final Path folder;
    private final boolean sync;
 
-   RegionFileStorage(Path var1, boolean var2) {
+   RegionFileStorage(RegionStorageInfo var1, Path var2, boolean var3) {
       super();
-      this.folder = var1;
-      this.sync = var2;
+      this.folder = var2;
+      this.sync = var3;
+      this.info = var1;
    }
 
    private RegionFile getRegionFile(ChunkPos var1) throws IOException {
@@ -40,7 +42,7 @@ public final class RegionFileStorage implements AutoCloseable {
 
          FileUtil.createDirectoriesSafe(this.folder);
          Path var5 = this.folder.resolve("r." + var1.getRegionX() + "." + var1.getRegionZ() + ".mca");
-         RegionFile var6 = new RegionFile(var5, this.folder, this.sync);
+         RegionFile var6 = new RegionFile(this.info, var5, this.folder, this.sync);
          this.regionCache.putAndMoveToFirst(var2, var6);
          return var6;
       }

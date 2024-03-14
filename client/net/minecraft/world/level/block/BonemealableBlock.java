@@ -13,4 +13,23 @@ public interface BonemealableBlock {
    boolean isBonemealSuccess(Level var1, RandomSource var2, BlockPos var3, BlockState var4);
 
    void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4);
+
+   default BlockPos getParticlePos(BlockPos var1) {
+      return switch(this.getType()) {
+         case NEIGHBOR_SPREADER -> var1.above();
+         case GROWER -> var1;
+      };
+   }
+
+   default BonemealableBlock.Type getType() {
+      return BonemealableBlock.Type.GROWER;
+   }
+
+   public static enum Type {
+      NEIGHBOR_SPREADER,
+      GROWER;
+
+      private Type() {
+      }
+   }
 }

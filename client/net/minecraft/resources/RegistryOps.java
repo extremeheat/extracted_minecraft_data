@@ -1,6 +1,7 @@
 package net.minecraft.resources;
 
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -32,7 +33,7 @@ public class RegistryOps<T> extends DelegatingOps<T> {
       return create(var0, memoizeLookup(new RegistryOps.RegistryInfoLookup() {
          @Override
          public <E> Optional<RegistryOps.RegistryInfo<E>> lookup(ResourceKey<? extends Registry<? extends E>> var1x) {
-            return var1.lookup(var1x).map(var0 -> new RegistryOps.RegistryInfo<>(var0, var0, var0.registryLifecycle()));
+            return var1.<T>lookup(var1x).map(RegistryOps.RegistryInfo::fromRegistryLookup);
          }
       }));
    }
@@ -41,9 +42,17 @@ public class RegistryOps<T> extends DelegatingOps<T> {
       return new RegistryOps<>(var0, var1);
    }
 
+   public static <T> Dynamic<T> injectRegistryContext(Dynamic<T> var0, HolderLookup.Provider var1) {
+      return new Dynamic(var1.createSerializationContext(var0.getOps()), var0.getValue());
+   }
+
    private RegistryOps(DynamicOps<T> var1, RegistryOps.RegistryInfoLookup var2) {
       super(var1);
       this.lookupProvider = var2;
+   }
+
+   public <U> RegistryOps<U> withParent(DynamicOps<U> var1) {
+      return var1 == this.delegate ? this : new RegistryOps<>(var1, this.lookupProvider);
    }
 
    public <E> Optional<HolderOwner<E>> owner(ResourceKey<? extends Registry<? extends E>> var1) {
@@ -90,6 +99,10 @@ public class RegistryOps<T> extends DelegatingOps<T> {
          this.owner = var1;
          this.getter = var2;
          this.elementsLifecycle = var3;
+      }
+
+      public static <T> RegistryOps.RegistryInfo<T> fromRegistryLookup(HolderLookup.RegistryLookup<T> var0) {
+         return new RegistryOps.RegistryInfo<>(var0, var0, var0.registryLifecycle());
       }
    }
 

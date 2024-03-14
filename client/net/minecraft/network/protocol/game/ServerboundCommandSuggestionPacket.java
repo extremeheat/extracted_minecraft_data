@@ -1,9 +1,14 @@
 package net.minecraft.network.protocol.game;
 
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 
 public class ServerboundCommandSuggestionPacket implements Packet<ServerGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ServerboundCommandSuggestionPacket> STREAM_CODEC = Packet.codec(
+      ServerboundCommandSuggestionPacket::write, ServerboundCommandSuggestionPacket::new
+   );
    private final int id;
    private final String command;
 
@@ -13,16 +18,20 @@ public class ServerboundCommandSuggestionPacket implements Packet<ServerGamePack
       this.command = var2;
    }
 
-   public ServerboundCommandSuggestionPacket(FriendlyByteBuf var1) {
+   private ServerboundCommandSuggestionPacket(FriendlyByteBuf var1) {
       super();
       this.id = var1.readVarInt();
       this.command = var1.readUtf(32500);
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       var1.writeVarInt(this.id);
       var1.writeUtf(this.command, 32500);
+   }
+
+   @Override
+   public PacketType<ServerboundCommandSuggestionPacket> type() {
+      return GamePacketTypes.SERVERBOUND_COMMAND_SUGGESTION;
    }
 
    public void handle(ServerGamePacketListener var1) {

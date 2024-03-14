@@ -41,9 +41,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 public class LiquidBlock extends Block implements BucketPickup {
    private static final Codec<FlowingFluid> FLOWING_FLUID = BuiltInRegistries.FLUID
       .byNameCodec()
-      .comapFlatMap(
-         var0 -> var0 instanceof FlowingFluid var1 ? DataResult.success(var1) : DataResult.error(() -> "Not a flowing fluid: " + var0), var0 -> var0
-      );
+      .comapFlatMap(var0 -> var0 instanceof FlowingFluid var1 ? DataResult.success(var1) : DataResult.error(() -> "Not a flowing fluid: " + var0), var0 -> var0);
    public static final MapCodec<LiquidBlock> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(FLOWING_FLUID.fieldOf("fluid").forGetter(var0x -> var0x.fluid), propertiesCodec()).apply(var0, LiquidBlock::new)
    );
@@ -75,7 +73,7 @@ public class LiquidBlock extends Block implements BucketPickup {
    }
 
    @Override
-   public VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return var4.isAbove(STABLE_SHAPE, var3, true)
             && var1.getValue(LEVEL) == 0
             && var4.canStandOnFluid(var2.getFluidState(var3.above()), var1.getFluidState())
@@ -84,60 +82,60 @@ public class LiquidBlock extends Block implements BucketPickup {
    }
 
    @Override
-   public boolean isRandomlyTicking(BlockState var1) {
+   protected boolean isRandomlyTicking(BlockState var1) {
       return var1.getFluidState().isRandomlyTicking();
    }
 
    @Override
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       var1.getFluidState().randomTick(var2, var3, var4);
    }
 
    @Override
-   public boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
       return false;
    }
 
    @Override
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
+   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return !this.fluid.is(FluidTags.LAVA);
    }
 
    @Override
-   public FluidState getFluidState(BlockState var1) {
+   protected FluidState getFluidState(BlockState var1) {
       int var2 = var1.getValue(LEVEL);
       return this.stateCache.get(Math.min(var2, 8));
    }
 
    @Override
-   public boolean skipRendering(BlockState var1, BlockState var2, Direction var3) {
+   protected boolean skipRendering(BlockState var1, BlockState var2, Direction var3) {
       return var2.getFluidState().getType().isSame(this.fluid);
    }
 
    @Override
-   public RenderShape getRenderShape(BlockState var1) {
+   protected RenderShape getRenderShape(BlockState var1) {
       return RenderShape.INVISIBLE;
    }
 
    @Override
-   public List<ItemStack> getDrops(BlockState var1, LootParams.Builder var2) {
+   protected List<ItemStack> getDrops(BlockState var1, LootParams.Builder var2) {
       return Collections.emptyList();
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return Shapes.empty();
    }
 
    @Override
-   public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (this.shouldSpreadLiquid(var2, var3, var1)) {
          var2.scheduleTick(var3, var1.getFluidState().getType(), this.fluid.getTickDelay(var2));
       }
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var1.getFluidState().isSource() || var3.getFluidState().isSource()) {
          var4.scheduleTick(var5, var1.getFluidState().getType(), this.fluid.getTickDelay(var4));
       }
@@ -146,7 +144,7 @@ public class LiquidBlock extends Block implements BucketPickup {
    }
 
    @Override
-   public void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
+   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
       if (this.shouldSpreadLiquid(var2, var3, var1)) {
          var2.scheduleTick(var3, var1.getFluidState().getType(), this.fluid.getTickDelay(var2));
       }

@@ -65,9 +65,7 @@ public record PlayerPredicate(
                ExtraCodecs.strictOptionalField(PlayerPredicate.StatMatcher.CODEC.listOf(), "stats", List.of()).forGetter(PlayerPredicate::stats),
                ExtraCodecs.strictOptionalField(ExtraCodecs.object2BooleanMap(ResourceLocation.CODEC), "recipes", Object2BooleanMaps.emptyMap())
                   .forGetter(PlayerPredicate::recipes),
-               ExtraCodecs.strictOptionalField(
-                     Codec.unboundedMap(ResourceLocation.CODEC, PlayerPredicate.AdvancementPredicate.CODEC), "advancements", Map.of()
-                  )
+               ExtraCodecs.strictOptionalField(Codec.unboundedMap(ResourceLocation.CODEC, PlayerPredicate.AdvancementPredicate.CODEC), "advancements", Map.of())
                   .forGetter(PlayerPredicate::advancements),
                ExtraCodecs.strictOptionalField(EntityPredicate.CODEC, "looking_at").forGetter(PlayerPredicate::lookingAt)
             )
@@ -144,7 +142,7 @@ public record PlayerPredicate(
                }
 
                Entity var20 = var19.getEntity();
-               if (!this.lookingAt.get().matches(var4, var20) || !var4.hasLineOfSight(var20)) {
+               if (!((EntityPredicate)this.lookingAt.get()).matches(var4, var20) || !var4.hasLineOfSight(var20)) {
                   return false;
                }
             }
@@ -155,8 +153,8 @@ public record PlayerPredicate(
    }
 
    @Override
-   public EntitySubPredicate.Type type() {
-      return EntitySubPredicate.Types.PLAYER;
+   public MapCodec<PlayerPredicate> codec() {
+      return EntitySubPredicates.PLAYER;
    }
 
    static record AdvancementCriterionsPredicate(Object2BooleanMap<String> c) implements PlayerPredicate.AdvancementPredicate {
@@ -236,7 +234,7 @@ public record PlayerPredicate(
       }
 
       public <T> PlayerPredicate.Builder addStat(StatType<T> var1, Holder.Reference<T> var2, MinMaxBounds.Ints var3) {
-         this.stats.add(new PlayerPredicate.StatMatcher<>(var1, var2, var3));
+         this.stats.add(new PlayerPredicate.StatMatcher<T>(var1, var2, var3));
          return this;
       }
 

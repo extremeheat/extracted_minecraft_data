@@ -12,11 +12,14 @@ import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.critereon.CriterionValidator;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.ProblemReporter;
@@ -25,13 +28,13 @@ import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.storage.loot.LootDataResolver;
 
 public record Advancement(
-   Optional<ResourceLocation> b,
-   Optional<DisplayInfo> c,
-   AdvancementRewards d,
-   Map<String, Criterion<?>> e,
-   AdvancementRequirements f,
-   boolean g,
-   Optional<Component> h
+   Optional<ResourceLocation> c,
+   Optional<DisplayInfo> d,
+   AdvancementRewards e,
+   Map<String, Criterion<?>> f,
+   AdvancementRequirements g,
+   boolean h,
+   Optional<Component> i
 ) {
    private final Optional<ResourceLocation> parent;
    private final Optional<DisplayInfo> display;
@@ -55,12 +58,13 @@ public record Advancement(
                   ExtraCodecs.strictOptionalField(Codec.BOOL, "sends_telemetry_event", false).forGetter(Advancement::sendsTelemetryEvent)
                )
                .apply(var0, (var0x, var1, var2, var3, var4, var5) -> {
-                  AdvancementRequirements var6 = var4.orElseGet(() -> AdvancementRequirements.allOf(var3.keySet()));
+                  AdvancementRequirements var6 = (AdvancementRequirements)var4.orElseGet(() -> AdvancementRequirements.allOf(var3.keySet()));
                   return new Advancement(var0x, var1, var2, var3, var6, var5);
                })
       ),
       Advancement::validate
    );
+   public static final StreamCodec<RegistryFriendlyByteBuf, Advancement> STREAM_CODEC = StreamCodec.ofMember(Advancement::write, Advancement::read);
 
    public Advancement(
       Optional<ResourceLocation> var1,
@@ -108,17 +112,17 @@ public record Advancement(
       return var0.value().name().orElseGet(() -> Component.literal(var0.id().toString()));
    }
 
-   public void write(FriendlyByteBuf var1) {
+   private void write(RegistryFriendlyByteBuf var1) {
       var1.writeOptional(this.parent, FriendlyByteBuf::writeResourceLocation);
-      var1.writeOptional(this.display, (var0, var1x) -> var1x.serializeToNetwork(var0));
+      DisplayInfo.STREAM_CODEC.apply(ByteBufCodecs::optional).encode(var1, this.display);
       this.requirements.write(var1);
       var1.writeBoolean(this.sendsTelemetryEvent);
    }
 
-   public static Advancement read(FriendlyByteBuf var0) {
+   private static Advancement read(RegistryFriendlyByteBuf var0) {
       return new Advancement(
          var0.readOptional(FriendlyByteBuf::readResourceLocation),
-         var0.readOptional(DisplayInfo::fromNetwork),
+         (Optional<DisplayInfo>)DisplayInfo.STREAM_CODEC.apply(ByteBufCodecs::optional).decode(var0),
          AdvancementRewards.EMPTY,
          Map.of(),
          new AdvancementRequirements(var0),
@@ -219,7 +223,7 @@ public record Advancement(
 
       public AdvancementHolder build(ResourceLocation var1) {
          ImmutableMap var2 = this.criteria.buildOrThrow();
-         AdvancementRequirements var3 = this.requirements.orElseGet(() -> this.requirementsStrategy.create(var2.keySet()));
+         AdvancementRequirements var3 = (AdvancementRequirements)this.requirements.orElseGet(() -> this.requirementsStrategy.create(var2.keySet()));
          return new AdvancementHolder(var1, new Advancement(this.parent, this.display, this.rewards, var2, var3, this.sendsTelemetryEvent));
       }
 

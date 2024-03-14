@@ -4,8 +4,8 @@ import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.StackedContents;
@@ -107,7 +107,7 @@ public class SimpleContainer implements Container, StackedContentsCompatible {
       boolean var2 = false;
 
       for(ItemStack var4 : this.items) {
-         if (var4.isEmpty() || ItemStack.isSameItemSameTags(var4, var1) && var4.getCount() < var4.getMaxStackSize()) {
+         if (var4.isEmpty() || ItemStack.isSameItemSameComponents(var4, var1) && var4.getCount() < var4.getMaxStackSize()) {
             var2 = true;
             break;
          }
@@ -198,7 +198,7 @@ public class SimpleContainer implements Container, StackedContentsCompatible {
    private void moveItemToOccupiedSlotsWithSameType(ItemStack var1) {
       for(int var2 = 0; var2 < this.size; ++var2) {
          ItemStack var3 = this.getItem(var2);
-         if (ItemStack.isSameItemSameTags(var3, var1)) {
+         if (ItemStack.isSameItemSameComponents(var3, var1)) {
             this.moveItemsBetweenStacks(var1, var3);
             if (var1.isEmpty()) {
                return;
@@ -217,28 +217,25 @@ public class SimpleContainer implements Container, StackedContentsCompatible {
       }
    }
 
-   public void fromTag(ListTag var1) {
+   public void fromTag(ListTag var1, HolderLookup.Provider var2) {
       this.clearContent();
 
-      for(int var2 = 0; var2 < var1.size(); ++var2) {
-         ItemStack var3 = ItemStack.of(var1.getCompound(var2));
-         if (!var3.isEmpty()) {
-            this.addItem(var3);
-         }
+      for(int var3 = 0; var3 < var1.size(); ++var3) {
+         ItemStack.parse(var2, var1.getCompound(var3)).ifPresent(this::addItem);
       }
    }
 
-   public ListTag createTag() {
-      ListTag var1 = new ListTag();
+   public ListTag createTag(HolderLookup.Provider var1) {
+      ListTag var2 = new ListTag();
 
-      for(int var2 = 0; var2 < this.getContainerSize(); ++var2) {
-         ItemStack var3 = this.getItem(var2);
-         if (!var3.isEmpty()) {
-            var1.add(var3.save(new CompoundTag()));
+      for(int var3 = 0; var3 < this.getContainerSize(); ++var3) {
+         ItemStack var4 = this.getItem(var3);
+         if (!var4.isEmpty()) {
+            var2.add(var4.save(var1));
          }
       }
 
-      return var1;
+      return var2;
    }
 
    public NonNullList<ItemStack> getItems() {

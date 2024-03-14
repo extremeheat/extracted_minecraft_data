@@ -1,6 +1,9 @@
 package net.minecraft.world.inventory;
 
+import java.util.Optional;
 import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -10,7 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionBrewing;
-import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.PotionContents;
 
 public class BrewingStandMenu extends AbstractContainerMenu {
    private static final int BOTTLE_SLOT_START = 0;
@@ -176,9 +179,9 @@ public class BrewingStandMenu extends AbstractContainerMenu {
 
       @Override
       public void onTake(Player var1, ItemStack var2) {
-         Potion var3 = PotionUtils.getPotion(var2);
-         if (var1 instanceof ServerPlayer) {
-            CriteriaTriggers.BREWED_POTION.trigger((ServerPlayer)var1, var3.builtInRegistryHolder());
+         Optional var3 = ((PotionContents)var2.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY)).potion();
+         if (var3.isPresent() && var1 instanceof ServerPlayer var4) {
+            CriteriaTriggers.BREWED_POTION.trigger((ServerPlayer)var4, (Holder<Potion>)var3.get());
          }
 
          super.onTake(var1, var2);

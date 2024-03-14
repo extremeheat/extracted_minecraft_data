@@ -60,7 +60,7 @@ public class PlayerChunkSender {
                if (!var5.isEmpty()) {
                   ServerGamePacketListenerImpl var6 = var1.connection;
                   ++this.unacknowledgedBatches;
-                  var6.send(new ClientboundChunkBatchStartPacket());
+                  var6.send(ClientboundChunkBatchStartPacket.INSTANCE);
 
                   for(LevelChunk var8 : var5) {
                      sendChunk(var6, var3, var8);

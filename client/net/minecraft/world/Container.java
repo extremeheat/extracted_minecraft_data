@@ -11,7 +11,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 
 public interface Container extends Clearable {
    int LARGE_MAX_STACK_SIZE = 64;
-   int DEFAULT_DISTANCE_LIMIT = 8;
+   float DEFAULT_DISTANCE_BUFFER = 4.0F;
 
    int getContainerSize();
 
@@ -76,18 +76,16 @@ public interface Container extends Clearable {
    }
 
    static boolean stillValidBlockEntity(BlockEntity var0, Player var1) {
-      return stillValidBlockEntity(var0, var1, 8);
+      return stillValidBlockEntity(var0, var1, 4.0F);
    }
 
-   static boolean stillValidBlockEntity(BlockEntity var0, Player var1, int var2) {
+   static boolean stillValidBlockEntity(BlockEntity var0, Player var1, float var2) {
       Level var3 = var0.getLevel();
       BlockPos var4 = var0.getBlockPos();
       if (var3 == null) {
          return false;
-      } else if (var3.getBlockEntity(var4) != var0) {
-         return false;
       } else {
-         return var1.distanceToSqr((double)var4.getX() + 0.5, (double)var4.getY() + 0.5, (double)var4.getZ() + 0.5) <= (double)(var2 * var2);
+         return var3.getBlockEntity(var4) != var0 ? false : var1.canInteractWithBlock(var4, (double)var2);
       }
    }
 }

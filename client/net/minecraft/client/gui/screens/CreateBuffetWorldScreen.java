@@ -10,6 +10,9 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ObjectSelectionList;
+import net.minecraft.client.gui.components.StringWidget;
+import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
+import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.worldselection.WorldCreationContext;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
@@ -22,7 +25,9 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 
 public class CreateBuffetWorldScreen extends Screen {
-   private static final Component BIOME_SELECT_INFO = Component.translatable("createWorld.customize.buffet.biome");
+   private static final Component BIOME_SELECT_INFO = Component.translatable("createWorld.customize.buffet.biome").withColor(-8355712);
+   private static final int SPACING = 8;
+   private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
    private final Screen parent;
    private final Consumer<Holder<Biome>> applySettings;
    final Registry<Biome> biomes;
@@ -46,33 +51,30 @@ public class CreateBuffetWorldScreen extends Screen {
 
    @Override
    protected void init() {
-      this.list = this.addRenderableWidget(new CreateBuffetWorldScreen.BiomeList());
-      this.doneButton = this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, var1 -> {
+      LinearLayout var1 = this.layout.addToHeader(LinearLayout.vertical().spacing(8));
+      var1.defaultCellSetting().alignHorizontallyCenter();
+      var1.addChild(new StringWidget(this.getTitle(), this.font));
+      var1.addChild(new StringWidget(BIOME_SELECT_INFO, this.font));
+      this.list = this.layout.addToContents(new CreateBuffetWorldScreen.BiomeList());
+      LinearLayout var2 = this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
+      this.doneButton = var2.addChild(Button.builder(CommonComponents.GUI_DONE, var1x -> {
          this.applySettings.accept(this.biome);
-         this.minecraft.setScreen(this.parent);
-      }).bounds(this.width / 2 - 155, this.height - 28, 150, 20).build());
-      this.addRenderableWidget(
-         Button.builder(CommonComponents.GUI_CANCEL, var1 -> this.minecraft.setScreen(this.parent))
-            .bounds(this.width / 2 + 5, this.height - 28, 150, 20)
-            .build()
-      );
-      this.list.setSelected(this.list.children().stream().filter(var1 -> Objects.equals(var1.biome, this.biome)).findFirst().orElse(null));
+         this.onClose();
+      }).build());
+      var2.addChild(Button.builder(CommonComponents.GUI_CANCEL, var1x -> this.onClose()).build());
+      this.list.setSelected(this.list.children().stream().filter(var1x -> Objects.equals(var1x.biome, this.biome)).findFirst().orElse(null));
+      this.layout.visitWidgets(this::addRenderableWidget);
+      this.repositionElements();
+   }
+
+   @Override
+   protected void repositionElements() {
+      this.layout.arrangeElements();
+      this.list.updateSize(this.width, this.layout);
    }
 
    void updateButtonValidity() {
       this.doneButton.active = this.list.getSelected() != null;
-   }
-
-   @Override
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, this.title, this.width / 2, 8, 16777215);
-      var1.drawCenteredString(this.font, BIOME_SELECT_INFO, this.width / 2, 28, 10526880);
-   }
-
-   @Override
-   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderDirtBackground(var1);
    }
 
    class BiomeList extends ObjectSelectionList<CreateBuffetWorldScreen.BiomeList.Entry> {
@@ -124,7 +126,7 @@ public class CreateBuffetWorldScreen extends Screen {
          @Override
          public boolean mouseClicked(double var1, double var3, int var5) {
             BiomeList.this.setSelected(this);
-            return true;
+            return super.mouseClicked(var1, var3, var5);
          }
       }
    }

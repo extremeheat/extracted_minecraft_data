@@ -12,14 +12,15 @@ import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.OptionsList;
 import net.minecraft.client.renderer.GpuWarnlistManager;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
 public class VideoSettingsScreen extends OptionsSubScreen {
+   private static final Component TITLE = Component.translatable("options.videoTitle");
    private static final Component FABULOUS = Component.translatable("options.graphics.fabulous").withStyle(ChatFormatting.ITALIC);
    private static final Component WARNING_MESSAGE = Component.translatable("options.graphics.warning.message", FABULOUS, FABULOUS);
    private static final Component WARNING_TITLE = Component.translatable("options.graphics.warning.title").withStyle(ChatFormatting.RED);
@@ -52,12 +53,13 @@ public class VideoSettingsScreen extends OptionsSubScreen {
          var0.fovEffectScale(),
          var0.showAutosaveIndicator(),
          var0.glintSpeed(),
-         var0.glintStrength()
+         var0.glintStrength(),
+         var0.menuBackgroundBlurriness()
       };
    }
 
    public VideoSettingsScreen(Screen var1, Options var2) {
-      super(var1, var2, Component.translatable("options.videoTitle"));
+      super(var1, var2, TITLE);
       this.gpuWarnlistManager = var1.minecraft.getGpuWarnlistManager();
       this.gpuWarnlistManager.resetWarnings();
       if (var2.graphicsMode().get() == GraphicsStatus.FABULOUS) {
@@ -69,7 +71,7 @@ public class VideoSettingsScreen extends OptionsSubScreen {
 
    @Override
    protected void init() {
-      this.list = this.addRenderableWidget(new OptionsList(this.minecraft, this.width, this.height - 64, 32, 25));
+      this.list = this.addRenderableWidget(new OptionsList(this.minecraft, this.width, this.height, this));
       boolean var1 = true;
       Window var2 = this.minecraft.getWindow();
       Monitor var3 = var2.findBestMonitor();
@@ -114,11 +116,19 @@ public class VideoSettingsScreen extends OptionsSubScreen {
       this.list.addBig(var6);
       this.list.addBig(this.options.biomeBlendRadius());
       this.list.addSmall(options(this.options));
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, var2x -> {
-         this.minecraft.options.save();
-         var2.changeFullscreenVideoMode();
-         this.minecraft.setScreen(this.lastScreen);
-      }).bounds(this.width / 2 - 100, this.height - 27, 200, 20).build());
+      super.init();
+   }
+
+   @Override
+   public void onClose() {
+      this.minecraft.getWindow().changeFullscreenVideoMode();
+      super.onClose();
+   }
+
+   @Override
+   protected void repositionElements() {
+      super.repositionElements();
+      this.list.updateSize(this.width, this.layout);
    }
 
    @Override
@@ -185,12 +195,21 @@ public class VideoSettingsScreen extends OptionsSubScreen {
    public boolean mouseScrolled(double var1, double var3, double var5, double var7) {
       if (Screen.hasControlDown()) {
          OptionInstance var9 = this.options.guiScale();
-         int var10 = var9.get() + (int)Math.signum(var7);
-         if (var10 != 0) {
-            var9.set(var10);
-            if (var9.get() == var10) {
-               this.minecraft.resizeDisplay();
-               return true;
+         OptionInstance.ValueSet var11 = var9.values();
+         if (var11 instanceof OptionInstance.ClampingLazyMaxIntRange var10) {
+            int var13 = var9.get() + (int)Math.signum(var7);
+            if (var13 != 0 && var13 <= var10.maxInclusive()) {
+               CycleButton var12 = (CycleButton)this.list.findOption(var9);
+               if (var12 != null) {
+                  var9.set(var13);
+                  var12.setValue(var13);
+               }
+
+               if (var9.get() == var13) {
+                  this.minecraft.resizeDisplay();
+                  this.list.setScrollAmount(0.0);
+                  return true;
+               }
             }
          }
 
@@ -198,16 +217,5 @@ public class VideoSettingsScreen extends OptionsSubScreen {
       } else {
          return super.mouseScrolled(var1, var3, var5, var7);
       }
-   }
-
-   @Override
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, this.title, this.width / 2, 20, 16777215);
-   }
-
-   @Override
-   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderDirtBackground(var1);
    }
 }

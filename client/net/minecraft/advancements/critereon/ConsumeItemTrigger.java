@@ -55,7 +55,7 @@ public class ConsumeItemTrigger extends SimpleCriterionTrigger<ConsumeItemTrigge
       }
 
       public boolean matches(ItemStack var1) {
-         return this.item.isEmpty() || this.item.get().matches(var1);
+         return this.item.isEmpty() || ((ItemPredicate)this.item.get()).matches(var1);
       }
    }
 }

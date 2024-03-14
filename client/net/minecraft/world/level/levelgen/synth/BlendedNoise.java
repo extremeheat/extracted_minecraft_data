@@ -94,9 +94,7 @@ public class BlendedNoise implements DensityFunction.SimpleFunction {
       for(int var27 = 0; var27 < 8; ++var27) {
          ImprovedNoise var28 = this.mainNoise.getOctaveNoise(var27);
          if (var28 != null) {
-            var22 += var28.noise(
-                  PerlinNoise.wrap(var8 * var25), PerlinNoise.wrap(var10 * var25), PerlinNoise.wrap(var12 * var25), var16 * var25, var10 * var25
-               )
+            var22 += var28.noise(PerlinNoise.wrap(var8 * var25), PerlinNoise.wrap(var10 * var25), PerlinNoise.wrap(var12 * var25), var16 * var25, var10 * var25)
                / var25;
          }
 

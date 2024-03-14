@@ -31,14 +31,14 @@ public class LavaCauldronBlock extends AbstractCauldronBlock {
    }
 
    @Override
-   public void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
       if (this.isEntityInsideContent(var1, var3, var4)) {
          var4.lavaHurt();
       }
    }
 
    @Override
-   public int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
+   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
       return 3;
    }
 }

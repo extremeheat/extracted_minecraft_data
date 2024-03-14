@@ -1,10 +1,15 @@
 package net.minecraft.world.item.crafting;
 
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 
-public record RecipeHolder<T extends Recipe<?>>(ResourceLocation a, T b) {
+public record RecipeHolder<T extends Recipe<?>>(ResourceLocation b, T c) {
    private final ResourceLocation id;
    private final T value;
+   public static final StreamCodec<RegistryFriendlyByteBuf, RecipeHolder<?>> STREAM_CODEC = StreamCodec.composite(
+      ResourceLocation.STREAM_CODEC, RecipeHolder::id, Recipe.STREAM_CODEC, RecipeHolder::value, RecipeHolder::new
+   );
 
    public RecipeHolder(ResourceLocation var1, T var2) {
       super();
@@ -12,7 +17,6 @@ public record RecipeHolder<T extends Recipe<?>>(ResourceLocation a, T b) {
       this.value = var2;
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
@@ -25,12 +29,10 @@ public record RecipeHolder<T extends Recipe<?>>(ResourceLocation a, T b) {
       }
    }
 
-   @Override
    public int hashCode() {
       return this.id.hashCode();
    }
 
-   @Override
    public String toString() {
       return this.id.toString();
    }

@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Items;
@@ -33,7 +33,7 @@ public class FlatLevelGeneratorPresets {
       super();
    }
 
-   public static void bootstrap(BootstapContext<FlatLevelGeneratorPreset> var0) {
+   public static void bootstrap(BootstrapContext<FlatLevelGeneratorPreset> var0) {
       new FlatLevelGeneratorPresets.Bootstrap(var0).run();
    }
 
@@ -42,9 +42,9 @@ public class FlatLevelGeneratorPresets {
    }
 
    static class Bootstrap {
-      private final BootstapContext<FlatLevelGeneratorPreset> context;
+      private final BootstrapContext<FlatLevelGeneratorPreset> context;
 
-      Bootstrap(BootstapContext<FlatLevelGeneratorPreset> var1) {
+      Bootstrap(BootstrapContext<FlatLevelGeneratorPreset> var1) {
          super();
          this.context = var1;
       }

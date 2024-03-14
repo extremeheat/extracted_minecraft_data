@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiConsumer;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
@@ -25,7 +26,7 @@ public class RandomSequences extends SavedData {
    private final Map<ResourceLocation, RandomSequence> sequences = new Object2ObjectOpenHashMap();
 
    public static SavedData.Factory<RandomSequences> factory(long var0) {
-      return new SavedData.Factory<>(() -> new RandomSequences(var0), var2 -> load(var0, var2), DataFixTypes.SAVED_DATA_RANDOM_SEQUENCES);
+      return new SavedData.Factory<>(() -> new RandomSequences(var0), (var2, var3) -> load(var0, var2), DataFixTypes.SAVED_DATA_RANDOM_SEQUENCES);
    }
 
    public RandomSequences(long var1) {
@@ -58,14 +59,14 @@ public class RandomSequences extends SavedData {
    }
 
    @Override
-   public CompoundTag save(CompoundTag var1) {
+   public CompoundTag save(CompoundTag var1, HolderLookup.Provider var2) {
       var1.putInt("salt", this.salt);
       var1.putBoolean("include_world_seed", this.includeWorldSeed);
       var1.putBoolean("include_sequence_id", this.includeSequenceId);
-      CompoundTag var2 = new CompoundTag();
+      CompoundTag var3 = new CompoundTag();
       this.sequences
-         .forEach((var1x, var2x) -> var2.put(var1x.toString(), (Tag)RandomSequence.CODEC.encodeStart(NbtOps.INSTANCE, var2x).result().orElseThrow()));
-      var1.put("sequences", var2);
+         .forEach((var1x, var2x) -> var3.put(var1x.toString(), (Tag)RandomSequence.CODEC.encodeStart(NbtOps.INSTANCE, var2x).result().orElseThrow()));
+      var1.put("sequences", var3);
       return var1;
    }
 

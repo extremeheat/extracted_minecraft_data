@@ -294,9 +294,9 @@ public class JavaOps implements DynamicOps<Object> {
       if (var1 instanceof Map var3) {
          LinkedHashMap var4 = new LinkedHashMap((Map)var3);
          var4.remove(var2);
-         return DataResult.success(Map.copyOf(var4));
+         return Map.copyOf(var4);
       } else {
-         return DataResult.error(() -> "Not a map: " + var1);
+         return var1;
       }
    }
 

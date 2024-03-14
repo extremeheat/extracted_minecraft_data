@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.datafix.ExtraDataFixUtils;
 import net.minecraft.util.datafix.fixes.References;
 
 public class V1451_6 extends NamespacedSchema {
@@ -96,27 +97,16 @@ public class V1451_6 extends NamespacedSchema {
          References.STATS,
          () -> DSL.optionalFields(
                "stats",
-               DSL.optionalFields(
-                  "minecraft:mined",
-                  DSL.compoundList(References.BLOCK_NAME.in(var1), DSL.constType(DSL.intType())),
-                  "minecraft:crafted",
-                  (TypeTemplate)var4.get(),
-                  "minecraft:used",
-                  (TypeTemplate)var4.get(),
-                  "minecraft:broken",
-                  (TypeTemplate)var4.get(),
-                  "minecraft:picked_up",
-                  (TypeTemplate)var4.get(),
-                  DSL.optionalFields(
-                     "minecraft:dropped",
-                     (TypeTemplate)var4.get(),
-                     "minecraft:killed",
-                     DSL.compoundList(References.ENTITY_NAME.in(var1), DSL.constType(DSL.intType())),
-                     "minecraft:killed_by",
-                     DSL.compoundList(References.ENTITY_NAME.in(var1), DSL.constType(DSL.intType())),
-                     "minecraft:custom",
-                     DSL.compoundList(DSL.constType(namespacedString()), DSL.constType(DSL.intType()))
-                  )
+               ExtraDataFixUtils.optionalFields(
+                  Pair.of("minecraft:mined", DSL.compoundList(References.BLOCK_NAME.in(var1), DSL.constType(DSL.intType()))),
+                  Pair.of("minecraft:crafted", (TypeTemplate)var4.get()),
+                  Pair.of("minecraft:used", (TypeTemplate)var4.get()),
+                  Pair.of("minecraft:broken", (TypeTemplate)var4.get()),
+                  Pair.of("minecraft:picked_up", (TypeTemplate)var4.get()),
+                  Pair.of("minecraft:dropped", (TypeTemplate)var4.get()),
+                  Pair.of("minecraft:killed", DSL.compoundList(References.ENTITY_NAME.in(var1), DSL.constType(DSL.intType()))),
+                  Pair.of("minecraft:killed_by", DSL.compoundList(References.ENTITY_NAME.in(var1), DSL.constType(DSL.intType()))),
+                  Pair.of("minecraft:custom", DSL.compoundList(DSL.constType(namespacedString()), DSL.constType(DSL.intType())))
                )
             )
       );

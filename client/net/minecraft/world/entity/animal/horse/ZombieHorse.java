@@ -10,10 +10,12 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.EntityAttachment;
+import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.MobType;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Animal;
@@ -22,6 +24,11 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 
 public class ZombieHorse extends AbstractHorse {
+   private static final EntityDimensions BABY_DIMENSIONS = EntityType.ZOMBIE_HORSE
+      .getDimensions()
+      .withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, EntityType.ZOMBIE_HORSE.getHeight() - 0.03125F, 0.0F))
+      .scale(0.5F);
+
    public ZombieHorse(EntityType<? extends ZombieHorse> var1, Level var2) {
       super(var1, var2);
    }
@@ -41,11 +48,6 @@ public class ZombieHorse extends AbstractHorse {
    @Override
    protected void randomizeAttributes(RandomSource var1) {
       this.getAttribute(Attributes.JUMP_STRENGTH).setBaseValue(generateJumpStrength(var1::nextDouble));
-   }
-
-   @Override
-   public MobType getMobType() {
-      return MobType.UNDEAD;
    }
 
    @Override
@@ -79,7 +81,7 @@ public class ZombieHorse extends AbstractHorse {
    }
 
    @Override
-   protected float getPassengersRidingOffsetY(EntityDimensions var1, float var2) {
-      return var1.height - (this.isBaby() ? 0.03125F : 0.28125F) * var2;
+   public EntityDimensions getDefaultDimensions(Pose var1) {
+      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(var1);
    }
 }

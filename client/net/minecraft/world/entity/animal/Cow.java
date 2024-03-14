@@ -9,7 +9,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -31,9 +30,10 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import org.joml.Vector3f;
 
 public class Cow extends Animal {
+   private static final EntityDimensions BABY_DIMENSIONS = EntityType.COW.getDimensions().scale(0.5F).withEyeHeight(0.665F);
+
    public Cow(EntityType<? extends Cow> var1, Level var2) {
       super(var1, var2);
    }
@@ -98,12 +98,7 @@ public class Cow extends Animal {
    }
 
    @Override
-   protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
-      return this.isBaby() ? var2.height * 0.95F : 1.3F;
-   }
-
-   @Override
-   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      return new Vector3f(0.0F, var2.height - 0.03125F * var3, 0.0F);
+   public EntityDimensions getDefaultDimensions(Pose var1) {
+      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(var1);
    }
 }

@@ -1,13 +1,17 @@
 package net.minecraft.network.protocol.game;
 
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 
 public class ClientboundSoundPacket implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSoundPacket> STREAM_CODEC = Packet.codec(
+      ClientboundSoundPacket::write, ClientboundSoundPacket::new
+   );
    public static final float LOCATION_ACCURACY = 8.0F;
    private final Holder<SoundEvent> sound;
    private final SoundSource source;
@@ -30,9 +34,9 @@ public class ClientboundSoundPacket implements Packet<ClientGamePacketListener> 
       this.seed = var11;
    }
 
-   public ClientboundSoundPacket(FriendlyByteBuf var1) {
+   private ClientboundSoundPacket(RegistryFriendlyByteBuf var1) {
       super();
-      this.sound = var1.readById(BuiltInRegistries.SOUND_EVENT.asHolderIdMap(), SoundEvent::readFromNetwork);
+      this.sound = SoundEvent.STREAM_CODEC.decode(var1);
       this.source = var1.readEnum(SoundSource.class);
       this.x = var1.readInt();
       this.y = var1.readInt();
@@ -42,9 +46,8 @@ public class ClientboundSoundPacket implements Packet<ClientGamePacketListener> 
       this.seed = var1.readLong();
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
-      var1.writeId(BuiltInRegistries.SOUND_EVENT.asHolderIdMap(), this.sound, (var0, var1x) -> var1x.writeToNetwork(var0));
+   private void write(RegistryFriendlyByteBuf var1) {
+      SoundEvent.STREAM_CODEC.encode(var1, this.sound);
       var1.writeEnum(this.source);
       var1.writeInt(this.x);
       var1.writeInt(this.y);
@@ -52,6 +55,15 @@ public class ClientboundSoundPacket implements Packet<ClientGamePacketListener> 
       var1.writeFloat(this.volume);
       var1.writeFloat(this.pitch);
       var1.writeLong(this.seed);
+   }
+
+   @Override
+   public PacketType<ClientboundSoundPacket> type() {
+      return GamePacketTypes.CLIENTBOUND_SOUND;
+   }
+
+   public void handle(ClientGamePacketListener var1) {
+      var1.handleSoundEvent(this);
    }
 
    public Holder<SoundEvent> getSound() {
@@ -84,9 +96,5 @@ public class ClientboundSoundPacket implements Packet<ClientGamePacketListener> 
 
    public long getSeed() {
       return this.seed;
-   }
-
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleSoundEvent(this);
    }
 }

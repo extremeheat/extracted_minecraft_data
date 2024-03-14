@@ -74,7 +74,7 @@ public class EndGatewayBlock extends BaseEntityBlock {
    }
 
    @Override
-   public boolean canBeReplaced(BlockState var1, Fluid var2) {
+   protected boolean canBeReplaced(BlockState var1, Fluid var2) {
       return false;
    }
 }

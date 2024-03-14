@@ -7,9 +7,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.BooleanSupplier;
@@ -19,14 +19,14 @@ import net.minecraft.CrashReportCategory;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.ConfirmScreen;
+import net.minecraft.client.gui.screens.ConnectScreen;
 import net.minecraft.client.gui.screens.DisconnectedScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.TitleScreen;
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen;
+import net.minecraft.client.multiplayer.resolver.ServerAddress;
 import net.minecraft.client.resources.server.DownloadedPackSource;
 import net.minecraft.client.telemetry.WorldSessionTelemetryManager;
-import net.minecraft.core.Registry;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.Connection;
 import net.minecraft.network.ServerboundPacketListener;
 import net.minecraft.network.chat.CommonComponents;
@@ -40,16 +40,18 @@ import net.minecraft.network.protocol.common.ClientboundKeepAlivePacket;
 import net.minecraft.network.protocol.common.ClientboundPingPacket;
 import net.minecraft.network.protocol.common.ClientboundResourcePackPopPacket;
 import net.minecraft.network.protocol.common.ClientboundResourcePackPushPacket;
-import net.minecraft.network.protocol.common.ClientboundUpdateTagsPacket;
+import net.minecraft.network.protocol.common.ClientboundStoreCookiePacket;
+import net.minecraft.network.protocol.common.ClientboundTransferPacket;
 import net.minecraft.network.protocol.common.ServerboundKeepAlivePacket;
 import net.minecraft.network.protocol.common.ServerboundPongPacket;
 import net.minecraft.network.protocol.common.ServerboundResourcePackPacket;
 import net.minecraft.network.protocol.common.custom.BrandPayload;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.protocol.common.custom.DiscardedPayload;
+import net.minecraft.network.protocol.cookie.ClientboundCookieRequestPacket;
+import net.minecraft.network.protocol.cookie.ServerboundCookieResponsePacket;
 import net.minecraft.realms.DisconnectedRealmsScreen;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.tags.TagNetworkSerialization;
+import net.minecraft.resources.ResourceLocation;
 import org.slf4j.Logger;
 
 public abstract class ClientCommonPacketListenerImpl implements ClientCommonPacketListener {
@@ -64,7 +66,9 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    protected final WorldSessionTelemetryManager telemetryManager;
    @Nullable
    protected final Screen postDisconnectScreen;
-   private final List<ClientCommonPacketListenerImpl.DeferredPacket> deferredPackets = new ArrayList<>();
+   protected boolean keepResourcePacks;
+   private final List<ClientCommonPacketListenerImpl.DeferredPacket> deferredPackets = new ArrayList();
+   protected final Map<ResourceLocation, byte[]> serverCookies;
 
    protected ClientCommonPacketListenerImpl(Minecraft var1, Connection var2, CommonListenerCookie var3) {
       super();
@@ -74,6 +78,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
       this.serverBrand = var3.serverBrand();
       this.telemetryManager = var3.telemetryManager();
       this.postDisconnectScreen = var3.postDisconnectScreen();
+      this.serverCookies = var3.serverCookies();
    }
 
    @Override
@@ -105,8 +110,6 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
 
    protected abstract void handleCustomPayload(CustomPacketPayload var1);
 
-   protected abstract RegistryAccess.Frozen registryAccess();
-
    @Override
    public void handleResourcePackPush(ClientboundResourcePackPushPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
@@ -121,7 +124,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
          if (var6 != ServerData.ServerPackStatus.PROMPT && (!var5 || var6 != ServerData.ServerPackStatus.DISABLED)) {
             this.minecraft.getDownloadedPackSource().pushPack(var2, var3, var4);
          } else {
-            this.minecraft.setScreen(this.addOrUpdatePackPrompt(var2, var3, var4, var5, var1.prompt()));
+            this.minecraft.setScreen(this.addOrUpdatePackPrompt(var2, var3, var4, var5, var1.prompt().orElse(null)));
          }
       }
    }
@@ -148,23 +151,42 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    }
 
    @Override
-   public void handleUpdateTags(ClientboundUpdateTagsPacket var1) {
+   public void handleRequestCookie(ClientboundCookieRequestPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
-      var1.getTags().forEach(this::updateTagsForRegistry);
+      this.connection.send(new ServerboundCookieResponsePacket(var1.key(), this.serverCookies.get(var1.key())));
    }
 
-   private <T> void updateTagsForRegistry(ResourceKey<? extends Registry<? extends T>> var1, TagNetworkSerialization.NetworkPayload var2) {
-      if (!var2.isEmpty()) {
-         Registry var3 = (Registry)this.registryAccess().registry(var1).orElseThrow(() -> new IllegalStateException("Unknown registry " + var1));
-         HashMap var5 = new HashMap();
-         TagNetworkSerialization.deserializeTagsFromNetwork(var1, var3, var2, var5::put);
-         var3.bindTags(var5);
+   @Override
+   public void handleStoreCookie(ClientboundStoreCookiePacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
+      this.serverCookies.put(var1.key(), var1.payload());
+   }
+
+   @Override
+   public void handleTransfer(ClientboundTransferPacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
+      if (this.serverData == null) {
+         throw new IllegalStateException("Cannot transfer to server from singleplayer");
+      } else {
+         this.keepResourcePacks = true;
+         this.connection.disconnect(Component.translatable("disconnect.transfer"));
+         this.connection.setReadOnly();
+         this.connection.handleDisconnection();
+         ServerAddress var2 = new ServerAddress(var1.host(), var1.port());
+         ConnectScreen.startConnecting(
+            Objects.requireNonNullElseGet(this.postDisconnectScreen, TitleScreen::new),
+            this.minecraft,
+            var2,
+            this.serverData,
+            false,
+            new TransferState(this.serverCookies)
+         );
       }
    }
 
    @Override
    public void handleDisconnect(ClientboundDisconnectPacket var1) {
-      this.connection.disconnect(var1.getReason());
+      this.connection.disconnect(var1.reason());
    }
 
    protected void sendDeferredPackets() {
@@ -188,7 +210,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    @Override
    public void onDisconnect(Component var1) {
       this.telemetryManager.onDisconnect();
-      this.minecraft.disconnect(this.createDisconnectScreen(var1));
+      this.minecraft.disconnect(this.createDisconnectScreen(var1), this.keepResourcePacks);
       LOGGER.warn("Client disconnected with reason: {}", var1.getString());
    }
 

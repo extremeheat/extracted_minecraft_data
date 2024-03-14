@@ -158,7 +158,7 @@ public class LinkFileSystem extends FileSystem {
          LinkFileSystem.DirectoryEntry var4 = this.root;
 
          for(String var6 : var1) {
-            var4 = var4.children.computeIfAbsent(var6, var0 -> new LinkFileSystem.DirectoryEntry());
+            var4 = (LinkFileSystem.DirectoryEntry)var4.children.computeIfAbsent(var6, var0 -> new LinkFileSystem.DirectoryEntry());
          }
 
          var4.files.put(var2, var3);

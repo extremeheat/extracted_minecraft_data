@@ -9,6 +9,7 @@ import net.minecraft.stats.Stats;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -55,35 +56,39 @@ public class CakeBlock extends Block {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE_BY_BITE[var1.getValue(BITES)];
    }
 
    @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
-      ItemStack var7 = var4.getItemInHand(var5);
-      Item var8 = var7.getItem();
-      if (var7.is(ItemTags.CANDLES) && var1.getValue(BITES) == 0) {
-         Block var9 = Block.byItem(var8);
-         if (var9 instanceof CandleBlock) {
-            if (!var4.isCreative()) {
-               var7.shrink(1);
+   protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
+      Item var8 = var1.getItem();
+      if (var1.is(ItemTags.CANDLES) && var2.getValue(BITES) == 0) {
+         Block var10 = Block.byItem(var8);
+         if (var10 instanceof CandleBlock var9) {
+            if (!var5.isCreative()) {
+               var1.shrink(1);
             }
 
-            var2.playSound(null, var3, SoundEvents.CAKE_ADD_CANDLE, SoundSource.BLOCKS, 1.0F, 1.0F);
-            var2.setBlockAndUpdate(var3, CandleCakeBlock.byCandle(var9));
-            var2.gameEvent(var4, GameEvent.BLOCK_CHANGE, var3);
-            var4.awardStat(Stats.ITEM_USED.get(var8));
-            return InteractionResult.SUCCESS;
+            var3.playSound(null, var4, SoundEvents.CAKE_ADD_CANDLE, SoundSource.BLOCKS, 1.0F, 1.0F);
+            var3.setBlockAndUpdate(var4, CandleCakeBlock.byCandle((CandleBlock)var9));
+            var3.gameEvent(var5, GameEvent.BLOCK_CHANGE, var4);
+            var5.awardStat(Stats.ITEM_USED.get(var8));
+            return ItemInteractionResult.SUCCESS;
          }
       }
 
+      return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+   }
+
+   @Override
+   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       if (var2.isClientSide) {
          if (eat(var2, var3, var1, var4).consumesAction()) {
             return InteractionResult.SUCCESS;
          }
 
-         if (var7.isEmpty()) {
+         if (var4.getItemInHand(InteractionHand.MAIN_HAND).isEmpty()) {
             return InteractionResult.CONSUME;
          }
       }
@@ -111,12 +116,12 @@ public class CakeBlock extends Block {
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       return var2 == Direction.DOWN && !var1.canSurvive(var4, var5) ? Blocks.AIR.defaultBlockState() : super.updateShape(var1, var2, var3, var4, var5, var6);
    }
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       return var2.getBlockState(var3.below()).isSolid();
    }
 
@@ -126,7 +131,7 @@ public class CakeBlock extends Block {
    }
 
    @Override
-   public int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
+   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
       return getOutputSignal(var1.getValue(BITES));
    }
 
@@ -135,12 +140,12 @@ public class CakeBlock extends Block {
    }
 
    @Override
-   public boolean hasAnalogOutputSignal(BlockState var1) {
+   protected boolean hasAnalogOutputSignal(BlockState var1) {
       return true;
    }
 
    @Override
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
+   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
    }
 }

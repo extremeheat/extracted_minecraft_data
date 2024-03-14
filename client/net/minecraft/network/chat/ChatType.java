@@ -4,13 +4,15 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
-import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstapContext;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.data.worldgen.BootstrapContext;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
@@ -18,10 +20,9 @@ import net.minecraft.world.entity.Entity;
 public record ChatType(ChatTypeDecoration j, ChatTypeDecoration k) {
    private final ChatTypeDecoration chat;
    private final ChatTypeDecoration narration;
-   public static final Codec<ChatType> CODEC = RecordCodecBuilder.create(
+   public static final Codec<ChatType> DIRECT_CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               ChatTypeDecoration.CODEC.fieldOf("chat").forGetter(ChatType::chat),
-               ChatTypeDecoration.CODEC.fieldOf("narration").forGetter(ChatType::narration)
+               ChatTypeDecoration.CODEC.fieldOf("chat").forGetter(ChatType::chat), ChatTypeDecoration.CODEC.fieldOf("narration").forGetter(ChatType::narration)
             )
             .apply(var0, ChatType::new)
    );
@@ -44,11 +45,9 @@ public record ChatType(ChatTypeDecoration j, ChatTypeDecoration k) {
       return ResourceKey.create(Registries.CHAT_TYPE, new ResourceLocation(var0));
    }
 
-   public static void bootstrap(BootstapContext<ChatType> var0) {
+   public static void bootstrap(BootstrapContext<ChatType> var0) {
       var0.register(CHAT, new ChatType(DEFAULT_CHAT_DECORATION, ChatTypeDecoration.withSender("chat.type.text.narrate")));
-      var0.register(
-         SAY_COMMAND, new ChatType(ChatTypeDecoration.withSender("chat.type.announcement"), ChatTypeDecoration.withSender("chat.type.text.narrate"))
-      );
+      var0.register(SAY_COMMAND, new ChatType(ChatTypeDecoration.withSender("chat.type.announcement"), ChatTypeDecoration.withSender("chat.type.text.narrate")));
       var0.register(
          MSG_COMMAND_INCOMING,
          new ChatType(ChatTypeDecoration.incomingDirectMessage("commands.message.display.incoming"), ChatTypeDecoration.withSender("chat.type.text.narrate"))
@@ -78,24 +77,28 @@ public record ChatType(ChatTypeDecoration j, ChatTypeDecoration k) {
 
    public static ChatType.Bound bind(ResourceKey<ChatType> var0, RegistryAccess var1, Component var2) {
       Registry var3 = var1.registryOrThrow(Registries.CHAT_TYPE);
-      return ((ChatType)var3.getOrThrow(var0)).bind(var2);
+      return new ChatType.Bound(var3.getHolderOrThrow(var0), var2);
    }
 
-   public ChatType.Bound bind(Component var1) {
-      return new ChatType.Bound(this, var1);
-   }
-
-   public static record Bound(ChatType a, Component b, @Nullable Component c) {
-      private final ChatType chatType;
+   public static record Bound(Holder<ChatType> b, Component c, Optional<Component> d) {
+      private final Holder<ChatType> chatType;
       private final Component name;
-      @Nullable
-      private final Component targetName;
+      private final Optional<Component> targetName;
+      public static final StreamCodec<RegistryFriendlyByteBuf, ChatType.Bound> STREAM_CODEC = StreamCodec.composite(
+         ByteBufCodecs.holderRegistry(Registries.CHAT_TYPE),
+         ChatType.Bound::chatType,
+         ComponentSerialization.TRUSTED_STREAM_CODEC,
+         ChatType.Bound::name,
+         ComponentSerialization.TRUSTED_OPTIONAL_STREAM_CODEC,
+         ChatType.Bound::targetName,
+         ChatType.Bound::new
+      );
 
-      Bound(ChatType var1, Component var2) {
-         this(var1, var2, null);
+      Bound(Holder<ChatType> var1, Component var2) {
+         this(var1, var2, Optional.empty());
       }
 
-      public Bound(ChatType var1, Component var2, @Nullable Component var3) {
+      public Bound(Holder<ChatType> var1, Component var2, Optional<Component> var3) {
          super();
          this.chatType = var1;
          this.name = var2;
@@ -103,50 +106,15 @@ public record ChatType(ChatTypeDecoration j, ChatTypeDecoration k) {
       }
 
       public Component decorate(Component var1) {
-         return this.chatType.chat().decorate(var1, this);
+         return ((ChatType)this.chatType.value()).chat().decorate(var1, this);
       }
 
       public Component decorateNarration(Component var1) {
-         return this.chatType.narration().decorate(var1, this);
+         return ((ChatType)this.chatType.value()).narration().decorate(var1, this);
       }
 
       public ChatType.Bound withTargetName(Component var1) {
-         return new ChatType.Bound(this.chatType, this.name, var1);
-      }
-
-      public ChatType.BoundNetwork toNetwork(RegistryAccess var1) {
-         Registry var2 = var1.registryOrThrow(Registries.CHAT_TYPE);
-         return new ChatType.BoundNetwork(var2.getId(this.chatType), this.name, this.targetName);
-      }
-   }
-
-   public static record BoundNetwork(int a, Component b, @Nullable Component c) {
-      private final int chatType;
-      private final Component name;
-      @Nullable
-      private final Component targetName;
-
-      public BoundNetwork(FriendlyByteBuf var1) {
-         this(var1.readVarInt(), var1.readComponentTrusted(), var1.readNullable(FriendlyByteBuf::readComponentTrusted));
-      }
-
-      public BoundNetwork(int var1, Component var2, @Nullable Component var3) {
-         super();
-         this.chatType = var1;
-         this.name = var2;
-         this.targetName = var3;
-      }
-
-      public void write(FriendlyByteBuf var1) {
-         var1.writeVarInt(this.chatType);
-         var1.writeComponent(this.name);
-         var1.writeNullable(this.targetName, FriendlyByteBuf::writeComponent);
-      }
-
-      public Optional<ChatType.Bound> resolve(RegistryAccess var1) {
-         Registry var2 = var1.registryOrThrow(Registries.CHAT_TYPE);
-         ChatType var3 = (ChatType)var2.byId(this.chatType);
-         return Optional.ofNullable(var3).map(var1x -> new ChatType.Bound(var1x, this.name, this.targetName));
+         return new ChatType.Bound(this.chatType, this.name, Optional.of(var1));
       }
    }
 }

@@ -21,7 +21,7 @@ public class CreateSnapshotRealmTask extends LongRunningTask {
    private final String description;
    private final RealmsMainScreen realmsMainScreen;
    @Nullable
-   private WorldCreationTask creationTask;
+   private RealmCreationTask creationTask;
    @Nullable
    private ResettingGeneratedWorldTask generateWorldTask;
 
@@ -40,7 +40,7 @@ public class CreateSnapshotRealmTask extends LongRunningTask {
 
       try {
          RealmsServer var2 = var1.createSnapshotRealm(this.parentId);
-         this.creationTask = new WorldCreationTask(var2.id, this.name, this.description);
+         this.creationTask = new RealmCreationTask(var2.id, this.name, this.description);
          this.generateWorldTask = new ResettingGeneratedWorldTask(
             this.generationInfo,
             var2.id,

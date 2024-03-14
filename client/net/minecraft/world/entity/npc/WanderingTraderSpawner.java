@@ -11,6 +11,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.SpawnPlacementType;
 import net.minecraft.world.entity.SpawnPlacements;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiTypes;
@@ -19,7 +20,6 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.CustomSpawner;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.NaturalSpawner;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.storage.ServerLevelData;
 
@@ -133,14 +133,15 @@ public class WanderingTraderSpawner implements CustomSpawner {
    @Nullable
    private BlockPos findSpawnPositionNear(LevelReader var1, BlockPos var2, int var3) {
       BlockPos var4 = null;
+      SpawnPlacementType var5 = SpawnPlacements.getPlacementType(EntityType.WANDERING_TRADER);
 
-      for(int var5 = 0; var5 < 10; ++var5) {
-         int var6 = var2.getX() + this.random.nextInt(var3 * 2) - var3;
-         int var7 = var2.getZ() + this.random.nextInt(var3 * 2) - var3;
-         int var8 = var1.getHeight(Heightmap.Types.WORLD_SURFACE, var6, var7);
-         BlockPos var9 = new BlockPos(var6, var8, var7);
-         if (NaturalSpawner.isSpawnPositionOk(SpawnPlacements.Type.ON_GROUND, var1, var9, EntityType.WANDERING_TRADER)) {
-            var4 = var9;
+      for(int var6 = 0; var6 < 10; ++var6) {
+         int var7 = var2.getX() + this.random.nextInt(var3 * 2) - var3;
+         int var8 = var2.getZ() + this.random.nextInt(var3 * 2) - var3;
+         int var9 = var1.getHeight(Heightmap.Types.WORLD_SURFACE, var7, var8);
+         BlockPos var10 = new BlockPos(var7, var9, var8);
+         if (var5.isSpawnPositionOk(var1, var10, EntityType.WANDERING_TRADER)) {
+            var4 = var10;
             break;
          }
       }

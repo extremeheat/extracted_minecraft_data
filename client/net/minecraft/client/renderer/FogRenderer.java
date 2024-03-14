@@ -218,7 +218,7 @@ public class FogRenderer {
             var7.end = var2 * 0.5F;
          } else if (var6 instanceof LivingEntity && ((LivingEntity)var6).hasEffect(MobEffects.FIRE_RESISTANCE)) {
             var7.start = 0.0F;
-            var7.end = 3.0F;
+            var7.end = 5.0F;
          } else {
             var7.start = 0.25F;
             var7.end = 1.0F;
@@ -281,7 +281,7 @@ public class FogRenderer {
       }
 
       @Override
-      public MobEffect getMobEffect() {
+      public Holder<MobEffect> getMobEffect() {
          return MobEffects.BLINDNESS;
       }
 
@@ -304,22 +304,20 @@ public class FogRenderer {
       }
 
       @Override
-      public MobEffect getMobEffect() {
+      public Holder<MobEffect> getMobEffect() {
          return MobEffects.DARKNESS;
       }
 
       @Override
       public void setupFog(FogRenderer.FogData var1, LivingEntity var2, MobEffectInstance var3, float var4, float var5) {
-         if (!var3.getFactorData().isEmpty()) {
-            float var6 = Mth.lerp(var3.getFactorData().get().getFactor(var2, var5), var4, 15.0F);
-            var1.start = var1.mode == FogRenderer.FogMode.FOG_SKY ? 0.0F : var6 * 0.75F;
-            var1.end = var6;
-         }
+         float var6 = Mth.lerp(var3.getBlendFactor(var2, var5), var4, 15.0F);
+         var1.start = var1.mode == FogRenderer.FogMode.FOG_SKY ? 0.0F : var6 * 0.75F;
+         var1.end = var6;
       }
 
       @Override
       public float getModifiedVoidDarkness(LivingEntity var1, MobEffectInstance var2, float var3, float var4) {
-         return var2.getFactorData().isEmpty() ? 0.0F : 1.0F - var2.getFactorData().get().getFactor(var1, var4);
+         return 1.0F - var2.getBlendFactor(var1, var4);
       }
    }
 
@@ -344,7 +342,7 @@ public class FogRenderer {
    }
 
    interface MobEffectFogFunction {
-      MobEffect getMobEffect();
+      Holder<MobEffect> getMobEffect();
 
       void setupFog(FogRenderer.FogData var1, LivingEntity var2, MobEffectInstance var3, float var4, float var5);
 

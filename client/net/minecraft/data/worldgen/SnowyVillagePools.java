@@ -18,7 +18,7 @@ public class SnowyVillagePools {
       super();
    }
 
-   public static void bootstrap(BootstapContext<StructureTemplatePool> var0) {
+   public static void bootstrap(BootstrapContext<StructureTemplatePool> var0) {
       HolderGetter var1 = var0.lookup(Registries.PLACED_FEATURE);
       Holder.Reference var2 = var1.getOrThrow(VillagePlacements.SPRUCE_VILLAGE);
       Holder.Reference var3 = var1.getOrThrow(VillagePlacements.PILE_SNOW_VILLAGE);

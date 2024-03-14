@@ -8,11 +8,8 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.MobType;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.ClimbOnTopOfPowderSnowGoal;
@@ -27,7 +24,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockState;
-import org.joml.Vector3f;
 
 public class Endermite extends Monster {
    private static final int MAX_LIFE = 2400;
@@ -48,11 +44,6 @@ public class Endermite extends Monster {
       this.goalSelector.addGoal(8, new RandomLookAroundGoal(this));
       this.targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers());
       this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
-   }
-
-   @Override
-   protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
-      return 0.13F;
    }
 
    public static AttributeSupplier.Builder createAttributes() {
@@ -142,15 +133,5 @@ public class Endermite extends Monster {
       } else {
          return false;
       }
-   }
-
-   @Override
-   public MobType getMobType() {
-      return MobType.ARTHROPOD;
-   }
-
-   @Override
-   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      return new Vector3f(0.0F, var2.height - 0.0625F * var3, 0.0F);
    }
 }

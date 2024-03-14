@@ -2,16 +2,13 @@ package net.minecraft.world.level.block.entity;
 
 import net.minecraft.world.Container;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.phys.shapes.Shapes;
-import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.phys.AABB;
 
 public interface Hopper extends Container {
-   VoxelShape INSIDE = Block.box(2.0, 11.0, 2.0, 14.0, 16.0, 14.0);
-   VoxelShape ABOVE = Block.box(0.0, 16.0, 0.0, 16.0, 32.0, 16.0);
-   VoxelShape SUCK = Shapes.or(INSIDE, ABOVE);
+   AABB SUCK_AABB = Block.box(0.0, 11.0, 0.0, 16.0, 32.0, 16.0).toAabbs().get(0);
 
-   default VoxelShape getSuckShape() {
-      return SUCK;
+   default AABB getSuckAabb() {
+      return SUCK_AABB;
    }
 
    double getLevelX();
@@ -19,4 +16,6 @@ public interface Hopper extends Container {
    double getLevelY();
 
    double getLevelZ();
+
+   boolean isGridAligned();
 }

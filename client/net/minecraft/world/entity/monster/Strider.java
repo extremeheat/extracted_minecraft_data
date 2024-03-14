@@ -64,19 +64,18 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.level.pathfinder.PathFinder;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
-import org.joml.Vector3f;
 
 public class Strider extends Animal implements ItemSteerable, Saddleable {
    private static final UUID SUFFOCATING_MODIFIER_UUID = UUID.fromString("9e362924-01de-4ddd-a2b2-d0f7a405a174");
    private static final AttributeModifier SUFFOCATING_MODIFIER = new AttributeModifier(
-      SUFFOCATING_MODIFIER_UUID, "Strider suffocating modifier", -0.3400000035762787, AttributeModifier.Operation.MULTIPLY_BASE
+      SUFFOCATING_MODIFIER_UUID, "Strider suffocating modifier", -0.3400000035762787, AttributeModifier.Operation.ADD_MULTIPLIED_BASE
    );
    private static final float SUFFOCATE_STEERING_MODIFIER = 0.35F;
    private static final float STEERING_MODIFIER = 0.55F;
@@ -92,10 +91,10 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
    public Strider(EntityType<? extends Strider> var1, Level var2) {
       super(var1, var2);
       this.blocksBuilding = true;
-      this.setPathfindingMalus(BlockPathTypes.WATER, -1.0F);
-      this.setPathfindingMalus(BlockPathTypes.LAVA, 0.0F);
-      this.setPathfindingMalus(BlockPathTypes.DANGER_FIRE, 0.0F);
-      this.setPathfindingMalus(BlockPathTypes.DAMAGE_FIRE, 0.0F);
+      this.setPathfindingMalus(PathType.WATER, -1.0F);
+      this.setPathfindingMalus(PathType.LAVA, 0.0F);
+      this.setPathfindingMalus(PathType.DANGER_FIRE, 0.0F);
+      this.setPathfindingMalus(PathType.DAMAGE_FIRE, 0.0F);
    }
 
    public static boolean checkStriderSpawnRules(EntityType<Strider> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
@@ -118,11 +117,11 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_BOOST_TIME, 0);
-      this.entityData.define(DATA_SUFFOCATING, false);
-      this.entityData.define(DATA_SADDLE_ID, false);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_BOOST_TIME, 0);
+      var1.define(DATA_SUFFOCATING, false);
+      var1.define(DATA_SADDLE_ID, false);
    }
 
    @Override
@@ -173,9 +172,10 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
       this.entityData.set(DATA_SUFFOCATING, var1);
       AttributeInstance var2 = this.getAttribute(Attributes.MOVEMENT_SPEED);
       if (var2 != null) {
-         var2.removeModifier(SUFFOCATING_MODIFIER_UUID);
          if (var1) {
-            var2.addTransientModifier(SUFFOCATING_MODIFIER);
+            var2.addOrUpdateTransientModifier(SUFFOCATING_MODIFIER);
+         } else {
+            var2.removeModifier(SUFFOCATING_MODIFIER);
          }
       }
    }
@@ -190,11 +190,11 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
    }
 
    @Override
-   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
+   protected Vec3 getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
       float var4 = Math.min(0.25F, this.walkAnimation.speed());
       float var5 = this.walkAnimation.position();
       float var6 = 0.12F * Mth.cos(var5 * 1.5F) * 2.0F * var4;
-      return new Vector3f(0.0F, var2.height + var6 * var3, 0.0F);
+      return super.getPassengerAttachmentPoint(var1, var2, var3).add(0.0, (double)(var6 * var3), 0.0);
    }
 
    @Override
@@ -306,9 +306,9 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
    @Override
    public void tick() {
       if (this.isBeingTempted() && this.random.nextInt(140) == 0) {
-         this.playSound(SoundEvents.STRIDER_HAPPY, 1.0F, this.getVoicePitch());
+         this.makeSound(SoundEvents.STRIDER_HAPPY);
       } else if (this.isPanicking() && this.random.nextInt(60) == 0) {
-         this.playSound(SoundEvents.STRIDER_RETREAT, 1.0F, this.getVoicePitch());
+         this.makeSound(SoundEvents.STRIDER_RETREAT);
       }
 
       if (!this.isNoAi()) {
@@ -348,8 +348,9 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
    private void floatStrider() {
       if (this.isInLava()) {
          CollisionContext var1 = CollisionContext.of(this);
-         if (var1.isAbove(LiquidBlock.STABLE_SHAPE, this.blockPosition(), true)
-            && !this.level().getFluidState(this.blockPosition().above()).is(FluidTags.LAVA)) {
+         if (var1.isAbove(LiquidBlock.STABLE_SHAPE, this.blockPosition(), true) && !this.level().getFluidState(this.blockPosition().above()).is(FluidTags.LAVA)
+            )
+          {
             this.setOnGround(true);
          } else {
             this.setDeltaMovement(this.getDeltaMovement().scale(0.5).add(0.0, 0.05, 0.0));
@@ -464,37 +465,35 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
       if (this.isBaby()) {
-         return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4, var5);
+         return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4);
       } else {
-         RandomSource var6 = var1.getRandom();
-         if (var6.nextInt(30) == 0) {
-            Mob var7 = EntityType.ZOMBIFIED_PIGLIN.create(var1.getLevel());
-            if (var7 != null) {
-               var4 = this.spawnJockey(var1, var2, var7, new Zombie.ZombieGroupData(Zombie.getSpawnAsBabyOdds(var6), false));
-               var7.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.WARPED_FUNGUS_ON_A_STICK));
+         RandomSource var5 = var1.getRandom();
+         if (var5.nextInt(30) == 0) {
+            Mob var6 = EntityType.ZOMBIFIED_PIGLIN.create(var1.getLevel());
+            if (var6 != null) {
+               var4 = this.spawnJockey(var1, var2, var6, new Zombie.ZombieGroupData(Zombie.getSpawnAsBabyOdds(var5), false));
+               var6.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.WARPED_FUNGUS_ON_A_STICK));
                this.equipSaddle(null);
             }
-         } else if (var6.nextInt(10) == 0) {
-            AgeableMob var8 = EntityType.STRIDER.create(var1.getLevel());
-            if (var8 != null) {
-               var8.setAge(-24000);
-               var4 = this.spawnJockey(var1, var2, var8, null);
+         } else if (var5.nextInt(10) == 0) {
+            AgeableMob var7 = EntityType.STRIDER.create(var1.getLevel());
+            if (var7 != null) {
+               var7.setAge(-24000);
+               var4 = this.spawnJockey(var1, var2, var7, null);
             }
          } else {
             var4 = new AgeableMob.AgeableMobGroupData(0.5F);
          }
 
-         return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4, var5);
+         return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4);
       }
    }
 
    private SpawnGroupData spawnJockey(ServerLevelAccessor var1, DifficultyInstance var2, Mob var3, @Nullable SpawnGroupData var4) {
       var3.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
-      var3.finalizeSpawn(var1, var2, MobSpawnType.JOCKEY, var4, null);
+      var3.finalizeSpawn(var1, var2, MobSpawnType.JOCKEY, var4);
       var3.startRiding(this, true);
       return new AgeableMob.AgeableMobGroupData(0.0F);
    }
@@ -529,7 +528,7 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
 
       @Override
       protected boolean isValidTarget(LevelReader var1, BlockPos var2) {
-         return var1.getBlockState(var2).is(Blocks.LAVA) && var1.getBlockState(var2.above()).isPathfindable(var1, var2, PathComputationType.LAND);
+         return var1.getBlockState(var2).is(Blocks.LAVA) && var1.getBlockState(var2.above()).isPathfindable(PathComputationType.LAND);
       }
    }
 
@@ -546,8 +545,8 @@ public class Strider extends Animal implements ItemSteerable, Saddleable {
       }
 
       @Override
-      protected boolean hasValidPathType(BlockPathTypes var1) {
-         return var1 != BlockPathTypes.LAVA && var1 != BlockPathTypes.DAMAGE_FIRE && var1 != BlockPathTypes.DANGER_FIRE ? super.hasValidPathType(var1) : true;
+      protected boolean hasValidPathType(PathType var1) {
+         return var1 != PathType.LAVA && var1 != PathType.DAMAGE_FIRE && var1 != PathType.DANGER_FIRE ? super.hasValidPathType(var1) : true;
       }
 
       @Override

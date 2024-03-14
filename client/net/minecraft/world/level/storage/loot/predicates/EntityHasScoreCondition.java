@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 import java.util.stream.Stream;
+import net.minecraft.server.ServerScoreboard;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.storage.loot.IntRange;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -50,7 +51,7 @@ public record EntityHasScoreCondition(Map<String, IntRange> b, LootContext.Entit
       if (var2 == null) {
          return false;
       } else {
-         Scoreboard var3 = var2.level().getScoreboard();
+         ServerScoreboard var3 = var1.getLevel().getScoreboard();
 
          for(Entry var5 : this.scores.entrySet()) {
             if (!this.hasScore(var1, var2, var3, (String)var5.getKey(), (IntRange)var5.getValue())) {

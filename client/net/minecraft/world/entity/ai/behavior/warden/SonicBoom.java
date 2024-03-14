@@ -6,6 +6,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Unit;
+import net.minecraft.world.entity.EntityAttachment;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.behavior.Behavior;
@@ -64,20 +65,21 @@ public class SonicBoom extends Behavior<Warden> {
             .filter(var2::canTargetEntity)
             .filter(var1x -> var2.closerThan(var1x, 15.0, 20.0))
             .ifPresent(var2x -> {
-               Vec3 var3xx = var2.position().add(0.0, 1.600000023841858, 0.0);
+               Vec3 var3xx = var2.position().add(var2.getAttachments().get(EntityAttachment.WARDEN_CHEST, 0, var2.getYRot()));
                Vec3 var4 = var2x.getEyePosition().subtract(var3xx);
                Vec3 var5 = var4.normalize();
+               int var6 = Mth.floor(var4.length()) + 7;
    
-               for(int var6 = 1; var6 < Mth.floor(var4.length()) + 7; ++var6) {
-                  Vec3 var7 = var3xx.add(var5.scale((double)var6));
-                  var1.sendParticles(ParticleTypes.SONIC_BOOM, var7.x, var7.y, var7.z, 1, 0.0, 0.0, 0.0, 0.0);
+               for(int var7 = 1; var7 < var6; ++var7) {
+                  Vec3 var8 = var3xx.add(var5.scale((double)var7));
+                  var1.sendParticles(ParticleTypes.SONIC_BOOM, var8.x, var8.y, var8.z, 1, 0.0, 0.0, 0.0, 0.0);
                }
    
                var2.playSound(SoundEvents.WARDEN_SONIC_BOOM, 3.0F, 1.0F);
                var2x.hurt(var1.damageSources().sonicBoom(var2), 10.0F);
-               double var10 = 0.5 * (1.0 - var2x.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
-               double var8 = 2.5 * (1.0 - var2x.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
-               var2x.push(var5.x() * var8, var5.y() * var10, var5.z() * var8);
+               double var11 = 0.5 * (1.0 - var2x.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
+               double var9 = 2.5 * (1.0 - var2x.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));
+               var2x.push(var5.x() * var9, var5.y() * var11, var5.z() * var9);
             });
       }
    }

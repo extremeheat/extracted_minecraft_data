@@ -124,7 +124,7 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
          var1 = 0.2F;
       }
 
-      return var1 + this.getJumpBoostPower();
+      return super.getJumpPower(var1 / 0.42F);
    }
 
    @Override
@@ -167,9 +167,9 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_TYPE_ID, Rabbit.Variant.BROWN.id);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_TYPE_ID, Rabbit.Variant.BROWN.id);
    }
 
    @Override
@@ -369,18 +369,16 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
-      Rabbit.Variant var6 = getRandomRabbitVariant(var1, this.blockPosition());
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+      Rabbit.Variant var5 = getRandomRabbitVariant(var1, this.blockPosition());
       if (var4 instanceof Rabbit.RabbitGroupData) {
-         var6 = ((Rabbit.RabbitGroupData)var4).variant;
+         var5 = ((Rabbit.RabbitGroupData)var4).variant;
       } else {
-         var4 = new Rabbit.RabbitGroupData(var6);
+         var4 = new Rabbit.RabbitGroupData(var5);
       }
 
-      this.setVariant(var6);
-      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4, var5);
+      this.setVariant(var5);
+      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4);
    }
 
    private static Rabbit.Variant getRandomRabbitVariant(LevelAccessor var0, BlockPos var1) {

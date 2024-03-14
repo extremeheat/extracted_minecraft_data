@@ -3,14 +3,17 @@ package net.minecraft.network.protocol.common.custom;
 import java.util.UUID;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.game.DebugEntityNameGenerator;
-import net.minecraft.resources.ResourceLocation;
 
-public record BreezeDebugPayload(BreezeDebugPayload.BreezeInfo b) implements CustomPacketPayload {
+public record BreezeDebugPayload(BreezeDebugPayload.BreezeInfo c) implements CustomPacketPayload {
    private final BreezeDebugPayload.BreezeInfo breezeInfo;
-   public static final ResourceLocation ID = new ResourceLocation("debug/breeze");
+   public static final StreamCodec<FriendlyByteBuf, BreezeDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(
+      BreezeDebugPayload::write, BreezeDebugPayload::new
+   );
+   public static final CustomPacketPayload.Type<BreezeDebugPayload> TYPE = CustomPacketPayload.createType("debug/breeze");
 
-   public BreezeDebugPayload(FriendlyByteBuf var1) {
+   private BreezeDebugPayload(FriendlyByteBuf var1) {
       this(new BreezeDebugPayload.BreezeInfo(var1));
    }
 
@@ -19,14 +22,13 @@ public record BreezeDebugPayload(BreezeDebugPayload.BreezeInfo b) implements Cus
       this.breezeInfo = var1;
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       this.breezeInfo.write(var1);
    }
 
    @Override
-   public ResourceLocation id() {
-      return ID;
+   public CustomPacketPayload.Type<BreezeDebugPayload> type() {
+      return TYPE;
    }
 
    public static record BreezeInfo(UUID a, int b, Integer c, BlockPos d) {
@@ -36,7 +38,7 @@ public record BreezeDebugPayload(BreezeDebugPayload.BreezeInfo b) implements Cus
       private final BlockPos jumpTarget;
 
       public BreezeInfo(FriendlyByteBuf var1) {
-         this(var1.readUUID(), var1.readInt(), var1.readNullable(FriendlyByteBuf::readInt), var1.readNullable(FriendlyByteBuf::readBlockPos));
+         this(var1.readUUID(), var1.readInt(), var1.readNullable(FriendlyByteBuf::readInt), var1.readNullable(BlockPos.STREAM_CODEC));
       }
 
       public BreezeInfo(UUID var1, int var2, Integer var3, BlockPos var4) {
@@ -51,14 +53,13 @@ public record BreezeDebugPayload(BreezeDebugPayload.BreezeInfo b) implements Cus
          var1.writeUUID(this.uuid);
          var1.writeInt(this.id);
          var1.writeNullable(this.attackTarget, FriendlyByteBuf::writeInt);
-         var1.writeNullable(this.jumpTarget, FriendlyByteBuf::writeBlockPos);
+         var1.writeNullable(this.jumpTarget, BlockPos.STREAM_CODEC);
       }
 
       public String generateName() {
          return DebugEntityNameGenerator.getEntityName(this.uuid);
       }
 
-      @Override
       public String toString() {
          return this.generateName();
       }

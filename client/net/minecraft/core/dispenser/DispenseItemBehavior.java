@@ -8,6 +8,7 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Position;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -15,10 +16,12 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.Saddleable;
+import net.minecraft.world.entity.animal.armadillo.Armadillo;
 import net.minecraft.world.entity.animal.horse.AbstractChestedHorse;
 import net.minecraft.world.entity.animal.horse.AbstractHorse;
 import net.minecraft.world.entity.decoration.ArmorStand;
@@ -33,6 +36,7 @@ import net.minecraft.world.entity.projectile.SpectralArrow;
 import net.minecraft.world.entity.projectile.ThrownEgg;
 import net.minecraft.world.entity.projectile.ThrownExperienceBottle;
 import net.minecraft.world.entity.projectile.ThrownPotion;
+import net.minecraft.world.entity.projectile.windcharge.WindCharge;
 import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.BoneMealItem;
@@ -43,7 +47,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.SpawnEggItem;
-import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseFireBlock;
@@ -92,7 +96,6 @@ public interface DispenseItemBehavior {
          @Override
          protected Projectile getProjectile(Level var1, Position var2, ItemStack var3) {
             Arrow var4 = new Arrow(var1, var2.x(), var2.y(), var2.z(), var3.copyWithCount(1));
-            var4.setEffectsFromItem(var3);
             var4.pickup = AbstractArrow.Pickup.ALLOWED;
             return var4;
          }
@@ -179,7 +182,7 @@ public interface DispenseItemBehavior {
          @Override
          public ItemStack execute(BlockSource var1, ItemStack var2) {
             Direction var3 = var1.state().getValue(DispenserBlock.FACING);
-            EntityType var4 = ((SpawnEggItem)var2.getItem()).getType(var2.getTag());
+            EntityType var4 = ((SpawnEggItem)var2.getItem()).getType(var2);
 
             try {
                var4.spawn(var1.level(), var2, null, var1.pos().relative(var3), MobSpawnType.DISPENSER, var3 != Direction.UP, false);
@@ -205,7 +208,7 @@ public interface DispenseItemBehavior {
             BlockPos var4 = var1.pos().relative(var3);
             ServerLevel var5 = var1.level();
             Consumer var6 = EntityType.appendDefaultStackConfig(var1x -> var1x.setYRot(var3.toYRot()), var5, var2, null);
-            ArmorStand var7 = EntityType.ARMOR_STAND.spawn(var5, var2.getTag(), var6, var4, MobSpawnType.DISPENSER, false, false);
+            ArmorStand var7 = EntityType.ARMOR_STAND.spawn(var5, var6, var4, MobSpawnType.DISPENSER, false, false);
             if (var7 != null) {
                var2.shrink(1);
             }
@@ -240,9 +243,9 @@ public interface DispenseItemBehavior {
          protected ItemStack execute(BlockSource var1, ItemStack var2) {
             BlockPos var3 = var1.pos().relative(var1.state().getValue(DispenserBlock.FACING));
 
-            for(AbstractHorse var6 : var1.level().getEntitiesOfClass(AbstractHorse.class, new AABB(var3), var0 -> var0.isAlive() && var0.canWearArmor())) {
-               if (var6.isArmor(var2) && !var6.isWearingArmor() && var6.isTamed()) {
-                  var6.getSlot(401).set(var2.split(1));
+            for(AbstractHorse var6 : var1.level().getEntitiesOfClass(AbstractHorse.class, new AABB(var3), var0 -> var0.isAlive() && var0.canWearBodyArmor())) {
+               if (var6.isBodyArmorItem(var2) && !var6.isWearingBodyArmor() && var6.isTamed()) {
+                  var6.setBodyArmorItem(var2.split(1));
                   this.setSuccess(true);
                   return var2;
                }
@@ -332,6 +335,33 @@ public interface DispenseItemBehavior {
             var1.level().levelEvent(1018, var1.pos(), 0);
          }
       });
+      DispenserBlock.registerBehavior(
+         Items.WIND_CHARGE,
+         new DefaultDispenseItemBehavior() {
+            @Override
+            public ItemStack execute(BlockSource var1, ItemStack var2) {
+               Direction var3 = var1.state().getValue(DispenserBlock.FACING);
+               Position var4 = DispenserBlock.getDispensePosition(var1);
+               ServerLevel var5 = var1.level();
+               RandomSource var6 = var5.random;
+               double var7 = var6.triangle((double)var3.getStepX(), 0.11485000000000001);
+               double var9 = var6.triangle((double)var3.getStepY(), 0.11485000000000001);
+               double var11 = var6.triangle((double)var3.getStepZ(), 0.11485000000000001);
+               WindCharge var13 = new WindCharge(
+                  var5,
+                  var4.x() + (double)((float)var3.getStepX() * 0.3F),
+                  var4.y() + (double)((float)var3.getStepY() * 0.3F),
+                  var4.z() + (double)((float)var3.getStepZ() * 0.3F),
+                  var7,
+                  var9,
+                  var11
+               );
+               var5.addFreshEntity(var13);
+               var2.shrink(1);
+               return var2;
+            }
+         }
+      );
       DispenserBlock.registerBehavior(Items.OAK_BOAT, new BoatDispenseItemBehavior(Boat.Type.OAK));
       DispenserBlock.registerBehavior(Items.SPRUCE_BOAT, new BoatDispenseItemBehavior(Boat.Type.SPRUCE));
       DispenserBlock.registerBehavior(Items.BIRCH_BOAT, new BoatDispenseItemBehavior(Boat.Type.BIRCH));
@@ -433,8 +463,8 @@ public interface DispenseItemBehavior {
                this.setSuccess(false);
             }
 
-            if (this.isSuccess() && var2.hurt(1, var3.random, null)) {
-               var2.setCount(0);
+            if (this.isSuccess()) {
+               var2.hurtAndBreak(1, var3.getRandom(), null, () -> var2.setCount(0));
             }
 
             return var2;
@@ -449,7 +479,7 @@ public interface DispenseItemBehavior {
             if (!BoneMealItem.growCrop(var2, var3, var4) && !BoneMealItem.growWaterPlant(var2, var3, var4, null)) {
                this.setSuccess(false);
             } else if (!var3.isClientSide) {
-               var3.levelEvent(1505, var4, 0);
+               var3.levelEvent(1505, var4, 15);
             }
 
             return var2;
@@ -570,7 +600,7 @@ public interface DispenseItemBehavior {
                   return this.takeLiquid(var1, var2, new ItemStack(Items.HONEY_BOTTLE));
                } else if (var3.getFluidState(var4).is(FluidTags.WATER)) {
                   this.setSuccess(true);
-                  return this.takeLiquid(var1, var2, PotionUtils.setPotion(new ItemStack(Items.POTION), Potions.WATER));
+                  return this.takeLiquid(var1, var2, PotionContents.createItemStack(Items.POTION, Potions.WATER));
                } else {
                   return super.execute(var1, var2);
                }
@@ -600,6 +630,31 @@ public interface DispenseItemBehavior {
          }
       });
       DispenserBlock.registerBehavior(Items.SHEARS.asItem(), new ShearsDispenseItemBehavior());
+      DispenserBlock.registerBehavior(Items.BRUSH.asItem(), new OptionalDispenseItemBehavior() {
+         @Override
+         protected ItemStack execute(BlockSource var1, ItemStack var2) {
+            ServerLevel var3 = var1.level();
+            BlockPos var4 = var1.pos().relative(var1.state().getValue(DispenserBlock.FACING));
+            List var5 = var3.getEntitiesOfClass(Armadillo.class, new AABB(var4), EntitySelector.NO_SPECTATORS);
+            if (var5.isEmpty()) {
+               this.setSuccess(false);
+               return var2;
+            } else {
+               for(Armadillo var7 : var5) {
+                  if (var7.brushOffScute()) {
+                     var2.hurtAndBreak(16, var3.getRandom(), null, () -> {
+                        var2.shrink(1);
+                        var2.setDamageValue(0);
+                     });
+                     return var2;
+                  }
+               }
+
+               this.setSuccess(false);
+               return var2;
+            }
+         }
+      });
       DispenserBlock.registerBehavior(Items.HONEYCOMB, new OptionalDispenseItemBehavior() {
          @Override
          public ItemStack execute(BlockSource var1, ItemStack var2) {
@@ -625,22 +680,23 @@ public interface DispenseItemBehavior {
    
             @Override
             public ItemStack execute(BlockSource var1, ItemStack var2) {
-               if (PotionUtils.getPotion(var2) != Potions.WATER) {
+               PotionContents var3 = var2.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
+               if (!var3.is(Potions.WATER)) {
                   return this.defaultDispenseItemBehavior.dispense(var1, var2);
                } else {
-                  ServerLevel var3 = var1.level();
-                  BlockPos var4 = var1.pos();
-                  BlockPos var5 = var1.pos().relative(var1.state().getValue(DispenserBlock.FACING));
-                  if (!var3.getBlockState(var5).is(BlockTags.CONVERTABLE_TO_MUD)) {
+                  ServerLevel var4 = var1.level();
+                  BlockPos var5 = var1.pos();
+                  BlockPos var6 = var1.pos().relative(var1.state().getValue(DispenserBlock.FACING));
+                  if (!var4.getBlockState(var6).is(BlockTags.CONVERTABLE_TO_MUD)) {
                      return this.defaultDispenseItemBehavior.dispense(var1, var2);
                   } else {
-                     if (!var3.isClientSide) {
-                        for(int var6 = 0; var6 < 5; ++var6) {
-                           var3.sendParticles(
+                     if (!var4.isClientSide) {
+                        for(int var7 = 0; var7 < 5; ++var7) {
+                           var4.sendParticles(
                               ParticleTypes.SPLASH,
-                              (double)var4.getX() + var3.random.nextDouble(),
-                              (double)(var4.getY() + 1),
-                              (double)var4.getZ() + var3.random.nextDouble(),
+                              (double)var5.getX() + var4.random.nextDouble(),
+                              (double)(var5.getY() + 1),
+                              (double)var5.getZ() + var4.random.nextDouble(),
                               1,
                               0.0,
                               0.0,
@@ -650,9 +706,9 @@ public interface DispenseItemBehavior {
                         }
                      }
    
-                     var3.playSound(null, var4, SoundEvents.BOTTLE_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
-                     var3.gameEvent(null, GameEvent.FLUID_PLACE, var4);
-                     var3.setBlockAndUpdate(var5, Blocks.MUD.defaultBlockState());
+                     var4.playSound(null, var5, SoundEvents.BOTTLE_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
+                     var4.gameEvent(null, GameEvent.FLUID_PLACE, var5);
+                     var4.setBlockAndUpdate(var6, Blocks.MUD.defaultBlockState());
                      return new ItemStack(Items.GLASS_BOTTLE);
                   }
                }

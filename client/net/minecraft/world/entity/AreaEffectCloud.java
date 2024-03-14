@@ -11,21 +11,21 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.Map.Entry;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.commands.arguments.ParticleArgument;
+import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.item.alchemy.Potion;
-import net.minecraft.world.item.alchemy.PotionUtils;
-import net.minecraft.world.item.alchemy.Potions;
+import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.PushReaction;
 import org.slf4j.Logger;
@@ -42,14 +42,11 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
    private static final float DEFAULT_RADIUS = 3.0F;
    public static final float DEFAULT_WIDTH = 6.0F;
    public static final float HEIGHT = 0.5F;
-   private static final String TAG_EFFECTS = "effects";
-   private Potion potion = Potions.EMPTY;
-   private final List<MobEffectInstance> effects = Lists.newArrayList();
+   private PotionContents potionContents = PotionContents.EMPTY;
    private final Map<Entity, Integer> victims = Maps.newHashMap();
    private int duration = 600;
    private int waitTime = 20;
    private int reapplicationDelay = 20;
-   private boolean fixedColor;
    private int durationOnUse;
    private float radiusOnUse;
    private float radiusPerTick;
@@ -69,11 +66,11 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
    }
 
    @Override
-   protected void defineSynchedData() {
-      this.getEntityData().define(DATA_COLOR, 0);
-      this.getEntityData().define(DATA_RADIUS, 3.0F);
-      this.getEntityData().define(DATA_WAITING, false);
-      this.getEntityData().define(DATA_PARTICLE, ParticleTypes.ENTITY_EFFECT);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      var1.define(DATA_COLOR, 0);
+      var1.define(DATA_RADIUS, 3.0F);
+      var1.define(DATA_WAITING, false);
+      var1.define(DATA_PARTICLE, ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, 0.0F, 0.0F, 0.0F));
    }
 
    public void setRadius(float var1) {
@@ -95,35 +92,21 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
       return this.getEntityData().get(DATA_RADIUS);
    }
 
-   public void setPotion(Potion var1) {
-      this.potion = var1;
-      if (!this.fixedColor) {
-         this.updateColor();
-      }
+   public void setPotionContents(PotionContents var1) {
+      this.potionContents = var1;
+      this.updateColor();
    }
 
    private void updateColor() {
-      if (this.potion == Potions.EMPTY && this.effects.isEmpty()) {
-         this.getEntityData().set(DATA_COLOR, 0);
-      } else {
-         this.getEntityData().set(DATA_COLOR, PotionUtils.getColor(PotionUtils.getAllEffects(this.potion, this.effects)));
-      }
+      this.entityData.set(DATA_COLOR, this.potionContents.equals(PotionContents.EMPTY) ? 0 : this.potionContents.getColor());
    }
 
    public void addEffect(MobEffectInstance var1) {
-      this.effects.add(var1);
-      if (!this.fixedColor) {
-         this.updateColor();
-      }
+      this.setPotionContents(this.potionContents.withEffectAdded(var1));
    }
 
    public int getColor() {
       return this.getEntityData().get(DATA_COLOR);
-   }
-
-   public void setFixedColor(int var1) {
-      this.fixedColor = true;
-      this.getEntityData().set(DATA_COLOR, var1);
    }
 
    public ParticleOptions getParticle() {
@@ -224,18 +207,21 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
 
          if (this.tickCount % 5 == 0) {
             this.victims.entrySet().removeIf(var1x -> this.tickCount >= var1x.getValue());
-            ArrayList var23 = Lists.newArrayList();
-
-            for(MobEffectInstance var26 : this.potion.getEffects()) {
-               var23.add(
-                  new MobEffectInstance(var26.getEffect(), var26.mapDuration(var0 -> var0 / 4), var26.getAmplifier(), var26.isAmbient(), var26.isVisible())
-               );
-            }
-
-            var23.addAll(this.effects);
-            if (var23.isEmpty()) {
+            if (!this.potionContents.hasEffects()) {
                this.victims.clear();
             } else {
+               ArrayList var23 = Lists.newArrayList();
+               if (this.potionContents.potion().isPresent()) {
+                  for(MobEffectInstance var26 : this.potionContents.potion().get().value().getEffects()) {
+                     var23.add(
+                        new MobEffectInstance(
+                           var26.getEffect(), var26.mapDuration(var0 -> var0 / 4), var26.getAmplifier(), var26.isAmbient(), var26.isVisible()
+                        )
+                     );
+                  }
+               }
+
+               var23.addAll(this.potionContents.customEffects());
                List var25 = this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox());
                if (!var25.isEmpty()) {
                   for(LivingEntity var28 : var25) {
@@ -247,8 +233,8 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
                            this.victims.put(var28, this.tickCount + this.reapplicationDelay);
 
                            for(MobEffectInstance var30 : var23) {
-                              if (var30.getEffect().isInstantenous()) {
-                                 var30.getEffect().applyInstantenousEffect(this, this.getOwner(), var28, var30.getAmplifier(), 0.5);
+                              if (var30.getEffect().value().isInstantenous()) {
+                                 var30.getEffect().value().applyInstantenousEffect(this, this.getOwner(), var28, var30.getAmplifier(), 0.5);
                               } else {
                                  var28.addEffect(new MobEffectInstance(var30), this);
                               }
@@ -345,30 +331,17 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
 
       if (var1.contains("Particle", 8)) {
          try {
-            this.setParticle(ParticleArgument.readParticle(new StringReader(var1.getString("Particle")), BuiltInRegistries.PARTICLE_TYPE.asLookup()));
-         } catch (CommandSyntaxException var5) {
-            LOGGER.warn("Couldn't load custom particle {}", var1.getString("Particle"), var5);
+            this.setParticle(ParticleArgument.readParticle(new StringReader(var1.getString("Particle")), this.registryAccess()));
+         } catch (CommandSyntaxException var3) {
+            LOGGER.warn("Couldn't load custom particle {}", var1.getString("Particle"), var3);
          }
       }
 
-      if (var1.contains("Color", 99)) {
-         this.setFixedColor(var1.getInt("Color"));
-      }
-
-      if (var1.contains("Potion", 8)) {
-         this.setPotion(PotionUtils.getPotion(var1));
-      }
-
-      if (var1.contains("effects", 9)) {
-         ListTag var2 = var1.getList("effects", 10);
-         this.effects.clear();
-
-         for(int var3 = 0; var3 < var2.size(); ++var3) {
-            MobEffectInstance var4 = MobEffectInstance.load(var2.getCompound(var3));
-            if (var4 != null) {
-               this.addEffect(var4);
-            }
-         }
+      if (var1.contains("potion_contents")) {
+         PotionContents.CODEC
+            .parse(NbtOps.INSTANCE, var1.get("potion_contents"))
+            .resultOrPartial(var0 -> LOGGER.warn("Failed to parse area effect cloud potions: '{}'", var0))
+            .ifPresent(this::setPotionContents);
       }
    }
 
@@ -382,27 +355,14 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
       var1.putFloat("RadiusOnUse", this.radiusOnUse);
       var1.putFloat("RadiusPerTick", this.radiusPerTick);
       var1.putFloat("Radius", this.getRadius());
-      var1.putString("Particle", this.getParticle().writeToString());
+      var1.putString("Particle", this.getParticle().writeToString(this.registryAccess()));
       if (this.ownerUUID != null) {
          var1.putUUID("Owner", this.ownerUUID);
       }
 
-      if (this.fixedColor) {
-         var1.putInt("Color", this.getColor());
-      }
-
-      if (this.potion != Potions.EMPTY) {
-         var1.putString("Potion", BuiltInRegistries.POTION.getKey(this.potion).toString());
-      }
-
-      if (!this.effects.isEmpty()) {
-         ListTag var2 = new ListTag();
-
-         for(MobEffectInstance var4 : this.effects) {
-            var2.add(var4.save(new CompoundTag()));
-         }
-
-         var1.put("effects", var2);
+      if (!this.potionContents.equals(PotionContents.EMPTY)) {
+         Tag var2 = Util.getOrThrow(PotionContents.CODEC.encodeStart(NbtOps.INSTANCE, this.potionContents), IllegalStateException::new);
+         var1.put("potion_contents", var2);
       }
    }
 
@@ -413,10 +373,6 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
       }
 
       super.onSyncedDataUpdated(var1);
-   }
-
-   public Potion getPotion() {
-      return this.potion;
    }
 
    @Override

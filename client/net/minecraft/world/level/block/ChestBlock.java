@@ -18,17 +18,14 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.CompoundContainer;
 import net.minecraft.world.Container;
 import net.minecraft.world.Containers;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Cat;
 import net.minecraft.world.entity.monster.piglin.PiglinAi;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ChestMenu;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -142,12 +139,12 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
    }
 
    @Override
-   public RenderShape getRenderShape(BlockState var1) {
+   protected RenderShape getRenderShape(BlockState var1) {
       return RenderShape.ENTITYBLOCK_ANIMATED;
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var1.getValue(WATERLOGGED)) {
          var4.scheduleTick(var5, Fluids.WATER, Fluids.WATER.getTickDelay(var4));
       }
@@ -168,7 +165,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       if (var1.getValue(TYPE) == ChestType.SINGLE) {
          return AABB;
       } else {
@@ -218,7 +215,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
    }
 
    @Override
-   public FluidState getFluidState(BlockState var1) {
+   protected FluidState getFluidState(BlockState var1) {
       return var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
    }
 
@@ -229,29 +226,19 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
    }
 
    @Override
-   public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, LivingEntity var4, ItemStack var5) {
-      if (var5.hasCustomHoverName()) {
-         BlockEntity var6 = var1.getBlockEntity(var2);
-         if (var6 instanceof ChestBlockEntity) {
-            ((ChestBlockEntity)var6).setCustomName(var5.getHoverName());
-         }
-      }
-   }
-
-   @Override
-   public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       Containers.dropContentsOnDestroy(var1, var4, var2, var3);
       super.onRemove(var1, var2, var3, var4, var5);
    }
 
    @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       if (var2.isClientSide) {
          return InteractionResult.SUCCESS;
       } else {
-         MenuProvider var7 = this.getMenuProvider(var1, var2, var3);
-         if (var7 != null) {
-            var4.openMenu(var7);
+         MenuProvider var6 = this.getMenuProvider(var1, var2, var3);
+         if (var6 != null) {
+            var4.openMenu(var6);
             var4.awardStat(this.getOpenChestStat());
             PiglinAi.angerNearbyPiglins(var4, true);
          }
@@ -289,7 +276,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
 
    @Nullable
    @Override
-   public MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
+   protected MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
       return this.combine(var1, var2, var3, false).<Optional<MenuProvider>>apply(MENU_PROVIDER_COMBINER).orElse(null);
    }
 
@@ -353,22 +340,22 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
    }
 
    @Override
-   public boolean hasAnalogOutputSignal(BlockState var1) {
+   protected boolean hasAnalogOutputSignal(BlockState var1) {
       return true;
    }
 
    @Override
-   public int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
+   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
       return AbstractContainerMenu.getRedstoneSignalFromContainer(getContainer(this, var1, var2, var3, false));
    }
 
    @Override
-   public BlockState rotate(BlockState var1, Rotation var2) {
+   protected BlockState rotate(BlockState var1, Rotation var2) {
       return var1.setValue(FACING, var2.rotate(var1.getValue(FACING)));
    }
 
    @Override
-   public BlockState mirror(BlockState var1, Mirror var2) {
+   protected BlockState mirror(BlockState var1, Mirror var2) {
       return var1.rotate(var2.getRotation(var1.getValue(FACING)));
    }
 
@@ -378,12 +365,12 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
    }
 
    @Override
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
+   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
    }
 
    @Override
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       BlockEntity var5 = var2.getBlockEntity(var3);
       if (var5 instanceof ChestBlockEntity) {
          ((ChestBlockEntity)var5).recheckOpen();

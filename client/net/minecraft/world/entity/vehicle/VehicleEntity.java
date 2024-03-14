@@ -1,5 +1,6 @@
 package net.minecraft.world.entity.vehicle;
 
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -55,19 +56,16 @@ public abstract class VehicleEntity extends Entity {
       this.kill();
       if (this.level().getGameRules().getBoolean(GameRules.RULE_DOENTITYDROPS)) {
          ItemStack var2 = new ItemStack(var1);
-         if (this.hasCustomName()) {
-            var2.setHoverName(this.getCustomName());
-         }
-
+         var2.set(DataComponents.CUSTOM_NAME, this.getCustomName());
          this.spawnAtLocation(var2);
       }
    }
 
    @Override
-   protected void defineSynchedData() {
-      this.entityData.define(DATA_ID_HURT, 0);
-      this.entityData.define(DATA_ID_HURTDIR, 1);
-      this.entityData.define(DATA_ID_DAMAGE, 0.0F);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      var1.define(DATA_ID_HURT, 0);
+      var1.define(DATA_ID_HURTDIR, 1);
+      var1.define(DATA_ID_DAMAGE, 0.0F);
    }
 
    public void setHurtTime(int var1) {

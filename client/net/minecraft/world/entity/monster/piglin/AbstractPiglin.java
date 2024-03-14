@@ -9,11 +9,8 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.navigation.GroundPathNavigation;
 import net.minecraft.world.entity.ai.util.GoalUtils;
@@ -21,44 +18,27 @@ import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.ZombifiedPiglin;
 import net.minecraft.world.item.TieredItem;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
-import org.joml.Vector3f;
+import net.minecraft.world.level.pathfinder.PathType;
 
 public abstract class AbstractPiglin extends Monster {
    protected static final EntityDataAccessor<Boolean> DATA_IMMUNE_TO_ZOMBIFICATION = SynchedEntityData.defineId(
       AbstractPiglin.class, EntityDataSerializers.BOOLEAN
    );
    protected static final int CONVERSION_TIME = 300;
-   protected static final float PIGLIN_EYE_HEIGHT = 1.79F;
    protected int timeInOverworld;
 
    public AbstractPiglin(EntityType<? extends AbstractPiglin> var1, Level var2) {
       super(var1, var2);
       this.setCanPickUpLoot(true);
       this.applyOpenDoorsAbility();
-      this.setPathfindingMalus(BlockPathTypes.DANGER_FIRE, 16.0F);
-      this.setPathfindingMalus(BlockPathTypes.DAMAGE_FIRE, -1.0F);
+      this.setPathfindingMalus(PathType.DANGER_FIRE, 16.0F);
+      this.setPathfindingMalus(PathType.DAMAGE_FIRE, -1.0F);
    }
 
    private void applyOpenDoorsAbility() {
       if (GoalUtils.hasGroundPathNavigation(this)) {
          ((GroundPathNavigation)this.getNavigation()).setCanOpenDoors(true);
       }
-   }
-
-   @Override
-   protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
-      return 1.79F;
-   }
-
-   @Override
-   protected float ridingOffset(Entity var1) {
-      return -0.7F;
-   }
-
-   @Override
-   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      return new Vector3f(0.0F, var2.height + 0.0625F * var3, 0.0F);
    }
 
    protected abstract boolean canHunt();
@@ -72,9 +52,9 @@ public abstract class AbstractPiglin extends Monster {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_IMMUNE_TO_ZOMBIFICATION, false);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_IMMUNE_TO_ZOMBIFICATION, false);
    }
 
    @Override

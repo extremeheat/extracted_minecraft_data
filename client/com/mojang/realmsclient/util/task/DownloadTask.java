@@ -14,14 +14,14 @@ import org.slf4j.Logger;
 public class DownloadTask extends LongRunningTask {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Component TITLE = Component.translatable("mco.download.preparing");
-   private final long worldId;
+   private final long realmId;
    private final int slot;
    private final Screen lastScreen;
    private final String downloadName;
 
    public DownloadTask(long var1, int var3, String var4, Screen var5) {
       super();
-      this.worldId = var1;
+      this.realmId = var1;
       this.slot = var3;
       this.lastScreen = var5;
       this.downloadName = var4;
@@ -38,7 +38,7 @@ public class DownloadTask extends LongRunningTask {
                return;
             }
 
-            WorldDownload var3 = var1.requestDownloadInfo(this.worldId, this.slot);
+            WorldDownload var3 = var1.requestDownloadInfo(this.realmId, this.slot);
             pause(1L);
             if (this.aborted()) {
                return;

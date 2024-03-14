@@ -12,6 +12,8 @@ import com.mojang.logging.LogUtils;
 import java.math.BigInteger;
 import java.security.PublicKey;
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -31,6 +33,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.common.ServerboundClientInformationPacket;
 import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.custom.BrandPayload;
+import net.minecraft.network.protocol.configuration.ConfigurationProtocols;
+import net.minecraft.network.protocol.cookie.ClientboundCookieRequestPacket;
+import net.minecraft.network.protocol.cookie.ServerboundCookieResponsePacket;
 import net.minecraft.network.protocol.login.ClientLoginPacketListener;
 import net.minecraft.network.protocol.login.ClientboundCustomQueryPacket;
 import net.minecraft.network.protocol.login.ClientboundGameProfilePacket;
@@ -41,6 +46,7 @@ import net.minecraft.network.protocol.login.ServerboundCustomQueryAnswerPacket;
 import net.minecraft.network.protocol.login.ServerboundKeyPacket;
 import net.minecraft.network.protocol.login.ServerboundLoginAcknowledgedPacket;
 import net.minecraft.realms.DisconnectedRealmsScreen;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Crypt;
 import net.minecraft.world.flag.FeatureFlags;
 import org.slf4j.Logger;
@@ -59,10 +65,19 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
    private final Duration worldLoadDuration;
    @Nullable
    private String minigameName;
+   private final Map<ResourceLocation, byte[]> cookies;
+   private final boolean wasTransferredTo;
    private final AtomicReference<ClientHandshakePacketListenerImpl.State> state = new AtomicReference<>(ClientHandshakePacketListenerImpl.State.CONNECTING);
 
    public ClientHandshakePacketListenerImpl(
-      Connection var1, Minecraft var2, @Nullable ServerData var3, @Nullable Screen var4, boolean var5, @Nullable Duration var6, Consumer<Component> var7
+      Connection var1,
+      Minecraft var2,
+      @Nullable ServerData var3,
+      @Nullable Screen var4,
+      boolean var5,
+      @Nullable Duration var6,
+      Consumer<Component> var7,
+      @Nullable TransferState var8
    ) {
       super();
       this.connection = var1;
@@ -72,6 +87,8 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
       this.updateStatus = var7;
       this.newWorld = var5;
       this.worldLoadDuration = var6;
+      this.cookies = var8 != null ? new HashMap<>(var8.cookies()) : new HashMap<>();
+      this.wasTransferredTo = var8 != null;
    }
 
    private void switchState(ClientHandshakePacketListenerImpl.State var1) {
@@ -105,20 +122,28 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
          throw new IllegalStateException("Protocol error", var9);
       }
 
-      Util.ioPool().submit(() -> {
-         Component var5xx = this.authenticateServer(var4);
-         if (var5xx != null) {
-            if (this.serverData == null || !this.serverData.isLan()) {
-               this.connection.disconnect(var5xx);
-               return;
+      if (var1.shouldAuthenticate()) {
+         Util.ioPool().submit(() -> {
+            Component var5xx = this.authenticateServer(var4);
+            if (var5xx != null) {
+               if (this.serverData == null || !this.serverData.isLan()) {
+                  this.connection.disconnect(var5xx);
+                  return;
+               }
+
+               LOGGER.warn(var5xx.getString());
             }
 
-            LOGGER.warn(var5xx.getString());
-         }
+            this.setEncryption(var5, var2, var3);
+         });
+      } else {
+         this.setEncryption(var5, var2, var3);
+      }
+   }
 
-         this.switchState(ClientHandshakePacketListenerImpl.State.ENCRYPTING);
-         this.connection.send(var5, PacketSendListener.thenRun(() -> this.connection.setEncryptionKey(var2, var3)));
-      });
+   private void setEncryption(ServerboundKeyPacket var1, Cipher var2, Cipher var3) {
+      this.switchState(ClientHandshakePacketListenerImpl.State.ENCRYPTING);
+      this.connection.send(var1, PacketSendListener.thenRun(() -> this.connection.setEncryptionKey(var2, var3)));
    }
 
    @Nullable
@@ -146,10 +171,10 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
    @Override
    public void handleGameProfile(ClientboundGameProfilePacket var1) {
       this.switchState(ClientHandshakePacketListenerImpl.State.JOINING);
-      GameProfile var2 = var1.getGameProfile();
-      this.connection.send(new ServerboundLoginAcknowledgedPacket());
+      GameProfile var2 = var1.gameProfile();
       this.connection
-         .setListener(
+         .setupInboundProtocol(
+            ConfigurationProtocols.CLIENTBOUND,
             new ClientConfigurationPacketListenerImpl(
                this.minecraft,
                this.connection,
@@ -160,20 +185,24 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
                   FeatureFlags.DEFAULT_FLAGS,
                   null,
                   this.serverData,
-                  this.parent
+                  this.parent,
+                  this.cookies
                )
             )
          );
+      this.connection.send(ServerboundLoginAcknowledgedPacket.INSTANCE);
+      this.connection.setupOutboundProtocol(ConfigurationProtocols.SERVERBOUND);
       this.connection.send(new ServerboundCustomPayloadPacket(new BrandPayload(ClientBrandRetriever.getClientModName())));
       this.connection.send(new ServerboundClientInformationPacket(this.minecraft.options.buildPlayerInformation()));
    }
 
    @Override
    public void onDisconnect(Component var1) {
+      Component var2 = this.wasTransferredTo ? CommonComponents.TRANSFER_CONNECT_FAILED : CommonComponents.CONNECT_FAILED;
       if (this.serverData != null && this.serverData.isRealm()) {
-         this.minecraft.setScreen(new DisconnectedRealmsScreen(this.parent, CommonComponents.CONNECT_FAILED, var1));
+         this.minecraft.setScreen(new DisconnectedRealmsScreen(this.parent, var2, var1));
       } else {
-         this.minecraft.setScreen(new DisconnectedScreen(this.parent, CommonComponents.CONNECT_FAILED, var1));
+         this.minecraft.setScreen(new DisconnectedScreen(this.parent, var2, var1));
       }
    }
 
@@ -200,8 +229,13 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
       this.connection.send(new ServerboundCustomQueryAnswerPacket(var1.transactionId(), null));
    }
 
-   public void setMinigameName(String var1) {
+   public void setMinigameName(@Nullable String var1) {
       this.minigameName = var1;
+   }
+
+   @Override
+   public void handleRequestCookie(ClientboundCookieRequestPacket var1) {
+      this.connection.send(new ServerboundCookieResponsePacket(var1.key(), this.cookies.get(var1.key())));
    }
 
    @Override

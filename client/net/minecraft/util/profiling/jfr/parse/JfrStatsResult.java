@@ -11,14 +11,16 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.util.profiling.jfr.serialize.JfrResultJsonSerializer;
 import net.minecraft.util.profiling.jfr.stats.ChunkGenStat;
+import net.minecraft.util.profiling.jfr.stats.ChunkIdentification;
 import net.minecraft.util.profiling.jfr.stats.CpuLoadStat;
 import net.minecraft.util.profiling.jfr.stats.FileIOStat;
 import net.minecraft.util.profiling.jfr.stats.GcHeapStat;
-import net.minecraft.util.profiling.jfr.stats.NetworkPacketSummary;
+import net.minecraft.util.profiling.jfr.stats.IoSummary;
+import net.minecraft.util.profiling.jfr.stats.PacketIdentification;
 import net.minecraft.util.profiling.jfr.stats.ThreadAllocationStat;
 import net.minecraft.util.profiling.jfr.stats.TickTimeStat;
 import net.minecraft.util.profiling.jfr.stats.TimedStatSummary;
-import net.minecraft.world.level.chunk.ChunkStatus;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 
 public record JfrStatsResult(
    Instant a,
@@ -29,11 +31,13 @@ public record JfrStatsResult(
    List<CpuLoadStat> f,
    GcHeapStat.Summary g,
    ThreadAllocationStat.Summary h,
-   NetworkPacketSummary i,
-   NetworkPacketSummary j,
-   FileIOStat.Summary k,
-   FileIOStat.Summary l,
-   List<ChunkGenStat> m
+   IoSummary<PacketIdentification> i,
+   IoSummary<PacketIdentification> j,
+   IoSummary<ChunkIdentification> k,
+   IoSummary<ChunkIdentification> l,
+   FileIOStat.Summary m,
+   FileIOStat.Summary n,
+   List<ChunkGenStat> o
 ) {
    private final Instant recordingStarted;
    private final Instant recordingEnded;
@@ -44,8 +48,10 @@ public record JfrStatsResult(
    private final List<CpuLoadStat> cpuLoadStats;
    private final GcHeapStat.Summary heapSummary;
    private final ThreadAllocationStat.Summary threadAllocationSummary;
-   private final NetworkPacketSummary receivedPacketsSummary;
-   private final NetworkPacketSummary sentPacketsSummary;
+   private final IoSummary<PacketIdentification> receivedPacketsSummary;
+   private final IoSummary<PacketIdentification> sentPacketsSummary;
+   private final IoSummary<ChunkIdentification> writtenChunks;
+   private final IoSummary<ChunkIdentification> readChunks;
    private final FileIOStat.Summary fileWrites;
    private final FileIOStat.Summary fileReads;
    private final List<ChunkGenStat> chunkGenStats;
@@ -59,11 +65,13 @@ public record JfrStatsResult(
       List<CpuLoadStat> var6,
       GcHeapStat.Summary var7,
       ThreadAllocationStat.Summary var8,
-      NetworkPacketSummary var9,
-      NetworkPacketSummary var10,
-      FileIOStat.Summary var11,
-      FileIOStat.Summary var12,
-      List<ChunkGenStat> var13
+      IoSummary<PacketIdentification> var9,
+      IoSummary<PacketIdentification> var10,
+      IoSummary<ChunkIdentification> var11,
+      IoSummary<ChunkIdentification> var12,
+      FileIOStat.Summary var13,
+      FileIOStat.Summary var14,
+      List<ChunkGenStat> var15
    ) {
       super();
       this.recordingStarted = var1;
@@ -76,9 +84,11 @@ public record JfrStatsResult(
       this.threadAllocationSummary = var8;
       this.receivedPacketsSummary = var9;
       this.sentPacketsSummary = var10;
-      this.fileWrites = var11;
-      this.fileReads = var12;
-      this.chunkGenStats = var13;
+      this.writtenChunks = var11;
+      this.readChunks = var12;
+      this.fileWrites = var13;
+      this.fileReads = var14;
+      this.chunkGenStats = var15;
    }
 
    public List<Pair<ChunkStatus, TimedStatSummary<ChunkGenStat>>> chunkGenSummary() {

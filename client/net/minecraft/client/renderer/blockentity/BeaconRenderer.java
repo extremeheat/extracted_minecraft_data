@@ -11,8 +11,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BeaconBlockEntity;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Matrix3f;
-import org.joml.Matrix4f;
 
 public class BeaconRenderer implements BlockEntityRenderer<BeaconBlockEntity> {
    public static final ResourceLocation BEAM_LOCATION = new ResourceLocation("textures/entity/beacon_beam.png");
@@ -151,59 +149,45 @@ public class BeaconRenderer implements BlockEntityRenderer<BeaconBlockEntity> {
       float var19
    ) {
       PoseStack.Pose var20 = var0.last();
-      Matrix4f var21 = var20.pose();
-      Matrix3f var22 = var20.normal();
-      renderQuad(var21, var22, var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var16, var17, var18, var19);
-      renderQuad(var21, var22, var1, var2, var3, var4, var5, var6, var7, var14, var15, var12, var13, var16, var17, var18, var19);
-      renderQuad(var21, var22, var1, var2, var3, var4, var5, var6, var7, var10, var11, var14, var15, var16, var17, var18, var19);
-      renderQuad(var21, var22, var1, var2, var3, var4, var5, var6, var7, var12, var13, var8, var9, var16, var17, var18, var19);
+      renderQuad(var20, var1, var2, var3, var4, var5, var6, var7, var8, var9, var10, var11, var16, var17, var18, var19);
+      renderQuad(var20, var1, var2, var3, var4, var5, var6, var7, var14, var15, var12, var13, var16, var17, var18, var19);
+      renderQuad(var20, var1, var2, var3, var4, var5, var6, var7, var10, var11, var14, var15, var16, var17, var18, var19);
+      renderQuad(var20, var1, var2, var3, var4, var5, var6, var7, var12, var13, var8, var9, var16, var17, var18, var19);
    }
 
    private static void renderQuad(
-      Matrix4f var0,
-      Matrix3f var1,
-      VertexConsumer var2,
+      PoseStack.Pose var0,
+      VertexConsumer var1,
+      float var2,
       float var3,
       float var4,
       float var5,
-      float var6,
+      int var6,
       int var7,
-      int var8,
+      float var8,
       float var9,
       float var10,
       float var11,
       float var12,
       float var13,
       float var14,
-      float var15,
-      float var16
+      float var15
    ) {
-      addVertex(var0, var1, var2, var3, var4, var5, var6, var8, var9, var10, var14, var15);
-      addVertex(var0, var1, var2, var3, var4, var5, var6, var7, var9, var10, var14, var16);
-      addVertex(var0, var1, var2, var3, var4, var5, var6, var7, var11, var12, var13, var16);
-      addVertex(var0, var1, var2, var3, var4, var5, var6, var8, var11, var12, var13, var15);
+      addVertex(var0, var1, var2, var3, var4, var5, var7, var8, var9, var13, var14);
+      addVertex(var0, var1, var2, var3, var4, var5, var6, var8, var9, var13, var15);
+      addVertex(var0, var1, var2, var3, var4, var5, var6, var10, var11, var12, var15);
+      addVertex(var0, var1, var2, var3, var4, var5, var7, var10, var11, var12, var14);
    }
 
    private static void addVertex(
-      Matrix4f var0,
-      Matrix3f var1,
-      VertexConsumer var2,
-      float var3,
-      float var4,
-      float var5,
-      float var6,
-      int var7,
-      float var8,
-      float var9,
-      float var10,
-      float var11
+      PoseStack.Pose var0, VertexConsumer var1, float var2, float var3, float var4, float var5, int var6, float var7, float var8, float var9, float var10
    ) {
-      var2.vertex(var0, var8, (float)var7, var9)
-         .color(var3, var4, var5, var6)
-         .uv(var10, var11)
+      var1.vertex(var0, var7, (float)var6, var8)
+         .color(var2, var3, var4, var5)
+         .uv(var9, var10)
          .overlayCoords(OverlayTexture.NO_OVERLAY)
          .uv2(15728880)
-         .normal(var1, 0.0F, 1.0F, 0.0F)
+         .normal(var0, 0.0F, 1.0F, 0.0F)
          .endVertex();
    }
 

@@ -113,6 +113,7 @@ import net.minecraft.world.level.block.SculkShriekerBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.trialspawner.TrialSpawner;
+import net.minecraft.world.level.block.entity.vault.VaultBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.border.WorldBorder;
@@ -127,8 +128,8 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.joml.Matrix3f;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fStack;
 import org.joml.Vector3d;
 import org.joml.Vector4f;
 import org.slf4j.Logger;
@@ -144,7 +145,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
    private static final int TRANSPARENT_SORT_COUNT = 15;
    private static final ResourceLocation MOON_LOCATION = new ResourceLocation("textures/environment/moon_phases.png");
    private static final ResourceLocation SUN_LOCATION = new ResourceLocation("textures/environment/sun.png");
-   private static final ResourceLocation CLOUDS_LOCATION = new ResourceLocation("textures/environment/clouds.png");
+   protected static final ResourceLocation CLOUDS_LOCATION = new ResourceLocation("textures/environment/clouds.png");
    private static final ResourceLocation END_SKY_LOCATION = new ResourceLocation("textures/environment/end_sky.png");
    private static final ResourceLocation FORCEFIELD_LOCATION = new ResourceLocation("textures/misc/forcefield.png");
    private static final ResourceLocation RAIN_LOCATION = new ResourceLocation("textures/environment/rain.png");
@@ -431,9 +432,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
                   SimpleParticleType var26 = !var18.is(FluidTags.LAVA) && !var17.is(Blocks.MAGMA_BLOCK) && !CampfireBlock.isLitCampfire(var17)
                      ? ParticleTypes.RAIN
                      : ParticleTypes.SMOKE;
-                  this.minecraft
-                     .level
-                     .addParticle(var26, (double)var6.getX() + var13, (double)var6.getY() + var24, (double)var6.getZ() + var15, 0.0, 0.0, 0.0);
+                  this.minecraft.level.addParticle(var26, (double)var6.getX() + var13, (double)var6.getY() + var24, (double)var6.getZ() + var15, 0.0, 0.0, 0.0);
                }
             }
          }
@@ -893,71 +892,66 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       }
    }
 
-   public void prepareCullFrustum(PoseStack var1, Vec3 var2, Matrix4f var3) {
-      Matrix4f var4 = var1.last().pose();
-      double var5 = var2.x();
-      double var7 = var2.y();
-      double var9 = var2.z();
-      this.cullingFrustum = new Frustum(var4, var3);
-      this.cullingFrustum.prepare(var5, var7, var9);
+   public void prepareCullFrustum(Vec3 var1, Matrix4f var2, Matrix4f var3) {
+      this.cullingFrustum = new Frustum(var2, var3);
+      this.cullingFrustum.prepare(var1.x(), var1.y(), var1.z());
    }
 
-   public void renderLevel(PoseStack var1, float var2, long var3, boolean var5, Camera var6, GameRenderer var7, LightTexture var8, Matrix4f var9) {
+   public void renderLevel(float var1, long var2, boolean var4, Camera var5, GameRenderer var6, LightTexture var7, Matrix4f var8, Matrix4f var9) {
       TickRateManager var10 = this.minecraft.level.tickRateManager();
-      float var11 = var10.runsNormally() ? var2 : 1.0F;
+      float var11 = var10.runsNormally() ? var1 : 1.0F;
       RenderSystem.setShaderGameTime(this.level.getGameTime(), var11);
-      this.blockEntityRenderDispatcher.prepare(this.level, var6, this.minecraft.hitResult);
-      this.entityRenderDispatcher.prepare(this.level, var6, this.minecraft.crosshairPickEntity);
+      this.blockEntityRenderDispatcher.prepare(this.level, var5, this.minecraft.hitResult);
+      this.entityRenderDispatcher.prepare(this.level, var5, this.minecraft.crosshairPickEntity);
       ProfilerFiller var12 = this.level.getProfiler();
       var12.popPush("light_update_queue");
       this.level.pollLightUpdates();
       var12.popPush("light_updates");
       this.level.getChunkSource().getLightEngine().runLightUpdates();
-      Vec3 var13 = var6.getPosition();
+      Vec3 var13 = var5.getPosition();
       double var14 = var13.x();
       double var16 = var13.y();
       double var18 = var13.z();
-      Matrix4f var20 = var1.last().pose();
       var12.popPush("culling");
-      boolean var21 = this.capturedFrustum != null;
-      Frustum var22;
-      if (var21) {
-         var22 = this.capturedFrustum;
-         var22.prepare(this.frustumPos.x, this.frustumPos.y, this.frustumPos.z);
+      boolean var20 = this.capturedFrustum != null;
+      Frustum var21;
+      if (var20) {
+         var21 = this.capturedFrustum;
+         var21.prepare(this.frustumPos.x, this.frustumPos.y, this.frustumPos.z);
       } else {
-         var22 = this.cullingFrustum;
+         var21 = this.cullingFrustum;
       }
 
       this.minecraft.getProfiler().popPush("captureFrustum");
       if (this.captureFrustum) {
-         this.captureFrustum(var20, var9, var13.x, var13.y, var13.z, var21 ? new Frustum(var20, var9) : var22);
+         this.captureFrustum(var8, var9, var13.x, var13.y, var13.z, var20 ? new Frustum(var8, var9) : var21);
          this.captureFrustum = false;
       }
 
       var12.popPush("clear");
-      FogRenderer.setupColor(var6, var11, this.minecraft.level, this.minecraft.options.getEffectiveRenderDistance(), var7.getDarkenWorldAmount(var11));
+      FogRenderer.setupColor(var5, var11, this.minecraft.level, this.minecraft.options.getEffectiveRenderDistance(), var6.getDarkenWorldAmount(var11));
       FogRenderer.levelFogColor();
       RenderSystem.clear(16640, Minecraft.ON_OSX);
-      float var23 = var7.getRenderDistance();
-      boolean var24 = this.minecraft.level.effects().isFoggyAt(Mth.floor(var14), Mth.floor(var16))
+      float var22 = var6.getRenderDistance();
+      boolean var23 = this.minecraft.level.effects().isFoggyAt(Mth.floor(var14), Mth.floor(var16))
          || this.minecraft.gui.getBossOverlay().shouldCreateWorldFog();
       var12.popPush("sky");
       RenderSystem.setShader(GameRenderer::getPositionShader);
-      this.renderSky(var1, var9, var11, var6, var24, () -> FogRenderer.setupFog(var6, FogRenderer.FogMode.FOG_SKY, var23, var24, var11));
+      this.renderSky(var8, var9, var11, var5, var23, () -> FogRenderer.setupFog(var5, FogRenderer.FogMode.FOG_SKY, var22, var23, var11));
       var12.popPush("fog");
-      FogRenderer.setupFog(var6, FogRenderer.FogMode.FOG_TERRAIN, Math.max(var23, 32.0F), var24, var11);
+      FogRenderer.setupFog(var5, FogRenderer.FogMode.FOG_TERRAIN, Math.max(var22, 32.0F), var23, var11);
       var12.popPush("terrain_setup");
-      this.setupRender(var6, var22, var21, this.minecraft.player.isSpectator());
+      this.setupRender(var5, var21, var20, this.minecraft.player.isSpectator());
       var12.popPush("compile_sections");
-      this.compileSections(var6);
+      this.compileSections(var5);
       var12.popPush("terrain");
-      this.renderSectionLayer(RenderType.solid(), var1, var14, var16, var18, var9);
-      this.renderSectionLayer(RenderType.cutoutMipped(), var1, var14, var16, var18, var9);
-      this.renderSectionLayer(RenderType.cutout(), var1, var14, var16, var18, var9);
+      this.renderSectionLayer(RenderType.solid(), var14, var16, var18, var8, var9);
+      this.renderSectionLayer(RenderType.cutoutMipped(), var14, var16, var18, var8, var9);
+      this.renderSectionLayer(RenderType.cutout(), var14, var16, var18, var8, var9);
       if (this.level.effects().constantAmbientLight()) {
-         Lighting.setupNetherLevel(var1.last().pose());
+         Lighting.setupNetherLevel();
       } else {
-         Lighting.setupLevel(var1.last().pose());
+         Lighting.setupLevel();
       }
 
       var12.popPush("entities");
@@ -978,74 +972,79 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          this.minecraft.getMainRenderTarget().bindWrite(false);
       }
 
+      Matrix4fStack var24 = RenderSystem.getModelViewStack();
+      var24.pushMatrix();
+      var24.mul(var8);
+      RenderSystem.applyModelViewMatrix();
       boolean var25 = false;
-      MultiBufferSource.BufferSource var26 = this.renderBuffers.bufferSource();
+      PoseStack var26 = new PoseStack();
+      MultiBufferSource.BufferSource var27 = this.renderBuffers.bufferSource();
 
-      for(Entity var28 : this.level.entitiesForRendering()) {
-         if (this.entityRenderDispatcher.shouldRender(var28, var22, var14, var16, var18) || var28.hasIndirectPassenger(this.minecraft.player)) {
-            BlockPos var29 = var28.blockPosition();
-            if ((this.level.isOutsideBuildHeight(var29.getY()) || this.isSectionCompiled(var29))
-               && (var28 != var6.getEntity() || var6.isDetached() || var6.getEntity() instanceof LivingEntity && ((LivingEntity)var6.getEntity()).isSleeping())
-               && (!(var28 instanceof LocalPlayer) || var6.getEntity() == var28)) {
+      for(Entity var29 : this.level.entitiesForRendering()) {
+         if (this.entityRenderDispatcher.shouldRender(var29, var21, var14, var16, var18) || var29.hasIndirectPassenger(this.minecraft.player)) {
+            BlockPos var30 = var29.blockPosition();
+            if ((this.level.isOutsideBuildHeight(var30.getY()) || this.isSectionCompiled(var30))
+               && (var29 != var5.getEntity() || var5.isDetached() || var5.getEntity() instanceof LivingEntity && ((LivingEntity)var5.getEntity()).isSleeping())
+               && (!(var29 instanceof LocalPlayer) || var5.getEntity() == var29)) {
                ++this.renderedEntities;
-               if (var28.tickCount == 0) {
-                  var28.xOld = var28.getX();
-                  var28.yOld = var28.getY();
-                  var28.zOld = var28.getZ();
+               if (var29.tickCount == 0) {
+                  var29.xOld = var29.getX();
+                  var29.yOld = var29.getY();
+                  var29.zOld = var29.getZ();
                }
 
-               Object var30;
-               if (this.shouldShowEntityOutlines() && this.minecraft.shouldEntityAppearGlowing(var28)) {
+               Object var31;
+               if (this.shouldShowEntityOutlines() && this.minecraft.shouldEntityAppearGlowing(var29)) {
                   var25 = true;
-                  OutlineBufferSource var31 = this.renderBuffers.outlineBufferSource();
-                  var30 = var31;
-                  int var32 = var28.getTeamColor();
-                  var31.setColor(FastColor.ARGB32.red(var32), FastColor.ARGB32.green(var32), FastColor.ARGB32.blue(var32), 255);
+                  OutlineBufferSource var32 = this.renderBuffers.outlineBufferSource();
+                  var31 = var32;
+                  int var33 = var29.getTeamColor();
+                  var32.setColor(FastColor.ARGB32.red(var33), FastColor.ARGB32.green(var33), FastColor.ARGB32.blue(var33), 255);
                } else {
-                  var30 = var26;
+                  var31 = var27;
                }
 
-               float var58 = var10.isEntityFrozen(var28) ? var11 : var2;
-               this.renderEntity(var28, var14, var16, var18, var58, var1, (MultiBufferSource)var30);
+               float var58 = var10.isEntityFrozen(var29) ? var11 : var1;
+               this.renderEntity(var29, var14, var16, var18, var58, var26, (MultiBufferSource)var31);
             }
          }
       }
 
-      var26.endLastBatch();
-      this.checkPoseStack(var1);
-      var26.endBatch(RenderType.entitySolid(TextureAtlas.LOCATION_BLOCKS));
-      var26.endBatch(RenderType.entityCutout(TextureAtlas.LOCATION_BLOCKS));
-      var26.endBatch(RenderType.entityCutoutNoCull(TextureAtlas.LOCATION_BLOCKS));
-      var26.endBatch(RenderType.entitySmoothCutout(TextureAtlas.LOCATION_BLOCKS));
+      var27.endLastBatch();
+      this.checkPoseStack(var26);
+      var27.endBatch(RenderType.entitySolid(TextureAtlas.LOCATION_BLOCKS));
+      var27.endBatch(RenderType.entityCutout(TextureAtlas.LOCATION_BLOCKS));
+      var27.endBatch(RenderType.entityCutoutNoCull(TextureAtlas.LOCATION_BLOCKS));
+      var27.endBatch(RenderType.entitySmoothCutout(TextureAtlas.LOCATION_BLOCKS));
       var12.popPush("blockentities");
-      ObjectListIterator var41 = this.visibleSections.iterator();
+      ObjectListIterator var42 = this.visibleSections.iterator();
 
-      while(var41.hasNext()) {
-         SectionRenderDispatcher.RenderSection var45 = (SectionRenderDispatcher.RenderSection)var41.next();
-         List var50 = var45.getCompiled().getRenderableBlockEntities();
+      while(var42.hasNext()) {
+         SectionRenderDispatcher.RenderSection var46 = (SectionRenderDispatcher.RenderSection)var42.next();
+         List var50 = var46.getCompiled().getRenderableBlockEntities();
          if (!var50.isEmpty()) {
             for(BlockEntity var59 : var50) {
                BlockPos var60 = var59.getBlockPos();
-               Object var33 = var26;
-               var1.pushPose();
-               var1.translate((double)var60.getX() - var14, (double)var60.getY() - var16, (double)var60.getZ() - var18);
-               SortedSet var34 = (SortedSet)this.destructionProgress.get(var60.asLong());
-               if (var34 != null && !var34.isEmpty()) {
-                  int var35 = ((BlockDestructionProgress)var34.last()).getProgress();
-                  if (var35 >= 0) {
-                     PoseStack.Pose var36 = var1.last();
-                     SheetedDecalTextureGenerator var37 = new SheetedDecalTextureGenerator(
-                        this.renderBuffers.crumblingBufferSource().getBuffer(ModelBakery.DESTROY_TYPES.get(var35)), var36.pose(), var36.normal(), 1.0F
+               Object var34 = var27;
+               var26.pushPose();
+               var26.translate((double)var60.getX() - var14, (double)var60.getY() - var16, (double)var60.getZ() - var18);
+               SortedSet var35 = (SortedSet)this.destructionProgress.get(var60.asLong());
+               if (var35 != null && !var35.isEmpty()) {
+                  int var36 = ((BlockDestructionProgress)var35.last()).getProgress();
+                  if (var36 >= 0) {
+                     PoseStack.Pose var37 = var26.last();
+                     SheetedDecalTextureGenerator var38 = new SheetedDecalTextureGenerator(
+                        this.renderBuffers.crumblingBufferSource().getBuffer(ModelBakery.DESTROY_TYPES.get(var36)), var37, 1.0F
                      );
-                     var33 = var2x -> {
-                        VertexConsumer var3xx = var26.getBuffer(var2x);
-                        return var2x.affectsCrumbling() ? VertexMultiConsumer.create(var37, var3xx) : var3xx;
+                     var34 = var2x -> {
+                        VertexConsumer var3 = var27.getBuffer(var2x);
+                        return var2x.affectsCrumbling() ? VertexMultiConsumer.create(var38, var3) : var3;
                      };
                   }
                }
 
-               this.blockEntityRenderDispatcher.render(var59, var11, var1, (MultiBufferSource)var33);
-               var1.popPose();
+               this.blockEntityRenderDispatcher.render(var59, var11, var26, (MultiBufferSource)var34);
+               var26.popPose();
             }
          }
       }
@@ -1053,24 +1052,24 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       synchronized(this.globalBlockEntities) {
          for(BlockEntity var51 : this.globalBlockEntities) {
             BlockPos var55 = var51.getBlockPos();
-            var1.pushPose();
-            var1.translate((double)var55.getX() - var14, (double)var55.getY() - var16, (double)var55.getZ() - var18);
-            this.blockEntityRenderDispatcher.render(var51, var11, var1, var26);
-            var1.popPose();
+            var26.pushPose();
+            var26.translate((double)var55.getX() - var14, (double)var55.getY() - var16, (double)var55.getZ() - var18);
+            this.blockEntityRenderDispatcher.render(var51, var11, var26, var27);
+            var26.popPose();
          }
       }
 
-      this.checkPoseStack(var1);
-      var26.endBatch(RenderType.solid());
-      var26.endBatch(RenderType.endPortal());
-      var26.endBatch(RenderType.endGateway());
-      var26.endBatch(Sheets.solidBlockSheet());
-      var26.endBatch(Sheets.cutoutBlockSheet());
-      var26.endBatch(Sheets.bedSheet());
-      var26.endBatch(Sheets.shulkerBoxSheet());
-      var26.endBatch(Sheets.signSheet());
-      var26.endBatch(Sheets.hangingSignSheet());
-      var26.endBatch(Sheets.chestSheet());
+      this.checkPoseStack(var26);
+      var27.endBatch(RenderType.solid());
+      var27.endBatch(RenderType.endPortal());
+      var27.endBatch(RenderType.endGateway());
+      var27.endBatch(Sheets.solidBlockSheet());
+      var27.endBatch(Sheets.cutoutBlockSheet());
+      var27.endBatch(Sheets.bedSheet());
+      var27.endBatch(Sheets.shulkerBoxSheet());
+      var27.endBatch(Sheets.signSheet());
+      var27.endBatch(Sheets.hangingSignSheet());
+      var27.endBatch(Sheets.chestSheet());
       this.renderBuffers.outlineBufferSource().endOutlineBatch();
       if (var25) {
          this.entityEffect.process(var11);
@@ -1078,72 +1077,70 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       }
 
       var12.popPush("destroyProgress");
-      ObjectIterator var43 = this.destructionProgress.long2ObjectEntrySet().iterator();
+      ObjectIterator var44 = this.destructionProgress.long2ObjectEntrySet().iterator();
 
-      while(var43.hasNext()) {
-         Entry var47 = (Entry)var43.next();
-         BlockPos var52 = BlockPos.of(var47.getLongKey());
+      while(var44.hasNext()) {
+         Entry var48 = (Entry)var44.next();
+         BlockPos var52 = BlockPos.of(var48.getLongKey());
          double var56 = (double)var52.getX() - var14;
          double var61 = (double)var52.getY() - var16;
          double var62 = (double)var52.getZ() - var18;
          if (!(var56 * var56 + var61 * var61 + var62 * var62 > 1024.0)) {
-            SortedSet var63 = (SortedSet)var47.getValue();
+            SortedSet var63 = (SortedSet)var48.getValue();
             if (var63 != null && !var63.isEmpty()) {
                int var64 = ((BlockDestructionProgress)var63.last()).getProgress();
-               var1.pushPose();
-               var1.translate((double)var52.getX() - var14, (double)var52.getY() - var16, (double)var52.getZ() - var18);
-               PoseStack.Pose var38 = var1.last();
-               SheetedDecalTextureGenerator var39 = new SheetedDecalTextureGenerator(
-                  this.renderBuffers.crumblingBufferSource().getBuffer(ModelBakery.DESTROY_TYPES.get(var64)), var38.pose(), var38.normal(), 1.0F
+               var26.pushPose();
+               var26.translate((double)var52.getX() - var14, (double)var52.getY() - var16, (double)var52.getZ() - var18);
+               PoseStack.Pose var39 = var26.last();
+               SheetedDecalTextureGenerator var40 = new SheetedDecalTextureGenerator(
+                  this.renderBuffers.crumblingBufferSource().getBuffer(ModelBakery.DESTROY_TYPES.get(var64)), var39, 1.0F
                );
-               this.minecraft.getBlockRenderer().renderBreakingTexture(this.level.getBlockState(var52), var52, this.level, var1, var39);
-               var1.popPose();
+               this.minecraft.getBlockRenderer().renderBreakingTexture(this.level.getBlockState(var52), var52, this.level, var26, var40);
+               var26.popPose();
             }
          }
       }
 
-      this.checkPoseStack(var1);
-      HitResult var44 = this.minecraft.hitResult;
-      if (var5 && var44 != null && var44.getType() == HitResult.Type.BLOCK) {
+      this.checkPoseStack(var26);
+      HitResult var45 = this.minecraft.hitResult;
+      if (var4 && var45 != null && var45.getType() == HitResult.Type.BLOCK) {
          var12.popPush("outline");
-         BlockPos var48 = ((BlockHitResult)var44).getBlockPos();
-         BlockState var53 = this.level.getBlockState(var48);
-         if (!var53.isAir() && this.level.getWorldBorder().isWithinBounds(var48)) {
-            VertexConsumer var57 = var26.getBuffer(RenderType.lines());
-            this.renderHitOutline(var1, var57, var6.getEntity(), var14, var16, var18, var48, var53);
+         BlockPos var49 = ((BlockHitResult)var45).getBlockPos();
+         BlockState var53 = this.level.getBlockState(var49);
+         if (!var53.isAir() && this.level.getWorldBorder().isWithinBounds(var49)) {
+            VertexConsumer var57 = var27.getBuffer(RenderType.lines());
+            this.renderHitOutline(var26, var57, var5.getEntity(), var14, var16, var18, var49, var53);
          }
       }
 
-      this.minecraft.debugRenderer.render(var1, var26, var14, var16, var18);
-      var26.endLastBatch();
-      PoseStack var49 = RenderSystem.getModelViewStack();
-      RenderSystem.applyModelViewMatrix();
-      var26.endBatch(Sheets.translucentCullBlockSheet());
-      var26.endBatch(Sheets.bannerSheet());
-      var26.endBatch(Sheets.shieldSheet());
-      var26.endBatch(RenderType.armorGlint());
-      var26.endBatch(RenderType.armorEntityGlint());
-      var26.endBatch(RenderType.glint());
-      var26.endBatch(RenderType.glintDirect());
-      var26.endBatch(RenderType.glintTranslucent());
-      var26.endBatch(RenderType.entityGlint());
-      var26.endBatch(RenderType.entityGlintDirect());
-      var26.endBatch(RenderType.waterMask());
+      this.minecraft.debugRenderer.render(var26, var27, var14, var16, var18);
+      var27.endLastBatch();
+      var27.endBatch(Sheets.translucentCullBlockSheet());
+      var27.endBatch(Sheets.bannerSheet());
+      var27.endBatch(Sheets.shieldSheet());
+      var27.endBatch(RenderType.armorGlint());
+      var27.endBatch(RenderType.armorEntityGlint());
+      var27.endBatch(RenderType.glint());
+      var27.endBatch(RenderType.glintDirect());
+      var27.endBatch(RenderType.glintTranslucent());
+      var27.endBatch(RenderType.entityGlint());
+      var27.endBatch(RenderType.entityGlintDirect());
+      var27.endBatch(RenderType.waterMask());
       this.renderBuffers.crumblingBufferSource().endBatch();
       if (this.transparencyChain != null) {
-         var26.endBatch(RenderType.lines());
-         var26.endBatch();
+         var27.endBatch(RenderType.lines());
+         var27.endBatch();
          this.translucentTarget.clear(Minecraft.ON_OSX);
          this.translucentTarget.copyDepthFrom(this.minecraft.getMainRenderTarget());
          var12.popPush("translucent");
-         this.renderSectionLayer(RenderType.translucent(), var1, var14, var16, var18, var9);
+         this.renderSectionLayer(RenderType.translucent(), var14, var16, var18, var8, var9);
          var12.popPush("string");
-         this.renderSectionLayer(RenderType.tripwire(), var1, var14, var16, var18, var9);
+         this.renderSectionLayer(RenderType.tripwire(), var14, var16, var18, var8, var9);
          this.particlesTarget.clear(Minecraft.ON_OSX);
          this.particlesTarget.copyDepthFrom(this.minecraft.getMainRenderTarget());
          RenderStateShard.PARTICLES_TARGET.setupRenderState();
          var12.popPush("particles");
-         this.minecraft.particleEngine.render(var1, var26, var8, var6, var11);
+         this.minecraft.particleEngine.render(var7, var5, var11);
          RenderStateShard.PARTICLES_TARGET.clearRenderState();
       } else {
          var12.popPush("translucent");
@@ -1151,52 +1148,44 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
             this.translucentTarget.clear(Minecraft.ON_OSX);
          }
 
-         this.renderSectionLayer(RenderType.translucent(), var1, var14, var16, var18, var9);
-         var26.endBatch(RenderType.lines());
-         var26.endBatch();
+         this.renderSectionLayer(RenderType.translucent(), var14, var16, var18, var8, var9);
+         var27.endBatch(RenderType.lines());
+         var27.endBatch();
          var12.popPush("string");
-         this.renderSectionLayer(RenderType.tripwire(), var1, var14, var16, var18, var9);
+         this.renderSectionLayer(RenderType.tripwire(), var14, var16, var18, var8, var9);
          var12.popPush("particles");
-         this.minecraft.particleEngine.render(var1, var26, var8, var6, var11);
+         this.minecraft.particleEngine.render(var7, var5, var11);
       }
 
-      var49.pushPose();
-      var49.mulPoseMatrix(var1.last().pose());
-      RenderSystem.applyModelViewMatrix();
       if (this.minecraft.options.getCloudsType() != CloudStatus.OFF) {
          if (this.transparencyChain != null) {
             this.cloudsTarget.clear(Minecraft.ON_OSX);
-            RenderStateShard.CLOUDS_TARGET.setupRenderState();
-            var12.popPush("clouds");
-            this.renderClouds(var1, var9, var11, var14, var16, var18);
-            RenderStateShard.CLOUDS_TARGET.clearRenderState();
-         } else {
-            var12.popPush("clouds");
-            RenderSystem.setShader(GameRenderer::getPositionTexColorNormalShader);
-            this.renderClouds(var1, var9, var11, var14, var16, var18);
          }
+
+         var12.popPush("clouds");
+         this.renderClouds(var26, var8, var9, var11, var14, var16, var18);
       }
 
       if (this.transparencyChain != null) {
          RenderStateShard.WEATHER_TARGET.setupRenderState();
          var12.popPush("weather");
-         this.renderSnowAndRain(var8, var11, var14, var16, var18);
-         this.renderWorldBorder(var6);
+         this.renderSnowAndRain(var7, var11, var14, var16, var18);
+         this.renderWorldBorder(var5);
          RenderStateShard.WEATHER_TARGET.clearRenderState();
          this.transparencyChain.process(var11);
          this.minecraft.getMainRenderTarget().bindWrite(false);
       } else {
          RenderSystem.depthMask(false);
          var12.popPush("weather");
-         this.renderSnowAndRain(var8, var11, var14, var16, var18);
-         this.renderWorldBorder(var6);
+         this.renderSnowAndRain(var7, var11, var14, var16, var18);
+         this.renderWorldBorder(var5);
          RenderSystem.depthMask(true);
       }
 
-      var49.popPose();
+      this.renderDebug(var26, var27, var5);
+      var27.endLastBatch();
+      var24.popMatrix();
       RenderSystem.applyModelViewMatrix();
-      this.renderDebug(var1, var26, var6);
-      var26.endLastBatch();
       RenderSystem.depthMask(true);
       RenderSystem.disableBlend();
       FogRenderer.setupNoFog();
@@ -1217,24 +1206,24 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          .render(var1, var11 - var2, var13 - var4, var15 - var6, var17, var8, var9, var10, this.entityRenderDispatcher.getPackedLightCoords(var1, var8));
    }
 
-   private void renderSectionLayer(RenderType var1, PoseStack var2, double var3, double var5, double var7, Matrix4f var9) {
+   private void renderSectionLayer(RenderType var1, double var2, double var4, double var6, Matrix4f var8, Matrix4f var9) {
       RenderSystem.assertOnRenderThread();
       var1.setupRenderState();
       if (var1 == RenderType.translucent()) {
          this.minecraft.getProfiler().push("translucent_sort");
-         double var10 = var3 - this.xTransparentOld;
-         double var12 = var5 - this.yTransparentOld;
-         double var14 = var7 - this.zTransparentOld;
+         double var10 = var2 - this.xTransparentOld;
+         double var12 = var4 - this.yTransparentOld;
+         double var14 = var6 - this.zTransparentOld;
          if (var10 * var10 + var12 * var12 + var14 * var14 > 1.0) {
-            int var16 = SectionPos.posToSectionCoord(var3);
-            int var17 = SectionPos.posToSectionCoord(var5);
-            int var18 = SectionPos.posToSectionCoord(var7);
+            int var16 = SectionPos.posToSectionCoord(var2);
+            int var17 = SectionPos.posToSectionCoord(var4);
+            int var18 = SectionPos.posToSectionCoord(var6);
             boolean var19 = var16 != SectionPos.posToSectionCoord(this.xTransparentOld)
                || var18 != SectionPos.posToSectionCoord(this.zTransparentOld)
                || var17 != SectionPos.posToSectionCoord(this.yTransparentOld);
-            this.xTransparentOld = var3;
-            this.yTransparentOld = var5;
-            this.zTransparentOld = var7;
+            this.xTransparentOld = var2;
+            this.yTransparentOld = var4;
+            this.zTransparentOld = var6;
             int var20 = 0;
             ObjectListIterator var21 = this.visibleSections.iterator();
 
@@ -1261,7 +1250,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       }
 
       if (var24.MODEL_VIEW_MATRIX != null) {
-         var24.MODEL_VIEW_MATRIX.set(var2.last().pose());
+         var24.MODEL_VIEW_MATRIX.set(var8);
       }
 
       if (var24.PROJECTION_MATRIX != null) {
@@ -1312,7 +1301,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
             VertexBuffer var15 = var27.getBuffer(var1);
             BlockPos var28 = var27.getOrigin();
             if (var25 != null) {
-               var25.set((float)((double)var28.getX() - var3), (float)((double)var28.getY() - var5), (float)((double)var28.getZ() - var7));
+               var25.set((float)((double)var28.getX() - var2), (float)((double)var28.getY() - var4), (float)((double)var28.getZ() - var6));
                var25.upload();
             }
 
@@ -1572,94 +1561,96 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       RenderSystem.disableBlend();
    }
 
-   public void renderSky(PoseStack var1, Matrix4f var2, float var3, Camera var4, boolean var5, Runnable var6) {
+   public void renderSky(Matrix4f var1, Matrix4f var2, float var3, Camera var4, boolean var5, Runnable var6) {
       var6.run();
       if (!var5) {
          FogType var7 = var4.getFluidInCamera();
          if (var7 != FogType.POWDER_SNOW && var7 != FogType.LAVA && !this.doesMobEffectBlockSky(var4)) {
+            PoseStack var8 = new PoseStack();
+            var8.mulPose(var1);
             if (this.minecraft.level.effects().skyType() == DimensionSpecialEffects.SkyType.END) {
-               this.renderEndSky(var1);
+               this.renderEndSky(var8);
             } else if (this.minecraft.level.effects().skyType() == DimensionSpecialEffects.SkyType.NORMAL) {
-               Vec3 var8 = this.level.getSkyColor(this.minecraft.gameRenderer.getMainCamera().getPosition(), var3);
-               float var9 = (float)var8.x;
-               float var10 = (float)var8.y;
-               float var11 = (float)var8.z;
+               Vec3 var9 = this.level.getSkyColor(this.minecraft.gameRenderer.getMainCamera().getPosition(), var3);
+               float var10 = (float)var9.x;
+               float var11 = (float)var9.y;
+               float var12 = (float)var9.z;
                FogRenderer.levelFogColor();
-               BufferBuilder var12 = Tesselator.getInstance().getBuilder();
+               BufferBuilder var13 = Tesselator.getInstance().getBuilder();
                RenderSystem.depthMask(false);
-               RenderSystem.setShaderColor(var9, var10, var11, 1.0F);
-               ShaderInstance var13 = RenderSystem.getShader();
+               RenderSystem.setShaderColor(var10, var11, var12, 1.0F);
+               ShaderInstance var14 = RenderSystem.getShader();
                this.skyBuffer.bind();
-               this.skyBuffer.drawWithShader(var1.last().pose(), var2, var13);
+               this.skyBuffer.drawWithShader(var8.last().pose(), var2, var14);
                VertexBuffer.unbind();
                RenderSystem.enableBlend();
-               float[] var14 = this.level.effects().getSunriseColor(this.level.getTimeOfDay(var3), var3);
-               if (var14 != null) {
+               float[] var15 = this.level.effects().getSunriseColor(this.level.getTimeOfDay(var3), var3);
+               if (var15 != null) {
                   RenderSystem.setShader(GameRenderer::getPositionColorShader);
                   RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-                  var1.pushPose();
-                  var1.mulPose(Axis.XP.rotationDegrees(90.0F));
-                  float var15 = Mth.sin(this.level.getSunAngle(var3)) < 0.0F ? 180.0F : 0.0F;
-                  var1.mulPose(Axis.ZP.rotationDegrees(var15));
-                  var1.mulPose(Axis.ZP.rotationDegrees(90.0F));
-                  float var16 = var14[0];
-                  float var17 = var14[1];
-                  float var18 = var14[2];
-                  Matrix4f var19 = var1.last().pose();
-                  var12.begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
-                  var12.vertex(var19, 0.0F, 100.0F, 0.0F).color(var16, var17, var18, var14[3]).endVertex();
-                  boolean var20 = true;
+                  var8.pushPose();
+                  var8.mulPose(Axis.XP.rotationDegrees(90.0F));
+                  float var16 = Mth.sin(this.level.getSunAngle(var3)) < 0.0F ? 180.0F : 0.0F;
+                  var8.mulPose(Axis.ZP.rotationDegrees(var16));
+                  var8.mulPose(Axis.ZP.rotationDegrees(90.0F));
+                  float var17 = var15[0];
+                  float var18 = var15[1];
+                  float var19 = var15[2];
+                  Matrix4f var20 = var8.last().pose();
+                  var13.begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
+                  var13.vertex(var20, 0.0F, 100.0F, 0.0F).color(var17, var18, var19, var15[3]).endVertex();
+                  boolean var21 = true;
 
-                  for(int var21 = 0; var21 <= 16; ++var21) {
-                     float var22 = (float)var21 * 6.2831855F / 16.0F;
-                     float var23 = Mth.sin(var22);
-                     float var24 = Mth.cos(var22);
-                     var12.vertex(var19, var23 * 120.0F, var24 * 120.0F, -var24 * 40.0F * var14[3]).color(var14[0], var14[1], var14[2], 0.0F).endVertex();
+                  for(int var22 = 0; var22 <= 16; ++var22) {
+                     float var23 = (float)var22 * 6.2831855F / 16.0F;
+                     float var24 = Mth.sin(var23);
+                     float var25 = Mth.cos(var23);
+                     var13.vertex(var20, var24 * 120.0F, var25 * 120.0F, -var25 * 40.0F * var15[3]).color(var15[0], var15[1], var15[2], 0.0F).endVertex();
                   }
 
-                  BufferUploader.drawWithShader(var12.end());
-                  var1.popPose();
+                  BufferUploader.drawWithShader(var13.end());
+                  var8.popPose();
                }
 
                RenderSystem.blendFuncSeparate(
                   GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO
                );
-               var1.pushPose();
-               float var26 = 1.0F - this.level.getRainLevel(var3);
-               RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, var26);
-               var1.mulPose(Axis.YP.rotationDegrees(-90.0F));
-               var1.mulPose(Axis.XP.rotationDegrees(this.level.getTimeOfDay(var3) * 360.0F));
-               Matrix4f var28 = var1.last().pose();
-               float var29 = 30.0F;
+               var8.pushPose();
+               float var27 = 1.0F - this.level.getRainLevel(var3);
+               RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, var27);
+               var8.mulPose(Axis.YP.rotationDegrees(-90.0F));
+               var8.mulPose(Axis.XP.rotationDegrees(this.level.getTimeOfDay(var3) * 360.0F));
+               Matrix4f var29 = var8.last().pose();
+               float var30 = 30.0F;
                RenderSystem.setShader(GameRenderer::getPositionTexShader);
                RenderSystem.setShaderTexture(0, SUN_LOCATION);
-               var12.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-               var12.vertex(var28, -var29, 100.0F, -var29).uv(0.0F, 0.0F).endVertex();
-               var12.vertex(var28, var29, 100.0F, -var29).uv(1.0F, 0.0F).endVertex();
-               var12.vertex(var28, var29, 100.0F, var29).uv(1.0F, 1.0F).endVertex();
-               var12.vertex(var28, -var29, 100.0F, var29).uv(0.0F, 1.0F).endVertex();
-               BufferUploader.drawWithShader(var12.end());
-               var29 = 20.0F;
+               var13.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+               var13.vertex(var29, -var30, 100.0F, -var30).uv(0.0F, 0.0F).endVertex();
+               var13.vertex(var29, var30, 100.0F, -var30).uv(1.0F, 0.0F).endVertex();
+               var13.vertex(var29, var30, 100.0F, var30).uv(1.0F, 1.0F).endVertex();
+               var13.vertex(var29, -var30, 100.0F, var30).uv(0.0F, 1.0F).endVertex();
+               BufferUploader.drawWithShader(var13.end());
+               var30 = 20.0F;
                RenderSystem.setShaderTexture(0, MOON_LOCATION);
-               int var31 = this.level.getMoonPhase();
-               int var32 = var31 % 4;
-               int var33 = var31 / 4 % 2;
-               float var34 = (float)(var32 + 0) / 4.0F;
-               float var35 = (float)(var33 + 0) / 2.0F;
-               float var36 = (float)(var32 + 1) / 4.0F;
-               float var37 = (float)(var33 + 1) / 2.0F;
-               var12.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-               var12.vertex(var28, -var29, -100.0F, var29).uv(var36, var37).endVertex();
-               var12.vertex(var28, var29, -100.0F, var29).uv(var34, var37).endVertex();
-               var12.vertex(var28, var29, -100.0F, -var29).uv(var34, var35).endVertex();
-               var12.vertex(var28, -var29, -100.0F, -var29).uv(var36, var35).endVertex();
-               BufferUploader.drawWithShader(var12.end());
-               float var25 = this.level.getStarBrightness(var3) * var26;
-               if (var25 > 0.0F) {
-                  RenderSystem.setShaderColor(var25, var25, var25, var25);
+               int var32 = this.level.getMoonPhase();
+               int var33 = var32 % 4;
+               int var34 = var32 / 4 % 2;
+               float var35 = (float)(var33 + 0) / 4.0F;
+               float var36 = (float)(var34 + 0) / 2.0F;
+               float var37 = (float)(var33 + 1) / 4.0F;
+               float var38 = (float)(var34 + 1) / 2.0F;
+               var13.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
+               var13.vertex(var29, -var30, -100.0F, var30).uv(var37, var38).endVertex();
+               var13.vertex(var29, var30, -100.0F, var30).uv(var35, var38).endVertex();
+               var13.vertex(var29, var30, -100.0F, -var30).uv(var35, var36).endVertex();
+               var13.vertex(var29, -var30, -100.0F, -var30).uv(var37, var36).endVertex();
+               BufferUploader.drawWithShader(var13.end());
+               float var26 = this.level.getStarBrightness(var3) * var27;
+               if (var26 > 0.0F) {
+                  RenderSystem.setShaderColor(var26, var26, var26, var26);
                   FogRenderer.setupNoFog();
                   this.starBuffer.bind();
-                  this.starBuffer.drawWithShader(var1.last().pose(), var2, GameRenderer.getPositionShader());
+                  this.starBuffer.drawWithShader(var8.last().pose(), var2, GameRenderer.getPositionShader());
                   VertexBuffer.unbind();
                   var6.run();
                }
@@ -1667,16 +1658,16 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
                RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
                RenderSystem.disableBlend();
                RenderSystem.defaultBlendFunc();
-               var1.popPose();
+               var8.popPose();
                RenderSystem.setShaderColor(0.0F, 0.0F, 0.0F, 1.0F);
-               double var27 = this.minecraft.player.getEyePosition(var3).y - this.level.getLevelData().getHorizonHeight(this.level);
-               if (var27 < 0.0) {
-                  var1.pushPose();
-                  var1.translate(0.0F, 12.0F, 0.0F);
+               double var28 = this.minecraft.player.getEyePosition(var3).y - this.level.getLevelData().getHorizonHeight(this.level);
+               if (var28 < 0.0) {
+                  var8.pushPose();
+                  var8.translate(0.0F, 12.0F, 0.0F);
                   this.darkBuffer.bind();
-                  this.darkBuffer.drawWithShader(var1.last().pose(), var2, var13);
+                  this.darkBuffer.drawWithShader(var8.last().pose(), var2, var14);
                   VertexBuffer.unbind();
-                  var1.popPose();
+                  var8.popPose();
                }
 
                RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
@@ -1696,90 +1687,73 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       }
    }
 
-   public void renderClouds(PoseStack var1, Matrix4f var2, float var3, double var4, double var6, double var8) {
-      float var10 = this.level.effects().getCloudHeight();
-      if (!Float.isNaN(var10)) {
-         RenderSystem.disableCull();
-         RenderSystem.enableBlend();
-         RenderSystem.enableDepthTest();
-         RenderSystem.blendFuncSeparate(
-            GlStateManager.SourceFactor.SRC_ALPHA,
-            GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
-            GlStateManager.SourceFactor.ONE,
-            GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA
-         );
-         RenderSystem.depthMask(true);
-         float var11 = 12.0F;
-         float var12 = 4.0F;
-         double var13 = 2.0E-4;
-         double var15 = (double)(((float)this.ticks + var3) * 0.03F);
-         double var17 = (var4 + var15) / 12.0;
-         double var19 = (double)(var10 - (float)var6 + 0.33F);
-         double var21 = var8 / 12.0 + 0.33000001311302185;
-         var17 -= (double)(Mth.floor(var17 / 2048.0) * 2048);
-         var21 -= (double)(Mth.floor(var21 / 2048.0) * 2048);
-         float var23 = (float)(var17 - (double)Mth.floor(var17));
-         float var24 = (float)(var19 / 4.0 - (double)Mth.floor(var19 / 4.0)) * 4.0F;
-         float var25 = (float)(var21 - (double)Mth.floor(var21));
-         Vec3 var26 = this.level.getCloudColor(var3);
-         int var27 = (int)Math.floor(var17);
-         int var28 = (int)Math.floor(var19 / 4.0);
-         int var29 = (int)Math.floor(var21);
-         if (var27 != this.prevCloudX
-            || var28 != this.prevCloudY
-            || var29 != this.prevCloudZ
+   public void renderClouds(PoseStack var1, Matrix4f var2, Matrix4f var3, float var4, double var5, double var7, double var9) {
+      float var11 = this.level.effects().getCloudHeight();
+      if (!Float.isNaN(var11)) {
+         float var12 = 12.0F;
+         float var13 = 4.0F;
+         double var14 = 2.0E-4;
+         double var16 = (double)(((float)this.ticks + var4) * 0.03F);
+         double var18 = (var5 + var16) / 12.0;
+         double var20 = (double)(var11 - (float)var7 + 0.33F);
+         double var22 = var9 / 12.0 + 0.33000001311302185;
+         var18 -= (double)(Mth.floor(var18 / 2048.0) * 2048);
+         var22 -= (double)(Mth.floor(var22 / 2048.0) * 2048);
+         float var24 = (float)(var18 - (double)Mth.floor(var18));
+         float var25 = (float)(var20 / 4.0 - (double)Mth.floor(var20 / 4.0)) * 4.0F;
+         float var26 = (float)(var22 - (double)Mth.floor(var22));
+         Vec3 var27 = this.level.getCloudColor(var4);
+         int var28 = (int)Math.floor(var18);
+         int var29 = (int)Math.floor(var20 / 4.0);
+         int var30 = (int)Math.floor(var22);
+         if (var28 != this.prevCloudX
+            || var29 != this.prevCloudY
+            || var30 != this.prevCloudZ
             || this.minecraft.options.getCloudsType() != this.prevCloudsType
-            || this.prevCloudColor.distanceToSqr(var26) > 2.0E-4) {
-            this.prevCloudX = var27;
-            this.prevCloudY = var28;
-            this.prevCloudZ = var29;
-            this.prevCloudColor = var26;
+            || this.prevCloudColor.distanceToSqr(var27) > 2.0E-4) {
+            this.prevCloudX = var28;
+            this.prevCloudY = var29;
+            this.prevCloudZ = var30;
+            this.prevCloudColor = var27;
             this.prevCloudsType = this.minecraft.options.getCloudsType();
             this.generateClouds = true;
          }
 
          if (this.generateClouds) {
             this.generateClouds = false;
-            BufferBuilder var30 = Tesselator.getInstance().getBuilder();
+            BufferBuilder var31 = Tesselator.getInstance().getBuilder();
             if (this.cloudBuffer != null) {
                this.cloudBuffer.close();
             }
 
             this.cloudBuffer = new VertexBuffer(VertexBuffer.Usage.STATIC);
-            BufferBuilder.RenderedBuffer var31 = this.buildClouds(var30, var17, var19, var21, var26);
+            BufferBuilder.RenderedBuffer var32 = this.buildClouds(var31, var18, var20, var22, var27);
             this.cloudBuffer.bind();
-            this.cloudBuffer.upload(var31);
+            this.cloudBuffer.upload(var32);
             VertexBuffer.unbind();
          }
 
-         RenderSystem.setShader(GameRenderer::getPositionTexColorNormalShader);
-         RenderSystem.setShaderTexture(0, CLOUDS_LOCATION);
          FogRenderer.levelFogColor();
          var1.pushPose();
+         var1.mulPose(var2);
          var1.scale(12.0F, 1.0F, 12.0F);
-         var1.translate(-var23, var24, -var25);
+         var1.translate(-var24, var25, -var26);
          if (this.cloudBuffer != null) {
             this.cloudBuffer.bind();
-            int var35 = this.prevCloudsType == CloudStatus.FANCY ? 0 : 1;
+            int var37 = this.prevCloudsType == CloudStatus.FANCY ? 0 : 1;
 
-            for(int var36 = var35; var36 < 2; ++var36) {
-               if (var36 == 0) {
-                  RenderSystem.colorMask(false, false, false, false);
-               } else {
-                  RenderSystem.colorMask(true, true, true, true);
-               }
-
-               ShaderInstance var32 = RenderSystem.getShader();
-               this.cloudBuffer.drawWithShader(var1.last().pose(), var2, var32);
+            for(int var38 = var37; var38 < 2; ++var38) {
+               RenderType var33 = var38 == 0 ? RenderType.cloudsDepthOnly() : RenderType.clouds();
+               var33.setupRenderState();
+               ShaderInstance var34 = RenderSystem.getShader();
+               this.cloudBuffer.drawWithShader(var1.last().pose(), var3, var34);
+               var33.clearRenderState();
             }
 
             VertexBuffer.unbind();
          }
 
          var1.popPose();
-         RenderSystem.enableCull();
-         RenderSystem.disableBlend();
-         RenderSystem.defaultBlendFunc();
       }
    }
 
@@ -1803,7 +1777,6 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       float var25 = var16 * 0.8F;
       float var26 = var17 * 0.8F;
       float var27 = var18 * 0.8F;
-      RenderSystem.setShader(GameRenderer::getPositionTexColorNormalShader);
       var1.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR_NORMAL);
       float var28 = (float)Math.floor(var4 / 4.0) * 4.0F;
       if (this.prevCloudsType == CloudStatus.FANCY) {
@@ -2055,81 +2028,78 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          );
          RenderSystem.setShaderTexture(0, FORCEFIELD_LOCATION);
          RenderSystem.depthMask(Minecraft.useShaderTransparency());
-         PoseStack var14 = RenderSystem.getModelViewStack();
-         var14.pushPose();
-         RenderSystem.applyModelViewMatrix();
-         int var15 = var3.getStatus().getColor();
-         float var16 = (float)(var15 >> 16 & 0xFF) / 255.0F;
-         float var17 = (float)(var15 >> 8 & 0xFF) / 255.0F;
-         float var18 = (float)(var15 & 0xFF) / 255.0F;
-         RenderSystem.setShaderColor(var16, var17, var18, (float)var6);
+         int var14 = var3.getStatus().getColor();
+         float var15 = (float)(var14 >> 16 & 0xFF) / 255.0F;
+         float var16 = (float)(var14 >> 8 & 0xFF) / 255.0F;
+         float var17 = (float)(var14 & 0xFF) / 255.0F;
+         RenderSystem.setShaderColor(var15, var16, var17, (float)var6);
          RenderSystem.setShader(GameRenderer::getPositionTexShader);
          RenderSystem.polygonOffset(-3.0F, -3.0F);
          RenderSystem.enablePolygonOffset();
          RenderSystem.disableCull();
-         float var19 = (float)(Util.getMillis() % 3000L) / 3000.0F;
-         float var20 = (float)(-Mth.frac(var1.getPosition().y * 0.5));
-         float var21 = var20 + (float)var12;
+         float var18 = (float)(Util.getMillis() % 3000L) / 3000.0F;
+         float var19 = (float)(-Mth.frac(var1.getPosition().y * 0.5));
+         float var20 = var19 + (float)var12;
          var2.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
-         double var22 = Math.max((double)Mth.floor(var10 - var4), var3.getMinZ());
-         double var24 = Math.min((double)Mth.ceil(var10 + var4), var3.getMaxZ());
-         float var26 = (float)(Mth.floor(var22) & 1) * 0.5F;
+         double var21 = Math.max((double)Mth.floor(var10 - var4), var3.getMinZ());
+         double var23 = Math.min((double)Mth.ceil(var10 + var4), var3.getMaxZ());
+         float var25 = (float)(Mth.floor(var21) & 1) * 0.5F;
          if (var8 > var3.getMaxX() - var4) {
-            float var27 = var26;
+            float var26 = var25;
 
-            for(double var28 = var22; var28 < var24; var27 += 0.5F) {
-               double var30 = Math.min(1.0, var24 - var28);
-               float var32 = (float)var30 * 0.5F;
-               var2.vertex(var3.getMaxX() - var8, -var12, var28 - var10).uv(var19 - var27, var19 + var21).endVertex();
-               var2.vertex(var3.getMaxX() - var8, -var12, var28 + var30 - var10).uv(var19 - (var32 + var27), var19 + var21).endVertex();
-               var2.vertex(var3.getMaxX() - var8, var12, var28 + var30 - var10).uv(var19 - (var32 + var27), var19 + var20).endVertex();
-               var2.vertex(var3.getMaxX() - var8, var12, var28 - var10).uv(var19 - var27, var19 + var20).endVertex();
-               ++var28;
+            for(double var27 = var21; var27 < var23; var26 += 0.5F) {
+               double var29 = Math.min(1.0, var23 - var27);
+               float var31 = (float)var29 * 0.5F;
+               var2.vertex(var3.getMaxX() - var8, -var12, var27 - var10).uv(var18 - var26, var18 + var20).endVertex();
+               var2.vertex(var3.getMaxX() - var8, -var12, var27 + var29 - var10).uv(var18 - (var31 + var26), var18 + var20).endVertex();
+               var2.vertex(var3.getMaxX() - var8, var12, var27 + var29 - var10).uv(var18 - (var31 + var26), var18 + var19).endVertex();
+               var2.vertex(var3.getMaxX() - var8, var12, var27 - var10).uv(var18 - var26, var18 + var19).endVertex();
+               ++var27;
             }
          }
 
          if (var8 < var3.getMinX() + var4) {
-            float var38 = var26;
+            float var37 = var25;
 
-            for(double var41 = var22; var41 < var24; var38 += 0.5F) {
-               double var44 = Math.min(1.0, var24 - var41);
+            for(double var40 = var21; var40 < var23; var37 += 0.5F) {
+               double var43 = Math.min(1.0, var23 - var40);
+               float var46 = (float)var43 * 0.5F;
+               var2.vertex(var3.getMinX() - var8, -var12, var40 - var10).uv(var18 + var37, var18 + var20).endVertex();
+               var2.vertex(var3.getMinX() - var8, -var12, var40 + var43 - var10).uv(var18 + var46 + var37, var18 + var20).endVertex();
+               var2.vertex(var3.getMinX() - var8, var12, var40 + var43 - var10).uv(var18 + var46 + var37, var18 + var19).endVertex();
+               var2.vertex(var3.getMinX() - var8, var12, var40 - var10).uv(var18 + var37, var18 + var19).endVertex();
+               ++var40;
+            }
+         }
+
+         var21 = Math.max((double)Mth.floor(var8 - var4), var3.getMinX());
+         var23 = Math.min((double)Mth.ceil(var8 + var4), var3.getMaxX());
+         var25 = (float)(Mth.floor(var21) & 1) * 0.5F;
+         if (var10 > var3.getMaxZ() - var4) {
+            float var38 = var25;
+
+            for(double var41 = var21; var41 < var23; var38 += 0.5F) {
+               double var44 = Math.min(1.0, var23 - var41);
                float var47 = (float)var44 * 0.5F;
-               var2.vertex(var3.getMinX() - var8, -var12, var41 - var10).uv(var19 + var38, var19 + var21).endVertex();
-               var2.vertex(var3.getMinX() - var8, -var12, var41 + var44 - var10).uv(var19 + var47 + var38, var19 + var21).endVertex();
-               var2.vertex(var3.getMinX() - var8, var12, var41 + var44 - var10).uv(var19 + var47 + var38, var19 + var20).endVertex();
-               var2.vertex(var3.getMinX() - var8, var12, var41 - var10).uv(var19 + var38, var19 + var20).endVertex();
+               var2.vertex(var41 - var8, -var12, var3.getMaxZ() - var10).uv(var18 + var38, var18 + var20).endVertex();
+               var2.vertex(var41 + var44 - var8, -var12, var3.getMaxZ() - var10).uv(var18 + var47 + var38, var18 + var20).endVertex();
+               var2.vertex(var41 + var44 - var8, var12, var3.getMaxZ() - var10).uv(var18 + var47 + var38, var18 + var19).endVertex();
+               var2.vertex(var41 - var8, var12, var3.getMaxZ() - var10).uv(var18 + var38, var18 + var19).endVertex();
                ++var41;
             }
          }
 
-         var22 = Math.max((double)Mth.floor(var8 - var4), var3.getMinX());
-         var24 = Math.min((double)Mth.ceil(var8 + var4), var3.getMaxX());
-         var26 = (float)(Mth.floor(var22) & 1) * 0.5F;
-         if (var10 > var3.getMaxZ() - var4) {
-            float var39 = var26;
-
-            for(double var42 = var22; var42 < var24; var39 += 0.5F) {
-               double var45 = Math.min(1.0, var24 - var42);
-               float var48 = (float)var45 * 0.5F;
-               var2.vertex(var42 - var8, -var12, var3.getMaxZ() - var10).uv(var19 + var39, var19 + var21).endVertex();
-               var2.vertex(var42 + var45 - var8, -var12, var3.getMaxZ() - var10).uv(var19 + var48 + var39, var19 + var21).endVertex();
-               var2.vertex(var42 + var45 - var8, var12, var3.getMaxZ() - var10).uv(var19 + var48 + var39, var19 + var20).endVertex();
-               var2.vertex(var42 - var8, var12, var3.getMaxZ() - var10).uv(var19 + var39, var19 + var20).endVertex();
-               ++var42;
-            }
-         }
-
          if (var10 < var3.getMinZ() + var4) {
-            float var40 = var26;
+            float var39 = var25;
 
-            for(double var43 = var22; var43 < var24; var40 += 0.5F) {
-               double var46 = Math.min(1.0, var24 - var43);
-               float var49 = (float)var46 * 0.5F;
-               var2.vertex(var43 - var8, -var12, var3.getMinZ() - var10).uv(var19 - var40, var19 + var21).endVertex();
-               var2.vertex(var43 + var46 - var8, -var12, var3.getMinZ() - var10).uv(var19 - (var49 + var40), var19 + var21).endVertex();
-               var2.vertex(var43 + var46 - var8, var12, var3.getMinZ() - var10).uv(var19 - (var49 + var40), var19 + var20).endVertex();
-               var2.vertex(var43 - var8, var12, var3.getMinZ() - var10).uv(var19 - var40, var19 + var20).endVertex();
-               ++var43;
+            for(double var42 = var21; var42 < var23; var39 += 0.5F) {
+               double var45 = Math.min(1.0, var23 - var42);
+               float var48 = (float)var45 * 0.5F;
+               var2.vertex(var42 - var8, -var12, var3.getMinZ() - var10).uv(var18 - var39, var18 + var20).endVertex();
+               var2.vertex(var42 + var45 - var8, -var12, var3.getMinZ() - var10).uv(var18 - (var48 + var39), var18 + var20).endVertex();
+               var2.vertex(var42 + var45 - var8, var12, var3.getMinZ() - var10).uv(var18 - (var48 + var39), var18 + var19).endVertex();
+               var2.vertex(var42 - var8, var12, var3.getMinZ() - var10).uv(var18 - var39, var18 + var19).endVertex();
+               ++var42;
             }
          }
 
@@ -2139,8 +2109,6 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          RenderSystem.disablePolygonOffset();
          RenderSystem.disableBlend();
          RenderSystem.defaultBlendFunc();
-         var14.popPose();
-         RenderSystem.applyModelViewMatrix();
          RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
          RenderSystem.depthMask(true);
       }
@@ -2226,13 +2194,13 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
             var24 /= var27;
             var25 /= var27;
             var26 /= var27;
-            var1.vertex(var13.pose(), (float)(var12x + var3), (float)(var14 + var5), (float)(var16 + var7))
+            var1.vertex(var13, (float)(var12x + var3), (float)(var14 + var5), (float)(var16 + var7))
                .color(var9, var10, var11, var12)
-               .normal(var13.normal(), var24, var25, var26)
+               .normal(var13, var24, var25, var26)
                .endVertex();
-            var1.vertex(var13.pose(), (float)(var18 + var3), (float)(var20 + var5), (float)(var22 + var7))
+            var1.vertex(var13, (float)(var18 + var3), (float)(var20 + var5), (float)(var22 + var7))
                .color(var9, var10, var11, var12)
-               .normal(var13.normal(), var24, var25, var26)
+               .normal(var13, var24, var25, var26)
                .endVertex();
          }
       );
@@ -2282,38 +2250,37 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       float var19,
       float var20
    ) {
-      Matrix4f var21 = var0.last().pose();
-      Matrix3f var22 = var0.last().normal();
-      float var23 = (float)var2;
-      float var24 = (float)var4;
-      float var25 = (float)var6;
-      float var26 = (float)var8;
-      float var27 = (float)var10;
-      float var28 = (float)var12;
-      var1.vertex(var21, var23, var24, var25).color(var14, var19, var20, var17).normal(var22, 1.0F, 0.0F, 0.0F).endVertex();
-      var1.vertex(var21, var26, var24, var25).color(var14, var19, var20, var17).normal(var22, 1.0F, 0.0F, 0.0F).endVertex();
-      var1.vertex(var21, var23, var24, var25).color(var18, var15, var20, var17).normal(var22, 0.0F, 1.0F, 0.0F).endVertex();
-      var1.vertex(var21, var23, var27, var25).color(var18, var15, var20, var17).normal(var22, 0.0F, 1.0F, 0.0F).endVertex();
-      var1.vertex(var21, var23, var24, var25).color(var18, var19, var16, var17).normal(var22, 0.0F, 0.0F, 1.0F).endVertex();
-      var1.vertex(var21, var23, var24, var28).color(var18, var19, var16, var17).normal(var22, 0.0F, 0.0F, 1.0F).endVertex();
-      var1.vertex(var21, var26, var24, var25).color(var14, var15, var16, var17).normal(var22, 0.0F, 1.0F, 0.0F).endVertex();
-      var1.vertex(var21, var26, var27, var25).color(var14, var15, var16, var17).normal(var22, 0.0F, 1.0F, 0.0F).endVertex();
-      var1.vertex(var21, var26, var27, var25).color(var14, var15, var16, var17).normal(var22, -1.0F, 0.0F, 0.0F).endVertex();
-      var1.vertex(var21, var23, var27, var25).color(var14, var15, var16, var17).normal(var22, -1.0F, 0.0F, 0.0F).endVertex();
-      var1.vertex(var21, var23, var27, var25).color(var14, var15, var16, var17).normal(var22, 0.0F, 0.0F, 1.0F).endVertex();
-      var1.vertex(var21, var23, var27, var28).color(var14, var15, var16, var17).normal(var22, 0.0F, 0.0F, 1.0F).endVertex();
-      var1.vertex(var21, var23, var27, var28).color(var14, var15, var16, var17).normal(var22, 0.0F, -1.0F, 0.0F).endVertex();
-      var1.vertex(var21, var23, var24, var28).color(var14, var15, var16, var17).normal(var22, 0.0F, -1.0F, 0.0F).endVertex();
-      var1.vertex(var21, var23, var24, var28).color(var14, var15, var16, var17).normal(var22, 1.0F, 0.0F, 0.0F).endVertex();
-      var1.vertex(var21, var26, var24, var28).color(var14, var15, var16, var17).normal(var22, 1.0F, 0.0F, 0.0F).endVertex();
-      var1.vertex(var21, var26, var24, var28).color(var14, var15, var16, var17).normal(var22, 0.0F, 0.0F, -1.0F).endVertex();
-      var1.vertex(var21, var26, var24, var25).color(var14, var15, var16, var17).normal(var22, 0.0F, 0.0F, -1.0F).endVertex();
-      var1.vertex(var21, var23, var27, var28).color(var14, var15, var16, var17).normal(var22, 1.0F, 0.0F, 0.0F).endVertex();
-      var1.vertex(var21, var26, var27, var28).color(var14, var15, var16, var17).normal(var22, 1.0F, 0.0F, 0.0F).endVertex();
-      var1.vertex(var21, var26, var24, var28).color(var14, var15, var16, var17).normal(var22, 0.0F, 1.0F, 0.0F).endVertex();
-      var1.vertex(var21, var26, var27, var28).color(var14, var15, var16, var17).normal(var22, 0.0F, 1.0F, 0.0F).endVertex();
-      var1.vertex(var21, var26, var27, var25).color(var14, var15, var16, var17).normal(var22, 0.0F, 0.0F, 1.0F).endVertex();
-      var1.vertex(var21, var26, var27, var28).color(var14, var15, var16, var17).normal(var22, 0.0F, 0.0F, 1.0F).endVertex();
+      PoseStack.Pose var21 = var0.last();
+      float var22 = (float)var2;
+      float var23 = (float)var4;
+      float var24 = (float)var6;
+      float var25 = (float)var8;
+      float var26 = (float)var10;
+      float var27 = (float)var12;
+      var1.vertex(var21, var22, var23, var24).color(var14, var19, var20, var17).normal(var21, 1.0F, 0.0F, 0.0F).endVertex();
+      var1.vertex(var21, var25, var23, var24).color(var14, var19, var20, var17).normal(var21, 1.0F, 0.0F, 0.0F).endVertex();
+      var1.vertex(var21, var22, var23, var24).color(var18, var15, var20, var17).normal(var21, 0.0F, 1.0F, 0.0F).endVertex();
+      var1.vertex(var21, var22, var26, var24).color(var18, var15, var20, var17).normal(var21, 0.0F, 1.0F, 0.0F).endVertex();
+      var1.vertex(var21, var22, var23, var24).color(var18, var19, var16, var17).normal(var21, 0.0F, 0.0F, 1.0F).endVertex();
+      var1.vertex(var21, var22, var23, var27).color(var18, var19, var16, var17).normal(var21, 0.0F, 0.0F, 1.0F).endVertex();
+      var1.vertex(var21, var25, var23, var24).color(var14, var15, var16, var17).normal(var21, 0.0F, 1.0F, 0.0F).endVertex();
+      var1.vertex(var21, var25, var26, var24).color(var14, var15, var16, var17).normal(var21, 0.0F, 1.0F, 0.0F).endVertex();
+      var1.vertex(var21, var25, var26, var24).color(var14, var15, var16, var17).normal(var21, -1.0F, 0.0F, 0.0F).endVertex();
+      var1.vertex(var21, var22, var26, var24).color(var14, var15, var16, var17).normal(var21, -1.0F, 0.0F, 0.0F).endVertex();
+      var1.vertex(var21, var22, var26, var24).color(var14, var15, var16, var17).normal(var21, 0.0F, 0.0F, 1.0F).endVertex();
+      var1.vertex(var21, var22, var26, var27).color(var14, var15, var16, var17).normal(var21, 0.0F, 0.0F, 1.0F).endVertex();
+      var1.vertex(var21, var22, var26, var27).color(var14, var15, var16, var17).normal(var21, 0.0F, -1.0F, 0.0F).endVertex();
+      var1.vertex(var21, var22, var23, var27).color(var14, var15, var16, var17).normal(var21, 0.0F, -1.0F, 0.0F).endVertex();
+      var1.vertex(var21, var22, var23, var27).color(var14, var15, var16, var17).normal(var21, 1.0F, 0.0F, 0.0F).endVertex();
+      var1.vertex(var21, var25, var23, var27).color(var14, var15, var16, var17).normal(var21, 1.0F, 0.0F, 0.0F).endVertex();
+      var1.vertex(var21, var25, var23, var27).color(var14, var15, var16, var17).normal(var21, 0.0F, 0.0F, -1.0F).endVertex();
+      var1.vertex(var21, var25, var23, var24).color(var14, var15, var16, var17).normal(var21, 0.0F, 0.0F, -1.0F).endVertex();
+      var1.vertex(var21, var22, var26, var27).color(var14, var15, var16, var17).normal(var21, 1.0F, 0.0F, 0.0F).endVertex();
+      var1.vertex(var21, var25, var26, var27).color(var14, var15, var16, var17).normal(var21, 1.0F, 0.0F, 0.0F).endVertex();
+      var1.vertex(var21, var25, var23, var27).color(var14, var15, var16, var17).normal(var21, 0.0F, 1.0F, 0.0F).endVertex();
+      var1.vertex(var21, var25, var26, var27).color(var14, var15, var16, var17).normal(var21, 0.0F, 1.0F, 0.0F).endVertex();
+      var1.vertex(var21, var25, var26, var24).color(var14, var15, var16, var17).normal(var21, 0.0F, 0.0F, 1.0F).endVertex();
+      var1.vertex(var21, var25, var26, var27).color(var14, var15, var16, var17).normal(var21, 0.0F, 0.0F, 1.0F).endVertex();
    }
 
    public static void addChainedFilledBoxVertices(
@@ -2466,7 +2433,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          CrashReport var17 = CrashReport.forThrowable(var19, "Exception while adding particle");
          CrashReportCategory var18 = var17.addCategory("Particle being added");
          var18.setDetail("ID", BuiltInRegistries.PARTICLE_TYPE.getKey(var1.getType()));
-         var18.setDetail("Parameters", var1.writeToString());
+         var18.setDetail("Parameters", () -> var1.writeToString(this.level.registryAccess()));
          var18.setDetail("Position", () -> CrashReportCategory.formatLocation(this.level, var4, var6, var8));
          throw new ReportedException(var17);
       }
@@ -2575,9 +2542,9 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
             }
             break;
          case 1010:
-            Item var60 = Item.byId(var3);
-            if (var60 instanceof RecordItem var52) {
-               this.playStreamingMusic(var52.getSound(), var2);
+            Item var62 = Item.byId(var3);
+            if (var62 instanceof RecordItem var54) {
+               this.playStreamingMusic(var54.getSound(), var2);
             }
             break;
          case 1011:
@@ -2604,9 +2571,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
             break;
          case 1020:
             this.level
-               .playLocalSound(
-                  var2, SoundEvents.ZOMBIE_ATTACK_IRON_DOOR, SoundSource.HOSTILE, 2.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, false
-               );
+               .playLocalSound(var2, SoundEvents.ZOMBIE_ATTACK_IRON_DOOR, SoundSource.HOSTILE, 2.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, false);
             break;
          case 1021:
             this.level
@@ -2711,7 +2676,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          case 1501:
             this.level.playLocalSound(var2, SoundEvents.LAVA_EXTINGUISH, SoundSource.BLOCKS, 0.5F, 2.6F + (var4.nextFloat() - var4.nextFloat()) * 0.8F, false);
 
-            for(int var51 = 0; var51 < 8; ++var51) {
+            for(int var53 = 0; var53 < 8; ++var53) {
                this.level
                   .addParticle(
                      ParticleTypes.LARGE_SMOKE,
@@ -2728,21 +2693,21 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
             this.level
                .playLocalSound(var2, SoundEvents.REDSTONE_TORCH_BURNOUT, SoundSource.BLOCKS, 0.5F, 2.6F + (var4.nextFloat() - var4.nextFloat()) * 0.8F, false);
 
-            for(int var50 = 0; var50 < 5; ++var50) {
-               double var59 = (double)var2.getX() + var4.nextDouble() * 0.6 + 0.2;
-               double var70 = (double)var2.getY() + var4.nextDouble() * 0.6 + 0.2;
-               double var78 = (double)var2.getZ() + var4.nextDouble() * 0.6 + 0.2;
-               this.level.addParticle(ParticleTypes.SMOKE, var59, var70, var78, 0.0, 0.0, 0.0);
+            for(int var52 = 0; var52 < 5; ++var52) {
+               double var61 = (double)var2.getX() + var4.nextDouble() * 0.6 + 0.2;
+               double var72 = (double)var2.getY() + var4.nextDouble() * 0.6 + 0.2;
+               double var80 = (double)var2.getZ() + var4.nextDouble() * 0.6 + 0.2;
+               this.level.addParticle(ParticleTypes.SMOKE, var61, var72, var80, 0.0, 0.0, 0.0);
             }
             break;
          case 1503:
             this.level.playLocalSound(var2, SoundEvents.END_PORTAL_FRAME_FILL, SoundSource.BLOCKS, 1.0F, 1.0F, false);
 
-            for(int var49 = 0; var49 < 16; ++var49) {
-               double var58 = (double)var2.getX() + (5.0 + var4.nextDouble() * 6.0) / 16.0;
-               double var69 = (double)var2.getY() + 0.8125;
-               double var77 = (double)var2.getZ() + (5.0 + var4.nextDouble() * 6.0) / 16.0;
-               this.level.addParticle(ParticleTypes.SMOKE, var58, var69, var77, 0.0, 0.0, 0.0);
+            for(int var51 = 0; var51 < 16; ++var51) {
+               double var60 = (double)var2.getX() + (5.0 + var4.nextDouble() * 6.0) / 16.0;
+               double var71 = (double)var2.getY() + 0.8125;
+               double var79 = (double)var2.getZ() + (5.0 + var4.nextDouble() * 6.0) / 16.0;
+               this.level.addParticle(ParticleTypes.SMOKE, var60, var71, var79, 0.0, 0.0, 0.0);
             }
             break;
          case 1504:
@@ -2781,23 +2746,23 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
             }
 
             float var26 = (float)(var3 >> 16 & 0xFF) / 255.0F;
-            float var31 = (float)(var3 >> 8 & 0xFF) / 255.0F;
-            float var38 = (float)(var3 >> 0 & 0xFF) / 255.0F;
-            SimpleParticleType var43 = var1 == 2007 ? ParticleTypes.INSTANT_EFFECT : ParticleTypes.EFFECT;
+            float var32 = (float)(var3 >> 8 & 0xFF) / 255.0F;
+            float var40 = (float)(var3 >> 0 & 0xFF) / 255.0F;
+            SimpleParticleType var45 = var1 == 2007 ? ParticleTypes.INSTANT_EFFECT : ParticleTypes.EFFECT;
 
-            for(int var48 = 0; var48 < 100; ++var48) {
-               double var57 = var4.nextDouble() * 4.0;
-               double var68 = var4.nextDouble() * 3.141592653589793 * 2.0;
-               double var76 = Math.cos(var68) * var57;
-               double var80 = 0.01 + var4.nextDouble() * 0.5;
-               double var81 = Math.sin(var68) * var57;
+            for(int var50 = 0; var50 < 100; ++var50) {
+               double var59 = var4.nextDouble() * 4.0;
+               double var70 = var4.nextDouble() * 3.141592653589793 * 2.0;
+               double var78 = Math.cos(var70) * var59;
+               double var82 = 0.01 + var4.nextDouble() * 0.5;
+               double var83 = Math.sin(var70) * var59;
                Particle var21 = this.addParticleInternal(
-                  var43, var43.getType().getOverrideLimiter(), var23.x + var76 * 0.1, var23.y + 0.3, var23.z + var81 * 0.1, var76, var80, var81
+                  var45, var45.getType().getOverrideLimiter(), var23.x + var78 * 0.1, var23.y + 0.3, var23.z + var83 * 0.1, var78, var82, var83
                );
                if (var21 != null) {
                   float var22 = 0.75F + var4.nextFloat() * 0.25F;
-                  var21.setColor(var26 * var22, var31 * var22, var38 * var22);
-                  var21.setPower((float)var57);
+                  var21.setColor(var26 * var22, var32 * var22, var40 * var22);
+                  var21.setPower((float)var59);
                }
             }
 
@@ -2805,73 +2770,70 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
             break;
          case 2003:
             double var5 = (double)var2.getX() + 0.5;
-            double var30 = (double)var2.getY();
-            double var42 = (double)var2.getZ() + 0.5;
+            double var31 = (double)var2.getY();
+            double var44 = (double)var2.getZ() + 0.5;
 
-            for(int var55 = 0; var55 < 8; ++var55) {
+            for(int var57 = 0; var57 < 8; ++var57) {
                this.addParticle(
                   new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(Items.ENDER_EYE)),
                   var5,
-                  var30,
-                  var42,
+                  var31,
+                  var44,
                   var4.nextGaussian() * 0.15,
                   var4.nextDouble() * 0.2,
                   var4.nextGaussian() * 0.15
                );
             }
 
-            for(double var56 = 0.0; var56 < 6.283185307179586; var56 += 0.15707963267948966) {
+            for(double var58 = 0.0; var58 < 6.283185307179586; var58 += 0.15707963267948966) {
                this.addParticle(
                   ParticleTypes.PORTAL,
-                  var5 + Math.cos(var56) * 5.0,
-                  var30 - 0.4,
-                  var42 + Math.sin(var56) * 5.0,
-                  Math.cos(var56) * -5.0,
+                  var5 + Math.cos(var58) * 5.0,
+                  var31 - 0.4,
+                  var44 + Math.sin(var58) * 5.0,
+                  Math.cos(var58) * -5.0,
                   0.0,
-                  Math.sin(var56) * -5.0
+                  Math.sin(var58) * -5.0
                );
                this.addParticle(
                   ParticleTypes.PORTAL,
-                  var5 + Math.cos(var56) * 5.0,
-                  var30 - 0.4,
-                  var42 + Math.sin(var56) * 5.0,
-                  Math.cos(var56) * -7.0,
+                  var5 + Math.cos(var58) * 5.0,
+                  var31 - 0.4,
+                  var44 + Math.sin(var58) * 5.0,
+                  Math.cos(var58) * -7.0,
                   0.0,
-                  Math.sin(var56) * -7.0
+                  Math.sin(var58) * -7.0
                );
             }
             break;
          case 2004:
-            for(int var29 = 0; var29 < 20; ++var29) {
-               double var37 = (double)var2.getX() + 0.5 + (var4.nextDouble() - 0.5) * 2.0;
-               double var47 = (double)var2.getY() + 0.5 + (var4.nextDouble() - 0.5) * 2.0;
-               double var64 = (double)var2.getZ() + 0.5 + (var4.nextDouble() - 0.5) * 2.0;
-               this.level.addParticle(ParticleTypes.SMOKE, var37, var47, var64, 0.0, 0.0, 0.0);
-               this.level.addParticle(ParticleTypes.FLAME, var37, var47, var64, 0.0, 0.0, 0.0);
+            for(int var30 = 0; var30 < 20; ++var30) {
+               double var39 = (double)var2.getX() + 0.5 + (var4.nextDouble() - 0.5) * 2.0;
+               double var49 = (double)var2.getY() + 0.5 + (var4.nextDouble() - 0.5) * 2.0;
+               double var66 = (double)var2.getZ() + 0.5 + (var4.nextDouble() - 0.5) * 2.0;
+               this.level.addParticle(ParticleTypes.SMOKE, var39, var49, var66, 0.0, 0.0, 0.0);
+               this.level.addParticle(ParticleTypes.FLAME, var39, var49, var66, 0.0, 0.0, 0.0);
             }
             break;
-         case 2005:
-            BoneMealItem.addGrowthParticles(this.level, var2, var3);
-            break;
          case 2006:
-            for(int var46 = 0; var46 < 200; ++var46) {
-               float var54 = var4.nextFloat() * 4.0F;
-               float var63 = var4.nextFloat() * 6.2831855F;
-               double var67 = (double)(Mth.cos(var63) * var54);
-               double var75 = 0.01 + var4.nextDouble() * 0.5;
-               double var79 = (double)(Mth.sin(var63) * var54);
+            for(int var48 = 0; var48 < 200; ++var48) {
+               float var56 = var4.nextFloat() * 4.0F;
+               float var65 = var4.nextFloat() * 6.2831855F;
+               double var69 = (double)(Mth.cos(var65) * var56);
+               double var77 = 0.01 + var4.nextDouble() * 0.5;
+               double var81 = (double)(Mth.sin(var65) * var56);
                Particle var19 = this.addParticleInternal(
                   ParticleTypes.DRAGON_BREATH,
                   false,
-                  (double)var2.getX() + var67 * 0.1,
+                  (double)var2.getX() + var69 * 0.1,
                   (double)var2.getY() + 0.3,
-                  (double)var2.getZ() + var79 * 0.1,
-                  var67,
-                  var75,
-                  var79
+                  (double)var2.getZ() + var81 * 0.1,
+                  var69,
+                  var77,
+                  var81
                );
                if (var19 != null) {
-                  var19.setPower(var54);
+                  var19.setPower(var56);
                }
             }
 
@@ -2883,7 +2845,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
             this.level.addParticle(ParticleTypes.EXPLOSION, (double)var2.getX() + 0.5, (double)var2.getY() + 0.5, (double)var2.getZ() + 0.5, 0.0, 0.0, 0.0);
             break;
          case 2009:
-            for(int var45 = 0; var45 < 8; ++var45) {
+            for(int var47 = 0; var47 < 8; ++var47) {
                this.level
                   .addParticle(
                      ParticleTypes.CLOUD,
@@ -2898,6 +2860,12 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
             break;
          case 2010:
             this.shootParticles(var3, var2, var4, ParticleTypes.WHITE_SMOKE);
+            break;
+         case 2011:
+            ParticleUtils.spawnParticleInBlock(this.level, var2, var3, ParticleTypes.HAPPY_VILLAGER);
+            break;
+         case 2012:
+            ParticleUtils.spawnParticleInBlock(this.level, var2, var3, ParticleTypes.HAPPY_VILLAGER);
             break;
          case 3000:
             this.level
@@ -2935,64 +2903,64 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
             ParticleUtils.spawnParticlesOnBlockFaces(this.level, var2, ParticleTypes.SCRAPE, UniformInt.of(3, 5));
             break;
          case 3006:
-            int var28 = var3 >> 6;
-            if (var28 > 0) {
-               if (var4.nextFloat() < 0.3F + (float)var28 * 0.1F) {
-                  float var34 = 0.15F + 0.02F * (float)var28 * (float)var28 * var4.nextFloat();
-                  float var39 = 0.4F + 0.3F * (float)var28 * var4.nextFloat();
-                  this.level.playLocalSound(var2, SoundEvents.SCULK_BLOCK_CHARGE, SoundSource.BLOCKS, var34, var39, false);
+            int var29 = var3 >> 6;
+            if (var29 > 0) {
+               if (var4.nextFloat() < 0.3F + (float)var29 * 0.1F) {
+                  float var36 = 0.15F + 0.02F * (float)var29 * (float)var29 * var4.nextFloat();
+                  float var41 = 0.4F + 0.3F * (float)var29 * var4.nextFloat();
+                  this.level.playLocalSound(var2, SoundEvents.SCULK_BLOCK_CHARGE, SoundSource.BLOCKS, var36, var41, false);
                }
 
-               byte var35 = (byte)(var3 & 63);
-               UniformInt var40 = UniformInt.of(0, var28);
+               byte var37 = (byte)(var3 & 63);
+               UniformInt var42 = UniformInt.of(0, var29);
                float var10 = 0.005F;
                Supplier var11 = () -> new Vec3(
                      Mth.nextDouble(var4, -0.004999999888241291, 0.004999999888241291),
                      Mth.nextDouble(var4, -0.004999999888241291, 0.004999999888241291),
                      Mth.nextDouble(var4, -0.004999999888241291, 0.004999999888241291)
                   );
-               if (var35 == 0) {
+               if (var37 == 0) {
                   for(Direction var15 : Direction.values()) {
                      float var16 = var15 == Direction.DOWN ? 3.1415927F : 0.0F;
                      double var17 = var15.getAxis() == Direction.Axis.Y ? 0.65 : 0.57;
-                     ParticleUtils.spawnParticlesOnBlockFace(this.level, var2, new SculkChargeParticleOptions(var16), var40, var15, var11, var17);
+                     ParticleUtils.spawnParticlesOnBlockFace(this.level, var2, new SculkChargeParticleOptions(var16), var42, var15, var11, var17);
                   }
                } else {
-                  for(Direction var65 : MultifaceBlock.unpack(var35)) {
-                     float var71 = var65 == Direction.UP ? 3.1415927F : 0.0F;
-                     double var73 = 0.35;
-                     ParticleUtils.spawnParticlesOnBlockFace(this.level, var2, new SculkChargeParticleOptions(var71), var40, var65, var11, 0.35);
+                  for(Direction var67 : MultifaceBlock.unpack(var37)) {
+                     float var73 = var67 == Direction.UP ? 3.1415927F : 0.0F;
+                     double var75 = 0.35;
+                     ParticleUtils.spawnParticlesOnBlockFace(this.level, var2, new SculkChargeParticleOptions(var73), var42, var67, var11, 0.35);
                   }
                }
             } else {
                this.level.playLocalSound(var2, SoundEvents.SCULK_BLOCK_CHARGE, SoundSource.BLOCKS, 1.0F, 1.0F, false);
-               boolean var36 = this.level.getBlockState(var2).isCollisionShapeFullBlock(this.level, var2);
-               int var41 = var36 ? 40 : 20;
-               float var44 = var36 ? 0.45F : 0.25F;
-               float var53 = 0.07F;
+               boolean var38 = this.level.getBlockState(var2).isCollisionShapeFullBlock(this.level, var2);
+               int var43 = var38 ? 40 : 20;
+               float var46 = var38 ? 0.45F : 0.25F;
+               float var55 = 0.07F;
 
-               for(int var62 = 0; var62 < var41; ++var62) {
-                  float var66 = 2.0F * var4.nextFloat() - 1.0F;
-                  float var72 = 2.0F * var4.nextFloat() - 1.0F;
+               for(int var64 = 0; var64 < var43; ++var64) {
+                  float var68 = 2.0F * var4.nextFloat() - 1.0F;
                   float var74 = 2.0F * var4.nextFloat() - 1.0F;
+                  float var76 = 2.0F * var4.nextFloat() - 1.0F;
                   this.level
                      .addParticle(
                         ParticleTypes.SCULK_CHARGE_POP,
-                        (double)var2.getX() + 0.5 + (double)(var66 * var44),
-                        (double)var2.getY() + 0.5 + (double)(var72 * var44),
-                        (double)var2.getZ() + 0.5 + (double)(var74 * var44),
-                        (double)(var66 * 0.07F),
-                        (double)(var72 * 0.07F),
-                        (double)(var74 * 0.07F)
+                        (double)var2.getX() + 0.5 + (double)(var68 * var46),
+                        (double)var2.getY() + 0.5 + (double)(var74 * var46),
+                        (double)var2.getZ() + 0.5 + (double)(var76 * var46),
+                        (double)(var68 * 0.07F),
+                        (double)(var74 * 0.07F),
+                        (double)(var76 * 0.07F)
                      );
                }
             }
             break;
          case 3007:
-            for(int var32 = 0; var32 < 10; ++var32) {
+            for(int var34 = 0; var34 < 10; ++var34) {
                this.level
                   .addParticle(
-                     new ShriekParticleOption(var32 * 5),
+                     new ShriekParticleOption(var34 * 5),
                      false,
                      (double)var2.getX() + 0.5,
                      (double)var2.getY() + SculkShriekerBlock.TOP_Y,
@@ -3003,8 +2971,8 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
                   );
             }
 
-            BlockState var33 = this.level.getBlockState(var2);
-            boolean var9 = var33.hasProperty(BlockStateProperties.WATERLOGGED) && var33.getValue(BlockStateProperties.WATERLOGGED);
+            BlockState var35 = this.level.getBlockState(var2);
+            boolean var9 = var35.hasProperty(BlockStateProperties.WATERLOGGED) && var35.getValue(BlockStateProperties.WATERLOGGED);
             if (!var9) {
                this.level
                   .playLocalSound(
@@ -3021,18 +2989,15 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
             break;
          case 3008:
             BlockState var6 = Block.stateById(var3);
-            Block var8 = var6.getBlock();
-            if (var8 instanceof BrushableBlock var7) {
-               this.level.playLocalSound(var2, var7.getBrushCompletedSound(), SoundSource.PLAYERS, 1.0F, 1.0F, false);
+            Block var33 = var6.getBlock();
+            if (var33 instanceof BrushableBlock var28) {
+               this.level.playLocalSound(var2, var28.getBrushCompletedSound(), SoundSource.PLAYERS, 1.0F, 1.0F, false);
             }
 
             this.level.addDestroyBlockEffect(var2, var6);
             break;
          case 3009:
             ParticleUtils.spawnParticlesOnBlockFaces(this.level, var2, ParticleTypes.EGG_CRACK, UniformInt.of(3, 6));
-            break;
-         case 3010:
-            ParticleUtils.spawnParticlesOnBlockFaces(this.level, var2, ParticleTypes.GUST_DUST, UniformInt.of(3, 6));
             break;
          case 3011:
             TrialSpawner.addSpawnParticles(this.level, var2, var4);
@@ -3052,6 +3017,20 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          case 3014:
             this.level
                .playLocalSound(var2, SoundEvents.TRIAL_SPAWNER_EJECT_ITEM, SoundSource.BLOCKS, 1.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, true);
+            TrialSpawner.addEjectItemParticles(this.level, var2, var4);
+            break;
+         case 3015:
+            BlockEntity var8 = this.level.getBlockEntity(var2);
+            if (var8 instanceof VaultBlockEntity var7) {
+               VaultBlockEntity.Client.emitActivationParticles(this.level, var7.getBlockPos(), var7.getBlockState(), var7.getSharedData());
+               this.level.playLocalSound(var2, SoundEvents.VAULT_ACTIVATE, SoundSource.BLOCKS, 1.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, true);
+            }
+            break;
+         case 3016:
+            VaultBlockEntity.Client.emitDeactivationParticles(this.level, var2);
+            this.level.playLocalSound(var2, SoundEvents.VAULT_DEACTIVATE, SoundSource.BLOCKS, 1.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, true);
+            break;
+         case 3017:
             TrialSpawner.addEjectItemParticles(this.level, var2, var4);
       }
    }

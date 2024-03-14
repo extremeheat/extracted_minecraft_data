@@ -23,10 +23,7 @@ public class MilkBucketItem extends Item {
          ((ServerPlayer)var4).awardStat(Stats.ITEM_USED.get(this));
       }
 
-      if (var3 instanceof Player && !((Player)var3).getAbilities().instabuild) {
-         var1.shrink(1);
-      }
-
+      var1.consume(1, var3);
       if (!var2.isClientSide) {
          var3.removeAllEffects();
       }

@@ -249,7 +249,7 @@ public class CloneCommands {
                      if (var4.test(var26)) {
                         BlockEntity var28 = var12.getBlockEntity(var24);
                         if (var28 != null) {
-                           CompoundTag var29 = var28.saveWithoutMetadata();
+                           CompoundTag var29 = var28.saveWithoutMetadata(var0.registryAccess());
                            var17.add(new CloneCommands.CloneBlockInfo(var25, var27, var29));
                            var19.addLast(var24);
                         } else if (!var27.isSolidRender(var12, var24) && !var27.isCollisionShapeFullBlock(var12, var24)) {
@@ -299,7 +299,7 @@ public class CloneCommands {
             for(CloneCommands.CloneBlockInfo var46 : var17) {
                BlockEntity var48 = var13.getBlockEntity(var46.pos);
                if (var46.tag != null && var48 != null) {
-                  var48.load(var46.tag);
+                  var48.load(var46.tag, var13.registryAccess());
                   var48.setChanged();
                }
 

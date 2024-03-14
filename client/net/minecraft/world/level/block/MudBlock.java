@@ -24,27 +24,27 @@ public class MudBlock extends Block {
    }
 
    @Override
-   public VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 
    @Override
-   public VoxelShape getBlockSupportShape(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected VoxelShape getBlockSupportShape(BlockState var1, BlockGetter var2, BlockPos var3) {
       return Shapes.block();
    }
 
    @Override
-   public VoxelShape getVisualShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getVisualShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return Shapes.block();
    }
 
    @Override
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
+   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
    }
 
    @Override
-   public float getShadeBrightness(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected float getShadeBrightness(BlockState var1, BlockGetter var2, BlockPos var3) {
       return 0.2F;
    }
 }

@@ -7,7 +7,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -35,7 +34,6 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.texture.SpriteLoader;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -97,7 +95,6 @@ public class ParticleEngine implements PreparableReloadListener {
    }
 
    private void registerProviders() {
-      this.register(ParticleTypes.AMBIENT_ENTITY_EFFECT, SpellParticle.AmbientMobProvider::new);
       this.register(ParticleTypes.ANGRY_VILLAGER, HeartParticle.AngryVillagerProvider::new);
       this.register(ParticleTypes.BLOCK_MARKER, new BlockMarker.Provider());
       this.register(ParticleTypes.BLOCK, new TerrainParticle.Provider());
@@ -123,15 +120,16 @@ public class ParticleEngine implements PreparableReloadListener {
       this.register(ParticleTypes.EFFECT, SpellParticle.Provider::new);
       this.register(ParticleTypes.ELDER_GUARDIAN, new MobAppearanceParticle.Provider());
       this.register(ParticleTypes.ENCHANTED_HIT, CritParticle.MagicProvider::new);
-      this.register(ParticleTypes.ENCHANT, EnchantmentTableParticle.Provider::new);
+      this.register(ParticleTypes.ENCHANT, FlyTowardsPositionParticle.EnchantProvider::new);
       this.register(ParticleTypes.END_ROD, EndRodParticle.Provider::new);
-      this.register(ParticleTypes.ENTITY_EFFECT, SpellParticle.MobProvider::new);
+      this.register(ParticleTypes.ENTITY_EFFECT, SpellParticle.MobEffectProvider::new);
       this.register(ParticleTypes.EXPLOSION_EMITTER, new HugeExplosionSeedParticle.Provider());
       this.register(ParticleTypes.EXPLOSION, HugeExplosionParticle.Provider::new);
       this.register(ParticleTypes.SONIC_BOOM, SonicBoomParticle.Provider::new);
       this.register(ParticleTypes.FALLING_DUST, FallingDustParticle.Provider::new);
       this.register(ParticleTypes.GUST, GustParticle.Provider::new);
-      this.register(ParticleTypes.GUST_EMITTER, new GustSeedParticle.Provider());
+      this.register(ParticleTypes.GUST_EMITTER_LARGE, new GustSeedParticle.Provider(3.0, 7, 0));
+      this.register(ParticleTypes.GUST_EMITTER_SMALL, new GustSeedParticle.Provider(1.0, 3, 2));
       this.register(ParticleTypes.FIREWORK, FireworkParticles.SparkProvider::new);
       this.register(ParticleTypes.FISHING, WakeParticle.Provider::new);
       this.register(ParticleTypes.FLAME, FlameParticle.Provider::new);
@@ -150,7 +148,7 @@ public class ParticleEngine implements PreparableReloadListener {
       this.register(ParticleTypes.LARGE_SMOKE, LargeSmokeParticle.Provider::new);
       this.register(ParticleTypes.LAVA, LavaParticle.Provider::new);
       this.register(ParticleTypes.MYCELIUM, SuspendedTownParticle.Provider::new);
-      this.register(ParticleTypes.NAUTILUS, EnchantmentTableParticle.NautilusProvider::new);
+      this.register(ParticleTypes.NAUTILUS, FlyTowardsPositionParticle.NautilusProvider::new);
       this.register(ParticleTypes.NOTE, NoteParticle.Provider::new);
       this.register(ParticleTypes.POOF, ExplodeParticle.Provider::new);
       this.register(ParticleTypes.PORTAL, PortalParticle.Provider::new);
@@ -183,9 +181,7 @@ public class ParticleEngine implements PreparableReloadListener {
       this.register(ParticleTypes.SMALL_FLAME, FlameParticle.SmallFlameProvider::new);
       this.register(ParticleTypes.DRIPPING_DRIPSTONE_WATER, DripParticle::createDripstoneWaterHangParticle);
       this.register(ParticleTypes.FALLING_DRIPSTONE_WATER, DripParticle::createDripstoneWaterFallParticle);
-      this.register(
-         ParticleTypes.CHERRY_LEAVES, var0 -> (var1, var2, var3, var5, var7, var9, var11, var13) -> new CherryParticle(var2, var3, var5, var7, var0)
-      );
+      this.register(ParticleTypes.CHERRY_LEAVES, var0 -> (var1, var2, var3, var5, var7, var9, var11, var13) -> new CherryParticle(var2, var3, var5, var7, var0));
       this.register(ParticleTypes.DRIPPING_DRIPSTONE_LAVA, DripParticle::createDripstoneLavaHangParticle);
       this.register(ParticleTypes.FALLING_DRIPSTONE_LAVA, DripParticle::createDripstoneLavaFallParticle);
       this.register(ParticleTypes.VIBRATION, VibrationSignalParticle.Provider::new);
@@ -198,8 +194,8 @@ public class ParticleEngine implements PreparableReloadListener {
       this.register(ParticleTypes.SHRIEK, ShriekParticle.Provider::new);
       this.register(ParticleTypes.EGG_CRACK, SuspendedTownParticle.EggCrackProvider::new);
       this.register(ParticleTypes.DUST_PLUME, DustPlumeParticle.Provider::new);
-      this.register(ParticleTypes.GUST_DUST, GustDustParticle.GustDustParticleProvider::new);
       this.register(ParticleTypes.TRIAL_SPAWNER_DETECTION, TrialSpawnerDetectionParticle.Provider::new);
+      this.register(ParticleTypes.VAULT_CONNECTION, FlyTowardsPositionParticle.VaultConnectionProvider::new);
    }
 
    private <T extends ParticleOptions> void register(ParticleType<T> var1, ParticleProvider<T> var2) {
@@ -409,43 +405,37 @@ public class ParticleEngine implements PreparableReloadListener {
       }
    }
 
-   public void render(PoseStack var1, MultiBufferSource.BufferSource var2, LightTexture var3, Camera var4, float var5) {
-      var3.turnOnLightLayer();
+   public void render(LightTexture var1, Camera var2, float var3) {
+      var1.turnOnLightLayer();
       RenderSystem.enableDepthTest();
-      PoseStack var6 = RenderSystem.getModelViewStack();
-      var6.pushPose();
-      var6.mulPoseMatrix(var1.last().pose());
-      RenderSystem.applyModelViewMatrix();
 
-      for(ParticleRenderType var8 : RENDER_ORDER) {
-         Iterable var9 = this.particles.get(var8);
-         if (var9 != null) {
+      for(ParticleRenderType var5 : RENDER_ORDER) {
+         Iterable var6 = this.particles.get(var5);
+         if (var6 != null) {
             RenderSystem.setShader(GameRenderer::getParticleShader);
-            Tesselator var10 = Tesselator.getInstance();
-            BufferBuilder var11 = var10.getBuilder();
-            var8.begin(var11, this.textureManager);
+            Tesselator var7 = Tesselator.getInstance();
+            BufferBuilder var8 = var7.getBuilder();
+            var5.begin(var8, this.textureManager);
 
-            for(Particle var13 : var9) {
+            for(Particle var10 : var6) {
                try {
-                  var13.render(var11, var4, var5);
-               } catch (Throwable var17) {
-                  CrashReport var15 = CrashReport.forThrowable(var17, "Rendering Particle");
-                  CrashReportCategory var16 = var15.addCategory("Particle being rendered");
-                  var16.setDetail("Particle", var13::toString);
-                  var16.setDetail("Particle Type", var8::toString);
-                  throw new ReportedException(var15);
+                  var10.render(var8, var2, var3);
+               } catch (Throwable var14) {
+                  CrashReport var12 = CrashReport.forThrowable(var14, "Rendering Particle");
+                  CrashReportCategory var13 = var12.addCategory("Particle being rendered");
+                  var13.setDetail("Particle", var10::toString);
+                  var13.setDetail("Particle Type", var5::toString);
+                  throw new ReportedException(var12);
                }
             }
 
-            var8.end(var10);
+            var5.end(var7);
          }
       }
 
-      var6.popPose();
-      RenderSystem.applyModelViewMatrix();
       RenderSystem.depthMask(true);
       RenderSystem.disableBlend();
-      var3.turnOffLightLayer();
+      var1.turnOffLightLayer();
    }
 
    public void setLevel(@Nullable ClientLevel var1) {

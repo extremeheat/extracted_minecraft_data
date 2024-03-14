@@ -4,11 +4,9 @@ import com.mojang.realmsclient.RealmsMainScreen;
 import com.mojang.realmsclient.dto.RealmsServer;
 import com.mojang.realmsclient.util.WorldGenerationInfo;
 import com.mojang.realmsclient.util.task.CreateSnapshotRealmTask;
-import com.mojang.realmsclient.util.task.WorldCreationTask;
-import net.minecraft.Util;
+import com.mojang.realmsclient.util.task.RealmCreationTask;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.CommonLayouts;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
@@ -16,6 +14,7 @@ import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.realms.RealmsScreen;
+import net.minecraft.util.StringUtil;
 
 public class RealmsCreateRealmScreen extends RealmsScreen {
    private static final Component CREATE_REALM_TEXT = Component.translatable("mco.selectServer.create");
@@ -43,12 +42,12 @@ public class RealmsCreateRealmScreen extends RealmsScreen {
 
    @Override
    public void init() {
-      this.layout.addToHeader(new StringWidget(this.title, this.font));
+      this.layout.addTitleHeader(this.title, this.font);
       LinearLayout var1 = this.layout.addToContents(LinearLayout.vertical()).spacing(10);
       Button var2 = Button.builder(CommonComponents.GUI_CONTINUE, var1x -> this.createWorldRunnable.run()).build();
       var2.active = false;
       this.nameBox = new EditBox(this.font, 210, 20, NAME_LABEL);
-      this.nameBox.setResponder(var1x -> var2.active = !Util.isBlank(var1x));
+      this.nameBox.setResponder(var1x -> var2.active = !StringUtil.isBlank(var1x));
       this.descriptionBox = new EditBox(this.font, 210, 20, DESCRIPTION_LABEL);
       var1.addChild(CommonLayouts.labeledElement(this.font, this.nameBox, NAME_LABEL));
       var1.addChild(CommonLayouts.labeledElement(this.font, this.descriptionBox, DESCRIPTION_LABEL));
@@ -58,6 +57,10 @@ public class RealmsCreateRealmScreen extends RealmsScreen {
       this.layout.visitWidgets(var1x -> {
       });
       this.repositionElements();
+   }
+
+   @Override
+   protected void setInitialFocus() {
       this.setInitialFocus(this.nameBox);
    }
 
@@ -67,7 +70,7 @@ public class RealmsCreateRealmScreen extends RealmsScreen {
    }
 
    private void createWorld(RealmsServer var1) {
-      WorldCreationTask var2 = new WorldCreationTask(var1.id, this.nameBox.getValue(), this.descriptionBox.getValue());
+      RealmCreationTask var2 = new RealmCreationTask(var1.id, this.nameBox.getValue(), this.descriptionBox.getValue());
       RealmsResetWorldScreen var3 = RealmsResetWorldScreen.forNewRealm(this, var1, var2, () -> this.minecraft.execute(() -> {
             RealmsMainScreen.refreshServerList();
             this.minecraft.setScreen(this.lastScreen);

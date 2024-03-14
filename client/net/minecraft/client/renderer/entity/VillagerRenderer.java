@@ -24,14 +24,12 @@ public class VillagerRenderer extends MobRenderer<Villager, VillagerModel<Villag
    }
 
    protected void scale(Villager var1, PoseStack var2, float var3) {
-      float var4 = 0.9375F;
-      if (var1.isBaby()) {
-         var4 *= 0.5F;
-         this.shadowRadius = 0.25F;
-      } else {
-         this.shadowRadius = 0.5F;
-      }
-
+      float var4 = 0.9375F * var1.getAgeScale();
       var2.scale(var4, var4, var4);
+   }
+
+   protected float getShadowRadius(Villager var1) {
+      float var2 = super.getShadowRadius(var1);
+      return var1.isBaby() ? var2 * 0.5F : var2;
    }
 }

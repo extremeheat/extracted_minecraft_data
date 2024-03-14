@@ -33,7 +33,6 @@ public class CraftingScreen extends AbstractContainerScreen<CraftingMenu> implem
          var1.setPosition(this.leftPos + 5, this.height / 2 - 49);
       }));
       this.addWidget(this.recipeBookComponent);
-      this.setInitialFocus(this.recipeBookComponent);
       this.titleLabelX = 29;
    }
 
@@ -63,6 +62,16 @@ public class CraftingScreen extends AbstractContainerScreen<CraftingMenu> implem
       int var5 = this.leftPos;
       int var6 = (this.height - this.imageHeight) / 2;
       var1.blit(CRAFTING_TABLE_LOCATION, var5, var6, 0, 0, this.imageWidth, this.imageHeight);
+   }
+
+   @Override
+   public boolean keyPressed(int var1, int var2, int var3) {
+      return this.recipeBookComponent.keyPressed(var1, var2, var3) ? true : super.keyPressed(var1, var2, var3);
+   }
+
+   @Override
+   public boolean charTyped(char var1, int var2) {
+      return this.recipeBookComponent.charTyped(var1, var2) ? true : super.charTyped(var1, var2);
    }
 
    @Override

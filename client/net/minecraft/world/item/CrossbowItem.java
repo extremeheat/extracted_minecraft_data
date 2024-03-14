@@ -7,8 +7,7 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.CriteriaTriggers;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
@@ -19,13 +18,12 @@ import net.minecraft.stats.Stats;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.monster.CrossbowAttackMob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.FireworkRocketEntity;
 import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.item.component.ChargedProjectiles;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
@@ -33,9 +31,7 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-public class CrossbowItem extends ProjectileWeaponItem implements Vanishable {
-   private static final String TAG_CHARGED = "Charged";
-   private static final String TAG_CHARGED_PROJECTILES = "ChargedProjectiles";
+public class CrossbowItem extends ProjectileWeaponItem {
    private static final int MAX_CHARGE_DURATION = 25;
    public static final int DEFAULT_RANGE = 8;
    private boolean startSoundPlayed = false;
@@ -44,6 +40,7 @@ public class CrossbowItem extends ProjectileWeaponItem implements Vanishable {
    private static final float MID_SOUND_PERCENT = 0.5F;
    private static final float ARROW_POWER = 3.15F;
    private static final float FIREWORK_POWER = 1.6F;
+   public static final float MOB_ARROW_POWER = 1.6F;
 
    public CrossbowItem(Item.Properties var1) {
       super(var1);
@@ -62,25 +59,22 @@ public class CrossbowItem extends ProjectileWeaponItem implements Vanishable {
    @Override
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
-      if (isCharged(var4)) {
-         performShooting(var1, var2, var3, var4, getShootingPower(var4), 1.0F);
-         setCharged(var4, false);
+      ChargedProjectiles var5 = var4.get(DataComponents.CHARGED_PROJECTILES);
+      if (var5 != null && !var5.isEmpty()) {
+         this.performShooting(var1, var2, var3, var4, getShootingPower(var5), 1.0F, null);
          return InteractionResultHolder.consume(var4);
       } else if (!var2.getProjectile(var4).isEmpty()) {
-         if (!isCharged(var4)) {
-            this.startSoundPlayed = false;
-            this.midLoadSoundPlayed = false;
-            var2.startUsingItem(var3);
-         }
-
+         this.startSoundPlayed = false;
+         this.midLoadSoundPlayed = false;
+         var2.startUsingItem(var3);
          return InteractionResultHolder.consume(var4);
       } else {
          return InteractionResultHolder.fail(var4);
       }
    }
 
-   private static float getShootingPower(ItemStack var0) {
-      return containsChargedProjectile(var0, Items.FIREWORK_ROCKET) ? 1.6F : 3.15F;
+   private static float getShootingPower(ChargedProjectiles var0) {
+      return var0.contains(Items.FIREWORK_ROCKET) ? 1.6F : 3.15F;
    }
 
    @Override
@@ -88,15 +82,13 @@ public class CrossbowItem extends ProjectileWeaponItem implements Vanishable {
       int var5 = this.getUseDuration(var1) - var4;
       float var6 = getPowerForTime(var5, var1);
       if (var6 >= 1.0F && !isCharged(var1) && tryLoadProjectiles(var3, var1)) {
-         setCharged(var1, true);
-         SoundSource var7 = var3 instanceof Player ? SoundSource.PLAYERS : SoundSource.HOSTILE;
          var2.playSound(
             null,
             var3.getX(),
             var3.getY(),
             var3.getZ(),
             SoundEvents.CROSSBOW_LOADING_END,
-            var7,
+            var3.getSoundSource(),
             1.0F,
             1.0F / (var2.getRandom().nextFloat() * 0.5F + 1.0F) + 0.2F
          );
@@ -104,195 +96,95 @@ public class CrossbowItem extends ProjectileWeaponItem implements Vanishable {
    }
 
    private static boolean tryLoadProjectiles(LivingEntity var0, ItemStack var1) {
-      int var2 = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.MULTISHOT, var1);
-      int var3 = var2 == 0 ? 1 : 3;
-      boolean var4 = var0 instanceof Player && ((Player)var0).getAbilities().instabuild;
-      ItemStack var5 = var0.getProjectile(var1);
-      ItemStack var6 = var5.copy();
-
-      for(int var7 = 0; var7 < var3; ++var7) {
-         if (var7 > 0) {
-            var5 = var6.copy();
-         }
-
-         if (var5.isEmpty() && var4) {
-            var5 = new ItemStack(Items.ARROW);
-            var6 = var5.copy();
-         }
-
-         if (!loadProjectile(var0, var1, var5, var7 > 0, var4)) {
-            return false;
-         }
-      }
-
-      return true;
-   }
-
-   private static boolean loadProjectile(LivingEntity var0, ItemStack var1, ItemStack var2, boolean var3, boolean var4) {
-      if (var2.isEmpty()) {
-         return false;
-      } else {
-         boolean var5 = var4 && var2.getItem() instanceof ArrowItem;
-         ItemStack var6;
-         if (!var5 && !var4 && !var3) {
-            var6 = var2.split(1);
-            if (var2.isEmpty() && var0 instanceof Player) {
-               ((Player)var0).getInventory().removeItem(var2);
-            }
-         } else {
-            var6 = var2.copy();
-         }
-
-         addChargedProjectile(var1, var6);
+      List var2 = draw(var1, var0.getProjectile(var1), var0);
+      if (!var2.isEmpty()) {
+         var1.set(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.of(var2));
          return true;
+      } else {
+         return false;
       }
    }
 
    public static boolean isCharged(ItemStack var0) {
-      CompoundTag var1 = var0.getTag();
-      return var1 != null && var1.getBoolean("Charged");
+      ChargedProjectiles var1 = var0.getOrDefault(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
+      return !var1.isEmpty();
    }
 
-   public static void setCharged(ItemStack var0, boolean var1) {
-      CompoundTag var2 = var0.getOrCreateTag();
-      var2.putBoolean("Charged", var1);
-   }
-
-   private static void addChargedProjectile(ItemStack var0, ItemStack var1) {
-      CompoundTag var2 = var0.getOrCreateTag();
-      ListTag var3;
-      if (var2.contains("ChargedProjectiles", 9)) {
-         var3 = var2.getList("ChargedProjectiles", 10);
+   @Override
+   protected void shootProjectile(LivingEntity var1, Projectile var2, int var3, float var4, float var5, float var6, @Nullable LivingEntity var7) {
+      Vector3f var8;
+      if (var7 != null) {
+         double var9 = var7.getX() - var1.getX();
+         double var11 = var7.getZ() - var1.getZ();
+         double var13 = Math.sqrt(var9 * var9 + var11 * var11);
+         double var15 = var7.getY(0.3333333333333333) - var2.getY() + var13 * 0.20000000298023224;
+         var8 = getProjectileShotVector(var1, new Vec3(var9, var15, var11), var6);
       } else {
-         var3 = new ListTag();
+         Vec3 var17 = var1.getUpVector(1.0F);
+         Quaternionf var10 = new Quaternionf().setAngleAxis((double)(var6 * 0.017453292F), var17.x, var17.y, var17.z);
+         Vec3 var19 = var1.getViewVector(1.0F);
+         var8 = var19.toVector3f().rotate(var10);
       }
 
-      CompoundTag var4 = new CompoundTag();
-      var1.save(var4);
-      var3.add(var4);
-      var2.put("ChargedProjectiles", var3);
+      var2.shoot((double)var8.x(), (double)var8.y(), (double)var8.z(), var4, var5);
+      float var18 = getShotPitch(var1.getRandom(), var3);
+      var1.level().playSound(null, var1.getX(), var1.getY(), var1.getZ(), SoundEvents.CROSSBOW_SHOOT, var1.getSoundSource(), 1.0F, var18);
    }
 
-   private static List<ItemStack> getChargedProjectiles(ItemStack var0) {
-      ArrayList var1 = Lists.newArrayList();
-      CompoundTag var2 = var0.getTag();
-      if (var2 != null && var2.contains("ChargedProjectiles", 9)) {
-         ListTag var3 = var2.getList("ChargedProjectiles", 10);
-         if (var3 != null) {
-            for(int var4 = 0; var4 < var3.size(); ++var4) {
-               CompoundTag var5 = var3.getCompound(var4);
-               var1.add(ItemStack.of(var5));
-            }
-         }
+   private static Vector3f getProjectileShotVector(LivingEntity var0, Vec3 var1, float var2) {
+      Vector3f var3 = var1.toVector3f().normalize();
+      Vector3f var4 = new Vector3f(var3).cross(new Vector3f(0.0F, 1.0F, 0.0F));
+      if ((double)var4.lengthSquared() <= 1.0E-7) {
+         Vec3 var5 = var0.getUpVector(1.0F);
+         var4 = new Vector3f(var3).cross(var5.toVector3f());
       }
 
-      return var1;
-   }
-
-   private static void clearChargedProjectiles(ItemStack var0) {
-      CompoundTag var1 = var0.getTag();
-      if (var1 != null) {
-         ListTag var2 = var1.getList("ChargedProjectiles", 9);
-         var2.clear();
-         var1.put("ChargedProjectiles", var2);
-      }
-   }
-
-   public static boolean containsChargedProjectile(ItemStack var0, Item var1) {
-      return getChargedProjectiles(var0).stream().anyMatch(var1x -> var1x.is(var1));
+      Vector3f var6 = new Vector3f(var3).rotateAxis(1.5707964F, var4.x, var4.y, var4.z);
+      return new Vector3f(var3).rotateAxis(var2 * 0.017453292F, var6.x, var6.y, var6.z);
    }
 
    // $VF: Could not properly define all variable types!
    // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   private static void shootProjectile(
-      Level var0, LivingEntity var1, InteractionHand var2, ItemStack var3, ItemStack var4, float var5, boolean var6, float var7, float var8, float var9
-   ) {
-      if (!var0.isClientSide) {
-         boolean var10 = var4.is(Items.FIREWORK_ROCKET);
-         Object var11;
-         if (var10) {
-            var11 = new FireworkRocketEntity(var0, var4, var1, var1.getX(), var1.getEyeY() - 0.15000000596046448, var1.getZ(), true);
-         } else {
-            var11 = getArrow(var0, var1, var3, var4);
-            if (var6 || var9 != 0.0F) {
-               ((AbstractArrow)var11).pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
-            }
+   @Override
+   protected Projectile createProjectile(Level var1, LivingEntity var2, ItemStack var3, ItemStack var4, boolean var5) {
+      if (var4.is(Items.FIREWORK_ROCKET)) {
+         return new FireworkRocketEntity(var1, var4, var2, var2.getX(), var2.getEyeY() - 0.15000000596046448, var2.getZ(), true);
+      } else {
+         Projectile var6 = super.createProjectile(var1, var2, var3, var4, var5);
+         if (var6 instanceof AbstractArrow var7) {
+            var7.setShotFromCrossbow(true);
+            var7.setSoundEvent(SoundEvents.CROSSBOW_HIT);
          }
 
-         if (var1 instanceof CrossbowAttackMob var12) {
-            var12.shootCrossbowProjectile(var12.getTarget(), var3, (Projectile)var11, var9);
-         } else {
-            Vec3 var13 = var1.getUpVector(1.0F);
-            Quaternionf var14 = new Quaternionf().setAngleAxis((double)(var9 * 0.017453292F), var13.x, var13.y, var13.z);
-            Vec3 var15 = var1.getViewVector(1.0F);
-            Vector3f var16 = var15.toVector3f().rotate(var14);
-            ((Projectile)var11).shoot((double)var16.x(), (double)var16.y(), (double)var16.z(), var7, var8);
-         }
-
-         var3.hurtAndBreak(var10 ? 3 : 1, var1, var1x -> var1x.broadcastBreakEvent(var2));
-         var0.addFreshEntity((Entity)var11);
-         var0.playSound(null, var1.getX(), var1.getY(), var1.getZ(), SoundEvents.CROSSBOW_SHOOT, SoundSource.PLAYERS, 1.0F, var5);
+         return var6;
       }
    }
 
-   private static AbstractArrow getArrow(Level var0, LivingEntity var1, ItemStack var2, ItemStack var3) {
-      ArrowItem var4 = (ArrowItem)(var3.getItem() instanceof ArrowItem ? var3.getItem() : Items.ARROW);
-      AbstractArrow var5 = var4.createArrow(var0, var3, var1);
-      if (var1 instanceof Player) {
-         var5.setCritArrow(true);
-      }
-
-      var5.setSoundEvent(SoundEvents.CROSSBOW_HIT);
-      var5.setShotFromCrossbow(true);
-      int var6 = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.PIERCING, var2);
-      if (var6 > 0) {
-         var5.setPierceLevel((byte)var6);
-      }
-
-      return var5;
+   @Override
+   protected int getDurabilityUse(ItemStack var1) {
+      return var1.is(Items.FIREWORK_ROCKET) ? 3 : 1;
    }
 
-   public static void performShooting(Level var0, LivingEntity var1, InteractionHand var2, ItemStack var3, float var4, float var5) {
-      List var6 = getChargedProjectiles(var3);
-      float[] var7 = getShotPitches(var1.getRandom());
-
-      for(int var8 = 0; var8 < var6.size(); ++var8) {
-         ItemStack var9 = (ItemStack)var6.get(var8);
-         boolean var10 = var1 instanceof Player && ((Player)var1).getAbilities().instabuild;
-         if (!var9.isEmpty()) {
-            if (var8 == 0) {
-               shootProjectile(var0, var1, var2, var3, var9, var7[var8], var10, var4, var5, 0.0F);
-            } else if (var8 == 1) {
-               shootProjectile(var0, var1, var2, var3, var9, var7[var8], var10, var4, var5, -10.0F);
-            } else if (var8 == 2) {
-               shootProjectile(var0, var1, var2, var3, var9, var7[var8], var10, var4, var5, 10.0F);
+   public void performShooting(Level var1, LivingEntity var2, InteractionHand var3, ItemStack var4, float var5, float var6, @Nullable LivingEntity var7) {
+      if (!var1.isClientSide()) {
+         ChargedProjectiles var8 = var4.set(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
+         if (var8 != null && !var8.isEmpty()) {
+            this.shoot(var1, var2, var3, var4, var8.getItems(), var5, var6, var2 instanceof Player, var7);
+            if (var2 instanceof ServerPlayer var9) {
+               CriteriaTriggers.SHOT_CROSSBOW.trigger((ServerPlayer)var9, var4);
+               ((ServerPlayer)var9).awardStat(Stats.ITEM_USED.get(var4.getItem()));
             }
          }
       }
-
-      onCrossbowShot(var0, var1, var3);
    }
 
-   private static float[] getShotPitches(RandomSource var0) {
-      boolean var1 = var0.nextBoolean();
-      return new float[]{1.0F, getRandomShotPitch(var1, var0), getRandomShotPitch(!var1, var0)};
+   private static float getShotPitch(RandomSource var0, int var1) {
+      return var1 == 0 ? 1.0F : getRandomShotPitch((var1 & 1) == 1, var0);
    }
 
    private static float getRandomShotPitch(boolean var0, RandomSource var1) {
       float var2 = var0 ? 0.63F : 0.43F;
       return 1.0F / (var1.nextFloat() * 0.5F + 1.8F) + var2;
-   }
-
-   private static void onCrossbowShot(Level var0, LivingEntity var1, ItemStack var2) {
-      if (var1 instanceof ServerPlayer var3) {
-         if (!var0.isClientSide) {
-            CriteriaTriggers.SHOT_CROSSBOW.trigger((ServerPlayer)var3, var2);
-         }
-
-         ((ServerPlayer)var3).awardStat(Stats.ITEM_USED.get(var2.getItem()));
-      }
-
-      clearChargedProjectiles(var2);
    }
 
    @Override
@@ -358,9 +250,9 @@ public class CrossbowItem extends ProjectileWeaponItem implements Vanishable {
 
    @Override
    public void appendHoverText(ItemStack var1, @Nullable Level var2, List<Component> var3, TooltipFlag var4) {
-      List var5 = getChargedProjectiles(var1);
-      if (isCharged(var1) && !var5.isEmpty()) {
-         ItemStack var6 = (ItemStack)var5.get(0);
+      ChargedProjectiles var5 = var1.get(DataComponents.CHARGED_PROJECTILES);
+      if (var5 != null && !var5.isEmpty()) {
+         ItemStack var6 = var5.getItems().get(0);
          var3.add(Component.translatable("item.minecraft.crossbow.projectile").append(CommonComponents.SPACE).append(var6.getDisplayName()));
          if (var4.isAdvanced() && var6.is(Items.FIREWORK_ROCKET)) {
             ArrayList var7 = Lists.newArrayList();

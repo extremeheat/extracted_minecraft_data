@@ -19,9 +19,7 @@ public class IronGolemFlowerLayer extends RenderLayer<IronGolem, IronGolemModel<
       this.blockRenderer = var2;
    }
 
-   public void render(
-      PoseStack var1, MultiBufferSource var2, int var3, IronGolem var4, float var5, float var6, float var7, float var8, float var9, float var10
-   ) {
+   public void render(PoseStack var1, MultiBufferSource var2, int var3, IronGolem var4, float var5, float var6, float var7, float var8, float var9, float var10) {
       if (var4.getOfferFlowerTick() != 0) {
          var1.pushPose();
          ModelPart var11 = this.getParentModel().getFlowerHoldingArm();

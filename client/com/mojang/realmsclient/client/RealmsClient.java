@@ -114,7 +114,7 @@ public class RealmsClient {
       RealmsClientConfig.setProxy(var3.getProxy());
    }
 
-   public RealmsServerList listWorlds() throws RealmsServiceException {
+   public RealmsServerList listRealms() throws RealmsServiceException {
       String var1 = this.url("worlds");
       if (RealmsMainScreen.isSnapshot()) {
          var1 = var1 + "/listUserWorldsOfType/any";
@@ -164,7 +164,7 @@ public class RealmsClient {
       this.execute(Request.post(var2, GSON.toJson(uuidListToJsonArray(var1))));
    }
 
-   public RealmsServer getOwnWorld(long var1) throws RealmsServiceException {
+   public RealmsServer getOwnRealm(long var1) throws RealmsServiceException {
       String var3 = this.url("worlds" + "/$ID".replace("$ID", String.valueOf(var1)));
       String var4 = this.execute(Request.get(var3));
       return RealmsServer.parse(var4);
@@ -188,7 +188,7 @@ public class RealmsClient {
       return RealmsServerAddress.parse(var4);
    }
 
-   public void initializeWorld(long var1, String var3, String var4) throws RealmsServiceException {
+   public void initializeRealm(long var1, String var3, String var4) throws RealmsServiceException {
       RealmsDescriptionDto var5 = new RealmsDescriptionDto(var3, var4);
       String var6 = this.url("worlds" + "/$WORLD_ID/initialize".replace("$WORLD_ID", String.valueOf(var1)));
       String var7 = GSON.toJson(var5);
@@ -330,7 +330,7 @@ public class RealmsClient {
    }
 
    private boolean isBlocked(PendingInvite var1) {
-      return this.minecraft.getPlayerSocialManager().isBlocked(var1.worldOwnerUuid);
+      return this.minecraft.getPlayerSocialManager().isBlocked(var1.realmOwnerUuid);
    }
 
    public void acceptInvitation(String var1) throws RealmsServiceException {
@@ -379,7 +379,7 @@ public class RealmsClient {
       return Boolean.valueOf(var2);
    }
 
-   public void deleteWorld(long var1) throws RealmsServiceException {
+   public void deleteRealm(long var1) throws RealmsServiceException {
       String var3 = this.url("worlds" + "/$WORLD_ID".replace("$WORLD_ID", String.valueOf(var1)));
       this.execute(Request.delete(var3));
    }

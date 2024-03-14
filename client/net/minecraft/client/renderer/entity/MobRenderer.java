@@ -112,4 +112,8 @@ public abstract class MobRenderer<T extends Mob, M extends EntityModel<T>> exten
       var0.vertex(var1, var23 - var11, var24 + var10, var25 + var12).color(var20, var21, var22, 1.0F).uv2(var18).endVertex();
       var0.vertex(var1, var23 + var11, var24 + var9 - var10, var25 - var12).color(var20, var21, var22, 1.0F).uv2(var18).endVertex();
    }
+
+   protected float getShadowRadius(T var1) {
+      return super.getShadowRadius((T)var1) * var1.getAgeScale();
+   }
 }

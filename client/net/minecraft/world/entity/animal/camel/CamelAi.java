@@ -10,7 +10,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.AnimalMakeLove;
 import net.minecraft.world.entity.ai.behavior.AnimalPanic;
@@ -101,7 +100,7 @@ public class CamelAi {
          Activity.IDLE,
          ImmutableList.of(
             Pair.of(0, SetEntityLookTargetSometimes.create(EntityType.PLAYER, 6.0F, UniformInt.of(30, 60))),
-            Pair.of(1, new AnimalMakeLove(EntityType.CAMEL, 1.0F)),
+            Pair.of(1, new AnimalMakeLove(EntityType.CAMEL)),
             Pair.of(
                2,
                new RunOne(
@@ -136,19 +135,13 @@ public class CamelAi {
       return Camel.TEMPTATION_ITEM;
    }
 
-   public static class CamelPanic extends AnimalPanic {
+   public static class CamelPanic extends AnimalPanic<Camel> {
       public CamelPanic(float var1) {
          super(var1);
       }
 
-      // $VF: Could not properly define all variable types!
-      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-      @Override
-      protected void start(ServerLevel var1, PathfinderMob var2, long var3) {
-         if (var2 instanceof Camel var5) {
-            var5.standUpInstantly();
-         }
-
+      protected void start(ServerLevel var1, Camel var2, long var3) {
+         var2.standUpInstantly();
          super.start(var1, var2, var3);
       }
    }

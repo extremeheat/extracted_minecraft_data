@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.animal.horse;
 
 import javax.annotation.Nullable;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.EntityType;
@@ -12,6 +13,7 @@ import net.minecraft.world.entity.monster.Skeleton;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 
 public class SkeletonTrapGoal extends Goal {
    private final SkeletonHorse horse;
@@ -62,7 +64,7 @@ public class SkeletonTrapGoal extends Goal {
    private AbstractHorse createHorse(DifficultyInstance var1) {
       SkeletonHorse var2 = EntityType.SKELETON_HORSE.create(this.horse.level());
       if (var2 != null) {
-         var2.finalizeSpawn((ServerLevel)this.horse.level(), var1, MobSpawnType.TRIGGERED, null, null);
+         var2.finalizeSpawn((ServerLevel)this.horse.level(), var1, MobSpawnType.TRIGGERED, null);
          var2.setPos(this.horse.getX(), this.horse.getY(), this.horse.getZ());
          var2.invulnerableTime = 60;
          var2.setPersistenceRequired();
@@ -77,7 +79,7 @@ public class SkeletonTrapGoal extends Goal {
    private Skeleton createSkeleton(DifficultyInstance var1, AbstractHorse var2) {
       Skeleton var3 = EntityType.SKELETON.create(var2.level());
       if (var3 != null) {
-         var3.finalizeSpawn((ServerLevel)var2.level(), var1, MobSpawnType.TRIGGERED, null, null);
+         var3.finalizeSpawn((ServerLevel)var2.level(), var1, MobSpawnType.TRIGGERED, null);
          var3.setPos(var2.getX(), var2.getY(), var2.getZ());
          var3.invulnerableTime = 60;
          var3.setPersistenceRequired();
@@ -109,7 +111,7 @@ public class SkeletonTrapGoal extends Goal {
    }
 
    private ItemStack disenchant(ItemStack var1) {
-      var1.removeTagKey("Enchantments");
+      var1.set(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
       return var1;
    }
 }

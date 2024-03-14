@@ -37,7 +37,6 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.resources.ResourceKey;
@@ -57,6 +56,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.FireworkExplosion;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.ColorResolver;
@@ -79,6 +79,7 @@ import net.minecraft.world.level.entity.TransientEntitySectionManager;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.level.storage.WritableLevelData;
 import net.minecraft.world.phys.Vec3;
@@ -102,8 +103,7 @@ public class ClientLevel extends Level {
    private final TickRateManager tickRateManager;
    private final Minecraft minecraft = Minecraft.getInstance();
    final List<AbstractClientPlayer> players = Lists.newArrayList();
-   private Scoreboard scoreboard = new Scoreboard();
-   private final Map<String, MapItemSavedData> mapData = Maps.newHashMap();
+   private final Map<MapId, MapItemSavedData> mapData = Maps.newHashMap();
    private static final long CLOUD_COLOR = 16777215L;
    private int skyFlashTime;
    private final Object2ObjectArrayMap<ColorResolver, BlockTintCache> tintCaches = Util.make(new Object2ObjectArrayMap(3), var1x -> {
@@ -505,8 +505,14 @@ public class ClientLevel extends Level {
    }
 
    @Override
-   public void createFireworks(double var1, double var3, double var5, double var7, double var9, double var11, @Nullable CompoundTag var13) {
-      this.minecraft.particleEngine.add(new FireworkParticles.Starter(this, var1, var3, var5, var7, var9, var11, this.minecraft.particleEngine, var13));
+   public void createFireworks(double var1, double var3, double var5, double var7, double var9, double var11, List<FireworkExplosion> var13) {
+      if (var13.isEmpty()) {
+         for(int var14 = 0; var14 < this.random.nextInt(3) + 2; ++var14) {
+            this.addParticle(ParticleTypes.POOF, var1, var3, var5, this.random.nextGaussian() * 0.05, 0.005, this.random.nextGaussian() * 0.05);
+         }
+      } else {
+         this.minecraft.particleEngine.add(new FireworkParticles.Starter(this, var1, var3, var5, var7, var9, var11, this.minecraft.particleEngine, var13));
+      }
    }
 
    @Override
@@ -522,10 +528,6 @@ public class ClientLevel extends Level {
    @Override
    public TickRateManager tickRateManager() {
       return this.tickRateManager;
-   }
-
-   public void setScoreboard(Scoreboard var1) {
-      this.scoreboard = var1;
    }
 
    @Override
@@ -544,26 +546,26 @@ public class ClientLevel extends Level {
 
    @Nullable
    @Override
-   public MapItemSavedData getMapData(String var1) {
+   public MapItemSavedData getMapData(MapId var1) {
       return this.mapData.get(var1);
    }
 
-   public void overrideMapData(String var1, MapItemSavedData var2) {
+   public void overrideMapData(MapId var1, MapItemSavedData var2) {
       this.mapData.put(var1, var2);
    }
 
    @Override
-   public void setMapData(String var1, MapItemSavedData var2) {
+   public void setMapData(MapId var1, MapItemSavedData var2) {
    }
 
    @Override
-   public int getFreeMapId() {
-      return 0;
+   public MapId getFreeMapId() {
+      return new MapId(0);
    }
 
    @Override
    public Scoreboard getScoreboard() {
-      return this.scoreboard;
+      return this.connection.scoreboard();
    }
 
    @Override
@@ -804,14 +806,14 @@ public class ClientLevel extends Level {
    }
 
    @Override
-   public void gameEvent(GameEvent var1, Vec3 var2, GameEvent.Context var3) {
+   public void gameEvent(Holder<GameEvent> var1, Vec3 var2, GameEvent.Context var3) {
    }
 
-   protected Map<String, MapItemSavedData> getAllMapData() {
+   protected Map<MapId, MapItemSavedData> getAllMapData() {
       return ImmutableMap.copyOf(this.mapData);
    }
 
-   protected void addMapData(Map<String, MapItemSavedData> var1) {
+   protected void addMapData(Map<MapId, MapItemSavedData> var1) {
       this.mapData.putAll(var1);
    }
 
@@ -847,9 +849,7 @@ public class ClientLevel extends Level {
       private final boolean hardcore;
       private final GameRules gameRules;
       private final boolean isFlat;
-      private int xSpawn;
-      private int ySpawn;
-      private int zSpawn;
+      private BlockPos spawnPos;
       private float spawnAngle;
       private long gameTime;
       private long dayTime;
@@ -866,18 +866,8 @@ public class ClientLevel extends Level {
       }
 
       @Override
-      public int getXSpawn() {
-         return this.xSpawn;
-      }
-
-      @Override
-      public int getYSpawn() {
-         return this.ySpawn;
-      }
-
-      @Override
-      public int getZSpawn() {
-         return this.zSpawn;
+      public BlockPos getSpawnPos() {
+         return this.spawnPos;
       }
 
       @Override
@@ -895,26 +885,6 @@ public class ClientLevel extends Level {
          return this.dayTime;
       }
 
-      @Override
-      public void setXSpawn(int var1) {
-         this.xSpawn = var1;
-      }
-
-      @Override
-      public void setYSpawn(int var1) {
-         this.ySpawn = var1;
-      }
-
-      @Override
-      public void setZSpawn(int var1) {
-         this.zSpawn = var1;
-      }
-
-      @Override
-      public void setSpawnAngle(float var1) {
-         this.spawnAngle = var1;
-      }
-
       public void setGameTime(long var1) {
          this.gameTime = var1;
       }
@@ -925,9 +895,7 @@ public class ClientLevel extends Level {
 
       @Override
       public void setSpawn(BlockPos var1, float var2) {
-         this.xSpawn = var1.getX();
-         this.ySpawn = var1.getY();
-         this.zSpawn = var1.getZ();
+         this.spawnPos = var1.immutable();
          this.spawnAngle = var2;
       }
 

@@ -1,17 +1,31 @@
 package net.minecraft.network.protocol.game;
 
 import com.google.common.collect.Lists;
+import io.netty.buffer.ByteBuf;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.FriendlyByteBuf;
+import java.util.UUID;
+import net.minecraft.core.Holder;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 
 public class ClientboundUpdateAttributesPacket implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundUpdateAttributesPacket> STREAM_CODEC = StreamCodec.composite(
+      ByteBufCodecs.VAR_INT,
+      ClientboundUpdateAttributesPacket::getEntityId,
+      ClientboundUpdateAttributesPacket.AttributeSnapshot.STREAM_CODEC.apply(ByteBufCodecs.list()),
+      ClientboundUpdateAttributesPacket::getValues,
+      ClientboundUpdateAttributesPacket::new
+   );
    private final int entityId;
    private final List<ClientboundUpdateAttributesPacket.AttributeSnapshot> attributes;
 
@@ -25,36 +39,15 @@ public class ClientboundUpdateAttributesPacket implements Packet<ClientGamePacke
       }
    }
 
-   public ClientboundUpdateAttributesPacket(FriendlyByteBuf var1) {
+   private ClientboundUpdateAttributesPacket(int var1, List<ClientboundUpdateAttributesPacket.AttributeSnapshot> var2) {
       super();
-      this.entityId = var1.readVarInt();
-      this.attributes = var1.readList(
-         var0 -> {
-            ResourceLocation var1xx = var0.readResourceLocation();
-            Attribute var2 = BuiltInRegistries.ATTRIBUTE.get(var1xx);
-            double var3 = var0.readDouble();
-            List var5 = var0.readList(
-               var0x -> new AttributeModifier(
-                     var0x.readUUID(), "Unknown synced attribute modifier", var0x.readDouble(), AttributeModifier.Operation.fromValue(var0x.readByte())
-                  )
-            );
-            return new ClientboundUpdateAttributesPacket.AttributeSnapshot(var2, var3, var5);
-         }
-      );
+      this.entityId = var1;
+      this.attributes = var2;
    }
 
    @Override
-   public void write(FriendlyByteBuf var1) {
-      var1.writeVarInt(this.entityId);
-      var1.writeCollection(this.attributes, (var0, var1x) -> {
-         var0.writeResourceLocation(BuiltInRegistries.ATTRIBUTE.getKey(var1x.getAttribute()));
-         var0.writeDouble(var1x.getBase());
-         var0.writeCollection(var1x.getModifiers(), (var0x, var1xx) -> {
-            var0x.writeUUID(var1xx.getId());
-            var0x.writeDouble(var1xx.getAmount());
-            var0x.writeByte(var1xx.getOperation().toValue());
-         });
-      });
+   public PacketType<ClientboundUpdateAttributesPacket> type() {
+      return GamePacketTypes.CLIENTBOUND_UPDATE_ATTRIBUTES;
    }
 
    public void handle(ClientGamePacketListener var1) {
@@ -69,28 +62,34 @@ public class ClientboundUpdateAttributesPacket implements Packet<ClientGamePacke
       return this.attributes;
    }
 
-   public static class AttributeSnapshot {
-      private final Attribute attribute;
+   public static record AttributeSnapshot(Holder<Attribute> c, double d, Collection<AttributeModifier> e) {
+      private final Holder<Attribute> attribute;
       private final double base;
       private final Collection<AttributeModifier> modifiers;
+      public static final StreamCodec<ByteBuf, AttributeModifier> MODIFIER_STREAM_CODEC = StreamCodec.composite(
+         UUIDUtil.STREAM_CODEC,
+         AttributeModifier::id,
+         ByteBufCodecs.DOUBLE,
+         AttributeModifier::amount,
+         AttributeModifier.Operation.STREAM_CODEC,
+         AttributeModifier::operation,
+         (var0, var1, var2) -> new AttributeModifier(var0, "Unknown synced attribute modifier", var1, var2)
+      );
+      public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundUpdateAttributesPacket.AttributeSnapshot> STREAM_CODEC = StreamCodec.composite(
+         ByteBufCodecs.holderRegistry(Registries.ATTRIBUTE),
+         ClientboundUpdateAttributesPacket.AttributeSnapshot::attribute,
+         ByteBufCodecs.DOUBLE,
+         ClientboundUpdateAttributesPacket.AttributeSnapshot::base,
+         MODIFIER_STREAM_CODEC.apply(ByteBufCodecs.collection(ArrayList::new)),
+         ClientboundUpdateAttributesPacket.AttributeSnapshot::modifiers,
+         ClientboundUpdateAttributesPacket.AttributeSnapshot::new
+      );
 
-      public AttributeSnapshot(Attribute var1, double var2, Collection<AttributeModifier> var4) {
+      public AttributeSnapshot(Holder<Attribute> var1, double var2, Collection<AttributeModifier> var4) {
          super();
          this.attribute = var1;
          this.base = var2;
          this.modifiers = var4;
-      }
-
-      public Attribute getAttribute() {
-         return this.attribute;
-      }
-
-      public double getBase() {
-         return this.base;
-      }
-
-      public Collection<AttributeModifier> getModifiers() {
-         return this.modifiers;
       }
    }
 }

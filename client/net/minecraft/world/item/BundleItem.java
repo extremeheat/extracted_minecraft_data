@@ -2,11 +2,8 @@ package net.minecraft.world.item;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.NonNullList;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -22,12 +19,10 @@ import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.tooltip.BundleTooltip;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
+import net.minecraft.world.item.component.BundleContents;
 import net.minecraft.world.level.Level;
 
 public class BundleItem extends Item {
-   private static final String TAG_ITEMS = "Items";
-   public static final int MAX_WEIGHT = 64;
-   private static final int BUNDLE_IN_BUNDLE_WEIGHT = 4;
    private static final int BAR_COLOR = Mth.color(0.4F, 0.4F, 1.0F);
 
    public BundleItem(Item.Properties var1) {
@@ -35,7 +30,8 @@ public class BundleItem extends Item {
    }
 
    public static float getFullnessDisplay(ItemStack var0) {
-      return (float)getContentWeight(var0) / 64.0F;
+      BundleContents var1 = var0.getOrDefault(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY);
+      return (float)var1.weight() / 64.0F;
    }
 
    @Override
@@ -43,39 +39,56 @@ public class BundleItem extends Item {
       if (var3 != ClickAction.SECONDARY) {
          return false;
       } else {
-         ItemStack var5 = var2.getItem();
-         if (var5.isEmpty()) {
-            this.playRemoveOneSound(var4);
-            removeOne(var1).ifPresent(var2x -> add(var1, var2.safeInsert(var2x)));
-         } else if (var5.getItem().canFitInsideContainerItems()) {
-            int var6 = (64 - getContentWeight(var1)) / getWeight(var5);
-            int var7 = add(var1, var2.safeTake(var5.getCount(), var6, var4));
-            if (var7 > 0) {
-               this.playInsertSound(var4);
+         BundleContents var5 = var1.get(DataComponents.BUNDLE_CONTENTS);
+         if (var5 == null) {
+            return false;
+         } else {
+            ItemStack var6 = var2.getItem();
+            BundleContents.Mutable var7 = new BundleContents.Mutable(var5);
+            if (var6.isEmpty()) {
+               this.playRemoveOneSound(var4);
+               ItemStack var8 = var7.removeOne();
+               if (var8 != null) {
+                  ItemStack var9 = var2.safeInsert(var8);
+                  var7.tryInsert(var9);
+               }
+            } else if (var6.getItem().canFitInsideContainerItems()) {
+               int var10 = var7.tryTransfer(var2, var4);
+               if (var10 > 0) {
+                  this.playInsertSound(var4);
+               }
             }
-         }
 
-         return true;
+            var1.set(DataComponents.BUNDLE_CONTENTS, var7.toImmutable());
+            return true;
+         }
       }
    }
 
    @Override
    public boolean overrideOtherStackedOnMe(ItemStack var1, ItemStack var2, Slot var3, ClickAction var4, Player var5, SlotAccess var6) {
       if (var4 == ClickAction.SECONDARY && var3.allowModification(var5)) {
-         if (var2.isEmpty()) {
-            removeOne(var1).ifPresent(var3x -> {
-               this.playRemoveOneSound(var5);
-               var6.set(var3x);
-            });
+         BundleContents var7 = var1.get(DataComponents.BUNDLE_CONTENTS);
+         if (var7 == null) {
+            return false;
          } else {
-            int var7 = add(var1, var2);
-            if (var7 > 0) {
-               this.playInsertSound(var5);
-               var2.shrink(var7);
+            BundleContents.Mutable var8 = new BundleContents.Mutable(var7);
+            if (var2.isEmpty()) {
+               ItemStack var9 = var8.removeOne();
+               if (var9 != null) {
+                  this.playRemoveOneSound(var5);
+                  var6.set(var9);
+               }
+            } else {
+               int var10 = var8.tryInsert(var2);
+               if (var10 > 0) {
+                  this.playInsertSound(var5);
+               }
             }
-         }
 
-         return true;
+            var1.set(DataComponents.BUNDLE_CONTENTS, var8.toImmutable());
+            return true;
+         }
       } else {
          return false;
       }
@@ -95,12 +108,14 @@ public class BundleItem extends Item {
 
    @Override
    public boolean isBarVisible(ItemStack var1) {
-      return getContentWeight(var1) > 0;
+      BundleContents var2 = var1.getOrDefault(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY);
+      return var2.weight() > 0;
    }
 
    @Override
    public int getBarWidth(ItemStack var1) {
-      return Math.min(1 + 12 * getContentWeight(var1) / 64, 13);
+      BundleContents var2 = var1.getOrDefault(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY);
+      return Math.min(1 + 12 * var2.weight() / 64, 13);
    }
 
    @Override
@@ -108,138 +123,40 @@ public class BundleItem extends Item {
       return BAR_COLOR;
    }
 
-   private static int add(ItemStack var0, ItemStack var1) {
-      if (!var1.isEmpty() && var1.getItem().canFitInsideContainerItems()) {
-         CompoundTag var2 = var0.getOrCreateTag();
-         if (!var2.contains("Items")) {
-            var2.put("Items", new ListTag());
-         }
-
-         int var3 = getContentWeight(var0);
-         int var4 = getWeight(var1);
-         int var5 = Math.min(var1.getCount(), (64 - var3) / var4);
-         if (var5 == 0) {
-            return 0;
-         } else {
-            ListTag var6 = var2.getList("Items", 10);
-            Optional var7 = getMatchingItem(var1, var6);
-            if (var7.isPresent()) {
-               CompoundTag var8 = (CompoundTag)var7.get();
-               ItemStack var9 = ItemStack.of(var8);
-               var9.grow(var5);
-               var9.save(var8);
-               var6.remove(var8);
-               var6.add(0, var8);
-            } else {
-               ItemStack var10 = var1.copyWithCount(var5);
-               CompoundTag var11 = new CompoundTag();
-               var10.save(var11);
-               var6.add(0, var11);
-            }
-
-            return var5;
-         }
-      } else {
-         return 0;
-      }
-   }
-
-   private static Optional<CompoundTag> getMatchingItem(ItemStack var0, ListTag var1) {
-      return var0.is(Items.BUNDLE)
-         ? Optional.empty()
-         : var1.stream()
-            .filter(CompoundTag.class::isInstance)
-            .map(CompoundTag.class::cast)
-            .filter(var1x -> ItemStack.isSameItemSameTags(ItemStack.of(var1x), var0))
-            .findFirst();
-   }
-
-   private static int getWeight(ItemStack var0) {
-      if (var0.is(Items.BUNDLE)) {
-         return 4 + getContentWeight(var0);
-      } else {
-         if ((var0.is(Items.BEEHIVE) || var0.is(Items.BEE_NEST)) && var0.hasTag()) {
-            CompoundTag var1 = BlockItem.getBlockEntityData(var0);
-            if (var1 != null && !var1.getList("Bees", 10).isEmpty()) {
-               return 64;
-            }
-         }
-
-         return 64 / var0.getMaxStackSize();
-      }
-   }
-
-   private static int getContentWeight(ItemStack var0) {
-      return getContents(var0).mapToInt(var0x -> getWeight(var0x) * var0x.getCount()).sum();
-   }
-
-   private static Optional<ItemStack> removeOne(ItemStack var0) {
-      CompoundTag var1 = var0.getOrCreateTag();
-      if (!var1.contains("Items")) {
-         return Optional.empty();
-      } else {
-         ListTag var2 = var1.getList("Items", 10);
-         if (var2.isEmpty()) {
-            return Optional.empty();
-         } else {
-            boolean var3 = false;
-            CompoundTag var4 = var2.getCompound(0);
-            ItemStack var5 = ItemStack.of(var4);
-            var2.remove(0);
-            if (var2.isEmpty()) {
-               var0.removeTagKey("Items");
-            }
-
-            return Optional.of(var5);
-         }
-      }
-   }
-
    private static boolean dropContents(ItemStack var0, Player var1) {
-      CompoundTag var2 = var0.getOrCreateTag();
-      if (!var2.contains("Items")) {
-         return false;
-      } else {
+      BundleContents var2 = var0.get(DataComponents.BUNDLE_CONTENTS);
+      if (var2 != null && !var2.isEmpty()) {
+         var0.set(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY);
          if (var1 instanceof ServerPlayer) {
-            ListTag var3 = var2.getList("Items", 10);
-
-            for(int var4 = 0; var4 < var3.size(); ++var4) {
-               CompoundTag var5 = var3.getCompound(var4);
-               ItemStack var6 = ItemStack.of(var5);
-               var1.drop(var6, true);
-            }
+            var2.items().forEach(var1x -> var1.drop(var1x, true));
          }
 
-         var0.removeTagKey("Items");
          return true;
-      }
-   }
-
-   private static Stream<ItemStack> getContents(ItemStack var0) {
-      CompoundTag var1 = var0.getTag();
-      if (var1 == null) {
-         return Stream.empty();
       } else {
-         ListTag var2 = var1.getList("Items", 10);
-         return var2.stream().map(CompoundTag.class::cast).map(ItemStack::of);
+         return false;
       }
    }
 
    @Override
    public Optional<TooltipComponent> getTooltipImage(ItemStack var1) {
-      NonNullList var2 = NonNullList.create();
-      getContents(var1).forEach(var2::add);
-      return Optional.of(new BundleTooltip(var2, getContentWeight(var1)));
+      return Optional.ofNullable(var1.get(DataComponents.BUNDLE_CONTENTS)).map(BundleTooltip::new);
    }
 
    @Override
    public void appendHoverText(ItemStack var1, Level var2, List<Component> var3, TooltipFlag var4) {
-      var3.add(Component.translatable("item.minecraft.bundle.fullness", getContentWeight(var1), 64).withStyle(ChatFormatting.GRAY));
+      BundleContents var5 = var1.get(DataComponents.BUNDLE_CONTENTS);
+      if (var5 != null) {
+         var3.add(Component.translatable("item.minecraft.bundle.fullness", var5.weight(), 64).withStyle(ChatFormatting.GRAY));
+      }
    }
 
    @Override
    public void onDestroyed(ItemEntity var1) {
-      ItemUtils.onContainerDestroyed(var1, getContents(var1.getItem()));
+      BundleContents var2 = var1.getItem().get(DataComponents.BUNDLE_CONTENTS);
+      if (var2 != null) {
+         var1.getItem().set(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY);
+         ItemUtils.onContainerDestroyed(var1, var2.items());
+      }
    }
 
    private void playRemoveOneSound(Entity var1) {

@@ -10,6 +10,7 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -17,7 +18,6 @@ import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
@@ -31,11 +31,11 @@ public class Pufferfish extends AbstractFish {
    int inflateCounter;
    int deflateTimer;
    private static final Predicate<LivingEntity> SCARY_MOB = var0 -> {
-      if (var0 instanceof Player && ((Player)var0).isCreative()) {
+      if (var0 instanceof Player var1 && var1.isCreative()) {
          return false;
-      } else {
-         return var0.getType() == EntityType.AXOLOTL || var0.getMobType() != MobType.WATER;
       }
+
+      return !var0.getType().is(EntityTypeTags.NOT_SCARY_FOR_PUFFERFISH);
    };
    static final TargetingConditions targetingConditions = TargetingConditions.forNonCombat()
       .ignoreInvisibilityTesting()
@@ -51,9 +51,9 @@ public class Pufferfish extends AbstractFish {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(PUFF_STATE, 0);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(PUFF_STATE, 0);
    }
 
    public int getPuffState() {
@@ -101,20 +101,20 @@ public class Pufferfish extends AbstractFish {
       if (!this.level().isClientSide && this.isAlive() && this.isEffectiveAi()) {
          if (this.inflateCounter > 0) {
             if (this.getPuffState() == 0) {
-               this.playSound(SoundEvents.PUFFER_FISH_BLOW_UP, this.getSoundVolume(), this.getVoicePitch());
+               this.makeSound(SoundEvents.PUFFER_FISH_BLOW_UP);
                this.setPuffState(1);
             } else if (this.inflateCounter > 40 && this.getPuffState() == 1) {
-               this.playSound(SoundEvents.PUFFER_FISH_BLOW_UP, this.getSoundVolume(), this.getVoicePitch());
+               this.makeSound(SoundEvents.PUFFER_FISH_BLOW_UP);
                this.setPuffState(2);
             }
 
             ++this.inflateCounter;
          } else if (this.getPuffState() != 0) {
             if (this.deflateTimer > 60 && this.getPuffState() == 2) {
-               this.playSound(SoundEvents.PUFFER_FISH_BLOW_OUT, this.getSoundVolume(), this.getVoicePitch());
+               this.makeSound(SoundEvents.PUFFER_FISH_BLOW_OUT);
                this.setPuffState(1);
             } else if (this.deflateTimer > 100 && this.getPuffState() == 1) {
-               this.playSound(SoundEvents.PUFFER_FISH_BLOW_OUT, this.getSoundVolume(), this.getVoicePitch());
+               this.makeSound(SoundEvents.PUFFER_FISH_BLOW_OUT);
                this.setPuffState(0);
             }
 
@@ -178,8 +178,8 @@ public class Pufferfish extends AbstractFish {
    }
 
    @Override
-   public EntityDimensions getDimensions(Pose var1) {
-      return super.getDimensions(var1).scale(getScale(this.getPuffState()));
+   public EntityDimensions getDefaultDimensions(Pose var1) {
+      return super.getDefaultDimensions(var1).scale(getScale(this.getPuffState()));
    }
 
    private static float getScale(int var0) {

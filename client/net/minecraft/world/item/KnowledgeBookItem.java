@@ -1,11 +1,10 @@
 package net.minecraft.world.item;
 
-import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
@@ -17,7 +16,6 @@ import net.minecraft.world.level.Level;
 import org.slf4j.Logger;
 
 public class KnowledgeBookItem extends Item {
-   private static final String RECIPE_TAG = "Recipes";
    private static final Logger LOGGER = LogUtils.getLogger();
 
    public KnowledgeBookItem(Item.Properties var1) {
@@ -27,26 +25,26 @@ public class KnowledgeBookItem extends Item {
    @Override
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
-      CompoundTag var5 = var4.getTag();
-      if (!var2.getAbilities().instabuild) {
+      if (!var2.hasInfiniteMaterials()) {
          var2.setItemInHand(var3, ItemStack.EMPTY);
       }
 
-      if (var5 != null && var5.contains("Recipes", 9)) {
+      List var5 = var4.getOrDefault(DataComponents.RECIPES, List.of());
+      if (var5.isEmpty()) {
+         return InteractionResultHolder.fail(var4);
+      } else {
          if (!var1.isClientSide) {
-            ListTag var6 = var5.getList("Recipes", 8);
-            ArrayList var7 = Lists.newArrayList();
-            RecipeManager var8 = var1.getServer().getRecipeManager();
+            RecipeManager var6 = var1.getServer().getRecipeManager();
+            ArrayList var7 = new ArrayList(var5.size());
 
-            for(int var9 = 0; var9 < var6.size(); ++var9) {
-               String var10 = var6.getString(var9);
-               Optional var11 = var8.byKey(new ResourceLocation(var10));
-               if (!var11.isPresent()) {
-                  LOGGER.error("Invalid recipe: {}", var10);
+            for(ResourceLocation var9 : var5) {
+               Optional var10 = var6.byKey(var9);
+               if (!var10.isPresent()) {
+                  LOGGER.error("Invalid recipe: {}", var9);
                   return InteractionResultHolder.fail(var4);
                }
 
-               var7.add((RecipeHolder)var11.get());
+               var7.add((RecipeHolder)var10.get());
             }
 
             var2.awardRecipes(var7);
@@ -54,9 +52,6 @@ public class KnowledgeBookItem extends Item {
          }
 
          return InteractionResultHolder.sidedSuccess(var4, var1.isClientSide());
-      } else {
-         LOGGER.error("Tag not valid: {}", var5);
-         return InteractionResultHolder.fail(var4);
       }
    }
 }

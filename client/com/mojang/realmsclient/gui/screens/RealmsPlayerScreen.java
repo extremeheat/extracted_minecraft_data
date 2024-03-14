@@ -1,5 +1,6 @@
 package com.mojang.realmsclient.gui.screens;
 
+import com.google.common.collect.ImmutableList;
 import com.mojang.logging.LogUtils;
 import com.mojang.realmsclient.client.RealmsClient;
 import com.mojang.realmsclient.dto.Ops;
@@ -7,107 +8,79 @@ import com.mojang.realmsclient.dto.PlayerInfo;
 import com.mojang.realmsclient.dto.RealmsServer;
 import com.mojang.realmsclient.exception.RealmsServiceException;
 import com.mojang.realmsclient.util.RealmsUtil;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.ImageButton;
-import net.minecraft.client.gui.components.ObjectSelectionList;
-import net.minecraft.client.gui.components.Tooltip;
-import net.minecraft.client.gui.components.WidgetSprites;
+import net.minecraft.client.gui.components.ContainerObjectSelectionList;
+import net.minecraft.client.gui.components.SpriteIconButton;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
+import net.minecraft.client.gui.layouts.LinearLayout;
+import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.realms.RealmsObjectSelectionList;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.resources.ResourceLocation;
 import org.slf4j.Logger;
 
 public class RealmsPlayerScreen extends RealmsScreen {
-   private static final Logger LOGGER = LogUtils.getLogger();
-   private static final ResourceLocation OPTIONS_BACKGROUND = new ResourceLocation("minecraft", "textures/gui/options_background.png");
-   private static final Component QUESTION_TITLE = Component.translatable("mco.question");
-   static final Component NORMAL_USER_TOOLTIP = Component.translatable("mco.configure.world.invites.normal.tooltip");
-   static final Component OP_TOOLTIP = Component.translatable("mco.configure.world.invites.ops.tooltip");
-   static final Component REMOVE_ENTRY_TOOLTIP = Component.translatable("mco.configure.world.invites.remove.tooltip");
-   private static final int NO_ENTRY_SELECTED = -1;
+   static final Logger LOGGER = LogUtils.getLogger();
+   private static final Component TITLE = Component.translatable("mco.configure.world.players.title");
+   static final Component QUESTION_TITLE = Component.translatable("mco.question");
+   private static final int PADDING = 8;
+   final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
    private final RealmsConfigureWorldScreen lastScreen;
    final RealmsServer serverData;
-   RealmsPlayerScreen.InvitedObjectSelectionList invitedObjectSelectionList;
-   int column1X;
-   int columnWidth;
-   private Button removeButton;
-   private Button opdeopButton;
-   int playerIndex = -1;
-   private boolean stateChanged;
+   @Nullable
+   RealmsPlayerScreen.InvitedObjectSelectionList invitedList;
+   boolean stateChanged;
 
    public RealmsPlayerScreen(RealmsConfigureWorldScreen var1, RealmsServer var2) {
-      super(Component.translatable("mco.configure.world.players.title"));
+      super(TITLE);
       this.lastScreen = var1;
       this.serverData = var2;
    }
 
    @Override
    public void init() {
-      this.column1X = this.width / 2 - 160;
-      this.columnWidth = 150;
-      int var1 = this.width / 2 + 12;
-      this.invitedObjectSelectionList = this.addRenderableWidget(new RealmsPlayerScreen.InvitedObjectSelectionList());
-      this.invitedObjectSelectionList.setX(this.column1X);
+      this.layout.addTitleHeader(TITLE, this.font);
+      this.invitedList = this.layout.addToContents(new RealmsPlayerScreen.InvitedObjectSelectionList());
 
-      for(PlayerInfo var3 : this.serverData.players) {
-         this.invitedObjectSelectionList.addEntry(var3);
+      for(PlayerInfo var2 : this.serverData.players) {
+         this.invitedList.children().add(new RealmsPlayerScreen.Entry(var2));
       }
 
-      this.playerIndex = -1;
-      this.addRenderableWidget(
+      LinearLayout var3 = this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
+      var3.addChild(
          Button.builder(
                Component.translatable("mco.configure.world.buttons.invite"),
-               var1x -> this.minecraft.setScreen(new RealmsInviteScreen(this.lastScreen, this, this.serverData))
+               var1 -> this.minecraft.setScreen(new RealmsInviteScreen(this.lastScreen, this, this.serverData))
             )
-            .bounds(var1, row(1), this.columnWidth + 10, 20)
             .build()
       );
-      this.removeButton = this.addRenderableWidget(
-         Button.builder(Component.translatable("mco.configure.world.invites.remove.tooltip"), var1x -> this.uninvite(this.playerIndex))
-            .bounds(var1, row(7), this.columnWidth + 10, 20)
-            .build()
-      );
-      this.opdeopButton = this.addRenderableWidget(Button.builder(Component.translatable("mco.configure.world.invites.ops.tooltip"), var1x -> {
-         if (this.serverData.players.get(this.playerIndex).isOperator()) {
-            this.deop(this.playerIndex);
-         } else {
-            this.op(this.playerIndex);
-         }
-      }).bounds(var1, row(9), this.columnWidth + 10, 20).build());
-      this.addRenderableWidget(
-         Button.builder(CommonComponents.GUI_BACK, var1x -> this.backButtonClicked())
-            .bounds(var1 + this.columnWidth / 2 + 2, row(12), this.columnWidth / 2 + 10 - 2, 20)
-            .build()
-      );
-      this.updateButtonStates();
-   }
-
-   void updateButtonStates() {
-      this.removeButton.visible = this.shouldRemoveAndOpdeopButtonBeVisible(this.playerIndex);
-      this.opdeopButton.visible = this.shouldRemoveAndOpdeopButtonBeVisible(this.playerIndex);
-      this.invitedObjectSelectionList.updateButtons();
-   }
-
-   private boolean shouldRemoveAndOpdeopButtonBeVisible(int var1) {
-      return var1 != -1;
+      var3.addChild(Button.builder(CommonComponents.GUI_BACK, var1 -> this.onClose()).build());
+      this.layout.visitWidgets(var1 -> {
+      });
+      this.repositionElements();
    }
 
    @Override
-   public boolean keyPressed(int var1, int var2, int var3) {
-      if (var1 == 256) {
-         this.backButtonClicked();
-         return true;
-      } else {
-         return super.keyPressed(var1, var2, var3);
+   protected void repositionElements() {
+      this.layout.arrangeElements();
+      if (this.invitedList != null) {
+         this.invitedList.updateSize(this.width, this.layout);
       }
+   }
+
+   @Override
+   public void onClose() {
+      this.backButtonClicked();
    }
 
    private void backButtonClicked() {
@@ -118,128 +91,129 @@ public class RealmsPlayerScreen extends RealmsScreen {
       }
    }
 
-   void op(int var1) {
-      RealmsClient var2 = RealmsClient.create();
-      UUID var3 = this.serverData.players.get(var1).getUuid();
-
-      try {
-         this.updateOps(var2.op(this.serverData.id, var3));
-      } catch (RealmsServiceException var5) {
-         LOGGER.error("Couldn't op the user", var5);
-      }
-
-      this.updateButtonStates();
-   }
-
-   void deop(int var1) {
-      RealmsClient var2 = RealmsClient.create();
-      UUID var3 = this.serverData.players.get(var1).getUuid();
-
-      try {
-         this.updateOps(var2.deop(this.serverData.id, var3));
-      } catch (RealmsServiceException var5) {
-         LOGGER.error("Couldn't deop the user", var5);
-      }
-
-      this.updateButtonStates();
-   }
-
-   private void updateOps(Ops var1) {
-      for(PlayerInfo var3 : this.serverData.players) {
-         var3.setOperator(var1.ops.contains(var3.getName()));
-      }
-   }
-
-   void uninvite(int var1) {
-      this.updateButtonStates();
-      if (var1 >= 0 && var1 < this.serverData.players.size()) {
-         PlayerInfo var2 = this.serverData.players.get(var1);
-         RealmsConfirmScreen var3 = new RealmsConfirmScreen(var2x -> {
-            if (var2x) {
-               RealmsClient var3xx = RealmsClient.create();
-
-               try {
-                  var3xx.uninvite(this.serverData.id, var2.getUuid());
-               } catch (RealmsServiceException var5) {
-                  LOGGER.error("Couldn't uninvite user", var5);
-               }
-
-               this.serverData.players.remove(this.playerIndex);
-               this.playerIndex = -1;
-               this.updateButtonStates();
-            }
-
-            this.stateChanged = true;
-            this.minecraft.setScreen(this);
-         }, QUESTION_TITLE, Component.translatable("mco.configure.world.uninvite.player", var2.getName()));
-         this.minecraft.setScreen(var3);
-      }
-   }
-
-   @Override
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, this.title, this.width / 2, 17, -1);
-      int var5 = row(12) + 20;
-      var1.setColor(0.25F, 0.25F, 0.25F, 1.0F);
-      var1.blit(OPTIONS_BACKGROUND, 0, var5, 0.0F, 0.0F, this.width, this.height - var5, 32, 32);
-      var1.setColor(1.0F, 1.0F, 1.0F, 1.0F);
-      String var6 = this.serverData.players != null ? Integer.toString(this.serverData.players.size()) : "0";
-      var1.drawString(this.font, Component.translatable("mco.configure.world.invited.number", var6), this.column1X, row(0), -1, false);
-   }
-
-   class Entry extends ObjectSelectionList.Entry<RealmsPlayerScreen.Entry> {
-      private static final int X_OFFSET = 3;
-      private static final int Y_PADDING = 1;
-      private static final int BUTTON_WIDTH = 8;
-      private static final int BUTTON_HEIGHT = 7;
-      private static final WidgetSprites REMOVE_BUTTON_SPRITES = new WidgetSprites(
-         new ResourceLocation("player_list/remove_player"), new ResourceLocation("player_list/remove_player_highlighted")
-      );
-      private static final WidgetSprites MAKE_OP_BUTTON_SPRITES = new WidgetSprites(
-         new ResourceLocation("player_list/make_operator"), new ResourceLocation("player_list/make_operator_highlighted")
-      );
-      private static final WidgetSprites REMOVE_OP_BUTTON_SPRITES = new WidgetSprites(
-         new ResourceLocation("player_list/remove_operator"), new ResourceLocation("player_list/remove_operator_highlighted")
-      );
+   class Entry extends ContainerObjectSelectionList.Entry<RealmsPlayerScreen.Entry> {
+      private static final Component NORMAL_USER_TEXT = Component.translatable("mco.configure.world.invites.normal.tooltip");
+      private static final Component OP_TEXT = Component.translatable("mco.configure.world.invites.ops.tooltip");
+      private static final Component REMOVE_TEXT = Component.translatable("mco.configure.world.invites.remove.tooltip");
+      private static final ResourceLocation MAKE_OP_SPRITE = new ResourceLocation("player_list/make_operator");
+      private static final ResourceLocation REMOVE_OP_SPRITE = new ResourceLocation("player_list/remove_operator");
+      private static final ResourceLocation REMOVE_PLAYER_SPRITE = new ResourceLocation("player_list/remove_player");
+      private static final int ICON_WIDTH = 8;
+      private static final int ICON_HEIGHT = 7;
       private final PlayerInfo playerInfo;
-      private final List<AbstractWidget> children = new ArrayList<>();
-      private final ImageButton removeButton;
-      private final ImageButton makeOpButton;
-      private final ImageButton removeOpButton;
+      private final Button removeButton;
+      private final Button makeOpButton;
+      private final Button removeOpButton;
 
       public Entry(PlayerInfo var2) {
          super();
          this.playerInfo = var2;
          int var3 = RealmsPlayerScreen.this.serverData.players.indexOf(this.playerInfo);
-         int var4 = RealmsPlayerScreen.this.invitedObjectSelectionList.getRowRight() - 16 - 9;
-         int var5 = RealmsPlayerScreen.this.invitedObjectSelectionList.getRowTop(var3) + 1;
-         this.removeButton = new ImageButton(var4, var5, 8, 7, REMOVE_BUTTON_SPRITES, var2x -> RealmsPlayerScreen.this.uninvite(var3), CommonComponents.EMPTY);
-         this.removeButton.setTooltip(Tooltip.create(RealmsPlayerScreen.REMOVE_ENTRY_TOOLTIP));
-         this.children.add(this.removeButton);
-         var4 += 11;
-         this.makeOpButton = new ImageButton(var4, var5, 8, 7, MAKE_OP_BUTTON_SPRITES, var2x -> RealmsPlayerScreen.this.op(var3), CommonComponents.EMPTY);
-         this.makeOpButton.setTooltip(Tooltip.create(RealmsPlayerScreen.NORMAL_USER_TOOLTIP));
-         this.children.add(this.makeOpButton);
-         this.removeOpButton = new ImageButton(var4, var5, 8, 7, REMOVE_OP_BUTTON_SPRITES, var2x -> RealmsPlayerScreen.this.deop(var3), CommonComponents.EMPTY);
-         this.removeOpButton.setTooltip(Tooltip.create(RealmsPlayerScreen.OP_TOOLTIP));
-         this.children.add(this.removeOpButton);
-         this.updateButtons();
+         this.makeOpButton = SpriteIconButton.builder(NORMAL_USER_TEXT, var2x -> this.op(var3), false)
+            .sprite(MAKE_OP_SPRITE, 8, 7)
+            .width(16 + RealmsPlayerScreen.this.font.width(NORMAL_USER_TEXT))
+            .narration(
+               var1x -> CommonComponents.joinForNarration(
+                     Component.translatable("mco.invited.player.narration", var2.getName()),
+                     var1x.get(),
+                     Component.translatable("narration.cycle_button.usage.focused", OP_TEXT)
+                  )
+            )
+            .build();
+         this.removeOpButton = SpriteIconButton.builder(OP_TEXT, var2x -> this.deop(var3), false)
+            .sprite(REMOVE_OP_SPRITE, 8, 7)
+            .width(16 + RealmsPlayerScreen.this.font.width(OP_TEXT))
+            .narration(
+               var1x -> CommonComponents.joinForNarration(
+                     Component.translatable("mco.invited.player.narration", var2.getName()),
+                     var1x.get(),
+                     Component.translatable("narration.cycle_button.usage.focused", NORMAL_USER_TEXT)
+                  )
+            )
+            .build();
+         this.removeButton = SpriteIconButton.builder(REMOVE_TEXT, var2x -> this.uninvite(var3), false)
+            .sprite(REMOVE_PLAYER_SPRITE, 8, 7)
+            .width(16 + RealmsPlayerScreen.this.font.width(REMOVE_TEXT))
+            .narration(var1x -> CommonComponents.joinForNarration(Component.translatable("mco.invited.player.narration", var2.getName()), var1x.get()))
+            .build();
+         this.updateOpButtons();
       }
 
-      public void updateButtons() {
+      private void op(int var1) {
+         RealmsClient var2 = RealmsClient.create();
+         UUID var3 = RealmsPlayerScreen.this.serverData.players.get(var1).getUuid();
+
+         try {
+            this.updateOps(var2.op(RealmsPlayerScreen.this.serverData.id, var3));
+         } catch (RealmsServiceException var5) {
+            RealmsPlayerScreen.LOGGER.error("Couldn't op the user", var5);
+         }
+
+         this.updateOpButtons();
+      }
+
+      private void deop(int var1) {
+         RealmsClient var2 = RealmsClient.create();
+         UUID var3 = RealmsPlayerScreen.this.serverData.players.get(var1).getUuid();
+
+         try {
+            this.updateOps(var2.deop(RealmsPlayerScreen.this.serverData.id, var3));
+         } catch (RealmsServiceException var5) {
+            RealmsPlayerScreen.LOGGER.error("Couldn't deop the user", var5);
+         }
+
+         this.updateOpButtons();
+      }
+
+      private void uninvite(int var1) {
+         if (var1 >= 0 && var1 < RealmsPlayerScreen.this.serverData.players.size()) {
+            PlayerInfo var2 = RealmsPlayerScreen.this.serverData.players.get(var1);
+            RealmsConfirmScreen var3 = new RealmsConfirmScreen(var3x -> {
+               if (var3x) {
+                  RealmsClient var4 = RealmsClient.create();
+
+                  try {
+                     var4.uninvite(RealmsPlayerScreen.this.serverData.id, var2.getUuid());
+                  } catch (RealmsServiceException var6) {
+                     RealmsPlayerScreen.LOGGER.error("Couldn't uninvite user", var6);
+                  }
+
+                  RealmsPlayerScreen.this.serverData.players.remove(var1);
+               }
+
+               RealmsPlayerScreen.this.stateChanged = true;
+               RealmsPlayerScreen.this.minecraft.setScreen(RealmsPlayerScreen.this);
+               if (RealmsPlayerScreen.this.invitedList != null) {
+                  RealmsPlayerScreen.this.invitedList.children().remove(this);
+               }
+            }, RealmsPlayerScreen.QUESTION_TITLE, Component.translatable("mco.configure.world.uninvite.player", var2.getName()));
+            RealmsPlayerScreen.this.minecraft.setScreen(var3);
+         }
+      }
+
+      private void updateOps(Ops var1) {
+         for(PlayerInfo var3 : RealmsPlayerScreen.this.serverData.players) {
+            var3.setOperator(var1.ops.contains(var3.getName()));
+         }
+      }
+
+      private void updateOpButtons() {
          this.makeOpButton.visible = !this.playerInfo.isOperator();
          this.removeOpButton.visible = !this.makeOpButton.visible;
       }
 
-      @Override
-      public boolean mouseClicked(double var1, double var3, int var5) {
-         if (!this.makeOpButton.mouseClicked(var1, var3, var5)) {
-            this.removeOpButton.mouseClicked(var1, var3, var5);
-         }
+      private Button activeOpButton() {
+         return this.makeOpButton.visible ? this.makeOpButton : this.removeOpButton;
+      }
 
-         this.removeButton.mouseClicked(var1, var3, var5);
-         return true;
+      @Override
+      public List<? extends GuiEventListener> children() {
+         return ImmutableList.of(this.activeOpButton(), this.removeButton);
+      }
+
+      @Override
+      public List<? extends NarratableEntry> narratables() {
+         return ImmutableList.of(this.activeOpButton(), this.removeButton);
       }
 
       @Override
@@ -253,65 +227,51 @@ public class RealmsPlayerScreen extends RealmsScreen {
             var11 = -1;
          }
 
-         RealmsUtil.renderPlayerFace(var1, RealmsPlayerScreen.this.column1X + 2 + 2, var3 + 1, 8, this.playerInfo.getUuid());
-         var1.drawString(RealmsPlayerScreen.this.font, this.playerInfo.getName(), RealmsPlayerScreen.this.column1X + 3 + 12, var3 + 1, var11, false);
-         this.children.forEach(var5x -> {
-            var5x.setY(var3 + 1);
-            var5x.render(var1, var7, var8, var10);
-         });
-      }
-
-      @Override
-      public Component getNarration() {
-         return Component.translatable("narrator.select", this.playerInfo.getName());
+         int var12 = var3 + var6 / 2 - 16;
+         RealmsUtil.renderPlayerFace(var1, var4, var12, 32, this.playerInfo.getUuid());
+         int var13 = var3 + var6 / 2 - 9 / 2;
+         var1.drawString(RealmsPlayerScreen.this.font, this.playerInfo.getName(), var4 + 8 + 32, var13, var11, false);
+         int var14 = var3 + var6 / 2 - 10;
+         int var15 = var4 + var5 - this.removeButton.getWidth();
+         this.removeButton.setPosition(var15, var14);
+         this.removeButton.render(var1, var7, var8, var10);
+         int var16 = var15 - this.activeOpButton().getWidth() - 8;
+         this.makeOpButton.setPosition(var16, var14);
+         this.makeOpButton.render(var1, var7, var8, var10);
+         this.removeOpButton.setPosition(var16, var14);
+         this.removeOpButton.render(var1, var7, var8, var10);
       }
    }
 
-   class InvitedObjectSelectionList extends RealmsObjectSelectionList<RealmsPlayerScreen.Entry> {
+   class InvitedObjectSelectionList extends ContainerObjectSelectionList<RealmsPlayerScreen.Entry> {
+      private static final int ITEM_HEIGHT = 36;
+
       public InvitedObjectSelectionList() {
-         super(RealmsPlayerScreen.this.columnWidth + 10, RealmsPlayerScreen.row(12) + 20, RealmsPlayerScreen.row(1), 13);
-      }
-
-      public void updateButtons() {
-         if (RealmsPlayerScreen.this.playerIndex != -1) {
-            this.getEntry(RealmsPlayerScreen.this.playerIndex).updateButtons();
-         }
-      }
-
-      public void addEntry(PlayerInfo var1) {
-         this.addEntry(RealmsPlayerScreen.this.new Entry(var1));
+         super(
+            Minecraft.getInstance(),
+            RealmsPlayerScreen.this.width,
+            RealmsPlayerScreen.this.layout.getContentHeight(),
+            RealmsPlayerScreen.this.layout.getHeaderHeight(),
+            36
+         );
+         this.setRenderHeader(true, (int)(9.0F * 1.5F));
       }
 
       @Override
-      public int getRowWidth() {
-         return (int)((double)this.width * 1.0);
-      }
-
-      @Override
-      public void selectItem(int var1) {
-         super.selectItem(var1);
-         this.selectInviteListItem(var1);
-      }
-
-      public void selectInviteListItem(int var1) {
-         RealmsPlayerScreen.this.playerIndex = var1;
-         RealmsPlayerScreen.this.updateButtonStates();
-      }
-
-      public void setSelected(@Nullable RealmsPlayerScreen.Entry var1) {
-         super.setSelected(var1);
-         RealmsPlayerScreen.this.playerIndex = this.children().indexOf(var1);
-         RealmsPlayerScreen.this.updateButtonStates();
-      }
-
-      @Override
-      public int getScrollbarPosition() {
-         return RealmsPlayerScreen.this.column1X + this.width;
+      protected void renderHeader(GuiGraphics var1, int var2, int var3) {
+         String var4 = RealmsPlayerScreen.this.serverData.players != null ? Integer.toString(RealmsPlayerScreen.this.serverData.players.size()) : "0";
+         MutableComponent var5 = Component.translatable("mco.configure.world.invited.number", var4).withStyle(ChatFormatting.UNDERLINE);
+         var1.drawString(RealmsPlayerScreen.this.font, var5, var2 + this.getRowWidth() / 2 - RealmsPlayerScreen.this.font.width(var5) / 2, var3, -1, false);
       }
 
       @Override
       public int getMaxPosition() {
-         return this.getItemCount() * 13;
+         return this.getItemCount() * this.itemHeight + this.headerHeight;
+      }
+
+      @Override
+      public int getRowWidth() {
+         return 300;
       }
    }
 }

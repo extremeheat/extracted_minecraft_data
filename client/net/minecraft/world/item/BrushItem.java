@@ -88,10 +88,8 @@ public class BrushItem extends Item {
                   if (var18 instanceof BrushableBlockEntity var17) {
                      boolean var19 = var17.brush(var1.getGameTime(), (Player)var5, ((BlockHitResult)var7).getDirection());
                      if (var19) {
-                        EquipmentSlot var16 = var3.equals(((Player)var5).getItemBySlot(EquipmentSlot.OFFHAND))
-                           ? EquipmentSlot.OFFHAND
-                           : EquipmentSlot.MAINHAND;
-                        var3.hurtAndBreak(1, var2, var1x -> var1x.broadcastBreakEvent(var16));
+                        EquipmentSlot var16 = var3.equals(((Player)var5).getItemBySlot(EquipmentSlot.OFFHAND)) ? EquipmentSlot.OFFHAND : EquipmentSlot.MAINHAND;
+                        var3.hurtAndBreak(1, var2, var16);
                      }
                   }
                }
@@ -107,7 +105,7 @@ public class BrushItem extends Item {
    }
 
    private HitResult calculateHitResult(Player var1) {
-      return ProjectileUtil.getHitResultOnViewVector(var1, var0 -> !var0.isSpectator() && var0.isPickable(), (double)Player.getPickRange(var1.isCreative()));
+      return ProjectileUtil.getHitResultOnViewVector(var1, var0 -> !var0.isSpectator() && var0.isPickable(), var1.blockInteractionRange());
    }
 
    private void spawnDustParticles(Level var1, BlockHitResult var2, BlockState var3, Vec3 var4, HumanoidArm var5) {

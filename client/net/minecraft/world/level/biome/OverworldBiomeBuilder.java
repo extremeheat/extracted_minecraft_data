@@ -459,9 +459,7 @@ public final class OverworldBiomeBuilder {
             ResourceKey var10 = this.pickBeachBiome(var3, var5);
             ResourceKey var11 = this.maybePickWindsweptSavannaBiome(var3, var5, var2, var7);
             ResourceKey var12 = this.pickShatteredCoastBiome(var3, var5, var2);
-            this.addSurfaceBiome(
-               var1, var4, var6, this.nearInlandContinentalness, Climate.Parameter.span(this.erosions[0], this.erosions[1]), var2, 0.0F, var8
-            );
+            this.addSurfaceBiome(var1, var4, var6, this.nearInlandContinentalness, Climate.Parameter.span(this.erosions[0], this.erosions[1]), var2, 0.0F, var8);
             this.addSurfaceBiome(
                var1,
                var4,
@@ -472,9 +470,7 @@ public final class OverworldBiomeBuilder {
                0.0F,
                var9
             );
-            this.addSurfaceBiome(
-               var1, var4, var6, this.nearInlandContinentalness, Climate.Parameter.span(this.erosions[2], this.erosions[3]), var2, 0.0F, var7
-            );
+            this.addSurfaceBiome(var1, var4, var6, this.nearInlandContinentalness, Climate.Parameter.span(this.erosions[2], this.erosions[3]), var2, 0.0F, var7);
             this.addSurfaceBiome(
                var1,
                var4,

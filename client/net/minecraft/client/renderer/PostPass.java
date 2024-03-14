@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.function.IntSupplier;
 import net.minecraft.client.Minecraft;
-import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.ResourceProvider;
 import org.joml.Matrix4f;
 
 public class PostPass implements AutoCloseable {
@@ -24,12 +24,14 @@ public class PostPass implements AutoCloseable {
    private final List<Integer> auxWidths = Lists.newArrayList();
    private final List<Integer> auxHeights = Lists.newArrayList();
    private Matrix4f shaderOrthoMatrix;
+   private final int filterMode;
 
-   public PostPass(ResourceManager var1, String var2, RenderTarget var3, RenderTarget var4) throws IOException {
+   public PostPass(ResourceProvider var1, String var2, RenderTarget var3, RenderTarget var4, boolean var5) throws IOException {
       super();
       this.effect = new EffectInstance(var1, var2);
       this.inTarget = var3;
       this.outTarget = var4;
+      this.filterMode = var5 ? 9729 : 9728;
    }
 
    @Override
@@ -95,5 +97,9 @@ public class PostPass implements AutoCloseable {
 
    public EffectInstance getEffect() {
       return this.effect;
+   }
+
+   public int getFilterMode() {
+      return this.filterMode;
    }
 }

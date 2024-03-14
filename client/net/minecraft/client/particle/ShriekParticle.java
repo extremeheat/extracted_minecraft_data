@@ -69,11 +69,7 @@ public class ShriekParticle extends TextureSheetParticle {
    }
 
    private void makeCornerVertex(VertexConsumer var1, Vector3f var2, float var3, float var4, int var5) {
-      var1.vertex((double)var2.x(), (double)var2.y(), (double)var2.z())
-         .uv(var3, var4)
-         .color(this.rCol, this.gCol, this.bCol, this.alpha)
-         .uv2(var5)
-         .endVertex();
+      var1.vertex((double)var2.x(), (double)var2.y(), (double)var2.z()).uv(var3, var4).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(var5).endVertex();
    }
 
    @Override

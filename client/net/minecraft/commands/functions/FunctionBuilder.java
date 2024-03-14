@@ -48,19 +48,19 @@ class FunctionBuilder<T extends ExecutionCommandSource<T>> {
       return var2;
    }
 
-   public void addMacro(String var1, int var2) {
-      StringTemplate var3 = StringTemplate.fromString(var1, var2);
+   public void addMacro(String var1, int var2, T var3) {
+      StringTemplate var4 = StringTemplate.fromString(var1, var2);
       if (this.plainEntries != null) {
          this.macroEntries = new ArrayList<>(this.plainEntries.size() + 1);
 
-         for(UnboundEntryAction var5 : this.plainEntries) {
-            this.macroEntries.add(new MacroFunction.PlainTextEntry<>(var5));
+         for(UnboundEntryAction var6 : this.plainEntries) {
+            this.macroEntries.add(new MacroFunction.PlainTextEntry<>(var6));
          }
 
          this.plainEntries = null;
       }
 
-      this.macroEntries.add(new MacroFunction.MacroEntry<>(var3, this.convertToIndices(var3.variables())));
+      this.macroEntries.add(new MacroFunction.MacroEntry<>(var4, this.convertToIndices(var4.variables()), (T)var3));
    }
 
    public CommandFunction<T> build(ResourceLocation var1) {

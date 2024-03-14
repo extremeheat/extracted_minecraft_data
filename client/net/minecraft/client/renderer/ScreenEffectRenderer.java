@@ -55,7 +55,7 @@ public class ScreenEffectRenderer {
 
       for(int var2 = 0; var2 < 8; ++var2) {
          double var3 = var0.getX() + (double)(((float)((var2 >> 0) % 2) - 0.5F) * var0.getBbWidth() * 0.8F);
-         double var5 = var0.getEyeY() + (double)(((float)((var2 >> 1) % 2) - 0.5F) * 0.1F);
+         double var5 = var0.getEyeY() + (double)(((float)((var2 >> 1) % 2) - 0.5F) * 0.1F * var0.getScale());
          double var7 = var0.getZ() + (double)(((float)((var2 >> 2) % 2) - 0.5F) * var0.getBbWidth() * 0.8F);
          var1.set(var3, var5, var7);
          BlockState var9 = var0.level().getBlockState(var1);

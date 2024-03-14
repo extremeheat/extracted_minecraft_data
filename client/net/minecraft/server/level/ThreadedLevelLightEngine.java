@@ -34,11 +34,7 @@ public class ThreadedLevelLightEngine extends LevelLightEngine implements AutoCl
    private final AtomicBoolean scheduled = new AtomicBoolean();
 
    public ThreadedLevelLightEngine(
-      LightChunkGetter var1,
-      ChunkMap var2,
-      boolean var3,
-      ProcessorMailbox<Runnable> var4,
-      ProcessorHandle<ChunkTaskPriorityQueueSorter.Message<Runnable>> var5
+      LightChunkGetter var1, ChunkMap var2, boolean var3, ProcessorMailbox<Runnable> var4, ProcessorHandle<ChunkTaskPriorityQueueSorter.Message<Runnable>> var5
    ) {
       super(var1, true, var3);
       this.chunkMap = var2;

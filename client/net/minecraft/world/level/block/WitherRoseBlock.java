@@ -3,8 +3,8 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
-import java.util.List;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
@@ -13,6 +13,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.component.SuspiciousStewEffects;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -31,11 +32,11 @@ public class WitherRoseBlock extends FlowerBlock {
       return CODEC;
    }
 
-   public WitherRoseBlock(MobEffect var1, int var2, BlockBehaviour.Properties var3) {
+   public WitherRoseBlock(Holder<MobEffect> var1, float var2, BlockBehaviour.Properties var3) {
       this(makeEffectList(var1, var2), var3);
    }
 
-   public WitherRoseBlock(List<SuspiciousEffectHolder.EffectEntry> var1, BlockBehaviour.Properties var2) {
+   public WitherRoseBlock(SuspiciousStewEffects var1, BlockBehaviour.Properties var2) {
       super(var1, var2);
    }
 
@@ -69,7 +70,7 @@ public class WitherRoseBlock extends FlowerBlock {
    // $VF: Could not properly define all variable types!
    // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
-   public void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
       if (!var2.isClientSide && var2.getDifficulty() != Difficulty.PEACEFUL) {
          if (var4 instanceof LivingEntity var5 && !var5.isInvulnerableTo(var2.damageSources().wither())) {
             var5.addEffect(new MobEffectInstance(MobEffects.WITHER, 40));

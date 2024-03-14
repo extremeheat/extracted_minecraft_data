@@ -6,7 +6,6 @@ import net.minecraft.Util;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -17,7 +16,6 @@ import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.EnchantedBookItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -143,7 +141,7 @@ public class EnchantmentMenu extends AbstractContainerMenu {
          ItemStack var3 = this.enchantSlots.getItem(0);
          ItemStack var4 = this.enchantSlots.getItem(1);
          int var5 = var2 + 1;
-         if ((var4.isEmpty() || var4.getCount() < var5) && !var1.getAbilities().instabuild) {
+         if ((var4.isEmpty() || var4.getCount() < var5) && !var1.hasInfiniteMaterials()) {
             return false;
          } else if (this.costs[var2] <= 0
             || var3.isEmpty()
@@ -155,26 +153,16 @@ public class EnchantmentMenu extends AbstractContainerMenu {
                List var9 = this.getEnchantmentList(var3, var2, this.costs[var2]);
                if (!var9.isEmpty()) {
                   var1.onEnchantmentPerformed(var3, var5);
-                  boolean var10 = var3.is(Items.BOOK);
-                  if (var10) {
-                     var8 = new ItemStack(Items.ENCHANTED_BOOK);
-                     CompoundTag var11 = var3.getTag();
-                     if (var11 != null) {
-                        var8.setTag(var11.copy());
-                     }
-
+                  if (var3.is(Items.BOOK)) {
+                     var8 = var3.transmuteCopy(Items.ENCHANTED_BOOK, 1);
                      this.enchantSlots.setItem(0, var8);
                   }
 
-                  for(EnchantmentInstance var12 : var9) {
-                     if (var10) {
-                        EnchantedBookItem.addEnchantment(var8, var12);
-                     } else {
-                        var8.enchant(var12.enchantment, var12.level);
-                     }
+                  for(EnchantmentInstance var11 : var9) {
+                     var8.enchant(var11.enchantment, var11.level);
                   }
 
-                  if (!var1.getAbilities().instabuild) {
+                  if (!var1.hasInfiniteMaterials()) {
                      var4.shrink(var5);
                      if (var4.isEmpty()) {
                         this.enchantSlots.setItem(1, ItemStack.EMPTY);

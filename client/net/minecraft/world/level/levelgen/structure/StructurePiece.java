@@ -412,9 +412,7 @@ public abstract class StructurePiece {
       }
    }
 
-   protected boolean createChest(
-      ServerLevelAccessor var1, BoundingBox var2, RandomSource var3, BlockPos var4, ResourceLocation var5, @Nullable BlockState var6
-   ) {
+   protected boolean createChest(ServerLevelAccessor var1, BoundingBox var2, RandomSource var3, BlockPos var4, ResourceLocation var5, @Nullable BlockState var6) {
       if (var2.isInside(var4) && !var1.getBlockState(var4).is(Blocks.CHEST)) {
          if (var6 == null) {
             var6 = reorient(var1, var4, Blocks.CHEST.defaultBlockState());

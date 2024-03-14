@@ -6,9 +6,10 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.MultiLineEditBox;
+import net.minecraft.client.gui.layouts.Layout;
+import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.GenericWaitingScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.multiplayer.WarningScreen;
@@ -104,8 +105,7 @@ public abstract class AbstractReportScreen<B extends Report.Builder<?>> extends 
 
    private void displayReportSendError(Component var1) {
       MutableComponent var2 = var1.copy().withStyle(ChatFormatting.RED);
-      this.minecraft
-         .setScreen(GenericWaitingScreen.createCompleted(REPORT_ERROR_TITLE, var2, CommonComponents.GUI_BACK, () -> this.minecraft.setScreen(this)));
+      this.minecraft.setScreen(GenericWaitingScreen.createCompleted(REPORT_ERROR_TITLE, var2, CommonComponents.GUI_BACK, () -> this.minecraft.setScreen(this)));
    }
 
    void saveDraft() {
@@ -134,7 +134,6 @@ public abstract class AbstractReportScreen<B extends Report.Builder<?>> extends 
    }
 
    class DiscardReportWarningScreen extends WarningScreen {
-      private static final int BUTTON_MARGIN = 20;
       private static final Component TITLE = Component.translatable("gui.abuseReport.discard.title").withStyle(ChatFormatting.BOLD);
       private static final Component MESSAGE = Component.translatable("gui.abuseReport.discard.content");
       private static final Component RETURN = Component.translatable("gui.abuseReport.discard.return");
@@ -146,16 +145,20 @@ public abstract class AbstractReportScreen<B extends Report.Builder<?>> extends 
       }
 
       @Override
-      protected void initButtons(int var1) {
-         this.addRenderableWidget(Button.builder(RETURN, var1x -> this.onClose()).pos(this.width / 2 - 155, 100 + var1).build());
-         this.addRenderableWidget(Button.builder(DRAFT, var1x -> {
+      protected Layout addFooterButtons() {
+         LinearLayout var1 = LinearLayout.vertical().spacing(8);
+         var1.defaultCellSetting().alignHorizontallyCenter();
+         LinearLayout var2 = var1.addChild(LinearLayout.horizontal().spacing(8));
+         var2.addChild(Button.builder(RETURN, var1x -> this.onClose()).build());
+         var2.addChild(Button.builder(DRAFT, var1x -> {
             AbstractReportScreen.this.saveDraft();
             this.minecraft.setScreen(AbstractReportScreen.this.lastScreen);
-         }).pos(this.width / 2 + 5, 100 + var1).build());
-         this.addRenderableWidget(Button.builder(DISCARD, var1x -> {
+         }).build());
+         var1.addChild(Button.builder(DISCARD, var1x -> {
             AbstractReportScreen.this.clearDraft();
             this.minecraft.setScreen(AbstractReportScreen.this.lastScreen);
-         }).pos(this.width / 2 - 75, 130 + var1).build());
+         }).build());
+         return var1;
       }
 
       @Override
@@ -166,11 +169,6 @@ public abstract class AbstractReportScreen<B extends Report.Builder<?>> extends 
       @Override
       public boolean shouldCloseOnEsc() {
          return false;
-      }
-
-      @Override
-      protected void renderTitle(GuiGraphics var1) {
-         var1.drawString(this.font, this.title, this.width / 2 - 155, 30, -1);
       }
    }
 }

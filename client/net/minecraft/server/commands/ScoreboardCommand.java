@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
+import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
@@ -70,7 +71,7 @@ public class ScoreboardCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
+   public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
       var0.register(
          (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("scoreboard").requires(var0x -> var0x.hasPermission(2)))
                .then(
@@ -91,7 +92,7 @@ public class ScoreboardCommand {
                                                          )
                                                    ))
                                                 .then(
-                                                   Commands.argument("displayName", ComponentArgument.textComponent())
+                                                   Commands.argument("displayName", ComponentArgument.textComponent(var1))
                                                       .executes(
                                                          var0x -> addObjective(
                                                                (CommandSourceStack)var0x.getSource(),
@@ -113,7 +114,7 @@ public class ScoreboardCommand {
                                                 .then(
                                                    Commands.literal("displayname")
                                                       .then(
-                                                         Commands.argument("displayName", ComponentArgument.textComponent())
+                                                         Commands.argument("displayName", ComponentArgument.textComponent(var1))
                                                             .executes(
                                                                var0x -> setDisplayName(
                                                                      (CommandSourceStack)var0x.getSource(),
@@ -139,9 +140,10 @@ public class ScoreboardCommand {
                                           ))
                                        .then(
                                           addNumberFormats(
+                                             var1,
                                              Commands.literal("numberformat"),
-                                             (var0x, var1) -> setObjectiveFormat(
-                                                   (CommandSourceStack)var0x.getSource(), ObjectiveArgument.getObjective(var0x, "objective"), var1
+                                             (var0x, var1x) -> setObjectiveFormat(
+                                                   (CommandSourceStack)var0x.getSource(), ObjectiveArgument.getObjective(var0x, "objective"), var1x
                                                 )
                                           )
                                        )
@@ -303,10 +305,10 @@ public class ScoreboardCommand {
                                     .then(
                                        Commands.argument("objective", ObjectiveArgument.objective())
                                           .suggests(
-                                             (var0x, var1) -> suggestTriggers(
+                                             (var0x, var1x) -> suggestTriggers(
                                                    (CommandSourceStack)var0x.getSource(),
                                                    ScoreHolderArgument.getNamesWithDefaultWildcard(var0x, "targets"),
-                                                   var1
+                                                   var1x
                                                 )
                                           )
                                           .executes(
@@ -329,7 +331,7 @@ public class ScoreboardCommand {
                                           .then(
                                              ((RequiredArgumentBuilder)Commands.argument("objective", ObjectiveArgument.objective())
                                                    .then(
-                                                      Commands.argument("name", ComponentArgument.textComponent())
+                                                      Commands.argument("name", ComponentArgument.textComponent(var1))
                                                          .executes(
                                                             var0x -> setScoreDisplay(
                                                                   (CommandSourceStack)var0x.getSource(),
@@ -357,12 +359,13 @@ public class ScoreboardCommand {
                                        .suggests(ScoreHolderArgument.SUGGEST_SCORE_HOLDERS)
                                        .then(
                                           addNumberFormats(
+                                             var1,
                                              Commands.argument("objective", ObjectiveArgument.objective()),
-                                             (var0x, var1) -> setScoreNumberFormat(
+                                             (var0x, var1x) -> setScoreNumberFormat(
                                                    (CommandSourceStack)var0x.getSource(),
                                                    ScoreHolderArgument.getNamesWithDefaultWildcard(var0x, "targets"),
                                                    ObjectiveArgument.getObjective(var0x, "objective"),
-                                                   var1
+                                                   var1x
                                                 )
                                           )
                                        )
@@ -404,18 +407,18 @@ public class ScoreboardCommand {
    }
 
    private static ArgumentBuilder<CommandSourceStack, ?> addNumberFormats(
-      ArgumentBuilder<CommandSourceStack, ?> var0, ScoreboardCommand.NumberFormatCommandExecutor var1
+      CommandBuildContext var0, ArgumentBuilder<CommandSourceStack, ?> var1, ScoreboardCommand.NumberFormatCommandExecutor var2
    ) {
-      return var0.then(Commands.literal("blank").executes(var1x -> var1.run(var1x, BlankFormat.INSTANCE)))
-         .then(Commands.literal("fixed").then(Commands.argument("contents", ComponentArgument.textComponent()).executes(var1x -> {
-            Component var2 = ComponentArgument.getComponent(var1x, "contents");
-            return var1.run(var1x, new FixedFormat(var2));
+      return var1.then(Commands.literal("blank").executes(var1x -> var2.run(var1x, BlankFormat.INSTANCE)))
+         .then(Commands.literal("fixed").then(Commands.argument("contents", ComponentArgument.textComponent(var0)).executes(var1x -> {
+            Component var2xx = ComponentArgument.getComponent(var1x, "contents");
+            return var2.run(var1x, new FixedFormat(var2xx));
          })))
-         .then(Commands.literal("styled").then(Commands.argument("style", StyleArgument.style()).executes(var1x -> {
-            Style var2 = StyleArgument.getStyle(var1x, "style");
-            return var1.run(var1x, new StyledFormat(var2));
+         .then(Commands.literal("styled").then(Commands.argument("style", StyleArgument.style(var0)).executes(var1x -> {
+            Style var2xx = StyleArgument.getStyle(var1x, "style");
+            return var2.run(var1x, new StyledFormat(var2xx));
          })))
-         .executes(var1x -> var1.run(var1x, null));
+         .executes(var1x -> var2.run(var1x, null));
    }
 
    private static LiteralArgumentBuilder<CommandSourceStack> createRenderTypeModify() {
@@ -463,9 +466,7 @@ public class ScoreboardCommand {
          throw ERROR_NO_VALUE.create(var2.getName(), var1.getFeedbackDisplayName());
       } else {
          var0.sendSuccess(
-            () -> Component.translatable(
-                  "commands.scoreboard.players.get.success", var1.getFeedbackDisplayName(), var4.value(), var2.getFormattedDisplayName()
-               ),
+            () -> Component.translatable("commands.scoreboard.players.get.success", var1.getFeedbackDisplayName(), var4.value(), var2.getFormattedDisplayName()),
             false
          );
          return var4.value();
@@ -692,9 +693,7 @@ public class ScoreboardCommand {
       if (var1.size() == 1) {
          int var9 = var5;
          var0.sendSuccess(
-            () -> Component.translatable(
-                  "commands.scoreboard.players.add.success.single", var3, var2.getFormattedDisplayName(), getFirstTargetName(var1), var9
-               ),
+            () -> Component.translatable("commands.scoreboard.players.add.success.single", var3, var2.getFormattedDisplayName(), getFirstTargetName(var1), var9),
             true
          );
       } else {

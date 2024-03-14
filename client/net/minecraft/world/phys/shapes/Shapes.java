@@ -186,9 +186,7 @@ public final class Shapes {
       }
    }
 
-   private static boolean joinIsNotEmpty(
-      IndexMerger var0, IndexMerger var1, IndexMerger var2, DiscreteVoxelShape var3, DiscreteVoxelShape var4, BooleanOp var5
-   ) {
+   private static boolean joinIsNotEmpty(IndexMerger var0, IndexMerger var1, IndexMerger var2, DiscreteVoxelShape var3, DiscreteVoxelShape var4, BooleanOp var5) {
       return !var0.forMergedIndexes(
          (var5x, var6, var7) -> var1.forMergedIndexes(
                (var6x, var7x, var8) -> var2.forMergedIndexes(

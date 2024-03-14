@@ -99,7 +99,7 @@ public abstract class AbstractFurnaceScreen<T extends AbstractFurnaceMenu> exten
 
    @Override
    public boolean keyPressed(int var1, int var2, int var3) {
-      return this.recipeBookComponent.keyPressed(var1, var2, var3) ? false : super.keyPressed(var1, var2, var3);
+      return this.recipeBookComponent.keyPressed(var1, var2, var3) ? true : super.keyPressed(var1, var2, var3);
    }
 
    @Override

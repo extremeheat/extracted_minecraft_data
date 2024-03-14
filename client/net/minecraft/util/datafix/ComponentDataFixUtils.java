@@ -1,9 +1,13 @@
 package net.minecraft.util.datafix;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 import com.mojang.datafixers.DataFixUtils;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.DynamicOps;
+import java.util.Optional;
 import net.minecraft.util.GsonHelper;
 
 public class ComponentDataFixUtils {
@@ -36,5 +40,33 @@ public class ComponentDataFixUtils {
 
    public static <T> Dynamic<T> wrapLiteralStringAsComponent(Dynamic<T> var0) {
       return (Dynamic<T>)DataFixUtils.orElse(var0.asString().map(var1 -> createPlainTextComponent(var0.getOps(), var1)).result(), var0);
+   }
+
+   public static Dynamic<?> rewriteFromLenient(Dynamic<?> var0) {
+      Optional var1 = var0.asString().result();
+      if (var1.isEmpty()) {
+         return var0;
+      } else {
+         String var2 = (String)var1.get();
+         if (!var2.isEmpty() && !var2.equals("null")) {
+            char var3 = var2.charAt(0);
+            char var4 = var2.charAt(var2.length() - 1);
+            if (var3 == '"' && var4 == '"' || var3 == '{' && var4 == '}' || var3 == '[' && var4 == ']') {
+               try {
+                  JsonElement var5 = JsonParser.parseString(var2);
+                  if (var5.isJsonPrimitive()) {
+                     return createPlainTextComponent(var0.getOps(), var5.getAsString());
+                  }
+
+                  return var0.createString(GsonHelper.toStableString(var5));
+               } catch (JsonParseException var6) {
+               }
+            }
+
+            return createPlainTextComponent(var0.getOps(), var2);
+         } else {
+            return createEmptyComponent(var0.getOps());
+         }
+      }
    }
 }

@@ -204,7 +204,7 @@ public class ModelBlockRenderer {
          var18 = 1.0F;
       }
 
-      var4.putBulkData(var5, var6, new float[]{var7, var8, var9, var10}, var16, var17, var18, new int[]{var11, var12, var13, var14}, var15, true);
+      var4.putBulkData(var5, var6, new float[]{var7, var8, var9, var10}, var16, var17, var18, 1.0F, new int[]{var11, var12, var13, var14}, var15, true);
    }
 
    private void calculateShape(BlockAndTintGetter var1, BlockState var2, BlockPos var3, int[] var4, Direction var5, @Nullable float[] var6, BitSet var7) {
@@ -326,7 +326,7 @@ public class ModelBlockRenderer {
             var12 = 1.0F;
          }
 
-         var1.putBulkData(var0, var9, var10, var11, var12, var6, var7);
+         var1.putBulkData(var0, var9, var10, var11, var12, 1.0F, var6, var7);
       }
    }
 

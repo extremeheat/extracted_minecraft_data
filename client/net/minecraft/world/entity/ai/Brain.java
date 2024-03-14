@@ -510,9 +510,7 @@ public class Brain<E extends LivingEntity> {
             .getCodec()
             .ifPresent(
                var3 -> this.value
-                     .ifPresent(
-                        var4 -> var2.add(BuiltInRegistries.MEMORY_MODULE_TYPE.byNameCodec().encodeStart(var1, this.type), var3.encodeStart(var1, var4))
-                     )
+                     .ifPresent(var4 -> var2.add(BuiltInRegistries.MEMORY_MODULE_TYPE.byNameCodec().encodeStart(var1, this.type), var3.encodeStart(var1, var4)))
             );
       }
    }

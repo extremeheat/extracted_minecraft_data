@@ -36,12 +36,13 @@ public class FileUpload {
    private static final int MAX_RETRIES = 5;
    private static final String UPLOAD_PATH = "/upload";
    private final File file;
-   private final long worldId;
+   private final long realmId;
    private final int slotId;
    private final UploadInfo uploadInfo;
    private final String sessionId;
    private final String username;
    private final String clientVersion;
+   private final String worldVersion;
    private final UploadStatus uploadStatus;
    private final AtomicBoolean cancelled = new AtomicBoolean(false);
    @Nullable
@@ -51,16 +52,17 @@ public class FileUpload {
       .setConnectTimeout((int)TimeUnit.SECONDS.toMillis(15L))
       .build();
 
-   public FileUpload(File var1, long var2, int var4, UploadInfo var5, User var6, String var7, UploadStatus var8) {
+   public FileUpload(File var1, long var2, int var4, UploadInfo var5, User var6, String var7, String var8, UploadStatus var9) {
       super();
       this.file = var1;
-      this.worldId = var2;
+      this.realmId = var2;
       this.slotId = var4;
       this.uploadInfo = var5;
       this.sessionId = var6.getSessionId();
       this.username = var6.getName();
       this.clientVersion = var7;
-      this.uploadStatus = var8;
+      this.worldVersion = var8;
+      this.uploadStatus = var9;
    }
 
    public void upload(Consumer<UploadResult> var1) {
@@ -84,7 +86,7 @@ public class FileUpload {
          return var2.build();
       } else {
          this.uploadStatus.totalBytes = this.file.length();
-         HttpPost var3 = new HttpPost(this.uploadInfo.getUploadEndpoint().resolve("/upload/" + this.worldId + "/" + this.slotId));
+         HttpPost var3 = new HttpPost(this.uploadInfo.getUploadEndpoint().resolve("/upload/" + this.realmId + "/" + this.slotId));
          CloseableHttpClient var4 = HttpClientBuilder.create().setDefaultRequestConfig(this.requestConfig).build();
 
          UploadResult var8;
@@ -124,7 +126,19 @@ public class FileUpload {
    }
 
    private void setupRequest(HttpPost var1) throws FileNotFoundException {
-      var1.setHeader("Cookie", "sid=" + this.sessionId + ";token=" + this.uploadInfo.getToken() + ";user=" + this.username + ";version=" + this.clientVersion);
+      var1.setHeader(
+         "Cookie",
+         "sid="
+            + this.sessionId
+            + ";token="
+            + this.uploadInfo.getToken()
+            + ";user="
+            + this.username
+            + ";version="
+            + this.clientVersion
+            + ";worldVersion="
+            + this.worldVersion
+      );
       FileUpload.CustomInputStreamEntity var2 = new FileUpload.CustomInputStreamEntity(new FileInputStream(this.file), this.file.length(), this.uploadStatus);
       var2.setContentType("application/octet-stream");
       var1.setEntity(var2);

@@ -14,13 +14,13 @@ public class RestoreTask extends LongRunningTask {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Component TITLE = Component.translatable("mco.backup.restoring");
    private final Backup backup;
-   private final long worldId;
+   private final long realmId;
    private final RealmsConfigureWorldScreen lastScreen;
 
    public RestoreTask(Backup var1, long var2, RealmsConfigureWorldScreen var4) {
       super();
       this.backup = var1;
-      this.worldId = var2;
+      this.realmId = var2;
       this.lastScreen = var4;
    }
 
@@ -35,7 +35,7 @@ public class RestoreTask extends LongRunningTask {
                return;
             }
 
-            var1.restoreWorld(this.worldId, this.backup.backupId);
+            var1.restoreWorld(this.realmId, this.backup.backupId);
             pause(1L);
             if (this.aborted()) {
                return;

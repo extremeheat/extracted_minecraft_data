@@ -37,7 +37,7 @@ public class ScoreboardSlotArgument implements ArgumentType<DisplaySlot> {
       String var2 = var1.readUnquotedString();
       DisplaySlot var3 = DisplaySlot.CODEC.byName(var2);
       if (var3 == null) {
-         throw ERROR_INVALID_VALUE.create(var2);
+         throw ERROR_INVALID_VALUE.createWithContext(var1, var2);
       } else {
          return var3;
       }

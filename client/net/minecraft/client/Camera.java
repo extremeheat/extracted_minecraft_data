@@ -20,6 +20,7 @@ import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class Camera {
+   private static final float DEFAULT_CAMERA_DISTANCE = 4.0F;
    private boolean initialized;
    private BlockGetter level;
    private Entity entity;
@@ -58,10 +59,11 @@ public class Camera {
             this.setRotation(this.yRot + 180.0F, -this.xRot);
          }
 
-         this.move(-this.getMaxZoom(4.0), 0.0, 0.0);
+         float var6 = var2 instanceof LivingEntity var7 ? var7.getScale() : 1.0F;
+         this.move(-this.getMaxZoom((double)(4.0F * var6)), 0.0, 0.0);
       } else if (var2 instanceof LivingEntity && ((LivingEntity)var2).isSleeping()) {
-         Direction var6 = ((LivingEntity)var2).getBedOrientation();
-         this.setRotation(var6 != null ? var6.toYRot() - 180.0F : 0.0F, 0.0F);
+         Direction var8 = ((LivingEntity)var2).getBedOrientation();
+         this.setRotation(var8 != null ? var8.toYRot() - 180.0F : 0.0F, 0.0F);
          this.move(0.0, 0.3, 0.0);
       }
    }

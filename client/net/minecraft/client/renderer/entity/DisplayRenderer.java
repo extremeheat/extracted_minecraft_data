@@ -49,8 +49,7 @@ public abstract class DisplayRenderer<T extends Display, S> extends EntityRender
             var4.pushPose();
             var4.mulPose(this.calculateOrientation(var7, (T)var1, var3, new Quaternionf()));
             Transformation var12 = var7.transformation().get(var9);
-            var4.mulPoseMatrix(var12.getMatrix());
-            var4.last().normal().rotate(var12.getLeftRotation()).rotate(var12.getRightRotation());
+            var4.mulPose(var12.getMatrix());
             this.renderInner((T)var1, (S)var8, var4, var5, var11, var9);
             var4.popPose();
          }

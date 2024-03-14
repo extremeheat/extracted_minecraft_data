@@ -9,7 +9,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -78,7 +77,7 @@ public class DoorBlock extends Block {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       Direction var5 = var1.getValue(FACING);
       boolean var6 = !var1.getValue(OPEN);
       boolean var7 = var1.getValue(HINGE) == DoorHingeSide.RIGHT;
@@ -92,7 +91,7 @@ public class DoorBlock extends Block {
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       DoubleBlockHalf var7 = var1.getValue(HALF);
       if (var2.getAxis() != Direction.Axis.Y || var7 == DoubleBlockHalf.LOWER != (var2 == Direction.UP)) {
          return var7 == DoubleBlockHalf.LOWER && var2 == Direction.DOWN && !var1.canSurvive(var4, var5)
@@ -104,7 +103,7 @@ public class DoorBlock extends Block {
    }
 
    @Override
-   public void onExplosionHit(BlockState var1, Level var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
+   protected void onExplosionHit(BlockState var1, Level var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
       if (var4.getBlockInteraction() == Explosion.BlockInteraction.TRIGGER_BLOCK
          && var1.getValue(HALF) == DoubleBlockHalf.LOWER
          && !var2.isClientSide()
@@ -126,8 +125,8 @@ public class DoorBlock extends Block {
    }
 
    @Override
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
-      return switch(var4) {
+   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
+      return switch(var2) {
          case LAND, AIR -> var1.getValue(OPEN);
          case WATER -> false;
       };
@@ -196,7 +195,7 @@ public class DoorBlock extends Block {
    }
 
    @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       if (!this.type.canOpenByHand()) {
          return InteractionResult.PASS;
       } else {
@@ -221,7 +220,7 @@ public class DoorBlock extends Block {
    }
 
    @Override
-   public void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
+   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
       boolean var7 = var2.hasNeighborSignal(var3)
          || var2.hasNeighborSignal(var3.relative(var1.getValue(HALF) == DoubleBlockHalf.LOWER ? Direction.UP : Direction.DOWN));
       if (!this.defaultBlockState().is(var4) && var7 != var1.getValue(POWERED)) {
@@ -235,7 +234,7 @@ public class DoorBlock extends Block {
    }
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       BlockPos var4 = var3.below();
       BlockState var5 = var2.getBlockState(var4);
       return var1.getValue(HALF) == DoubleBlockHalf.LOWER ? var5.isFaceSturdy(var2, var4, Direction.UP) : var5.is(this);
@@ -246,17 +245,17 @@ public class DoorBlock extends Block {
    }
 
    @Override
-   public BlockState rotate(BlockState var1, Rotation var2) {
+   protected BlockState rotate(BlockState var1, Rotation var2) {
       return var1.setValue(FACING, var2.rotate(var1.getValue(FACING)));
    }
 
    @Override
-   public BlockState mirror(BlockState var1, Mirror var2) {
+   protected BlockState mirror(BlockState var1, Mirror var2) {
       return var2 == Mirror.NONE ? var1 : var1.rotate(var2.getRotation(var1.getValue(FACING))).cycle(HINGE);
    }
 
    @Override
-   public long getSeed(BlockState var1, BlockPos var2) {
+   protected long getSeed(BlockState var1, BlockPos var2) {
       return Mth.getSeed(var2.getX(), var2.below(var1.getValue(HALF) == DoubleBlockHalf.LOWER ? 0 : 1).getY(), var2.getZ());
    }
 

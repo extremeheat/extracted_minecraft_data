@@ -14,7 +14,6 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -22,7 +21,6 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PathfinderMob;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.TraceableEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -42,7 +40,6 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Vector3f;
 
 public class Vex extends Monster implements TraceableEntity {
    public static final float FLAP_DEGREES_PER_TICK = 45.836624F;
@@ -60,11 +57,6 @@ public class Vex extends Monster implements TraceableEntity {
       super(var1, var2);
       this.moveControl = new Vex.VexMoveControl(this);
       this.xpReward = 3;
-   }
-
-   @Override
-   protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
-      return var2.height - 0.28125F;
    }
 
    @Override
@@ -108,9 +100,9 @@ public class Vex extends Monster implements TraceableEntity {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_FLAGS_ID, (byte)0);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_FLAGS_ID, (byte)0);
    }
 
    @Override
@@ -218,29 +210,17 @@ public class Vex extends Monster implements TraceableEntity {
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
-      RandomSource var6 = var1.getRandom();
-      this.populateDefaultEquipmentSlots(var6, var2);
-      this.populateDefaultEquipmentEnchantments(var6, var2);
-      return super.finalizeSpawn(var1, var2, var3, var4, var5);
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+      RandomSource var5 = var1.getRandom();
+      this.populateDefaultEquipmentSlots(var5, var2);
+      this.populateDefaultEquipmentEnchantments(var5, var2);
+      return super.finalizeSpawn(var1, var2, var3, var4);
    }
 
    @Override
    protected void populateDefaultEquipmentSlots(RandomSource var1, DifficultyInstance var2) {
       this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.IRON_SWORD));
       this.setDropChance(EquipmentSlot.MAINHAND, 0.0F);
-   }
-
-   @Override
-   protected float ridingOffset(Entity var1) {
-      return 0.04F;
-   }
-
-   @Override
-   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      return new Vector3f(0.0F, var2.height - 0.0625F * var3, 0.0F);
    }
 
    class VexChargeAttackGoal extends Goal {

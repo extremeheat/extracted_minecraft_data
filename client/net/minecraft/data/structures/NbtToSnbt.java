@@ -21,6 +21,7 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.util.FastBufferedInputStream;
 import org.slf4j.Logger;
 
 public class NbtToSnbt implements DataProvider {
@@ -81,17 +82,20 @@ public class NbtToSnbt implements DataProvider {
    @Nullable
    public static Path convertStructure(CachedOutput var0, Path var1, String var2, Path var3) {
       try {
-         Path var6;
-         try (InputStream var4 = Files.newInputStream(var1)) {
-            Path var5 = var3.resolve(var2 + ".snbt");
-            writeSnbt(var0, var5, NbtUtils.structureToSnbt(NbtIo.readCompressed(var4, NbtAccounter.unlimitedHeap())));
+         Path var7;
+         try (
+            InputStream var4 = Files.newInputStream(var1);
+            FastBufferedInputStream var5 = new FastBufferedInputStream(var4);
+         ) {
+            Path var6 = var3.resolve(var2 + ".snbt");
+            writeSnbt(var0, var6, NbtUtils.structureToSnbt(NbtIo.readCompressed(var5, NbtAccounter.unlimitedHeap())));
             LOGGER.info("Converted {} from NBT to SNBT", var2);
-            var6 = var5;
+            var7 = var6;
          }
 
-         return var6;
-      } catch (IOException var9) {
-         LOGGER.error("Couldn't convert {} from NBT to SNBT at {}", new Object[]{var2, var1, var9});
+         return var7;
+      } catch (IOException var12) {
+         LOGGER.error("Couldn't convert {} from NBT to SNBT at {}", new Object[]{var2, var1, var12});
          return null;
       }
    }

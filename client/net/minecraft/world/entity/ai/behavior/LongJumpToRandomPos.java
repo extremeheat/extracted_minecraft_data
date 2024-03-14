@@ -19,6 +19,7 @@ import net.minecraft.util.random.WeightedEntry;
 import net.minecraft.util.random.WeightedRandom;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
@@ -37,7 +38,7 @@ public class LongJumpToRandomPos<E extends Mob> extends Behavior<E> {
    private final UniformInt timeBetweenLongJumps;
    protected final int maxLongJumpHeight;
    protected final int maxLongJumpWidth;
-   protected final float maxJumpVelocity;
+   protected final float maxJumpVelocityMultiplier;
    protected List<LongJumpToRandomPos.PossibleJump> jumpCandidates = Lists.newArrayList();
    protected Optional<Vec3> initialPosition = Optional.empty();
    @Nullable
@@ -54,8 +55,7 @@ public class LongJumpToRandomPos<E extends Mob> extends Behavior<E> {
    public static <E extends Mob> boolean defaultAcceptableLandingSpot(E var0, BlockPos var1) {
       Level var2 = var0.level();
       BlockPos var3 = var1.below();
-      return var2.getBlockState(var3).isSolidRender(var2, var3)
-         && var0.getPathfindingMalus(WalkNodeEvaluator.getBlockPathTypeStatic(var2, var1.mutable())) == 0.0F;
+      return var2.getBlockState(var3).isSolidRender(var2, var3) && var0.getPathfindingMalus(WalkNodeEvaluator.getPathTypeStatic(var0, var1)) == 0.0F;
    }
 
    public LongJumpToRandomPos(UniformInt var1, int var2, int var3, float var4, Function<E, SoundEvent> var5, BiPredicate<E, BlockPos> var6) {
@@ -73,7 +73,7 @@ public class LongJumpToRandomPos<E extends Mob> extends Behavior<E> {
       this.timeBetweenLongJumps = var1;
       this.maxLongJumpHeight = var2;
       this.maxLongJumpWidth = var3;
-      this.maxJumpVelocity = var4;
+      this.maxJumpVelocityMultiplier = var4;
       this.getJumpSound = var5;
       this.acceptableLandingSpot = var6;
    }
@@ -180,11 +180,12 @@ public class LongJumpToRandomPos<E extends Mob> extends Behavior<E> {
    protected Vec3 calculateOptimalJumpVector(Mob var1, Vec3 var2) {
       ArrayList var3 = Lists.newArrayList(ALLOWED_ANGLES);
       Collections.shuffle(var3);
+      float var4 = (float)(var1.getAttributeValue(Attributes.JUMP_STRENGTH) * (double)this.maxJumpVelocityMultiplier);
 
-      for(int var5 : var3) {
-         Optional var6 = LongJumpUtil.calculateJumpVectorForAngle(var1, var2, this.maxJumpVelocity, var5, true);
-         if (var6.isPresent()) {
-            return (Vec3)var6.get();
+      for(int var6 : var3) {
+         Optional var7 = LongJumpUtil.calculateJumpVectorForAngle(var1, var2, var4, var6, true);
+         if (var7.isPresent()) {
+            return (Vec3)var7.get();
          }
       }
 

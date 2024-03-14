@@ -38,10 +38,10 @@ public class SwizzleArgument implements ArgumentType<EnumSet<Direction.Axis>> {
             case 'x' -> Direction.Axis.X;
             case 'y' -> Direction.Axis.Y;
             case 'z' -> Direction.Axis.Z;
-            default -> throw ERROR_INVALID.create();
+            default -> throw ERROR_INVALID.createWithContext(var1);
          };
          if (var2.contains(var4)) {
-            throw ERROR_INVALID.create();
+            throw ERROR_INVALID.createWithContext(var1);
          }
 
          var2.add(var4);

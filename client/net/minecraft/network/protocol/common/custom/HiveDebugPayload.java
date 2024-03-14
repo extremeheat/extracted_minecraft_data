@@ -2,13 +2,14 @@ package net.minecraft.network.protocol.common.custom;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.codec.StreamCodec;
 
-public record HiveDebugPayload(HiveDebugPayload.HiveInfo b) implements CustomPacketPayload {
+public record HiveDebugPayload(HiveDebugPayload.HiveInfo c) implements CustomPacketPayload {
    private final HiveDebugPayload.HiveInfo hiveInfo;
-   public static final ResourceLocation ID = new ResourceLocation("debug/hive");
+   public static final StreamCodec<FriendlyByteBuf, HiveDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(HiveDebugPayload::write, HiveDebugPayload::new);
+   public static final CustomPacketPayload.Type<HiveDebugPayload> TYPE = CustomPacketPayload.createType("debug/hive");
 
-   public HiveDebugPayload(FriendlyByteBuf var1) {
+   private HiveDebugPayload(FriendlyByteBuf var1) {
       this(new HiveDebugPayload.HiveInfo(var1));
    }
 
@@ -17,14 +18,13 @@ public record HiveDebugPayload(HiveDebugPayload.HiveInfo b) implements CustomPac
       this.hiveInfo = var1;
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       this.hiveInfo.write(var1);
    }
 
    @Override
-   public ResourceLocation id() {
-      return ID;
+   public CustomPacketPayload.Type<HiveDebugPayload> type() {
+      return TYPE;
    }
 
    public static record HiveInfo(BlockPos a, String b, int c, int d, boolean e) {

@@ -10,17 +10,14 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import net.minecraft.commands.CommandBuildContext;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.world.item.Item;
 
 public class ItemArgument implements ArgumentType<ItemInput> {
    private static final Collection<String> EXAMPLES = Arrays.asList("stick", "minecraft:stick", "stick{foo=bar}");
-   private final HolderLookup<Item> items;
+   private final ItemParser parser;
 
    public ItemArgument(CommandBuildContext var1) {
       super();
-      this.items = var1.holderLookup(Registries.ITEM);
+      this.parser = new ItemParser(var1);
    }
 
    public static ItemArgument item(CommandBuildContext var0) {
@@ -28,8 +25,8 @@ public class ItemArgument implements ArgumentType<ItemInput> {
    }
 
    public ItemInput parse(StringReader var1) throws CommandSyntaxException {
-      ItemParser.ItemResult var2 = ItemParser.parseForItem(this.items, var1);
-      return new ItemInput(var2.item(), var2.nbt());
+      ItemParser.ItemResult var2 = this.parser.parse(var1);
+      return new ItemInput(var2.item(), var2.components());
    }
 
    public static <S> ItemInput getItem(CommandContext<S> var0, String var1) {
@@ -37,7 +34,7 @@ public class ItemArgument implements ArgumentType<ItemInput> {
    }
 
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {
-      return ItemParser.fillSuggestions(this.items, var2, false);
+      return this.parser.fillSuggestions(var2);
    }
 
    public Collection<String> getExamples() {

@@ -4,13 +4,14 @@ import java.util.Collection;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.component.DebugStickState;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -22,11 +23,6 @@ import net.minecraft.world.level.block.state.properties.Property;
 public class DebugStickItem extends Item {
    public DebugStickItem(Item.Properties var1) {
       super(var1);
-   }
-
-   @Override
-   public boolean isFoil(ItemStack var1) {
-      return true;
    }
 
    @Override
@@ -56,33 +52,34 @@ public class DebugStickItem extends Item {
       if (!var1.canUseGameMasterBlocks()) {
          return false;
       } else {
-         Block var7 = var2.getBlock();
-         StateDefinition var8 = var7.getStateDefinition();
+         Holder var7 = var2.getBlockHolder();
+         StateDefinition var8 = ((Block)var7.value()).getStateDefinition();
          Collection var9 = var8.getProperties();
-         String var10 = BuiltInRegistries.BLOCK.getKey(var7).toString();
          if (var9.isEmpty()) {
-            message(var1, Component.translatable(this.getDescriptionId() + ".empty", var10));
+            message(var1, Component.translatable(this.getDescriptionId() + ".empty", var7.getRegisteredName()));
             return false;
          } else {
-            CompoundTag var11 = var6.getOrCreateTagElement("DebugProperty");
-            String var12 = var11.getString(var10);
-            Property var13 = var8.getProperty(var12);
-            if (var5) {
-               if (var13 == null) {
-                  var13 = (Property)var9.iterator().next();
+            DebugStickState var10 = var6.get(DataComponents.DEBUG_STICK_STATE);
+            if (var10 == null) {
+               return false;
+            } else {
+               Property var11 = var10.properties().get(var7);
+               if (var5) {
+                  if (var11 == null) {
+                     var11 = (Property)var9.iterator().next();
+                  }
+
+                  BlockState var12 = cycleState(var2, var11, var1.isSecondaryUseActive());
+                  var3.setBlock(var4, var12, 18);
+                  message(var1, Component.translatable(this.getDescriptionId() + ".update", var11.getName(), getNameHelper(var12, var11)));
+               } else {
+                  var11 = getRelative(var9, var11, var1.isSecondaryUseActive());
+                  var6.set(DataComponents.DEBUG_STICK_STATE, var10.withProperty(var7, var11));
+                  message(var1, Component.translatable(this.getDescriptionId() + ".select", var11.getName(), getNameHelper(var2, var11)));
                }
 
-               BlockState var14 = cycleState(var2, var13, var1.isSecondaryUseActive());
-               var3.setBlock(var4, var14, 18);
-               message(var1, Component.translatable(this.getDescriptionId() + ".update", var13.getName(), getNameHelper(var14, var13)));
-            } else {
-               var13 = getRelative(var9, var13, var1.isSecondaryUseActive());
-               String var16 = var13.getName();
-               var11.putString(var10, var16);
-               message(var1, Component.translatable(this.getDescriptionId() + ".select", var16, getNameHelper(var2, var13)));
+               return true;
             }
-
-            return true;
          }
       }
    }

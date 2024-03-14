@@ -51,18 +51,18 @@ public class PowderSnowBlock extends Block implements BucketPickup {
    }
 
    @Override
-   public boolean skipRendering(BlockState var1, BlockState var2, Direction var3) {
+   protected boolean skipRendering(BlockState var1, BlockState var2, Direction var3) {
       return var2.is(this) ? true : super.skipRendering(var1, var2, var3);
    }
 
    @Override
-   public VoxelShape getOcclusionShape(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected VoxelShape getOcclusionShape(BlockState var1, BlockGetter var2, BlockPos var3) {
       return Shapes.empty();
    }
 
    @Override
-   public void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
-      if (!(var4 instanceof LivingEntity) || var4.getFeetBlockState().is(this)) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
+      if (!(var4 instanceof LivingEntity) || var4.getInBlockState().is(this)) {
          var4.makeStuckInBlock(var1, new Vec3(0.8999999761581421, 1.5, 0.8999999761581421));
          if (var2.isClientSide) {
             RandomSource var5 = var2.getRandom();
@@ -105,7 +105,7 @@ public class PowderSnowBlock extends Block implements BucketPickup {
    // $VF: Could not properly define all variable types!
    // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
-   public VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       if (var4 instanceof EntityCollisionContext var5) {
          Entity var6 = var5.getEntity();
          if (var6 != null) {
@@ -124,7 +124,7 @@ public class PowderSnowBlock extends Block implements BucketPickup {
    }
 
    @Override
-   public VoxelShape getVisualShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getVisualShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return Shapes.empty();
    }
 
@@ -152,7 +152,7 @@ public class PowderSnowBlock extends Block implements BucketPickup {
    }
 
    @Override
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
+   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return true;
    }
 }

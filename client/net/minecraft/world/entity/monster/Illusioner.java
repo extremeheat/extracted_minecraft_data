@@ -2,7 +2,6 @@ package net.minecraft.world.entity.monster;
 
 import javax.annotation.Nullable;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.Difficulty;
@@ -10,13 +9,11 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -79,16 +76,9 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
    }
 
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
       this.setItemSlot(EquipmentSlot.MAINHAND, new ItemStack(Items.BOW));
-      return super.finalizeSpawn(var1, var2, var3, var4, var5);
-   }
-
-   @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
+      return super.finalizeSpawn(var1, var2, var3, var4);
    }
 
    @Override
@@ -153,17 +143,6 @@ public class Illusioner extends SpellcasterIllager implements RangedAttackMob {
          }
 
          return var4;
-      }
-   }
-
-   @Override
-   public boolean isAlliedTo(Entity var1) {
-      if (super.isAlliedTo(var1)) {
-         return true;
-      } else if (var1 instanceof LivingEntity && ((LivingEntity)var1).getMobType() == MobType.ILLAGER) {
-         return this.getTeam() == null && var1.getTeam() == null;
-      } else {
-         return false;
       }
    }
 

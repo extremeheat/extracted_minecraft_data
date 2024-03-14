@@ -19,7 +19,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.world.level.ChunkPos;
 
 public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickContainerAccess<T> {
-   private final Queue<ScheduledTick<T>> tickQueue = new PriorityQueue<>(ScheduledTick.DRAIN_ORDER);
+   private final Queue<ScheduledTick<T>> tickQueue = new PriorityQueue(ScheduledTick.DRAIN_ORDER);
    @Nullable
    private List<SavedTick<T>> pendingTicks;
    private final Set<ScheduledTick<?>> ticksPerPosition = new ObjectOpenCustomHashSet(ScheduledTick.UNIQUE_TICK_HASH);
@@ -35,7 +35,7 @@ public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickCon
       this.pendingTicks = var1;
 
       for(SavedTick var3 : var1) {
-         this.ticksPerPosition.add(ScheduledTick.probe(var3.type(), var3.pos()));
+         this.ticksPerPosition.add(ScheduledTick.<Object>probe(var3.type(), var3.pos()));
       }
    }
 
@@ -45,12 +45,12 @@ public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickCon
 
    @Nullable
    public ScheduledTick<T> peek() {
-      return this.tickQueue.peek();
+      return (ScheduledTick<T>)this.tickQueue.peek();
    }
 
    @Nullable
    public ScheduledTick<T> poll() {
-      ScheduledTick var1 = this.tickQueue.poll();
+      ScheduledTick var1 = (ScheduledTick)this.tickQueue.poll();
       if (var1 != null) {
          this.ticksPerPosition.remove(var1);
       }
@@ -74,7 +74,7 @@ public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickCon
 
    @Override
    public boolean hasScheduledTick(BlockPos var1, T var2) {
-      return this.ticksPerPosition.contains(ScheduledTick.probe(var2, var1));
+      return this.ticksPerPosition.contains(ScheduledTick.<Object>probe(var2, var1));
    }
 
    public void removeIf(Predicate<ScheduledTick<T>> var1) {
@@ -82,7 +82,7 @@ public class LevelChunkTicks<T> implements SerializableTickContainer<T>, TickCon
 
       while(var2.hasNext()) {
          ScheduledTick var3 = (ScheduledTick)var2.next();
-         if (var1.test(var3)) {
+         if (var1.test((T)var3)) {
             var2.remove();
             this.ticksPerPosition.remove(var3);
          }

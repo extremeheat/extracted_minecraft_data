@@ -12,6 +12,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -40,9 +41,9 @@ public class CandleCakeBlock extends AbstractCandleBlock {
    protected static final VoxelShape CAKE_SHAPE = Block.box(1.0, 0.0, 1.0, 15.0, 8.0, 15.0);
    protected static final VoxelShape CANDLE_SHAPE = Block.box(7.0, 8.0, 7.0, 9.0, 14.0, 9.0);
    protected static final VoxelShape SHAPE = Shapes.or(CAKE_SHAPE, CANDLE_SHAPE);
-   private static final Map<Block, CandleCakeBlock> BY_CANDLE = Maps.newHashMap();
+   private static final Map<CandleBlock, CandleCakeBlock> BY_CANDLE = Maps.newHashMap();
    private static final Iterable<Vec3> PARTICLE_OFFSETS = ImmutableList.of(new Vec3(0.5, 1.0, 0.5));
-   private final Block candleBlock;
+   private final CandleBlock candleBlock;
 
    @Override
    public MapCodec<CandleCakeBlock> codec() {
@@ -52,8 +53,12 @@ public class CandleCakeBlock extends AbstractCandleBlock {
    protected CandleCakeBlock(Block var1, BlockBehaviour.Properties var2) {
       super(var2);
       this.registerDefaultState(this.stateDefinition.any().setValue(LIT, Boolean.valueOf(false)));
-      BY_CANDLE.put(var1, this);
-      this.candleBlock = var1;
+      if (var1 instanceof CandleBlock var3) {
+         BY_CANDLE.put((CandleBlock)var3, this);
+         this.candleBlock = (CandleBlock)var3;
+      } else {
+         throw new IllegalArgumentException("Expected block to be of " + CandleBlock.class + " was " + var1.getClass());
+      }
    }
 
    @Override
@@ -62,26 +67,30 @@ public class CandleCakeBlock extends AbstractCandleBlock {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 
    @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
-      ItemStack var7 = var4.getItemInHand(var5);
-      if (var7.is(Items.FLINT_AND_STEEL) || var7.is(Items.FIRE_CHARGE)) {
-         return InteractionResult.PASS;
-      } else if (candleHit(var6) && var4.getItemInHand(var5).isEmpty() && var1.getValue(LIT)) {
-         extinguish(var4, var1, var2, var3);
-         return InteractionResult.sidedSuccess(var2.isClientSide);
+   protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
+      if (var1.is(Items.FLINT_AND_STEEL) || var1.is(Items.FIRE_CHARGE)) {
+         return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
+      } else if (candleHit(var7) && var1.isEmpty() && var2.getValue(LIT)) {
+         extinguish(var5, var2, var3, var4);
+         return ItemInteractionResult.sidedSuccess(var3.isClientSide);
       } else {
-         InteractionResult var8 = CakeBlock.eat(var2, var3, Blocks.CAKE.defaultBlockState(), var4);
-         if (var8.consumesAction()) {
-            dropResources(var1, var2, var3);
-         }
-
-         return var8;
+         return super.useItemOn(var1, var2, var3, var4, var5, var6, var7);
       }
+   }
+
+   @Override
+   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
+      InteractionResult var6 = CakeBlock.eat(var2, var3, Blocks.CAKE.defaultBlockState(), var4);
+      if (var6.consumesAction()) {
+         dropResources(var1, var2, var3);
+      }
+
+      return var6;
    }
 
    private static boolean candleHit(BlockHitResult var0) {
@@ -99,31 +108,31 @@ public class CandleCakeBlock extends AbstractCandleBlock {
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       return var2 == Direction.DOWN && !var1.canSurvive(var4, var5) ? Blocks.AIR.defaultBlockState() : super.updateShape(var1, var2, var3, var4, var5, var6);
    }
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       return var2.getBlockState(var3.below()).isSolid();
    }
 
    @Override
-   public int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
+   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
       return CakeBlock.FULL_CAKE_SIGNAL;
    }
 
    @Override
-   public boolean hasAnalogOutputSignal(BlockState var1) {
+   protected boolean hasAnalogOutputSignal(BlockState var1) {
       return true;
    }
 
    @Override
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
+   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
    }
 
-   public static BlockState byCandle(Block var0) {
+   public static BlockState byCandle(CandleBlock var0) {
       return BY_CANDLE.get(var0).defaultBlockState();
    }
 

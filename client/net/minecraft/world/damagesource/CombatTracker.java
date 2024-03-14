@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nullable;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -55,7 +56,7 @@ public class CombatTracker {
 
    private Component getMessageForAssistedFall(Entity var1, Component var2, String var3, String var4) {
       ItemStack var5 = var1 instanceof LivingEntity var6 ? var6.getMainHandItem() : ItemStack.EMPTY;
-      return !var5.isEmpty() && var5.hasCustomHoverName()
+      return !var5.isEmpty() && var5.has(DataComponents.CUSTOM_NAME)
          ? Component.translatable(var3, this.mob.getDisplayName(), var2, var5.getDisplayName())
          : Component.translatable(var4, this.mob.getDisplayName(), var2);
    }
@@ -88,7 +89,7 @@ public class CombatTracker {
       if (this.entries.isEmpty()) {
          return Component.translatable("death.attack.generic", this.mob.getDisplayName());
       } else {
-         CombatEntry var1 = this.entries.get(this.entries.size() - 1);
+         CombatEntry var1 = (CombatEntry)this.entries.get(this.entries.size() - 1);
          DamageSource var2 = var1.source();
          CombatEntry var3 = this.getMostSignificantFall();
          DeathMessageType var4 = var2.type().deathMessageType();
@@ -112,8 +113,8 @@ public class CombatTracker {
       float var4 = 0.0F;
 
       for(int var5 = 0; var5 < this.entries.size(); ++var5) {
-         CombatEntry var6 = this.entries.get(var5);
-         CombatEntry var7 = var5 > 0 ? this.entries.get(var5 - 1) : null;
+         CombatEntry var6 = (CombatEntry)this.entries.get(var5);
+         CombatEntry var7 = var5 > 0 ? (CombatEntry)this.entries.get(var5 - 1) : null;
          DamageSource var8 = var6.source();
          boolean var9 = var8.is(DamageTypeTags.ALWAYS_MOST_SIGNIFICANT_FALL);
          float var10 = var9 ? 3.4028235E38F : var6.fallDistance();

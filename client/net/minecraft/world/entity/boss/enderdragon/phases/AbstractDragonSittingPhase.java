@@ -17,7 +17,7 @@ public abstract class AbstractDragonSittingPhase extends AbstractDragonPhaseInst
    @Override
    public float onHurt(DamageSource var1, float var2) {
       if (var1.getDirectEntity() instanceof AbstractArrow) {
-         var1.getDirectEntity().setSecondsOnFire(1);
+         var1.getDirectEntity().igniteForSeconds(1);
          return 0.0F;
       } else {
          return super.onHurt(var1, var2);

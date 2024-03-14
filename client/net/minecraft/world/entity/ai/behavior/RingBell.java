@@ -24,7 +24,7 @@ public class RingBell {
                if (var2.random.nextFloat() <= 0.95F) {
                   return false;
                } else {
-                  BlockPos var6 = var0.<GlobalPos>get(var1).pos();
+                  BlockPos var6 = ((GlobalPos)var0.get(var1)).pos();
                   if (var6.closerThan(var3.blockPosition(), 3.0)) {
                      BlockState var7 = var2.getBlockState(var6);
                      if (var7.is(Blocks.BELL)) {

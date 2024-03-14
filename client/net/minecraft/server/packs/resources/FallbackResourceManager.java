@@ -64,7 +64,7 @@ public class FallbackResourceManager implements ResourceManager {
    @Override
    public Optional<Resource> getResource(ResourceLocation var1) {
       for(int var2 = this.fallbacks.size() - 1; var2 >= 0; --var2) {
-         FallbackResourceManager.PackEntry var3 = this.fallbacks.get(var2);
+         FallbackResourceManager.PackEntry var3 = (FallbackResourceManager.PackEntry)this.fallbacks.get(var2);
          PackResources var4 = var3.resources;
          if (var4 != null) {
             IoSupplier var5 = var4.getResource(this.type, var1);
@@ -99,7 +99,7 @@ public class FallbackResourceManager implements ResourceManager {
       String var5 = null;
 
       for(int var6 = this.fallbacks.size() - 1; var6 >= 0; --var6) {
-         FallbackResourceManager.PackEntry var7 = this.fallbacks.get(var6);
+         FallbackResourceManager.PackEntry var7 = (FallbackResourceManager.PackEntry)this.fallbacks.get(var6);
          PackResources var8 = var7.resources;
          if (var8 != null) {
             IoSupplier var9 = var8.getResource(this.type, var1);
@@ -155,7 +155,7 @@ public class FallbackResourceManager implements ResourceManager {
       int var5 = this.fallbacks.size();
 
       for(int var6 = 0; var6 < var5; ++var6) {
-         FallbackResourceManager.PackEntry var7 = this.fallbacks.get(var6);
+         FallbackResourceManager.PackEntry var7 = (FallbackResourceManager.PackEntry)this.fallbacks.get(var6);
          var7.filterAll(var3.keySet());
          var7.filterAll(var4.keySet());
          PackResources var8 = var7.resources;
@@ -208,7 +208,7 @@ public class FallbackResourceManager implements ResourceManager {
          ResourceLocation var3 = getMetadataLocation(var1);
 
          for(int var4 = this.fallbacks.size() - 1; var4 >= var2; --var4) {
-            FallbackResourceManager.PackEntry var5 = this.fallbacks.get(var4);
+            FallbackResourceManager.PackEntry var5 = (FallbackResourceManager.PackEntry)this.fallbacks.get(var4);
             PackResources var6 = var5.resources;
             if (var6 != null) {
                IoSupplier var7 = var6.getResource(this.type, var3);
@@ -267,13 +267,13 @@ public class FallbackResourceManager implements ResourceManager {
                      return;
                   }
    
-                  var4.computeIfAbsent(var5xx, FallbackResourceManager.EntryStack::new).metaSources.put(var5, var4x);
+                  ((FallbackResourceManager.EntryStack)var4.computeIfAbsent(var5xx, FallbackResourceManager.EntryStack::new)).metaSources.put(var5, var4x);
                } else {
                   if (!var3.test(var3x)) {
                      return;
                   }
    
-                  var4.computeIfAbsent(var3x, FallbackResourceManager.EntryStack::new)
+                  ((FallbackResourceManager.EntryStack)var4.computeIfAbsent(var3x, FallbackResourceManager.EntryStack::new))
                      .fileSources
                      .add(new FallbackResourceManager.ResourceWithSource(var5, var4x));
                }
@@ -325,7 +325,7 @@ public class FallbackResourceManager implements ResourceManager {
       final Map<PackResources, IoSupplier<InputStream>> metaSources;
 
       EntryStack(ResourceLocation var1) {
-         this(var1, FallbackResourceManager.getMetadataLocation(var1), new ArrayList<>(), new Object2ObjectArrayMap());
+         this(var1, FallbackResourceManager.getMetadataLocation(var1), new ArrayList(), new Object2ObjectArrayMap());
       }
 
       private EntryStack(

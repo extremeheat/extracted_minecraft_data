@@ -4,7 +4,7 @@ import com.mojang.serialization.MapCodec;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -13,12 +13,13 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -86,17 +87,17 @@ public class LecternBlock extends BaseEntityBlock {
    }
 
    @Override
-   public RenderShape getRenderShape(BlockState var1) {
+   protected RenderShape getRenderShape(BlockState var1) {
       return RenderShape.MODEL;
    }
 
    @Override
-   public VoxelShape getOcclusionShape(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected VoxelShape getOcclusionShape(BlockState var1, BlockGetter var2, BlockPos var3) {
       return SHAPE_COMMON;
    }
 
    @Override
-   public boolean useShapeForLightOcclusion(BlockState var1) {
+   protected boolean useShapeForLightOcclusion(BlockState var1) {
       return true;
    }
 
@@ -107,8 +108,8 @@ public class LecternBlock extends BaseEntityBlock {
       Player var4 = var1.getPlayer();
       boolean var5 = false;
       if (!var2.isClientSide && var4 != null && var4.canUseGameMasterBlocks()) {
-         CompoundTag var6 = BlockItem.getBlockEntityData(var3);
-         if (var6 != null && var6.contains("Book")) {
+         CustomData var6 = var3.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
+         if (var6.contains("Book")) {
             var5 = true;
          }
       }
@@ -117,12 +118,12 @@ public class LecternBlock extends BaseEntityBlock {
    }
 
    @Override
-   public VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE_COLLISION;
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       switch((Direction)var1.getValue(FACING)) {
          case NORTH:
             return SHAPE_NORTH;
@@ -138,12 +139,12 @@ public class LecternBlock extends BaseEntityBlock {
    }
 
    @Override
-   public BlockState rotate(BlockState var1, Rotation var2) {
+   protected BlockState rotate(BlockState var1, Rotation var2) {
       return var1.setValue(FACING, var2.rotate(var1.getValue(FACING)));
    }
 
    @Override
-   public BlockState mirror(BlockState var1, Mirror var2) {
+   protected BlockState mirror(BlockState var1, Mirror var2) {
       return var1.rotate(var2.getRotation(var1.getValue(FACING)));
    }
 
@@ -203,12 +204,12 @@ public class LecternBlock extends BaseEntityBlock {
    }
 
    @Override
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       changePowered(var2, var3, var1, false);
    }
 
    @Override
-   public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var1.is(var4.getBlock())) {
          if (var1.getValue(HAS_BOOK)) {
             this.popBook(var1, var2, var3);
@@ -241,27 +242,27 @@ public class LecternBlock extends BaseEntityBlock {
    }
 
    @Override
-   public boolean isSignalSource(BlockState var1) {
+   protected boolean isSignalSource(BlockState var1) {
       return true;
    }
 
    @Override
-   public int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
+   protected int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       return var1.getValue(POWERED) ? 15 : 0;
    }
 
    @Override
-   public int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
+   protected int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       return var4 == Direction.UP && var1.getValue(POWERED) ? 15 : 0;
    }
 
    @Override
-   public boolean hasAnalogOutputSignal(BlockState var1) {
+   protected boolean hasAnalogOutputSignal(BlockState var1) {
       return true;
    }
 
    @Override
-   public int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
+   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
       if (var1.getValue(HAS_BOOK)) {
          BlockEntity var4 = var2.getBlockEntity(var3);
          if (var4 instanceof LecternBlockEntity) {
@@ -273,7 +274,22 @@ public class LecternBlock extends BaseEntityBlock {
    }
 
    @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
+      if (var2.getValue(HAS_BOOK)) {
+         return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+      } else if (var1.is(ItemTags.LECTERN_BOOKS)) {
+         return tryPlaceBook(var5, var3, var4, var2, var1)
+            ? ItemInteractionResult.sidedSuccess(var3.isClientSide)
+            : ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
+      } else {
+         return var1.isEmpty() && var6 == InteractionHand.MAIN_HAND
+            ? ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION
+            : ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+      }
+   }
+
+   @Override
+   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       if (var1.getValue(HAS_BOOK)) {
          if (!var2.isClientSide) {
             this.openScreen(var2, var3, var4);
@@ -281,14 +297,13 @@ public class LecternBlock extends BaseEntityBlock {
 
          return InteractionResult.sidedSuccess(var2.isClientSide);
       } else {
-         ItemStack var7 = var4.getItemInHand(var5);
-         return !var7.isEmpty() && !var7.is(ItemTags.LECTERN_BOOKS) ? InteractionResult.CONSUME : InteractionResult.PASS;
+         return InteractionResult.CONSUME;
       }
    }
 
    @Nullable
    @Override
-   public MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
+   protected MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
       return !var1.getValue(HAS_BOOK) ? null : super.getMenuProvider(var1, var2, var3);
    }
 
@@ -301,7 +316,7 @@ public class LecternBlock extends BaseEntityBlock {
    }
 
    @Override
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
+   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
    }
 }

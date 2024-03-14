@@ -13,6 +13,7 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.sounds.SoundEvent;
@@ -55,7 +56,7 @@ public class Explosion {
    private final ExplosionDamageCalculator damageCalculator;
    private final ParticleOptions smallExplosionParticles;
    private final ParticleOptions largeExplosionParticles;
-   private final SoundEvent explosionSound;
+   private final Holder<SoundEvent> explosionSound;
    private final ObjectArrayList<BlockPos> toBlow = new ObjectArrayList();
    private final Map<Player, Vec3> hitPlayers = Maps.newHashMap();
 
@@ -74,7 +75,7 @@ public class Explosion {
       Explosion.BlockInteraction var11,
       ParticleOptions var12,
       ParticleOptions var13,
-      SoundEvent var14
+      Holder<SoundEvent> var14
    ) {
       this(var1, var2, getDefaultDamageSource(var1, var2), null, var3, var5, var7, var9, false, var11, var12, var13, var14);
       this.toBlow.addAll(var10);
@@ -126,7 +127,7 @@ public class Explosion {
       Explosion.BlockInteraction var13,
       ParticleOptions var14,
       ParticleOptions var15,
-      SoundEvent var16
+      Holder<SoundEvent> var16
    ) {
       super();
       this.level = var1;
@@ -264,7 +265,7 @@ public class Explosion {
                      var13.hurt(this.damageSource, this.damageCalculator.getEntityDamageAmount(this, var13));
                   }
 
-                  double var48 = (1.0 - var40) * (double)getSeenPercent(var11, var13);
+                  double var48 = (1.0 - var40) * (double)getSeenPercent(var11, var13) * (double)this.damageCalculator.getKnockbackMultiplier();
                   double var26;
                   if (var13 instanceof LivingEntity var28) {
                      var26 = ProtectionEnchantment.getExplosionKnockbackAfterDampener((LivingEntity)var28, var48);
@@ -282,6 +283,8 @@ public class Explosion {
                      && (!((Player)var29).isCreative() || !((Player)var29).getAbilities().flying)) {
                      this.hitPlayers.put((Player)var29, var49);
                   }
+
+                  var13.onExplosionHit(this.source);
                }
             }
          }
@@ -295,7 +298,7 @@ public class Explosion {
                this.x,
                this.y,
                this.z,
-               this.explosionSound,
+               this.explosionSound.value(),
                SoundSource.BLOCKS,
                4.0F,
                (1.0F + (this.level.random.nextFloat() - this.level.random.nextFloat()) * 0.2F) * 0.7F,
@@ -422,7 +425,7 @@ public class Explosion {
       return this.largeExplosionParticles;
    }
 
-   public SoundEvent getExplosionSound() {
+   public Holder<SoundEvent> getExplosionSound() {
       return this.explosionSound;
    }
 

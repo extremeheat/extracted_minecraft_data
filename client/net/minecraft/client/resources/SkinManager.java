@@ -66,11 +66,11 @@ public class SkinManager {
    public Supplier<PlayerSkin> lookupInsecure(GameProfile var1) {
       CompletableFuture var2 = this.getOrLoad(var1);
       PlayerSkin var3 = DefaultPlayerSkin.get(var1);
-      return () -> var2.getNow(var3);
+      return () -> (PlayerSkin)var2.getNow(var3);
    }
 
    public PlayerSkin getInsecureSkin(GameProfile var1) {
-      PlayerSkin var2 = this.getOrLoad(var1).getNow(null);
+      PlayerSkin var2 = (PlayerSkin)this.getOrLoad(var1).getNow(null);
       return var2 != null ? var2 : DefaultPlayerSkin.get(var1);
    }
 

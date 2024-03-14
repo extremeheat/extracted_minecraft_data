@@ -334,10 +334,10 @@ public class EntitySelectorOptions {
             CompoundTag var2 = new TagParser(var0.getReader()).readStruct();
             var0.addPredicate(var2x -> {
                CompoundTag var3 = var2x.saveWithoutId(new CompoundTag());
-               if (var2x instanceof ServerPlayer) {
-                  ItemStack var4 = ((ServerPlayer)var2x).getInventory().getSelected();
-                  if (!var4.isEmpty()) {
-                     var3.put("SelectedItem", var4.save(new CompoundTag()));
+               if (var2x instanceof ServerPlayer var4) {
+                  ItemStack var5 = var4.getInventory().getSelected();
+                  if (!var5.isEmpty()) {
+                     var3.put("SelectedItem", var5.save(var4.registryAccess()));
                   }
                }
 
@@ -506,7 +506,7 @@ public class EntitySelectorOptions {
    }
 
    public static EntitySelectorOptions.Modifier get(EntitySelectorParser var0, String var1, int var2) throws CommandSyntaxException {
-      EntitySelectorOptions.Option var3 = OPTIONS.get(var1);
+      EntitySelectorOptions.Option var3 = (EntitySelectorOptions.Option)OPTIONS.get(var1);
       if (var3 != null) {
          if (var3.canUse.test(var0)) {
             return var3.modifier;

@@ -101,7 +101,7 @@ public class StructureTemplate {
                BlockEntity var16 = var1.getBlockEntity(var13);
                StructureTemplate.StructureBlockInfo var17;
                if (var16 != null) {
-                  var17 = new StructureTemplate.StructureBlockInfo(var14, var15, var16.saveWithId());
+                  var17 = new StructureTemplate.StructureBlockInfo(var14, var15, var16.saveWithId(var1.registryAccess()));
                } else {
                   var17 = new StructureTemplate.StructureBlockInfo(var14, var15, null);
                }
@@ -139,7 +139,7 @@ public class StructureTemplate {
    private static List<StructureTemplate.StructureBlockInfo> buildInfoList(
       List<StructureTemplate.StructureBlockInfo> var0, List<StructureTemplate.StructureBlockInfo> var1, List<StructureTemplate.StructureBlockInfo> var2
    ) {
-      Comparator var3 = Comparator.<StructureTemplate.StructureBlockInfo>comparingInt(var0x -> var0x.pos.getY())
+      Comparator var3 = Comparator.comparingInt(var0x -> var0x.pos.getY())
          .thenComparingInt(var0x -> var0x.pos.getX())
          .thenComparingInt(var0x -> var0x.pos.getZ());
       var0.sort(var3);
@@ -248,7 +248,7 @@ public class StructureTemplate {
                               var20.nbt.putLong("LootTableSeed", var5.nextLong());
                            }
 
-                           var39.load(var20.nbt);
+                           var39.load(var20.nbt, var1.registryAccess());
                         }
                      }
 
@@ -344,20 +344,26 @@ public class StructureTemplate {
       }
    }
 
+   public static void updateShapeAtEdge(LevelAccessor var0, int var1, DiscreteVoxelShape var2, BlockPos var3) {
+      updateShapeAtEdge(var0, var1, var2, var3.getX(), var3.getY(), var3.getZ());
+   }
+
    public static void updateShapeAtEdge(LevelAccessor var0, int var1, DiscreteVoxelShape var2, int var3, int var4, int var5) {
-      var2.forAllFaces((var5x, var6, var7, var8) -> {
-         BlockPos var9 = new BlockPos(var3 + var6, var4 + var7, var5 + var8);
-         BlockPos var10 = var9.relative(var5x);
-         BlockState var11 = var0.getBlockState(var9);
-         BlockState var12 = var0.getBlockState(var10);
-         BlockState var13 = var11.updateShape(var5x, var12, var0, var9, var10);
+      BlockPos.MutableBlockPos var6 = new BlockPos.MutableBlockPos();
+      BlockPos.MutableBlockPos var7 = new BlockPos.MutableBlockPos();
+      var2.forAllFaces((var7x, var8, var9, var10) -> {
+         var6.set(var3 + var8, var4 + var9, var5 + var10);
+         var7.setWithOffset(var6, var7x);
+         BlockState var11 = var0.getBlockState(var6);
+         BlockState var12 = var0.getBlockState(var7);
+         BlockState var13 = var11.updateShape(var7x, var12, var0, var6, var7);
          if (var11 != var13) {
-            var0.setBlock(var9, var13, var1 & -2);
+            var0.setBlock(var6, var13, var1 & -2);
          }
 
-         BlockState var14 = var12.updateShape(var5x.getOpposite(), var13, var0, var10, var9);
+         BlockState var14 = var12.updateShape(var7x.getOpposite(), var13, var0, var7, var6);
          if (var12 != var14) {
-            var0.setBlock(var10, var14, var1 & -2);
+            var0.setBlock(var7, var14, var1 & -2);
          }
       });
    }
@@ -403,15 +409,15 @@ public class StructureTemplate {
             var14.add(DoubleTag.valueOf(var13.z));
             var11.put("Pos", var14);
             var11.remove("UUID");
-            createEntityIgnoreException(var1, var11).ifPresent(var6x -> {
-               float var7xx = var6x.rotate(var4);
-               var7xx += var6x.mirror(var3) - var6x.getYRot();
-               var6x.moveTo(var13.x, var13.y, var13.z, var7xx, var6x.getXRot());
-               if (var7 && var6x instanceof Mob) {
-                  ((Mob)var6x).finalizeSpawn(var1, var1.getCurrentDifficultyAt(BlockPos.containing(var13)), MobSpawnType.STRUCTURE, null, var11);
+            createEntityIgnoreException(var1, var11).ifPresent(var5x -> {
+               float var6xx = var5x.rotate(var4);
+               var6xx += var5x.mirror(var3) - var5x.getYRot();
+               var5x.moveTo(var13.x, var13.y, var13.z, var6xx, var5x.getXRot());
+               if (var7 && var5x instanceof Mob) {
+                  ((Mob)var5x).finalizeSpawn(var1, var1.getCurrentDifficultyAt(BlockPos.containing(var13)), MobSpawnType.STRUCTURE, null);
                }
 
-               var1.addFreshEntityWithPassengers(var6x);
+               var1.addFreshEntityWithPassengers(var5x);
             });
          }
       }
@@ -568,7 +574,7 @@ public class StructureTemplate {
 
             for(int var10 = 1; var10 < this.palettes.size(); ++var10) {
                StructureTemplate.SimplePalette var11 = (StructureTemplate.SimplePalette)var2.get(var10);
-               var11.addMapping(this.palettes.get(var10).blocks().get(var6).state, var9);
+               var11.addMapping(((StructureTemplate.StructureBlockInfo)this.palettes.get(var10).blocks().get(var6)).state, var9);
             }
          }
 
@@ -764,7 +770,6 @@ public class StructureTemplate {
          this.nbt = var3;
       }
 
-      @Override
       public String toString() {
          return String.format(Locale.ROOT, "<StructureBlockInfo | %s | %s | %s>", this.pos, this.state, this.nbt);
       }

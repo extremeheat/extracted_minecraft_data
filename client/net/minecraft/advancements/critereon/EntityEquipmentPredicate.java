@@ -5,20 +5,23 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import javax.annotation.Nullable;
+import net.minecraft.core.HolderGetter;
+import net.minecraft.core.component.DataComponentPredicate;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.block.entity.BannerPattern;
 
 public record EntityEquipmentPredicate(
+   Optional<ItemPredicate> b,
    Optional<ItemPredicate> c,
    Optional<ItemPredicate> d,
    Optional<ItemPredicate> e,
    Optional<ItemPredicate> f,
-   Optional<ItemPredicate> g,
-   Optional<ItemPredicate> h
+   Optional<ItemPredicate> g
 ) {
    private final Optional<ItemPredicate> head;
    private final Optional<ItemPredicate> chest;
@@ -37,9 +40,6 @@ public record EntityEquipmentPredicate(
             )
             .apply(var0, EntityEquipmentPredicate::new)
    );
-   public static final EntityEquipmentPredicate CAPTAIN = EntityEquipmentPredicate.Builder.equipment()
-      .head(ItemPredicate.Builder.item().of(Items.WHITE_BANNER).hasNbt(Raid.getLeaderBannerInstance().getTag()))
-      .build();
 
    public EntityEquipmentPredicate(
       Optional<ItemPredicate> var1,
@@ -58,22 +58,30 @@ public record EntityEquipmentPredicate(
       this.offhand = var6;
    }
 
+   public static EntityEquipmentPredicate captainPredicate(HolderGetter<BannerPattern> var0) {
+      return EntityEquipmentPredicate.Builder.equipment()
+         .head(
+            ItemPredicate.Builder.item().of(Items.WHITE_BANNER).hasComponents(DataComponentPredicate.allOf(Raid.getLeaderBannerInstance(var0).getComponents()))
+         )
+         .build();
+   }
+
    // $VF: Could not properly define all variable types!
    // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public boolean matches(@Nullable Entity var1) {
       if (var1 instanceof LivingEntity var2) {
-         if (this.head.isPresent() && !this.head.get().matches(var2.getItemBySlot(EquipmentSlot.HEAD))) {
+         if (this.head.isPresent() && !((ItemPredicate)this.head.get()).matches(var2.getItemBySlot(EquipmentSlot.HEAD))) {
             return false;
-         } else if (this.chest.isPresent() && !this.chest.get().matches(var2.getItemBySlot(EquipmentSlot.CHEST))) {
+         } else if (this.chest.isPresent() && !((ItemPredicate)this.chest.get()).matches(var2.getItemBySlot(EquipmentSlot.CHEST))) {
             return false;
-         } else if (this.legs.isPresent() && !this.legs.get().matches(var2.getItemBySlot(EquipmentSlot.LEGS))) {
+         } else if (this.legs.isPresent() && !((ItemPredicate)this.legs.get()).matches(var2.getItemBySlot(EquipmentSlot.LEGS))) {
             return false;
-         } else if (this.feet.isPresent() && !this.feet.get().matches(var2.getItemBySlot(EquipmentSlot.FEET))) {
+         } else if (this.feet.isPresent() && !((ItemPredicate)this.feet.get()).matches(var2.getItemBySlot(EquipmentSlot.FEET))) {
             return false;
-         } else if (this.mainhand.isPresent() && !this.mainhand.get().matches(var2.getItemBySlot(EquipmentSlot.MAINHAND))) {
+         } else if (this.mainhand.isPresent() && !((ItemPredicate)this.mainhand.get()).matches(var2.getItemBySlot(EquipmentSlot.MAINHAND))) {
             return false;
          } else {
-            return !this.offhand.isPresent() || this.offhand.get().matches(var2.getItemBySlot(EquipmentSlot.OFFHAND));
+            return !this.offhand.isPresent() || ((ItemPredicate)this.offhand.get()).matches(var2.getItemBySlot(EquipmentSlot.OFFHAND));
          }
       } else {
          return false;

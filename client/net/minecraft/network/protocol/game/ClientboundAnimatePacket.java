@@ -1,10 +1,15 @@
 package net.minecraft.network.protocol.game;
 
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.entity.Entity;
 
 public class ClientboundAnimatePacket implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ClientboundAnimatePacket> STREAM_CODEC = Packet.codec(
+      ClientboundAnimatePacket::write, ClientboundAnimatePacket::new
+   );
    public static final int SWING_MAIN_HAND = 0;
    public static final int WAKE_UP = 2;
    public static final int SWING_OFF_HAND = 3;
@@ -19,16 +24,20 @@ public class ClientboundAnimatePacket implements Packet<ClientGamePacketListener
       this.action = var2;
    }
 
-   public ClientboundAnimatePacket(FriendlyByteBuf var1) {
+   private ClientboundAnimatePacket(FriendlyByteBuf var1) {
       super();
       this.id = var1.readVarInt();
       this.action = var1.readUnsignedByte();
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       var1.writeVarInt(this.id);
       var1.writeByte(this.action);
+   }
+
+   @Override
+   public PacketType<ClientboundAnimatePacket> type() {
+      return GamePacketTypes.CLIENTBOUND_ANIMATE;
    }
 
    public void handle(ClientGamePacketListener var1) {

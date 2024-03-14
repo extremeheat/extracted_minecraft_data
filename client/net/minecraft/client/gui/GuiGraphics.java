@@ -156,6 +156,10 @@ public class GuiGraphics {
       this.applyScissor(this.scissorStack.pop());
    }
 
+   public boolean containsPointInScissor(int var1, int var2) {
+      return this.scissorStack.containsPoint(var1, var2);
+   }
+
    private void applyScissor(@Nullable ScreenRectangle var1) {
       this.flushIfManaged();
       if (var1 != null) {
@@ -243,6 +247,16 @@ public class GuiGraphics {
       var1.vertex(var17, (float)var2, (float)var5, (float)var6).color(var14, var15, var16, var13).endVertex();
       var1.vertex(var17, (float)var4, (float)var5, (float)var6).color(var14, var15, var16, var13).endVertex();
       var1.vertex(var17, (float)var4, (float)var3, (float)var6).color(var10, var11, var12, var9).endVertex();
+   }
+
+   public void fillRenderType(RenderType var1, int var2, int var3, int var4, int var5, int var6) {
+      Matrix4f var7 = this.pose.last().pose();
+      VertexConsumer var8 = this.bufferSource.getBuffer(var1);
+      var8.vertex(var7, (float)var2, (float)var3, (float)var6).endVertex();
+      var8.vertex(var7, (float)var2, (float)var5, (float)var6).endVertex();
+      var8.vertex(var7, (float)var4, (float)var5, (float)var6).endVertex();
+      var8.vertex(var7, (float)var4, (float)var3, (float)var6).endVertex();
+      this.flushIfUnmanaged();
    }
 
    public void drawCenteredString(Font var1, String var2, int var3, int var4, int var5) {
@@ -587,8 +601,7 @@ public class GuiGraphics {
          this.pose.translate((float)(var4 + 8), (float)(var5 + 8), (float)(150 + (var8.isGui3d() ? var7 : 0)));
 
          try {
-            this.pose.mulPoseMatrix(new Matrix4f().scaling(1.0F, -1.0F, 1.0F));
-            this.pose.scale(16.0F, 16.0F, 16.0F);
+            this.pose.scale(16.0F, -16.0F, 16.0F);
             boolean var9 = !var8.usesBlockLight();
             if (var9) {
                Lighting.setupForFlatItems();
@@ -605,8 +618,7 @@ public class GuiGraphics {
             CrashReport var10 = CrashReport.forThrowable(var12, "Rendering item");
             CrashReportCategory var11 = var10.addCategory("Item being rendered");
             var11.setDetail("Item Type", () -> String.valueOf(var3.getItem()));
-            var11.setDetail("Item Damage", () -> String.valueOf(var3.getDamageValue()));
-            var11.setDetail("Item NBT", () -> String.valueOf(var3.getTag()));
+            var11.setDetail("Item Components", () -> String.valueOf(var3.getComponents()));
             var11.setDetail("Item Foil", () -> String.valueOf(var3.hasFoil()));
             throw new ReportedException(var10);
          }
@@ -743,14 +755,14 @@ public class GuiGraphics {
    }
 
    static class ScissorStack {
-      private final Deque<ScreenRectangle> stack = new ArrayDeque<>();
+      private final Deque<ScreenRectangle> stack = new ArrayDeque();
 
       ScissorStack() {
          super();
       }
 
       public ScreenRectangle push(ScreenRectangle var1) {
-         ScreenRectangle var2 = this.stack.peekLast();
+         ScreenRectangle var2 = (ScreenRectangle)this.stack.peekLast();
          if (var2 != null) {
             ScreenRectangle var3 = Objects.requireNonNullElse(var1.intersection(var2), ScreenRectangle.empty());
             this.stack.addLast(var3);
@@ -767,8 +779,12 @@ public class GuiGraphics {
             throw new IllegalStateException("Scissor stack underflow");
          } else {
             this.stack.removeLast();
-            return this.stack.peekLast();
+            return (ScreenRectangle)this.stack.peekLast();
          }
+      }
+
+      public boolean containsPoint(int var1, int var2) {
+         return this.stack.isEmpty() ? true : ((ScreenRectangle)this.stack.peek()).containsPoint(var1, var2);
       }
    }
 }

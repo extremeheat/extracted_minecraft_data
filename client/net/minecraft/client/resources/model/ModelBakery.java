@@ -99,9 +99,7 @@ public class ModelBakery {
    private static final Splitter COMMA_SPLITTER = Splitter.on(',');
    private static final Splitter EQUAL_SPLITTER = Splitter.on('=').limit(2);
    public static final BlockModel GENERATION_MARKER = Util.make(BlockModel.fromString("{\"gui_light\": \"front\"}"), var0 -> var0.name = "generation marker");
-   public static final BlockModel BLOCK_ENTITY_MARKER = Util.make(
-      BlockModel.fromString("{\"gui_light\": \"side\"}"), var0 -> var0.name = "block entity marker"
-   );
+   public static final BlockModel BLOCK_ENTITY_MARKER = Util.make(BlockModel.fromString("{\"gui_light\": \"side\"}"), var0 -> var0.name = "block entity marker");
    private static final StateDefinition<Block, BlockState> ITEM_FRAME_FAKE_DEFINITION = new StateDefinition.Builder<Block, BlockState>(Blocks.AIR)
       .add(BooleanProperty.create("map"))
       .create(Block::defaultBlockState, BlockState::new);
@@ -261,8 +259,7 @@ public class ModelBakery {
             this.unbakedCache.put(var3, var4);
          } else {
             ResourceLocation var27 = new ResourceLocation(var1.getNamespace(), var1.getPath());
-            StateDefinition var28 = Optional.ofNullable(STATIC_DEFINITIONS.get(var27))
-               .orElseGet(() -> BuiltInRegistries.BLOCK.get(var27).getStateDefinition());
+            StateDefinition var28 = Optional.ofNullable(STATIC_DEFINITIONS.get(var27)).orElseGet(() -> BuiltInRegistries.BLOCK.get(var27).getStateDefinition());
             this.context.setDefinition(var28);
             ImmutableList var5 = ImmutableList.copyOf(this.blockColors.getColoringProperties((Block)var28.getOwner()));
             ImmutableList var6 = var28.getPossibleStates();
@@ -350,9 +347,7 @@ public class ModelBakery {
             } catch (ModelBakery.BlockStateDefinitionException var24) {
                throw var24;
             } catch (Exception var25) {
-               throw new ModelBakery.BlockStateDefinitionException(
-                  String.format(Locale.ROOT, "Exception loading blockstate definition: '%s': %s", var9, var25)
-               );
+               throw new ModelBakery.BlockStateDefinitionException(String.format(Locale.ROOT, "Exception loading blockstate definition: '%s': %s", var9, var25));
             } finally {
                HashMap var20 = Maps.newHashMap();
                var7.forEach((var5x, var6x) -> {

@@ -3,17 +3,16 @@ package net.minecraft.client.renderer;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexSorting;
-import com.mojang.math.Axis;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fStack;
 
 public class CubeMap {
    private static final int SIDES = 6;
@@ -33,11 +32,9 @@ public class CubeMap {
       Matrix4f var7 = new Matrix4f().setPerspective(1.4835298F, (float)var1.getWindow().getWidth() / (float)var1.getWindow().getHeight(), 0.05F, 10.0F);
       RenderSystem.backupProjectionMatrix();
       RenderSystem.setProjectionMatrix(var7, VertexSorting.DISTANCE_TO_ORIGIN);
-      PoseStack var8 = RenderSystem.getModelViewStack();
-      var8.pushPose();
-      var8.setIdentity();
-      var8.mulPose(Axis.XP.rotationDegrees(180.0F));
-      RenderSystem.applyModelViewMatrix();
+      Matrix4fStack var8 = RenderSystem.getModelViewStack();
+      var8.pushMatrix();
+      var8.rotationX(3.1415927F);
       RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
       RenderSystem.enableBlend();
       RenderSystem.disableCull();
@@ -45,13 +42,13 @@ public class CubeMap {
       boolean var9 = true;
 
       for(int var10 = 0; var10 < 4; ++var10) {
-         var8.pushPose();
+         var8.pushMatrix();
          float var11 = ((float)(var10 % 2) / 2.0F - 0.5F) / 256.0F;
          float var12 = ((float)(var10 / 2) / 2.0F - 0.5F) / 256.0F;
          float var13 = 0.0F;
          var8.translate(var11, var12, 0.0F);
-         var8.mulPose(Axis.XP.rotationDegrees(var2));
-         var8.mulPose(Axis.YP.rotationDegrees(var3));
+         var8.rotateX(var2 * 0.017453292F);
+         var8.rotateY(var3 * 0.017453292F);
          RenderSystem.applyModelViewMatrix();
 
          for(int var14 = 0; var14 < 6; ++var14) {
@@ -103,14 +100,13 @@ public class CubeMap {
             var5.end();
          }
 
-         var8.popPose();
-         RenderSystem.applyModelViewMatrix();
+         var8.popMatrix();
          RenderSystem.colorMask(true, true, true, false);
       }
 
       RenderSystem.colorMask(true, true, true, true);
       RenderSystem.restoreProjectionMatrix();
-      var8.popPose();
+      var8.popMatrix();
       RenderSystem.applyModelViewMatrix();
       RenderSystem.depthMask(true);
       RenderSystem.enableCull();

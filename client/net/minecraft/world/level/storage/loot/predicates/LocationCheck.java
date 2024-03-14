@@ -48,11 +48,8 @@ public record LocationCheck(Optional<LocationPredicate> b, BlockPos c) implement
       return var2 != null
          && (
             this.predicate.isEmpty()
-               || this.predicate
-                  .get()
-                  .matches(
-                     var1.getLevel(), var2.x() + (double)this.offset.getX(), var2.y() + (double)this.offset.getY(), var2.z() + (double)this.offset.getZ()
-                  )
+               || ((LocationPredicate)this.predicate.get())
+                  .matches(var1.getLevel(), var2.x() + (double)this.offset.getX(), var2.y() + (double)this.offset.getY(), var2.z() + (double)this.offset.getZ())
          );
    }
 

@@ -41,16 +41,12 @@ public class MenuScreens {
       super();
    }
 
-   public static <T extends AbstractContainerMenu> void create(@Nullable MenuType<T> var0, Minecraft var1, int var2, Component var3) {
-      if (var0 == null) {
-         LOGGER.warn("Trying to open invalid screen with name: {}", var3.getString());
+   public static <T extends AbstractContainerMenu> void create(MenuType<T> var0, Minecraft var1, int var2, Component var3) {
+      MenuScreens.ScreenConstructor var4 = getConstructor(var0);
+      if (var4 == null) {
+         LOGGER.warn("Failed to create screen for menu type: {}", BuiltInRegistries.MENU.getKey(var0));
       } else {
-         MenuScreens.ScreenConstructor var4 = getConstructor(var0);
-         if (var4 == null) {
-            LOGGER.warn("Failed to create screen for menu type: {}", BuiltInRegistries.MENU.getKey(var0));
-         } else {
-            var4.fromPacket(var3, var0, var1, var2);
-         }
+         var4.fromPacket(var3, var0, var1, var2);
       }
    }
 

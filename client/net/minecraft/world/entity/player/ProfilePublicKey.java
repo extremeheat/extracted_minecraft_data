@@ -92,7 +92,6 @@ public record ProfilePublicKey(ProfilePublicKey.Data d) {
          return this.expiresAt.plus(var1).isBefore(Instant.now());
       }
 
-      @Override
       public boolean equals(Object var1) {
          if (!(var1 instanceof ProfilePublicKey.Data)) {
             return false;

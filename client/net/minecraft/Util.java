@@ -1,6 +1,8 @@
 package net.minecraft;
 
 import com.google.common.base.Ticker;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -70,6 +72,7 @@ import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.util.Mth;
@@ -89,7 +92,7 @@ public class Util {
    private static final ExecutorService IO_POOL = makeIoExecutor("IO-Worker-", false);
    private static final ExecutorService DOWNLOAD_POOL = makeIoExecutor("Download-", true);
    private static final DateTimeFormatter FILENAME_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd_HH.mm.ss", Locale.ROOT);
-   private static final int LINEAR_LOOKUP_THRESHOLD = 8;
+   public static final int LINEAR_LOOKUP_THRESHOLD = 8;
    public static final long NANOS_PER_MILLI = 1000000L;
    public static TimeSource.NanoTimeSource timeSource = System::nanoTime;
    public static final Ticker TICKER = new Ticker() {
@@ -299,6 +302,49 @@ public class Util {
 
          return (V)var4;
       } : var1;
+   }
+
+   public static <T> String getRegisteredName(Registry<T> var0, T var1) {
+      ResourceLocation var2 = var0.getKey(var1);
+      return var2 == null ? "[unregistered]" : var2.toString();
+   }
+
+   public static <T> Predicate<T> allOf(List<? extends Predicate<T>> var0) {
+      List var1 = List.copyOf(var0);
+
+      return switch(var1.size()) {
+         case 0 -> var0x -> true;
+         case 1 -> (Predicate)var1.get(0);
+         case 2 -> ((Predicate)var1.get(0)).and((Predicate<? super T>)var1.get(1));
+         default -> var1x -> {
+         for(Predicate var3 : var1) {
+            if (!var3.test(var1x)) {
+               return false;
+            }
+         }
+
+         return true;
+      };
+      };
+   }
+
+   public static <T> Predicate<T> anyOf(List<? extends Predicate<T>> var0) {
+      List var1 = List.copyOf(var0);
+
+      return switch(var1.size()) {
+         case 0 -> var0x -> false;
+         case 1 -> (Predicate)var1.get(0);
+         case 2 -> ((Predicate)var1.get(0)).or((Predicate<? super T>)var1.get(1));
+         default -> var1x -> {
+         for(Predicate var3 : var1) {
+            if (var3.test(var1x)) {
+               return true;
+            }
+         }
+
+         return false;
+      };
+      };
    }
 
    public static Util.OS getPlatform() {
@@ -873,12 +919,12 @@ public class Util {
       }
    }
 
-   public static boolean isWhitespace(int var0) {
-      return Character.isWhitespace(var0) || Character.isSpaceChar(var0);
+   public static <T> List<T> copyAndAdd(List<T> var0, T var1) {
+      return ImmutableList.builderWithExpectedSize(var0.size() + 1).addAll(var0).add(var1).build();
    }
 
-   public static boolean isBlank(@Nullable String var0) {
-      return var0 != null && var0.length() != 0 ? var0.chars().allMatch(Util::isWhitespace) : true;
+   public static <K, V> Map<K, V> copyAndPut(Map<K, V> var0, K var1, V var2) {
+      return ImmutableMap.builderWithExpectedSize(var0.size() + 1).putAll(var0).put(var1, var2).buildKeepingLast();
    }
 
    public static enum OS {

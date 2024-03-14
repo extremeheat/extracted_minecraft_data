@@ -1,9 +1,9 @@
 package net.minecraft.client.animation;
 
 import com.google.common.collect.Maps;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.apache.commons.compress.utils.Lists;
 
 public record AnimationDefinition(float a, boolean b, Map<String, List<AnimationChannel>> c) {
    private final float lengthInSeconds;
@@ -37,7 +37,7 @@ public record AnimationDefinition(float a, boolean b, Map<String, List<Animation
       }
 
       public AnimationDefinition.Builder addAnimation(String var1, AnimationChannel var2) {
-         this.animationByBone.computeIfAbsent(var1, var0 -> Lists.newArrayList()).add(var2);
+         this.animationByBone.computeIfAbsent(var1, var0 -> new ArrayList()).add(var2);
          return this;
       }
 

@@ -11,6 +11,7 @@ import java.util.Set;
 import java.util.function.UnaryOperator;
 import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.ComponentUtils;
@@ -74,7 +75,7 @@ public class SetNameFunction extends LootItemConditionalFunction {
 
    @Override
    public ItemStack run(ItemStack var1, LootContext var2) {
-      this.name.ifPresent(var3 -> var1.setHoverName(createResolver(var2, this.resolutionContext.orElse(null)).apply(var3)));
+      this.name.ifPresent(var3 -> var1.set(DataComponents.CUSTOM_NAME, createResolver(var2, this.resolutionContext.orElse(null)).apply(var3)));
       return var1;
    }
 

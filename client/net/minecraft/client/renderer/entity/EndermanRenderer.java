@@ -32,8 +32,8 @@ public class EndermanRenderer extends MobRenderer<EnderMan, EndermanModel<EnderM
 
    public Vec3 getRenderOffset(EnderMan var1, float var2) {
       if (var1.isCreepy()) {
-         double var3 = 0.02;
-         return new Vec3(this.random.nextGaussian() * 0.02, 0.0, this.random.nextGaussian() * 0.02);
+         double var3 = 0.02 * (double)var1.getScale();
+         return new Vec3(this.random.nextGaussian() * var3, 0.0, this.random.nextGaussian() * var3);
       } else {
          return super.getRenderOffset(var1, var2);
       }

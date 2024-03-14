@@ -35,9 +35,17 @@ public abstract class PathfinderMob extends Mob {
    }
 
    public boolean isPanicking() {
-      return this.brain.hasMemoryValue(MemoryModuleType.IS_PANICKING)
-         ? this.brain.getMemory(MemoryModuleType.IS_PANICKING).isPresent()
-         : this.goalSelector.getRunningGoals().anyMatch(var0 -> var0.getGoal() instanceof PanicGoal);
+      if (this.brain.hasMemoryValue(MemoryModuleType.IS_PANICKING)) {
+         return this.brain.getMemory(MemoryModuleType.IS_PANICKING).isPresent();
+      } else {
+         for(WrappedGoal var2 : this.goalSelector.getAvailableGoals()) {
+            if (var2.isRunning() && var2.getGoal() instanceof PanicGoal) {
+               return true;
+            }
+         }
+
+         return false;
+      }
    }
 
    @Override

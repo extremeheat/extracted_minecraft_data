@@ -8,6 +8,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
+import net.minecraft.CrashReport;
+import net.minecraft.CrashReportCategory;
+import net.minecraft.ReportedException;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -15,6 +18,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
@@ -29,7 +33,6 @@ import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.LevelHeightAccessor;
-import net.minecraft.world.level.StructureManager;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeManager;
@@ -41,7 +44,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.border.WorldBorder;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkSource;
-import net.minecraft.world.level.chunk.ChunkStatus;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
+import net.minecraft.world.level.chunk.status.ChunkType;
 import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -71,7 +75,6 @@ public class WorldGenRegion implements WorldGenLevel {
    private final BiomeManager biomeManager;
    private final ChunkPos firstPos;
    private final ChunkPos lastPos;
-   private final StructureManager structureManager;
    private final ChunkStatus generatingStatus;
    private final int writeRadiusCutoff;
    @Nullable
@@ -98,7 +101,6 @@ public class WorldGenRegion implements WorldGenLevel {
          this.biomeManager = new BiomeManager(this, BiomeManager.obfuscateSeed(this.seed));
          this.firstPos = ((ChunkAccess)var2.get(0)).getPos();
          this.lastPos = ((ChunkAccess)var2.get(var2.size() - 1)).getPos();
-         this.structureManager = var1.structureManager().forWorldGenRegion(this);
       }
    }
 
@@ -135,23 +137,18 @@ public class WorldGenRegion implements WorldGenLevel {
          var5 = null;
       }
 
-      if (!var4) {
-         return null;
-      } else {
-         LOGGER.error("Requested chunk : {} {}", var1, var2);
-         LOGGER.error("Region bounds : {} {} | {} {}", new Object[]{this.firstPos.x, this.firstPos.z, this.lastPos.x, this.lastPos.z});
-         if (var5 != null) {
-            throw (RuntimeException)Util.pauseInIde(
-               new RuntimeException(
-                  String.format(Locale.ROOT, "Chunk is not of correct status. Expecting %s, got %s | %s %s", var3, var5.getStatus(), var1, var2)
-               )
-            );
-         } else {
-            throw (RuntimeException)Util.pauseInIde(
-               new RuntimeException(String.format(Locale.ROOT, "We are asking a region for a chunk out of bound | %s %s", var1, var2))
-            );
-         }
-      }
+      CrashReport var8 = CrashReport.forThrowable(
+         new IllegalStateException("Requested chunk unavailable during world generation"), "Exception generating new chunk"
+      );
+      CrashReportCategory var9 = var8.addCategory("Chunk request details");
+      var9.setDetail("Requested chunk", String.format(Locale.ROOT, "%d, %d", var1, var2));
+      var9.setDetail("Requested status", () -> BuiltInRegistries.CHUNK_STATUS.getKey(var3).toString());
+      var9.setDetail("Actual status", () -> var5 == null ? "[out of region bounds]" : BuiltInRegistries.CHUNK_STATUS.getKey(var5.getStatus()).toString());
+      var9.setDetail("loadOrGenerate", var4);
+      var9.setDetail("Generating chunk", () -> this.center.getPos().toString());
+      var9.setDetail("Region start", this.firstPos);
+      var9.setDetail("Region end", this.lastPos);
+      throw new ReportedException(var8);
    }
 
    @Override
@@ -233,7 +230,7 @@ public class WorldGenRegion implements WorldGenLevel {
 
                var3 = ((EntityBlock)var5.getBlock()).newBlockEntity(var1, var5);
             } else {
-               var3 = BlockEntity.loadStatic(var1, var5, var4);
+               var3 = BlockEntity.loadStatic(var1, var5, var4, this.level.registryAccess());
             }
 
             if (var3 != null) {
@@ -294,7 +291,7 @@ public class WorldGenRegion implements WorldGenLevel {
          }
 
          if (var2.hasBlockEntity()) {
-            if (var5.getStatus().getChunkType() == ChunkStatus.ChunkType.LEVELCHUNK) {
+            if (var5.getStatus().getChunkType() == ChunkType.LEVELCHUNK) {
                BlockEntity var7 = ((EntityBlock)var2.getBlock()).newBlockEntity(var1, var2);
                if (var7 != null) {
                   var5.setBlockEntity(var7);
@@ -432,7 +429,7 @@ public class WorldGenRegion implements WorldGenLevel {
    }
 
    @Override
-   public void gameEvent(GameEvent var1, Vec3 var2, GameEvent.Context var3) {
+   public void gameEvent(Holder<GameEvent> var1, Vec3 var2, GameEvent.Context var3) {
    }
 
    @Override

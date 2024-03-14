@@ -3,6 +3,7 @@ package net.minecraft.advancements.critereon;
 import com.mojang.serialization.Codec;
 import java.util.List;
 import java.util.function.Predicate;
+import net.minecraft.Util;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
@@ -16,7 +17,7 @@ public class ContextAwarePredicate {
    ContextAwarePredicate(List<LootItemCondition> var1) {
       super();
       this.conditions = var1;
-      this.compositePredicates = LootItemConditions.andConditions(var1);
+      this.compositePredicates = Util.allOf(var1);
    }
 
    public static ContextAwarePredicate create(LootItemCondition... var0) {

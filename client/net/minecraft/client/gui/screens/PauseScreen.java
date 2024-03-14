@@ -67,12 +67,11 @@ public class PauseScreen extends Screen {
          this.minecraft.setScreen(null);
          this.minecraft.mouseHandler.grabMouse();
       }).width(204).build(), 2, var1.newCellSettings().paddingTop(50));
-      var2.addChild(this.openScreenButton(ADVANCEMENTS, () -> new AdvancementsScreen(this.minecraft.player.connection.getAdvancements())));
+      var2.addChild(this.openScreenButton(ADVANCEMENTS, () -> new AdvancementsScreen(this.minecraft.player.connection.getAdvancements(), this)));
       var2.addChild(this.openScreenButton(STATS, () -> new StatsScreen(this, this.minecraft.player.getStats())));
       var2.addChild(
          this.openLinkButton(
-            SEND_FEEDBACK,
-            SharedConstants.getCurrentVersion().isStable() ? "https://aka.ms/javafeedback?ref=game" : "https://aka.ms/snapshotfeedback?ref=game"
+            SEND_FEEDBACK, SharedConstants.getCurrentVersion().isStable() ? "https://aka.ms/javafeedback?ref=game" : "https://aka.ms/snapshotfeedback?ref=game"
          )
       );
       var2.addChild(this.openLinkButton(REPORT_BUGS, "https://aka.ms/snapshotbugs?ref=game")).active = !SharedConstants.getCurrentVersion()
@@ -82,7 +81,7 @@ public class PauseScreen extends Screen {
       if (this.minecraft.hasSingleplayerServer() && !this.minecraft.getSingleplayerServer().isPublished()) {
          var2.addChild(this.openScreenButton(SHARE_TO_LAN, () -> new ShareToLanScreen(this)));
       } else {
-         var2.addChild(this.openScreenButton(PLAYER_REPORTING, SocialInteractionsScreen::new));
+         var2.addChild(this.openScreenButton(PLAYER_REPORTING, () -> new SocialInteractionsScreen(this)));
       }
 
       Component var3 = this.minecraft.isLocalServer() ? RETURN_TO_MENU : CommonComponents.GUI_DISCONNECT;
@@ -100,7 +99,7 @@ public class PauseScreen extends Screen {
       ServerData var2 = this.minecraft.getCurrentServer();
       this.minecraft.level.disconnect();
       if (var1) {
-         this.minecraft.disconnect(new GenericDirtMessageScreen(SAVING_LEVEL));
+         this.minecraft.disconnect(new GenericMessageScreen(SAVING_LEVEL));
       } else {
          this.minecraft.disconnect();
       }

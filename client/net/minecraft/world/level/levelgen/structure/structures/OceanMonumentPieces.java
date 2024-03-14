@@ -357,9 +357,7 @@ public class OceanMonumentPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          int var8 = Math.max(var1.getSeaLevel(), 64) - this.boundingBox.minY();
          this.generateWaterBox(var1, var5, 0, 0, 0, 58, var8, 58);
          this.generateWing(false, 0, var1, var4, var5);
@@ -744,9 +742,7 @@ public class OceanMonumentPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          this.generateBoxOnFillOnly(var1, var5, 1, 8, 0, 14, 8, 14, BASE_GRAY);
          boolean var8 = true;
          BlockState var9 = BASE_LIGHT;
@@ -824,9 +820,7 @@ public class OceanMonumentPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          OceanMonumentPieces.RoomDefinition var8 = this.roomDefinition.connections[Direction.EAST.get3DDataValue()];
          OceanMonumentPieces.RoomDefinition var9 = this.roomDefinition;
          if (this.roomDefinition.index / 25 > 0) {
@@ -895,9 +889,7 @@ public class OceanMonumentPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          OceanMonumentPieces.RoomDefinition var8 = this.roomDefinition.connections[Direction.EAST.get3DDataValue()];
          OceanMonumentPieces.RoomDefinition var9 = this.roomDefinition;
          OceanMonumentPieces.RoomDefinition var10 = var9.connections[Direction.UP.get3DDataValue()];
@@ -1010,9 +1002,7 @@ public class OceanMonumentPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          if (this.roomDefinition.index / 25 > 0) {
             this.generateDefaultFloor(var1, var5, 0, 0, this.roomDefinition.hasOpening[Direction.DOWN.get3DDataValue()]);
          }
@@ -1092,9 +1082,7 @@ public class OceanMonumentPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          OceanMonumentPieces.RoomDefinition var8 = this.roomDefinition.connections[Direction.NORTH.get3DDataValue()];
          OceanMonumentPieces.RoomDefinition var9 = this.roomDefinition;
          OceanMonumentPieces.RoomDefinition var10 = var8.connections[Direction.UP.get3DDataValue()];
@@ -1205,9 +1193,7 @@ public class OceanMonumentPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          OceanMonumentPieces.RoomDefinition var8 = this.roomDefinition.connections[Direction.NORTH.get3DDataValue()];
          OceanMonumentPieces.RoomDefinition var9 = this.roomDefinition;
          if (this.roomDefinition.index / 25 > 0) {
@@ -1295,9 +1281,7 @@ public class OceanMonumentPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          this.generateBox(var1, var5, 0, 3, 0, 2, 3, 7, BASE_LIGHT, BASE_LIGHT, false);
          this.generateBox(var1, var5, 5, 3, 0, 7, 3, 7, BASE_LIGHT, BASE_LIGHT, false);
          this.generateBox(var1, var5, 0, 2, 0, 1, 2, 7, BASE_LIGHT, BASE_LIGHT, false);
@@ -1331,9 +1315,7 @@ public class OceanMonumentPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          this.generateBox(var1, var5, 2, -1, 2, 11, -1, 11, BASE_LIGHT, BASE_LIGHT, false);
          this.generateBox(var1, var5, 0, -1, 0, 1, -1, 11, BASE_GRAY, BASE_GRAY, false);
          this.generateBox(var1, var5, 12, -1, 0, 13, -1, 11, BASE_GRAY, BASE_GRAY, false);
@@ -1515,7 +1497,7 @@ public class OceanMonumentPieces {
             if (var7 != null) {
                var7.heal(var7.getMaxHealth());
                var7.moveTo((double)var6.getX() + 0.5, (double)var6.getY(), (double)var6.getZ() + 0.5, 0.0F, 0.0F);
-               var7.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var7.blockPosition()), MobSpawnType.STRUCTURE, null, null);
+               var7.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var7.blockPosition()), MobSpawnType.STRUCTURE, null);
                var1.addFreshEntityWithPassengers(var7);
             }
          }
@@ -1535,9 +1517,7 @@ public class OceanMonumentPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          if (this.roomDefinition.index / 25 > 0) {
             this.generateDefaultFloor(var1, var5, 0, 0, this.roomDefinition.hasOpening[Direction.DOWN.get3DDataValue()]);
          }
@@ -1703,9 +1683,7 @@ public class OceanMonumentPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          if (this.roomDefinition.index / 25 > 0) {
             this.generateDefaultFloor(var1, var5, 0, 0, this.roomDefinition.hasOpening[Direction.DOWN.get3DDataValue()]);
          }
@@ -1759,9 +1737,7 @@ public class OceanMonumentPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          if (this.mainDesign == 0) {
             for(int var8 = 0; var8 < 4; ++var8) {
                this.generateBox(var1, var5, 10 - var8, 3 - var8, 20 - var8, 12 + var8, 3 - var8, 20, BASE_LIGHT, BASE_LIGHT, false);

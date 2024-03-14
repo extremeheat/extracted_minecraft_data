@@ -125,7 +125,6 @@ public class Climate {
          }
       }
 
-      @Override
       public String toString() {
          return this.min == this.max ? String.format(Locale.ROOT, "%d", this.min) : String.format(Locale.ROOT, "[%d-%d]", this.min, this.max);
       }

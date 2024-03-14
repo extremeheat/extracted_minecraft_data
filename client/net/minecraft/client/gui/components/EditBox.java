@@ -5,7 +5,6 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
-import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -21,6 +20,7 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.FormattedCharSequence;
 import net.minecraft.util.Mth;
+import net.minecraft.util.StringUtil;
 
 public class EditBox extends AbstractWidget implements Renderable {
    private static final WidgetSprites SPRITES = new WidgetSprites(
@@ -117,7 +117,7 @@ public class EditBox extends AbstractWidget implements Renderable {
       int var3 = Math.max(this.cursorPos, this.highlightPos);
       int var4 = this.maxLength - this.value.length() - (var2 - var3);
       if (var4 > 0) {
-         String var5 = SharedConstants.filterText(var1);
+         String var5 = StringUtil.filterText(var1);
          int var6 = var5.length();
          if (var4 < var6) {
             if (Character.isHighSurrogate(var5.charAt(var4 - 1))) {
@@ -335,7 +335,7 @@ public class EditBox extends AbstractWidget implements Renderable {
    public boolean charTyped(char var1, int var2) {
       if (!this.canConsumeInput()) {
          return false;
-      } else if (SharedConstants.isAllowedChatCharacter(var1)) {
+      } else if (StringUtil.isAllowedChatCharacter(var1)) {
          if (this.isEditable) {
             this.insertText(Character.toString(var1));
          }

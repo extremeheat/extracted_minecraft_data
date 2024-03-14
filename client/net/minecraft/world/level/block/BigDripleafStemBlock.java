@@ -43,7 +43,7 @@ public class BigDripleafStemBlock extends HorizontalDirectionalBlock implements 
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       switch((Direction)var1.getValue(FACING)) {
          case SOUTH:
             return SOUTH_SHAPE;
@@ -63,12 +63,12 @@ public class BigDripleafStemBlock extends HorizontalDirectionalBlock implements 
    }
 
    @Override
-   public FluidState getFluidState(BlockState var1) {
+   protected FluidState getFluidState(BlockState var1) {
       return var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
    }
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       BlockPos var4 = var3.below();
       BlockState var5 = var2.getBlockState(var4);
       BlockState var6 = var2.getBlockState(var3.above());
@@ -84,7 +84,7 @@ public class BigDripleafStemBlock extends HorizontalDirectionalBlock implements 
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if ((var2 == Direction.DOWN || var2 == Direction.UP) && !var1.canSurvive(var4, var5)) {
          var4.scheduleTick(var5, this, 1);
       }
@@ -97,7 +97,7 @@ public class BigDripleafStemBlock extends HorizontalDirectionalBlock implements 
    }
 
    @Override
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (!var1.canSurvive(var2, var3)) {
          var2.destroyBlock(var3, true);
       }

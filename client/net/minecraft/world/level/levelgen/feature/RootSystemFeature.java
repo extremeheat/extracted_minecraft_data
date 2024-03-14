@@ -10,6 +10,7 @@ import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.feature.configurations.RootSystemConfiguration;
+import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 public class RootSystemFeature extends Feature<RootSystemConfiguration> {
    public RootSystemFeature(Codec<RootSystemConfiguration> var1) {
@@ -69,7 +70,7 @@ public class RootSystemFeature extends Feature<RootSystemConfiguration> {
                return false;
             }
 
-            if (var2.treeFeature.value().place(var0, var1, var3, var4)) {
+            if (((PlacedFeature)var2.treeFeature.value()).place(var0, var1, var3, var4)) {
                placeDirt(var5, var5.getY() + var6, var0, var2, var3);
                return true;
             }

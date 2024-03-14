@@ -7,15 +7,18 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.Vec3;
 
-public record BrainDebugPayload(BrainDebugPayload.BrainDump b) implements CustomPacketPayload {
+public record BrainDebugPayload(BrainDebugPayload.BrainDump c) implements CustomPacketPayload {
    private final BrainDebugPayload.BrainDump brainDump;
-   public static final ResourceLocation ID = new ResourceLocation("debug/brain");
+   public static final StreamCodec<FriendlyByteBuf, BrainDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(
+      BrainDebugPayload::write, BrainDebugPayload::new
+   );
+   public static final CustomPacketPayload.Type<BrainDebugPayload> TYPE = CustomPacketPayload.createType("debug/brain");
 
-   public BrainDebugPayload(FriendlyByteBuf var1) {
+   private BrainDebugPayload(FriendlyByteBuf var1) {
       this(new BrainDebugPayload.BrainDump(var1));
    }
 
@@ -24,14 +27,13 @@ public record BrainDebugPayload(BrainDebugPayload.BrainDump b) implements Custom
       this.brainDump = var1;
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       this.brainDump.write(var1);
    }
 
    @Override
-   public ResourceLocation id() {
-      return ID;
+   public CustomPacketPayload.Type<BrainDebugPayload> type() {
+      return TYPE;
    }
 
    public static record BrainDump(
@@ -92,8 +94,8 @@ public record BrainDebugPayload(BrainDebugPayload.BrainDump b) implements Custom
             var1.readList(FriendlyByteBuf::readUtf),
             var1.readList(FriendlyByteBuf::readUtf),
             var1.readList(FriendlyByteBuf::readUtf),
-            var1.readCollection(HashSet::new, FriendlyByteBuf::readBlockPos),
-            var1.readCollection(HashSet::new, FriendlyByteBuf::readBlockPos)
+            var1.readCollection(HashSet::new, BlockPos.STREAM_CODEC),
+            var1.readCollection(HashSet::new, BlockPos.STREAM_CODEC)
          );
       }
 
@@ -155,8 +157,8 @@ public record BrainDebugPayload(BrainDebugPayload.BrainDump b) implements Custom
          var1.writeCollection(this.behaviors, FriendlyByteBuf::writeUtf);
          var1.writeCollection(this.memories, FriendlyByteBuf::writeUtf);
          var1.writeCollection(this.gossips, FriendlyByteBuf::writeUtf);
-         var1.writeCollection(this.pois, FriendlyByteBuf::writeBlockPos);
-         var1.writeCollection(this.potentialPois, FriendlyByteBuf::writeBlockPos);
+         var1.writeCollection(this.pois, BlockPos.STREAM_CODEC);
+         var1.writeCollection(this.potentialPois, BlockPos.STREAM_CODEC);
       }
 
       public boolean hasPoi(BlockPos var1) {

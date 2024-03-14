@@ -104,8 +104,8 @@ public class WitherSkull extends AbstractHurtingProjectile {
    }
 
    @Override
-   protected void defineSynchedData() {
-      this.entityData.define(DATA_DANGEROUS, false);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      var1.define(DATA_DANGEROUS, false);
    }
 
    public boolean isDangerous() {

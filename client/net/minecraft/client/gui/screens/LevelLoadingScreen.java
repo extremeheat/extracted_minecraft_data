@@ -10,7 +10,7 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.progress.StoringChunkProgressListener;
 import net.minecraft.util.Mth;
-import net.minecraft.world.level.chunk.ChunkStatus;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 
 public class LevelLoadingScreen extends Screen {
    private static final long NARRATION_DELAY_MS = 2000L;
@@ -78,9 +78,9 @@ public class LevelLoadingScreen extends Screen {
 
       int var7 = this.width / 2;
       int var8 = this.height / 2;
-      boolean var9 = true;
-      renderChunks(var1, this.progressListener, var7, var8 + 30, 2, 0);
-      var1.drawCenteredString(this.font, this.getFormattedProgress(), var7, var8 - 9 / 2 - 30, 16777215);
+      renderChunks(var1, this.progressListener, var7, var8, 2, 0);
+      int var9 = this.progressListener.getDiameter() + 9 + 2;
+      var1.drawCenteredString(this.font, this.getFormattedProgress(), var7, var8 - var9, 16777215);
    }
 
    public static void renderChunks(GuiGraphics var0, StoringChunkProgressListener var1, int var2, int var3, int var4, int var5) {

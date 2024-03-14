@@ -8,6 +8,8 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
 import java.util.Collection;
+import java.util.List;
+import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
@@ -32,7 +34,20 @@ public class PlaySoundCommand {
    }
 
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
-      RequiredArgumentBuilder var1 = Commands.argument("sound", ResourceLocationArgument.id()).suggests(SuggestionProviders.AVAILABLE_SOUNDS);
+      RequiredArgumentBuilder var1 = (RequiredArgumentBuilder)Commands.argument("sound", ResourceLocationArgument.id())
+         .suggests(SuggestionProviders.AVAILABLE_SOUNDS)
+         .executes(
+            var0x -> playSound(
+                  (CommandSourceStack)var0x.getSource(),
+                  getCallingPlayerAsCollection(((CommandSourceStack)var0x.getSource()).getPlayer()),
+                  ResourceLocationArgument.getId(var0x, "sound"),
+                  SoundSource.MASTER,
+                  ((CommandSourceStack)var0x.getSource()).getPosition(),
+                  1.0F,
+                  1.0F,
+                  0.0F
+               )
+         );
 
       for(SoundSource var5 : SoundSource.values()) {
          var1.then(source(var5));
@@ -42,7 +57,19 @@ public class PlaySoundCommand {
    }
 
    private static LiteralArgumentBuilder<CommandSourceStack> source(SoundSource var0) {
-      return (LiteralArgumentBuilder<CommandSourceStack>)Commands.literal(var0.getName())
+      return (LiteralArgumentBuilder<CommandSourceStack>)((LiteralArgumentBuilder)Commands.literal(var0.getName())
+            .executes(
+               var1 -> playSound(
+                     (CommandSourceStack)var1.getSource(),
+                     getCallingPlayerAsCollection(((CommandSourceStack)var1.getSource()).getPlayer()),
+                     ResourceLocationArgument.getId(var1, "sound"),
+                     var0,
+                     ((CommandSourceStack)var1.getSource()).getPosition(),
+                     1.0F,
+                     1.0F,
+                     0.0F
+                  )
+            ))
          .then(
             ((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players())
                   .executes(
@@ -118,6 +145,10 @@ public class PlaySoundCommand {
                      )
                )
          );
+   }
+
+   private static Collection<ServerPlayer> getCallingPlayerAsCollection(@Nullable ServerPlayer var0) {
+      return var0 != null ? List.of(var0) : List.of();
    }
 
    private static int playSound(

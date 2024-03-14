@@ -7,6 +7,8 @@ import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 public class ParticleUtils {
@@ -71,5 +73,29 @@ public class ParticleUtils {
       double var6 = (double)var1.getY() - 0.05;
       double var8 = (double)var1.getZ() + var2.nextDouble();
       var0.addParticle(var3, var4, var6, var8, 0.0, 0.0, 0.0);
+   }
+
+   public static void spawnParticleInBlock(LevelAccessor var0, BlockPos var1, int var2, ParticleOptions var3) {
+      double var4 = 0.5;
+      BlockState var6 = var0.getBlockState(var1);
+      double var7 = var6.isAir() ? 1.0 : var6.getShape(var0, var1).max(Direction.Axis.Y);
+      spawnParticles(var0, var1, var2, 0.5, var7, true, var3);
+   }
+
+   public static void spawnParticles(LevelAccessor var0, BlockPos var1, int var2, double var3, double var5, boolean var7, ParticleOptions var8) {
+      RandomSource var9 = var0.getRandom();
+
+      for(int var10 = 0; var10 < var2; ++var10) {
+         double var11 = var9.nextGaussian() * 0.02;
+         double var13 = var9.nextGaussian() * 0.02;
+         double var15 = var9.nextGaussian() * 0.02;
+         double var17 = 0.5 - var3;
+         double var19 = (double)var1.getX() + var17 + var9.nextDouble() * var3 * 2.0;
+         double var21 = (double)var1.getY() + var9.nextDouble() * var5;
+         double var23 = (double)var1.getZ() + var17 + var9.nextDouble() * var3 * 2.0;
+         if (var7 || !var0.getBlockState(BlockPos.containing(var19, var21, var23).below()).isAir()) {
+            var0.addParticle(var8, var19, var21, var23, var11, var13, var15);
+         }
+      }
    }
 }

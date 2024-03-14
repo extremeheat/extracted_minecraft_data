@@ -1,6 +1,5 @@
 package net.minecraft.world.entity.animal.horse;
 
-import java.util.UUID;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.nbt.CompoundTag;
@@ -17,24 +16,30 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
+import net.minecraft.world.entity.EntityAttachment;
+import net.minecraft.world.entity.EntityAttachments;
+import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.VariantHolder;
-import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.HorseArmorItem;
+import net.minecraft.world.item.AnimalArmorItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.SoundType;
 
 public class Horse extends AbstractHorse implements VariantHolder<Variant> {
-   private static final UUID ARMOR_MODIFIER_UUID = UUID.fromString("556E1665-8B10-40C8-8F9D-CF9B1667F295");
    private static final EntityDataAccessor<Integer> DATA_ID_TYPE_VARIANT = SynchedEntityData.defineId(Horse.class, EntityDataSerializers.INT);
+   private static final EntityDimensions BABY_DIMENSIONS = EntityType.HORSE
+      .getDimensions()
+      .withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, EntityType.HORSE.getHeight() + 0.125F, 0.0F))
+      .scale(0.5F);
 
    public Horse(EntityType<? extends Horse> var1, Level var2) {
       super(var1, var2);
@@ -48,41 +53,21 @@ public class Horse extends AbstractHorse implements VariantHolder<Variant> {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_ID_TYPE_VARIANT, 0);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_ID_TYPE_VARIANT, 0);
    }
 
    @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       var1.putInt("Variant", this.getTypeVariant());
-      if (!this.inventory.getItem(1).isEmpty()) {
-         var1.put("ArmorItem", this.inventory.getItem(1).save(new CompoundTag()));
-      }
-   }
-
-   public ItemStack getArmor() {
-      return this.getItemBySlot(EquipmentSlot.CHEST);
-   }
-
-   private void setArmor(ItemStack var1) {
-      this.setItemSlot(EquipmentSlot.CHEST, var1);
-      this.setDropChance(EquipmentSlot.CHEST, 0.0F);
    }
 
    @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
       this.setTypeVariant(var1.getInt("Variant"));
-      if (var1.contains("ArmorItem", 10)) {
-         ItemStack var2 = ItemStack.of(var1.getCompound("ArmorItem"));
-         if (!var2.isEmpty() && this.isArmor(var2)) {
-            this.inventory.setItem(1, var2);
-         }
-      }
-
-      this.updateContainerEquipment();
    }
 
    private void setTypeVariant(int var1) {
@@ -110,34 +95,11 @@ public class Horse extends AbstractHorse implements VariantHolder<Variant> {
    }
 
    @Override
-   protected void updateContainerEquipment() {
-      if (!this.level().isClientSide) {
-         super.updateContainerEquipment();
-         this.setArmorEquipment(this.inventory.getItem(1));
-         this.setDropChance(EquipmentSlot.CHEST, 0.0F);
-      }
-   }
-
-   private void setArmorEquipment(ItemStack var1) {
-      this.setArmor(var1);
-      if (!this.level().isClientSide) {
-         this.getAttribute(Attributes.ARMOR).removeModifier(ARMOR_MODIFIER_UUID);
-         if (this.isArmor(var1)) {
-            int var2 = ((HorseArmorItem)var1.getItem()).getProtection();
-            if (var2 != 0) {
-               this.getAttribute(Attributes.ARMOR)
-                  .addTransientModifier(new AttributeModifier(ARMOR_MODIFIER_UUID, "Horse armor bonus", (double)var2, AttributeModifier.Operation.ADDITION));
-            }
-         }
-      }
-   }
-
-   @Override
    public void containerChanged(Container var1) {
-      ItemStack var2 = this.getArmor();
+      ItemStack var2 = this.getBodyArmorItem();
       super.containerChanged(var1);
-      ItemStack var3 = this.getArmor();
-      if (this.tickCount > 20 && this.isArmor(var3) && var2 != var3) {
+      ItemStack var3 = this.getBodyArmorItem();
+      if (this.tickCount > 20 && this.isBodyArmorItem(var3) && var2 != var3) {
          this.playSound(SoundEvents.HORSE_ARMOR, 0.5F, 1.0F);
       }
    }
@@ -252,31 +214,39 @@ public class Horse extends AbstractHorse implements VariantHolder<Variant> {
    }
 
    @Override
-   public boolean canWearArmor() {
+   public boolean canWearBodyArmor() {
       return true;
    }
 
    @Override
-   public boolean isArmor(ItemStack var1) {
-      return var1.getItem() instanceof HorseArmorItem;
+   public boolean isBodyArmorItem(ItemStack var1) {
+      Item var3 = var1.getItem();
+      if (var3 instanceof AnimalArmorItem var2 && var2.getBodyType() == AnimalArmorItem.BodyType.EQUESTRIAN) {
+         return true;
+      }
+
+      return false;
    }
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
-      RandomSource var6 = var1.getRandom();
-      Variant var7;
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+      RandomSource var5 = var1.getRandom();
+      Variant var6;
       if (var4 instanceof Horse.HorseGroupData) {
-         var7 = ((Horse.HorseGroupData)var4).variant;
+         var6 = ((Horse.HorseGroupData)var4).variant;
       } else {
-         var7 = Util.getRandom(Variant.values(), var6);
-         var4 = new Horse.HorseGroupData(var7);
+         var6 = Util.getRandom(Variant.values(), var5);
+         var4 = new Horse.HorseGroupData(var6);
       }
 
-      this.setVariantAndMarkings(var7, Util.getRandom(Markings.values(), var6));
-      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4, var5);
+      this.setVariantAndMarkings(var6, Util.getRandom(Markings.values(), var5));
+      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4);
+   }
+
+   @Override
+   public EntityDimensions getDefaultDimensions(Pose var1) {
+      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(var1);
    }
 
    public static class HorseGroupData extends AgeableMob.AgeableMobGroupData {

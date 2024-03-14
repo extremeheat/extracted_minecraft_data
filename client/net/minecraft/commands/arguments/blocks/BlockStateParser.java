@@ -1,7 +1,6 @@
 package net.minecraft.commands.arguments.blocks;
 
 import com.google.common.collect.Maps;
-import com.google.common.collect.UnmodifiableIterator;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.Dynamic2CommandExceptionType;
@@ -506,13 +505,13 @@ public class BlockStateParser {
          var1.append('[');
          boolean var2 = false;
 
-         for(UnmodifiableIterator var3 = var0.getValues().entrySet().iterator(); var3.hasNext(); var2 = true) {
-            Entry var4 = (Entry)var3.next();
+         for(Entry var4 : var0.getValues().entrySet()) {
             if (var2) {
                var1.append(',');
             }
 
             appendProperty(var1, (Property)var4.getKey(), (Comparable<?>)var4.getValue());
+            var2 = true;
          }
 
          var1.append(']');

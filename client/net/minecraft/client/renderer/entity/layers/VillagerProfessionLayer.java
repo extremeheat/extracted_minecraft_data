@@ -58,7 +58,7 @@ public class VillagerProfessionLayer<T extends LivingEntity & VillagerDataHolder
          renderColoredCutoutModel(var16, var17, var1, var2, var3, var4, 1.0F, 1.0F, 1.0F);
          ((VillagerHeadModel)var16).hatVisible(true);
          if (var13 != VillagerProfession.NONE && !var4.isBaby()) {
-            ResourceLocation var18 = this.getResourceLocation("profession", BuiltInRegistries.VILLAGER_PROFESSION.getKey(var13));
+            ResourceLocation var18 = this.getResourceLocation("profession", BuiltInRegistries.VILLAGER_PROFESSION.getKey((T)var13));
             renderColoredCutoutModel(var16, var18, var1, var2, var3, var4, 1.0F, 1.0F, 1.0F);
             if (var13 != VillagerProfession.NITWIT) {
                ResourceLocation var19 = this.getResourceLocation(

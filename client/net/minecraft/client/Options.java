@@ -29,7 +29,9 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Iterator;
@@ -86,7 +88,6 @@ public class Options {
    public static final int RENDER_DISTANCE_REALLY_FAR = 16;
    public static final int RENDER_DISTANCE_EXTREME = 32;
    private static final Splitter OPTION_SPLITTER = Splitter.on(':').limit(2);
-   private static final float DEFAULT_VOLUME = 1.0F;
    public static final String DEFAULT_SOUND_DEVICE = "";
    private static final Component ACCESSIBILITY_TOOLTIP_DARK_MOJANG_BACKGROUND = Component.translatable("options.darkMojangStudiosBackgroundColor.tooltip");
    private final OptionInstance<Boolean> darkMojangStudiosBackground = OptionInstance.createBoolean(
@@ -230,6 +231,17 @@ public class Options {
    );
    private final OptionInstance<Double> chatLineSpacing = new OptionInstance<>(
       "options.chat.line_spacing", OptionInstance.noTooltip(), Options::percentValueLabel, OptionInstance.UnitDouble.INSTANCE, 0.0, var0 -> {
+      }
+   );
+   private static final Component MENU_BACKGROUND_BLURRINESS_TOOLTIP = Component.translatable("options.accessibility.menu_background_blurriness.tooltip");
+   private static final double BLURRINESS_DEFAULT_VALUE = 0.5;
+   private final OptionInstance<Double> menuBackgroundBlurriness = new OptionInstance<>(
+      "options.accessibility.menu_background_blurriness",
+      OptionInstance.cachedConstantTooltip(MENU_BACKGROUND_BLURRINESS_TOOLTIP),
+      Options::percentValueLabel,
+      OptionInstance.UnitDouble.INSTANCE,
+      0.5,
+      var0 -> {
       }
    );
    private final OptionInstance<Double> textBackgroundOpacity = new OptionInstance<>(
@@ -392,13 +404,13 @@ public class Options {
       }
    });
    private final OptionInstance<Boolean> entityShadows = OptionInstance.createBoolean("options.entityShadows", true);
-   private final OptionInstance<Boolean> forceUnicodeFont = OptionInstance.createBoolean("options.forceUnicodeFont", false, var0 -> {
-      Minecraft var1xx = Minecraft.getInstance();
-      if (var1xx.getWindow() != null) {
-         var1xx.selectMainFont(var0);
-         var1xx.resizeDisplay();
-      }
-   });
+   private final OptionInstance<Boolean> forceUnicodeFont = OptionInstance.createBoolean("options.forceUnicodeFont", false, var0 -> updateFontOptions());
+   private final OptionInstance<Boolean> japaneseGlyphVariants = OptionInstance.createBoolean(
+      "options.japaneseGlyphVariants",
+      OptionInstance.cachedConstantTooltip(Component.translatable("options.japaneseGlyphVariants.tooltip")),
+      japaneseGlyphVariantsDefault(),
+      var0 -> updateFontOptions()
+   );
    private final OptionInstance<Boolean> invertYMouse = OptionInstance.createBoolean("options.invertMouse", false);
    private final OptionInstance<Boolean> discreteMouseScroll = OptionInstance.createBoolean("options.discrete_mouse_scroll", false);
    private final OptionInstance<Boolean> realmsNotifications = OptionInstance.createBoolean("options.realmsNotifications", true);
@@ -416,10 +428,7 @@ public class Options {
    private static final Component DIRECTIONAL_AUDIO_TOOLTIP_ON = Component.translatable("options.directionalAudio.on.tooltip");
    private static final Component DIRECTIONAL_AUDIO_TOOLTIP_OFF = Component.translatable("options.directionalAudio.off.tooltip");
    private final OptionInstance<Boolean> directionalAudio = OptionInstance.createBoolean(
-      "options.directionalAudio",
-      var0 -> var0 ? Tooltip.create(DIRECTIONAL_AUDIO_TOOLTIP_ON) : Tooltip.create(DIRECTIONAL_AUDIO_TOOLTIP_OFF),
-      false,
-      var0 -> {
+      "options.directionalAudio", var0 -> var0 ? Tooltip.create(DIRECTIONAL_AUDIO_TOOLTIP_ON) : Tooltip.create(DIRECTIONAL_AUDIO_TOOLTIP_OFF), false, var0 -> {
          SoundManager var1xx = Minecraft.getInstance().getSoundManager();
          var1xx.reload();
          var1xx.play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
@@ -784,6 +793,14 @@ public class Options {
       return this.chatLineSpacing;
    }
 
+   public OptionInstance<Double> menuBackgroundBlurriness() {
+      return this.menuBackgroundBlurriness;
+   }
+
+   public double getMenuBackgroundBlurriness() {
+      return this.menuBackgroundBlurriness().get();
+   }
+
    public OptionInstance<Double> textBackgroundOpacity() {
       return this.textBackgroundOpacity;
    }
@@ -888,8 +905,24 @@ public class Options {
       return this.entityShadows;
    }
 
+   private static void updateFontOptions() {
+      Minecraft var0 = Minecraft.getInstance();
+      if (var0.getWindow() != null) {
+         var0.updateFontOptions();
+         var0.resizeDisplay();
+      }
+   }
+
    public OptionInstance<Boolean> forceUnicodeFont() {
       return this.forceUnicodeFont;
+   }
+
+   private static boolean japaneseGlyphVariantsDefault() {
+      return Locale.getDefault().getLanguage().equalsIgnoreCase("ja");
+   }
+
+   public OptionInstance<Boolean> japaneseGlyphVariants() {
+      return this.japaneseGlyphVariants;
    }
 
    public OptionInstance<Boolean> invertYMouse() {
@@ -1071,24 +1104,50 @@ public class Options {
       this.save();
    }
 
+   private void processDumpedOptions(Options.OptionAccess var1) {
+      var1.process("ao", this.ambientOcclusion);
+      var1.process("biomeBlendRadius", this.biomeBlendRadius);
+      var1.process("enableVsync", this.enableVsync);
+      var1.process("entityDistanceScaling", this.entityDistanceScaling);
+      var1.process("entityShadows", this.entityShadows);
+      var1.process("forceUnicodeFont", this.forceUnicodeFont);
+      var1.process("japaneseGlyphVariants", this.japaneseGlyphVariants);
+      var1.process("fov", this.fov);
+      var1.process("fovEffectScale", this.fovEffectScale);
+      var1.process("darknessEffectScale", this.darknessEffectScale);
+      var1.process("glintSpeed", this.glintSpeed);
+      var1.process("glintStrength", this.glintStrength);
+      var1.process("prioritizeChunkUpdates", this.prioritizeChunkUpdates);
+      var1.process("fullscreen", this.fullscreen);
+      var1.process("gamma", this.gamma);
+      var1.process("graphicsMode", this.graphicsMode);
+      var1.process("guiScale", this.guiScale);
+      var1.process("maxFps", this.framerateLimit);
+      var1.process("mipmapLevels", this.mipmapLevels);
+      var1.process("narrator", this.narrator);
+      var1.process("particles", this.particles);
+      var1.process("reducedDebugInfo", this.reducedDebugInfo);
+      var1.process("renderClouds", this.cloudStatus);
+      var1.process("renderDistance", this.renderDistance);
+      var1.process("simulationDistance", this.simulationDistance);
+      var1.process("screenEffectScale", this.screenEffectScale);
+      var1.process("soundDevice", this.soundDevice);
+   }
+
    private void processOptions(Options.FieldAccess var1) {
+      this.processDumpedOptions(var1);
       var1.process("autoJump", this.autoJump);
       var1.process("operatorItemsTab", this.operatorItemsTab);
       var1.process("autoSuggestions", this.autoSuggestions);
       var1.process("chatColors", this.chatColors);
       var1.process("chatLinks", this.chatLinks);
       var1.process("chatLinksPrompt", this.chatLinksPrompt);
-      var1.process("enableVsync", this.enableVsync);
-      var1.process("entityShadows", this.entityShadows);
-      var1.process("forceUnicodeFont", this.forceUnicodeFont);
       var1.process("discrete_mouse_scroll", this.discreteMouseScroll);
       var1.process("invertYMouse", this.invertYMouse);
       var1.process("realmsNotifications", this.realmsNotifications);
-      var1.process("reducedDebugInfo", this.reducedDebugInfo);
       var1.process("showSubtitles", this.showSubtitles);
       var1.process("directionalAudio", this.directionalAudio);
       var1.process("touchscreen", this.touchscreen);
-      var1.process("fullscreen", this.fullscreen);
       var1.process("bobView", this.bobView);
       var1.process("toggleCrouch", this.toggleCrouch);
       var1.process("toggleSprint", this.toggleSprint);
@@ -1096,32 +1155,13 @@ public class Options {
       var1.process("hideLightningFlashes", this.hideLightningFlash);
       var1.process("hideSplashTexts", this.hideSplashTexts);
       var1.process("mouseSensitivity", this.sensitivity);
-      var1.process("fov", this.fov);
-      var1.process("screenEffectScale", this.screenEffectScale);
-      var1.process("fovEffectScale", this.fovEffectScale);
-      var1.process("darknessEffectScale", this.darknessEffectScale);
-      var1.process("glintSpeed", this.glintSpeed);
-      var1.process("glintStrength", this.glintStrength);
       var1.process("damageTiltStrength", this.damageTiltStrength);
       var1.process("highContrast", this.highContrast);
       var1.process("narratorHotkey", this.narratorHotkey);
-      var1.process("gamma", this.gamma);
-      var1.process("renderDistance", this.renderDistance);
-      var1.process("simulationDistance", this.simulationDistance);
-      var1.process("entityDistanceScaling", this.entityDistanceScaling);
-      var1.process("guiScale", this.guiScale);
-      var1.process("particles", this.particles);
-      var1.process("maxFps", this.framerateLimit);
-      var1.process("graphicsMode", this.graphicsMode);
-      var1.process("ao", this.ambientOcclusion);
-      var1.process("prioritizeChunkUpdates", this.prioritizeChunkUpdates);
-      var1.process("biomeBlendRadius", this.biomeBlendRadius);
-      var1.process("renderClouds", this.cloudStatus);
       this.resourcePacks = var1.process("resourcePacks", this.resourcePacks, Options::readListOfStrings, GSON::toJson);
       this.incompatibleResourcePacks = var1.process("incompatibleResourcePacks", this.incompatibleResourcePacks, Options::readListOfStrings, GSON::toJson);
       this.lastMpIp = var1.process("lastServer", this.lastMpIp);
       this.languageCode = var1.process("lang", this.languageCode);
-      var1.process("soundDevice", this.soundDevice);
       var1.process("chatVisibility", this.chatVisibility);
       var1.process("chatOpacity", this.chatOpacity);
       var1.process("chatLineSpacing", this.chatLineSpacing);
@@ -1138,11 +1178,9 @@ public class Options {
       var1.process("chatScale", this.chatScale);
       var1.process("chatWidth", this.chatWidth);
       var1.process("notificationDisplayTime", this.notificationDisplayTime);
-      var1.process("mipmapLevels", this.mipmapLevels);
       this.useNativeTransport = var1.process("useNativeTransport", this.useNativeTransport);
       var1.process("mainHand", this.mainHand);
       var1.process("attackIndicator", this.attackIndicator);
-      var1.process("narrator", this.narrator);
       this.tutorialStep = var1.process("tutorialStep", this.tutorialStep, TutorialSteps::getByName, TutorialSteps::getName);
       var1.process("mouseWheelSensitivity", this.mouseWheelSensitivity);
       var1.process("rawMouseInput", this.rawMouseInput);
@@ -1159,6 +1197,7 @@ public class Options {
       var1.process("panoramaScrollSpeed", this.panoramaSpeed);
       var1.process("telemetryOptInExtra", this.telemetryOptInExtra);
       this.onboardAccessibility = var1.process("onboardAccessibility", this.onboardAccessibility);
+      var1.process("menuBackgroundBlurriness", this.menuBackgroundBlurriness);
 
       for(KeyMapping var5 : this.keyMappings) {
          String var6 = var5.saveString();
@@ -1470,42 +1509,24 @@ public class Options {
    }
 
    public String dumpOptionsForReport() {
-      Stream var1 = Stream.builder()
-         .add(Pair.of("ao", this.ambientOcclusion.get()))
-         .add(Pair.of("biomeBlendRadius", this.biomeBlendRadius.get()))
-         .add(Pair.of("enableVsync", this.enableVsync.get()))
-         .add(Pair.of("entityDistanceScaling", this.entityDistanceScaling.get()))
-         .add(Pair.of("entityShadows", this.entityShadows.get()))
-         .add(Pair.of("forceUnicodeFont", this.forceUnicodeFont.get()))
-         .add(Pair.of("fov", this.fov.get()))
-         .add(Pair.of("fovEffectScale", this.fovEffectScale.get()))
-         .add(Pair.of("darknessEffectScale", this.darknessEffectScale.get()))
-         .add(Pair.of("glintSpeed", this.glintSpeed.get()))
-         .add(Pair.of("glintStrength", this.glintStrength.get()))
-         .add(Pair.of("prioritizeChunkUpdates", this.prioritizeChunkUpdates.get()))
-         .add(Pair.of("fullscreen", this.fullscreen.get()))
-         .add(Pair.of("fullscreenResolution", String.valueOf(this.fullscreenVideoModeString)))
-         .add(Pair.of("gamma", this.gamma.get()))
-         .add(Pair.of("glDebugVerbosity", this.glDebugVerbosity))
-         .add(Pair.of("graphicsMode", this.graphicsMode.get()))
-         .add(Pair.of("guiScale", this.guiScale.get()))
-         .add(Pair.of("maxFps", this.framerateLimit.get()))
-         .add(Pair.of("mipmapLevels", this.mipmapLevels.get()))
-         .add(Pair.of("narrator", this.narrator.get()))
-         .add(Pair.of("overrideHeight", this.overrideHeight))
-         .add(Pair.of("overrideWidth", this.overrideWidth))
-         .add(Pair.of("particles", this.particles.get()))
-         .add(Pair.of("reducedDebugInfo", this.reducedDebugInfo.get()))
-         .add(Pair.of("renderClouds", this.cloudStatus.get()))
-         .add(Pair.of("renderDistance", this.renderDistance.get()))
-         .add(Pair.of("simulationDistance", this.simulationDistance.get()))
-         .add(Pair.of("resourcePacks", this.resourcePacks))
-         .add(Pair.of("screenEffectScale", this.screenEffectScale.get()))
-         .add(Pair.of("syncChunkWrites", this.syncWrites))
-         .add(Pair.of("useNativeTransport", this.useNativeTransport))
-         .add(Pair.of("soundDevice", this.soundDevice.get()))
-         .build();
-      return var1.<String>map(var0 -> (String)var0.getFirst() + ": " + var0.getSecond()).collect(Collectors.joining(System.lineSeparator()));
+      final ArrayList var1 = new ArrayList();
+      this.processDumpedOptions(new Options.OptionAccess() {
+         @Override
+         public <T> void process(String var1x, OptionInstance<T> var2) {
+            var1.add(Pair.of(var1x, var2.get()));
+         }
+      });
+      var1.add(Pair.of("fullscreenResolution", String.valueOf(this.fullscreenVideoModeString)));
+      var1.add(Pair.of("glDebugVerbosity", this.glDebugVerbosity));
+      var1.add(Pair.of("overrideHeight", this.overrideHeight));
+      var1.add(Pair.of("overrideWidth", this.overrideWidth));
+      var1.add(Pair.of("syncChunkWrites", this.syncWrites));
+      var1.add(Pair.of("useNativeTransport", this.useNativeTransport));
+      var1.add(Pair.of("resourcePacks", this.resourcePacks));
+      return var1.stream()
+         .sorted(Comparator.comparing(Pair::getFirst))
+         .map(var0 -> (String)var0.getFirst() + ": " + var0.getSecond())
+         .collect(Collectors.joining(System.lineSeparator()));
    }
 
    public void setServerRenderDistance(int var1) {
@@ -1532,9 +1553,7 @@ public class Options {
       return genericValueLabel(var0, Component.literal(Integer.toString(var1)));
    }
 
-   interface FieldAccess {
-      <T> void process(String var1, OptionInstance<T> var2);
-
+   interface FieldAccess extends Options.OptionAccess {
       int process(String var1, int var2);
 
       boolean process(String var1, boolean var2);
@@ -1544,5 +1563,9 @@ public class Options {
       float process(String var1, float var2);
 
       <T> T process(String var1, T var2, Function<String, T> var3, Function<T, String> var4);
+   }
+
+   interface OptionAccess {
+      <T> void process(String var1, OptionInstance<T> var2);
    }
 }

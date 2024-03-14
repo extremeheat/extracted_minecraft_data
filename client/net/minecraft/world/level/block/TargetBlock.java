@@ -40,7 +40,7 @@ public class TargetBlock extends Block {
    }
 
    @Override
-   public void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
+   protected void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
       int var5 = updateRedstoneOutput(var1, var2, var3, var4);
       Entity var6 = var4.getOwner();
       if (var6 instanceof ServerPlayer var7) {
@@ -83,19 +83,19 @@ public class TargetBlock extends Block {
    }
 
    @Override
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (var1.getValue(OUTPUT_POWER) != 0) {
          var2.setBlock(var3, var1.setValue(OUTPUT_POWER, Integer.valueOf(0)), 3);
       }
    }
 
    @Override
-   public int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
+   protected int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       return var1.getValue(OUTPUT_POWER);
    }
 
    @Override
-   public boolean isSignalSource(BlockState var1) {
+   protected boolean isSignalSource(BlockState var1) {
       return true;
    }
 
@@ -105,7 +105,7 @@ public class TargetBlock extends Block {
    }
 
    @Override
-   public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var2.isClientSide() && !var1.is(var4.getBlock())) {
          if (var1.getValue(OUTPUT_POWER) > 0 && !var2.getBlockTicks().hasScheduledTick(var3, this)) {
             var2.setBlock(var3, var1.setValue(OUTPUT_POWER, Integer.valueOf(0)), 18);

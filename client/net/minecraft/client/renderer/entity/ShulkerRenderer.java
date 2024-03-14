@@ -30,7 +30,7 @@ public class ShulkerRenderer extends MobRenderer<Shulker, ShulkerModel<Shulker>>
    }
 
    public Vec3 getRenderOffset(Shulker var1, float var2) {
-      return var1.getRenderPosition(var2).orElse(super.getRenderOffset(var1, var2));
+      return var1.getRenderPosition(var2).orElse(super.getRenderOffset(var1, var2)).scale((double)var1.getScale());
    }
 
    public boolean shouldRender(Shulker var1, Frustum var2, double var3, double var5, double var7) {
@@ -60,10 +60,8 @@ public class ShulkerRenderer extends MobRenderer<Shulker, ShulkerModel<Shulker>>
       return var0 == null ? DEFAULT_TEXTURE_LOCATION : TEXTURE_LOCATION[var0.getId()];
    }
 
-   protected void setupRotations(Shulker var1, PoseStack var2, float var3, float var4, float var5) {
-      super.setupRotations(var1, var2, var3, var4 + 180.0F, var5);
-      var2.translate(0.0, 0.5, 0.0);
-      var2.mulPose(var1.getAttachFace().getOpposite().getRotation());
-      var2.translate(0.0, -0.5, 0.0);
+   protected void setupRotations(Shulker var1, PoseStack var2, float var3, float var4, float var5, float var6) {
+      super.setupRotations(var1, var2, var3, var4 + 180.0F, var5, var6);
+      var2.rotateAround(var1.getAttachFace().getOpposite().getRotation(), 0.0F, 0.5F, 0.0F);
    }
 }

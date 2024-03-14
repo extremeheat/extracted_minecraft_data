@@ -8,7 +8,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.features.TreeFeatures;
 import net.minecraft.data.worldgen.features.VegetationFeatures;
 import net.minecraft.resources.ResourceKey;
@@ -149,7 +149,7 @@ public class VegetationPlacements {
       return treePlacementBase(var0).add(BlockPredicateFilter.forPredicate(BlockPredicate.wouldSurvive(var1.defaultBlockState(), BlockPos.ZERO))).build();
    }
 
-   public static void bootstrap(BootstapContext<PlacedFeature> var0) {
+   public static void bootstrap(BootstrapContext<PlacedFeature> var0) {
       HolderGetter var1 = var0.lookup(Registries.CONFIGURED_FEATURE);
       Holder.Reference var2 = var1.getOrThrow(VegetationFeatures.BAMBOO_NO_PODZOL);
       Holder.Reference var3 = var1.getOrThrow(VegetationFeatures.BAMBOO_SOME_PODZOL);

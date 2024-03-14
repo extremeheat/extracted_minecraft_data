@@ -3,12 +3,17 @@ package net.minecraft.network.protocol.game;
 import javax.annotation.Nullable;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 public class ClientboundPlayerLookAtPacket implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ClientboundPlayerLookAtPacket> STREAM_CODEC = Packet.codec(
+      ClientboundPlayerLookAtPacket::write, ClientboundPlayerLookAtPacket::new
+   );
    private final double x;
    private final double y;
    private final double z;
@@ -40,7 +45,7 @@ public class ClientboundPlayerLookAtPacket implements Packet<ClientGamePacketLis
       this.atEntity = true;
    }
 
-   public ClientboundPlayerLookAtPacket(FriendlyByteBuf var1) {
+   private ClientboundPlayerLookAtPacket(FriendlyByteBuf var1) {
       super();
       this.fromAnchor = var1.readEnum(EntityAnchorArgument.Anchor.class);
       this.x = var1.readDouble();
@@ -56,8 +61,7 @@ public class ClientboundPlayerLookAtPacket implements Packet<ClientGamePacketLis
       }
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       var1.writeEnum(this.fromAnchor);
       var1.writeDouble(this.x);
       var1.writeDouble(this.y);
@@ -67,6 +71,11 @@ public class ClientboundPlayerLookAtPacket implements Packet<ClientGamePacketLis
          var1.writeVarInt(this.entity);
          var1.writeEnum(this.toAnchor);
       }
+   }
+
+   @Override
+   public PacketType<ClientboundPlayerLookAtPacket> type() {
+      return GamePacketTypes.CLIENTBOUND_PLAYER_LOOK_AT;
    }
 
    public void handle(ClientGamePacketListener var1) {

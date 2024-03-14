@@ -2,13 +2,14 @@ package net.minecraft.world.item.crafting;
 
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.BannerItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BannerBlockEntity;
+import net.minecraft.world.level.block.entity.BannerPatternLayers;
 
 public class BannerDuplicateRecipe extends CustomRecipe {
    public BannerDuplicateRecipe(CraftingBookCategory var1) {
@@ -35,7 +36,7 @@ public class BannerDuplicateRecipe extends CustomRecipe {
                return false;
             }
 
-            int var10 = BannerBlockEntity.getPatternCount(var7);
+            int var10 = ((BannerPatternLayers)var7.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY)).layers().size();
             if (var10 > 6) {
                return false;
             }
@@ -63,7 +64,7 @@ public class BannerDuplicateRecipe extends CustomRecipe {
       for(int var3 = 0; var3 < var1.getContainerSize(); ++var3) {
          ItemStack var4 = var1.getItem(var3);
          if (!var4.isEmpty()) {
-            int var5 = BannerBlockEntity.getPatternCount(var4);
+            int var5 = ((BannerPatternLayers)var4.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY)).layers().size();
             if (var5 > 0 && var5 <= 6) {
                return var4.copyWithCount(1);
             }
@@ -81,7 +82,7 @@ public class BannerDuplicateRecipe extends CustomRecipe {
          if (!var4.isEmpty()) {
             if (var4.getItem().hasCraftingRemainingItem()) {
                var2.set(var3, new ItemStack(var4.getItem().getCraftingRemainingItem()));
-            } else if (var4.hasTag() && BannerBlockEntity.getPatternCount(var4) > 0) {
+            } else if (!((BannerPatternLayers)var4.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY)).layers().isEmpty()) {
                var2.set(var3, var4.copyWithCount(1));
             }
          }

@@ -9,9 +9,9 @@ import java.util.ListIterator;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
-import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.GameNarrator;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
@@ -20,17 +20,18 @@ import net.minecraft.client.gui.font.TextFieldHelper;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.client.renderer.RenderType;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.protocol.game.ServerboundEditBookPacket;
+import net.minecraft.server.network.Filterable;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.util.StringUtil;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.WritableBookContent;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableInt;
@@ -81,9 +82,9 @@ public class BookEditScreen extends Screen {
       this.owner = var1;
       this.book = var2;
       this.hand = var3;
-      CompoundTag var4 = var2.getTag();
+      WritableBookContent var4 = var2.get(DataComponents.WRITABLE_BOOK_CONTENT);
       if (var4 != null) {
-         BookViewScreen.loadPages(var4, this.pages::add);
+         var4.getPages(Minecraft.getInstance().isTextFilteringEnabled()).forEach(this.pages::add);
       }
 
       if (this.pages.isEmpty()) {
@@ -174,7 +175,7 @@ public class BookEditScreen extends Screen {
       this.signButton.visible = !this.isSigning;
       this.cancelButton.visible = this.isSigning;
       this.finalizeButton.visible = this.isSigning;
-      this.finalizeButton.active = !Util.isBlank(this.title);
+      this.finalizeButton.active = !StringUtil.isBlank(this.title);
    }
 
    private void eraseEmptyTrailingPages() {
@@ -188,23 +189,14 @@ public class BookEditScreen extends Screen {
    private void saveChanges(boolean var1) {
       if (this.isModified) {
          this.eraseEmptyTrailingPages();
-         this.updateLocalCopy(var1);
+         this.updateLocalCopy();
          int var2 = this.hand == InteractionHand.MAIN_HAND ? this.owner.getInventory().selected : 40;
          this.minecraft.getConnection().send(new ServerboundEditBookPacket(var2, this.pages, var1 ? Optional.of(this.title.trim()) : Optional.empty()));
       }
    }
 
-   private void updateLocalCopy(boolean var1) {
-      ListTag var2 = new ListTag();
-      this.pages.stream().map(StringTag::valueOf).forEach(var2::add);
-      if (!this.pages.isEmpty()) {
-         this.book.addTagElement("pages", var2);
-      }
-
-      if (var1) {
-         this.book.addTagElement("author", StringTag.valueOf(this.owner.getGameProfile().getName()));
-         this.book.addTagElement("title", StringTag.valueOf(this.title.trim()));
-      }
+   private void updateLocalCopy() {
+      this.book.set(DataComponents.WRITABLE_BOOK_CONTENT, new WritableBookContent(this.pages.stream().map(Filterable::passThrough).toList()));
    }
 
    private void appendPageToBook() {
@@ -244,7 +236,7 @@ public class BookEditScreen extends Screen {
          } else {
             return false;
          }
-      } else if (SharedConstants.isAllowedChatCharacter(var1)) {
+      } else if (StringUtil.isAllowedChatCharacter(var1)) {
          this.pageEdit.insertText(Character.toString(var1));
          this.clearDisplayCache();
          return true;
@@ -384,9 +376,7 @@ public class BookEditScreen extends Screen {
       boolean var6 = true;
       if (this.isSigning) {
          boolean var7 = this.frameTick / 6 % 2 == 0;
-         FormattedCharSequence var8 = FormattedCharSequence.composite(
-            FormattedCharSequence.forward(this.title, Style.EMPTY), var7 ? BLACK_CURSOR : GRAY_CURSOR
-         );
+         FormattedCharSequence var8 = FormattedCharSequence.composite(FormattedCharSequence.forward(this.title, Style.EMPTY), var7 ? BLACK_CURSOR : GRAY_CURSOR);
          int var9 = this.font.width(EDIT_TITLE_LABEL);
          var1.drawString(this.font, EDIT_TITLE_LABEL, var5 + 36 + (114 - var9) / 2, 34, 0, false);
          int var10 = this.font.width(var8);
@@ -410,7 +400,7 @@ public class BookEditScreen extends Screen {
 
    @Override
    public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      super.renderBackground(var1, var2, var3, var4);
+      this.renderTransparentBackground(var1);
       var1.blit(BookViewScreen.BOOK_LOCATION, (this.width - 192) / 2, 2, 0, 0, 192, 192);
    }
 

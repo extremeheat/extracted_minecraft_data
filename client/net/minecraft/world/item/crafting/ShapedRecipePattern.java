@@ -13,11 +13,12 @@ import java.util.Optional;
 import java.util.function.Function;
 import net.minecraft.Util;
 import net.minecraft.core.NonNullList;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.inventory.CraftingContainer;
 
-public record ShapedRecipePattern(int b, int c, NonNullList<Ingredient> d, Optional<ShapedRecipePattern.Data> e) {
+public record ShapedRecipePattern(int c, int d, NonNullList<Ingredient> e, Optional<ShapedRecipePattern.Data> f) {
    private final int width;
    private final int height;
    private final NonNullList<Ingredient> ingredients;
@@ -28,6 +29,9 @@ public record ShapedRecipePattern(int b, int c, NonNullList<Ingredient> d, Optio
          ShapedRecipePattern::unpack,
          var0 -> (DataResult)var0.data().map(DataResult::success).orElseGet(() -> DataResult.error(() -> "Cannot encode unpacked recipe"))
       );
+   public static final StreamCodec<RegistryFriendlyByteBuf, ShapedRecipePattern> STREAM_CODEC = StreamCodec.ofMember(
+      ShapedRecipePattern::toNetwork, ShapedRecipePattern::fromNetwork
+   );
 
    public ShapedRecipePattern(int var1, int var2, NonNullList<Ingredient> var3, Optional<ShapedRecipePattern.Data> var4) {
       super();
@@ -168,20 +172,20 @@ public record ShapedRecipePattern(int b, int c, NonNullList<Ingredient> d, Optio
       return true;
    }
 
-   public void toNetwork(FriendlyByteBuf var1) {
+   private void toNetwork(RegistryFriendlyByteBuf var1) {
       var1.writeVarInt(this.width);
       var1.writeVarInt(this.height);
 
       for(Ingredient var3 : this.ingredients) {
-         var3.toNetwork(var1);
+         Ingredient.CONTENTS_STREAM_CODEC.encode(var1, var3);
       }
    }
 
-   public static ShapedRecipePattern fromNetwork(FriendlyByteBuf var0) {
+   private static ShapedRecipePattern fromNetwork(RegistryFriendlyByteBuf var0) {
       int var1 = var0.readVarInt();
       int var2 = var0.readVarInt();
       NonNullList var3 = NonNullList.withSize(var1 * var2, Ingredient.EMPTY);
-      var3.replaceAll(var1x -> Ingredient.fromNetwork(var0));
+      var3.replaceAll(var1x -> Ingredient.CONTENTS_STREAM_CODEC.decode(var0));
       return new ShapedRecipePattern(var1, var2, var3, Optional.empty());
    }
 

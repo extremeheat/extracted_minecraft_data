@@ -2,11 +2,16 @@ package net.minecraft.network.protocol.game;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.entity.JigsawBlockEntity;
 
 public class ServerboundSetJigsawBlockPacket implements Packet<ServerGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ServerboundSetJigsawBlockPacket> STREAM_CODEC = Packet.codec(
+      ServerboundSetJigsawBlockPacket::write, ServerboundSetJigsawBlockPacket::new
+   );
    private final BlockPos pos;
    private final ResourceLocation name;
    private final ResourceLocation target;
@@ -30,7 +35,7 @@ public class ServerboundSetJigsawBlockPacket implements Packet<ServerGamePacketL
       this.placementPriority = var8;
    }
 
-   public ServerboundSetJigsawBlockPacket(FriendlyByteBuf var1) {
+   private ServerboundSetJigsawBlockPacket(FriendlyByteBuf var1) {
       super();
       this.pos = var1.readBlockPos();
       this.name = var1.readResourceLocation();
@@ -42,8 +47,7 @@ public class ServerboundSetJigsawBlockPacket implements Packet<ServerGamePacketL
       this.placementPriority = var1.readVarInt();
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       var1.writeBlockPos(this.pos);
       var1.writeResourceLocation(this.name);
       var1.writeResourceLocation(this.target);
@@ -52,6 +56,11 @@ public class ServerboundSetJigsawBlockPacket implements Packet<ServerGamePacketL
       var1.writeUtf(this.joint.getSerializedName());
       var1.writeVarInt(this.selectionPriority);
       var1.writeVarInt(this.placementPriority);
+   }
+
+   @Override
+   public PacketType<ServerboundSetJigsawBlockPacket> type() {
+      return GamePacketTypes.SERVERBOUND_SET_JIGSAW_BLOCK;
    }
 
    public void handle(ServerGamePacketListener var1) {

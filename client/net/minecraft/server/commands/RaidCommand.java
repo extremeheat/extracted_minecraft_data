@@ -6,10 +6,12 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import javax.annotation.Nullable;
+import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.ComponentArgument;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -30,7 +32,7 @@ public class RaidCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
+   public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
       var0.register(
          (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal(
                                     "raid"
@@ -48,7 +50,7 @@ public class RaidCommand {
                      .then(
                         Commands.literal("sound")
                            .then(
-                              Commands.argument("type", ComponentArgument.textComponent())
+                              Commands.argument("type", ComponentArgument.textComponent(var1))
                                  .executes(var0x -> playSound((CommandSourceStack)var0x.getSource(), ComponentArgument.getComponent(var0x, "type")))
                            )
                      ))
@@ -101,9 +103,9 @@ public class RaidCommand {
          return 0;
       } else {
          var1.setPatrolLeader(true);
-         var1.setItemSlot(EquipmentSlot.HEAD, Raid.getLeaderBannerInstance());
+         var1.setItemSlot(EquipmentSlot.HEAD, Raid.getLeaderBannerInstance(var0.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN)));
          var1.setPos(var0.getPosition().x, var0.getPosition().y, var0.getPosition().z);
-         var1.finalizeSpawn(var0.getLevel(), var0.getLevel().getCurrentDifficultyAt(BlockPos.containing(var0.getPosition())), MobSpawnType.COMMAND, null, null);
+         var1.finalizeSpawn(var0.getLevel(), var0.getLevel().getCurrentDifficultyAt(BlockPos.containing(var0.getPosition())), MobSpawnType.COMMAND, null);
          var0.getLevel().addFreshEntityWithPassengers(var1);
          return 1;
       }

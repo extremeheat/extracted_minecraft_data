@@ -3,6 +3,7 @@ package net.minecraft.world.level.block.entity;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DataResult.PartialResult;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
@@ -25,13 +26,14 @@ public class TrialSpawnerBlockEntity extends BlockEntity implements Spawner, Tri
 
    public TrialSpawnerBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.TRIAL_SPAWNER, var1, var2);
-      PlayerDetector var3 = PlayerDetector.PLAYERS;
-      this.trialSpawner = new TrialSpawner(this, var3);
+      PlayerDetector var3 = PlayerDetector.NO_CREATIVE_PLAYERS;
+      PlayerDetector.EntitySelector var4 = PlayerDetector.EntitySelector.SELECT_FROM_LEVEL;
+      this.trialSpawner = new TrialSpawner(this, var3, var4);
    }
 
    @Override
-   public void load(CompoundTag var1) {
-      super.load(var1);
+   public void load(CompoundTag var1, HolderLookup.Provider var2) {
+      super.load(var1, var2);
       this.trialSpawner.codec().parse(NbtOps.INSTANCE, var1).resultOrPartial(LOGGER::error).ifPresent(var1x -> this.trialSpawner = var1x);
       if (this.level != null) {
          this.markUpdated();
@@ -39,8 +41,8 @@ public class TrialSpawnerBlockEntity extends BlockEntity implements Spawner, Tri
    }
 
    @Override
-   protected void saveAdditional(CompoundTag var1) {
-      super.saveAdditional(var1);
+   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.saveAdditional(var1, var2);
       this.trialSpawner
          .codec()
          .encodeStart(NbtOps.INSTANCE, this.trialSpawner)
@@ -54,7 +56,7 @@ public class TrialSpawnerBlockEntity extends BlockEntity implements Spawner, Tri
    }
 
    @Override
-   public CompoundTag getUpdateTag() {
+   public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
       return this.trialSpawner.getData().getUpdateTag(this.getBlockState().getValue(TrialSpawnerBlock.STATE));
    }
 

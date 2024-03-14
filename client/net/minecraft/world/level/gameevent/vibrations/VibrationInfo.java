@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
+import net.minecraft.core.Holder;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
@@ -14,8 +15,8 @@ import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
 
-public record VibrationInfo(GameEvent b, float c, Vec3 d, @Nullable UUID e, @Nullable UUID f, @Nullable Entity g) {
-   private final GameEvent gameEvent;
+public record VibrationInfo(Holder<GameEvent> b, float c, Vec3 d, @Nullable UUID e, @Nullable UUID f, @Nullable Entity g) {
+   private final Holder<GameEvent> gameEvent;
    private final float distance;
    private final Vec3 pos;
    @Nullable
@@ -26,7 +27,7 @@ public record VibrationInfo(GameEvent b, float c, Vec3 d, @Nullable UUID e, @Nul
    private final Entity entity;
    public static final Codec<VibrationInfo> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               BuiltInRegistries.GAME_EVENT.byNameCodec().fieldOf("game_event").forGetter(VibrationInfo::gameEvent),
+               BuiltInRegistries.GAME_EVENT.holderByNameCodec().fieldOf("game_event").forGetter(VibrationInfo::gameEvent),
                Codec.floatRange(0.0F, 3.4028235E38F).fieldOf("distance").forGetter(VibrationInfo::distance),
                Vec3.CODEC.fieldOf("pos").forGetter(VibrationInfo::pos),
                UUIDUtil.CODEC.optionalFieldOf("source").forGetter(var0x -> Optional.ofNullable(var0x.uuid())),
@@ -35,15 +36,15 @@ public record VibrationInfo(GameEvent b, float c, Vec3 d, @Nullable UUID e, @Nul
             .apply(var0, (var0x, var1, var2, var3, var4) -> new VibrationInfo(var0x, var1, var2, (UUID)var3.orElse(null), (UUID)var4.orElse(null)))
    );
 
-   public VibrationInfo(GameEvent var1, float var2, Vec3 var3, @Nullable UUID var4, @Nullable UUID var5) {
+   public VibrationInfo(Holder<GameEvent> var1, float var2, Vec3 var3, @Nullable UUID var4, @Nullable UUID var5) {
       this(var1, var2, var3, var4, var5, null);
    }
 
-   public VibrationInfo(GameEvent var1, float var2, Vec3 var3, @Nullable Entity var4) {
+   public VibrationInfo(Holder<GameEvent> var1, float var2, Vec3 var3, @Nullable Entity var4) {
       this(var1, var2, var3, var4 == null ? null : var4.getUUID(), getProjectileOwner(var4), var4);
    }
 
-   public VibrationInfo(GameEvent var1, float var2, Vec3 var3, @Nullable UUID var4, @Nullable UUID var5, @Nullable Entity var6) {
+   public VibrationInfo(Holder<GameEvent> var1, float var2, Vec3 var3, @Nullable UUID var4, @Nullable UUID var5, @Nullable Entity var6) {
       super();
       this.gameEvent = var1;
       this.distance = var2;

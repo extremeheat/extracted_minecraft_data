@@ -12,7 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.HangingSignItem;
 import net.minecraft.world.item.ItemStack;
@@ -78,16 +78,13 @@ public class CeilingHangingSignBlock extends SignBlock {
    }
 
    @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
-      BlockEntity var8 = var2.getBlockEntity(var3);
-      if (var8 instanceof SignBlockEntity var7) {
-         ItemStack var9 = var4.getItemInHand(var5);
-         if (this.shouldTryToChainAnotherHangingSign(var4, var6, (SignBlockEntity)var7, var9)) {
-            return InteractionResult.PASS;
-         }
+   protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
+      BlockEntity var9 = var3.getBlockEntity(var4);
+      if (var9 instanceof SignBlockEntity var8 && this.shouldTryToChainAnotherHangingSign(var5, var7, (SignBlockEntity)var8, var1)) {
+         return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
       }
 
-      return super.use(var1, var2, var3, var4, var5, var6);
+      return super.useItemOn(var1, var2, var3, var4, var5, var6, var7);
    }
 
    private boolean shouldTryToChainAnotherHangingSign(Player var1, BlockHitResult var2, SignBlockEntity var3, ItemStack var4) {
@@ -97,7 +94,7 @@ public class CeilingHangingSignBlock extends SignBlock {
    }
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       return var2.getBlockState(var3.above()).isFaceSturdy(var2, var3.above(), Direction.DOWN, SupportType.CENTER);
    }
 
@@ -132,18 +129,18 @@ public class CeilingHangingSignBlock extends SignBlock {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       VoxelShape var5 = AABBS.get(var1.getValue(ROTATION));
       return var5 == null ? SHAPE : var5;
    }
 
    @Override
-   public VoxelShape getBlockSupportShape(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected VoxelShape getBlockSupportShape(BlockState var1, BlockGetter var2, BlockPos var3) {
       return this.getShape(var1, var2, var3, CollisionContext.empty());
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       return var2 == Direction.UP && !this.canSurvive(var1, var4, var5)
          ? Blocks.AIR.defaultBlockState()
          : super.updateShape(var1, var2, var3, var4, var5, var6);
@@ -155,12 +152,12 @@ public class CeilingHangingSignBlock extends SignBlock {
    }
 
    @Override
-   public BlockState rotate(BlockState var1, Rotation var2) {
+   protected BlockState rotate(BlockState var1, Rotation var2) {
       return var1.setValue(ROTATION, Integer.valueOf(var2.rotate(var1.getValue(ROTATION), 16)));
    }
 
    @Override
-   public BlockState mirror(BlockState var1, Mirror var2) {
+   protected BlockState mirror(BlockState var1, Mirror var2) {
       return var1.setValue(ROTATION, Integer.valueOf(var2.mirror(var1.getValue(ROTATION), 16)));
    }
 

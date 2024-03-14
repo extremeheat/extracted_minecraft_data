@@ -53,6 +53,9 @@ public class BuiltInLootTables {
    public static final ResourceLocation ANCIENT_CITY_ICE_BOX = register("chests/ancient_city_ice_box");
    public static final ResourceLocation RUINED_PORTAL = register("chests/ruined_portal");
    public static final ResourceLocation TRIAL_CHAMBERS_REWARD = register("chests/trial_chambers/reward");
+   public static final ResourceLocation TRIAL_CHAMBERS_REWARD_COMMON = register("chests/trial_chambers/reward_common");
+   public static final ResourceLocation TRIAL_CHAMBERS_REWARD_RARE = register("chests/trial_chambers/reward_rare");
+   public static final ResourceLocation TRIAL_CHAMBERS_REWARD_UNIQUE = register("chests/trial_chambers/reward_unique");
    public static final ResourceLocation TRIAL_CHAMBERS_SUPPLY = register("chests/trial_chambers/supply");
    public static final ResourceLocation TRIAL_CHAMBERS_CORRIDOR = register("chests/trial_chambers/corridor");
    public static final ResourceLocation TRIAL_CHAMBERS_INTERSECTION = register("chests/trial_chambers/intersection");
@@ -97,9 +100,11 @@ public class BuiltInLootTables {
    public static final ResourceLocation TOOLSMITH_GIFT = register("gameplay/hero_of_the_village/toolsmith_gift");
    public static final ResourceLocation WEAPONSMITH_GIFT = register("gameplay/hero_of_the_village/weaponsmith_gift");
    public static final ResourceLocation SNIFFER_DIGGING = register("gameplay/sniffer_digging");
+   public static final ResourceLocation PANDA_SNEEZE = register("gameplay/panda_sneeze");
    public static final ResourceLocation PIGLIN_BARTERING = register("gameplay/piglin_bartering");
    public static final ResourceLocation SPAWNER_TRIAL_CHAMBER_KEY = register("spawners/trial_chamber/key");
    public static final ResourceLocation SPAWNER_TRIAL_CHAMBER_CONSUMABLES = register("spawners/trial_chamber/consumables");
+   public static final ResourceLocation BOGGED_SHEAR = register("shearing/bogged");
    public static final ResourceLocation DESERT_WELL_ARCHAEOLOGY = register("archaeology/desert_well");
    public static final ResourceLocation DESERT_PYRAMID_ARCHAEOLOGY = register("archaeology/desert_pyramid");
    public static final ResourceLocation TRAIL_RUINS_ARCHAEOLOGY_COMMON = register("archaeology/trail_ruins_common");

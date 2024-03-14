@@ -20,9 +20,6 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeFormatterBuilder;
-import java.time.format.SignStyle;
-import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -79,23 +76,12 @@ import org.slf4j.Logger;
 
 public class LevelStorageSource {
    static final Logger LOGGER = LogUtils.getLogger();
-   static final DateTimeFormatter FORMATTER = new DateTimeFormatterBuilder()
-      .appendValue(ChronoField.YEAR, 4, 10, SignStyle.EXCEEDS_PAD)
-      .appendLiteral('-')
-      .appendValue(ChronoField.MONTH_OF_YEAR, 2)
-      .appendLiteral('-')
-      .appendValue(ChronoField.DAY_OF_MONTH, 2)
-      .appendLiteral('_')
-      .appendValue(ChronoField.HOUR_OF_DAY, 2)
-      .appendLiteral('-')
-      .appendValue(ChronoField.MINUTE_OF_HOUR, 2)
-      .appendLiteral('-')
-      .appendValue(ChronoField.SECOND_OF_MINUTE, 2)
-      .toFormatter();
+   static final DateTimeFormatter FORMATTER = FileNameDateFormatter.create();
    private static final String TAG_DATA = "Data";
    private static final PathMatcher NO_SYMLINKS_ALLOWED = var0 -> false;
    public static final String ALLOWED_SYMLINKS_CONFIG_NAME = "allowed_symlinks.txt";
    private static final int UNCOMPRESSED_NBT_QUOTA = 104857600;
+   private static final int DISK_SPACE_WARNING_THRESHOLD = 67108864;
    private final Path baseDir;
    private final Path backupDir;
    final DataFixer fixerUpper;
@@ -139,7 +125,7 @@ public class LevelStorageSource {
    }
 
    public static WorldDataConfiguration readDataConfig(Dynamic<?> var0) {
-      return WorldDataConfiguration.CODEC.parse(var0).resultOrPartial(LOGGER::error).orElse(WorldDataConfiguration.DEFAULT);
+      return (WorldDataConfiguration)WorldDataConfiguration.CODEC.parse(var0).resultOrPartial(LOGGER::error).orElse(WorldDataConfiguration.DEFAULT);
    }
 
    public static WorldLoader.PackConfig getPackConfig(Dynamic<?> var0, PackRepository var1, boolean var2) {
@@ -149,7 +135,7 @@ public class LevelStorageSource {
    public static LevelDataAndDimensions getLevelDataAndDimensions(
       Dynamic<?> var0, WorldDataConfiguration var1, Registry<LevelStem> var2, RegistryAccess.Frozen var3
    ) {
-      Dynamic var4 = wrapWithRegistryOps(var0, var3);
+      Dynamic var4 = RegistryOps.injectRegistryContext(var0, var3);
       Dynamic var5 = var4.get("WorldGenSettings").orElseEmptyMap();
       WorldGenSettings var6 = (WorldGenSettings)WorldGenSettings.CODEC.parse(var5).getOrThrow(false, Util.prefix("WorldGenSettings: ", LOGGER::error));
       LevelSettings var7 = LevelSettings.parse(var4, var1);
@@ -157,11 +143,6 @@ public class LevelStorageSource {
       Lifecycle var9 = var8.lifecycle().add(var3.allRegistriesLifecycle());
       PrimaryLevelData var10 = PrimaryLevelData.parse(var4, var7, var8.specialWorldProperty(), var6.options(), var9);
       return new LevelDataAndDimensions(var10, var8);
-   }
-
-   private static <T> Dynamic<T> wrapWithRegistryOps(Dynamic<T> var0, RegistryAccess.Frozen var1) {
-      RegistryOps var2 = RegistryOps.create(var0.getOps(), var1);
-      return new Dynamic(var2, var0.getValue());
    }
 
    public String getName() {
@@ -401,7 +382,7 @@ public class LevelStorageSource {
    }
 
    public static record LevelDirectory(Path a) {
-      private final Path path;
+      final Path path;
 
       public LevelDirectory(Path var1) {
          super();
@@ -452,6 +433,18 @@ public class LevelStorageSource {
          this.levelId = var2;
          this.levelDirectory = new LevelStorageSource.LevelDirectory(var3);
          this.lock = DirectoryLock.create(var3);
+      }
+
+      public long estimateDiskSpace() {
+         try {
+            return Files.getFileStore(this.levelDirectory.path).getUsableSpace();
+         } catch (Exception var2) {
+            return 9223372036854775807L;
+         }
+      }
+
+      public boolean checkForLowDiskSpace() {
+         return this.estimateDiskSpace() < 67108864L;
       }
 
       public void safeClose() {

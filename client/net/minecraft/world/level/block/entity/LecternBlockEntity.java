@@ -4,6 +4,8 @@ import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -19,6 +21,8 @@ import net.minecraft.world.inventory.LecternMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.WrittenBookItem;
+import net.minecraft.world.item.component.WritableBookContent;
+import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.level.block.LecternBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec2;
@@ -146,7 +150,7 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
    public void setBook(ItemStack var1, @Nullable Player var2) {
       this.book = this.resolveBook(var1, var2);
       this.page = 0;
-      this.pageCount = WrittenBookItem.getPageCount(this.book);
+      this.pageCount = getPageCount(this.book);
       this.setChanged();
    }
 
@@ -197,23 +201,23 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
    }
 
    @Override
-   public void load(CompoundTag var1) {
-      super.load(var1);
+   public void load(CompoundTag var1, HolderLookup.Provider var2) {
+      super.load(var1, var2);
       if (var1.contains("Book", 10)) {
-         this.book = this.resolveBook(ItemStack.of(var1.getCompound("Book")), null);
+         this.book = this.resolveBook(ItemStack.parse(var2, var1.getCompound("Book")).orElse(ItemStack.EMPTY), null);
       } else {
          this.book = ItemStack.EMPTY;
       }
 
-      this.pageCount = WrittenBookItem.getPageCount(this.book);
+      this.pageCount = getPageCount(this.book);
       this.page = Mth.clamp(var1.getInt("Page"), 0, this.pageCount - 1);
    }
 
    @Override
-   protected void saveAdditional(CompoundTag var1) {
-      super.saveAdditional(var1);
+   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.saveAdditional(var1, var2);
       if (!this.getBook().isEmpty()) {
-         var1.put("Book", this.getBook().save(new CompoundTag()));
+         var1.put("Book", this.getBook().save(var2));
          var1.putInt("Page", this.page);
       }
    }
@@ -231,5 +235,15 @@ public class LecternBlockEntity extends BlockEntity implements Clearable, MenuPr
    @Override
    public Component getDisplayName() {
       return Component.translatable("container.lectern");
+   }
+
+   private static int getPageCount(ItemStack var0) {
+      WrittenBookContent var1 = var0.get(DataComponents.WRITTEN_BOOK_CONTENT);
+      if (var1 != null) {
+         return var1.pages().size();
+      } else {
+         WritableBookContent var2 = var0.get(DataComponents.WRITABLE_BOOK_CONTENT);
+         return var2 != null ? var2.pages().size() : 0;
+      }
    }
 }

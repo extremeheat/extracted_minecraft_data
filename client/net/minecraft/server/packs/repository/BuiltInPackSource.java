@@ -11,6 +11,7 @@ import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.packs.PackLocationInfo;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.VanillaPackResources;
@@ -21,6 +22,7 @@ import org.slf4j.Logger;
 public abstract class BuiltInPackSource implements RepositorySource {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final String VANILLA_ID = "vanilla";
+   public static final KnownPack CORE_PACK_INFO = KnownPack.vanilla("core");
    private final PackType packType;
    private final VanillaPackResources vanillaPack;
    private final ResourceLocation packDir;
@@ -72,10 +74,7 @@ public abstract class BuiltInPackSource implements RepositorySource {
       if (var1 != null && Files.isDirectory(var1)) {
          try {
             FolderRepositorySource.discoverPacks(
-               var1,
-               this.validator,
-               true,
-               (var2x, var3) -> var2.accept(pathToId(var2x), var2xx -> this.createBuiltinPack(var2xx, var3, this.getPackTitle(var2xx)))
+               var1, this.validator, (var2x, var3) -> var2.accept(pathToId(var2x), var2xx -> this.createBuiltinPack(var2xx, var3, this.getPackTitle(var2xx)))
             );
          } catch (IOException var4) {
             LOGGER.warn("Failed to discover packs in {}", var1, var4);
@@ -93,12 +92,12 @@ public abstract class BuiltInPackSource implements RepositorySource {
    protected static Pack.ResourcesSupplier fixedResources(final PackResources var0) {
       return new Pack.ResourcesSupplier() {
          @Override
-         public PackResources openPrimary(String var1) {
+         public PackResources openPrimary(PackLocationInfo var1) {
             return var0;
          }
 
          @Override
-         public PackResources openFull(String var1, Pack.Info var2) {
+         public PackResources openFull(PackLocationInfo var1, Pack.Metadata var2) {
             return var0;
          }
       };

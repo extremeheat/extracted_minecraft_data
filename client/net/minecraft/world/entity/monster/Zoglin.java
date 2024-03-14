@@ -17,10 +17,8 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -46,7 +44,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import org.joml.Vector3f;
 
 public class Zoglin extends Monster implements Enemy, HoglinBase {
    private static final EntityDataAccessor<Boolean> DATA_BABY_ID = SynchedEntityData.defineId(Zoglin.class, EntityDataSerializers.BOOLEAN);
@@ -146,9 +143,9 @@ public class Zoglin extends Monster implements Enemy, HoglinBase {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_BABY_ID, false);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_BABY_ID, false);
    }
 
    @Override
@@ -179,7 +176,7 @@ public class Zoglin extends Monster implements Enemy, HoglinBase {
       } else {
          this.attackAnimationRemainingTicks = 10;
          this.level().broadcastEntityEvent(this, (byte)4);
-         this.playSound(SoundEvents.ZOGLIN_ATTACK, 1.0F, this.getVoicePitch());
+         this.makeSound(SoundEvents.ZOGLIN_ATTACK);
          return HoglinBase.hurtAndThrowTarget(this, (LivingEntity)var1);
       }
    }
@@ -194,11 +191,6 @@ public class Zoglin extends Monster implements Enemy, HoglinBase {
       if (!this.isBaby()) {
          HoglinBase.throwTarget(this, var1);
       }
-   }
-
-   @Override
-   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      return new Vector3f(0.0F, var2.height + 0.09375F * var3, 0.0F);
    }
 
    @Override
@@ -272,7 +264,7 @@ public class Zoglin extends Monster implements Enemy, HoglinBase {
    public void handleEntityEvent(byte var1) {
       if (var1 == 4) {
          this.attackAnimationRemainingTicks = 10;
-         this.playSound(SoundEvents.ZOGLIN_ATTACK, 1.0F, this.getVoicePitch());
+         this.makeSound(SoundEvents.ZOGLIN_ATTACK);
       } else {
          super.handleEntityEvent(var1);
       }
@@ -308,18 +300,13 @@ public class Zoglin extends Monster implements Enemy, HoglinBase {
    }
 
    protected void playAngrySound() {
-      this.playSound(SoundEvents.ZOGLIN_ANGRY, 1.0F, this.getVoicePitch());
+      this.makeSound(SoundEvents.ZOGLIN_ANGRY);
    }
 
    @Override
    protected void sendDebugPackets() {
       super.sendDebugPackets();
       DebugPackets.sendEntityBrain(this);
-   }
-
-   @Override
-   public MobType getMobType() {
-      return MobType.UNDEAD;
    }
 
    @Override

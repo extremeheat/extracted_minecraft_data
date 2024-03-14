@@ -22,14 +22,14 @@ public final class LongJumpUtil {
       double var12 = var8.subtract(0.0, var8.y, 0.0).lengthSqr();
       double var14 = Math.sqrt(var12);
       double var16 = var8.y;
-      double var18 = 0.08;
+      double var18 = var0.getGravity();
       double var20 = Math.sin((double)(2.0F * var9));
       double var22 = Math.pow(Math.cos((double)var9), 2.0);
       double var24 = Math.sin((double)var9);
       double var26 = Math.cos((double)var9);
       double var28 = Math.sin(var10);
       double var30 = Math.cos(var10);
-      double var32 = var12 * 0.08 / (var14 * var20 - 2.0 * var16 * var22);
+      double var32 = var12 * var18 / (var14 * var20 - 2.0 * var16 * var22);
       if (var32 < 0.0) {
          return Optional.empty();
       } else {
@@ -47,7 +47,7 @@ public final class LongJumpUtil {
 
                for(int var45 = 0; var45 < var40 - 1; ++var45) {
                   var41 += var14 / (double)var40;
-                  double var46 = var24 / var26 * var41 - Math.pow(var41, 2.0) * 0.08 / (2.0 * var32 * Math.pow(var26, 2.0));
+                  double var46 = var24 / var26 * var41 - Math.pow(var41, 2.0) * var18 / (2.0 * var32 * Math.pow(var26, 2.0));
                   double var48 = var41 * var30;
                   double var50 = var41 * var28;
                   Vec3 var52 = new Vec3(var5.x + var48, var5.y + var46, var5.z + var50);
@@ -66,7 +66,7 @@ public final class LongJumpUtil {
 
    private static boolean isClearTransition(Mob var0, EntityDimensions var1, Vec3 var2, Vec3 var3) {
       Vec3 var4 = var3.subtract(var2);
-      double var5 = (double)Math.min(var1.width, var1.height);
+      double var5 = (double)Math.min(var1.width(), var1.height());
       int var7 = Mth.ceil(var4.length() / var5);
       Vec3 var8 = var4.normalize();
       Vec3 var9 = var2;

@@ -287,7 +287,7 @@ public class OceanRuinPieces {
             if (var7 != null) {
                var7.setPersistenceRequired();
                var7.moveTo(var2, 0.0F, 0.0F);
-               var7.finalizeSpawn(var3, var3.getCurrentDifficultyAt(var2), MobSpawnType.STRUCTURE, null, null);
+               var7.finalizeSpawn(var3, var3.getCurrentDifficultyAt(var2), MobSpawnType.STRUCTURE, null);
                var3.addFreshEntityWithPassengers(var7);
                if (var2.getY() > var3.getSeaLevel()) {
                   var3.setBlock(var2, Blocks.AIR.defaultBlockState(), 2);
@@ -299,9 +299,7 @@ public class OceanRuinPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          int var8 = var1.getHeight(Heightmap.Types.OCEAN_FLOOR_WG, this.templatePosition.getX(), this.templatePosition.getZ());
          this.templatePosition = new BlockPos(this.templatePosition.getX(), var8, this.templatePosition.getZ());
          BlockPos var9 = StructureTemplate.transform(

@@ -62,7 +62,7 @@ public class PickedUpItemTrigger extends SimpleCriterionTrigger<PickedUpItemTrig
       }
 
       public boolean matches(ServerPlayer var1, ItemStack var2, LootContext var3) {
-         if (this.item.isPresent() && !this.item.get().matches(var2)) {
+         if (this.item.isPresent() && !((ItemPredicate)this.item.get()).matches(var2)) {
             return false;
          } else {
             return !this.entity.isPresent() || this.entity.get().matches(var3);

@@ -8,7 +8,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -71,7 +70,7 @@ public class BellBlock extends BaseEntityBlock {
    }
 
    @Override
-   public void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
+   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
       boolean var7 = var2.hasNeighborSignal(var3);
       if (var7 != var1.getValue(POWERED)) {
          if (var7) {
@@ -83,15 +82,15 @@ public class BellBlock extends BaseEntityBlock {
    }
 
    @Override
-   public void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
+   protected void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
       Entity var5 = var4.getOwner();
       Player var6 = var5 instanceof Player ? (Player)var5 : null;
       this.onHit(var1, var2, var3, var6, true);
    }
 
    @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
-      return this.onHit(var2, var1, var6, var4, true) ? InteractionResult.sidedSuccess(var2.isClientSide) : InteractionResult.PASS;
+   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
+      return this.onHit(var2, var1, var5, var4, true) ? InteractionResult.sidedSuccess(var2.isClientSide) : InteractionResult.PASS;
    }
 
    public boolean onHit(Level var1, BlockState var2, BlockHitResult var3, @Nullable Player var4, boolean var5) {
@@ -169,17 +168,17 @@ public class BellBlock extends BaseEntityBlock {
    }
 
    @Override
-   public VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return this.getVoxelShape(var1);
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return this.getVoxelShape(var1);
    }
 
    @Override
-   public RenderShape getRenderShape(BlockState var1) {
+   protected RenderShape getRenderShape(BlockState var1) {
       return RenderShape.MODEL;
    }
 
@@ -222,7 +221,7 @@ public class BellBlock extends BaseEntityBlock {
    }
 
    @Override
-   public void onExplosionHit(BlockState var1, Level var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
+   protected void onExplosionHit(BlockState var1, Level var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
       if (var4.getBlockInteraction() == Explosion.BlockInteraction.TRIGGER_BLOCK && !var2.isClientSide()) {
          this.attemptToRing(var2, var3, null);
       }
@@ -231,7 +230,7 @@ public class BellBlock extends BaseEntityBlock {
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       BellAttachType var7 = var1.getValue(ATTACHMENT);
       Direction var8 = getConnectedDirection(var1).getOpposite();
       if (var8 == var2 && !var1.canSurvive(var4, var5) && var7 != BellAttachType.DOUBLE_WALL) {
@@ -252,7 +251,7 @@ public class BellBlock extends BaseEntityBlock {
    }
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       Direction var4 = getConnectedDirection(var1).getOpposite();
       return var4 == Direction.UP
          ? Block.canSupportCenter(var2, var3.above(), Direction.DOWN)
@@ -288,7 +287,7 @@ public class BellBlock extends BaseEntityBlock {
    }
 
    @Override
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
+   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
    }
 

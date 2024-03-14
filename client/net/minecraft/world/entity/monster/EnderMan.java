@@ -1,13 +1,13 @@
 package net.minecraft.world.entity.monster;
 
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -27,11 +27,9 @@ import net.minecraft.util.TimeUtil;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.NeutralMob;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -50,8 +48,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ThrownPotion;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.alchemy.Potion;
-import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.ClipContext;
@@ -61,18 +58,17 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Vector3f;
 
 public class EnderMan extends Monster implements NeutralMob {
    private static final UUID SPEED_MODIFIER_ATTACKING_UUID = UUID.fromString("020E0DFB-87AE-4653-9556-831010E291A0");
    private static final AttributeModifier SPEED_MODIFIER_ATTACKING = new AttributeModifier(
-      SPEED_MODIFIER_ATTACKING_UUID, "Attacking speed boost", 0.15000000596046448, AttributeModifier.Operation.ADDITION
+      SPEED_MODIFIER_ATTACKING_UUID, "Attacking speed boost", 0.15000000596046448, AttributeModifier.Operation.ADD_VALUE
    );
    private static final int DELAY_BETWEEN_CREEPY_STARE_SOUND = 400;
    private static final int MIN_DEAGGRESSION_TIME = 600;
@@ -90,8 +86,7 @@ public class EnderMan extends Monster implements NeutralMob {
 
    public EnderMan(EntityType<? extends EnderMan> var1, Level var2) {
       super(var1, var2);
-      this.setMaxUpStep(1.0F);
-      this.setPathfindingMalus(BlockPathTypes.WATER, -1.0F);
+      this.setPathfindingMalus(PathType.WATER, -1.0F);
    }
 
    @Override
@@ -115,7 +110,8 @@ public class EnderMan extends Monster implements NeutralMob {
          .add(Attributes.MAX_HEALTH, 40.0)
          .add(Attributes.MOVEMENT_SPEED, 0.30000001192092896)
          .add(Attributes.ATTACK_DAMAGE, 7.0)
-         .add(Attributes.FOLLOW_RANGE, 64.0);
+         .add(Attributes.FOLLOW_RANGE, 64.0)
+         .add(Attributes.STEP_HEIGHT, 1.0);
    }
 
    @Override
@@ -126,7 +122,7 @@ public class EnderMan extends Monster implements NeutralMob {
          this.targetChangeTime = 0;
          this.entityData.set(DATA_CREEPY, false);
          this.entityData.set(DATA_STARED_AT, false);
-         var2.removeModifier(SPEED_MODIFIER_ATTACKING.getId());
+         var2.removeModifier(SPEED_MODIFIER_ATTACKING.id());
       } else {
          this.targetChangeTime = this.tickCount;
          this.entityData.set(DATA_CREEPY, true);
@@ -137,11 +133,11 @@ public class EnderMan extends Monster implements NeutralMob {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_CARRY_STATE, Optional.empty());
-      this.entityData.define(DATA_CREEPY, false);
-      this.entityData.define(DATA_STARED_AT, false);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_CARRY_STATE, Optional.empty());
+      var1.define(DATA_CREEPY, false);
+      var1.define(DATA_STARED_AT, false);
    }
 
    @Override
@@ -226,16 +222,6 @@ public class EnderMan extends Monster implements NeutralMob {
          double var7 = var3.dot(var4);
          return var7 > 1.0 - 0.025 / var5 ? var1.hasLineOfSight(this) : false;
       }
-   }
-
-   @Override
-   protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
-      return 2.55F;
-   }
-
-   @Override
-   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      return new Vector3f(0.0F, var2.height - 0.09375F * var3, 0.0F);
    }
 
    @Override
@@ -400,10 +386,8 @@ public class EnderMan extends Monster implements NeutralMob {
 
    private boolean hurtWithCleanWater(DamageSource var1, ThrownPotion var2, float var3) {
       ItemStack var4 = var2.getItem();
-      Potion var5 = PotionUtils.getPotion(var4);
-      List var6 = PotionUtils.getMobEffects(var4);
-      boolean var7 = var5 == Potions.WATER && var6.isEmpty();
-      return var7 ? super.hurt(var1, var3) : false;
+      PotionContents var5 = var4.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
+      return var5.is(Potions.WATER) ? super.hurt(var1, var3) : false;
    }
 
    public boolean isCreepy() {

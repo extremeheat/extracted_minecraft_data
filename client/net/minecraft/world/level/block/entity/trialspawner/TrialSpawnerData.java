@@ -76,7 +76,7 @@ public class TrialSpawnerData {
    public void setSpawnPotentialsFromConfig(TrialSpawnerConfig var1) {
       SimpleWeightedRandomList var2 = var1.spawnPotentialsDefinition();
       if (var2.isEmpty()) {
-         this.spawnPotentials = SimpleWeightedRandomList.single(this.nextSpawnData.orElseGet(SpawnData::new));
+         this.spawnPotentials = SimpleWeightedRandomList.single((SpawnData)this.nextSpawnData.orElseGet(SpawnData::new));
       } else {
          this.spawnPotentials = var2;
       }
@@ -90,9 +90,9 @@ public class TrialSpawnerData {
       this.currentMobs.clear();
    }
 
-   public boolean hasMobToSpawn() {
-      boolean var1 = this.nextSpawnData.isPresent() && this.nextSpawnData.get().getEntityToSpawn().contains("id", 8);
-      return var1 || !this.spawnPotentials.isEmpty();
+   public boolean hasMobToSpawn(TrialSpawner var1, RandomSource var2) {
+      boolean var3 = this.getOrCreateNextSpawnData(var1, var2).getEntityToSpawn().contains("id", 8);
+      return var3 || !this.spawnPotentials.isEmpty();
    }
 
    public boolean hasFinishedSpawningAllMobs(TrialSpawnerConfig var1, int var2) {
@@ -115,10 +115,10 @@ public class TrialSpawnerData {
       return Math.max(0, this.detectedPlayers.size() - 1);
    }
 
-   public void tryDetectPlayers(ServerLevel var1, BlockPos var2, PlayerDetector var3, int var4) {
-      List var5 = var3.detect(var1, var2, var4);
-      boolean var6 = this.detectedPlayers.addAll(var5);
-      if (var6) {
+   public void tryDetectPlayers(ServerLevel var1, BlockPos var2, PlayerDetector var3, PlayerDetector.EntitySelector var4, int var5) {
+      List var6 = var3.detect(var1, var4, var2, (double)var5);
+      boolean var7 = this.detectedPlayers.addAll(var6);
+      if (var7) {
          this.nextMobSpawnsAt = Math.max(var1.getGameTime() + 40L, this.nextMobSpawnsAt);
          var1.levelEvent(3013, var2, this.detectedPlayers.size());
       }
@@ -144,11 +144,12 @@ public class TrialSpawnerData {
 
    protected SpawnData getOrCreateNextSpawnData(TrialSpawner var1, RandomSource var2) {
       if (this.nextSpawnData.isPresent()) {
-         return this.nextSpawnData.get();
+         return (SpawnData)this.nextSpawnData.get();
       } else {
-         this.nextSpawnData = Optional.of(this.spawnPotentials.getRandom(var2).map(WeightedEntry.Wrapper::getData).orElseGet(SpawnData::new));
+         SpawnData var3 = (SpawnData)this.spawnPotentials.getRandom(var2).map(WeightedEntry.Wrapper::getData).orElseGet(SpawnData::new);
+         this.nextSpawnData = Optional.of(var3);
          var1.markUpdated();
-         return this.nextSpawnData.get();
+         return var3;
       }
    }
 

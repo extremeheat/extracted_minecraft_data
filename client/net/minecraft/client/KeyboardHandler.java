@@ -16,13 +16,13 @@ import net.minecraft.ReportedException;
 import net.minecraft.Util;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.SimpleOptionsSubScreen;
 import net.minecraft.client.gui.screens.controls.KeyBindsScreen;
 import net.minecraft.client.gui.screens.debug.GameModeSwitcherScreen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -38,6 +38,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.NativeModuleLister;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -262,22 +263,23 @@ public class KeyboardHandler {
       if (var3 != null) {
          switch(var3.getType()) {
             case BLOCK:
-               BlockPos var8 = ((BlockHitResult)var3).getBlockPos();
-               BlockState var9 = this.minecraft.player.level().getBlockState(var8);
+               BlockPos var9 = ((BlockHitResult)var3).getBlockPos();
+               Level var10 = this.minecraft.player.level();
+               BlockState var11 = var10.getBlockState(var9);
                if (var1) {
                   if (var2) {
-                     this.minecraft.player.connection.getDebugQueryHandler().queryBlockEntityTag(var8, var3x -> {
-                        this.copyCreateBlockCommand(var9, var8, var3x);
+                     this.minecraft.player.connection.getDebugQueryHandler().queryBlockEntityTag(var9, var3x -> {
+                        this.copyCreateBlockCommand(var11, var9, var3x);
                         this.debugFeedbackTranslated("debug.inspect.server.block");
                      });
                   } else {
-                     BlockEntity var10 = this.minecraft.player.level().getBlockEntity(var8);
-                     CompoundTag var7 = var10 != null ? var10.saveWithoutMetadata() : null;
-                     this.copyCreateBlockCommand(var9, var8, var7);
+                     BlockEntity var7 = var10.getBlockEntity(var9);
+                     CompoundTag var8 = var7 != null ? var7.saveWithoutMetadata(var10.registryAccess()) : null;
+                     this.copyCreateBlockCommand(var11, var9, var8);
                      this.debugFeedbackTranslated("debug.inspect.client.block");
                   }
                } else {
-                  this.copyCreateBlockCommand(var9, var8, null);
+                  this.copyCreateBlockCommand(var11, var9, null);
                   this.debugFeedbackTranslated("debug.inspect.client.block");
                }
                break;
@@ -380,32 +382,23 @@ public class KeyboardHandler {
             }
          }
 
-         if (this.minecraft.getNarrator().isActive() && this.minecraft.options.narratorHotkey().get()) {
-            boolean var10000;
-            label155: {
-               if (var8 != null) {
-                  GuiEventListener var11 = var8.getFocused();
-                  if (var11 instanceof EditBox var10 && var10.canConsumeInput()) {
-                     var10000 = false;
-                     break label155;
+         if (var5 != 0) {
+            boolean var9 = var8 == null || !(var8.getFocused() instanceof EditBox) || !((EditBox)var8.getFocused()).canConsumeInput();
+            if (var9) {
+               if (Screen.hasControlDown() && var3 == 66 && this.minecraft.getNarrator().isActive()) {
+                  boolean var10 = this.minecraft.options.narrator().get() == NarratorStatus.OFF;
+                  this.minecraft.options.narrator().set(NarratorStatus.byId(this.minecraft.options.narrator().get().getId() + 1));
+                  this.minecraft.options.save();
+                  if (var8 instanceof SimpleOptionsSubScreen) {
+                     ((SimpleOptionsSubScreen)var8).updateNarratorButton();
+                  }
+
+                  if (var10 && var8 != null) {
+                     var8.narrationEnabled();
                   }
                }
 
-               var10000 = true;
-            }
-
-            boolean var9 = var10000;
-            if (var5 != 0 && var3 == 66 && Screen.hasControlDown() && var9) {
-               boolean var16 = this.minecraft.options.narrator().get() == NarratorStatus.OFF;
-               this.minecraft.options.narrator().set(NarratorStatus.byId(this.minecraft.options.narrator().get().getId() + 1));
-               this.minecraft.options.save();
-               if (var8 instanceof SimpleOptionsSubScreen) {
-                  ((SimpleOptionsSubScreen)var8).updateNarratorButton();
-               }
-
-               if (var16 && var8 != null) {
-                  var8.narrationEnabled();
-               }
+               LocalPlayer var16 = this.minecraft.player;
             }
          }
 
@@ -426,28 +419,28 @@ public class KeyboardHandler {
 
          InputConstants.Key var15;
          boolean var17;
-         boolean var20;
+         boolean var10000;
          label185: {
             var15 = InputConstants.getKey(var3, var4);
             var17 = this.minecraft.screen == null;
-            label144:
+            label145:
             if (!var17) {
                Screen var13 = this.minecraft.screen;
                if (var13 instanceof PauseScreen var12 && !var12.showsPauseMenu()) {
-                  break label144;
+                  break label145;
                }
 
-               var20 = false;
+               var10000 = false;
                break label185;
             }
 
-            var20 = true;
+            var10000 = true;
          }
 
-         boolean var18 = var20;
+         boolean var11 = var10000;
          if (var5 == 0) {
             KeyMapping.set(var15, false);
-            if (var18 && var3 == 292) {
+            if (var11 && var3 == 292) {
                if (this.handledDebugKey) {
                   this.handledDebugKey = false;
                } else {
@@ -455,19 +448,19 @@ public class KeyboardHandler {
                }
             }
          } else {
-            boolean var19 = false;
-            if (var18) {
+            boolean var18 = false;
+            if (var11) {
                if (var3 == 293 && this.minecraft.gameRenderer != null) {
                   this.minecraft.gameRenderer.togglePostEffect();
                }
 
                if (var3 == 256) {
                   this.minecraft.pauseGame(var7);
-                  var19 |= var7;
+                  var18 |= var7;
                }
 
-               var19 |= var7 && this.handleDebugKeys(var3);
-               this.handledDebugKey |= var19;
+               var18 |= var7 && this.handleDebugKeys(var3);
+               this.handledDebugKey |= var18;
                if (var3 == 290) {
                   this.minecraft.options.hideGui = !this.minecraft.options.hideGui;
                }
@@ -478,7 +471,7 @@ public class KeyboardHandler {
             }
 
             if (var17) {
-               if (var19) {
+               if (var18) {
                   KeyMapping.set(var15, false);
                } else {
                   KeyMapping.set(var15, true);

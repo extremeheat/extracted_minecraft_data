@@ -4,12 +4,16 @@ import com.google.common.collect.Sets;
 import java.util.Set;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 
-public record ClientboundLoginPacket(int a, boolean b, Set<ResourceKey<Level>> c, int d, int e, int f, boolean g, boolean h, boolean i, CommonPlayerSpawnInfo j)
-   implements Packet<ClientGamePacketListener> {
+public record ClientboundLoginPacket(
+   int b, boolean c, Set<ResourceKey<Level>> d, int e, int f, int g, boolean h, boolean i, boolean j, CommonPlayerSpawnInfo k, boolean l
+) implements Packet<ClientGamePacketListener> {
    private final int playerId;
    private final boolean hardcore;
    private final Set<ResourceKey<Level>> levels;
@@ -20,8 +24,12 @@ public record ClientboundLoginPacket(int a, boolean b, Set<ResourceKey<Level>> c
    private final boolean showDeathScreen;
    private final boolean doLimitedCrafting;
    private final CommonPlayerSpawnInfo commonPlayerSpawnInfo;
+   private final boolean enforcesSecureChat;
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundLoginPacket> STREAM_CODEC = Packet.codec(
+      ClientboundLoginPacket::write, ClientboundLoginPacket::new
+   );
 
-   public ClientboundLoginPacket(FriendlyByteBuf var1) {
+   private ClientboundLoginPacket(RegistryFriendlyByteBuf var1) {
       this(
          var1.readInt(),
          var1.readBoolean(),
@@ -32,7 +40,8 @@ public record ClientboundLoginPacket(int a, boolean b, Set<ResourceKey<Level>> c
          var1.readBoolean(),
          var1.readBoolean(),
          var1.readBoolean(),
-         new CommonPlayerSpawnInfo(var1)
+         new CommonPlayerSpawnInfo(var1),
+         var1.readBoolean()
       );
    }
 
@@ -46,7 +55,8 @@ public record ClientboundLoginPacket(int a, boolean b, Set<ResourceKey<Level>> c
       boolean var7,
       boolean var8,
       boolean var9,
-      CommonPlayerSpawnInfo var10
+      CommonPlayerSpawnInfo var10,
+      boolean var11
    ) {
       super();
       this.playerId = var1;
@@ -59,10 +69,10 @@ public record ClientboundLoginPacket(int a, boolean b, Set<ResourceKey<Level>> c
       this.showDeathScreen = var8;
       this.doLimitedCrafting = var9;
       this.commonPlayerSpawnInfo = var10;
+      this.enforcesSecureChat = var11;
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(RegistryFriendlyByteBuf var1) {
       var1.writeInt(this.playerId);
       var1.writeBoolean(this.hardcore);
       var1.writeCollection(this.levels, FriendlyByteBuf::writeResourceKey);
@@ -73,6 +83,12 @@ public record ClientboundLoginPacket(int a, boolean b, Set<ResourceKey<Level>> c
       var1.writeBoolean(this.showDeathScreen);
       var1.writeBoolean(this.doLimitedCrafting);
       this.commonPlayerSpawnInfo.write(var1);
+      var1.writeBoolean(this.enforcesSecureChat);
+   }
+
+   @Override
+   public PacketType<ClientboundLoginPacket> type() {
+      return GamePacketTypes.CLIENTBOUND_LOGIN;
    }
 
    public void handle(ClientGamePacketListener var1) {

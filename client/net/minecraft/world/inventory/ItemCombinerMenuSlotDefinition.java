@@ -29,7 +29,7 @@ public class ItemCombinerMenuSlotDefinition {
    }
 
    public ItemCombinerMenuSlotDefinition.SlotDefinition getSlot(int var1) {
-      return this.slots.get(var1);
+      return (ItemCombinerMenuSlotDefinition.SlotDefinition)this.slots.get(var1);
    }
 
    public ItemCombinerMenuSlotDefinition.SlotDefinition getResultSlot() {
@@ -53,7 +53,7 @@ public class ItemCombinerMenuSlotDefinition {
    }
 
    public static class Builder {
-      private final List<ItemCombinerMenuSlotDefinition.SlotDefinition> slots = new ArrayList<>();
+      private final List<ItemCombinerMenuSlotDefinition.SlotDefinition> slots = new ArrayList();
       private ItemCombinerMenuSlotDefinition.SlotDefinition resultSlot = ItemCombinerMenuSlotDefinition.SlotDefinition.EMPTY;
 
       public Builder() {

@@ -22,7 +22,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ExperienceOrb;
@@ -50,7 +49,6 @@ import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Vector3f;
 import org.slf4j.Logger;
 
 public class EnderDragon extends Mob implements Enemy {
@@ -141,9 +139,9 @@ public class EnderDragon extends Mob implements Enemy {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.getEntityData().define(DATA_PHASE, EnderDragonPhase.HOVERING.getId());
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_PHASE, EnderDragonPhase.HOVERING.getId());
    }
 
    public double[] getLatencyPos(int var1, float var2) {
@@ -918,10 +916,5 @@ public class EnderDragon extends Mob implements Enemy {
    @Override
    public boolean canAttack(LivingEntity var1) {
       return var1.canBeSeenAsEnemy();
-   }
-
-   @Override
-   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      return new Vector3f(0.0F, this.body.getBbHeight(), 0.0F);
    }
 }

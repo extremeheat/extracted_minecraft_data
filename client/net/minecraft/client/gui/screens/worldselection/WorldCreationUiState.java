@@ -34,7 +34,7 @@ public class WorldCreationUiState {
    private WorldCreationUiState.SelectedGameMode gameMode = WorldCreationUiState.SelectedGameMode.SURVIVAL;
    private Difficulty difficulty = Difficulty.NORMAL;
    @Nullable
-   private Boolean allowCheats;
+   private Boolean allowCommands;
    private String seed;
    private boolean generateStructures;
    private boolean bonusChest;
@@ -42,8 +42,8 @@ public class WorldCreationUiState {
    private String targetFolder;
    private WorldCreationContext settings;
    private WorldCreationUiState.WorldTypeEntry worldType;
-   private final List<WorldCreationUiState.WorldTypeEntry> normalPresetList = new ArrayList<>();
-   private final List<WorldCreationUiState.WorldTypeEntry> altPresetList = new ArrayList<>();
+   private final List<WorldCreationUiState.WorldTypeEntry> normalPresetList = new ArrayList();
+   private final List<WorldCreationUiState.WorldTypeEntry> altPresetList = new ArrayList();
    private GameRules gameRules = new GameRules();
 
    public WorldCreationUiState(Path var1, WorldCreationContext var2, Optional<ResourceKey<WorldPreset>> var3, OptionalLong var4) {
@@ -128,20 +128,20 @@ public class WorldCreationUiState {
       return this.getGameMode() == WorldCreationUiState.SelectedGameMode.HARDCORE;
    }
 
-   public void setAllowCheats(boolean var1) {
-      this.allowCheats = var1;
+   public void setAllowCommands(boolean var1) {
+      this.allowCommands = var1;
       this.onChanged();
    }
 
-   public boolean isAllowCheats() {
+   public boolean isAllowCommands() {
       if (this.isDebug()) {
          return true;
       } else if (this.isHardcore()) {
          return false;
-      } else if (this.allowCheats == null) {
+      } else if (this.allowCommands == null) {
          return this.getGameMode() == WorldCreationUiState.SelectedGameMode.CREATIVE;
       } else {
-         return this.allowCheats;
+         return this.allowCommands;
       }
    }
 
@@ -244,7 +244,9 @@ public class WorldCreationUiState {
       this.altPresetList.addAll(getNonEmptyList(var1, WorldPresetTags.EXTENDED).orElse(this.normalPresetList));
       Holder var2 = this.worldType.preset();
       if (var2 != null) {
-         this.worldType = findPreset(this.getSettings(), var2.unwrapKey()).map(WorldCreationUiState.WorldTypeEntry::new).orElse(this.normalPresetList.get(0));
+         this.worldType = (WorldCreationUiState.WorldTypeEntry)findPreset(this.getSettings(), var2.unwrapKey())
+            .map(WorldCreationUiState.WorldTypeEntry::new)
+            .orElse((WorldCreationUiState.WorldTypeEntry)this.normalPresetList.get(0));
       }
    }
 

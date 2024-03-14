@@ -1,5 +1,6 @@
 package net.minecraft.world.item;
 
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionResult;
@@ -36,30 +37,27 @@ public class LeadItem extends Item {
 
    public static InteractionResult bindPlayerMobs(Player var0, Level var1, BlockPos var2) {
       LeashFenceKnotEntity var3 = null;
-      boolean var4 = false;
-      double var5 = 7.0;
-      int var7 = var2.getX();
-      int var8 = var2.getY();
-      int var9 = var2.getZ();
+      double var4 = 7.0;
+      int var6 = var2.getX();
+      int var7 = var2.getY();
+      int var8 = var2.getZ();
+      AABB var9 = new AABB((double)var6 - 7.0, (double)var7 - 7.0, (double)var8 - 7.0, (double)var6 + 7.0, (double)var7 + 7.0, (double)var8 + 7.0);
+      List var10 = var1.getEntitiesOfClass(Mob.class, var9, var1x -> var1x.getLeashHolder() == var0);
 
-      for(Mob var12 : var1.getEntitiesOfClass(
-         Mob.class, new AABB((double)var7 - 7.0, (double)var8 - 7.0, (double)var9 - 7.0, (double)var7 + 7.0, (double)var8 + 7.0, (double)var9 + 7.0)
-      )) {
-         if (var12.getLeashHolder() == var0) {
-            if (var3 == null) {
-               var3 = LeashFenceKnotEntity.getOrCreateKnot(var1, var2);
-               var3.playPlacementSound();
-            }
-
-            var12.setLeashedTo(var3, true);
-            var4 = true;
+      for(Mob var12 : var10) {
+         if (var3 == null) {
+            var3 = LeashFenceKnotEntity.getOrCreateKnot(var1, var2);
+            var3.playPlacementSound();
          }
+
+         var12.setLeashedTo(var3, true);
       }
 
-      if (var4) {
+      if (!var10.isEmpty()) {
          var1.gameEvent(GameEvent.BLOCK_ATTACH, var2, GameEvent.Context.of(var0));
+         return InteractionResult.SUCCESS;
+      } else {
+         return InteractionResult.PASS;
       }
-
-      return var4 ? InteractionResult.SUCCESS : InteractionResult.PASS;
    }
 }

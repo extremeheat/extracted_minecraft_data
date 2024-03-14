@@ -57,7 +57,7 @@ public class PoiRecord {
    }
 
    protected boolean releaseTicket() {
-      if (this.freeTickets >= this.poiType.value().maxTickets()) {
+      if (this.freeTickets >= ((PoiType)this.poiType.value()).maxTickets()) {
          return false;
       } else {
          ++this.freeTickets;
@@ -71,7 +71,7 @@ public class PoiRecord {
    }
 
    public boolean isOccupied() {
-      return this.freeTickets != this.poiType.value().maxTickets();
+      return this.freeTickets != ((PoiType)this.poiType.value()).maxTickets();
    }
 
    public BlockPos getPos() {

@@ -71,6 +71,7 @@ public class EntityRenderers {
    static {
       register(EntityType.ALLAY, AllayRenderer::new);
       register(EntityType.AREA_EFFECT_CLOUD, NoopRenderer::new);
+      register(EntityType.ARMADILLO, ArmadilloRenderer::new);
       register(EntityType.ARMOR_STAND, ArmorStandRenderer::new);
       register(EntityType.ARROW, TippableArrowRenderer::new);
       register(EntityType.AXOLOTL, AxolotlRenderer::new);
@@ -79,7 +80,9 @@ public class EntityRenderers {
       register(EntityType.BLAZE, BlazeRenderer::new);
       register(EntityType.BLOCK_DISPLAY, DisplayRenderer.BlockDisplayRenderer::new);
       register(EntityType.BOAT, var0 -> new BoatRenderer(var0, false));
+      register(EntityType.BOGGED, BoggedRenderer::new);
       register(EntityType.BREEZE, BreezeRenderer::new);
+      register(EntityType.BREEZE_WIND_CHARGE, WindChargeRenderer::new);
       register(EntityType.CAT, CatRenderer::new);
       register(EntityType.CAMEL, var0 -> new CamelRenderer(var0, ModelLayers.CAMEL));
       register(EntityType.CAVE_SPIDER, CaveSpiderRenderer::new);

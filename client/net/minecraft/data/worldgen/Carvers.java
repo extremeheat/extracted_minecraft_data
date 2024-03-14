@@ -31,7 +31,7 @@ public class Carvers {
       return ResourceKey.create(Registries.CONFIGURED_CARVER, new ResourceLocation(var0));
    }
 
-   public static void bootstrap(BootstapContext<ConfiguredWorldCarver<?>> var0) {
+   public static void bootstrap(BootstrapContext<ConfiguredWorldCarver<?>> var0) {
       HolderGetter var1 = var0.lookup(Registries.BLOCK);
       var0.register(
          CAVE,

@@ -3,14 +3,22 @@ package net.minecraft.network.protocol.game;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import java.util.function.IntFunction;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.item.ItemStack;
 
 public class ServerboundContainerClickPacket implements Packet<ServerGamePacketListener> {
+   public static final StreamCodec<RegistryFriendlyByteBuf, ServerboundContainerClickPacket> STREAM_CODEC = Packet.codec(
+      ServerboundContainerClickPacket::write, ServerboundContainerClickPacket::new
+   );
    private static final int MAX_SLOT_COUNT = 128;
+   private static final StreamCodec<RegistryFriendlyByteBuf, Int2ObjectMap<ItemStack>> SLOTS_STREAM_CODEC = ByteBufCodecs.map(
+      Int2ObjectOpenHashMap::new, ByteBufCodecs.SHORT.map(Short::intValue, Integer::shortValue), ItemStack.OPTIONAL_STREAM_CODEC, 128
+   );
    private final int containerId;
    private final int stateId;
    private final int slotNum;
@@ -30,27 +38,30 @@ public class ServerboundContainerClickPacket implements Packet<ServerGamePacketL
       this.changedSlots = Int2ObjectMaps.unmodifiable(var7);
    }
 
-   public ServerboundContainerClickPacket(FriendlyByteBuf var1) {
+   private ServerboundContainerClickPacket(RegistryFriendlyByteBuf var1) {
       super();
       this.containerId = var1.readByte();
       this.stateId = var1.readVarInt();
       this.slotNum = var1.readShort();
       this.buttonNum = var1.readByte();
       this.clickType = var1.readEnum(ClickType.class);
-      IntFunction var2 = FriendlyByteBuf.limitValue(Int2ObjectOpenHashMap::new, 128);
-      this.changedSlots = Int2ObjectMaps.unmodifiable(var1.readMap(var2, var0 -> Integer.valueOf(var0.readShort()), FriendlyByteBuf::readItem));
-      this.carriedItem = var1.readItem();
+      this.changedSlots = Int2ObjectMaps.unmodifiable((Int2ObjectMap)SLOTS_STREAM_CODEC.decode(var1));
+      this.carriedItem = ItemStack.OPTIONAL_STREAM_CODEC.decode(var1);
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(RegistryFriendlyByteBuf var1) {
       var1.writeByte(this.containerId);
       var1.writeVarInt(this.stateId);
       var1.writeShort(this.slotNum);
       var1.writeByte(this.buttonNum);
       var1.writeEnum(this.clickType);
-      var1.writeMap(this.changedSlots, FriendlyByteBuf::writeShort, FriendlyByteBuf::writeItem);
-      var1.writeItem(this.carriedItem);
+      SLOTS_STREAM_CODEC.encode(var1, this.changedSlots);
+      ItemStack.OPTIONAL_STREAM_CODEC.encode(var1, this.carriedItem);
+   }
+
+   @Override
+   public PacketType<ServerboundContainerClickPacket> type() {
+      return GamePacketTypes.SERVERBOUND_CONTAINER_CLICK;
    }
 
    public void handle(ServerGamePacketListener var1) {

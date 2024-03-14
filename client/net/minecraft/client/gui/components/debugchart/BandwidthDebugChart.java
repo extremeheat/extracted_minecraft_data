@@ -5,7 +5,7 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.util.Mth;
-import net.minecraft.util.SampleLogger;
+import net.minecraft.util.debugchart.SampleStorage;
 
 public class BandwidthDebugChart extends AbstractDebugChart {
    private static final int MIN_COLOR = -16711681;
@@ -15,7 +15,7 @@ public class BandwidthDebugChart extends AbstractDebugChart {
    private static final int MEGABYTE = 1048576;
    private static final int CHART_TOP_VALUE = 1048576;
 
-   public BandwidthDebugChart(Font var1, SampleLogger var2) {
+   public BandwidthDebugChart(Font var1, SampleStorage var2) {
       super(var1, var2);
    }
 

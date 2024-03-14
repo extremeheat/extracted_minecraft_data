@@ -2,10 +2,12 @@ package net.minecraft.resources;
 
 import com.google.common.collect.MapMaker;
 import com.mojang.serialization.Codec;
+import io.netty.buffer.ByteBuf;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentMap;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.codec.StreamCodec;
 
 public class ResourceKey<T> {
    private static final ConcurrentMap<ResourceKey.InternKey, ResourceKey<?>> VALUES = new MapMaker().weakValues().makeMap();
@@ -14,6 +16,10 @@ public class ResourceKey<T> {
 
    public static <T> Codec<ResourceKey<T>> codec(ResourceKey<? extends Registry<T>> var0) {
       return ResourceLocation.CODEC.xmap(var1 -> create(var0, var1), ResourceKey::location);
+   }
+
+   public static <T> StreamCodec<ByteBuf, ResourceKey<T>> streamCodec(ResourceKey<? extends Registry<T>> var0) {
+      return ResourceLocation.STREAM_CODEC.map(var1 -> create(var0, var1), ResourceKey::location);
    }
 
    public static <T> ResourceKey<T> create(ResourceKey<? extends Registry<T>> var0, ResourceLocation var1) {

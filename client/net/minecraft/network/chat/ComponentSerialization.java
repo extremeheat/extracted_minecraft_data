@@ -1,7 +1,10 @@
 package net.minecraft.network.chat;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 import com.mojang.datafixers.util.Either;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
@@ -13,25 +16,70 @@ import com.mojang.serialization.MapLike;
 import com.mojang.serialization.RecordBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
+import io.netty.buffer.ByteBuf;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.contents.KeybindContents;
 import net.minecraft.network.chat.contents.NbtContents;
 import net.minecraft.network.chat.contents.PlainTextContents;
 import net.minecraft.network.chat.contents.ScoreContents;
 import net.minecraft.network.chat.contents.SelectorContents;
 import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.util.GsonHelper;
 import net.minecraft.util.StringRepresentable;
 
 public class ComponentSerialization {
    public static final Codec<Component> CODEC = ExtraCodecs.recursive("Component", ComponentSerialization::createCodec);
-   public static final Codec<Component> FLAT_CODEC = ExtraCodecs.FLAT_JSON
-      .flatXmap(var0 -> CODEC.parse(JsonOps.INSTANCE, var0), var0 -> CODEC.encodeStart(JsonOps.INSTANCE, var0));
+   public static final StreamCodec<RegistryFriendlyByteBuf, Component> STREAM_CODEC = ByteBufCodecs.fromCodecWithRegistries(CODEC);
+   public static final StreamCodec<RegistryFriendlyByteBuf, Optional<Component>> OPTIONAL_STREAM_CODEC = STREAM_CODEC.apply(ByteBufCodecs::optional);
+   public static final StreamCodec<RegistryFriendlyByteBuf, Component> TRUSTED_STREAM_CODEC = ByteBufCodecs.fromCodecWithRegistriesTrusted(CODEC);
+   public static final StreamCodec<RegistryFriendlyByteBuf, Optional<Component>> TRUSTED_OPTIONAL_STREAM_CODEC = TRUSTED_STREAM_CODEC.apply(
+      ByteBufCodecs::optional
+   );
+   public static final StreamCodec<ByteBuf, Component> TRUSTED_CONTEXT_FREE_STREAM_CODEC = ByteBufCodecs.fromCodecTrusted(CODEC);
+   public static final Codec<Component> FLAT_CODEC = flatCodec(2147483647);
 
    public ComponentSerialization() {
       super();
+   }
+
+   public static Codec<Component> flatCodec(int var0) {
+      final Codec var1 = ExtraCodecs.sizeLimitedString(0, var0);
+      return new Codec<Component>() {
+         public <T> DataResult<Pair<Component, T>> decode(DynamicOps<T> var1x, T var2) {
+            DynamicOps var3 = asJsonOps(var1x);
+            return var1.decode(var1x, var2).flatMap(var1xxx -> {
+               try {
+                  JsonElement var2xx = JsonParser.parseString((String)var1xxx.getFirst());
+                  return ComponentSerialization.CODEC.parse(var3, var2xx).map(var1xxxxx -> Pair.of(var1xxxxx, var1xxx.getSecond()));
+               } catch (JsonParseException var3xx) {
+                  return DataResult.error(var3xx::getMessage);
+               }
+            });
+         }
+
+         public <T> DataResult<T> encode(Component var1x, DynamicOps<T> var2, T var3) {
+            DynamicOps var4 = asJsonOps(var2);
+            return ComponentSerialization.CODEC.encodeStart(var4, var1x).flatMap(var2x -> {
+               try {
+                  return var1.encodeStart(var2, GsonHelper.toStableString(var2x));
+               } catch (IllegalArgumentException var4xx) {
+                  return DataResult.error(var4xx::getMessage);
+               }
+            });
+         }
+
+         private static <T> DynamicOps<JsonElement> asJsonOps(DynamicOps<T> var0) {
+            return (DynamicOps<JsonElement>)(var0 instanceof RegistryOps var1x ? var1x.withParent(JsonOps.INSTANCE) : JsonOps.INSTANCE);
+         }
+      };
    }
 
    private static MutableComponent createFromList(List<Component> var0) {

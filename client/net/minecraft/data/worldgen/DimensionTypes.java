@@ -12,7 +12,7 @@ public class DimensionTypes {
       super();
    }
 
-   public static void bootstrap(BootstapContext<DimensionType> var0) {
+   public static void bootstrap(BootstrapContext<DimensionType> var0) {
       var0.register(
          BuiltinDimensionTypes.OVERWORLD,
          new DimensionType(

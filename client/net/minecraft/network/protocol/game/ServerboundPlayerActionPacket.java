@@ -3,9 +3,14 @@ package net.minecraft.network.protocol.game;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 
 public class ServerboundPlayerActionPacket implements Packet<ServerGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ServerboundPlayerActionPacket> STREAM_CODEC = Packet.codec(
+      ServerboundPlayerActionPacket::write, ServerboundPlayerActionPacket::new
+   );
    private final BlockPos pos;
    private final Direction direction;
    private final ServerboundPlayerActionPacket.Action action;
@@ -23,7 +28,7 @@ public class ServerboundPlayerActionPacket implements Packet<ServerGamePacketLis
       this(var1, var2, var3, 0);
    }
 
-   public ServerboundPlayerActionPacket(FriendlyByteBuf var1) {
+   private ServerboundPlayerActionPacket(FriendlyByteBuf var1) {
       super();
       this.action = var1.readEnum(ServerboundPlayerActionPacket.Action.class);
       this.pos = var1.readBlockPos();
@@ -31,12 +36,16 @@ public class ServerboundPlayerActionPacket implements Packet<ServerGamePacketLis
       this.sequence = var1.readVarInt();
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       var1.writeEnum(this.action);
       var1.writeBlockPos(this.pos);
       var1.writeByte(this.direction.get3DDataValue());
       var1.writeVarInt(this.sequence);
+   }
+
+   @Override
+   public PacketType<ServerboundPlayerActionPacket> type() {
+      return GamePacketTypes.SERVERBOUND_PLAYER_ACTION;
    }
 
    public void handle(ServerGamePacketListener var1) {

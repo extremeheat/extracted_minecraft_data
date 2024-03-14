@@ -38,7 +38,7 @@ public class NetherWartBlock extends BushBlock {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE_BY_AGE[var1.getValue(AGE)];
    }
 
@@ -48,12 +48,12 @@ public class NetherWartBlock extends BushBlock {
    }
 
    @Override
-   public boolean isRandomlyTicking(BlockState var1) {
+   protected boolean isRandomlyTicking(BlockState var1) {
       return var1.getValue(AGE) < 3;
    }
 
    @Override
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       int var5 = var1.getValue(AGE);
       if (var5 < 3 && var4.nextInt(10) == 0) {
          var1 = var1.setValue(AGE, Integer.valueOf(var5 + 1));

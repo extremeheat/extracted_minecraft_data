@@ -49,6 +49,10 @@ public class ChatScreen extends Screen {
       this.commandSuggestions = new CommandSuggestions(this.minecraft, this, this.input, this.font, false, false, 1, 10, true, -805306368);
       this.commandSuggestions.setAllowHiding(false);
       this.commandSuggestions.updateCommandInfo();
+   }
+
+   @Override
+   protected void setInitialFocus() {
       this.setInitialFocus(this.input);
    }
 
@@ -81,10 +85,8 @@ public class ChatScreen extends Screen {
          this.minecraft.setScreen(null);
          return true;
       } else if (var1 == 257 || var1 == 335) {
-         if (this.handleChatInput(this.input.getValue(), true)) {
-            this.minecraft.setScreen(null);
-         }
-
+         this.handleChatInput(this.input.getValue(), true);
+         this.minecraft.setScreen(null);
          return true;
       } else if (var1 == 265) {
          this.moveInHistory(-1);
@@ -171,10 +173,14 @@ public class ChatScreen extends Screen {
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
+      this.minecraft.gui.getChat().render(var1, this.minecraft.gui.getGuiTicks(), var2, var3, true);
       var1.fill(2, this.height - 14, this.width - 2, this.height - 2, this.minecraft.options.getBackgroundColor(-2147483648));
       this.input.render(var1, var2, var3, var4);
       super.render(var1, var2, var3, var4);
+      var1.pose().pushPose();
+      var1.pose().translate(0.0F, 0.0F, 200.0F);
       this.commandSuggestions.render(var1, var2, var3);
+      var1.pose().popPose();
       GuiMessageTag var5 = this.minecraft.gui.getChat().getMessageTagAt((double)var2, (double)var3);
       if (var5 != null && var5.text() != null) {
          var1.renderTooltip(this.font, this.font.split(var5.text(), 210), var2, var3);
@@ -214,11 +220,9 @@ public class ChatScreen extends Screen {
       return this.minecraft.gui.getChat().getClickedComponentStyleAt(var1, var3);
    }
 
-   public boolean handleChatInput(String var1, boolean var2) {
+   public void handleChatInput(String var1, boolean var2) {
       var1 = this.normalizeChatMessage(var1);
-      if (var1.isEmpty()) {
-         return true;
-      } else {
+      if (!var1.isEmpty()) {
          if (var2) {
             this.minecraft.gui.getChat().addRecentChat(var1);
          }
@@ -228,8 +232,6 @@ public class ChatScreen extends Screen {
          } else {
             this.minecraft.player.connection.sendChat(var1);
          }
-
-         return true;
       }
    }
 

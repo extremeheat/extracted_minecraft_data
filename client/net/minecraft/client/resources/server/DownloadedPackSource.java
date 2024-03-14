@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -34,6 +35,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.common.ServerboundResourcePackPacket;
 import net.minecraft.server.packs.DownloadQueue;
 import net.minecraft.server.packs.FilePackResources;
+import net.minecraft.server.packs.PackLocationInfo;
+import net.minecraft.server.packs.PackSelectionConfig;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackSource;
@@ -47,6 +50,7 @@ public class DownloadedPackSource implements AutoCloseable {
    static final Logger LOGGER = LogUtils.getLogger();
    private static final RepositorySource EMPTY_SOURCE = var0 -> {
    };
+   private static final PackSelectionConfig DOWNLOADED_PACK_SELECTION = new PackSelectionConfig(true, Pack.Position.TOP, true);
    private static final PackLoadFeedback LOG_ONLY_FEEDBACK = new PackLoadFeedback() {
       @Override
       public void reportUpdate(UUID var1, PackLoadFeedback.Update var2) {
@@ -231,15 +235,16 @@ public class DownloadedPackSource implements AutoCloseable {
       for(PackReloadConfig.IdAndPath var4 : Lists.reverse(var1)) {
          String var5 = String.format(Locale.ROOT, "server/%08X/%s", this.packIdSerialNumber++, var4.id());
          Path var6 = var4.path();
-         FilePackResources.FileResourcesSupplier var7 = new FilePackResources.FileResourcesSupplier(var6, false);
-         int var8 = SharedConstants.getCurrentVersion().getPackVersion(PackType.CLIENT_RESOURCES);
-         Pack.Info var9 = Pack.readPackInfo(var5, var7, var8);
-         if (var9 == null) {
+         PackLocationInfo var7 = new PackLocationInfo(var5, SERVER_NAME, this.packType, Optional.empty());
+         FilePackResources.FileResourcesSupplier var8 = new FilePackResources.FileResourcesSupplier(var6);
+         int var9 = SharedConstants.getCurrentVersion().getPackVersion(PackType.CLIENT_RESOURCES);
+         Pack.Metadata var10 = Pack.readPackMetadata(var7, var8, var9);
+         if (var10 == null) {
             LOGGER.warn("Invalid pack metadata in {}, ignoring all", var6);
             return null;
          }
 
-         var2.add(Pack.create(var5, SERVER_NAME, true, var7, var9, Pack.Position.TOP, true, this.packType));
+         var2.add(new Pack(var7, var8, var10, DOWNLOADED_PACK_SELECTION));
       }
 
       return var2;

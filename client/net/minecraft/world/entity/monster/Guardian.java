@@ -18,13 +18,10 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.MoverType;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.LookControl;
@@ -43,9 +40,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Vector3f;
 
 public class Guardian extends Monster {
    protected static final int ATTACK_TIME = 80;
@@ -66,7 +62,7 @@ public class Guardian extends Monster {
    public Guardian(EntityType<? extends Guardian> var1, Level var2) {
       super(var1, var2);
       this.xpReward = 10;
-      this.setPathfindingMalus(BlockPathTypes.WATER, 0.0F);
+      this.setPathfindingMalus(PathType.WATER, 0.0F);
       this.moveControl = new Guardian.GuardianMoveControl(this);
       this.clientSideTailAnimation = this.random.nextFloat();
       this.clientSideTailAnimationO = this.clientSideTailAnimation;
@@ -101,15 +97,10 @@ public class Guardian extends Monster {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_ID_MOVING, false);
-      this.entityData.define(DATA_ID_ATTACK_TARGET, 0);
-   }
-
-   @Override
-   public MobType getMobType() {
-      return MobType.WATER;
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_ID_MOVING, false);
+      var1.define(DATA_ID_ATTACK_TARGET, 0);
    }
 
    public boolean isMoving() {
@@ -185,11 +176,6 @@ public class Guardian extends Monster {
    @Override
    protected Entity.MovementEmission getMovementEmission() {
       return Entity.MovementEmission.EVENTS;
-   }
-
-   @Override
-   protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
-      return var2.height * 0.5F;
    }
 
    @Override
@@ -269,9 +255,7 @@ public class Guardian extends Monster {
                   while(var12 < var10) {
                      var12 += 1.8 - var16 + this.random.nextDouble() * (1.7 - var16);
                      this.level()
-                        .addParticle(
-                           ParticleTypes.BUBBLE, this.getX() + var4 * var12, this.getEyeY() + var6 * var12, this.getZ() + var8 * var12, 0.0, 0.0, 0.0
-                        );
+                        .addParticle(ParticleTypes.BUBBLE, this.getX() + var4 * var12, this.getEyeY() + var6 * var12, this.getZ() + var8 * var12, 0.0, 0.0, 0.0);
                   }
                }
             }
@@ -368,11 +352,6 @@ public class Guardian extends Monster {
       } else {
          super.travel(var1);
       }
-   }
-
-   @Override
-   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      return new Vector3f(0.0F, var2.height + 0.125F * var3, 0.0F);
    }
 
    static class GuardianAttackGoal extends Goal {
@@ -514,9 +493,7 @@ public class Guardian extends Monster {
                var32 = var26;
             }
 
-            this.guardian
-               .getLookControl()
-               .setLookAt(Mth.lerp(0.125, var28, var22), Mth.lerp(0.125, var30, var24), Mth.lerp(0.125, var32, var26), 10.0F, 40.0F);
+            this.guardian.getLookControl().setLookAt(Mth.lerp(0.125, var28, var22), Mth.lerp(0.125, var30, var24), Mth.lerp(0.125, var32, var26), 10.0F, 40.0F);
             this.guardian.setMoving(true);
          } else {
             this.guardian.setSpeed(0.0F);

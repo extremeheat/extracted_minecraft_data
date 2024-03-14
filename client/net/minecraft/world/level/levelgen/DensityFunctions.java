@@ -1309,9 +1309,7 @@ public final class DensityFunctions {
 
       // $VF: Could not properly define all variable types!
       // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-      static DensityFunctions.TwoArgumentSimpleFunction create(
-         DensityFunctions.TwoArgumentSimpleFunction.Type var0, DensityFunction var1, DensityFunction var2
-      ) {
+      static DensityFunctions.TwoArgumentSimpleFunction create(DensityFunctions.TwoArgumentSimpleFunction.Type var0, DensityFunction var1, DensityFunction var2) {
          double var3 = var1.minValue();
          double var5 = var2.minValue();
          double var7 = var1.maxValue();

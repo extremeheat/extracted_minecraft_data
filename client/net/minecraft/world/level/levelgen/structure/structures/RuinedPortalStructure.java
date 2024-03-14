@@ -89,7 +89,7 @@ public class RuinedPortalStructure extends Structure {
             }
          }
       } else {
-         var4 = this.setups.get(0);
+         var4 = (RuinedPortalStructure.Setup)this.setups.get(0);
       }
 
       if (var4 == null) {
@@ -130,9 +130,7 @@ public class RuinedPortalStructure extends Structure {
                         var19,
                         var1.chunkGenerator()
                            .getBiomeSource()
-                           .getNoiseBiome(
-                              QuartPos.fromBlock(var19.getX()), QuartPos.fromBlock(var19.getY()), QuartPos.fromBlock(var19.getZ()), var13.sampler()
-                           )
+                           .getNoiseBiome(QuartPos.fromBlock(var19.getX()), QuartPos.fromBlock(var19.getY()), QuartPos.fromBlock(var19.getZ()), var13.sampler())
                      );
                   }
       

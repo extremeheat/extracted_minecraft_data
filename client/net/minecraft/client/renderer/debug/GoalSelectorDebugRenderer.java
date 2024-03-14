@@ -45,7 +45,7 @@ public class GoalSelectorDebugRenderer implements DebugRenderer.SimpleDebugRende
          BlockPos var13 = var12.entityPos;
          if (var10.closerThan(var13, 160.0)) {
             for(int var14 = 0; var14 < var12.goals.size(); ++var14) {
-               GoalDebugPayload.DebugGoal var15 = var12.goals.get(var14);
+               GoalDebugPayload.DebugGoal var15 = (GoalDebugPayload.DebugGoal)var12.goals.get(var14);
                double var16 = (double)var13.getX() + 0.5;
                double var18 = (double)var13.getY() + 2.0 + (double)var14 * 0.25;
                double var20 = (double)var13.getZ() + 0.5;

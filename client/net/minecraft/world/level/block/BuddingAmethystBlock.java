@@ -24,7 +24,7 @@ public class BuddingAmethystBlock extends AmethystBlock {
    }
 
    @Override
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (var4.nextInt(5) == 0) {
          Direction var5 = DIRECTIONS[var4.nextInt(DIRECTIONS.length)];
          BlockPos var6 = var3.relative(var5);

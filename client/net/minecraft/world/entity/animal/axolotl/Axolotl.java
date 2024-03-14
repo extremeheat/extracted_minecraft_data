@@ -12,6 +12,7 @@ import java.util.function.IntFunction;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -33,15 +34,12 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LerpingModel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.MoverType;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.VariantHolder;
 import net.minecraft.world.entity.ai.Brain;
@@ -59,10 +57,11 @@ import net.minecraft.world.entity.animal.Bucketable;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 
@@ -109,10 +108,9 @@ public class Axolotl extends Animal implements LerpingModel, VariantHolder<Axolo
 
    public Axolotl(EntityType<? extends Axolotl> var1, Level var2) {
       super(var1, var2);
-      this.setPathfindingMalus(BlockPathTypes.WATER, 0.0F);
+      this.setPathfindingMalus(PathType.WATER, 0.0F);
       this.moveControl = new Axolotl.AxolotlMoveControl(this);
       this.lookControl = new Axolotl.AxolotlLookControl(this, 20);
-      this.setMaxUpStep(1.0F);
    }
 
    @Override
@@ -126,11 +124,11 @@ public class Axolotl extends Animal implements LerpingModel, VariantHolder<Axolo
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_VARIANT, 0);
-      this.entityData.define(DATA_PLAYING_DEAD, false);
-      this.entityData.define(FROM_BUCKET, false);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_VARIANT, 0);
+      var1.define(DATA_PLAYING_DEAD, false);
+      var1.define(FROM_BUCKET, false);
    }
 
    @Override
@@ -155,28 +153,26 @@ public class Axolotl extends Animal implements LerpingModel, VariantHolder<Axolo
    }
 
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
-      boolean var6 = false;
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+      boolean var5 = false;
       if (var3 == MobSpawnType.BUCKET) {
          return (SpawnGroupData)var4;
       } else {
-         RandomSource var7 = var1.getRandom();
+         RandomSource var6 = var1.getRandom();
          if (var4 instanceof Axolotl.AxolotlGroupData) {
             if (((Axolotl.AxolotlGroupData)var4).getGroupSize() >= 2) {
-               var6 = true;
+               var5 = true;
             }
          } else {
-            var4 = new Axolotl.AxolotlGroupData(Axolotl.Variant.getCommonSpawnVariant(var7), Axolotl.Variant.getCommonSpawnVariant(var7));
+            var4 = new Axolotl.AxolotlGroupData(Axolotl.Variant.getCommonSpawnVariant(var6), Axolotl.Variant.getCommonSpawnVariant(var6));
          }
 
-         this.setVariant(((Axolotl.AxolotlGroupData)var4).getVariant(var7));
-         if (var6) {
+         this.setVariant(((Axolotl.AxolotlGroupData)var4).getVariant(var6));
+         if (var5) {
             this.setAge(-24000);
          }
 
-         return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4, var5);
+         return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4);
       }
    }
 
@@ -231,11 +227,6 @@ public class Axolotl extends Animal implements LerpingModel, VariantHolder<Axolo
    @Override
    public boolean isPushedByFluid() {
       return false;
-   }
-
-   @Override
-   public MobType getMobType() {
-      return MobType.WATER;
    }
 
    public void setPlayingDead(boolean var1) {
@@ -300,7 +291,11 @@ public class Axolotl extends Animal implements LerpingModel, VariantHolder<Axolo
    }
 
    public static AttributeSupplier.Builder createAttributes() {
-      return Mob.createMobAttributes().add(Attributes.MAX_HEALTH, 14.0).add(Attributes.MOVEMENT_SPEED, 1.0).add(Attributes.ATTACK_DAMAGE, 2.0);
+      return Mob.createMobAttributes()
+         .add(Attributes.MAX_HEALTH, 14.0)
+         .add(Attributes.MOVEMENT_SPEED, 1.0)
+         .add(Attributes.ATTACK_DAMAGE, 2.0)
+         .add(Attributes.STEP_HEIGHT, 1.0);
    }
 
    @Override
@@ -337,11 +332,6 @@ public class Axolotl extends Animal implements LerpingModel, VariantHolder<Axolo
    }
 
    @Override
-   protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
-      return var2.height * 0.655F;
-   }
-
-   @Override
    public int getMaxHeadXRot() {
       return 1;
    }
@@ -359,13 +349,14 @@ public class Axolotl extends Animal implements LerpingModel, VariantHolder<Axolo
    @Override
    public void saveToBucketTag(ItemStack var1) {
       Bucketable.saveDefaultDataToBucketTag(this, var1);
-      CompoundTag var2 = var1.getOrCreateTag();
-      var2.putInt("Variant", this.getVariant().getId());
-      var2.putInt("Age", this.getAge());
-      Brain var3 = this.getBrain();
-      if (var3.hasMemoryValue(MemoryModuleType.HAS_HUNTING_COOLDOWN)) {
-         var2.putLong("HuntingCooldown", var3.getTimeUntilExpiry(MemoryModuleType.HAS_HUNTING_COOLDOWN));
-      }
+      CustomData.update(DataComponents.BUCKET_ENTITY_DATA, var1, var1x -> {
+         var1x.putInt("Variant", this.getVariant().getId());
+         var1x.putInt("Age", this.getAge());
+         Brain var2 = this.getBrain();
+         if (var2.hasMemoryValue(MemoryModuleType.HAS_HUNTING_COOLDOWN)) {
+            var1x.putLong("HuntingCooldown", var2.getTimeUntilExpiry(MemoryModuleType.HAS_HUNTING_COOLDOWN));
+         }
+      });
    }
 
    @Override

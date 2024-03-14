@@ -16,11 +16,11 @@ public class UpdateOneTwentyOnePools {
       return ResourceKey.create(Registries.TEMPLATE_POOL, new ResourceLocation(var0));
    }
 
-   public static void register(BootstapContext<StructureTemplatePool> var0, String var1, StructureTemplatePool var2) {
+   public static void register(BootstrapContext<StructureTemplatePool> var0, String var1, StructureTemplatePool var2) {
       Pools.register(var0, var1, var2);
    }
 
-   public static void bootstrap(BootstapContext<StructureTemplatePool> var0) {
+   public static void bootstrap(BootstrapContext<StructureTemplatePool> var0) {
       TrialChambersStructurePools.bootstrap(var0);
    }
 }

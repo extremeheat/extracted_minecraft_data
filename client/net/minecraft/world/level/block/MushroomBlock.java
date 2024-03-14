@@ -40,12 +40,12 @@ public class MushroomBlock extends BushBlock implements BonemealableBlock {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 
    @Override
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (var4.nextInt(25) == 0) {
          int var5 = 5;
          boolean var6 = true;
@@ -80,7 +80,7 @@ public class MushroomBlock extends BushBlock implements BonemealableBlock {
    }
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       BlockPos var4 = var3.below();
       BlockState var5 = var2.getBlockState(var4);
       if (var5.is(BlockTags.MUSHROOM_GROW_BLOCK)) {

@@ -1,6 +1,6 @@
 package net.minecraft.data.worldgen.features;
 
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.random.SimpleWeightedRandomList;
 import net.minecraft.world.level.block.Blocks;
@@ -23,7 +23,7 @@ public class PileFeatures {
       super();
    }
 
-   public static void bootstrap(BootstapContext<ConfiguredFeature<?, ?>> var0) {
+   public static void bootstrap(BootstrapContext<ConfiguredFeature<?, ?>> var0) {
       FeatureUtils.register(var0, PILE_HAY, Feature.BLOCK_PILE, new BlockPileConfiguration(new RotatedBlockProvider(Blocks.HAY_BLOCK)));
       FeatureUtils.register(var0, PILE_MELON, Feature.BLOCK_PILE, new BlockPileConfiguration(BlockStateProvider.simple(Blocks.MELON)));
       FeatureUtils.register(var0, PILE_SNOW, Feature.BLOCK_PILE, new BlockPileConfiguration(BlockStateProvider.simple(Blocks.SNOW)));

@@ -26,10 +26,10 @@ public class ChunkStorage implements AutoCloseable {
    @Nullable
    private volatile LegacyStructureDataHandler legacyStructureHandler;
 
-   public ChunkStorage(Path var1, DataFixer var2, boolean var3) {
+   public ChunkStorage(RegionStorageInfo var1, Path var2, DataFixer var3, boolean var4) {
       super();
-      this.fixerUpper = var2;
-      this.worker = new IOWorker(var1, var3, "chunk");
+      this.fixerUpper = var3;
+      this.worker = new IOWorker(var1, var2, var4);
    }
 
    public boolean isOldChunkAround(ChunkPos var1, int var2) {
@@ -87,8 +87,12 @@ public class ChunkStorage implements AutoCloseable {
       return this.worker.loadAsync(var1);
    }
 
-   public void write(ChunkPos var1, CompoundTag var2) {
-      this.worker.store(var1, var2);
+   public CompletableFuture<Void> write(ChunkPos var1, CompoundTag var2) {
+      this.handleLegacyStructureIndex(var1);
+      return this.worker.store(var1, var2);
+   }
+
+   protected void handleLegacyStructureIndex(ChunkPos var1) {
       if (this.legacyStructureHandler != null) {
          this.legacyStructureHandler.removeIndex(var1.toLong());
       }

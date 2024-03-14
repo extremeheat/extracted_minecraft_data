@@ -66,11 +66,6 @@ public class UnsupportedGraphicsWarningScreen extends Screen {
    }
 
    @Override
-   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderDirtBackground(var1);
-   }
-
-   @Override
    public boolean shouldCloseOnEsc() {
       return false;
    }

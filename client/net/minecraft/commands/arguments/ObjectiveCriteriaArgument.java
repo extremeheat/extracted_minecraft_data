@@ -48,7 +48,7 @@ public class ObjectiveCriteriaArgument implements ArgumentType<ObjectiveCriteria
       String var3 = var1.getString().substring(var2, var1.getCursor());
       return ObjectiveCriteria.byName(var3).orElseThrow(() -> {
          var1.setCursor(var2);
-         return ERROR_INVALID_VALUE.create(var3);
+         return ERROR_INVALID_VALUE.createWithContext(var1, var3);
       });
    }
 

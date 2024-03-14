@@ -71,9 +71,7 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
          this.selectedInvite = -1;
          this.updateButtonStates();
       }).bounds(this.width / 2 - 174, this.height - 32, 100, 20).build());
-      this.addRenderableWidget(
-         Button.builder(CommonComponents.GUI_DONE, var1 -> this.onClose()).bounds(this.width / 2 - 50, this.height - 32, 100, 20).build()
-      );
+      this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, var1 -> this.onClose()).bounds(this.width / 2 - 50, this.height - 32, 100, 20).build());
       this.rejectButton = this.addRenderableWidget(Button.builder(REJECT_INVITE, var1 -> {
          this.handleInvitation(this.selectedInvite, false);
          this.selectedInvite = -1;
@@ -160,22 +158,22 @@ public class RealmsPendingInvitesScreen extends RealmsScreen {
       @Override
       public boolean mouseClicked(double var1, double var3, int var5) {
          RowButton.rowButtonMouseClicked(RealmsPendingInvitesScreen.this.pendingInvitationSelectionList, this, this.rowButtons, var5, var1, var3);
-         return true;
+         return super.mouseClicked(var1, var3, var5);
       }
 
       private void renderPendingInvitationItem(GuiGraphics var1, PendingInvite var2, int var3, int var4, int var5, int var6) {
-         var1.drawString(RealmsPendingInvitesScreen.this.font, var2.worldName, var3 + 38, var4 + 1, -1, false);
-         var1.drawString(RealmsPendingInvitesScreen.this.font, var2.worldOwnerName, var3 + 38, var4 + 12, 7105644, false);
+         var1.drawString(RealmsPendingInvitesScreen.this.font, var2.realmName, var3 + 38, var4 + 1, -1, false);
+         var1.drawString(RealmsPendingInvitesScreen.this.font, var2.realmOwnerName, var3 + 38, var4 + 12, 7105644, false);
          var1.drawString(RealmsPendingInvitesScreen.this.font, RealmsUtil.convertToAgePresentationFromInstant(var2.date), var3 + 38, var4 + 24, 7105644, false);
          RowButton.drawButtonsInRow(var1, this.rowButtons, RealmsPendingInvitesScreen.this.pendingInvitationSelectionList, var3, var4, var5, var6);
-         RealmsUtil.renderPlayerFace(var1, var3, var4, 32, var2.worldOwnerUuid);
+         RealmsUtil.renderPlayerFace(var1, var3, var4, 32, var2.realmOwnerUuid);
       }
 
       @Override
       public Component getNarration() {
          Component var1 = CommonComponents.joinLines(
-            Component.literal(this.pendingInvite.worldName),
-            Component.literal(this.pendingInvite.worldOwnerName),
+            Component.literal(this.pendingInvite.realmName),
+            Component.literal(this.pendingInvite.realmOwnerName),
             RealmsUtil.convertToAgePresentationFromInstant(this.pendingInvite.date)
          );
          return Component.translatable("narrator.select", var1);

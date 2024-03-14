@@ -83,13 +83,13 @@ public abstract class AbstractMinecartContainer extends AbstractMinecart impleme
    @Override
    protected void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      this.addChestVehicleSaveData(var1);
+      this.addChestVehicleSaveData(var1, this.registryAccess());
    }
 
    @Override
    protected void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.readChestVehicleSaveData(var1);
+      this.readChestVehicleSaveData(var1, this.registryAccess());
    }
 
    @Override

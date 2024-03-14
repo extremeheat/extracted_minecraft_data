@@ -15,11 +15,6 @@ public class ExperienceBottleItem extends Item {
    }
 
    @Override
-   public boolean isFoil(ItemStack var1) {
-      return true;
-   }
-
-   @Override
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
       var1.playSound(
@@ -40,10 +35,7 @@ public class ExperienceBottleItem extends Item {
       }
 
       var2.awardStat(Stats.ITEM_USED.get(this));
-      if (!var2.getAbilities().instabuild) {
-         var4.shrink(1);
-      }
-
+      var4.consume(1, var2);
       return InteractionResultHolder.sidedSuccess(var4, var1.isClientSide());
    }
 }

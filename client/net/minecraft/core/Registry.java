@@ -26,32 +26,28 @@ public interface Registry<T> extends Keyable, IdMap<T> {
    ResourceKey<? extends Registry<T>> key();
 
    default Codec<T> byNameCodec() {
-      Codec var1 = ResourceLocation.CODEC
-         .flatXmap(
-            var1x -> (DataResult)Optional.ofNullable(this.get(var1x))
-                  .map(DataResult::success)
-                  .orElseGet(() -> (T)DataResult.error(() -> "Unknown registry key in " + this.key() + ": " + var1x)),
-            var1x -> (DataResult)this.getResourceKey((T)var1x)
-                  .map(ResourceKey::location)
-                  .map(DataResult::success)
-                  .orElseGet(() -> (T)DataResult.error(() -> "Unknown registry element in " + this.key() + ":" + var1x))
-         );
-      Codec var2 = ExtraCodecs.idResolverCodec(var1x -> this.getResourceKey((T)var1x).isPresent() ? this.getId((T)var1x) : -1, this::byId, -1);
-      return ExtraCodecs.overrideLifecycle(ExtraCodecs.orCompressed(var1, var2), this::lifecycle, this::lifecycle);
+      return this.referenceHolderWithLifecycle().flatComapMap(Holder.Reference::value, var1 -> this.safeCastToReference(this.wrapAsHolder((T)var1)));
    }
 
    default Codec<Holder<T>> holderByNameCodec() {
+      return this.referenceHolderWithLifecycle().flatComapMap(var0 -> var0, this::safeCastToReference);
+   }
+
+   private Codec<Holder.Reference<T>> referenceHolderWithLifecycle() {
       Codec var1 = ResourceLocation.CODEC
-         .flatXmap(
-            var1x -> (DataResult)this.getHolder(ResourceKey.create(this.key(), var1x))
+         .comapFlatMap(
+            var1x -> (DataResult)this.getHolder(var1x)
                   .map(DataResult::success)
                   .orElseGet(() -> (T)DataResult.error(() -> "Unknown registry key in " + this.key() + ": " + var1x)),
-            var1x -> (DataResult)var1x.unwrapKey()
-                  .map(ResourceKey::location)
-                  .map(DataResult::success)
-                  .orElseGet(() -> (T)DataResult.error(() -> "Unknown registry element in " + this.key() + ":" + var1x))
+            var0 -> var0.key().location()
          );
-      return ExtraCodecs.overrideLifecycle(var1, var1x -> this.lifecycle(var1x.value()), var1x -> this.lifecycle(var1x.value()));
+      return ExtraCodecs.overrideLifecycle(
+         var1, var1x -> (Lifecycle)this.registrationInfo(var1x.key()).map(RegistrationInfo::lifecycle).orElse((T)Lifecycle.experimental())
+      );
+   }
+
+   private DataResult<Holder.Reference<T>> safeCastToReference(Holder<T> var1) {
+      return var1 instanceof Holder.Reference var2 ? DataResult.success(var2) : DataResult.error(() -> "Unregistered holder in " + this.key() + ": " + var1);
    }
 
    default <U> Stream<U> keys(DynamicOps<U> var1) {
@@ -72,7 +68,7 @@ public interface Registry<T> extends Keyable, IdMap<T> {
    @Nullable
    T get(@Nullable ResourceLocation var1);
 
-   Lifecycle lifecycle(T var1);
+   Optional<RegistrationInfo> registrationInfo(ResourceKey<T> var1);
 
    Lifecycle registryLifecycle();
 
@@ -118,12 +114,12 @@ public interface Registry<T> extends Keyable, IdMap<T> {
    }
 
    static <V, T extends V> T register(Registry<V> var0, ResourceKey<V> var1, T var2) {
-      ((WritableRegistry)var0).register(var1, var2, Lifecycle.stable());
+      ((WritableRegistry)var0).register(var1, var2, RegistrationInfo.BUILT_IN);
       return (T)var2;
    }
 
    static <T> Holder.Reference<T> registerForHolder(Registry<T> var0, ResourceKey<T> var1, T var2) {
-      return ((WritableRegistry)var0).register(var1, var2, Lifecycle.stable());
+      return ((WritableRegistry)var0).register(var1, var2, RegistrationInfo.BUILT_IN);
    }
 
    static <T> Holder.Reference<T> registerForHolder(Registry<T> var0, ResourceLocation var1, T var2) {
@@ -135,6 +131,8 @@ public interface Registry<T> extends Keyable, IdMap<T> {
    Holder.Reference<T> createIntrusiveHolder(T var1);
 
    Optional<Holder.Reference<T>> getHolder(int var1);
+
+   Optional<Holder.Reference<T>> getHolder(ResourceLocation var1);
 
    Optional<Holder.Reference<T>> getHolder(ResourceKey<T> var1);
 
@@ -150,6 +148,10 @@ public interface Registry<T> extends Keyable, IdMap<T> {
 
    default Iterable<Holder<T>> getTagOrEmpty(TagKey<T> var1) {
       return (Iterable<Holder<T>>)DataFixUtils.orElse(this.getTag(var1), List.of());
+   }
+
+   default Optional<Holder<T>> getRandomElementOf(TagKey<T> var1, RandomSource var2) {
+      return this.getTag(var1).flatMap(var1x -> var1x.getRandomElement(var2));
    }
 
    HolderSet.Named<T> getOrCreateTag(TagKey<T> var1);
@@ -192,7 +194,7 @@ public interface Registry<T> extends Keyable, IdMap<T> {
    default HolderLookup.RegistryLookup<T> asTagAddingLookup() {
       return new HolderLookup.RegistryLookup.Delegate<T>() {
          @Override
-         protected HolderLookup.RegistryLookup<T> parent() {
+         public HolderLookup.RegistryLookup<T> parent() {
             return Registry.this.asLookup();
          }
 

@@ -6,9 +6,9 @@ import java.io.File;
 import java.net.Proxy;
 import java.nio.file.Path;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.client.User;
 import net.minecraft.client.resources.IndexedAssetSource;
+import net.minecraft.util.StringUtil;
 
 public class GameConfig {
    public final GameConfig.UserData user;
@@ -82,7 +82,7 @@ public class GameConfig {
       }
 
       public boolean isEnabled() {
-         return !Util.isBlank(this.singleplayer) || !Util.isBlank(this.multiplayer) || !Util.isBlank(this.realms);
+         return !StringUtil.isBlank(this.singleplayer) || !StringUtil.isBlank(this.multiplayer) || !StringUtil.isBlank(this.realms);
       }
    }
 

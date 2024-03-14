@@ -71,7 +71,7 @@ public class EnterBlockTrigger extends SimpleCriterionTrigger<EnterBlockTrigger.
          if (this.block.isPresent() && !var1.is(this.block.get())) {
             return false;
          } else {
-            return !this.state.isPresent() || this.state.get().matches(var1);
+            return !this.state.isPresent() || ((StatePropertiesPredicate)this.state.get()).matches(var1);
          }
       }
    }

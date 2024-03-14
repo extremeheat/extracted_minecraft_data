@@ -29,7 +29,6 @@ public record ColorRGBA(int b) {
       return String.format(Locale.ROOT, "#%08X", this.rgba);
    }
 
-   @Override
    public String toString() {
       return this.formatValue();
    }

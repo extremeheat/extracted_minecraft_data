@@ -111,11 +111,11 @@ public class UpgradeData {
 
       Level var6 = var1.getLevel();
       this.neighborBlockTicks.forEach(var1x -> {
-         Block var2 = var1x.type() == Blocks.AIR ? var6.getBlockState(var1x.pos()).getBlock() : var1x.type();
+         Block var2 = var1x.type() == Blocks.AIR ? var6.getBlockState(var1x.pos()).getBlock() : (Block)var1x.type();
          var6.scheduleTick(var1x.pos(), var2, var1x.delay(), var1x.priority());
       });
       this.neighborFluidTicks.forEach(var1x -> {
-         Fluid var2 = var1x.type() == Fluids.EMPTY ? var6.getFluidState(var1x.pos()).getType() : var1x.type();
+         Fluid var2 = var1x.type() == Fluids.EMPTY ? var6.getFluidState(var1x.pos()).getType() : (Fluid)var1x.type();
          var6.scheduleTick(var1x.pos(), var2, var1x.delay(), var1x.priority());
       });
       CHUNKY_FIXERS.forEach(var1x -> var1x.processChunk(var6));

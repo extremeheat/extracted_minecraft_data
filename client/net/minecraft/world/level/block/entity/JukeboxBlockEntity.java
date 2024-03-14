@@ -3,6 +3,7 @@ package net.minecraft.world.level.block.entity;
 import com.google.common.annotations.VisibleForTesting;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -21,7 +22,7 @@ import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.ticks.ContainerSingleItem;
 
-public class JukeboxBlockEntity extends BlockEntity implements Clearable, ContainerSingleItem {
+public class JukeboxBlockEntity extends BlockEntity implements Clearable, ContainerSingleItem.BlockContainerSingleItem {
    private static final int SONG_END_PADDING = 20;
    private ItemStack item = ItemStack.EMPTY;
    private int ticksSinceLastEvent;
@@ -34,10 +35,12 @@ public class JukeboxBlockEntity extends BlockEntity implements Clearable, Contai
    }
 
    @Override
-   public void load(CompoundTag var1) {
-      super.load(var1);
+   public void load(CompoundTag var1, HolderLookup.Provider var2) {
+      super.load(var1, var2);
       if (var1.contains("RecordItem", 10)) {
-         this.item = ItemStack.of(var1.getCompound("RecordItem"));
+         this.item = ItemStack.parse(var2, var1.getCompound("RecordItem")).orElse(ItemStack.EMPTY);
+      } else {
+         this.item = ItemStack.EMPTY;
       }
 
       this.isPlaying = var1.getBoolean("IsPlaying");
@@ -46,10 +49,10 @@ public class JukeboxBlockEntity extends BlockEntity implements Clearable, Contai
    }
 
    @Override
-   protected void saveAdditional(CompoundTag var1) {
-      super.saveAdditional(var1);
+   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.saveAdditional(var1, var2);
       if (!this.getTheItem().isEmpty()) {
-         var1.put("RecordItem", this.getTheItem().save(new CompoundTag()));
+         var1.put("RecordItem", this.getTheItem().save(var2));
       }
 
       var1.putBoolean("IsPlaying", this.isPlaying);

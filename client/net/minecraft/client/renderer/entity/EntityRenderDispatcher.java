@@ -35,7 +35,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.boss.EnderDragonPart;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
 import net.minecraft.world.entity.player.Player;
@@ -47,8 +46,6 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.joml.Matrix3f;
-import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -136,22 +133,25 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
 
       try {
          Vec3 var14 = var13.getRenderOffset(var1, var9);
-         double var25 = var2 + var14.x();
-         double var26 = var4 + var14.y();
+         double var26 = var2 + var14.x();
+         double var27 = var4 + var14.y();
          double var19 = var6 + var14.z();
          var10.pushPose();
-         var10.translate(var25, var26, var19);
+         var10.translate(var26, var27, var19);
          var13.render(var1, var8, var9, var10, var11, var12);
          if (var1.displayFireAnimation()) {
             this.renderFlame(var10, var11, var1, Mth.rotationAroundAxis(Mth.Y_AXIS, this.cameraOrientation, new Quaternionf()));
          }
 
          var10.translate(-var14.x(), -var14.y(), -var14.z());
-         if (this.options.entityShadows().get() && this.shouldRenderShadow && var13.shadowRadius > 0.0F && !var1.isInvisible()) {
-            double var21 = this.distanceToSqr(var1.getX(), var1.getY(), var1.getZ());
-            float var23 = (float)((1.0 - var21 / 256.0) * (double)var13.shadowStrength);
-            if (var23 > 0.0F) {
-               renderShadow(var10, var11, var1, var23, var9, this.level, Math.min(var13.shadowRadius, 32.0F));
+         if (this.options.entityShadows().get() && this.shouldRenderShadow && !var1.isInvisible()) {
+            float var21 = var13.getShadowRadius(var1);
+            if (var21 > 0.0F) {
+               double var22 = this.distanceToSqr(var1.getX(), var1.getY(), var1.getZ());
+               float var24 = (float)((1.0 - var22 / 256.0) * (double)var13.shadowStrength);
+               if (var24 > 0.0F) {
+                  renderShadow(var10, var11, var1, var24, var9, this.level, Math.min(var21, 32.0F));
+               }
             }
          }
 
@@ -160,8 +160,8 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
          }
 
          var10.popPose();
-      } catch (Throwable var24) {
-         CrashReport var15 = CrashReport.forThrowable(var24, "Rendering entity in world");
+      } catch (Throwable var25) {
+         CrashReport var15 = CrashReport.forThrowable(var25, "Rendering entity in world");
          CrashReportCategory var16 = var15.addCategory("Entity being rendered");
          var1.fillCrashReportCategory(var16);
          CrashReportCategory var17 = var15.addCategory("Renderer details");
@@ -232,12 +232,11 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
       }
 
       Vec3 var23 = var2.getViewVector(var3);
-      Matrix4f var25 = var0.last().pose();
-      Matrix3f var26 = var0.last().normal();
-      var1.vertex(var25, 0.0F, var2.getEyeHeight(), 0.0F).color(0, 0, 255, 255).normal(var26, (float)var23.x, (float)var23.y, (float)var23.z).endVertex();
+      PoseStack.Pose var25 = var0.last();
+      var1.vertex(var25, 0.0F, var2.getEyeHeight(), 0.0F).color(0, 0, 255, 255).normal(var25, (float)var23.x, (float)var23.y, (float)var23.z).endVertex();
       var1.vertex(var25, (float)(var23.x * 2.0), (float)((double)var2.getEyeHeight() + var23.y * 2.0), (float)(var23.z * 2.0))
          .color(0, 0, 255, 255)
-         .normal(var26, (float)var23.x, (float)var23.y, (float)var23.z)
+         .normal(var25, (float)var23.x, (float)var23.y, (float)var23.z)
          .endVertex();
    }
 
@@ -283,44 +282,33 @@ public class EntityRenderDispatcher implements ResourceManagerReloadListener {
    }
 
    private static void fireVertex(PoseStack.Pose var0, VertexConsumer var1, float var2, float var3, float var4, float var5, float var6) {
-      var1.vertex(var0.pose(), var2, var3, var4)
-         .color(255, 255, 255, 255)
-         .uv(var5, var6)
-         .overlayCoords(0, 10)
-         .uv2(240)
-         .normal(var0.normal(), 0.0F, 1.0F, 0.0F)
-         .endVertex();
+      var1.vertex(var0, var2, var3, var4).color(255, 255, 255, 255).uv(var5, var6).overlayCoords(0, 10).uv2(240).normal(var0, 0.0F, 1.0F, 0.0F).endVertex();
    }
 
    private static void renderShadow(PoseStack var0, MultiBufferSource var1, Entity var2, float var3, float var4, LevelReader var5, float var6) {
-      float var7 = var6;
-      if (var2 instanceof Mob var8 && var8.isBaby()) {
-         var7 = var6 * 0.5F;
-      }
+      double var7 = Mth.lerp((double)var4, var2.xOld, var2.getX());
+      double var9 = Mth.lerp((double)var4, var2.yOld, var2.getY());
+      double var11 = Mth.lerp((double)var4, var2.zOld, var2.getZ());
+      float var13 = Math.min(var3 / 0.5F, var6);
+      int var14 = Mth.floor(var7 - (double)var6);
+      int var15 = Mth.floor(var7 + (double)var6);
+      int var16 = Mth.floor(var9 - (double)var13);
+      int var17 = Mth.floor(var9);
+      int var18 = Mth.floor(var11 - (double)var6);
+      int var19 = Mth.floor(var11 + (double)var6);
+      PoseStack.Pose var20 = var0.last();
+      VertexConsumer var21 = var1.getBuffer(SHADOW_RENDER_TYPE);
+      BlockPos.MutableBlockPos var22 = new BlockPos.MutableBlockPos();
 
-      double var29 = Mth.lerp((double)var4, var2.xOld, var2.getX());
-      double var10 = Mth.lerp((double)var4, var2.yOld, var2.getY());
-      double var12 = Mth.lerp((double)var4, var2.zOld, var2.getZ());
-      float var14 = Math.min(var3 / 0.5F, var7);
-      int var15 = Mth.floor(var29 - (double)var7);
-      int var16 = Mth.floor(var29 + (double)var7);
-      int var17 = Mth.floor(var10 - (double)var14);
-      int var18 = Mth.floor(var10);
-      int var19 = Mth.floor(var12 - (double)var7);
-      int var20 = Mth.floor(var12 + (double)var7);
-      PoseStack.Pose var21 = var0.last();
-      VertexConsumer var22 = var1.getBuffer(SHADOW_RENDER_TYPE);
-      BlockPos.MutableBlockPos var23 = new BlockPos.MutableBlockPos();
+      for(int var23 = var18; var23 <= var19; ++var23) {
+         for(int var24 = var14; var24 <= var15; ++var24) {
+            var22.set(var24, 0, var23);
+            ChunkAccess var25 = var5.getChunk(var22);
 
-      for(int var24 = var19; var24 <= var20; ++var24) {
-         for(int var25 = var15; var25 <= var16; ++var25) {
-            var23.set(var25, 0, var24);
-            ChunkAccess var26 = var5.getChunk(var23);
-
-            for(int var27 = var17; var27 <= var18; ++var27) {
-               var23.setY(var27);
-               float var28 = var3 - (float)(var10 - (double)var23.getY()) * 0.5F;
-               renderBlockShadow(var21, var22, var26, var5, var23, var29, var10, var12, var7, var28);
+            for(int var26 = var16; var26 <= var17; ++var26) {
+               var22.setY(var26);
+               float var27 = var3 - (float)(var9 - (double)var22.getY()) * 0.5F;
+               renderBlockShadow(var20, var21, var25, var5, var22, var7, var9, var11, var6, var27);
             }
          }
       }

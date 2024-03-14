@@ -81,12 +81,12 @@ public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterlogg
    }
 
    @Override
-   public FluidState getFluidState(BlockState var1) {
+   protected FluidState getFluidState(BlockState var1) {
       return var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
    }
 
    @Override
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (getPhase(var1) != SculkSensorPhase.ACTIVE) {
          if (getPhase(var1) == SculkSensorPhase.COOLDOWN) {
             var2.setBlock(var3, var1.setValue(PHASE, SculkSensorPhase.INACTIVE), 3);
@@ -116,7 +116,7 @@ public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterlogg
    }
 
    @Override
-   public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var2.isClientSide() && !var1.is(var4.getBlock())) {
          if (var1.getValue(POWER) > 0 && !var2.getBlockTicks().hasScheduledTick(var3, this)) {
             var2.setBlock(var3, var1.setValue(POWER, Integer.valueOf(0)), 18);
@@ -125,7 +125,7 @@ public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterlogg
    }
 
    @Override
-   public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var1.is(var4.getBlock())) {
          if (getPhase(var1) == SculkSensorPhase.ACTIVE) {
             updateNeighbours(var2, var3, var1);
@@ -136,7 +136,7 @@ public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterlogg
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var1.getValue(WATERLOGGED)) {
          var4.scheduleTick(var5, Fluids.WATER, Fluids.WATER.getTickDelay(var4));
       }
@@ -169,22 +169,22 @@ public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterlogg
    }
 
    @Override
-   public RenderShape getRenderShape(BlockState var1) {
+   protected RenderShape getRenderShape(BlockState var1) {
       return RenderShape.MODEL;
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 
    @Override
-   public boolean isSignalSource(BlockState var1) {
+   protected boolean isSignalSource(BlockState var1) {
       return true;
    }
 
    @Override
-   public int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
+   protected int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       return var1.getValue(POWER);
    }
 
@@ -264,14 +264,14 @@ public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterlogg
    }
 
    @Override
-   public boolean hasAnalogOutputSignal(BlockState var1) {
+   protected boolean hasAnalogOutputSignal(BlockState var1) {
       return true;
    }
 
    // $VF: Could not properly define all variable types!
    // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
-   public int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
+   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
       BlockEntity var4 = var2.getBlockEntity(var3);
       if (var4 instanceof SculkSensorBlockEntity var5) {
          return getPhase(var1) == SculkSensorPhase.ACTIVE ? var5.getLastVibrationFrequency() : 0;
@@ -281,17 +281,17 @@ public class SculkSensorBlock extends BaseEntityBlock implements SimpleWaterlogg
    }
 
    @Override
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
+   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
    }
 
    @Override
-   public boolean useShapeForLightOcclusion(BlockState var1) {
+   protected boolean useShapeForLightOcclusion(BlockState var1) {
       return true;
    }
 
    @Override
-   public void spawnAfterBreak(BlockState var1, ServerLevel var2, BlockPos var3, ItemStack var4, boolean var5) {
+   protected void spawnAfterBreak(BlockState var1, ServerLevel var2, BlockPos var3, ItemStack var4, boolean var5) {
       super.spawnAfterBreak(var1, var2, var3, var4, var5);
       if (var5) {
          this.tryDropExperience(var2, var3, var4, ConstantInt.of(5));

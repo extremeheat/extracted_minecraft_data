@@ -94,7 +94,7 @@ public class SummonCommand {
             throw ERROR_FAILED.create();
          } else {
             if (var4 && var8 instanceof Mob) {
-               ((Mob)var8).finalizeSpawn(var0.getLevel(), var0.getLevel().getCurrentDifficultyAt(var8.blockPosition()), MobSpawnType.COMMAND, null, null);
+               ((Mob)var8).finalizeSpawn(var0.getLevel(), var0.getLevel().getCurrentDifficultyAt(var8.blockPosition()), MobSpawnType.COMMAND, null);
             }
 
             if (!var7.tryAddFreshEntityWithPassengers(var8)) {

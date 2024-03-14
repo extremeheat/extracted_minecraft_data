@@ -4,7 +4,6 @@ import java.util.EnumSet;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BiomeTags;
@@ -22,6 +21,7 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.MoveControl;
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -47,8 +47,8 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.level.pathfinder.Path;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
 
 public class Drowned extends Zombie implements RangedAttackMob {
@@ -59,11 +59,14 @@ public class Drowned extends Zombie implements RangedAttackMob {
 
    public Drowned(EntityType<? extends Drowned> var1, Level var2) {
       super(var1, var2);
-      this.setMaxUpStep(1.0F);
       this.moveControl = new Drowned.DrownedMoveControl(this);
-      this.setPathfindingMalus(BlockPathTypes.WATER, 0.0F);
+      this.setPathfindingMalus(PathType.WATER, 0.0F);
       this.waterNavigation = new WaterBoundPathNavigation(this, var2);
       this.groundNavigation = new GroundPathNavigation(this, var2);
+   }
+
+   public static AttributeSupplier.Builder createAttributes() {
+      return Zombie.createAttributes().add(Attributes.STEP_HEIGHT, 1.0);
    }
 
    @Override
@@ -83,10 +86,8 @@ public class Drowned extends Zombie implements RangedAttackMob {
    }
 
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
-      var4 = super.finalizeSpawn(var1, var2, var3, var4, var5);
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+      var4 = super.finalizeSpawn(var1, var2, var3, var4);
       if (this.getItemBySlot(EquipmentSlot.OFFHAND).isEmpty() && var1.getRandom().nextFloat() < 0.03F) {
          this.setItemSlot(EquipmentSlot.OFFHAND, new ItemStack(Items.NAUTILUS_SHELL));
          this.setGuaranteedDrop(EquipmentSlot.OFFHAND);

@@ -14,7 +14,7 @@ import net.minecraft.world.level.block.Block;
 
 public abstract class ItemTagsProvider extends IntrinsicHolderTagsProvider<Item> {
    private final CompletableFuture<TagsProvider.TagLookup<Block>> blockTags;
-   private final Map<TagKey<Block>, TagKey<Item>> tagsToCopy = new HashMap<>();
+   private final Map<TagKey<Block>, TagKey<Item>> tagsToCopy = new HashMap();
 
    public ItemTagsProvider(PackOutput var1, CompletableFuture<HolderLookup.Provider> var2, CompletableFuture<TagsProvider.TagLookup<Block>> var3) {
       super(var1, Registries.ITEM, var2, var0 -> var0.builtInRegistryHolder().key());

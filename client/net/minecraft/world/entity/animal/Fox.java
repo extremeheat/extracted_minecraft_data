@@ -90,9 +90,8 @@ import net.minecraft.world.level.block.CaveVines;
 import net.minecraft.world.level.block.SweetBerryBushBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Vector3f;
 
 public class Fox extends Animal implements VariantHolder<Fox.Type> {
    private static final EntityDataAccessor<Integer> DATA_TYPE_ID = SynchedEntityData.defineId(Fox.class, EntityDataSerializers.INT);
@@ -118,6 +117,7 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
    static final Predicate<Entity> STALKABLE_PREY = var0 -> var0 instanceof Chicken || var0 instanceof Rabbit;
    private static final Predicate<Entity> AVOID_PLAYERS = var0 -> !var0.isDiscrete() && EntitySelector.NO_CREATIVE_OR_SPECTATOR.test(var0);
    private static final int MIN_TICKS_BEFORE_EAT = 600;
+   private static final EntityDimensions BABY_DIMENSIONS = EntityType.FOX.getDimensions().scale(0.5F).withEyeHeight(0.2975F);
    private Goal landTargetGoal;
    private Goal turtleEggTargetGoal;
    private Goal fishTargetGoal;
@@ -131,18 +131,18 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
       super(var1, var2);
       this.lookControl = new Fox.FoxLookControl();
       this.moveControl = new Fox.FoxMoveControl();
-      this.setPathfindingMalus(BlockPathTypes.DANGER_OTHER, 0.0F);
-      this.setPathfindingMalus(BlockPathTypes.DAMAGE_OTHER, 0.0F);
+      this.setPathfindingMalus(PathType.DANGER_OTHER, 0.0F);
+      this.setPathfindingMalus(PathType.DAMAGE_OTHER, 0.0F);
       this.setCanPickUpLoot(true);
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_TRUSTED_ID_0, Optional.empty());
-      this.entityData.define(DATA_TRUSTED_ID_1, Optional.empty());
-      this.entityData.define(DATA_TYPE_ID, 0);
-      this.entityData.define(DATA_FLAGS_ID, (byte)0);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_TRUSTED_ID_0, Optional.empty());
+      var1.define(DATA_TRUSTED_ID_1, Optional.empty());
+      var1.define(DATA_TYPE_ID, 0);
+      var1.define(DATA_FLAGS_ID, (byte)0);
    }
 
    @Override
@@ -308,23 +308,21 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
    // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
-      Holder var6 = var1.getBiome(this.blockPosition());
-      Fox.Type var7 = Fox.Type.byBiome(var6);
-      boolean var8 = false;
-      if (var4 instanceof Fox.FoxGroupData var9) {
-         var7 = var9.type;
-         if (var9.getGroupSize() >= 2) {
-            var8 = true;
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+      Holder var5 = var1.getBiome(this.blockPosition());
+      Fox.Type var6 = Fox.Type.byBiome(var5);
+      boolean var7 = false;
+      if (var4 instanceof Fox.FoxGroupData var8) {
+         var6 = var8.type;
+         if (var8.getGroupSize() >= 2) {
+            var7 = true;
          }
       } else {
-         var4 = new Fox.FoxGroupData(var7);
+         var4 = new Fox.FoxGroupData(var6);
       }
 
-      this.setVariant(var7);
-      if (var8) {
+      this.setVariant(var6);
+      if (var7) {
          this.setAge(-24000);
       }
 
@@ -333,7 +331,7 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
       }
 
       this.populateDefaultEquipmentSlots(var1.getRandom(), var2);
-      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4, var5);
+      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4);
    }
 
    private void setTargetGoals() {
@@ -358,8 +356,8 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
    }
 
    @Override
-   protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
-      return this.isBaby() ? var2.height * 0.85F : 0.4F;
+   public EntityDimensions getDefaultDimensions(Pose var1) {
+      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(var1);
    }
 
    public Fox.Type getVariant() {
@@ -689,11 +687,6 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
       }
 
       super.dropAllDeathLoot(var1);
-   }
-
-   @Override
-   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      return new Vector3f(0.0F, var2.height + -0.0625F * var3, -0.25F * var3);
    }
 
    public static boolean isPathClear(Fox var0, LivingEntity var1) {
@@ -1340,11 +1333,7 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
 
          Fox.this.getLookControl()
             .setLookAt(
-               Fox.this.getX() + this.relX,
-               Fox.this.getEyeY(),
-               Fox.this.getZ() + this.relZ,
-               (float)Fox.this.getMaxHeadYRot(),
-               (float)Fox.this.getMaxHeadXRot()
+               Fox.this.getX() + this.relX, Fox.this.getEyeY(), Fox.this.getZ() + this.relZ, (float)Fox.this.getMaxHeadYRot(), (float)Fox.this.getMaxHeadXRot()
             );
       }
 

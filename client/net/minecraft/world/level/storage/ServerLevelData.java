@@ -31,11 +31,11 @@ public interface ServerLevelData extends WritableLevelData {
          "Level game mode",
          () -> String.format(
                Locale.ROOT,
-               "Game mode: %s (ID %d). Hardcore: %b. Cheats: %b",
+               "Game mode: %s (ID %d). Hardcore: %b. Commands: %b",
                this.getGameType().getName(),
                this.getGameType().getId(),
                this.isHardcore(),
-               this.getAllowCommands()
+               this.isAllowCommands()
             )
       );
       var1.setDetail(
@@ -78,7 +78,7 @@ public interface ServerLevelData extends WritableLevelData {
 
    void setInitialized(boolean var1);
 
-   boolean getAllowCommands();
+   boolean isAllowCommands();
 
    void setGameType(GameType var1);
 

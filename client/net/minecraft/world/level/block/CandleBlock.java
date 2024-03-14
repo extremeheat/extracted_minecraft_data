@@ -12,8 +12,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -67,17 +68,17 @@ public class CandleBlock extends AbstractCandleBlock implements SimpleWaterlogge
    }
 
    @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
-      if (var4.getAbilities().mayBuild && var4.getItemInHand(var5).isEmpty() && var1.getValue(LIT)) {
-         extinguish(var4, var1, var2, var3);
-         return InteractionResult.sidedSuccess(var2.isClientSide);
+   protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
+      if (var1.isEmpty() && var5.getAbilities().mayBuild && var2.getValue(LIT)) {
+         extinguish(var5, var2, var3, var4);
+         return ItemInteractionResult.sidedSuccess(var3.isClientSide);
       } else {
-         return InteractionResult.PASS;
+         return super.useItemOn(var1, var2, var3, var4, var5, var6, var7);
       }
    }
 
    @Override
-   public boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
+   protected boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
       return !var2.isSecondaryUseActive() && var2.getItemInHand().getItem() == this.asItem() && var1.getValue(CANDLES) < 4
          ? true
          : super.canBeReplaced(var1, var2);
@@ -96,7 +97,7 @@ public class CandleBlock extends AbstractCandleBlock implements SimpleWaterlogge
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var1.getValue(WATERLOGGED)) {
          var4.scheduleTick(var5, Fluids.WATER, Fluids.WATER.getTickDelay(var4));
       }
@@ -105,12 +106,12 @@ public class CandleBlock extends AbstractCandleBlock implements SimpleWaterlogge
    }
 
    @Override
-   public FluidState getFluidState(BlockState var1) {
+   protected FluidState getFluidState(BlockState var1) {
       return var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       switch(var1.getValue(CANDLES)) {
          case 1:
          default:
@@ -163,7 +164,7 @@ public class CandleBlock extends AbstractCandleBlock implements SimpleWaterlogge
    }
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       return Block.canSupportCenter(var2, var3.below(), Direction.UP);
    }
 }

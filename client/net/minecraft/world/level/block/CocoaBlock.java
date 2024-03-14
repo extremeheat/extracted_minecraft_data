@@ -58,12 +58,12 @@ public class CocoaBlock extends HorizontalDirectionalBlock implements Bonemealab
    }
 
    @Override
-   public boolean isRandomlyTicking(BlockState var1) {
+   protected boolean isRandomlyTicking(BlockState var1) {
       return var1.getValue(AGE) < 2;
    }
 
    @Override
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (var2.random.nextInt(5) == 0) {
          int var5 = var1.getValue(AGE);
          if (var5 < 2) {
@@ -73,13 +73,13 @@ public class CocoaBlock extends HorizontalDirectionalBlock implements Bonemealab
    }
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       BlockState var4 = var2.getBlockState(var3.relative(var1.getValue(FACING)));
       return var4.is(BlockTags.JUNGLE_LOGS);
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       int var5 = var1.getValue(AGE);
       switch((Direction)var1.getValue(FACING)) {
          case SOUTH:
@@ -114,7 +114,7 @@ public class CocoaBlock extends HorizontalDirectionalBlock implements Bonemealab
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       return var2 == var1.getValue(FACING) && !var1.canSurvive(var4, var5)
          ? Blocks.AIR.defaultBlockState()
          : super.updateShape(var1, var2, var3, var4, var5, var6);
@@ -141,7 +141,7 @@ public class CocoaBlock extends HorizontalDirectionalBlock implements Bonemealab
    }
 
    @Override
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
+   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
    }
 }

@@ -4,12 +4,12 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderSet;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.util.ParticleUtils;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.context.UseOnContext;
@@ -40,7 +40,7 @@ public class BoneMealItem extends Item {
       if (growCrop(var1.getItemInHand(), var2, var3)) {
          if (!var2.isClientSide) {
             var1.getPlayer().gameEvent(GameEvent.ITEM_INTERACT_FINISH);
-            var2.levelEvent(1505, var3, 0);
+            var2.levelEvent(1505, var3, 15);
          }
 
          return InteractionResult.sidedSuccess(var2.isClientSide);
@@ -50,7 +50,7 @@ public class BoneMealItem extends Item {
          if (var6 && growWaterPlant(var1.getItemInHand(), var2, var4, var1.getClickedFace())) {
             if (!var2.isClientSide) {
                var1.getPlayer().gameEvent(GameEvent.ITEM_INTERACT_FINISH);
-               var2.levelEvent(1505, var4, 0);
+               var2.levelEvent(1505, var4, 15);
             }
 
             return InteractionResult.sidedSuccess(var2.isClientSide);
@@ -103,8 +103,7 @@ public class BoneMealItem extends Item {
                if (var10.is(BiomeTags.PRODUCES_CORALS_FROM_BONEMEAL)) {
                   if (var5 == 0 && var3 != null && var3.getAxis().isHorizontal()) {
                      var7 = BuiltInRegistries.BLOCK
-                        .getTag(BlockTags.WALL_CORALS)
-                        .flatMap(var1x -> var1x.getRandomElement(var1.random))
+                        .getRandomElementOf(BlockTags.WALL_CORALS, var1.random)
                         .map(var0x -> var0x.value().defaultBlockState())
                         .orElse(var7);
                      if (var7.hasProperty(BaseCoralWallFanBlock.FACING)) {
@@ -112,8 +111,7 @@ public class BoneMealItem extends Item {
                      }
                   } else if (var4.nextInt(4) == 0) {
                      var7 = BuiltInRegistries.BLOCK
-                        .getTag(BlockTags.UNDERWATER_BONEMEALS)
-                        .flatMap(var1x -> var1x.getRandomElement(var1.random))
+                        .getRandomElementOf(BlockTags.UNDERWATER_BONEMEALS, var1.random)
                         .map(var0x -> var0x.value().defaultBlockState())
                         .orElse(var7);
                   }
@@ -143,43 +141,22 @@ public class BoneMealItem extends Item {
       }
    }
 
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public static void addGrowthParticles(LevelAccessor var0, BlockPos var1, int var2) {
-      if (var2 == 0) {
-         var2 = 15;
-      }
-
       BlockState var3 = var0.getBlockState(var1);
-      if (!var3.isAir()) {
-         double var4 = 0.5;
-         double var6;
-         if (var3.is(Blocks.WATER)) {
-            var2 *= 3;
-            var6 = 1.0;
-            var4 = 3.0;
-         } else if (var3.isSolidRender(var0, var1)) {
-            var1 = var1.above();
-            var2 *= 3;
-            var4 = 3.0;
-            var6 = 1.0;
-         } else {
-            var6 = var3.getShape(var0, var1).max(Direction.Axis.Y);
+      Block var5 = var3.getBlock();
+      if (var5 instanceof BonemealableBlock var4) {
+         BlockPos var6 = var4.getParticlePos(var1);
+         switch(var4.getType()) {
+            case NEIGHBOR_SPREADER:
+               ParticleUtils.spawnParticles(var0, var6, var2 * 3, 3.0, 1.0, false, ParticleTypes.HAPPY_VILLAGER);
+               break;
+            case GROWER:
+               ParticleUtils.spawnParticleInBlock(var0, var6, var2, ParticleTypes.HAPPY_VILLAGER);
          }
-
-         var0.addParticle(ParticleTypes.HAPPY_VILLAGER, (double)var1.getX() + 0.5, (double)var1.getY() + 0.5, (double)var1.getZ() + 0.5, 0.0, 0.0, 0.0);
-         RandomSource var8 = var0.getRandom();
-
-         for(int var9 = 0; var9 < var2; ++var9) {
-            double var10 = var8.nextGaussian() * 0.02;
-            double var12 = var8.nextGaussian() * 0.02;
-            double var14 = var8.nextGaussian() * 0.02;
-            double var16 = 0.5 - var4;
-            double var18 = (double)var1.getX() + var16 + var8.nextDouble() * var4 * 2.0;
-            double var20 = (double)var1.getY() + var8.nextDouble() * var6;
-            double var22 = (double)var1.getZ() + var16 + var8.nextDouble() * var4 * 2.0;
-            if (!var0.getBlockState(BlockPos.containing(var18, var20, var22).below()).isAir()) {
-               var0.addParticle(ParticleTypes.HAPPY_VILLAGER, var18, var20, var22, var10, var12, var14);
-            }
-         }
+      } else if (var3.is(Blocks.WATER)) {
+         ParticleUtils.spawnParticles(var0, var1, var2 * 3, 3.0, 1.0, false, ParticleTypes.HAPPY_VILLAGER);
       }
    }
 }

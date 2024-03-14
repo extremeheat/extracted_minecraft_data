@@ -7,7 +7,7 @@ public class VillagePools {
       super();
    }
 
-   public static void bootstrap(BootstapContext<StructureTemplatePool> var0) {
+   public static void bootstrap(BootstrapContext<StructureTemplatePool> var0) {
       PlainVillagePools.bootstrap(var0);
       SnowyVillagePools.bootstrap(var0);
       SavannaVillagePools.bootstrap(var0);

@@ -161,7 +161,7 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
          RealmsClient var3 = RealmsClient.create();
 
          try {
-            this.serverData = var3.getOwnWorld(var1);
+            this.serverData = var3.getOwnRealm(var1);
             this.addButtons();
          } catch (RealmsServiceException var5) {
             LOGGER.error("Couldn't get own world", var5);
@@ -182,7 +182,7 @@ public class RealmsBrokenWorldScreen extends RealmsScreen {
                      );
                } else {
                   try {
-                     RealmsServer var2 = var1.getOwnWorld(this.serverId);
+                     RealmsServer var2 = var1.getOwnRealm(this.serverId);
                      this.minecraft.execute(() -> RealmsMainScreen.play(var2, this));
                   } catch (RealmsServiceException var3) {
                      LOGGER.error("Couldn't get own world", var3);

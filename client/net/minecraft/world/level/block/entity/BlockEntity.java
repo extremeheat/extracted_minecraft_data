@@ -4,6 +4,8 @@ import com.mojang.logging.LogUtils;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
@@ -48,28 +50,28 @@ public abstract class BlockEntity {
       return this.level != null;
    }
 
-   public void load(CompoundTag var1) {
+   public void load(CompoundTag var1, HolderLookup.Provider var2) {
    }
 
-   protected void saveAdditional(CompoundTag var1) {
+   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
    }
 
-   public final CompoundTag saveWithFullMetadata() {
-      CompoundTag var1 = this.saveWithoutMetadata();
-      this.saveMetadata(var1);
-      return var1;
+   public final CompoundTag saveWithFullMetadata(HolderLookup.Provider var1) {
+      CompoundTag var2 = this.saveWithoutMetadata(var1);
+      this.saveMetadata(var2);
+      return var2;
    }
 
-   public final CompoundTag saveWithId() {
-      CompoundTag var1 = this.saveWithoutMetadata();
-      this.saveId(var1);
-      return var1;
+   public final CompoundTag saveWithId(HolderLookup.Provider var1) {
+      CompoundTag var2 = this.saveWithoutMetadata(var1);
+      this.saveId(var2);
+      return var2;
    }
 
-   public final CompoundTag saveWithoutMetadata() {
-      CompoundTag var1 = new CompoundTag();
-      this.saveAdditional(var1);
-      return var1;
+   public final CompoundTag saveWithoutMetadata(HolderLookup.Provider var1) {
+      CompoundTag var2 = new CompoundTag();
+      this.saveAdditional(var2, var1);
+      return var2;
    }
 
    private void saveId(CompoundTag var1) {
@@ -85,8 +87,11 @@ public abstract class BlockEntity {
       var0.putString("id", BlockEntityType.getKey(var1).toString());
    }
 
-   public void saveToItem(ItemStack var1) {
-      BlockItem.setBlockEntityData(var1, this.getType(), this.saveWithoutMetadata());
+   public void saveToItem(ItemStack var1, HolderLookup.Provider var2) {
+      CompoundTag var3 = this.saveWithoutMetadata(var2);
+      this.removeComponentsFromTag(var3);
+      BlockItem.setBlockEntityData(var1, this.getType(), var3);
+      var1.applyComponents(this.collectComponents());
    }
 
    private void saveMetadata(CompoundTag var1) {
@@ -97,30 +102,30 @@ public abstract class BlockEntity {
    }
 
    @Nullable
-   public static BlockEntity loadStatic(BlockPos var0, BlockState var1, CompoundTag var2) {
-      String var3 = var2.getString("id");
-      ResourceLocation var4 = ResourceLocation.tryParse(var3);
-      if (var4 == null) {
-         LOGGER.error("Block entity has invalid type: {}", var3);
+   public static BlockEntity loadStatic(BlockPos var0, BlockState var1, CompoundTag var2, HolderLookup.Provider var3) {
+      String var4 = var2.getString("id");
+      ResourceLocation var5 = ResourceLocation.tryParse(var4);
+      if (var5 == null) {
+         LOGGER.error("Block entity has invalid type: {}", var4);
          return null;
       } else {
-         return BuiltInRegistries.BLOCK_ENTITY_TYPE.getOptional(var4).map(var3x -> {
+         return BuiltInRegistries.BLOCK_ENTITY_TYPE.getOptional(var5).map(var3x -> {
             try {
                return var3x.create(var0, var1);
-            } catch (Throwable var5) {
-               LOGGER.error("Failed to create block entity {}", var3, var5);
+            } catch (Throwable var5xx) {
+               LOGGER.error("Failed to create block entity {}", var4, var5xx);
                return null;
             }
-         }).map(var2x -> {
+         }).map(var3x -> {
             try {
-               var2x.load(var2);
-               return var2x;
-            } catch (Throwable var4xx) {
-               LOGGER.error("Failed to load data for block entity {}", var3, var4xx);
+               var3x.load(var2, var3);
+               return var3x;
+            } catch (Throwable var5xx) {
+               LOGGER.error("Failed to load data for block entity {}", var4, var5xx);
                return null;
             }
          }).orElseGet(() -> {
-            LOGGER.warn("Skipping BlockEntity with id {}", var3);
+            LOGGER.warn("Skipping BlockEntity with id {}", var4);
             return null;
          });
       }
@@ -152,7 +157,7 @@ public abstract class BlockEntity {
       return null;
    }
 
-   public CompoundTag getUpdateTag() {
+   public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
       return new CompoundTag();
    }
 
@@ -191,5 +196,21 @@ public abstract class BlockEntity {
    @Deprecated
    public void setBlockState(BlockState var1) {
       this.blockState = var1;
+   }
+
+   public void applyComponents(DataComponentMap var1) {
+   }
+
+   public void collectComponents(DataComponentMap.Builder var1) {
+   }
+
+   @Deprecated
+   public void removeComponentsFromTag(CompoundTag var1) {
+   }
+
+   public final DataComponentMap collectComponents() {
+      DataComponentMap.Builder var1 = DataComponentMap.builder();
+      this.collectComponents(var1);
+      return var1.build();
    }
 }

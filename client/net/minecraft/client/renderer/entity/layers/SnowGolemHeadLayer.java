@@ -28,9 +28,7 @@ public class SnowGolemHeadLayer extends RenderLayer<SnowGolem, SnowGolemModel<Sn
       this.itemRenderer = var3;
    }
 
-   public void render(
-      PoseStack var1, MultiBufferSource var2, int var3, SnowGolem var4, float var5, float var6, float var7, float var8, float var9, float var10
-   ) {
+   public void render(PoseStack var1, MultiBufferSource var2, int var3, SnowGolem var4, float var5, float var6, float var7, float var8, float var9, float var10) {
       if (var4.hasPumpkin()) {
          boolean var11 = Minecraft.getInstance().shouldEntityAppearGlowing(var4) && var4.isInvisible();
          if (!var4.isInvisible() || var11) {

@@ -7,12 +7,9 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Containers;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -54,7 +51,7 @@ public class BrewingStandBlock extends BaseEntityBlock {
    }
 
    @Override
-   public RenderShape getRenderShape(BlockState var1) {
+   protected RenderShape getRenderShape(BlockState var1) {
       return RenderShape.MODEL;
    }
 
@@ -70,32 +67,22 @@ public class BrewingStandBlock extends BaseEntityBlock {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 
    @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       if (var2.isClientSide) {
          return InteractionResult.SUCCESS;
       } else {
-         BlockEntity var7 = var2.getBlockEntity(var3);
-         if (var7 instanceof BrewingStandBlockEntity) {
-            var4.openMenu((BrewingStandBlockEntity)var7);
+         BlockEntity var6 = var2.getBlockEntity(var3);
+         if (var6 instanceof BrewingStandBlockEntity) {
+            var4.openMenu((BrewingStandBlockEntity)var6);
             var4.awardStat(Stats.INTERACT_WITH_BREWINGSTAND);
          }
 
          return InteractionResult.CONSUME;
-      }
-   }
-
-   @Override
-   public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, LivingEntity var4, ItemStack var5) {
-      if (var5.hasCustomHoverName()) {
-         BlockEntity var6 = var1.getBlockEntity(var2);
-         if (var6 instanceof BrewingStandBlockEntity) {
-            ((BrewingStandBlockEntity)var6).setCustomName(var5.getHoverName());
-         }
       }
    }
 
@@ -108,18 +95,18 @@ public class BrewingStandBlock extends BaseEntityBlock {
    }
 
    @Override
-   public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       Containers.dropContentsOnDestroy(var1, var4, var2, var3);
       super.onRemove(var1, var2, var3, var4, var5);
    }
 
    @Override
-   public boolean hasAnalogOutputSignal(BlockState var1) {
+   protected boolean hasAnalogOutputSignal(BlockState var1) {
       return true;
    }
 
    @Override
-   public int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
+   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
       return AbstractContainerMenu.getRedstoneSignalFromBlockEntity(var2.getBlockEntity(var3));
    }
 
@@ -129,7 +116,7 @@ public class BrewingStandBlock extends BaseEntityBlock {
    }
 
    @Override
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
+   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
    }
 }

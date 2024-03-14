@@ -46,7 +46,7 @@ public class BubbleColumnBlock extends Block implements BucketPickup {
    }
 
    @Override
-   public void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
       BlockState var5 = var2.getBlockState(var3.above());
       if (var5.isAir()) {
          var4.onAboveBubbleCol(var1.getValue(DRAG_DOWN));
@@ -84,12 +84,12 @@ public class BubbleColumnBlock extends Block implements BucketPickup {
    }
 
    @Override
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       updateColumn(var2, var3, var1, var2.getBlockState(var3.below()));
    }
 
    @Override
-   public FluidState getFluidState(BlockState var1) {
+   protected FluidState getFluidState(BlockState var1) {
       return Fluids.WATER.getSource(false);
    }
 
@@ -169,7 +169,7 @@ public class BubbleColumnBlock extends Block implements BucketPickup {
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       var4.scheduleTick(var5, Fluids.WATER, Fluids.WATER.getTickDelay(var4));
       if (!var1.canSurvive(var4, var5) || var2 == Direction.DOWN || var2 == Direction.UP && !var3.is(Blocks.BUBBLE_COLUMN) && canExistIn(var3)) {
          var4.scheduleTick(var5, this, 5);
@@ -179,18 +179,18 @@ public class BubbleColumnBlock extends Block implements BucketPickup {
    }
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       BlockState var4 = var2.getBlockState(var3.below());
       return var4.is(Blocks.BUBBLE_COLUMN) || var4.is(Blocks.MAGMA_BLOCK) || var4.is(Blocks.SOUL_SAND);
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return Shapes.empty();
    }
 
    @Override
-   public RenderShape getRenderShape(BlockState var1) {
+   protected RenderShape getRenderShape(BlockState var1) {
       return RenderShape.INVISIBLE;
    }
 

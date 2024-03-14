@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.Set;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.Nameable;
 import net.minecraft.world.item.ItemStack;
@@ -40,8 +41,8 @@ public class CopyNameFunction extends LootItemConditionalFunction {
    @Override
    public ItemStack run(ItemStack var1, LootContext var2) {
       Object var3 = var2.getParamOrNull(this.source.param);
-      if (var3 instanceof Nameable var4 && var4.hasCustomName()) {
-         var1.setHoverName(var4.getDisplayName());
+      if (var3 instanceof Nameable var4) {
+         var1.set(DataComponents.CUSTOM_NAME, var4.getCustomName());
       }
 
       return var1;

@@ -2,7 +2,6 @@ package net.minecraft.world.level.block.state;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -12,6 +11,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.Decoder;
 import com.mojang.serialization.Encoder;
 import com.mojang.serialization.MapCodec;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectArrayMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -66,10 +66,15 @@ public class StateDefinition<O, S extends StateHolder<O, S>> {
       }
 
       var10.forEach(var5x -> {
-         ImmutableMap var6xx = var5x.stream().collect(ImmutableMap.toImmutableMap(Pair::getFirst, Pair::getSecond));
-         StateHolder var7xx = (StateHolder)var3.create((O)var2, var6xx, var13);
-         var14.put(var6xx, var7xx);
-         var9.add(var7xx);
+         Reference2ObjectArrayMap var6xx = new Reference2ObjectArrayMap(var5x.size());
+
+         for(Pair var8xx : var5x) {
+            var6xx.put((Property)var8xx.getFirst(), (Comparable)var8xx.getSecond());
+         }
+
+         StateHolder var9xx = (StateHolder)var3.create((O)var2, var6xx, var13);
+         var14.put(var6xx, var9xx);
+         var9.add(var9xx);
       });
 
       for(StateHolder var16 : var9) {
@@ -166,6 +171,6 @@ public class StateDefinition<O, S extends StateHolder<O, S>> {
    }
 
    public interface Factory<O, S> {
-      S create(O var1, ImmutableMap<Property<?>, Comparable<?>> var2, MapCodec<S> var3);
+      S create(O var1, Reference2ObjectArrayMap<Property<?>, Comparable<?>> var2, MapCodec<S> var3);
    }
 }

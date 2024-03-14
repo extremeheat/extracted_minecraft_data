@@ -81,7 +81,7 @@ public class LevelSummary implements Comparable<LevelSummary> {
       return this.settings.hardcore();
    }
 
-   public boolean hasCheats() {
+   public boolean hasCommands() {
       return this.settings.allowCommands();
    }
 
@@ -149,8 +149,8 @@ public class LevelSummary implements Comparable<LevelSummary> {
          MutableComponent var1 = this.isHardcore()
             ? Component.empty().append(Component.translatable("gameMode.hardcore").withColor(-65536))
             : Component.translatable("gameMode." + this.getGameMode().getName());
-         if (this.hasCheats()) {
-            var1.append(", ").append(Component.translatable("selectWorld.cheats"));
+         if (this.hasCommands()) {
+            var1.append(", ").append(Component.translatable("selectWorld.commands"));
          }
 
          if (this.isExperimental()) {
@@ -176,6 +176,10 @@ public class LevelSummary implements Comparable<LevelSummary> {
 
    public boolean primaryActionActive() {
       return !this.isDisabled();
+   }
+
+   public boolean canUpload() {
+      return !this.requiresManualConversion() && !this.isLocked();
    }
 
    public boolean canEdit() {
@@ -259,6 +263,11 @@ public class LevelSummary implements Comparable<LevelSummary> {
       }
 
       @Override
+      public boolean canUpload() {
+         return false;
+      }
+
+      @Override
       public boolean canEdit() {
          return false;
       }
@@ -305,6 +314,11 @@ public class LevelSummary implements Comparable<LevelSummary> {
       @Override
       public boolean primaryActionActive() {
          return true;
+      }
+
+      @Override
+      public boolean canUpload() {
+         return false;
       }
 
       @Override

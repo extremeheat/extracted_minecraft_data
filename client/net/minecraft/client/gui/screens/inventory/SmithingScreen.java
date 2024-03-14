@@ -101,7 +101,7 @@ public class SmithingScreen extends ItemCombinerScreen<SmithingMenu> {
       this.baseIcon.render(this.menu, var1, var2, this.leftPos, this.topPos);
       this.additionalIcon.render(this.menu, var1, var2, this.leftPos, this.topPos);
       InventoryScreen.renderEntityInInventory(
-         var1, (float)(this.leftPos + 141), (float)(this.topPos + 75), 25, ARMOR_STAND_TRANSLATION, ARMOR_STAND_ANGLE, null, this.armorStandPreview
+         var1, (float)(this.leftPos + 141), (float)(this.topPos + 75), 25.0F, ARMOR_STAND_TRANSLATION, ARMOR_STAND_ANGLE, null, this.armorStandPreview
       );
    }
 

@@ -298,7 +298,7 @@ public class PiglinAi {
       );
       Activity var3 = var1.getActiveNonCoreActivity().orElse(null);
       if (var2 != var3) {
-         getSoundForCurrentActivity(var0).ifPresent(var0::playSoundEvent);
+         getSoundForCurrentActivity(var0).ifPresent(var0::makeSound);
       }
 
       var0.setAggressive(var1.hasMemoryValue(MemoryModuleType.ATTACK_TARGET));
@@ -640,9 +640,9 @@ public class PiglinAi {
    }
 
    public static boolean isWearingGold(LivingEntity var0) {
-      for(ItemStack var3 : var0.getArmorSlots()) {
+      for(ItemStack var3 : var0.getArmorAndBodyArmorSlots()) {
          Item var4 = var3.getItem();
-         if (var4 instanceof ArmorItem && ((ArmorItem)var4).getMaterial() == ArmorMaterials.GOLD) {
+         if (var4 instanceof ArmorItem && ((ArmorItem)var4).getMaterial().is(ArmorMaterials.GOLD)) {
             return true;
          }
       }

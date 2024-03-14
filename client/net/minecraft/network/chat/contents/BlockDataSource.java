@@ -52,7 +52,7 @@ public record BlockDataSource(String d, @Nullable Coordinates e) implements Data
          if (var2.isLoaded(var3)) {
             BlockEntity var4 = var2.getBlockEntity(var3);
             if (var4 != null) {
-               return Stream.of(var4.saveWithFullMetadata());
+               return Stream.of(var4.saveWithFullMetadata(var1.registryAccess()));
             }
          }
       }

@@ -45,7 +45,7 @@ public class LocateHidingPlace {
                                        var12.getRandom()
                                     )
                            )
-                           .or(() -> var3.<GlobalPos>tryGet(var5).map(GlobalPos::pos))
+                           .or(() -> var3.tryGet(var5).map(GlobalPos::pos))
                            .ifPresent(var10xx -> {
                               var7.erase();
                               var8.erase();

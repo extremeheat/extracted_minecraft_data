@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.ai.behavior;
 
 import com.google.common.collect.ImmutableMap;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -12,6 +13,7 @@ import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.CrossbowItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.ChargedProjectiles;
 
 public class CrossbowAttack<E extends Mob & CrossbowAttackMob, T extends LivingEntity> extends Behavior<E> {
    private static final int TIMEOUT = 1200;
@@ -44,7 +46,7 @@ public class CrossbowAttack<E extends Mob & CrossbowAttackMob, T extends LivingE
 
       if (var2.isHolding(Items.CROSSBOW)) {
          ((CrossbowAttackMob)var2).setChargingCrossbow(false);
-         CrossbowItem.setCharged(var2.getUseItem(), false);
+         var2.getUseItem().set(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
       }
    }
 
@@ -73,8 +75,6 @@ public class CrossbowAttack<E extends Mob & CrossbowAttackMob, T extends LivingE
          }
       } else if (this.crossbowState == CrossbowAttack.CrossbowState.READY_TO_ATTACK) {
          ((RangedAttackMob)var1).performRangedAttack(var2, 1.0F);
-         ItemStack var5 = var1.getItemInHand(ProjectileUtil.getWeaponHoldingHand(var1, Items.CROSSBOW));
-         CrossbowItem.setCharged(var5, false);
          this.crossbowState = CrossbowAttack.CrossbowState.UNCHARGED;
       }
    }

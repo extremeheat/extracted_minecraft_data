@@ -7,11 +7,14 @@ import javax.annotation.Nullable;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementNode;
 import net.minecraft.advancements.AdvancementProgress;
-import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientAdvancements;
 import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundSeenAdvancementsPacket;
 import net.minecraft.resources.ResourceLocation;
@@ -34,6 +37,9 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
    private static final Component VERY_SAD_LABEL = Component.translatable("advancements.sad_label");
    private static final Component NO_ADVANCEMENTS_LABEL = Component.translatable("advancements.empty");
    private static final Component TITLE = Component.translatable("gui.advancements");
+   private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
+   @Nullable
+   private final Screen lastScreen;
    private final ClientAdvancements advancements;
    private final Map<AdvancementHolder, AdvancementTab> tabs = Maps.newLinkedHashMap();
    @Nullable
@@ -41,12 +47,18 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
    private boolean isScrolling;
 
    public AdvancementsScreen(ClientAdvancements var1) {
-      super(GameNarrator.NO_TITLE);
+      this(var1, null);
+   }
+
+   public AdvancementsScreen(ClientAdvancements var1, @Nullable Screen var2) {
+      super(TITLE);
       this.advancements = var1;
+      this.lastScreen = var2;
    }
 
    @Override
    protected void init() {
+      this.layout.addTitleHeader(TITLE, this.font);
       this.tabs.clear();
       this.selectedTab = null;
       this.advancements.setListener(this);
@@ -56,6 +68,21 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
       } else {
          this.advancements.setSelectedTab(this.selectedTab == null ? null : this.selectedTab.getRootNode().holder(), true);
       }
+
+      this.layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, var1x -> this.onClose()).width(200).build());
+      this.layout.visitWidgets(var1x -> {
+      });
+      this.repositionElements();
+   }
+
+   @Override
+   protected void repositionElements() {
+      this.layout.arrangeElements();
+   }
+
+   @Override
+   public void onClose() {
+      this.minecraft.setScreen(this.lastScreen);
    }
 
    @Override
@@ -97,9 +124,9 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
+      super.render(var1, var2, var3, var4);
       int var5 = (this.width - 252) / 2;
       int var6 = (this.height - 140) / 2;
-      this.renderBackground(var1, var2, var3, var4);
       this.renderInside(var1, var2, var3, var5, var6);
       this.renderWindow(var1, var5, var6);
       this.renderTooltips(var1, var2, var3, var5, var6);
@@ -156,7 +183,7 @@ public class AdvancementsScreen extends Screen implements ClientAdvancements.Lis
          }
       }
 
-      var1.drawString(this.font, TITLE, var2 + 8, var3 + 6, 4210752, false);
+      var1.drawString(this.font, this.selectedTab != null ? this.selectedTab.getTitle() : TITLE, var2 + 8, var3 + 6, 4210752, false);
    }
 
    private void renderTooltips(GuiGraphics var1, int var2, int var3, int var4, int var5) {

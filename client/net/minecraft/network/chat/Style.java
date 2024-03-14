@@ -8,6 +8,9 @@ import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 
@@ -164,16 +167,7 @@ public class Style {
          ? this
          : checkEmptyAfterChange(
             new Style(
-               this.color,
-               var1,
-               this.italic,
-               this.underlined,
-               this.strikethrough,
-               this.obfuscated,
-               this.clickEvent,
-               this.hoverEvent,
-               this.insertion,
-               this.font
+               this.color, var1, this.italic, this.underlined, this.strikethrough, this.obfuscated, this.clickEvent, this.hoverEvent, this.insertion, this.font
             ),
             this.bold,
             var1
@@ -267,16 +261,7 @@ public class Style {
          ? this
          : checkEmptyAfterChange(
             new Style(
-               this.color,
-               this.bold,
-               this.italic,
-               this.underlined,
-               this.strikethrough,
-               this.obfuscated,
-               this.clickEvent,
-               this.hoverEvent,
-               this.insertion,
-               var1
+               this.color, this.bold, this.italic, this.underlined, this.strikethrough, this.obfuscated, this.clickEvent, this.hoverEvent, this.insertion, var1
             ),
             this.font,
             var1
@@ -508,6 +493,7 @@ public class Style {
                .apply(var0, Style::create)
       );
       public static final Codec<Style> CODEC = MAP_CODEC.codec();
+      public static final StreamCodec<RegistryFriendlyByteBuf, Style> TRUSTED_STREAM_CODEC = ByteBufCodecs.fromCodecWithRegistriesTrusted(CODEC);
 
       public Serializer() {
          super();

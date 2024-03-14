@@ -75,7 +75,7 @@ public class ExecutionContext<T> implements AutoCloseable {
    }
 
    public void discardAtDepthOrHigher(int var1) {
-      while(!this.commandQueue.isEmpty() && this.commandQueue.peek().frame().depth() >= var1) {
+      while(!this.commandQueue.isEmpty() && ((CommandQueueEntry)this.commandQueue.peek()).frame().depth() >= var1) {
          this.commandQueue.removeFirst();
       }
    }
@@ -93,7 +93,7 @@ public class ExecutionContext<T> implements AutoCloseable {
             break;
          }
 
-         CommandQueueEntry var1 = this.commandQueue.pollFirst();
+         CommandQueueEntry var1 = (CommandQueueEntry)this.commandQueue.pollFirst();
          if (var1 == null) {
             return;
          }
@@ -113,7 +113,7 @@ public class ExecutionContext<T> implements AutoCloseable {
 
    private void pushNewCommands() {
       for(int var1 = this.newTopCommands.size() - 1; var1 >= 0; --var1) {
-         this.commandQueue.addFirst(this.newTopCommands.get(var1));
+         this.commandQueue.addFirst((CommandQueueEntry)this.newTopCommands.get(var1));
       }
 
       this.newTopCommands.clear();

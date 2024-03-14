@@ -13,9 +13,7 @@ import net.minecraft.server.packs.resources.ResourceManager;
 
 public class DirectoryLister implements SpriteSource {
    public static final Codec<DirectoryLister> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               Codec.STRING.fieldOf("source").forGetter(var0x -> var0x.sourcePath), Codec.STRING.fieldOf("prefix").forGetter(var0x -> var0x.idPrefix)
-            )
+      var0 -> var0.group(Codec.STRING.fieldOf("source").forGetter(var0x -> var0x.sourcePath), Codec.STRING.fieldOf("prefix").forGetter(var0x -> var0x.idPrefix))
             .apply(var0, DirectoryLister::new)
    );
    private final String sourcePath;

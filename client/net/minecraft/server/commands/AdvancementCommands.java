@@ -97,9 +97,7 @@ public class AdvancementCommands {
                                                          EntityArgument.getPlayers(var0x, "targets"),
                                                          AdvancementCommands.Action.GRANT,
                                                          getAdvancements(
-                                                            var0x,
-                                                            ResourceLocationArgument.getAdvancement(var0x, "advancement"),
-                                                            AdvancementCommands.Mode.FROM
+                                                            var0x, ResourceLocationArgument.getAdvancement(var0x, "advancement"), AdvancementCommands.Mode.FROM
                                                          )
                                                       )
                                                 )
@@ -303,16 +301,13 @@ public class AdvancementCommands {
                );
             } else {
                var0.sendSuccess(
-                  () -> Component.translatable(
-                        var2.getKey() + ".one.to.many.success", Advancement.name((AdvancementHolder)var3.iterator().next()), var1.size()
-                     ),
+                  () -> Component.translatable(var2.getKey() + ".one.to.many.success", Advancement.name((AdvancementHolder)var3.iterator().next()), var1.size()),
                   true
                );
             }
          } else if (var1.size() == 1) {
             var0.sendSuccess(
-               () -> Component.translatable(var2.getKey() + ".many.to.one.success", var3.size(), ((ServerPlayer)var1.iterator().next()).getDisplayName()),
-               true
+               () -> Component.translatable(var2.getKey() + ".many.to.one.success", var3.size(), ((ServerPlayer)var1.iterator().next()).getDisplayName()), true
             );
          } else {
             var0.sendSuccess(() -> Component.translatable(var2.getKey() + ".many.to.many.success", var3.size(), var1.size()), true);

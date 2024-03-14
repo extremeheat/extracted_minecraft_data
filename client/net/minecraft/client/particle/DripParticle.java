@@ -123,9 +123,7 @@ public class DripParticle extends TextureSheetParticle {
    public static TextureSheetParticle createHoneyFallParticle(
       SimpleParticleType var0, ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12
    ) {
-      DripParticle.HoneyFallAndLandParticle var14 = new DripParticle.HoneyFallAndLandParticle(
-         var1, var2, var4, var6, Fluids.EMPTY, ParticleTypes.LANDING_HONEY
-      );
+      DripParticle.HoneyFallAndLandParticle var14 = new DripParticle.HoneyFallAndLandParticle(var1, var2, var4, var6, Fluids.EMPTY, ParticleTypes.LANDING_HONEY);
       var14.gravity = 0.01F;
       var14.setColor(0.582F, 0.448F, 0.082F);
       return var14;

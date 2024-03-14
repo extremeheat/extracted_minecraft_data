@@ -31,6 +31,7 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    private Entity cachedOwner;
    private boolean leftOwner;
    private boolean hasBeenShot;
+   protected boolean isDeflected;
 
    Projectile(EntityType<? extends Projectile> var1, Level var2) {
       super(var1, var2);
@@ -162,13 +163,23 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    protected void onHit(HitResult var1) {
       HitResult.Type var2 = var1.getType();
       if (var2 == HitResult.Type.ENTITY) {
-         this.onHitEntity((EntityHitResult)var1);
+         EntityHitResult var3 = (EntityHitResult)var1;
+         if (!this.isDeflected) {
+            ProjectileDeflection var4 = var3.getEntity().deflection(this);
+            if (var4 != ProjectileDeflection.NONE) {
+               var4.deflect(this, var3.getEntity(), this.random);
+               this.isDeflected = true;
+               return;
+            }
+         }
+
+         this.onHitEntity(var3);
          this.level().gameEvent(GameEvent.PROJECTILE_LAND, var1.getLocation(), GameEvent.Context.of(this, null));
       } else if (var2 == HitResult.Type.BLOCK) {
-         BlockHitResult var3 = (BlockHitResult)var1;
-         this.onHitBlock(var3);
-         BlockPos var4 = var3.getBlockPos();
-         this.level().gameEvent(GameEvent.PROJECTILE_LAND, var4, GameEvent.Context.of(this, this.level().getBlockState(var4)));
+         BlockHitResult var5 = (BlockHitResult)var1;
+         this.onHitBlock(var5);
+         BlockPos var6 = var5.getBlockPos();
+         this.level().gameEvent(GameEvent.PROJECTILE_LAND, var6, GameEvent.Context.of(this, this.level().getBlockState(var6)));
       }
    }
 

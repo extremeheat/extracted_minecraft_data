@@ -12,6 +12,7 @@ import java.util.Map.Entry;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -102,7 +103,7 @@ public class DebugPackets {
    public static void sendBreezeInfo(Breeze var0) {
    }
 
-   public static void sendGameEventInfo(Level var0, GameEvent var1, Vec3 var2) {
+   public static void sendGameEventInfo(Level var0, Holder<GameEvent> var1, Vec3 var2) {
    }
 
    public static void sendGameEventListenerInfo(Level var0, GameEventListener var1) {

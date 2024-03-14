@@ -48,10 +48,7 @@ public class BredAnimalsTrigger extends SimpleCriterionTrigger<BredAnimalsTrigge
       );
 
       public TriggerInstance(
-         Optional<ContextAwarePredicate> var1,
-         Optional<ContextAwarePredicate> var2,
-         Optional<ContextAwarePredicate> var3,
-         Optional<ContextAwarePredicate> var4
+         Optional<ContextAwarePredicate> var1, Optional<ContextAwarePredicate> var2, Optional<ContextAwarePredicate> var3, Optional<ContextAwarePredicate> var4
       ) {
          super();
          this.player = var1;

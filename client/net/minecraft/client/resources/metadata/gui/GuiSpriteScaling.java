@@ -89,9 +89,7 @@ public interface GuiSpriteScaling {
          }
 
          private OptionalInt unpackValue() {
-            return this.left() == this.top() && this.top() == this.right() && this.right() == this.bottom()
-               ? OptionalInt.of(this.left())
-               : OptionalInt.empty();
+            return this.left() == this.top() && this.top() == this.right() && this.right() == this.bottom() ? OptionalInt.of(this.left()) : OptionalInt.empty();
          }
       }
    }

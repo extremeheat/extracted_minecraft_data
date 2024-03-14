@@ -21,6 +21,9 @@ import net.minecraft.world.entity.raid.Raid;
 
 public class VillagerGoalPackages {
    private static final float STROLL_SPEED_MODIFIER = 0.4F;
+   public static final int INTERACT_DIST_SQR = 5;
+   public static final int INTERACT_WALKUP_DIST = 2;
+   public static final float INTERACT_SPEED_MODIFIER = 0.5F;
 
    public VillagerGoalPackages() {
       super();

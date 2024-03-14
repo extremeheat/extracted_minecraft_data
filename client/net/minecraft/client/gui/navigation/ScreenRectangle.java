@@ -94,4 +94,8 @@ public record ScreenRectangle(ScreenPosition a, int b, int c) {
    public int right() {
       return this.position.x() + this.width;
    }
+
+   public boolean containsPoint(int var1, int var2) {
+      return var1 >= this.left() && var1 < this.right() && var2 >= this.top() && var2 < this.bottom();
+   }
 }

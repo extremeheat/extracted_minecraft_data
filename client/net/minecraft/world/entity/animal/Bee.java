@@ -37,14 +37,11 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.PathfinderMob;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.FlyingMoveControl;
@@ -85,8 +82,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.material.Fluid;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.level.pathfinder.Path;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
 
 public class Bee extends Animal implements NeutralMob, FlyingAnimal {
@@ -113,8 +110,8 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
    public static final String TAG_TICKS_SINCE_POLLINATION = "TicksSincePollination";
    public static final String TAG_HAS_STUNG = "HasStung";
    public static final String TAG_HAS_NECTAR = "HasNectar";
-   public static final String TAG_FLOWER_POS = "FlowerPos";
-   public static final String TAG_HIVE_POS = "HivePos";
+   public static final String TAG_FLOWER_POS = "flower_pos";
+   public static final String TAG_HIVE_POS = "hive_pos";
    private static final UniformInt PERSISTENT_ANGER_TIME = TimeUtil.rangeOfSeconds(20, 39);
    @Nullable
    private UUID persistentAngerTarget;
@@ -141,18 +138,18 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
       super(var1, var2);
       this.moveControl = new FlyingMoveControl(this, 20, true);
       this.lookControl = new Bee.BeeLookControl(this);
-      this.setPathfindingMalus(BlockPathTypes.DANGER_FIRE, -1.0F);
-      this.setPathfindingMalus(BlockPathTypes.WATER, -1.0F);
-      this.setPathfindingMalus(BlockPathTypes.WATER_BORDER, 16.0F);
-      this.setPathfindingMalus(BlockPathTypes.COCOA, -1.0F);
-      this.setPathfindingMalus(BlockPathTypes.FENCE, -1.0F);
+      this.setPathfindingMalus(PathType.DANGER_FIRE, -1.0F);
+      this.setPathfindingMalus(PathType.WATER, -1.0F);
+      this.setPathfindingMalus(PathType.WATER_BORDER, 16.0F);
+      this.setPathfindingMalus(PathType.COCOA, -1.0F);
+      this.setPathfindingMalus(PathType.FENCE, -1.0F);
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_FLAGS_ID, (byte)0);
-      this.entityData.define(DATA_REMAINING_ANGER_TIME, 0);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_FLAGS_ID, (byte)0);
+      var1.define(DATA_REMAINING_ANGER_TIME, 0);
    }
 
    @Override
@@ -186,11 +183,11 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       if (this.hasHive()) {
-         var1.put("HivePos", NbtUtils.writeBlockPos(this.getHivePos()));
+         var1.put("hive_pos", NbtUtils.writeBlockPos(this.getHivePos()));
       }
 
       if (this.hasSavedFlowerPos()) {
-         var1.put("FlowerPos", NbtUtils.writeBlockPos(this.getSavedFlowerPos()));
+         var1.put("flower_pos", NbtUtils.writeBlockPos(this.getSavedFlowerPos()));
       }
 
       var1.putBoolean("HasNectar", this.hasNectar());
@@ -203,16 +200,8 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
 
    @Override
    public void readAdditionalSaveData(CompoundTag var1) {
-      this.hivePos = null;
-      if (var1.contains("HivePos")) {
-         this.hivePos = NbtUtils.readBlockPos(var1.getCompound("HivePos"));
-      }
-
-      this.savedFlowerPos = null;
-      if (var1.contains("FlowerPos")) {
-         this.savedFlowerPos = NbtUtils.readBlockPos(var1.getCompound("FlowerPos"));
-      }
-
+      this.hivePos = NbtUtils.readBlockPos(var1, "hive_pos").orElse(null);
+      this.savedFlowerPos = NbtUtils.readBlockPos(var1, "flower_pos").orElse(null);
       super.readAdditionalSaveData(var1);
       this.setHasNectar(var1.getBoolean("HasNectar"));
       this.setHasStung(var1.getBoolean("HasStung"));
@@ -611,11 +600,6 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
    }
 
    @Override
-   protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
-      return this.isBaby() ? var2.height * 0.5F : var2.height * 0.5F;
-   }
-
-   @Override
    protected void checkFallDamage(double var1, boolean var3, BlockState var4, BlockPos var5) {
    }
 
@@ -648,11 +632,6 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
    }
 
    @Override
-   public MobType getMobType() {
-      return MobType.ARTHROPOD;
-   }
-
-   @Override
    protected void jumpInLiquid(TagKey<Fluid> var1) {
       this.setDeltaMovement(this.getDeltaMovement().add(0.0, 0.01, 0.0));
    }
@@ -664,6 +643,10 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
 
    boolean closerThan(BlockPos var1, int var2) {
       return var1.closerThan(this.blockPosition(), (double)var2);
+   }
+
+   public void setHivePos(BlockPos var1) {
+      this.hivePos = var1;
    }
 
    abstract class BaseBeeGoal extends Goal {
@@ -761,7 +744,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
       public void start() {
          BlockEntity var1 = Bee.this.level().getBlockEntity(Bee.this.hivePos);
          if (var1 instanceof BeehiveBlockEntity var2) {
-            var2.addOccupant(Bee.this, Bee.this.hasNectar());
+            var2.addOccupant(Bee.this);
          }
       }
    }
@@ -844,7 +827,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
 
       private boolean pathfindDirectlyTowards(BlockPos var1) {
          Bee.this.navigation.setMaxVisitedNodesMultiplier(10.0F);
-         Bee.this.navigation.moveTo((double)var1.getX(), (double)var1.getY(), (double)var1.getZ(), 1.0);
+         Bee.this.navigation.moveTo((double)var1.getX(), (double)var1.getY(), (double)var1.getZ(), 2, 1.0);
          return Bee.this.navigation.getPath() != null && Bee.this.navigation.getPath().canReach();
       }
 
@@ -997,7 +980,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
                   }
 
                   if (var5 != null) {
-                     Bee.this.level().levelEvent(2005, var2, 0);
+                     Bee.this.level().levelEvent(2011, var2, 15);
                      Bee.this.level().setBlockAndUpdate(var2, var5);
                      Bee.this.incrementNumCropsGrownSincePollination();
                   }

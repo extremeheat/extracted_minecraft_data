@@ -2,10 +2,15 @@ package net.minecraft.network.protocol.game;
 
 import java.util.List;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.entity.Entity;
 
 public class ClientboundSetPassengersPacket implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ClientboundSetPassengersPacket> STREAM_CODEC = Packet.codec(
+      ClientboundSetPassengersPacket::write, ClientboundSetPassengersPacket::new
+   );
    private final int vehicle;
    private final int[] passengers;
 
@@ -20,16 +25,20 @@ public class ClientboundSetPassengersPacket implements Packet<ClientGamePacketLi
       }
    }
 
-   public ClientboundSetPassengersPacket(FriendlyByteBuf var1) {
+   private ClientboundSetPassengersPacket(FriendlyByteBuf var1) {
       super();
       this.vehicle = var1.readVarInt();
       this.passengers = var1.readVarIntArray();
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       var1.writeVarInt(this.vehicle);
       var1.writeVarIntArray(this.passengers);
+   }
+
+   @Override
+   public PacketType<ClientboundSetPassengersPacket> type() {
+      return GamePacketTypes.CLIENTBOUND_SET_PASSENGERS;
    }
 
    public void handle(ClientGamePacketListener var1) {

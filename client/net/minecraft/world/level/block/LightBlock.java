@@ -4,12 +4,12 @@ import com.mojang.serialization.MapCodec;
 import java.util.function.ToIntFunction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.InteractionHand;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -50,7 +50,7 @@ public class LightBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       if (!var2.isClientSide && var4.canUseGameMasterBlocks()) {
          var2.setBlock(var3, var1.cycle(LEVEL), 2);
          return InteractionResult.SUCCESS;
@@ -60,27 +60,27 @@ public class LightBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return var4.isHoldingItem(Items.LIGHT) ? Shapes.block() : Shapes.empty();
    }
 
    @Override
-   public boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
       return true;
    }
 
    @Override
-   public RenderShape getRenderShape(BlockState var1) {
+   protected RenderShape getRenderShape(BlockState var1) {
       return RenderShape.INVISIBLE;
    }
 
    @Override
-   public float getShadeBrightness(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected float getShadeBrightness(BlockState var1, BlockGetter var2, BlockPos var3) {
       return 1.0F;
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var1.getValue(WATERLOGGED)) {
          var4.scheduleTick(var5, Fluids.WATER, Fluids.WATER.getTickDelay(var4));
       }
@@ -89,7 +89,7 @@ public class LightBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    @Override
-   public FluidState getFluidState(BlockState var1) {
+   protected FluidState getFluidState(BlockState var1) {
       return var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
    }
 
@@ -100,9 +100,7 @@ public class LightBlock extends Block implements SimpleWaterloggedBlock {
 
    public static ItemStack setLightOnStack(ItemStack var0, int var1) {
       if (var1 != 15) {
-         CompoundTag var2 = new CompoundTag();
-         var2.putString(LEVEL.getName(), String.valueOf(var1));
-         var0.addTagElement("BlockStateTag", var2);
+         var0.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(LEVEL, var1));
       }
 
       return var0;

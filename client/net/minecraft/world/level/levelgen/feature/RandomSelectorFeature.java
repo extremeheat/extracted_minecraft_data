@@ -6,6 +6,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.feature.configurations.RandomFeatureConfiguration;
+import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 public class RandomSelectorFeature extends Feature<RandomFeatureConfiguration> {
    public RandomSelectorFeature(Codec<RandomFeatureConfiguration> var1) {
@@ -26,6 +27,6 @@ public class RandomSelectorFeature extends Feature<RandomFeatureConfiguration> {
          }
       }
 
-      return var2.defaultFeature.value().place(var4, var5, var3, var6);
+      return ((PlacedFeature)var2.defaultFeature.value()).place(var4, var5, var3, var6);
    }
 }

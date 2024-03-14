@@ -1,33 +1,37 @@
 package net.minecraft.network.protocol.game;
 
 import javax.annotation.Nullable;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 
-public class ClientboundRemoveMobEffectPacket implements Packet<ClientGamePacketListener> {
+public record ClientboundRemoveMobEffectPacket(int b, Holder<MobEffect> c) implements Packet<ClientGamePacketListener> {
    private final int entityId;
-   private final MobEffect effect;
+   private final Holder<MobEffect> effect;
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundRemoveMobEffectPacket> STREAM_CODEC = StreamCodec.composite(
+      ByteBufCodecs.VAR_INT,
+      var0 -> var0.entityId,
+      ByteBufCodecs.holderRegistry(Registries.MOB_EFFECT),
+      ClientboundRemoveMobEffectPacket::effect,
+      ClientboundRemoveMobEffectPacket::new
+   );
 
-   public ClientboundRemoveMobEffectPacket(int var1, MobEffect var2) {
+   public ClientboundRemoveMobEffectPacket(int var1, Holder<MobEffect> var2) {
       super();
       this.entityId = var1;
       this.effect = var2;
    }
 
-   public ClientboundRemoveMobEffectPacket(FriendlyByteBuf var1) {
-      super();
-      this.entityId = var1.readVarInt();
-      this.effect = var1.readById(BuiltInRegistries.MOB_EFFECT);
-   }
-
    @Override
-   public void write(FriendlyByteBuf var1) {
-      var1.writeVarInt(this.entityId);
-      var1.writeId(BuiltInRegistries.MOB_EFFECT, this.effect);
+   public PacketType<ClientboundRemoveMobEffectPacket> type() {
+      return GamePacketTypes.CLIENTBOUND_REMOVE_MOB_EFFECT;
    }
 
    public void handle(ClientGamePacketListener var1) {
@@ -37,10 +41,5 @@ public class ClientboundRemoveMobEffectPacket implements Packet<ClientGamePacket
    @Nullable
    public Entity getEntity(Level var1) {
       return var1.getEntity(this.entityId);
-   }
-
-   @Nullable
-   public MobEffect getEffect() {
-      return this.effect;
    }
 }

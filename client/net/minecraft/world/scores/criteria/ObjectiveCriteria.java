@@ -126,9 +126,7 @@ public class ObjectiveCriteria {
       HEARTS("hearts");
 
       private final String id;
-      public static final StringRepresentable.EnumCodec<ObjectiveCriteria.RenderType> CODEC = StringRepresentable.fromEnum(
-         ObjectiveCriteria.RenderType::values
-      );
+      public static final StringRepresentable.EnumCodec<ObjectiveCriteria.RenderType> CODEC = StringRepresentable.fromEnum(ObjectiveCriteria.RenderType::values);
 
       private RenderType(String var3) {
          this.id = var3;

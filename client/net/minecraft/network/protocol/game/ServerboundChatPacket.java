@@ -5,9 +5,11 @@ import javax.annotation.Nullable;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.LastSeenMessages;
 import net.minecraft.network.chat.MessageSignature;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 
-public record ServerboundChatPacket(String a, Instant b, long c, @Nullable MessageSignature d, LastSeenMessages.Update e)
+public record ServerboundChatPacket(String b, Instant c, long d, @Nullable MessageSignature e, LastSeenMessages.Update f)
    implements Packet<ServerGamePacketListener> {
    private final String message;
    private final Instant timeStamp;
@@ -15,8 +17,9 @@ public record ServerboundChatPacket(String a, Instant b, long c, @Nullable Messa
    @Nullable
    private final MessageSignature signature;
    private final LastSeenMessages.Update lastSeenMessages;
+   public static final StreamCodec<FriendlyByteBuf, ServerboundChatPacket> STREAM_CODEC = Packet.codec(ServerboundChatPacket::write, ServerboundChatPacket::new);
 
-   public ServerboundChatPacket(FriendlyByteBuf var1) {
+   private ServerboundChatPacket(FriendlyByteBuf var1) {
       this(var1.readUtf(256), var1.readInstant(), var1.readLong(), var1.readNullable(MessageSignature::read), new LastSeenMessages.Update(var1));
    }
 
@@ -29,13 +32,17 @@ public record ServerboundChatPacket(String a, Instant b, long c, @Nullable Messa
       this.lastSeenMessages = var6;
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       var1.writeUtf(this.message, 256);
       var1.writeInstant(this.timeStamp);
       var1.writeLong(this.salt);
       var1.writeNullable(this.signature, MessageSignature::write);
       this.lastSeenMessages.write(var1);
+   }
+
+   @Override
+   public PacketType<ServerboundChatPacket> type() {
+      return GamePacketTypes.SERVERBOUND_CHAT;
    }
 
    public void handle(ServerGamePacketListener var1) {

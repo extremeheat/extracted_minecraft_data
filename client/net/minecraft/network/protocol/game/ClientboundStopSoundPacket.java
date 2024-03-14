@@ -2,11 +2,16 @@ package net.minecraft.network.protocol.game;
 
 import javax.annotation.Nullable;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
 
 public class ClientboundStopSoundPacket implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ClientboundStopSoundPacket> STREAM_CODEC = Packet.codec(
+      ClientboundStopSoundPacket::write, ClientboundStopSoundPacket::new
+   );
    private static final int HAS_SOURCE = 1;
    private static final int HAS_SOUND = 2;
    @Nullable
@@ -20,7 +25,7 @@ public class ClientboundStopSoundPacket implements Packet<ClientGamePacketListen
       this.source = var2;
    }
 
-   public ClientboundStopSoundPacket(FriendlyByteBuf var1) {
+   private ClientboundStopSoundPacket(FriendlyByteBuf var1) {
       super();
       byte var2 = var1.readByte();
       if ((var2 & 1) > 0) {
@@ -36,8 +41,7 @@ public class ClientboundStopSoundPacket implements Packet<ClientGamePacketListen
       }
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       if (this.source != null) {
          if (this.name != null) {
             var1.writeByte(3);
@@ -55,6 +59,15 @@ public class ClientboundStopSoundPacket implements Packet<ClientGamePacketListen
       }
    }
 
+   @Override
+   public PacketType<ClientboundStopSoundPacket> type() {
+      return GamePacketTypes.CLIENTBOUND_STOP_SOUND;
+   }
+
+   public void handle(ClientGamePacketListener var1) {
+      var1.handleStopSoundEvent(this);
+   }
+
    @Nullable
    public ResourceLocation getName() {
       return this.name;
@@ -63,9 +76,5 @@ public class ClientboundStopSoundPacket implements Packet<ClientGamePacketListen
    @Nullable
    public SoundSource getSource() {
       return this.source;
-   }
-
-   public void handle(ClientGamePacketListener var1) {
-      var1.handleStopSoundEvent(this);
    }
 }

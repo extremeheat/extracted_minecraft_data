@@ -16,6 +16,7 @@ import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -36,6 +37,7 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.TickingBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.gameevent.EuclideanGameEventListenerRegistry;
 import net.minecraft.world.level.gameevent.GameEventListener;
 import net.minecraft.world.level.gameevent.GameEventListenerRegistry;
@@ -393,20 +395,20 @@ public class LevelChunk extends ChunkAccess {
 
    @Nullable
    @Override
-   public CompoundTag getBlockEntityNbtForSaving(BlockPos var1) {
-      BlockEntity var2 = this.getBlockEntity(var1);
-      if (var2 != null && !var2.isRemoved()) {
-         CompoundTag var4 = var2.saveWithFullMetadata();
-         var4.putBoolean("keepPacked", false);
-         return var4;
+   public CompoundTag getBlockEntityNbtForSaving(BlockPos var1, HolderLookup.Provider var2) {
+      BlockEntity var3 = this.getBlockEntity(var1);
+      if (var3 != null && !var3.isRemoved()) {
+         CompoundTag var5 = var3.saveWithFullMetadata(this.level.registryAccess());
+         var5.putBoolean("keepPacked", false);
+         return var5;
       } else {
-         CompoundTag var3 = this.pendingBlockEntities.get(var1);
-         if (var3 != null) {
-            var3 = var3.copy();
-            var3.putBoolean("keepPacked", true);
+         CompoundTag var4 = this.pendingBlockEntities.get(var1);
+         if (var4 != null) {
+            var4 = var4.copy();
+            var4.putBoolean("keepPacked", true);
          }
 
-         return var3;
+         return var4;
       }
    }
 
@@ -479,7 +481,7 @@ public class LevelChunk extends ChunkAccess {
       var3.accept((var1x, var2x, var3x) -> {
          BlockEntity var4 = this.getBlockEntity(var1x, LevelChunk.EntityCreationType.IMMEDIATE);
          if (var4 != null && var3x != null && var4.getType() == var2x) {
-            var4.load(var3x);
+            var4.load(var3x, this.level.registryAccess());
          }
       });
    }
@@ -551,7 +553,7 @@ public class LevelChunk extends ChunkAccess {
             LOGGER.warn("Tried to load a DUMMY block entity @ {} but found not block entity block {} at location", var1, var4);
          }
       } else {
-         var3 = BlockEntity.loadStatic(var1, var4, var2);
+         var3 = BlockEntity.loadStatic(var1, var4, var2, this.level.registryAccess());
       }
 
       if (var3 != null) {

@@ -11,17 +11,19 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobType;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
 public abstract class Enchantment {
    private final EquipmentSlot[] slots;
    private final Enchantment.Rarity rarity;
-   public final EnchantmentCategory category;
+   private final TagKey<Item> match;
    @Nullable
    protected String descriptionId;
    private final Holder.Reference<Enchantment> builtInRegistryHolder = BuiltInRegistries.ENCHANTMENT.createIntrusiveHolder(this);
@@ -31,10 +33,10 @@ public abstract class Enchantment {
       return BuiltInRegistries.ENCHANTMENT.byId(var0);
    }
 
-   protected Enchantment(Enchantment.Rarity var1, EnchantmentCategory var2, EquipmentSlot[] var3) {
+   protected Enchantment(Enchantment.Rarity var1, TagKey<Item> var2, EquipmentSlot[] var3) {
       super();
       this.rarity = var1;
-      this.category = var2;
+      this.match = var2;
       this.slots = var3;
    }
 
@@ -49,6 +51,10 @@ public abstract class Enchantment {
       }
 
       return var2;
+   }
+
+   public TagKey<Item> getMatch() {
+      return this.match;
    }
 
    public Enchantment.Rarity getRarity() {
@@ -75,7 +81,7 @@ public abstract class Enchantment {
       return 0;
    }
 
-   public float getDamageBonus(int var1, MobType var2) {
+   public float getDamageBonus(int var1, @Nullable EntityType<?> var2) {
       return 0.0F;
    }
 
@@ -115,7 +121,7 @@ public abstract class Enchantment {
    }
 
    public boolean canEnchant(ItemStack var1) {
-      return this.category.canEnchant(var1.getItem());
+      return var1.getItem().builtInRegistryHolder().is(this.match);
    }
 
    public void doPostAttack(LivingEntity var1, Entity var2, int var3) {

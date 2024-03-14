@@ -20,7 +20,8 @@ import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.player.StackedContents;
@@ -30,6 +31,8 @@ import net.minecraft.world.level.ItemLike;
 
 public final class Ingredient implements Predicate<ItemStack> {
    public static final Ingredient EMPTY = new Ingredient(Stream.empty());
+   public static final StreamCodec<RegistryFriendlyByteBuf, Ingredient> CONTENTS_STREAM_CODEC = ItemStack.LIST_STREAM_CODEC
+      .map(var0 -> fromValues(var0.stream().map(Ingredient.ItemValue::new)), var0 -> Arrays.asList(var0.getItems()));
    private final Ingredient.Value[] values;
    @Nullable
    private ItemStack[] itemStacks;
@@ -87,10 +90,6 @@ public final class Ingredient implements Predicate<ItemStack> {
       return this.stackingIds;
    }
 
-   public void toNetwork(FriendlyByteBuf var1) {
-      var1.writeCollection(Arrays.asList(this.getItems()), FriendlyByteBuf::writeItem);
-   }
-
    public boolean isEmpty() {
       return this.values.length == 0;
    }
@@ -125,10 +124,6 @@ public final class Ingredient implements Predicate<ItemStack> {
       return fromValues(Stream.of(new Ingredient.TagValue(var0)));
    }
 
-   public static Ingredient fromNetwork(FriendlyByteBuf var0) {
-      return fromValues(var0.<ItemStack>readList(FriendlyByteBuf::readItem).stream().map(Ingredient.ItemValue::new));
-   }
-
    private static Codec<Ingredient> codec(boolean var0) {
       Codec var1 = Codec.list(Ingredient.Value.CODEC)
          .comapFlatMap(
@@ -155,7 +150,7 @@ public final class Ingredient implements Predicate<ItemStack> {
    static record ItemValue(ItemStack b) implements Ingredient.Value {
       private final ItemStack item;
       static final Codec<Ingredient.ItemValue> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(ItemStack.SINGLE_ITEM_CODEC.fieldOf("item").forGetter(var0x -> var0x.item)).apply(var0, Ingredient.ItemValue::new)
+         var0 -> var0.group(ItemStack.SIMPLE_ITEM_CODEC.fieldOf("item").forGetter(var0x -> var0x.item)).apply(var0, Ingredient.ItemValue::new)
       );
 
       private ItemValue(ItemStack var1) {

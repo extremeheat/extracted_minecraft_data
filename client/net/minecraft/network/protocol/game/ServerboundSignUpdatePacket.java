@@ -2,9 +2,14 @@ package net.minecraft.network.protocol.game;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 
 public class ServerboundSignUpdatePacket implements Packet<ServerGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ServerboundSignUpdatePacket> STREAM_CODEC = Packet.codec(
+      ServerboundSignUpdatePacket::write, ServerboundSignUpdatePacket::new
+   );
    private static final int MAX_STRING_LENGTH = 384;
    private final BlockPos pos;
    private final String[] lines;
@@ -17,7 +22,7 @@ public class ServerboundSignUpdatePacket implements Packet<ServerGamePacketListe
       this.lines = new String[]{var3, var4, var5, var6};
    }
 
-   public ServerboundSignUpdatePacket(FriendlyByteBuf var1) {
+   private ServerboundSignUpdatePacket(FriendlyByteBuf var1) {
       super();
       this.pos = var1.readBlockPos();
       this.isFrontText = var1.readBoolean();
@@ -28,14 +33,18 @@ public class ServerboundSignUpdatePacket implements Packet<ServerGamePacketListe
       }
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       var1.writeBlockPos(this.pos);
       var1.writeBoolean(this.isFrontText);
 
       for(int var2 = 0; var2 < 4; ++var2) {
          var1.writeUtf(this.lines[var2]);
       }
+   }
+
+   @Override
+   public PacketType<ServerboundSignUpdatePacket> type() {
+      return GamePacketTypes.SERVERBOUND_SIGN_UPDATE;
    }
 
    public void handle(ServerGamePacketListener var1) {

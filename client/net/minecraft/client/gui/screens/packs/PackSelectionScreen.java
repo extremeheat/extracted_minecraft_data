@@ -27,10 +27,13 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ComponentPath;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.components.toasts.SystemToast;
+import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
+import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.AlertScreen;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.NoticeWithLinkScreen;
@@ -50,11 +53,15 @@ import org.slf4j.Logger;
 
 public class PackSelectionScreen extends Screen {
    static final Logger LOGGER = LogUtils.getLogger();
+   private static final Component AVAILABLE_TITLE = Component.translatable("pack.available.title");
+   private static final Component SELECTED_TITLE = Component.translatable("pack.selected.title");
+   private static final Component OPEN_PACK_FOLDER_TITLE = Component.translatable("pack.openFolder");
    private static final int LIST_WIDTH = 200;
    private static final Component DRAG_AND_DROP = Component.translatable("pack.dropInfo").withStyle(ChatFormatting.GRAY);
    private static final Component DIRECTORY_BUTTON_TOOLTIP = Component.translatable("pack.folderInfo");
    private static final int RELOAD_COOLDOWN = 20;
    private static final ResourceLocation DEFAULT_ICON = new ResourceLocation("textures/misc/unknown_pack.png");
+   private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
    private final PackSelectionModel model;
    @Nullable
    private PackSelectionScreen.Watcher watcher;
@@ -90,24 +97,32 @@ public class PackSelectionScreen extends Screen {
 
    @Override
    protected void init() {
-      this.availablePackList = this.addRenderableWidget(
-         new TransferableSelectionList(this.minecraft, this, 200, this.height, Component.translatable("pack.available.title"))
-      );
-      this.availablePackList.setX(this.width / 2 - 4 - 200);
-      this.selectedPackList = this.addRenderableWidget(
-         new TransferableSelectionList(this.minecraft, this, 200, this.height, Component.translatable("pack.selected.title"))
-      );
-      this.selectedPackList.setX(this.width / 2 + 4);
-      this.addRenderableWidget(
-         Button.builder(Component.translatable("pack.openFolder"), var1 -> Util.getPlatform().openUri(this.packDir.toUri()))
-            .bounds(this.width / 2 - 154, this.height - 48, 150, 20)
+      LinearLayout var1 = this.layout.addToHeader(LinearLayout.vertical().spacing(5));
+      var1.defaultCellSetting().alignHorizontallyCenter();
+      var1.addChild(new StringWidget(this.getTitle(), this.font));
+      var1.addChild(new StringWidget(DRAG_AND_DROP, this.font));
+      this.availablePackList = this.addRenderableWidget(new TransferableSelectionList(this.minecraft, this, 200, this.height - 66, AVAILABLE_TITLE));
+      this.selectedPackList = this.addRenderableWidget(new TransferableSelectionList(this.minecraft, this, 200, this.height - 66, SELECTED_TITLE));
+      LinearLayout var2 = this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
+      var2.addChild(
+         Button.builder(OPEN_PACK_FOLDER_TITLE, var1x -> Util.getPlatform().openUri(this.packDir.toUri()))
             .tooltip(Tooltip.create(DIRECTORY_BUTTON_TOOLTIP))
             .build()
       );
-      this.doneButton = this.addRenderableWidget(
-         Button.builder(CommonComponents.GUI_DONE, var1 -> this.onClose()).bounds(this.width / 2 + 4, this.height - 48, 150, 20).build()
-      );
+      this.doneButton = var2.addChild(Button.builder(CommonComponents.GUI_DONE, var1x -> this.onClose()).build());
       this.reload();
+      this.layout.visitWidgets(var1x -> {
+      });
+      this.repositionElements();
+   }
+
+   @Override
+   protected void repositionElements() {
+      this.layout.arrangeElements();
+      this.availablePackList.updateSize(200, this.layout);
+      this.availablePackList.setX(this.width / 2 - 15 - 200);
+      this.selectedPackList.updateSize(200, this.layout);
+      this.selectedPackList.setX(this.width / 2 + 15);
    }
 
    @Override
@@ -163,18 +178,6 @@ public class PackSelectionScreen extends Screen {
       this.populateLists();
       this.ticksToReload = 0L;
       this.packIcons.clear();
-   }
-
-   @Override
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, this.title, this.width / 2, 8, 16777215);
-      var1.drawCenteredString(this.font, DRAG_AND_DROP, this.width / 2, 20, 16777215);
-   }
-
-   @Override
-   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderDirtBackground(var1);
    }
 
    protected static void copyPacks(Minecraft var0, List<Path> var1, Path var2) {

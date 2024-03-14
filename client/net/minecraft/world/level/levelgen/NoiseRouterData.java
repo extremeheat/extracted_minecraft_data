@@ -4,7 +4,7 @@ import java.util.stream.Stream;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.TerrainProvider;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -67,7 +67,7 @@ public class NoiseRouterData {
       return ResourceKey.create(Registries.DENSITY_FUNCTION, new ResourceLocation(var0));
    }
 
-   public static Holder<? extends DensityFunction> bootstrap(BootstapContext<DensityFunction> var0) {
+   public static Holder<? extends DensityFunction> bootstrap(BootstrapContext<DensityFunction> var0) {
       HolderGetter var1 = var0.lookup(Registries.NOISE);
       HolderGetter var2 = var0.lookup(Registries.DENSITY_FUNCTION);
       var0.register(ZERO, DensityFunctions.zero());
@@ -118,7 +118,7 @@ public class NoiseRouterData {
    }
 
    private static void registerTerrainNoises(
-      BootstapContext<DensityFunction> var0,
+      BootstrapContext<DensityFunction> var0,
       HolderGetter<DensityFunction> var1,
       DensityFunction var2,
       Holder<DensityFunction> var3,
@@ -156,7 +156,7 @@ public class NoiseRouterData {
       var0.register(var9, DensityFunctions.add(var20, getFunction(var1, BASE_3D_NOISE_OVERWORLD)));
    }
 
-   private static DensityFunction registerAndWrap(BootstapContext<DensityFunction> var0, ResourceKey<DensityFunction> var1, DensityFunction var2) {
+   private static DensityFunction registerAndWrap(BootstrapContext<DensityFunction> var0, ResourceKey<DensityFunction> var1, DensityFunction var2) {
       return new DensityFunctions.HolderHolder(var0.register(var1, var2));
    }
 

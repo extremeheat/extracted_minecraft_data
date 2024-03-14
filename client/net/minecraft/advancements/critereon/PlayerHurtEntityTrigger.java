@@ -78,7 +78,7 @@ public class PlayerHurtEntityTrigger extends SimpleCriterionTrigger<PlayerHurtEn
       }
 
       public boolean matches(ServerPlayer var1, LootContext var2, DamageSource var3, float var4, float var5, boolean var6) {
-         if (this.damage.isPresent() && !this.damage.get().matches(var1, var3, var4, var5, var6)) {
+         if (this.damage.isPresent() && !((DamagePredicate)this.damage.get()).matches(var1, var3, var4, var5, var6)) {
             return false;
          } else {
             return !this.entity.isPresent() || this.entity.get().matches(var2);

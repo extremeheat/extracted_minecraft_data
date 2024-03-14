@@ -2,6 +2,9 @@ package net.minecraft.world.level.block.entity;
 
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
@@ -23,6 +26,7 @@ public class EnchantmentTableBlockEntity extends BlockEntity implements Nameable
    public float oRot;
    public float tRot;
    private static final RandomSource RANDOM = RandomSource.create();
+   @Nullable
    private Component name;
 
    public EnchantmentTableBlockEntity(BlockPos var1, BlockState var2) {
@@ -30,18 +34,18 @@ public class EnchantmentTableBlockEntity extends BlockEntity implements Nameable
    }
 
    @Override
-   protected void saveAdditional(CompoundTag var1) {
-      super.saveAdditional(var1);
+   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.saveAdditional(var1, var2);
       if (this.hasCustomName()) {
-         var1.putString("CustomName", Component.Serializer.toJson(this.name));
+         var1.putString("CustomName", Component.Serializer.toJson(this.name, var2));
       }
    }
 
    @Override
-   public void load(CompoundTag var1) {
-      super.load(var1);
+   public void load(CompoundTag var1, HolderLookup.Provider var2) {
+      super.load(var1, var2);
       if (var1.contains("CustomName", 8)) {
-         this.name = Component.Serializer.fromJson(var1.getString("CustomName"));
+         this.name = Component.Serializer.fromJson(var1.getString("CustomName"), var2);
       }
    }
 
@@ -116,5 +120,20 @@ public class EnchantmentTableBlockEntity extends BlockEntity implements Nameable
    @Override
    public Component getCustomName() {
       return this.name;
+   }
+
+   @Override
+   public void applyComponents(DataComponentMap var1) {
+      this.name = var1.get(DataComponents.CUSTOM_NAME);
+   }
+
+   @Override
+   public void collectComponents(DataComponentMap.Builder var1) {
+      var1.set(DataComponents.CUSTOM_NAME, this.name);
+   }
+
+   @Override
+   public void removeComponentsFromTag(CompoundTag var1) {
+      var1.remove("CustomName");
    }
 }

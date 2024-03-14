@@ -34,7 +34,7 @@ public class StringRepresentableArgument<T extends Enum<T> & StringRepresentable
 
    public T parse(StringReader var1) throws CommandSyntaxException {
       String var2 = var1.readUnquotedString();
-      return (T)this.codec.parse(JsonOps.INSTANCE, new JsonPrimitive(var2)).result().orElseThrow(() -> ERROR_INVALID_VALUE.create(var2));
+      return (T)this.codec.parse(JsonOps.INSTANCE, new JsonPrimitive(var2)).result().orElseThrow(() -> ERROR_INVALID_VALUE.createWithContext(var1, var2));
    }
 
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {

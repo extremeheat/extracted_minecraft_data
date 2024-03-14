@@ -2,7 +2,7 @@ package net.minecraft.world.entity.monster;
 
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.Holder;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -16,15 +16,13 @@ import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.MobType;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LeapAtTargetGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
@@ -36,13 +34,13 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.ai.navigation.WallClimberNavigation;
 import net.minecraft.world.entity.animal.IronGolem;
+import net.minecraft.world.entity.animal.armadillo.Armadillo;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Vector3f;
 
 public class Spider extends Monster {
    private static final EntityDataAccessor<Byte> DATA_FLAGS_ID = SynchedEntityData.defineId(Spider.class, EntityDataSerializers.BYTE);
@@ -55,6 +53,7 @@ public class Spider extends Monster {
    @Override
    protected void registerGoals() {
       this.goalSelector.addGoal(1, new FloatGoal(this));
+      this.goalSelector.addGoal(2, new AvoidEntityGoal<>(this, Armadillo.class, 6.0F, 1.0, 1.2, var0 -> !((Armadillo)var0).isScared()));
       this.goalSelector.addGoal(3, new LeapAtTargetGoal(this, 0.4F));
       this.goalSelector.addGoal(4, new Spider.SpiderAttackGoal(this));
       this.goalSelector.addGoal(5, new WaterAvoidingRandomStrollGoal(this, 0.8));
@@ -66,19 +65,14 @@ public class Spider extends Monster {
    }
 
    @Override
-   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      return new Vector3f(0.0F, var2.height * 0.85F, 0.0F);
-   }
-
-   @Override
    protected PathNavigation createNavigation(Level var1) {
       return new WallClimberNavigation(this, var1);
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_FLAGS_ID, (byte)0);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_FLAGS_ID, (byte)0);
    }
 
    @Override
@@ -126,13 +120,8 @@ public class Spider extends Monster {
    }
 
    @Override
-   public MobType getMobType() {
-      return MobType.ARTHROPOD;
-   }
-
-   @Override
    public boolean canBeAffected(MobEffectInstance var1) {
-      return var1.getEffect() == MobEffects.POISON ? false : super.canBeAffected(var1);
+      return var1.is(MobEffects.POISON) ? false : super.canBeAffected(var1);
    }
 
    public boolean isClimbing() {
@@ -154,31 +143,29 @@ public class Spider extends Monster {
    // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
-      var4 = super.finalizeSpawn(var1, var2, var3, var4, var5);
-      RandomSource var6 = var1.getRandom();
-      if (var6.nextInt(100) == 0) {
-         Skeleton var7 = EntityType.SKELETON.create(this.level());
-         if (var7 != null) {
-            var7.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
-            var7.finalizeSpawn(var1, var2, var3, null, null);
-            var7.startRiding(this);
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+      var4 = super.finalizeSpawn(var1, var2, var3, var4);
+      RandomSource var5 = var1.getRandom();
+      if (var5.nextInt(100) == 0) {
+         Skeleton var6 = EntityType.SKELETON.create(this.level());
+         if (var6 != null) {
+            var6.moveTo(this.getX(), this.getY(), this.getZ(), this.getYRot(), 0.0F);
+            var6.finalizeSpawn(var1, var2, var3, null);
+            var6.startRiding(this);
          }
       }
 
       if (var4 == null) {
          var4 = new Spider.SpiderEffectsGroupData();
-         if (var1.getDifficulty() == Difficulty.HARD && var6.nextFloat() < 0.1F * var2.getSpecialMultiplier()) {
-            ((Spider.SpiderEffectsGroupData)var4).setRandomEffect(var6);
+         if (var1.getDifficulty() == Difficulty.HARD && var5.nextFloat() < 0.1F * var2.getSpecialMultiplier()) {
+            ((Spider.SpiderEffectsGroupData)var4).setRandomEffect(var5);
          }
       }
 
-      if (var4 instanceof Spider.SpiderEffectsGroupData var10) {
-         MobEffect var8 = var10.effect;
-         if (var8 != null) {
-            this.addEffect(new MobEffectInstance(var8, -1));
+      if (var4 instanceof Spider.SpiderEffectsGroupData var9) {
+         Holder var7 = var9.effect;
+         if (var7 != null) {
+            this.addEffect(new MobEffectInstance(var7, -1));
          }
       }
 
@@ -186,13 +173,8 @@ public class Spider extends Monster {
    }
 
    @Override
-   protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
-      return 0.65F;
-   }
-
-   @Override
-   protected float ridingOffset(Entity var1) {
-      return var1.getBbWidth() <= this.getBbWidth() ? -0.3125F : 0.0F;
+   public Vec3 getVehicleAttachmentPoint(Entity var1) {
+      return var1.getBbWidth() <= this.getBbWidth() ? new Vec3(0.0, 0.3125 * (double)this.getScale(), 0.0) : super.getVehicleAttachmentPoint(var1);
    }
 
    static class SpiderAttackGoal extends MeleeAttackGoal {
@@ -219,7 +201,7 @@ public class Spider extends Monster {
 
    public static class SpiderEffectsGroupData implements SpawnGroupData {
       @Nullable
-      public MobEffect effect;
+      public Holder<MobEffect> effect;
 
       public SpiderEffectsGroupData() {
          super();

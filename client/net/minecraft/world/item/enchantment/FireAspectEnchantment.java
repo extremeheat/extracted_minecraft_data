@@ -1,10 +1,11 @@
 package net.minecraft.world.item.enchantment;
 
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.EquipmentSlot;
 
 public class FireAspectEnchantment extends Enchantment {
    protected FireAspectEnchantment(Enchantment.Rarity var1, EquipmentSlot... var2) {
-      super(var1, EnchantmentCategory.WEAPON, var2);
+      super(var1, ItemTags.SWORD_ENCHANTABLE, var2);
    }
 
    @Override

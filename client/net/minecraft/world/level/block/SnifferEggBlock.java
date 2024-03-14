@@ -92,7 +92,7 @@ public class SnifferEggBlock extends Block {
    }
 
    @Override
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
+   public boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
    }
 

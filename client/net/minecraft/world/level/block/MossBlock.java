@@ -12,6 +12,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 
 public class MossBlock extends Block implements BonemealableBlock {
    public static final MapCodec<MossBlock> CODEC = simpleCodec(MossBlock::new);
@@ -40,6 +41,11 @@ public class MossBlock extends Block implements BonemealableBlock {
       var1.registryAccess()
          .registry(Registries.CONFIGURED_FEATURE)
          .flatMap(var0 -> var0.getHolder(CaveFeatures.MOSS_PATCH_BONEMEAL))
-         .ifPresent(var3x -> var3x.value().place(var1, var1.getChunkSource().getGenerator(), var2, var3.above()));
+         .ifPresent(var3x -> ((ConfiguredFeature)var3x.value()).place(var1, var1.getChunkSource().getGenerator(), var2, var3.above()));
+   }
+
+   @Override
+   public BonemealableBlock.Type getType() {
+      return BonemealableBlock.Type.NEIGHBOR_SPREADER;
    }
 }

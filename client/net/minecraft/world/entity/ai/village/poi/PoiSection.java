@@ -22,7 +22,6 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.SectionPos;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.VisibleForDebug;
 import org.slf4j.Logger;
 
@@ -62,7 +61,7 @@ public class PoiSection {
 
    public void add(BlockPos var1, Holder<PoiType> var2) {
       if (this.add(new PoiRecord(var1, var2, this.setDirty))) {
-         LOGGER.debug("Added POI of type {} @ {}", var2.unwrapKey().map(var0 -> var0.location().toString()).orElse("[unregistered]"), var1);
+         LOGGER.debug("Added POI of type {} @ {}", var2.getRegisteredName(), var1);
          this.setDirty.run();
       }
    }

@@ -9,10 +9,10 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.protocol.game.ClientboundBlockUpdatePacket;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket;
-import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
@@ -23,7 +23,6 @@ import net.minecraft.world.level.block.GameMasterBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
 public class ServerPlayerGameMode {
@@ -127,7 +126,7 @@ public class ServerPlayerGameMode {
    }
 
    public void handleBlockBreakAction(BlockPos var1, ServerboundPlayerActionPacket.Action var2, Direction var3, int var4, int var5) {
-      if (this.player.getEyePosition().distanceToSqr(Vec3.atCenterOf(var1)) > ServerGamePacketListenerImpl.MAX_INTERACTION_DISTANCE) {
+      if (!this.player.canInteractWithBlock(var1, 1.0)) {
          this.debugLogging(var1, false, var5, "too far");
       } else if (var1.getY() >= var4) {
          this.player.connection.send(new ClientboundBlockUpdatePacket(var1, this.level.getBlockState(var1)));
@@ -275,13 +274,6 @@ public class ServerPlayerGameMode {
                var1.setItemInHand(var4, var8);
             }
 
-            if (this.isCreative() && var8 != ItemStack.EMPTY) {
-               var8.setCount(var5);
-               if (var8.isDamageableItem() && var8.getDamageValue() != var6) {
-                  var8.setDamageValue(var6);
-               }
-            }
-
             if (var8.isEmpty()) {
                var1.setItemInHand(var4, ItemStack.EMPTY);
             }
@@ -313,29 +305,37 @@ public class ServerPlayerGameMode {
          boolean var9 = var1.isSecondaryUseActive() && var8;
          ItemStack var10 = var3.copy();
          if (!var9) {
-            InteractionResult var11 = var7.use(var2, var1, var4, var5);
+            ItemInteractionResult var11 = var7.useItemOn(var1.getItemInHand(var4), var2, var1, var4, var5);
             if (var11.consumesAction()) {
                CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger(var1, var6, var10);
-               return var11;
+               return var11.result();
+            }
+
+            if (var11 == ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION && var4 == InteractionHand.MAIN_HAND) {
+               InteractionResult var12 = var7.useWithoutItem(var2, var1, var5);
+               if (var12.consumesAction()) {
+                  CriteriaTriggers.DEFAULT_BLOCK_USE.trigger(var1, var6);
+                  return var12;
+               }
             }
          }
 
          if (!var3.isEmpty() && !var1.getCooldowns().isOnCooldown(var3.getItem())) {
             UseOnContext var15 = new UseOnContext(var1, var4, var5);
-            InteractionResult var12;
+            InteractionResult var16;
             if (this.isCreative()) {
                int var13 = var3.getCount();
-               var12 = var3.useOn(var15);
+               var16 = var3.useOn(var15);
                var3.setCount(var13);
             } else {
-               var12 = var3.useOn(var15);
+               var16 = var3.useOn(var15);
             }
 
-            if (var12.consumesAction()) {
+            if (var16.consumesAction()) {
                CriteriaTriggers.ITEM_USED_ON_BLOCK.trigger(var1, var6, var10);
             }
 
-            return var12;
+            return var16;
          } else {
             return InteractionResult.PASS;
          }

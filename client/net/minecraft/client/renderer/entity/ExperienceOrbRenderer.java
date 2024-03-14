@@ -10,8 +10,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.ExperienceOrb;
-import org.joml.Matrix3f;
-import org.joml.Matrix4f;
 
 public class ExperienceOrbRenderer extends EntityRenderer<ExperienceOrb> {
    private static final ResourceLocation EXPERIENCE_ORB_LOCATION = new ResourceLocation("textures/entity/experience_orb.png");
@@ -49,25 +47,21 @@ public class ExperienceOrbRenderer extends EntityRenderer<ExperienceOrb> {
       var4.scale(0.3F, 0.3F, 0.3F);
       VertexConsumer var21 = var5.getBuffer(RENDER_TYPE);
       PoseStack.Pose var22 = var4.last();
-      Matrix4f var23 = var22.pose();
-      Matrix3f var24 = var22.normal();
-      vertex(var21, var23, var24, -0.5F, -0.25F, var17, 255, var19, var8, var11, var6);
-      vertex(var21, var23, var24, 0.5F, -0.25F, var17, 255, var19, var9, var11, var6);
-      vertex(var21, var23, var24, 0.5F, 0.75F, var17, 255, var19, var9, var10, var6);
-      vertex(var21, var23, var24, -0.5F, 0.75F, var17, 255, var19, var8, var10, var6);
+      vertex(var21, var22, -0.5F, -0.25F, var17, 255, var19, var8, var11, var6);
+      vertex(var21, var22, 0.5F, -0.25F, var17, 255, var19, var9, var11, var6);
+      vertex(var21, var22, 0.5F, 0.75F, var17, 255, var19, var9, var10, var6);
+      vertex(var21, var22, -0.5F, 0.75F, var17, 255, var19, var8, var10, var6);
       var4.popPose();
       super.render(var1, var2, var3, var4, var5, var6);
    }
 
-   private static void vertex(
-      VertexConsumer var0, Matrix4f var1, Matrix3f var2, float var3, float var4, int var5, int var6, int var7, float var8, float var9, int var10
-   ) {
-      var0.vertex(var1, var3, var4, 0.0F)
-         .color(var5, var6, var7, 128)
-         .uv(var8, var9)
+   private static void vertex(VertexConsumer var0, PoseStack.Pose var1, float var2, float var3, int var4, int var5, int var6, float var7, float var8, int var9) {
+      var0.vertex(var1, var2, var3, 0.0F)
+         .color(var4, var5, var6, 128)
+         .uv(var7, var8)
          .overlayCoords(OverlayTexture.NO_OVERLAY)
-         .uv2(var10)
-         .normal(var2, 0.0F, 1.0F, 0.0F)
+         .uv2(var9)
+         .normal(var1, 0.0F, 1.0F, 0.0F)
          .endVertex();
    }
 

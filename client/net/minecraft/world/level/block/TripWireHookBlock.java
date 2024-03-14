@@ -54,7 +54,7 @@ public class TripWireHookBlock extends Block {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       switch((Direction)var1.getValue(FACING)) {
          case EAST:
          default:
@@ -69,7 +69,7 @@ public class TripWireHookBlock extends Block {
    }
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       Direction var4 = var1.getValue(FACING);
       BlockPos var5 = var3.relative(var4.getOpposite());
       BlockState var6 = var2.getBlockState(var5);
@@ -77,7 +77,7 @@ public class TripWireHookBlock extends Block {
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       return var2.getOpposite() == var1.getValue(FACING) && !var1.canSurvive(var4, var5)
          ? Blocks.AIR.defaultBlockState()
          : super.updateShape(var1, var2, var3, var4, var5, var6);
@@ -184,7 +184,7 @@ public class TripWireHookBlock extends Block {
    }
 
    @Override
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       calculateState(var2, var3, var1, false, true, -1, null);
    }
 
@@ -210,7 +210,7 @@ public class TripWireHookBlock extends Block {
    }
 
    @Override
-   public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var5 && !var1.is(var4.getBlock())) {
          boolean var6 = var1.getValue(ATTACHED);
          boolean var7 = var1.getValue(POWERED);
@@ -228,12 +228,12 @@ public class TripWireHookBlock extends Block {
    }
 
    @Override
-   public int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
+   protected int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       return var1.getValue(POWERED) ? 15 : 0;
    }
 
    @Override
-   public int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
+   protected int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       if (!var1.getValue(POWERED)) {
          return 0;
       } else {
@@ -242,17 +242,17 @@ public class TripWireHookBlock extends Block {
    }
 
    @Override
-   public boolean isSignalSource(BlockState var1) {
+   protected boolean isSignalSource(BlockState var1) {
       return true;
    }
 
    @Override
-   public BlockState rotate(BlockState var1, Rotation var2) {
+   protected BlockState rotate(BlockState var1, Rotation var2) {
       return var1.setValue(FACING, var2.rotate(var1.getValue(FACING)));
    }
 
    @Override
-   public BlockState mirror(BlockState var1, Mirror var2) {
+   protected BlockState mirror(BlockState var1, Mirror var2) {
       return var1.rotate(var2.getRotation(var1.getValue(FACING)));
    }
 

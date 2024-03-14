@@ -4,6 +4,8 @@ import com.google.common.annotations.VisibleForTesting;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
@@ -25,7 +27,7 @@ import net.minecraft.world.level.gameevent.GameEventListener;
 import net.minecraft.world.level.gameevent.PositionSource;
 import net.minecraft.world.phys.Vec3;
 
-public class SculkCatalystBlockEntity extends BlockEntity implements GameEventListener.Holder<SculkCatalystBlockEntity.CatalystListener> {
+public class SculkCatalystBlockEntity extends BlockEntity implements GameEventListener.Provider<SculkCatalystBlockEntity.CatalystListener> {
    private final SculkCatalystBlockEntity.CatalystListener catalystListener;
 
    public SculkCatalystBlockEntity(BlockPos var1, BlockState var2) {
@@ -38,14 +40,14 @@ public class SculkCatalystBlockEntity extends BlockEntity implements GameEventLi
    }
 
    @Override
-   public void load(CompoundTag var1) {
+   public void load(CompoundTag var1, HolderLookup.Provider var2) {
       this.catalystListener.sculkSpreader.load(var1);
    }
 
    @Override
-   protected void saveAdditional(CompoundTag var1) {
+   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       this.catalystListener.sculkSpreader.save(var1);
-      super.saveAdditional(var1);
+      super.saveAdditional(var1, var2);
    }
 
    public SculkCatalystBlockEntity.CatalystListener getListener() {
@@ -81,8 +83,8 @@ public class SculkCatalystBlockEntity extends BlockEntity implements GameEventLi
       }
 
       @Override
-      public boolean handleGameEvent(ServerLevel var1, GameEvent var2, GameEvent.Context var3, Vec3 var4) {
-         if (var2 == GameEvent.ENTITY_DIE) {
+      public boolean handleGameEvent(ServerLevel var1, Holder<GameEvent> var2, GameEvent.Context var3, Vec3 var4) {
+         if (var2.is(GameEvent.ENTITY_DIE)) {
             Entity var6 = var3.sourceEntity();
             if (var6 instanceof LivingEntity var5) {
                if (!((LivingEntity)var5).wasExperienceConsumed()) {

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -18,6 +19,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.Difficulty;
@@ -27,7 +29,6 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.PowerableMob;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -72,7 +73,7 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
          this.getDisplayName(), BossEvent.BossBarColor.PURPLE, BossEvent.BossBarOverlay.PROGRESS
       )
       .setDarkenScreen(true);
-   private static final Predicate<LivingEntity> LIVING_ENTITY_SELECTOR = var0 -> var0.getMobType() != MobType.UNDEAD && var0.attackable();
+   private static final Predicate<LivingEntity> LIVING_ENTITY_SELECTOR = var0 -> !var0.getType().is(EntityTypeTags.WITHER_FRIENDS) && var0.attackable();
    private static final TargetingConditions TARGETING_CONDITIONS = TargetingConditions.forCombat().range(20.0).selector(LIVING_ENTITY_SELECTOR);
 
    public WitherBoss(EntityType<? extends WitherBoss> var1, Level var2) {
@@ -103,12 +104,12 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_TARGET_A, 0);
-      this.entityData.define(DATA_TARGET_B, 0);
-      this.entityData.define(DATA_TARGET_C, 0);
-      this.entityData.define(DATA_ID_INV, 0);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_TARGET_A, 0);
+      var1.define(DATA_TARGET_B, 0);
+      var1.define(DATA_TARGET_C, 0);
+      var1.define(DATA_ID_INV, 0);
    }
 
    @Override
@@ -188,10 +189,10 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
          }
 
          if (var4 != null) {
-            double var29 = this.getHeadX(var22 + 1);
+            double var30 = this.getHeadX(var22 + 1);
             double var7 = this.getHeadY(var22 + 1);
             double var9 = this.getHeadZ(var22 + 1);
-            double var11 = var4.getX() - var29;
+            double var11 = var4.getX() - var30;
             double var13 = var4.getEyeY() - var7;
             double var15 = var4.getZ() - var9;
             double var17 = Math.sqrt(var11 * var11 + var15 * var15);
@@ -208,14 +209,15 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
 
       for(int var26 = 0; var26 < 3; ++var26) {
          double var28 = this.getHeadX(var26);
-         double var30 = this.getHeadY(var26);
+         double var31 = this.getHeadY(var26);
          double var8 = this.getHeadZ(var26);
+         float var10 = 0.3F * this.getScale();
          this.level()
             .addParticle(
                ParticleTypes.SMOKE,
-               var28 + this.random.nextGaussian() * 0.30000001192092896,
-               var30 + this.random.nextGaussian() * 0.30000001192092896,
-               var8 + this.random.nextGaussian() * 0.30000001192092896,
+               var28 + this.random.nextGaussian() * (double)var10,
+               var31 + this.random.nextGaussian() * (double)var10,
+               var8 + this.random.nextGaussian() * (double)var10,
                0.0,
                0.0,
                0.0
@@ -223,28 +225,30 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
          if (var23 && this.level().random.nextInt(4) == 0) {
             this.level()
                .addParticle(
-                  ParticleTypes.ENTITY_EFFECT,
-                  var28 + this.random.nextGaussian() * 0.30000001192092896,
-                  var30 + this.random.nextGaussian() * 0.30000001192092896,
-                  var8 + this.random.nextGaussian() * 0.30000001192092896,
-                  0.699999988079071,
-                  0.699999988079071,
-                  0.5
+                  ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, 0.7F, 0.7F, 0.5F),
+                  var28 + this.random.nextGaussian() * (double)var10,
+                  var31 + this.random.nextGaussian() * (double)var10,
+                  var8 + this.random.nextGaussian() * (double)var10,
+                  0.0,
+                  0.0,
+                  0.0
                );
          }
       }
 
       if (this.getInvulnerableTicks() > 0) {
-         for(int var27 = 0; var27 < 3; ++var27) {
+         float var27 = 3.3F * this.getScale();
+
+         for(int var29 = 0; var29 < 3; ++var29) {
             this.level()
                .addParticle(
-                  ParticleTypes.ENTITY_EFFECT,
+                  ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, 0.7F, 0.7F, 0.9F),
                   this.getX() + this.random.nextGaussian(),
-                  this.getY() + (double)(this.random.nextFloat() * 3.3F),
+                  this.getY() + (double)(this.random.nextFloat() * var27),
                   this.getZ() + this.random.nextGaussian(),
-                  0.699999988079071,
-                  0.699999988079071,
-                  0.8999999761581421
+                  0.0,
+                  0.0,
+                  0.0
                );
          }
       }
@@ -253,16 +257,16 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
    @Override
    protected void customServerAiStep() {
       if (this.getInvulnerableTicks() > 0) {
-         int var14 = this.getInvulnerableTicks() - 1;
-         this.bossEvent.setProgress(1.0F - (float)var14 / 220.0F);
-         if (var14 <= 0) {
+         int var11 = this.getInvulnerableTicks() - 1;
+         this.bossEvent.setProgress(1.0F - (float)var11 / 220.0F);
+         if (var11 <= 0) {
             this.level().explode(this, this.getX(), this.getEyeY(), this.getZ(), 7.0F, false, Level.ExplosionInteraction.MOB);
             if (!this.isSilent()) {
                this.level().globalLevelEvent(1023, this.blockPosition(), 0);
             }
          }
 
-         this.setInvulnerableTicks(var14);
+         this.setInvulnerableTicks(var11);
          if (this.tickCount % 10 == 0) {
             this.heal(10.0F);
          }
@@ -283,21 +287,21 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
                   this.idleHeadUpdates[var1 - 1] = 0;
                }
 
-               int var15 = this.getAlternativeTarget(var1);
-               if (var15 > 0) {
-                  LivingEntity var17 = (LivingEntity)this.level().getEntity(var15);
-                  if (var17 != null && this.canAttack(var17) && !(this.distanceToSqr(var17) > 900.0) && this.hasLineOfSight(var17)) {
-                     this.performRangedAttack(var1 + 1, var17);
+               int var12 = this.getAlternativeTarget(var1);
+               if (var12 > 0) {
+                  LivingEntity var14 = (LivingEntity)this.level().getEntity(var12);
+                  if (var14 != null && this.canAttack(var14) && !(this.distanceToSqr(var14) > 900.0) && this.hasLineOfSight(var14)) {
+                     this.performRangedAttack(var1 + 1, var14);
                      this.nextHeadUpdate[var1 - 1] = this.tickCount + 40 + this.random.nextInt(20);
                      this.idleHeadUpdates[var1 - 1] = 0;
                   } else {
                      this.setAlternativeTarget(var1, 0);
                   }
                } else {
-                  List var18 = this.level().getNearbyEntities(LivingEntity.class, TARGETING_CONDITIONS, this, this.getBoundingBox().inflate(20.0, 8.0, 20.0));
-                  if (!var18.isEmpty()) {
-                     LivingEntity var20 = (LivingEntity)var18.get(this.random.nextInt(var18.size()));
-                     this.setAlternativeTarget(var1, var20.getId());
+                  List var15 = this.level().getNearbyEntities(LivingEntity.class, TARGETING_CONDITIONS, this, this.getBoundingBox().inflate(20.0, 8.0, 20.0));
+                  if (!var15.isEmpty()) {
+                     LivingEntity var17 = (LivingEntity)var15.get(this.random.nextInt(var15.size()));
+                     this.setAlternativeTarget(var1, var17.getId());
                   }
                }
             }
@@ -312,27 +316,25 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
          if (this.destroyBlocksTick > 0) {
             --this.destroyBlocksTick;
             if (this.destroyBlocksTick == 0 && this.level().getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
-               int var13 = Mth.floor(this.getY());
-               int var16 = Mth.floor(this.getX());
-               int var19 = Mth.floor(this.getZ());
-               boolean var21 = false;
+               boolean var10 = false;
+               int var13 = Mth.floor(this.getBbWidth() / 2.0F + 1.0F);
+               int var16 = Mth.floor(this.getBbHeight());
 
-               for(int var5 = -1; var5 <= 1; ++var5) {
-                  for(int var22 = -1; var22 <= 1; ++var22) {
-                     for(int var7 = 0; var7 <= 3; ++var7) {
-                        int var23 = var16 + var5;
-                        int var9 = var13 + var7;
-                        int var10 = var19 + var22;
-                        BlockPos var11 = new BlockPos(var23, var9, var10);
-                        BlockState var12 = this.level().getBlockState(var11);
-                        if (canDestroy(var12)) {
-                           var21 = this.level().destroyBlock(var11, true, this) || var21;
-                        }
-                     }
+               for(BlockPos var5 : BlockPos.betweenClosed(
+                  this.getBlockX() - var13,
+                  this.getBlockY(),
+                  this.getBlockZ() - var13,
+                  this.getBlockX() + var13,
+                  this.getBlockY() + var16,
+                  this.getBlockZ() + var13
+               )) {
+                  BlockState var19 = this.level().getBlockState(var5);
+                  if (canDestroy(var19)) {
+                     var10 = this.level().destroyBlock(var5, true, this) || var10;
                   }
                }
 
-               if (var21) {
+               if (var10) {
                   this.level().levelEvent(null, 1022, this.blockPosition(), 0);
                }
             }
@@ -378,12 +380,13 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
       } else {
          float var2 = (this.yBodyRot + (float)(180 * (var1 - 1))) * 0.017453292F;
          float var3 = Mth.cos(var2);
-         return this.getX() + (double)var3 * 1.3;
+         return this.getX() + (double)var3 * 1.3 * (double)this.getScale();
       }
    }
 
    private double getHeadY(int var1) {
-      return var1 <= 0 ? this.getY() + 3.0 : this.getY() + 2.2;
+      float var2 = var1 <= 0 ? 3.0F : 2.2F;
+      return this.getY() + (double)(var2 * this.getScale());
    }
 
    private double getHeadZ(int var1) {
@@ -392,7 +395,7 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
       } else {
          float var2 = (this.yBodyRot + (float)(180 * (var1 - 1))) * 0.017453292F;
          float var3 = Mth.sin(var2);
-         return this.getZ() + (double)var3 * 1.3;
+         return this.getZ() + (double)var3 * 1.3 * (double)this.getScale();
       }
    }
 
@@ -456,7 +459,7 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
          }
 
          Entity var5 = var1.getEntity();
-         if (var5 != null && !(var5 instanceof Player) && var5 instanceof LivingEntity && ((LivingEntity)var5).getMobType() == this.getMobType()) {
+         if (var5 != null && var5.getType().is(EntityTypeTags.WITHER_FRIENDS)) {
             return false;
          } else {
             if (this.destroyBlocksTick <= 0) {
@@ -521,21 +524,16 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
    }
 
    public int getAlternativeTarget(int var1) {
-      return this.entityData.get(DATA_TARGETS.get(var1));
+      return this.entityData.<Integer>get((EntityDataAccessor<Integer>)DATA_TARGETS.get(var1));
    }
 
    public void setAlternativeTarget(int var1, int var2) {
-      this.entityData.set(DATA_TARGETS.get(var1), var2);
+      this.entityData.set((EntityDataAccessor<Integer>)DATA_TARGETS.get(var1), var2);
    }
 
    @Override
    public boolean isPowered() {
       return this.getHealth() <= this.getMaxHealth() / 2.0F;
-   }
-
-   @Override
-   public MobType getMobType() {
-      return MobType.UNDEAD;
    }
 
    @Override
@@ -550,7 +548,7 @@ public class WitherBoss extends Monster implements PowerableMob, RangedAttackMob
 
    @Override
    public boolean canBeAffected(MobEffectInstance var1) {
-      return var1.getEffect() == MobEffects.WITHER ? false : super.canBeAffected(var1);
+      return var1.is(MobEffects.WITHER) ? false : super.canBeAffected(var1);
    }
 
    class WitherDoNothingGoal extends Goal {

@@ -11,6 +11,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -49,45 +50,40 @@ public class FlowerPotBlock extends Block {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 
    @Override
-   public RenderShape getRenderShape(BlockState var1) {
-      return RenderShape.MODEL;
+   protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
+      Item var10 = var1.getItem();
+      BlockState var8 = (var10 instanceof BlockItem var9 ? POTTED_BY_CONTENT.getOrDefault(var9.getBlock(), Blocks.AIR) : Blocks.AIR).defaultBlockState();
+      if (var8.isAir()) {
+         return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+      } else if (!this.isEmpty()) {
+         return ItemInteractionResult.CONSUME;
+      } else {
+         var3.setBlock(var4, var8, 3);
+         var3.gameEvent(var5, GameEvent.BLOCK_CHANGE, var4);
+         var5.awardStat(Stats.POT_FLOWER);
+         var1.consume(1, var5);
+         return ItemInteractionResult.sidedSuccess(var3.isClientSide);
+      }
    }
 
    @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
-      ItemStack var7 = var4.getItemInHand(var5);
-      Item var8 = var7.getItem();
-      BlockState var9 = (var8 instanceof BlockItem ? POTTED_BY_CONTENT.getOrDefault(((BlockItem)var8).getBlock(), Blocks.AIR) : Blocks.AIR)
-         .defaultBlockState();
-      boolean var10 = var9.is(Blocks.AIR);
-      boolean var11 = this.isEmpty();
-      if (var10 != var11) {
-         if (var11) {
-            var2.setBlock(var3, var9, 3);
-            var4.awardStat(Stats.POT_FLOWER);
-            if (!var4.getAbilities().instabuild) {
-               var7.shrink(1);
-            }
-         } else {
-            ItemStack var12 = new ItemStack(this.potted);
-            if (var7.isEmpty()) {
-               var4.setItemInHand(var5, var12);
-            } else if (!var4.addItem(var12)) {
-               var4.drop(var12, false);
-            }
-
-            var2.setBlock(var3, Blocks.FLOWER_POT.defaultBlockState(), 3);
+   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
+      if (this.isEmpty()) {
+         return InteractionResult.CONSUME;
+      } else {
+         ItemStack var6 = new ItemStack(this.potted);
+         if (!var4.addItem(var6)) {
+            var4.drop(var6, false);
          }
 
+         var2.setBlock(var3, Blocks.FLOWER_POT.defaultBlockState(), 3);
          var2.gameEvent(var4, GameEvent.BLOCK_CHANGE, var3);
          return InteractionResult.sidedSuccess(var2.isClientSide);
-      } else {
-         return InteractionResult.CONSUME;
       }
    }
 
@@ -101,7 +97,7 @@ public class FlowerPotBlock extends Block {
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       return var2 == Direction.DOWN && !var1.canSurvive(var4, var5) ? Blocks.AIR.defaultBlockState() : super.updateShape(var1, var2, var3, var4, var5, var6);
    }
 
@@ -110,7 +106,7 @@ public class FlowerPotBlock extends Block {
    }
 
    @Override
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
+   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
    }
 }

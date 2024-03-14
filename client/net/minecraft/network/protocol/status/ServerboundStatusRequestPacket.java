@@ -1,19 +1,21 @@
 package net.minecraft.network.protocol.status;
 
-import net.minecraft.network.FriendlyByteBuf;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 
 public class ServerboundStatusRequestPacket implements Packet<ServerStatusPacketListener> {
-   public ServerboundStatusRequestPacket() {
-      super();
-   }
+   public static final ServerboundStatusRequestPacket INSTANCE = new ServerboundStatusRequestPacket();
+   public static final StreamCodec<ByteBuf, ServerboundStatusRequestPacket> STREAM_CODEC = StreamCodec.unit(INSTANCE);
 
-   public ServerboundStatusRequestPacket(FriendlyByteBuf var1) {
+   private ServerboundStatusRequestPacket() {
       super();
    }
 
    @Override
-   public void write(FriendlyByteBuf var1) {
+   public PacketType<ServerboundStatusRequestPacket> type() {
+      return StatusPacketTypes.SERVERBOUND_STATUS_REQUEST;
    }
 
    public void handle(ServerStatusPacketListener var1) {

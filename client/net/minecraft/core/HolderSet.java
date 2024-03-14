@@ -35,7 +35,12 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
    @Deprecated
    @VisibleForTesting
    static <T> HolderSet.Named<T> emptyNamed(HolderOwner<T> var0, TagKey<T> var1) {
-      return new HolderSet.Named<>(var0, var1);
+      return new HolderSet.Named<T>(var0, var1) {
+         @Override
+         protected List<Holder<T>> contents() {
+            throw new UnsupportedOperationException("Tag " + this.key() + " can't be dereferenced during construction");
+         }
+      };
    }
 
    @SafeVarargs
@@ -56,7 +61,7 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
       return direct(var1.stream().map(var0).toList());
    }
 
-   public static class Direct<T> extends HolderSet.ListBacked<T> {
+   public static final class Direct<T> extends HolderSet.ListBacked<T> {
       private final List<Holder<T>> contents;
       @Nullable
       private Set<Holder<T>> contentsSet;
@@ -93,6 +98,24 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
       @Override
       public String toString() {
          return "DirectSet[" + this.contents + "]";
+      }
+
+      @Override
+      public boolean equals(Object var1) {
+         if (this == var1) {
+            return true;
+         } else {
+            if (var1 instanceof HolderSet.Direct var2 && this.contents.equals(var2.contents)) {
+               return true;
+            }
+
+            return false;
+         }
+      }
+
+      @Override
+      public int hashCode() {
+         return this.contents.hashCode();
       }
    }
 
@@ -170,7 +193,7 @@ public interface HolderSet<T> extends Iterable<Holder<T>> {
 
       @Override
       public Optional<TagKey<T>> unwrapKey() {
-         return Optional.of(this.key);
+         return Optional.of((T)this.key);
       }
 
       @Override

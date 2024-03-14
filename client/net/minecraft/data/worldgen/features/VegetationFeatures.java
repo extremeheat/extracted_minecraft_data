@@ -7,7 +7,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.placement.PlacementUtils;
 import net.minecraft.data.worldgen.placement.TreePlacements;
 import net.minecraft.resources.ResourceKey;
@@ -92,7 +92,7 @@ public class VegetationFeatures {
       return FeatureUtils.simpleRandomPatchConfiguration(var1, PlacementUtils.onlyWhenEmpty(Feature.SIMPLE_BLOCK, new SimpleBlockConfiguration(var0)));
    }
 
-   public static void bootstrap(BootstapContext<ConfiguredFeature<?, ?>> var0) {
+   public static void bootstrap(BootstrapContext<ConfiguredFeature<?, ?>> var0) {
       HolderGetter var1 = var0.lookup(Registries.CONFIGURED_FEATURE);
       Holder.Reference var2 = var1.getOrThrow(TreeFeatures.HUGE_BROWN_MUSHROOM);
       Holder.Reference var3 = var1.getOrThrow(TreeFeatures.HUGE_RED_MUSHROOM);
@@ -467,9 +467,7 @@ public class VegetationFeatures {
          Feature.RANDOM_SELECTOR,
          new RandomFeatureConfiguration(List.of(new WeightedPlacedFeature(var11, 0.2F), new WeightedPlacedFeature(var12, 0.1F)), var27)
       );
-      FeatureUtils.register(
-         var0, MEADOW_TREES, Feature.RANDOM_SELECTOR, new RandomFeatureConfiguration(List.of(new WeightedPlacedFeature(var13, 0.5F)), var28)
-      );
+      FeatureUtils.register(var0, MEADOW_TREES, Feature.RANDOM_SELECTOR, new RandomFeatureConfiguration(List.of(new WeightedPlacedFeature(var13, 0.5F)), var28));
       FeatureUtils.register(
          var0, TREES_TAIGA, Feature.RANDOM_SELECTOR, new RandomFeatureConfiguration(List.of(new WeightedPlacedFeature(var14, 0.33333334F)), var15)
       );

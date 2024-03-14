@@ -75,7 +75,7 @@ public class ConcretePowderBlock extends FallingBlock {
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       return touchesLiquid(var4, var5) ? this.concrete.defaultBlockState() : super.updateShape(var1, var2, var3, var4, var5, var6);
    }
 

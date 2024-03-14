@@ -36,7 +36,8 @@ public record EntityPredicate(
    Optional<EntityPredicate> l,
    Optional<EntityPredicate> m,
    Optional<EntityPredicate> n,
-   Optional<String> o
+   Optional<String> o,
+   Optional<SlotsPredicate> p
 ) {
    private final Optional<EntityTypePredicate> entityType;
    private final Optional<DistancePredicate> distanceToPlayer;
@@ -51,6 +52,7 @@ public record EntityPredicate(
    private final Optional<EntityPredicate> passenger;
    private final Optional<EntityPredicate> targetedEntity;
    private final Optional<String> team;
+   private final Optional<SlotsPredicate> slots;
    public static final Codec<EntityPredicate> CODEC = ExtraCodecs.recursive(
       "EntityPredicate",
       var0 -> RecordCodecBuilder.create(
@@ -67,7 +69,8 @@ public record EntityPredicate(
                      ExtraCodecs.strictOptionalField(var0, "vehicle").forGetter(EntityPredicate::vehicle),
                      ExtraCodecs.strictOptionalField(var0, "passenger").forGetter(EntityPredicate::passenger),
                      ExtraCodecs.strictOptionalField(var0, "targeted_entity").forGetter(EntityPredicate::targetedEntity),
-                     ExtraCodecs.strictOptionalField(Codec.STRING, "team").forGetter(EntityPredicate::team)
+                     ExtraCodecs.strictOptionalField(Codec.STRING, "team").forGetter(EntityPredicate::team),
+                     ExtraCodecs.strictOptionalField(SlotsPredicate.CODEC, "slots").forGetter(EntityPredicate::slots)
                   )
                   .apply(var1, EntityPredicate::new)
          )
@@ -87,7 +90,8 @@ public record EntityPredicate(
       Optional<EntityPredicate> var10,
       Optional<EntityPredicate> var11,
       Optional<EntityPredicate> var12,
-      Optional<String> var13
+      Optional<String> var13,
+      Optional<SlotsPredicate> var14
    ) {
       super();
       this.entityType = var1;
@@ -103,6 +107,7 @@ public record EntityPredicate(
       this.passenger = var11;
       this.targetedEntity = var12;
       this.team = var13;
+      this.slots = var14;
    }
 
    public static ContextAwarePredicate wrap(EntityPredicate.Builder var0) {
@@ -129,44 +134,43 @@ public record EntityPredicate(
    public boolean matches(ServerLevel var1, @Nullable Vec3 var2, @Nullable Entity var3) {
       if (var3 == null) {
          return false;
-      } else if (this.entityType.isPresent() && !this.entityType.get().matches(var3.getType())) {
+      } else if (this.entityType.isPresent() && !((EntityTypePredicate)this.entityType.get()).matches(var3.getType())) {
          return false;
       } else {
          if (var2 == null) {
             if (this.distanceToPlayer.isPresent()) {
                return false;
             }
-         } else if (this.distanceToPlayer.isPresent() && !this.distanceToPlayer.get().matches(var2.x, var2.y, var2.z, var3.getX(), var3.getY(), var3.getZ())) {
+         } else if (this.distanceToPlayer.isPresent()
+            && !((DistancePredicate)this.distanceToPlayer.get()).matches(var2.x, var2.y, var2.z, var3.getX(), var3.getY(), var3.getZ())) {
             return false;
          }
 
-         if (this.location.isPresent() && !this.location.get().matches(var1, var3.getX(), var3.getY(), var3.getZ())) {
+         if (this.location.isPresent() && !((LocationPredicate)this.location.get()).matches(var1, var3.getX(), var3.getY(), var3.getZ())) {
             return false;
          } else {
             if (this.steppingOnLocation.isPresent()) {
                Vec3 var4 = Vec3.atCenterOf(var3.getOnPos());
-               if (!this.steppingOnLocation.get().matches(var1, var4.x(), var4.y(), var4.z())) {
+               if (!((LocationPredicate)this.steppingOnLocation.get()).matches(var1, var4.x(), var4.y(), var4.z())) {
                   return false;
                }
             }
 
-            if (this.effects.isPresent() && !this.effects.get().matches(var3)) {
+            if (this.effects.isPresent() && !((MobEffectsPredicate)this.effects.get()).matches(var3)) {
                return false;
-            } else if (this.nbt.isPresent() && !this.nbt.get().matches(var3)) {
+            } else if (this.flags.isPresent() && !((EntityFlagsPredicate)this.flags.get()).matches(var3)) {
                return false;
-            } else if (this.flags.isPresent() && !this.flags.get().matches(var3)) {
-               return false;
-            } else if (this.equipment.isPresent() && !this.equipment.get().matches(var3)) {
+            } else if (this.equipment.isPresent() && !((EntityEquipmentPredicate)this.equipment.get()).matches(var3)) {
                return false;
             } else if (this.subPredicate.isPresent() && !this.subPredicate.get().matches(var3, var1, var2)) {
                return false;
-            } else if (this.vehicle.isPresent() && !this.vehicle.get().matches(var1, var2, var3.getVehicle())) {
+            } else if (this.vehicle.isPresent() && !((EntityPredicate)this.vehicle.get()).matches(var1, var2, var3.getVehicle())) {
                return false;
-            } else if (this.passenger.isPresent() && var3.getPassengers().stream().noneMatch(var3x -> this.passenger.get().matches(var1, var2, var3x))) {
+            } else if (this.passenger.isPresent()
+               && var3.getPassengers().stream().noneMatch(var3x -> ((EntityPredicate)this.passenger.get()).matches(var1, var2, var3x))) {
                return false;
-            } else if (this.targetedEntity.isPresent() && !this.targetedEntity.get().matches(var1, var2, var3 instanceof Mob ? ((Mob)var3).getTarget() : null)
-               )
-             {
+            } else if (this.targetedEntity.isPresent()
+               && !((EntityPredicate)this.targetedEntity.get()).matches(var1, var2, var3 instanceof Mob ? ((Mob)var3).getTarget() : null)) {
                return false;
             } else {
                if (this.team.isPresent()) {
@@ -176,7 +180,11 @@ public record EntityPredicate(
                   }
                }
 
-               return true;
+               if (this.nbt.isPresent() && !((NbtPredicate)this.nbt.get()).matches(var3)) {
+                  return false;
+               } else {
+                  return !this.slots.isPresent() || ((SlotsPredicate)this.slots.get()).matches(var3);
+               }
             }
          }
       }
@@ -204,6 +212,7 @@ public record EntityPredicate(
       private Optional<EntityPredicate> passenger = Optional.empty();
       private Optional<EntityPredicate> targetedEntity = Optional.empty();
       private Optional<String> team = Optional.empty();
+      private Optional<SlotsPredicate> slots = Optional.empty();
 
       public Builder() {
          super();
@@ -293,6 +302,11 @@ public record EntityPredicate(
          return this;
       }
 
+      public EntityPredicate.Builder slots(SlotsPredicate var1) {
+         this.slots = Optional.of(var1);
+         return this;
+      }
+
       public EntityPredicate build() {
          return new EntityPredicate(
             this.entityType,
@@ -307,7 +321,8 @@ public record EntityPredicate(
             this.vehicle,
             this.passenger,
             this.targetedEntity,
-            this.team
+            this.team,
+            this.slots
          );
       }
    }

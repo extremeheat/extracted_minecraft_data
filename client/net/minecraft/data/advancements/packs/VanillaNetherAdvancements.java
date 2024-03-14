@@ -35,6 +35,7 @@ import net.minecraft.advancements.critereon.StatePropertiesPredicate;
 import net.minecraft.advancements.critereon.SummonedEntityTrigger;
 import net.minecraft.advancements.critereon.TagPredicate;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.advancements.AdvancementSubProvider;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -49,6 +50,7 @@ import net.minecraft.world.level.biome.MultiNoiseBiomeSourceParameterList;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RespawnAnchorBlock;
 import net.minecraft.world.level.levelgen.structure.BuiltinStructures;
+import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemEntityPropertyCondition;
 
@@ -56,8 +58,7 @@ public class VanillaNetherAdvancements implements AdvancementSubProvider {
    private static final ContextAwarePredicate DISTRACT_PIGLIN_PLAYER_ARMOR_PREDICATE = ContextAwarePredicate.create(
       LootItemEntityPropertyCondition.hasProperties(
             LootContext.EntityTarget.THIS,
-            EntityPredicate.Builder.entity()
-               .equipment(EntityEquipmentPredicate.Builder.equipment().head(ItemPredicate.Builder.item().of(Items.GOLDEN_HELMET)))
+            EntityPredicate.Builder.entity().equipment(EntityEquipmentPredicate.Builder.equipment().head(ItemPredicate.Builder.item().of(Items.GOLDEN_HELMET)))
          )
          .invert()
          .build(),
@@ -137,7 +138,12 @@ public class VanillaNetherAdvancements implements AdvancementSubProvider {
             true,
             false
          )
-         .addCriterion("fortress", PlayerTrigger.TriggerInstance.located(LocationPredicate.Builder.inStructure(BuiltinStructures.FORTRESS)))
+         .addCriterion(
+            "fortress",
+            PlayerTrigger.TriggerInstance.located(
+               LocationPredicate.Builder.inStructure(var1.<Structure>lookupOrThrow(Registries.STRUCTURE).getOrThrow(BuiltinStructures.FORTRESS))
+            )
+         )
          .save(var2, "nether/find_fortress");
       Advancement.Builder.advancement()
          .parent(var3)
@@ -367,9 +373,7 @@ public class VanillaNetherAdvancements implements AdvancementSubProvider {
          .rewards(AdvancementRewards.Builder.experience(100))
          .addCriterion(
             "netherite_armor",
-            InventoryChangeTrigger.TriggerInstance.hasItems(
-               Items.NETHERITE_HELMET, Items.NETHERITE_CHESTPLATE, Items.NETHERITE_LEGGINGS, Items.NETHERITE_BOOTS
-            )
+            InventoryChangeTrigger.TriggerInstance.hasItems(Items.NETHERITE_HELMET, Items.NETHERITE_CHESTPLATE, Items.NETHERITE_LEGGINGS, Items.NETHERITE_BOOTS)
          )
          .save(var2, "nether/netherite_armor");
       Advancement.Builder.advancement()
@@ -474,7 +478,7 @@ public class VanillaNetherAdvancements implements AdvancementSubProvider {
             )
          )
          .save(var2, "nether/ride_strider_in_overworld_lava");
-      VanillaAdventureAdvancements.addBiomes(Advancement.Builder.advancement(), MultiNoiseBiomeSourceParameterList.Preset.NETHER.usedBiomes().toList())
+      VanillaAdventureAdvancements.addBiomes(Advancement.Builder.advancement(), var1, MultiNoiseBiomeSourceParameterList.Preset.NETHER.usedBiomes().toList())
          .parent(var14)
          .display(
             Items.NETHERITE_BOOTS,
@@ -500,7 +504,12 @@ public class VanillaNetherAdvancements implements AdvancementSubProvider {
             true,
             false
          )
-         .addCriterion("bastion", PlayerTrigger.TriggerInstance.located(LocationPredicate.Builder.inStructure(BuiltinStructures.BASTION_REMNANT)))
+         .addCriterion(
+            "bastion",
+            PlayerTrigger.TriggerInstance.located(
+               LocationPredicate.Builder.inStructure(var1.<Structure>lookupOrThrow(Registries.STRUCTURE).getOrThrow(BuiltinStructures.BASTION_REMNANT))
+            )
+         )
          .save(var2, "nether/find_bastion");
       Advancement.Builder.advancement()
          .parent(var15)

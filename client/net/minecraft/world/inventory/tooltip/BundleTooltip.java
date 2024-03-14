@@ -1,23 +1,12 @@
 package net.minecraft.world.inventory.tooltip;
 
-import net.minecraft.core.NonNullList;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.BundleContents;
 
-public class BundleTooltip implements TooltipComponent {
-   private final NonNullList<ItemStack> items;
-   private final int weight;
+public record BundleTooltip(BundleContents a) implements TooltipComponent {
+   private final BundleContents contents;
 
-   public BundleTooltip(NonNullList<ItemStack> var1, int var2) {
+   public BundleTooltip(BundleContents var1) {
       super();
-      this.items = var1;
-      this.weight = var2;
-   }
-
-   public NonNullList<ItemStack> getItems() {
-      return this.items;
-   }
-
-   public int getWeight() {
-      return this.weight;
+      this.contents = var1;
    }
 }

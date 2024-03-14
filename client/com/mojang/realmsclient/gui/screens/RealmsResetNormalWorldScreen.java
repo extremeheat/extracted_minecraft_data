@@ -8,7 +8,6 @@ import java.util.function.Consumer;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
-import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.layouts.CommonLayouts;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
@@ -45,8 +44,7 @@ public class RealmsResetNormalWorldScreen extends RealmsScreen {
    public void init() {
       this.seedEdit = new EditBox(this.font, 210, 20, Component.translatable("mco.reset.world.seed"));
       this.seedEdit.setMaxLength(32);
-      this.setInitialFocus(this.seedEdit);
-      this.layout.addToHeader(new StringWidget(this.title, this.font));
+      this.layout.addTitleHeader(this.title, this.font);
       LinearLayout var1 = this.layout.addToContents(LinearLayout.vertical()).spacing(10);
       var1.addChild(CommonLayouts.labeledElement(this.font, this.seedEdit, SEED_LABEL));
       var1.addChild(
@@ -66,6 +64,11 @@ public class RealmsResetNormalWorldScreen extends RealmsScreen {
       this.layout.visitWidgets(var1x -> {
       });
       this.repositionElements();
+   }
+
+   @Override
+   protected void setInitialFocus() {
+      this.setInitialFocus(this.seedEdit);
    }
 
    private void createExperimentsButton(LinearLayout var1) {

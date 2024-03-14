@@ -3,17 +3,24 @@ package net.minecraft.world.effect;
 import com.google.common.collect.ComparisonChain;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
+import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.Int2IntFunction;
 import java.util.Optional;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
+import net.minecraft.core.Holder;
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
@@ -22,15 +29,23 @@ import org.slf4j.Logger;
 public class MobEffectInstance implements Comparable<MobEffectInstance> {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final int INFINITE_DURATION = -1;
-   private static final String TAG_ID = "id";
-   private static final String TAG_AMBIENT = "ambient";
-   private static final String TAG_HIDDEN_EFFECT = "hidden_effect";
-   private static final String TAG_AMPLIFIER = "amplifier";
-   private static final String TAG_DURATION = "duration";
-   private static final String TAG_SHOW_PARTICLES = "show_particles";
-   private static final String TAG_SHOW_ICON = "show_icon";
-   private static final String TAG_FACTOR_CALCULATION_DATA = "factor_calculation_data";
-   private final MobEffect effect;
+   public static final int MIN_AMPLIFIER = 0;
+   public static final int MAX_AMPLIFIER = 255;
+   public static final Codec<MobEffectInstance> CODEC = RecordCodecBuilder.create(
+      var0 -> var0.group(
+               BuiltInRegistries.MOB_EFFECT.holderByNameCodec().fieldOf("id").forGetter(MobEffectInstance::getEffect),
+               MobEffectInstance.Details.MAP_CODEC.forGetter(MobEffectInstance::asDetails)
+            )
+            .apply(var0, MobEffectInstance::new)
+   );
+   public static final StreamCodec<RegistryFriendlyByteBuf, MobEffectInstance> STREAM_CODEC = StreamCodec.composite(
+      ByteBufCodecs.holderRegistry(Registries.MOB_EFFECT),
+      MobEffectInstance::getEffect,
+      MobEffectInstance.Details.STREAM_CODEC,
+      MobEffectInstance::asDetails,
+      MobEffectInstance::new
+   );
+   private final Holder<MobEffect> effect;
    private int duration;
    private int amplifier;
    private boolean ambient;
@@ -38,58 +53,74 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
    private boolean showIcon;
    @Nullable
    private MobEffectInstance hiddenEffect;
-   private final Optional<MobEffectInstance.FactorData> factorData;
+   private final MobEffectInstance.BlendState blendState = new MobEffectInstance.BlendState();
 
-   public MobEffectInstance(MobEffect var1) {
+   public MobEffectInstance(Holder<MobEffect> var1) {
       this(var1, 0, 0);
    }
 
-   public MobEffectInstance(MobEffect var1, int var2) {
+   public MobEffectInstance(Holder<MobEffect> var1, int var2) {
       this(var1, var2, 0);
    }
 
-   public MobEffectInstance(MobEffect var1, int var2, int var3) {
+   public MobEffectInstance(Holder<MobEffect> var1, int var2, int var3) {
       this(var1, var2, var3, false, true);
    }
 
-   public MobEffectInstance(MobEffect var1, int var2, int var3, boolean var4, boolean var5) {
+   public MobEffectInstance(Holder<MobEffect> var1, int var2, int var3, boolean var4, boolean var5) {
       this(var1, var2, var3, var4, var5, var5);
    }
 
-   public MobEffectInstance(MobEffect var1, int var2, int var3, boolean var4, boolean var5, boolean var6) {
-      this(var1, var2, var3, var4, var5, var6, null, var1.createFactorData());
+   public MobEffectInstance(Holder<MobEffect> var1, int var2, int var3, boolean var4, boolean var5, boolean var6) {
+      this(var1, var2, var3, var4, var5, var6, null);
    }
 
-   public MobEffectInstance(
-      MobEffect var1,
-      int var2,
-      int var3,
-      boolean var4,
-      boolean var5,
-      boolean var6,
-      @Nullable MobEffectInstance var7,
-      Optional<MobEffectInstance.FactorData> var8
-   ) {
+   public MobEffectInstance(Holder<MobEffect> var1, int var2, int var3, boolean var4, boolean var5, boolean var6, @Nullable MobEffectInstance var7) {
       super();
       this.effect = var1;
       this.duration = var2;
-      this.amplifier = var3;
+      this.amplifier = Mth.clamp(var3, 0, 255);
       this.ambient = var4;
       this.visible = var5;
       this.showIcon = var6;
       this.hiddenEffect = var7;
-      this.factorData = var8;
    }
 
    public MobEffectInstance(MobEffectInstance var1) {
       super();
       this.effect = var1.effect;
-      this.factorData = this.effect.createFactorData();
       this.setDetailsFrom(var1);
    }
 
-   public Optional<MobEffectInstance.FactorData> getFactorData() {
-      return this.factorData;
+   private MobEffectInstance(Holder<MobEffect> var1, MobEffectInstance.Details var2) {
+      this(
+         var1,
+         var2.duration(),
+         var2.amplifier(),
+         var2.ambient(),
+         var2.showParticles(),
+         var2.showIcon(),
+         var2.hiddenEffect().map(var1x -> new MobEffectInstance(var1, var1x)).orElse(null)
+      );
+   }
+
+   private MobEffectInstance.Details asDetails() {
+      return new MobEffectInstance.Details(
+         this.getAmplifier(),
+         this.getDuration(),
+         this.isAmbient(),
+         this.isVisible(),
+         this.showIcon(),
+         Optional.ofNullable(this.hiddenEffect).map(MobEffectInstance::asDetails)
+      );
+   }
+
+   public float getBlendFactor(LivingEntity var1, float var2) {
+      return this.blendState.getFactor(var1, var2);
+   }
+
+   public ParticleOptions getParticleOptions() {
+      return this.effect.value().createParticleOptions(this);
    }
 
    void setDetailsFrom(MobEffectInstance var1) {
@@ -101,7 +132,7 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
    }
 
    public boolean update(MobEffectInstance var1) {
-      if (this.effect != var1.effect) {
+      if (!this.effect.equals(var1.effect)) {
          LOGGER.warn("This method should only be called for matching effects!");
       }
 
@@ -161,7 +192,7 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
       return !this.isInfiniteDuration() && this.duration != 0 ? var1.applyAsInt(this.duration) : this.duration;
    }
 
-   public MobEffect getEffect() {
+   public Holder<MobEffect> getEffect() {
       return this.effect;
    }
 
@@ -188,8 +219,8 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
    public boolean tick(LivingEntity var1, Runnable var2) {
       if (this.hasRemainingDuration()) {
          int var3 = this.isInfiniteDuration() ? var1.tickCount : this.duration;
-         if (this.effect.shouldApplyEffectTickThisTick(var3, this.amplifier)) {
-            this.effect.applyEffectTick(var1, this.amplifier);
+         if (this.effect.value().shouldApplyEffectTickThisTick(var3, this.amplifier) && !this.effect.value().applyEffectTick(var1, this.amplifier)) {
+            var1.removeEffect(this.effect);
          }
 
          this.tickDownDuration();
@@ -200,7 +231,7 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
          }
       }
 
-      this.factorData.ifPresent(var1x -> var1x.tick(this));
+      this.blendState.tick(this);
       return this.hasRemainingDuration();
    }
 
@@ -217,11 +248,11 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
    }
 
    public void onEffectStarted(LivingEntity var1) {
-      this.effect.onEffectStarted(var1, this.amplifier);
+      this.effect.value().onEffectStarted(var1, this.amplifier);
    }
 
    public String getDescriptionId() {
-      return this.effect.getDescriptionId();
+      return this.effect.value().getDescriptionId();
    }
 
    @Override
@@ -268,70 +299,13 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
       return 31 * var1 + (this.ambient ? 1 : 0);
    }
 
-   public CompoundTag save(CompoundTag var1) {
-      ResourceLocation var2 = BuiltInRegistries.MOB_EFFECT.getKey(this.effect);
-      var1.putString("id", var2.toString());
-      this.writeDetailsTo(var1);
-      return var1;
-   }
-
-   private void writeDetailsTo(CompoundTag var1) {
-      var1.putByte("amplifier", (byte)this.getAmplifier());
-      var1.putInt("duration", this.getDuration());
-      var1.putBoolean("ambient", this.isAmbient());
-      var1.putBoolean("show_particles", this.isVisible());
-      var1.putBoolean("show_icon", this.showIcon());
-      if (this.hiddenEffect != null) {
-         CompoundTag var2 = new CompoundTag();
-         this.hiddenEffect.save(var2);
-         var1.put("hidden_effect", var2);
-      }
-
-      this.factorData
-         .ifPresent(
-            var1x -> MobEffectInstance.FactorData.CODEC
-                  .encodeStart(NbtOps.INSTANCE, var1x)
-                  .resultOrPartial(LOGGER::error)
-                  .ifPresent(var1xx -> var1.put("factor_calculation_data", var1xx))
-         );
+   public Tag save() {
+      return Util.getOrThrow(CODEC.encodeStart(NbtOps.INSTANCE, this), IllegalStateException::new);
    }
 
    @Nullable
    public static MobEffectInstance load(CompoundTag var0) {
-      String var1 = var0.getString("id");
-      MobEffect var2 = BuiltInRegistries.MOB_EFFECT.get(ResourceLocation.tryParse(var1));
-      return var2 == null ? null : loadSpecifiedEffect(var2, var0);
-   }
-
-   private static MobEffectInstance loadSpecifiedEffect(MobEffect var0, CompoundTag var1) {
-      byte var2 = var1.getByte("amplifier");
-      int var3 = var1.getInt("duration");
-      boolean var4 = var1.getBoolean("ambient");
-      boolean var5 = true;
-      if (var1.contains("show_particles", 1)) {
-         var5 = var1.getBoolean("show_particles");
-      }
-
-      boolean var6 = var5;
-      if (var1.contains("show_icon", 1)) {
-         var6 = var1.getBoolean("show_icon");
-      }
-
-      MobEffectInstance var7 = null;
-      if (var1.contains("hidden_effect", 10)) {
-         var7 = loadSpecifiedEffect(var0, var1.getCompound("hidden_effect"));
-      }
-
-      Optional var8;
-      if (var1.contains("factor_calculation_data", 10)) {
-         var8 = MobEffectInstance.FactorData.CODEC
-            .parse(new Dynamic(NbtOps.INSTANCE, var1.getCompound("factor_calculation_data")))
-            .resultOrPartial(LOGGER::error);
-      } else {
-         var8 = Optional.empty();
-      }
-
-      return new MobEffectInstance(var0, var3, Math.max(var2, 0), var4, var5, var6, var7, var8);
+      return (MobEffectInstance)CODEC.parse(NbtOps.INSTANCE, var0).resultOrPartial(LOGGER::error).orElse(null);
    }
 
    public int compareTo(MobEffectInstance var1) {
@@ -341,68 +315,129 @@ public class MobEffectInstance implements Comparable<MobEffectInstance> {
             .compareFalseFirst(this.isAmbient(), var1.isAmbient())
             .compareFalseFirst(this.isInfiniteDuration(), var1.isInfiniteDuration())
             .compare(this.getDuration(), var1.getDuration())
-            .compare(this.getEffect().getColor(), var1.getEffect().getColor())
+            .compare(this.getEffect().value().getColor(), var1.getEffect().value().getColor())
             .result()
-         : ComparisonChain.start().compare(this.isAmbient(), var1.isAmbient()).compare(this.getEffect().getColor(), var1.getEffect().getColor()).result();
+         : ComparisonChain.start()
+            .compare(this.isAmbient(), var1.isAmbient())
+            .compare(this.getEffect().value().getColor(), var1.getEffect().value().getColor())
+            .result();
    }
 
-   public static class FactorData {
-      public static final Codec<MobEffectInstance.FactorData> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(
-                  ExtraCodecs.NON_NEGATIVE_INT.fieldOf("padding_duration").forGetter(var0x -> var0x.paddingDuration),
-                  Codec.FLOAT.fieldOf("factor_start").orElse(0.0F).forGetter(var0x -> var0x.factorStart),
-                  Codec.FLOAT.fieldOf("factor_target").orElse(1.0F).forGetter(var0x -> var0x.factorTarget),
-                  Codec.FLOAT.fieldOf("factor_current").orElse(0.0F).forGetter(var0x -> var0x.factorCurrent),
-                  ExtraCodecs.NON_NEGATIVE_INT.fieldOf("ticks_active").orElse(0).forGetter(var0x -> var0x.ticksActive),
-                  Codec.FLOAT.fieldOf("factor_previous_frame").orElse(0.0F).forGetter(var0x -> var0x.factorPreviousFrame),
-                  Codec.BOOL.fieldOf("had_effect_last_tick").orElse(false).forGetter(var0x -> var0x.hadEffectLastTick)
-               )
-               .apply(var0, MobEffectInstance.FactorData::new)
-      );
-      private final int paddingDuration;
-      private float factorStart;
-      private float factorTarget;
-      private float factorCurrent;
-      private int ticksActive;
-      private float factorPreviousFrame;
-      private boolean hadEffectLastTick;
+   public boolean is(Holder<MobEffect> var1) {
+      return this.effect.equals(var1);
+   }
 
-      public FactorData(int var1, float var2, float var3, float var4, int var5, float var6, boolean var7) {
+   public void copyBlendState(MobEffectInstance var1) {
+      this.blendState.copyFrom(var1.blendState);
+   }
+
+   public void skipBlending() {
+      this.blendState.setImmediate(this);
+   }
+
+   static class BlendState {
+      private float factor;
+      private float factorPreviousFrame;
+
+      BlendState() {
          super();
-         this.paddingDuration = var1;
-         this.factorStart = var2;
-         this.factorTarget = var3;
-         this.factorCurrent = var4;
-         this.ticksActive = var5;
-         this.factorPreviousFrame = var6;
-         this.hadEffectLastTick = var7;
       }
 
-      public FactorData(int var1) {
-         this(var1, 0.0F, 1.0F, 0.0F, 0, 0.0F, false);
+      public void setImmediate(MobEffectInstance var1) {
+         this.factor = computeTarget(var1);
+         this.factorPreviousFrame = this.factor;
+      }
+
+      public void copyFrom(MobEffectInstance.BlendState var1) {
+         this.factor = var1.factor;
+         this.factorPreviousFrame = var1.factorPreviousFrame;
       }
 
       public void tick(MobEffectInstance var1) {
-         this.factorPreviousFrame = this.factorCurrent;
-         boolean var2 = !var1.endsWithin(this.paddingDuration);
-         ++this.ticksActive;
-         if (this.hadEffectLastTick != var2) {
-            this.hadEffectLastTick = var2;
-            this.ticksActive = 0;
-            this.factorStart = this.factorCurrent;
-            this.factorTarget = var2 ? 1.0F : 0.0F;
+         this.factorPreviousFrame = this.factor;
+         int var2 = getBlendDuration(var1);
+         if (var2 == 0) {
+            this.factor = 1.0F;
+         } else {
+            float var3 = computeTarget(var1);
+            if (this.factor != var3) {
+               float var4 = 1.0F / (float)var2;
+               this.factor += Mth.clamp(var3 - this.factor, -var4, var4);
+            }
          }
+      }
 
-         float var3 = Mth.clamp((float)this.ticksActive / (float)this.paddingDuration, 0.0F, 1.0F);
-         this.factorCurrent = Mth.lerp(var3, this.factorStart, this.factorTarget);
+      private static float computeTarget(MobEffectInstance var0) {
+         boolean var1 = !var0.endsWithin(getBlendDuration(var0));
+         return var1 ? 1.0F : 0.0F;
+      }
+
+      private static int getBlendDuration(MobEffectInstance var0) {
+         return var0.getEffect().value().getBlendDurationTicks();
       }
 
       public float getFactor(LivingEntity var1, float var2) {
          if (var1.isRemoved()) {
-            this.factorPreviousFrame = this.factorCurrent;
+            this.factorPreviousFrame = this.factor;
          }
 
-         return Mth.lerp(var2, this.factorPreviousFrame, this.factorCurrent);
+         return Mth.lerp(var2, this.factorPreviousFrame, this.factor);
+      }
+   }
+
+   static record Details(int c, int d, boolean e, boolean f, boolean g, Optional<MobEffectInstance.Details> h) {
+      private final int amplifier;
+      private final int duration;
+      private final boolean ambient;
+      private final boolean showParticles;
+      private final boolean showIcon;
+      private final Optional<MobEffectInstance.Details> hiddenEffect;
+      public static final MapCodec<MobEffectInstance.Details> MAP_CODEC = ExtraCodecs.recursiveMap(
+         "MobEffectInstance.Details",
+         var0 -> RecordCodecBuilder.mapCodec(
+               var1 -> var1.group(
+                        ExtraCodecs.strictOptionalField(ExtraCodecs.UNSIGNED_BYTE, "amplifier", 0).forGetter(MobEffectInstance.Details::amplifier),
+                        ExtraCodecs.strictOptionalField(Codec.INT, "duration", 0).forGetter(MobEffectInstance.Details::duration),
+                        ExtraCodecs.strictOptionalField(Codec.BOOL, "ambient", false).forGetter(MobEffectInstance.Details::ambient),
+                        ExtraCodecs.strictOptionalField(Codec.BOOL, "show_particles", true).forGetter(MobEffectInstance.Details::showParticles),
+                        ExtraCodecs.strictOptionalField(Codec.BOOL, "show_icon").forGetter(var0xx -> Optional.of(var0xx.showIcon())),
+                        ExtraCodecs.strictOptionalField(var0, "hidden_effect").forGetter(MobEffectInstance.Details::hiddenEffect)
+                     )
+                     .apply(var1, MobEffectInstance.Details::create)
+            )
+      );
+      public static final StreamCodec<ByteBuf, MobEffectInstance.Details> STREAM_CODEC = StreamCodec.recursive(
+         var0 -> StreamCodec.composite(
+               ByteBufCodecs.VAR_INT,
+               MobEffectInstance.Details::amplifier,
+               ByteBufCodecs.VAR_INT,
+               MobEffectInstance.Details::duration,
+               ByteBufCodecs.BOOL,
+               MobEffectInstance.Details::ambient,
+               ByteBufCodecs.BOOL,
+               MobEffectInstance.Details::showParticles,
+               ByteBufCodecs.BOOL,
+               MobEffectInstance.Details::showIcon,
+               var0.apply(ByteBufCodecs::optional),
+               MobEffectInstance.Details::hiddenEffect,
+               MobEffectInstance.Details::new
+            )
+      );
+
+      Details(int var1, int var2, boolean var3, boolean var4, boolean var5, Optional<MobEffectInstance.Details> var6) {
+         super();
+         this.amplifier = var1;
+         this.duration = var2;
+         this.ambient = var3;
+         this.showParticles = var4;
+         this.showIcon = var5;
+         this.hiddenEffect = var6;
+      }
+
+      private static MobEffectInstance.Details create(
+         int var0, int var1, boolean var2, boolean var3, Optional<Boolean> var4, Optional<MobEffectInstance.Details> var5
+      ) {
+         return new MobEffectInstance.Details(var0, var1, var2, var3, var4.orElse(var3), var5);
       }
    }
 }

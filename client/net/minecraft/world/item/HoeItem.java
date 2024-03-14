@@ -12,6 +12,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.ItemLike;
@@ -37,8 +38,8 @@ public class HoeItem extends DiggerItem {
       )
    );
 
-   protected HoeItem(Tier var1, int var2, float var3, Item.Properties var4) {
-      super((float)var2, var3, var1, BlockTags.MINEABLE_WITH_HOE, var4);
+   public HoeItem(Tier var1, Item.Properties var2) {
+      super(var1, BlockTags.MINEABLE_WITH_HOE, var2);
    }
 
    @Override
@@ -57,7 +58,7 @@ public class HoeItem extends DiggerItem {
             if (!var2.isClientSide) {
                var6.accept(var1);
                if (var7 != null) {
-                  var1.getItemInHand().hurtAndBreak(1, var7, var1x -> var1x.broadcastBreakEvent(var1.getHand()));
+                  var1.getItemInHand().hurtAndBreak(1, var7, LivingEntity.getSlotForHand(var1.getHand()));
                }
             }
 

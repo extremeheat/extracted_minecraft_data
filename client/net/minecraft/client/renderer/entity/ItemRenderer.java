@@ -29,6 +29,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.util.FastColor;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.BlockItem;
@@ -120,8 +121,7 @@ public class ItemRenderer implements ResourceManagerReloadListener {
             RenderType var14 = ItemBlockRenderTypes.getRenderType(var1, var10);
             VertexConsumer var12;
             if (hasAnimatedTexture(var1) && var1.hasFoil()) {
-               var4.pushPose();
-               PoseStack.Pose var13 = var4.last();
+               PoseStack.Pose var13 = var4.last().copy();
                if (var2 == ItemDisplayContext.GUI) {
                   MatrixUtil.mulComponentWise(var13.pose(), 0.5F);
                } else if (var2.firstPerson()) {
@@ -133,8 +133,6 @@ public class ItemRenderer implements ResourceManagerReloadListener {
                } else {
                   var12 = getCompassFoilBuffer(var5, var14, var13);
                }
-
-               var4.popPose();
             } else if (var10) {
                var12 = getFoilBufferDirect(var5, var14, true, var1.hasFoil());
             } else {
@@ -161,15 +159,11 @@ public class ItemRenderer implements ResourceManagerReloadListener {
    }
 
    public static VertexConsumer getCompassFoilBuffer(MultiBufferSource var0, RenderType var1, PoseStack.Pose var2) {
-      return VertexMultiConsumer.create(
-         new SheetedDecalTextureGenerator(var0.getBuffer(RenderType.glint()), var2.pose(), var2.normal(), 0.0078125F), var0.getBuffer(var1)
-      );
+      return VertexMultiConsumer.create(new SheetedDecalTextureGenerator(var0.getBuffer(RenderType.glint()), var2, 0.0078125F), var0.getBuffer(var1));
    }
 
    public static VertexConsumer getCompassFoilBufferDirect(MultiBufferSource var0, RenderType var1, PoseStack.Pose var2) {
-      return VertexMultiConsumer.create(
-         new SheetedDecalTextureGenerator(var0.getBuffer(RenderType.glintDirect()), var2.pose(), var2.normal(), 0.0078125F), var0.getBuffer(var1)
-      );
+      return VertexMultiConsumer.create(new SheetedDecalTextureGenerator(var0.getBuffer(RenderType.glintDirect()), var2, 0.0078125F), var0.getBuffer(var1));
    }
 
    public static VertexConsumer getFoilBuffer(MultiBufferSource var0, RenderType var1, boolean var2, boolean var3) {
@@ -198,10 +192,11 @@ public class ItemRenderer implements ResourceManagerReloadListener {
             var11 = this.itemColors.getColor(var4, var10.getTintIndex());
          }
 
-         float var12 = (float)(var11 >> 16 & 0xFF) / 255.0F;
-         float var13 = (float)(var11 >> 8 & 0xFF) / 255.0F;
-         float var14 = (float)(var11 & 0xFF) / 255.0F;
-         var2.putBulkData(var8, var10, var12, var13, var14, var5, var6);
+         float var12 = (float)FastColor.ARGB32.alpha(var11) / 255.0F;
+         float var13 = (float)FastColor.ARGB32.red(var11) / 255.0F;
+         float var14 = (float)FastColor.ARGB32.green(var11) / 255.0F;
+         float var15 = (float)FastColor.ARGB32.blue(var11) / 255.0F;
+         var2.putBulkData(var8, var10, var13, var14, var15, var12, var5, var6);
       }
    }
 
@@ -220,9 +215,7 @@ public class ItemRenderer implements ResourceManagerReloadListener {
       return var7 == null ? this.itemModelShaper.getModelManager().getMissingModel() : var7;
    }
 
-   public void renderStatic(
-      ItemStack var1, ItemDisplayContext var2, int var3, int var4, PoseStack var5, MultiBufferSource var6, @Nullable Level var7, int var8
-   ) {
+   public void renderStatic(ItemStack var1, ItemDisplayContext var2, int var3, int var4, PoseStack var5, MultiBufferSource var6, @Nullable Level var7, int var8) {
       this.renderStatic(null, var1, var2, false, var5, var6, var7, var3, var4, var8);
    }
 

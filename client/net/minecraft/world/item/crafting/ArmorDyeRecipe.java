@@ -3,11 +3,12 @@ package net.minecraft.world.item.crafting;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.DyeItem;
-import net.minecraft.world.item.DyeableLeatherItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.DyedItemColor;
 import net.minecraft.world.level.Level;
 
 public class ArmorDyeRecipe extends CustomRecipe {
@@ -22,7 +23,7 @@ public class ArmorDyeRecipe extends CustomRecipe {
       for(int var5 = 0; var5 < var1.getContainerSize(); ++var5) {
          ItemStack var6 = var1.getItem(var5);
          if (!var6.isEmpty()) {
-            if (var6.getItem() instanceof DyeableLeatherItem) {
+            if (var6.is(ItemTags.DYEABLE)) {
                if (!var3.isEmpty()) {
                   return false;
                }
@@ -48,24 +49,25 @@ public class ArmorDyeRecipe extends CustomRecipe {
       for(int var5 = 0; var5 < var1.getContainerSize(); ++var5) {
          ItemStack var6 = var1.getItem(var5);
          if (!var6.isEmpty()) {
-            Item var7 = var6.getItem();
-            if (var7 instanceof DyeableLeatherItem) {
+            if (var6.is(ItemTags.DYEABLE)) {
                if (!var4.isEmpty()) {
                   return ItemStack.EMPTY;
                }
 
                var4 = var6.copy();
             } else {
-               if (!(var7 instanceof DyeItem)) {
+               Item var8 = var6.getItem();
+               if (!(var8 instanceof DyeItem)) {
                   return ItemStack.EMPTY;
                }
 
-               var3.add((DyeItem)var7);
+               DyeItem var7 = (DyeItem)var8;
+               var3.add(var7);
             }
          }
       }
 
-      return !var4.isEmpty() && !var3.isEmpty() ? DyeableLeatherItem.dyeArmor(var4, var3) : ItemStack.EMPTY;
+      return !var4.isEmpty() && !var3.isEmpty() ? DyedItemColor.applyDyes(var4, var3) : ItemStack.EMPTY;
    }
 
    @Override

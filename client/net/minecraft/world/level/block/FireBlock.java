@@ -113,12 +113,12 @@ public class FireBlock extends BaseFireBlock {
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       return this.canSurvive(var1, var4, var5) ? this.getStateWithAge(var4, var5, var1.getValue(AGE)) : Blocks.AIR.defaultBlockState();
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return this.shapesCache.get(var1.setValue(AGE, Integer.valueOf(0)));
    }
 
@@ -147,13 +147,13 @@ public class FireBlock extends BaseFireBlock {
    }
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       BlockPos var4 = var3.below();
       return var2.getBlockState(var4).isFaceSturdy(var2, var4, Direction.UP) || this.isValidFireLocation(var2, var3);
    }
 
    @Override
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       var2.scheduleTick(var3, this, getFireTickDelay(var2.random));
       if (var2.getGameRules().getBoolean(GameRules.RULE_DOFIRETICK)) {
          if (!var1.canSurvive(var2, var3)) {
@@ -300,7 +300,7 @@ public class FireBlock extends BaseFireBlock {
    }
 
    @Override
-   public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       super.onPlace(var1, var2, var3, var4, var5);
       var2.scheduleTick(var3, this, getFireTickDelay(var2.random));
    }

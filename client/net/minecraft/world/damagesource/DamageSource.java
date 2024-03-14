@@ -2,6 +2,7 @@ package net.minecraft.world.damagesource;
 
 import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
@@ -72,14 +73,12 @@ public class DamageSource {
       if (this.causingEntity == null && this.directEntity == null) {
          LivingEntity var7 = var1.getKillCredit();
          String var8 = var2 + ".player";
-         return var7 != null
-            ? Component.translatable(var8, var1.getDisplayName(), var7.getDisplayName())
-            : Component.translatable(var2, var1.getDisplayName());
+         return var7 != null ? Component.translatable(var8, var1.getDisplayName(), var7.getDisplayName()) : Component.translatable(var2, var1.getDisplayName());
       } else {
          Component var3 = this.causingEntity == null ? this.directEntity.getDisplayName() : this.causingEntity.getDisplayName();
          Entity var6 = this.causingEntity;
          ItemStack var4 = var6 instanceof LivingEntity var5 ? var5.getMainHandItem() : ItemStack.EMPTY;
-         return !var4.isEmpty() && var4.hasCustomHoverName()
+         return !var4.isEmpty() && var4.has(DataComponents.CUSTOM_NAME)
             ? Component.translatable(var2 + ".item", var1.getDisplayName(), var3, var4.getDisplayName())
             : Component.translatable(var2, var1.getDisplayName(), var3);
       }
@@ -129,7 +128,7 @@ public class DamageSource {
    }
 
    public DamageType type() {
-      return this.type.value();
+      return (DamageType)this.type.value();
    }
 
    public Holder<DamageType> typeHolder() {

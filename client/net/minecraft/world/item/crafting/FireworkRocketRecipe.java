@@ -1,11 +1,13 @@
 package net.minecraft.world.item.crafting;
 
+import java.util.ArrayList;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.FireworkExplosion;
+import net.minecraft.world.item.component.Fireworks;
 import net.minecraft.world.level.Level;
 
 public class FireworkRocketRecipe extends CustomRecipe {
@@ -44,31 +46,26 @@ public class FireworkRocketRecipe extends CustomRecipe {
    }
 
    public ItemStack assemble(CraftingContainer var1, RegistryAccess var2) {
-      ItemStack var3 = new ItemStack(Items.FIREWORK_ROCKET, 3);
-      CompoundTag var4 = var3.getOrCreateTagElement("Fireworks");
-      ListTag var5 = new ListTag();
-      int var6 = 0;
+      ArrayList var3 = new ArrayList();
+      int var4 = 0;
 
-      for(int var7 = 0; var7 < var1.getContainerSize(); ++var7) {
-         ItemStack var8 = var1.getItem(var7);
-         if (!var8.isEmpty()) {
-            if (GUNPOWDER_INGREDIENT.test(var8)) {
-               ++var6;
-            } else if (STAR_INGREDIENT.test(var8)) {
-               CompoundTag var9 = var8.getTagElement("Explosion");
-               if (var9 != null) {
-                  var5.add(var9);
+      for(int var5 = 0; var5 < var1.getContainerSize(); ++var5) {
+         ItemStack var6 = var1.getItem(var5);
+         if (!var6.isEmpty()) {
+            if (GUNPOWDER_INGREDIENT.test(var6)) {
+               ++var4;
+            } else if (STAR_INGREDIENT.test(var6)) {
+               FireworkExplosion var7 = var6.get(DataComponents.FIREWORK_EXPLOSION);
+               if (var7 != null) {
+                  var3.add(var7);
                }
             }
          }
       }
 
-      var4.putByte("Flight", (byte)var6);
-      if (!var5.isEmpty()) {
-         var4.put("Explosions", var5);
-      }
-
-      return var3;
+      ItemStack var8 = new ItemStack(Items.FIREWORK_ROCKET, 3);
+      var8.set(DataComponents.FIREWORKS, new Fireworks(var4, var3));
+      return var8;
    }
 
    @Override

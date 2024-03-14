@@ -9,9 +9,10 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
@@ -58,20 +59,15 @@ public class CopyBlockState extends LootItemConditionalFunction {
    protected ItemStack run(ItemStack var1, LootContext var2) {
       BlockState var3 = var2.getParamOrNull(LootContextParams.BLOCK_STATE);
       if (var3 != null) {
-         CompoundTag var4 = var1.getOrCreateTag();
-         CompoundTag var5;
-         if (var4.contains("BlockStateTag", 10)) {
-            var5 = var4.getCompound("BlockStateTag");
-         } else {
-            var5 = new CompoundTag();
-            var4.put("BlockStateTag", var5);
-         }
-
-         for(Property var7 : this.properties) {
-            if (var3.hasProperty(var7)) {
-               var5.putString(var7.getName(), serialize(var3, var7));
+         var1.update(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY, var2x -> {
+            for(Property var4 : this.properties) {
+               if (var3.hasProperty(var4)) {
+                  var2x = var2x.with(var4, var3);
+               }
             }
-         }
+
+            return var2x;
+         });
       }
 
       return var1;
@@ -79,11 +75,6 @@ public class CopyBlockState extends LootItemConditionalFunction {
 
    public static CopyBlockState.Builder copyState(Block var0) {
       return new CopyBlockState.Builder(var0);
-   }
-
-   private static <T extends Comparable<T>> String serialize(BlockState var0, Property<T> var1) {
-      Comparable var2 = var0.getValue(var1);
-      return var1.getName((T)var2);
    }
 
    public static class Builder extends LootItemConditionalFunction.Builder<CopyBlockState.Builder> {

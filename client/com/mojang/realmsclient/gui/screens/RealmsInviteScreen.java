@@ -6,21 +6,27 @@ import com.mojang.realmsclient.dto.RealmsServer;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
-import net.minecraft.client.GameNarrator;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.layouts.CommonLayouts;
+import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
+import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.realms.RealmsScreen;
+import net.minecraft.util.StringUtil;
 import org.slf4j.Logger;
 
 public class RealmsInviteScreen extends RealmsScreen {
    private static final Logger LOGGER = LogUtils.getLogger();
+   private static final Component TITLE = Component.translatable("mco.configure.world.buttons.invite");
    private static final Component NAME_LABEL = Component.translatable("mco.configure.world.invite.profile.name").withColor(-6250336);
    private static final Component INVITING_PLAYER_TEXT = Component.translatable("mco.configure.world.players.inviting").withColor(-6250336);
    private static final Component NO_SUCH_PLAYER_ERROR_TEXT = Component.translatable("mco.configure.world.players.error").withColor(-65536);
+   private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
    private EditBox profileName;
    private Button inviteButton;
    private final RealmsServer serverData;
@@ -30,7 +36,7 @@ public class RealmsInviteScreen extends RealmsScreen {
    private Component message;
 
    public RealmsInviteScreen(RealmsConfigureWorldScreen var1, Screen var2, RealmsServer var3) {
-      super(GameNarrator.NO_TITLE);
+      super(TITLE);
       this.configureScreen = var1;
       this.lastScreen = var2;
       this.serverData = var3;
@@ -38,23 +44,29 @@ public class RealmsInviteScreen extends RealmsScreen {
 
    @Override
    public void init() {
-      this.profileName = new EditBox(
-         this.minecraft.font, this.width / 2 - 100, row(2), 200, 20, null, Component.translatable("mco.configure.world.invite.profile.name")
-      );
-      this.addWidget(this.profileName);
+      this.layout.addTitleHeader(TITLE, this.font);
+      LinearLayout var1 = this.layout.addToContents(LinearLayout.vertical().spacing(8));
+      this.profileName = new EditBox(this.minecraft.font, 200, 20, Component.translatable("mco.configure.world.invite.profile.name"));
+      var1.addChild(CommonLayouts.labeledElement(this.font, this.profileName, NAME_LABEL));
+      this.inviteButton = var1.addChild(Button.builder(TITLE, var1x -> this.onInvite()).width(200).build());
+      this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, var1x -> this.onClose()).width(200).build());
+      this.layout.visitWidgets(var1x -> {
+      });
+      this.repositionElements();
+   }
+
+   @Override
+   protected void repositionElements() {
+      this.layout.arrangeElements();
+   }
+
+   @Override
+   protected void setInitialFocus() {
       this.setInitialFocus(this.profileName);
-      this.inviteButton = this.addRenderableWidget(
-         Button.builder(Component.translatable("mco.configure.world.buttons.invite"), var1 -> this.onInvite())
-            .bounds(this.width / 2 - 100, row(10), 200, 20)
-            .build()
-      );
-      this.addRenderableWidget(
-         Button.builder(CommonComponents.GUI_CANCEL, var1 -> this.minecraft.setScreen(this.lastScreen)).bounds(this.width / 2 - 100, row(12), 200, 20).build()
-      );
    }
 
    private void onInvite() {
-      if (Util.isBlank(this.profileName.getValue())) {
+      if (StringUtil.isBlank(this.profileName.getValue())) {
          this.showMessage(NO_SUCH_PLAYER_ERROR_TEXT);
       } else {
          long var1 = this.serverData.id;
@@ -89,23 +101,15 @@ public class RealmsInviteScreen extends RealmsScreen {
    }
 
    @Override
-   public boolean keyPressed(int var1, int var2, int var3) {
-      if (var1 == 256) {
-         this.minecraft.setScreen(this.lastScreen);
-         return true;
-      } else {
-         return super.keyPressed(var1, var2, var3);
-      }
+   public void onClose() {
+      this.minecraft.setScreen(this.lastScreen);
    }
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      var1.drawString(this.font, NAME_LABEL, this.width / 2 - 100, row(1), -1, false);
       if (this.message != null) {
-         var1.drawCenteredString(this.font, this.message, this.width / 2, row(5), -1);
+         var1.drawCenteredString(this.font, this.message, this.width / 2, this.inviteButton.getY() + this.inviteButton.getHeight() + 8, -1);
       }
-
-      this.profileName.render(var1, var2, var3, var4);
    }
 }

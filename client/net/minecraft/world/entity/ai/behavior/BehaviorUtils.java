@@ -30,9 +30,9 @@ public class BehaviorUtils {
       super();
    }
 
-   public static void lockGazeAndWalkToEachOther(LivingEntity var0, LivingEntity var1, float var2) {
+   public static void lockGazeAndWalkToEachOther(LivingEntity var0, LivingEntity var1, float var2, int var3) {
       lookAtEachOther(var0, var1);
-      setWalkAndLookTargetMemoriesToEachOther(var0, var1, var2);
+      setWalkAndLookTargetMemoriesToEachOther(var0, var1, var2, var3);
    }
 
    public static boolean entityIsVisible(Brain<?> var0, LivingEntity var1) {
@@ -57,10 +57,9 @@ public class BehaviorUtils {
       var0.getBrain().setMemory(MemoryModuleType.LOOK_TARGET, new EntityTracker(var1, true));
    }
 
-   private static void setWalkAndLookTargetMemoriesToEachOther(LivingEntity var0, LivingEntity var1, float var2) {
-      boolean var3 = true;
-      setWalkAndLookTargetMemories(var0, var1, var2, 2);
-      setWalkAndLookTargetMemories(var1, var0, var2, 2);
+   private static void setWalkAndLookTargetMemoriesToEachOther(LivingEntity var0, LivingEntity var1, float var2, int var3) {
+      setWalkAndLookTargetMemories(var0, var1, var2, var3);
+      setWalkAndLookTargetMemories(var1, var0, var2, var3);
    }
 
    public static void setWalkAndLookTargetMemories(LivingEntity var0, Entity var1, float var2, int var3) {
@@ -149,11 +148,7 @@ public class BehaviorUtils {
       Vec3 var3 = DefaultRandomPos.getPos(var0, var1, var2);
       int var4 = 0;
 
-      while(
-         var3 != null
-            && !var0.level().getBlockState(BlockPos.containing(var3)).isPathfindable(var0.level(), BlockPos.containing(var3), PathComputationType.WATER)
-            && var4++ < 10
-      ) {
+      while(var3 != null && !var0.level().getBlockState(BlockPos.containing(var3)).isPathfindable(PathComputationType.WATER) && var4++ < 10) {
          var3 = DefaultRandomPos.getPos(var0, var1, var2);
       }
 

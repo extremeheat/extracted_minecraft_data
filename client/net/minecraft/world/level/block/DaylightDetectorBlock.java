@@ -5,7 +5,6 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
@@ -43,17 +42,17 @@ public class DaylightDetectorBlock extends BaseEntityBlock {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 
    @Override
-   public boolean useShapeForLightOcclusion(BlockState var1) {
+   protected boolean useShapeForLightOcclusion(BlockState var1) {
       return true;
    }
 
    @Override
-   public int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
+   protected int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       return var1.getValue(POWER);
    }
 
@@ -76,29 +75,29 @@ public class DaylightDetectorBlock extends BaseEntityBlock {
    }
 
    @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       if (var4.mayBuild()) {
          if (var2.isClientSide) {
             return InteractionResult.SUCCESS;
          } else {
-            BlockState var7 = var1.cycle(INVERTED);
-            var2.setBlock(var3, var7, 2);
-            var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var4, var7));
-            updateSignalStrength(var7, var2, var3);
+            BlockState var6 = var1.cycle(INVERTED);
+            var2.setBlock(var3, var6, 2);
+            var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var4, var6));
+            updateSignalStrength(var6, var2, var3);
             return InteractionResult.CONSUME;
          }
       } else {
-         return super.use(var1, var2, var3, var4, var5, var6);
+         return super.useWithoutItem(var1, var2, var3, var4, var5);
       }
    }
 
    @Override
-   public RenderShape getRenderShape(BlockState var1) {
+   protected RenderShape getRenderShape(BlockState var1) {
       return RenderShape.MODEL;
    }
 
    @Override
-   public boolean isSignalSource(BlockState var1) {
+   protected boolean isSignalSource(BlockState var1) {
       return true;
    }
 

@@ -18,10 +18,7 @@ public class EmptyMapItem extends ComplexItem {
       if (var1.isClientSide) {
          return InteractionResultHolder.success(var4);
       } else {
-         if (!var2.getAbilities().instabuild) {
-            var4.shrink(1);
-         }
-
+         var4.consume(1, var2);
          var2.awardStat(Stats.ITEM_USED.get(this));
          var2.level().playSound(null, var2, SoundEvents.UI_CARTOGRAPHY_TABLE_TAKE_RESULT, var2.getSoundSource(), 1.0F, 1.0F);
          ItemStack var5 = MapItem.create(var1, var2.getBlockX(), var2.getBlockZ(), (byte)0, true, false);

@@ -175,10 +175,7 @@ public class LevelDataGeneratorOptionsFix extends DataFix {
             .map(
                var1x -> var1.createMap(
                      ImmutableMap.of(
-                        var1.createString("height"),
-                        var1.createInt(var1x.getFirst()),
-                        var1.createString("block"),
-                        var1.createString((String)var1x.getSecond())
+                        var1.createString("height"), var1.createInt(var1x.getFirst()), var1.createString("block"), var1.createString((String)var1x.getSecond())
                      )
                   )
             )

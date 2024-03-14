@@ -3,7 +3,8 @@ package net.minecraft.world.item.crafting;
 import com.mojang.serialization.Codec;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 
 public interface RecipeSerializer<T extends Recipe<?>> {
    RecipeSerializer<ShapedRecipe> SHAPED_RECIPE = register("crafting_shaped", new ShapedRecipe.Serializer());
@@ -11,9 +12,7 @@ public interface RecipeSerializer<T extends Recipe<?>> {
    RecipeSerializer<ArmorDyeRecipe> ARMOR_DYE = register("crafting_special_armordye", new SimpleCraftingRecipeSerializer<>(ArmorDyeRecipe::new));
    RecipeSerializer<BookCloningRecipe> BOOK_CLONING = register("crafting_special_bookcloning", new SimpleCraftingRecipeSerializer<>(BookCloningRecipe::new));
    RecipeSerializer<MapCloningRecipe> MAP_CLONING = register("crafting_special_mapcloning", new SimpleCraftingRecipeSerializer<>(MapCloningRecipe::new));
-   RecipeSerializer<MapExtendingRecipe> MAP_EXTENDING = register(
-      "crafting_special_mapextending", new SimpleCraftingRecipeSerializer<>(MapExtendingRecipe::new)
-   );
+   RecipeSerializer<MapExtendingRecipe> MAP_EXTENDING = register("crafting_special_mapextending", new SimpleCraftingRecipeSerializer<>(MapExtendingRecipe::new));
    RecipeSerializer<FireworkRocketRecipe> FIREWORK_ROCKET = register(
       "crafting_special_firework_rocket", new SimpleCraftingRecipeSerializer<>(FireworkRocketRecipe::new)
    );
@@ -46,15 +45,11 @@ public interface RecipeSerializer<T extends Recipe<?>> {
    RecipeSerializer<StonecutterRecipe> STONECUTTER = register("stonecutting", new SingleItemRecipe.Serializer<>(StonecutterRecipe::new));
    RecipeSerializer<SmithingTransformRecipe> SMITHING_TRANSFORM = register("smithing_transform", new SmithingTransformRecipe.Serializer());
    RecipeSerializer<SmithingTrimRecipe> SMITHING_TRIM = register("smithing_trim", new SmithingTrimRecipe.Serializer());
-   RecipeSerializer<DecoratedPotRecipe> DECORATED_POT_RECIPE = register(
-      "crafting_decorated_pot", new SimpleCraftingRecipeSerializer<>(DecoratedPotRecipe::new)
-   );
+   RecipeSerializer<DecoratedPotRecipe> DECORATED_POT_RECIPE = register("crafting_decorated_pot", new SimpleCraftingRecipeSerializer<>(DecoratedPotRecipe::new));
 
    Codec<T> codec();
 
-   T fromNetwork(FriendlyByteBuf var1);
-
-   void toNetwork(FriendlyByteBuf var1, T var2);
+   StreamCodec<RegistryFriendlyByteBuf, T> streamCodec();
 
    static <S extends RecipeSerializer<T>, T extends Recipe<?>> S register(String var0, S var1) {
       return Registry.register(BuiltInRegistries.RECIPE_SERIALIZER, var0, (S)var1);

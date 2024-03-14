@@ -7,7 +7,7 @@ import net.minecraft.nbt.StreamTagVisitor;
 import net.minecraft.nbt.TagType;
 
 public class SkipFields extends CollectToTag {
-   private final Deque<FieldTree> stack = new ArrayDeque<>();
+   private final Deque<FieldTree> stack = new ArrayDeque();
 
    public SkipFields(FieldSelector... var1) {
       super();
@@ -22,12 +22,12 @@ public class SkipFields extends CollectToTag {
 
    @Override
    public StreamTagVisitor.EntryResult visitEntry(TagType<?> var1, String var2) {
-      FieldTree var3 = this.stack.element();
+      FieldTree var3 = (FieldTree)this.stack.element();
       if (var3.isSelected(var1, var2)) {
          return StreamTagVisitor.EntryResult.SKIP;
       } else {
          if (var1 == CompoundTag.TYPE) {
-            FieldTree var4 = var3.fieldsToRecurse().get(var2);
+            FieldTree var4 = (FieldTree)var3.fieldsToRecurse().get(var2);
             if (var4 != null) {
                this.stack.push(var4);
             }
@@ -39,7 +39,7 @@ public class SkipFields extends CollectToTag {
 
    @Override
    public StreamTagVisitor.ValueResult visitContainerEnd() {
-      if (this.depth() == this.stack.element().depth()) {
+      if (this.depth() == ((FieldTree)this.stack.element()).depth()) {
          this.stack.pop();
       }
 

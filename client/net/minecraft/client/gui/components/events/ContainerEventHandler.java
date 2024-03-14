@@ -103,10 +103,6 @@ public interface ContainerEventHandler extends GuiEventListener {
       return var1 != null ? ComponentPath.path(this, var1.getCurrentFocusPath()) : null;
    }
 
-   default void magicalSpecialHackyFocus(@Nullable GuiEventListener var1) {
-      this.setFocused(var1);
-   }
-
    @Nullable
    @Override
    default ComponentPath nextFocusPath(FocusNavigationEvent var1) {
@@ -206,9 +202,7 @@ public interface ContainerEventHandler extends GuiEventListener {
    }
 
    @Nullable
-   private ComponentPath nextFocusPathVaguelyInDirection(
-      ScreenRectangle var1, ScreenDirection var2, @Nullable GuiEventListener var3, FocusNavigationEvent var4
-   ) {
+   private ComponentPath nextFocusPathVaguelyInDirection(ScreenRectangle var1, ScreenDirection var2, @Nullable GuiEventListener var3, FocusNavigationEvent var4) {
       ScreenAxis var5 = var2.getAxis();
       ScreenAxis var6 = var5.orthogonal();
       ArrayList var7 = new ArrayList();

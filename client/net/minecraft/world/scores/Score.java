@@ -1,6 +1,7 @@
 package net.minecraft.world.scores;
 
 import javax.annotation.Nullable;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
@@ -61,33 +62,39 @@ public class Score implements ReadOnlyScoreInfo {
       this.numberFormat = var1;
    }
 
-   public CompoundTag write() {
-      CompoundTag var1 = new CompoundTag();
-      var1.putInt("Score", this.value);
-      var1.putBoolean("Locked", this.locked);
+   public CompoundTag write(HolderLookup.Provider var1) {
+      CompoundTag var2 = new CompoundTag();
+      var2.putInt("Score", this.value);
+      var2.putBoolean("Locked", this.locked);
       if (this.display != null) {
-         var1.putString("display", Component.Serializer.toJson(this.display));
+         var2.putString("display", Component.Serializer.toJson(this.display, var1));
       }
 
       if (this.numberFormat != null) {
-         NumberFormatTypes.CODEC.encodeStart(NbtOps.INSTANCE, this.numberFormat).result().ifPresent(var1x -> var1.put("format", var1x));
+         NumberFormatTypes.CODEC
+            .encodeStart(var1.createSerializationContext(NbtOps.INSTANCE), this.numberFormat)
+            .result()
+            .ifPresent(var1x -> var2.put("format", var1x));
       }
 
-      return var1;
+      return var2;
    }
 
-   public static Score read(CompoundTag var0) {
-      Score var1 = new Score();
-      var1.value = var0.getInt("Score");
-      var1.locked = var0.getBoolean("Locked");
+   public static Score read(CompoundTag var0, HolderLookup.Provider var1) {
+      Score var2 = new Score();
+      var2.value = var0.getInt("Score");
+      var2.locked = var0.getBoolean("Locked");
       if (var0.contains("display", 8)) {
-         var1.display = Component.Serializer.fromJson(var0.getString("display"));
+         var2.display = Component.Serializer.fromJson(var0.getString("display"), var1);
       }
 
       if (var0.contains("format", 10)) {
-         NumberFormatTypes.CODEC.parse(NbtOps.INSTANCE, var0.get("format")).result().ifPresent(var1x -> var1.numberFormat = var1x);
+         NumberFormatTypes.CODEC
+            .parse(var1.createSerializationContext(NbtOps.INSTANCE), var0.get("format"))
+            .result()
+            .ifPresent(var1x -> var2.numberFormat = var1x);
       }
 
-      return var1;
+      return var2;
    }
 }

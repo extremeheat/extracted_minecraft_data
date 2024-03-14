@@ -59,7 +59,7 @@ public class EffectsChangedTrigger extends SimpleCriterionTrigger<EffectsChanged
       }
 
       public boolean matches(ServerPlayer var1, @Nullable LootContext var2) {
-         if (this.effects.isPresent() && !this.effects.get().matches((LivingEntity)var1)) {
+         if (this.effects.isPresent() && !((MobEffectsPredicate)this.effects.get()).matches((LivingEntity)var1)) {
             return false;
          } else {
             return !this.source.isPresent() || var2 != null && this.source.get().matches(var2);

@@ -339,9 +339,7 @@ public class SurfaceRuleData {
                      var0,
                      SurfaceRules.ifTrue(
                         var3,
-                        SurfaceRules.ifTrue(
-                           var7, SurfaceRules.sequence(SurfaceRules.ifTrue(var1, GRAVEL), SurfaceRules.ifTrue(SurfaceRules.not(var5), GRAVEL))
-                        )
+                        SurfaceRules.ifTrue(var7, SurfaceRules.sequence(SurfaceRules.ifTrue(var1, GRAVEL), SurfaceRules.ifTrue(SurfaceRules.not(var5), GRAVEL)))
                      )
                   )
                )

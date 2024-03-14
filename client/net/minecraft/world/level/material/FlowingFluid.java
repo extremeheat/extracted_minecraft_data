@@ -312,9 +312,7 @@ public abstract class FlowingFluid extends Fluid {
       }
    }
 
-   private boolean canPassThrough(
-      BlockGetter var1, Fluid var2, BlockPos var3, BlockState var4, Direction var5, BlockPos var6, BlockState var7, FluidState var8
-   ) {
+   private boolean canPassThrough(BlockGetter var1, Fluid var2, BlockPos var3, BlockState var4, Direction var5, BlockPos var6, BlockState var7, FluidState var8) {
       return !this.isSourceBlockOfThisType(var8) && this.canPassThroughWall(var5, var1, var3, var4, var6, var7) && this.canHoldFluid(var1, var6, var7, var2);
    }
 
@@ -387,11 +385,9 @@ public abstract class FlowingFluid extends Fluid {
       Block var5 = var3.getBlock();
       if (var5 instanceof LiquidBlockContainer var6) {
          return var6.canPlaceLiquid(null, var1, var2, var3, var4);
-      } else if (var5 instanceof DoorBlock
-         || var3.is(BlockTags.SIGNS)
-         || var3.is(Blocks.LADDER)
-         || var3.is(Blocks.SUGAR_CANE)
-         || var3.is(Blocks.BUBBLE_COLUMN)) {
+      } else if (var5 instanceof DoorBlock || var3.is(BlockTags.SIGNS) || var3.is(Blocks.LADDER) || var3.is(Blocks.SUGAR_CANE) || var3.is(Blocks.BUBBLE_COLUMN)
+         )
+       {
          return false;
       } else if (!var3.is(Blocks.NETHER_PORTAL) && !var3.is(Blocks.END_PORTAL) && !var3.is(Blocks.END_GATEWAY) && !var3.is(Blocks.STRUCTURE_VOID)) {
          return !var3.blocksMotion();

@@ -2,6 +2,7 @@ package com.mojang.realmsclient.gui.screens;
 
 import com.google.common.collect.Lists;
 import com.mojang.logging.LogUtils;
+import com.mojang.realmsclient.util.task.RealmCreationTask;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -25,33 +26,30 @@ public class RealmsSelectFileToUploadScreen extends RealmsScreen {
    public static final Component TITLE = Component.translatable("mco.upload.select.world.title");
    private static final Component UNABLE_TO_LOAD_WORLD = Component.translatable("selectWorld.unable_to_load");
    static final Component WORLD_TEXT = Component.translatable("selectWorld.world");
-   static final Component HARDCORE_TEXT = Component.translatable("mco.upload.hardcore").withColor(-65536);
-   static final Component CHEATS_TEXT = Component.translatable("selectWorld.cheats");
+   private static final Component HARDCORE_TEXT = Component.translatable("mco.upload.hardcore").withColor(-65536);
+   private static final Component COMMANDS_TEXT = Component.translatable("selectWorld.commands");
    private static final DateFormat DATE_FORMAT = new SimpleDateFormat();
+   @Nullable
+   private final RealmCreationTask realmCreationTask;
    private final RealmsResetWorldScreen lastScreen;
-   private final long worldId;
+   private final long realmId;
    private final int slotId;
    Button uploadButton;
    List<LevelSummary> levelList = Lists.newArrayList();
    int selectedWorld = -1;
    RealmsSelectFileToUploadScreen.WorldSelectionList worldSelectionList;
 
-   public RealmsSelectFileToUploadScreen(long var1, int var3, RealmsResetWorldScreen var4) {
+   public RealmsSelectFileToUploadScreen(@Nullable RealmCreationTask var1, long var2, int var4, RealmsResetWorldScreen var5) {
       super(TITLE);
-      this.lastScreen = var4;
-      this.worldId = var1;
-      this.slotId = var3;
+      this.realmCreationTask = var1;
+      this.lastScreen = var5;
+      this.realmId = var2;
+      this.slotId = var4;
    }
 
-   private void loadLevelList() throws Exception {
+   private void loadLevelList() {
       LevelStorageSource.LevelCandidates var1 = this.minecraft.getLevelSource().findLevelCandidates();
-      this.levelList = this.minecraft
-         .getLevelSource()
-         .loadLevelSummaries(var1)
-         .join()
-         .stream()
-         .filter(var0 -> !var0.requiresManualConversion() && !var0.isLocked())
-         .collect(Collectors.toList());
+      this.levelList = this.minecraft.getLevelSource().loadLevelSummaries(var1).join().stream().filter(LevelSummary::canUpload).collect(Collectors.toList());
 
       for(LevelSummary var3 : this.levelList) {
          this.worldSelectionList.addEntry(var3);
@@ -95,7 +93,7 @@ public class RealmsSelectFileToUploadScreen extends RealmsScreen {
    private void upload() {
       if (this.selectedWorld != -1 && !this.levelList.get(this.selectedWorld).isHardcore()) {
          LevelSummary var1 = this.levelList.get(this.selectedWorld);
-         this.minecraft.setScreen(new RealmsUploadScreen(this.worldId, this.slotId, this.lastScreen, var1));
+         this.minecraft.setScreen(new RealmsUploadScreen(this.realmCreationTask, this.realmId, this.slotId, this.lastScreen, var1));
       }
    }
 
@@ -134,18 +132,7 @@ public class RealmsSelectFileToUploadScreen extends RealmsScreen {
          this.levelSummary = var2;
          this.name = var2.getLevelName();
          this.id = Component.translatable("mco.upload.entry.id", var2.getLevelId(), RealmsSelectFileToUploadScreen.formatLastPlayed(var2));
-         Object var3;
-         if (var2.isHardcore()) {
-            var3 = RealmsSelectFileToUploadScreen.HARDCORE_TEXT;
-         } else {
-            var3 = RealmsSelectFileToUploadScreen.gameModeName(var2);
-         }
-
-         if (var2.hasCheats()) {
-            var3 = Component.translatable("mco.upload.entry.cheats", ((Component)var3).getString(), RealmsSelectFileToUploadScreen.CHEATS_TEXT);
-         }
-
-         this.info = (Component)var3;
+         this.info = var2.getInfo();
       }
 
       @Override
@@ -156,7 +143,7 @@ public class RealmsSelectFileToUploadScreen extends RealmsScreen {
       @Override
       public boolean mouseClicked(double var1, double var3, int var5) {
          RealmsSelectFileToUploadScreen.this.worldSelectionList.selectItem(RealmsSelectFileToUploadScreen.this.levelList.indexOf(this.levelSummary));
-         return true;
+         return super.mouseClicked(var1, var3, var5);
       }
 
       protected void renderItem(GuiGraphics var1, int var2, int var3, int var4) {

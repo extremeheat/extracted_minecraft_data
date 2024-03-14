@@ -19,12 +19,12 @@ public class TintedGlassBlock extends TransparentBlock {
    }
 
    @Override
-   public boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
       return false;
    }
 
    @Override
-   public int getLightBlock(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected int getLightBlock(BlockState var1, BlockGetter var2, BlockPos var3) {
       return var2.getMaxLightLevel();
    }
 }

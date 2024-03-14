@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
@@ -17,6 +18,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.Style;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.network.FilteredText;
 import net.minecraft.sounds.SoundEvent;
@@ -90,26 +92,28 @@ public class SignBlockEntity extends BlockEntity {
    }
 
    @Override
-   protected void saveAdditional(CompoundTag var1) {
-      super.saveAdditional(var1);
-      SignText.DIRECT_CODEC.encodeStart(NbtOps.INSTANCE, this.frontText).resultOrPartial(LOGGER::error).ifPresent(var1x -> var1.put("front_text", var1x));
-      SignText.DIRECT_CODEC.encodeStart(NbtOps.INSTANCE, this.backText).resultOrPartial(LOGGER::error).ifPresent(var1x -> var1.put("back_text", var1x));
+   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.saveAdditional(var1, var2);
+      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
+      SignText.DIRECT_CODEC.encodeStart(var3, this.frontText).resultOrPartial(LOGGER::error).ifPresent(var1x -> var1.put("front_text", var1x));
+      SignText.DIRECT_CODEC.encodeStart(var3, this.backText).resultOrPartial(LOGGER::error).ifPresent(var1x -> var1.put("back_text", var1x));
       var1.putBoolean("is_waxed", this.isWaxed);
    }
 
    @Override
-   public void load(CompoundTag var1) {
-      super.load(var1);
+   public void load(CompoundTag var1, HolderLookup.Provider var2) {
+      super.load(var1, var2);
+      RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
       if (var1.contains("front_text")) {
          SignText.DIRECT_CODEC
-            .parse(NbtOps.INSTANCE, var1.getCompound("front_text"))
+            .parse(var3, var1.getCompound("front_text"))
             .resultOrPartial(LOGGER::error)
             .ifPresent(var1x -> this.frontText = this.loadLines(var1x));
       }
 
       if (var1.contains("back_text")) {
          SignText.DIRECT_CODEC
-            .parse(NbtOps.INSTANCE, var1.getCompound("back_text"))
+            .parse(var3, var1.getCompound("back_text"))
             .resultOrPartial(LOGGER::error)
             .ifPresent(var1x -> this.backText = this.loadLines(var1x));
       }
@@ -222,8 +226,8 @@ public class SignBlockEntity extends BlockEntity {
    }
 
    @Override
-   public CompoundTag getUpdateTag() {
-      return this.saveWithoutMetadata();
+   public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
+      return this.saveWithoutMetadata(var1);
    }
 
    @Override
@@ -261,8 +265,7 @@ public class SignBlockEntity extends BlockEntity {
 
    public boolean playerIsTooFarAwayToEdit(UUID var1) {
       Player var2 = this.level.getPlayerByUUID(var1);
-      return var2 == null
-         || var2.distanceToSqr((double)this.getBlockPos().getX(), (double)this.getBlockPos().getY(), (double)this.getBlockPos().getZ()) > 64.0;
+      return var2 == null || var2.distanceToSqr((double)this.getBlockPos().getX(), (double)this.getBlockPos().getY(), (double)this.getBlockPos().getZ()) > 64.0;
    }
 
    public static void tick(Level var0, BlockPos var1, BlockState var2, SignBlockEntity var3) {

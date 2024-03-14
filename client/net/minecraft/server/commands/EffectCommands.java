@@ -186,7 +186,7 @@ public class EffectCommands {
 
       for(Entity var10 : var1) {
          if (var10 instanceof LivingEntity) {
-            MobEffectInstance var11 = new MobEffectInstance(var6, var8, var4, false, var5);
+            MobEffectInstance var11 = new MobEffectInstance(var2, var8, var4, false, var5);
             if (((LivingEntity)var10).addEffect(var11, var0.getEntity())) {
                ++var7;
             }
@@ -240,7 +240,7 @@ public class EffectCommands {
       int var4 = 0;
 
       for(Entity var6 : var1) {
-         if (var6 instanceof LivingEntity && ((LivingEntity)var6).removeEffect(var3)) {
+         if (var6 instanceof LivingEntity && ((LivingEntity)var6).removeEffect(var2)) {
             ++var4;
          }
       }

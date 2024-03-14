@@ -151,7 +151,7 @@ public class StonecutterMenu extends AbstractContainerMenu {
 
    void setupResultSlot() {
       if (!this.recipes.isEmpty() && this.isValidRecipeIndex(this.selectedRecipeIndex.get())) {
-         RecipeHolder var1 = this.recipes.get(this.selectedRecipeIndex.get());
+         RecipeHolder var1 = (RecipeHolder)this.recipes.get(this.selectedRecipeIndex.get());
          ItemStack var2 = ((StonecutterRecipe)var1.value()).assemble(this.container, this.level.registryAccess());
          if (var2.isItemEnabled(this.level.enabledFeatures())) {
             this.resultContainer.setRecipeUsed(var1);

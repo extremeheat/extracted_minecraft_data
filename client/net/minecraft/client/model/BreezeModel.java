@@ -18,7 +18,8 @@ public class BreezeModel<T extends Breeze> extends HierarchicalModel<T> {
    private static final float WIND_BOTTOM_SPEED = 1.0F;
    private final ModelPart root;
    private final ModelPart head;
-   private final ModelPart windBody;
+   private final ModelPart eyes;
+   private final ModelPart wind;
    private final ModelPart windTop;
    private final ModelPart windMid;
    private final ModelPart windBottom;
@@ -27,81 +28,60 @@ public class BreezeModel<T extends Breeze> extends HierarchicalModel<T> {
    public BreezeModel(ModelPart var1) {
       super(RenderType::entityTranslucent);
       this.root = var1;
-      this.windBody = var1.getChild("wind_body");
-      this.windBottom = this.windBody.getChild("wind_bottom");
+      this.wind = var1.getChild("wind_body");
+      this.windBottom = this.wind.getChild("wind_bottom");
       this.windMid = this.windBottom.getChild("wind_mid");
       this.windTop = this.windMid.getChild("wind_top");
       this.head = var1.getChild("body").getChild("head");
+      this.eyes = this.head.getChild("eyes");
       this.rods = var1.getChild("body").getChild("rods");
    }
 
-   public static LayerDefinition createBodyLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
-      PartDefinition var2 = var1.addOrReplaceChild("body", CubeListBuilder.create(), PartPose.offset(0.0F, 0.0F, 0.0F));
-      PartDefinition var3 = var2.addOrReplaceChild("rods", CubeListBuilder.create(), PartPose.offset(0.0F, 8.0F, 0.0F));
-      var3.addOrReplaceChild(
+   public static LayerDefinition createBodyLayer(int var0, int var1) {
+      MeshDefinition var2 = new MeshDefinition();
+      PartDefinition var3 = var2.getRoot();
+      PartDefinition var4 = var3.addOrReplaceChild("body", CubeListBuilder.create(), PartPose.offset(0.0F, 0.0F, 0.0F));
+      PartDefinition var5 = var4.addOrReplaceChild("rods", CubeListBuilder.create(), PartPose.offset(0.0F, 8.0F, 0.0F));
+      var5.addOrReplaceChild(
          "rod_1",
          CubeListBuilder.create().texOffs(0, 17).addBox(-1.0F, 0.0F, -3.0F, 2.0F, 8.0F, 2.0F, new CubeDeformation(0.0F)),
          PartPose.offsetAndRotation(2.5981F, -3.0F, 1.5F, -2.7489F, -1.0472F, 3.1416F)
       );
-      var3.addOrReplaceChild(
+      var5.addOrReplaceChild(
          "rod_2",
          CubeListBuilder.create().texOffs(0, 17).addBox(-1.0F, 0.0F, -3.0F, 2.0F, 8.0F, 2.0F, new CubeDeformation(0.0F)),
          PartPose.offsetAndRotation(-2.5981F, -3.0F, 1.5F, -2.7489F, 1.0472F, 3.1416F)
       );
-      var3.addOrReplaceChild(
+      var5.addOrReplaceChild(
          "rod_3",
          CubeListBuilder.create().texOffs(0, 17).addBox(-1.0F, 0.0F, -3.0F, 2.0F, 8.0F, 2.0F, new CubeDeformation(0.0F)),
          PartPose.offsetAndRotation(0.0F, -3.0F, -3.0F, 0.3927F, 0.0F, 0.0F)
       );
-      PartDefinition var4 = var2.addOrReplaceChild(
+      PartDefinition var6 = var4.addOrReplaceChild(
          "head",
-         CubeListBuilder.create().texOffs(0, 0).addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, new CubeDeformation(0.0F)),
+         CubeListBuilder.create()
+            .texOffs(4, 24)
+            .addBox(-5.0F, -5.0F, -4.2F, 10.0F, 3.0F, 4.0F, new CubeDeformation(0.0F))
+            .texOffs(0, 0)
+            .addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, new CubeDeformation(0.0F)),
          PartPose.offset(0.0F, 4.0F, 0.0F)
       );
-      PartDefinition var5 = var1.addOrReplaceChild("wind_body", CubeListBuilder.create(), PartPose.offset(0.0F, 0.0F, 0.0F));
-      PartDefinition var6 = var5.addOrReplaceChild("wind_bottom", CubeListBuilder.create(), PartPose.offset(0.0F, 24.0F, 0.0F));
-      PartDefinition var7 = var6.addOrReplaceChild("wind_mid", CubeListBuilder.create(), PartPose.offset(0.0F, -7.0F, 0.0F));
-      var7.addOrReplaceChild("wind_top", CubeListBuilder.create(), PartPose.offset(0.0F, -6.0F, 0.0F));
-      return LayerDefinition.create(var0, 32, 32);
-   }
-
-   public static LayerDefinition createEyesLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
-      PartDefinition var2 = var1.addOrReplaceChild("body", CubeListBuilder.create(), PartPose.offset(0.0F, 0.0F, 0.0F));
-      PartDefinition var3 = var2.addOrReplaceChild("rods", CubeListBuilder.create(), PartPose.offset(0.0F, 8.0F, 0.0F));
-      PartDefinition var4 = var2.addOrReplaceChild("head", CubeListBuilder.create(), PartPose.offset(0.0F, 4.0F, 0.0F));
-      var4.addOrReplaceChild(
+      var6.addOrReplaceChild(
          "eyes",
          CubeListBuilder.create()
             .texOffs(4, 24)
             .addBox(-5.0F, -5.0F, -4.2F, 10.0F, 3.0F, 4.0F, new CubeDeformation(0.0F))
-            .texOffs(7, 16)
-            .addBox(-4.0F, -2.0F, -4.0F, 8.0F, 1.0F, 1.0F, new CubeDeformation(0.0F)),
+            .texOffs(0, 0)
+            .addBox(-4.0F, -8.0F, -4.0F, 8.0F, 8.0F, 8.0F, new CubeDeformation(0.0F)),
          PartPose.offset(0.0F, 0.0F, 0.0F)
       );
-      PartDefinition var5 = var1.addOrReplaceChild("wind_body", CubeListBuilder.create(), PartPose.offset(0.0F, 0.0F, 0.0F));
-      PartDefinition var6 = var5.addOrReplaceChild("wind_bottom", CubeListBuilder.create(), PartPose.offset(0.0F, 24.0F, 0.0F));
-      PartDefinition var7 = var6.addOrReplaceChild("wind_mid", CubeListBuilder.create(), PartPose.offset(0.0F, -7.0F, 0.0F));
-      var7.addOrReplaceChild("wind_top", CubeListBuilder.create(), PartPose.offset(0.0F, -6.0F, 0.0F));
-      return LayerDefinition.create(var0, 32, 32);
-   }
-
-   public static LayerDefinition createWindBodyLayer() {
-      MeshDefinition var0 = new MeshDefinition();
-      PartDefinition var1 = var0.getRoot();
-      PartDefinition var2 = var1.addOrReplaceChild("body", CubeListBuilder.create(), PartPose.offset(0.0F, 0.0F, 0.0F));
-      PartDefinition var3 = var2.addOrReplaceChild("rods", CubeListBuilder.create(), PartPose.offset(0.0F, 8.0F, 0.0F));
-      var2.addOrReplaceChild("head", CubeListBuilder.create(), PartPose.offset(0.0F, 4.0F, 0.0F));
-      PartDefinition var4 = var1.addOrReplaceChild("wind_body", CubeListBuilder.create(), PartPose.offset(0.0F, 0.0F, 0.0F));
-      PartDefinition var5 = var4.addOrReplaceChild(
+      PartDefinition var7 = var3.addOrReplaceChild("wind_body", CubeListBuilder.create(), PartPose.offset(0.0F, 0.0F, 0.0F));
+      PartDefinition var8 = var7.addOrReplaceChild(
          "wind_bottom",
          CubeListBuilder.create().texOffs(1, 83).addBox(-2.5F, -7.0F, -2.5F, 5.0F, 7.0F, 5.0F, new CubeDeformation(0.0F)),
          PartPose.offset(0.0F, 24.0F, 0.0F)
       );
-      PartDefinition var6 = var5.addOrReplaceChild(
+      PartDefinition var9 = var8.addOrReplaceChild(
          "wind_mid",
          CubeListBuilder.create()
             .texOffs(74, 28)
@@ -112,7 +92,7 @@ public class BreezeModel<T extends Breeze> extends HierarchicalModel<T> {
             .addBox(-2.5F, -6.0F, -2.5F, 5.0F, 6.0F, 5.0F, new CubeDeformation(0.0F)),
          PartPose.offset(0.0F, -7.0F, 0.0F)
       );
-      var6.addOrReplaceChild(
+      var9.addOrReplaceChild(
          "wind_top",
          CubeListBuilder.create()
             .texOffs(0, 0)
@@ -123,7 +103,7 @@ public class BreezeModel<T extends Breeze> extends HierarchicalModel<T> {
             .addBox(-2.5F, -8.0F, -2.5F, 5.0F, 8.0F, 5.0F, new CubeDeformation(0.0F)),
          PartPose.offset(0.0F, -6.0F, 0.0F)
       );
-      return LayerDefinition.create(var0, 128, 128);
+      return LayerDefinition.create(var2, var0, var1);
    }
 
    public void setupAnim(T var1, float var2, float var3, float var4, float var5, float var6) {
@@ -139,6 +119,7 @@ public class BreezeModel<T extends Breeze> extends HierarchicalModel<T> {
       this.rods.yRot = var4 * 3.1415927F * 0.1F;
       this.animate(var1.shoot, BreezeAnimation.SHOOT, var4);
       this.animate(var1.slide, BreezeAnimation.SLIDE, var4);
+      this.animate(var1.slideBack, BreezeAnimation.SLIDE_BACK, var4);
       this.animate(var1.longJump, BreezeAnimation.JUMP, var4);
    }
 
@@ -147,15 +128,19 @@ public class BreezeModel<T extends Breeze> extends HierarchicalModel<T> {
       return this.root;
    }
 
-   public ModelPart windTop() {
-      return this.windTop;
+   public ModelPart head() {
+      return this.head;
    }
 
-   public ModelPart windMiddle() {
-      return this.windMid;
+   public ModelPart eyes() {
+      return this.eyes;
    }
 
-   public ModelPart windBottom() {
-      return this.windBottom;
+   public ModelPart rods() {
+      return this.rods;
+   }
+
+   public ModelPart wind() {
+      return this.wind;
    }
 }

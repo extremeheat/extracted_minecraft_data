@@ -37,6 +37,7 @@ import net.minecraft.commands.arguments.ResourceOrTagKeyArgument;
 import net.minecraft.commands.arguments.ScoreHolderArgument;
 import net.minecraft.commands.arguments.ScoreboardSlotArgument;
 import net.minecraft.commands.arguments.SlotArgument;
+import net.minecraft.commands.arguments.SlotsArgument;
 import net.minecraft.commands.arguments.StyleArgument;
 import net.minecraft.commands.arguments.TeamArgument;
 import net.minecraft.commands.arguments.TemplateMirrorArgument;
@@ -95,8 +96,8 @@ public class ArgumentTypeInfos {
       register(var0, "item_stack", ItemArgument.class, SingletonArgumentInfo.contextAware(ItemArgument::item));
       register(var0, "item_predicate", ItemPredicateArgument.class, SingletonArgumentInfo.contextAware(ItemPredicateArgument::itemPredicate));
       register(var0, "color", ColorArgument.class, SingletonArgumentInfo.contextFree(ColorArgument::color));
-      register(var0, "component", ComponentArgument.class, SingletonArgumentInfo.contextFree(ComponentArgument::textComponent));
-      register(var0, "style", StyleArgument.class, SingletonArgumentInfo.contextFree(StyleArgument::style));
+      register(var0, "component", ComponentArgument.class, SingletonArgumentInfo.contextAware(ComponentArgument::textComponent));
+      register(var0, "style", StyleArgument.class, SingletonArgumentInfo.contextAware(StyleArgument::style));
       register(var0, "message", MessageArgument.class, SingletonArgumentInfo.contextFree(MessageArgument::message));
       register(var0, "nbt_compound_tag", CompoundTagArgument.class, SingletonArgumentInfo.contextFree(CompoundTagArgument::compoundTag));
       register(var0, "nbt_tag", NbtTagArgument.class, SingletonArgumentInfo.contextFree(NbtTagArgument::nbtTag));
@@ -112,6 +113,7 @@ public class ArgumentTypeInfos {
       register(var0, "swizzle", SwizzleArgument.class, SingletonArgumentInfo.contextFree(SwizzleArgument::swizzle));
       register(var0, "team", TeamArgument.class, SingletonArgumentInfo.contextFree(TeamArgument::team));
       register(var0, "item_slot", SlotArgument.class, SingletonArgumentInfo.contextFree(SlotArgument::slot));
+      register(var0, "item_slots", SlotsArgument.class, SingletonArgumentInfo.contextFree(SlotsArgument::slots));
       register(var0, "resource_location", ResourceLocationArgument.class, SingletonArgumentInfo.contextFree(ResourceLocationArgument::id));
       register(var0, "function", FunctionArgument.class, SingletonArgumentInfo.contextFree(FunctionArgument::functions));
       register(var0, "entity_anchor", EntityAnchorArgument.class, SingletonArgumentInfo.contextFree(EntityAnchorArgument::anchor));

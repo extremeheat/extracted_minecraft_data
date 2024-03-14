@@ -95,8 +95,7 @@ public class LocateCommand {
                      Commands.argument("poi", ResourceOrTagArgument.resourceOrTag(var1, Registries.POINT_OF_INTEREST_TYPE))
                         .executes(
                            var0x -> locatePoi(
-                                 (CommandSourceStack)var0x.getSource(),
-                                 ResourceOrTagArgument.getResourceOrTag(var0x, "poi", Registries.POINT_OF_INTEREST_TYPE)
+                                 (CommandSourceStack)var0x.getSource(), ResourceOrTagArgument.getResourceOrTag(var0x, "poi", Registries.POINT_OF_INTEREST_TYPE)
                               )
                         )
                   )
@@ -149,10 +148,6 @@ public class LocateCommand {
       }
    }
 
-   private static String getElementName(Pair<BlockPos, ? extends Holder<?>> var0) {
-      return ((Holder)var0.getSecond()).unwrapKey().map(var0x -> var0x.location().toString()).orElse("[unregistered]");
-   }
-
    public static int showLocateResult(
       CommandSourceStack var0,
       ResourceOrTagArgument.Result<?> var1,
@@ -162,7 +157,8 @@ public class LocateCommand {
       boolean var5,
       Duration var6
    ) {
-      String var7 = (String)var1.unwrap().map(var1x -> var1.asPrintable(), var2x -> var1.asPrintable() + " (" + getElementName(var3) + ")");
+      String var7 = (String)var1.unwrap()
+         .map(var1x -> var1.asPrintable(), var2x -> var1.asPrintable() + " (" + ((Holder)var3.getSecond()).getRegisteredName() + ")");
       return showLocateResult(var0, var2, var3, var4, var5, var7, var6);
    }
 
@@ -175,7 +171,8 @@ public class LocateCommand {
       boolean var5,
       Duration var6
    ) {
-      String var7 = (String)var1.unwrap().map(var0x -> var0x.location().toString(), var1x -> "#" + var1x.location() + " (" + getElementName(var3) + ")");
+      String var7 = (String)var1.unwrap()
+         .map(var0x -> var0x.location().toString(), var1x -> "#" + var1x.location() + " (" + ((Holder)var3.getSecond()).getRegisteredName() + ")");
       return showLocateResult(var0, var2, var3, var4, var5, var7, var6);
    }
 

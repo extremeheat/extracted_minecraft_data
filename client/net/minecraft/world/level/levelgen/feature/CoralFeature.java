@@ -5,7 +5,6 @@ import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
@@ -28,7 +27,7 @@ public abstract class CoralFeature extends Feature<NoneFeatureConfiguration> {
       RandomSource var2 = var1.random();
       WorldGenLevel var3 = var1.level();
       BlockPos var4 = var1.origin();
-      Optional var5 = BuiltInRegistries.BLOCK.getTag(BlockTags.CORAL_BLOCKS).flatMap(var1x -> var1x.getRandomElement(var2)).map(Holder::value);
+      Optional var5 = BuiltInRegistries.BLOCK.getRandomElementOf(BlockTags.CORAL_BLOCKS, var2).map(Holder::value);
       return var5.isEmpty() ? false : this.placeFeature(var3, var2, var4, ((Block)var5.get()).defaultBlockState());
    }
 
@@ -41,8 +40,7 @@ public abstract class CoralFeature extends Feature<NoneFeatureConfiguration> {
          var1.setBlock(var3, var4, 3);
          if (var2.nextFloat() < 0.25F) {
             BuiltInRegistries.BLOCK
-               .getTag(BlockTags.CORALS)
-               .flatMap(var1x -> var1x.getRandomElement(var2))
+               .getRandomElementOf(BlockTags.CORALS, var2)
                .map(Holder::value)
                .ifPresent(var2x -> var1.setBlock(var5, var2x.defaultBlockState(), 2));
          } else if (var2.nextFloat() < 0.05F) {
@@ -53,7 +51,7 @@ public abstract class CoralFeature extends Feature<NoneFeatureConfiguration> {
             if (var2.nextFloat() < 0.2F) {
                BlockPos var9 = var3.relative(var8);
                if (var1.getBlockState(var9).is(Blocks.WATER)) {
-                  BuiltInRegistries.BLOCK.getTag(BlockTags.WALL_CORALS).flatMap(var1x -> var1x.getRandomElement(var2)).map(Holder::value).ifPresent(var3x -> {
+                  BuiltInRegistries.BLOCK.getRandomElementOf(BlockTags.WALL_CORALS, var2).map(Holder::value).ifPresent(var3x -> {
                      BlockState var4xx = var3x.defaultBlockState();
                      if (var4xx.hasProperty(BaseCoralWallFanBlock.FACING)) {
                         var4xx = var4xx.setValue(BaseCoralWallFanBlock.FACING, var8);

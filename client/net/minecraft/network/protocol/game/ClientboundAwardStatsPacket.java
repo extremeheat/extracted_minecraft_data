@@ -2,48 +2,33 @@ package net.minecraft.network.protocol.game;
 
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import java.util.Map;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.stats.Stat;
-import net.minecraft.stats.StatType;
 
-public class ClientboundAwardStatsPacket implements Packet<ClientGamePacketListener> {
+public record ClientboundAwardStatsPacket(Object2IntMap<Stat<?>> b) implements Packet<ClientGamePacketListener> {
    private final Object2IntMap<Stat<?>> stats;
+   private static final StreamCodec<RegistryFriendlyByteBuf, Object2IntMap<Stat<?>>> STAT_VALUES_STREAM_CODEC = ByteBufCodecs.map(
+      Object2IntOpenHashMap::new, Stat.STREAM_CODEC, ByteBufCodecs.VAR_INT
+   );
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundAwardStatsPacket> STREAM_CODEC = STAT_VALUES_STREAM_CODEC.map(
+      ClientboundAwardStatsPacket::new, ClientboundAwardStatsPacket::stats
+   );
 
    public ClientboundAwardStatsPacket(Object2IntMap<Stat<?>> var1) {
       super();
       this.stats = var1;
    }
 
-   public ClientboundAwardStatsPacket(FriendlyByteBuf var1) {
-      super();
-      this.stats = var1.readMap(Object2IntOpenHashMap::new, var1x -> {
-         StatType var2 = var1x.readById(BuiltInRegistries.STAT_TYPE);
-         return readStatCap(var1, var2);
-      }, FriendlyByteBuf::readVarInt);
-   }
-
-   private static <T> Stat<T> readStatCap(FriendlyByteBuf var0, StatType<T> var1) {
-      return var1.get(var0.readById(var1.getRegistry()));
+   @Override
+   public PacketType<ClientboundAwardStatsPacket> type() {
+      return GamePacketTypes.CLIENTBOUND_AWARD_STATS;
    }
 
    public void handle(ClientGamePacketListener var1) {
       var1.handleAwardStats(this);
-   }
-
-   @Override
-   public void write(FriendlyByteBuf var1) {
-      var1.writeMap(this.stats, ClientboundAwardStatsPacket::writeStatCap, FriendlyByteBuf::writeVarInt);
-   }
-
-   private static <T> void writeStatCap(FriendlyByteBuf var0, Stat<T> var1) {
-      var0.writeId(BuiltInRegistries.STAT_TYPE, var1.getType());
-      var0.writeId(var1.getType().getRegistry(), (T)var1.getValue());
-   }
-
-   public Map<Stat<?>, Integer> getStats() {
-      return this.stats;
    }
 }

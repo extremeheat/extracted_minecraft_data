@@ -34,8 +34,8 @@ public record LightningBoltPredicate(MinMaxBounds.Ints c, Optional<EntityPredica
    }
 
    @Override
-   public EntitySubPredicate.Type type() {
-      return EntitySubPredicate.Types.LIGHTNING;
+   public MapCodec<LightningBoltPredicate> codec() {
+      return EntitySubPredicates.LIGHTNING;
    }
 
    @Override
@@ -45,7 +45,7 @@ public record LightningBoltPredicate(MinMaxBounds.Ints c, Optional<EntityPredica
       } else {
          LightningBolt var4 = (LightningBolt)var1;
          return this.blocksSetOnFire.matches(var4.getBlocksSetOnFire())
-            && (this.entityStruck.isEmpty() || var4.getHitEntities().anyMatch(var3x -> this.entityStruck.get().matches(var2, var3, var3x)));
+            && (this.entityStruck.isEmpty() || var4.getHitEntities().anyMatch(var3x -> ((EntityPredicate)this.entityStruck.get()).matches(var2, var3, var3x)));
       }
    }
 }

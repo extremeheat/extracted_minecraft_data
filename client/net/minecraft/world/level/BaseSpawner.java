@@ -110,26 +110,25 @@ public abstract class BaseSpawner {
                         continue;
                      }
 
-                     SpawnData.CustomSpawnRules var18 = var5.getCustomSpawnRules().get();
-                     if (!var18.blockLightLimit().isValueInRange(var1.getBrightness(LightLayer.BLOCK, var17))
-                        || !var18.skyLightLimit().isValueInRange(var1.getBrightness(LightLayer.SKY, var17))) {
+                     SpawnData.CustomSpawnRules var18 = (SpawnData.CustomSpawnRules)var5.getCustomSpawnRules().get();
+                     if (!var18.isValidPosition(var17, var1)) {
                         continue;
                      }
                   } else if (!SpawnPlacements.checkSpawnRules((EntityType)var8.get(), var1, MobSpawnType.SPAWNER, var17, var1.getRandom())) {
                      continue;
                   }
 
-                  Entity var21 = EntityType.loadEntityRecursive(var7, var1, var6x -> {
+                  Entity var22 = EntityType.loadEntityRecursive(var7, var1, var6x -> {
                      var6x.moveTo(var11, var13, var15, var6x.getYRot(), var6x.getXRot());
                      return var6x;
                   });
-                  if (var21 == null) {
+                  if (var22 == null) {
                      this.delay(var1, var2);
                      return;
                   }
 
                   int var19 = var1.getEntities(
-                        EntityTypeTest.forExactClass(var21.getClass()),
+                        EntityTypeTest.forExactClass(var22.getClass()),
                         new AABB(
                               (double)var2.getX(),
                               (double)var2.getY(),
@@ -147,26 +146,27 @@ public abstract class BaseSpawner {
                      return;
                   }
 
-                  var21.moveTo(var21.getX(), var21.getY(), var21.getZ(), var4.nextFloat() * 360.0F, 0.0F);
-                  if (var21 instanceof Mob var20) {
+                  var22.moveTo(var22.getX(), var22.getY(), var22.getZ(), var4.nextFloat() * 360.0F, 0.0F);
+                  if (var22 instanceof Mob var20) {
                      if (var5.getCustomSpawnRules().isEmpty() && !var20.checkSpawnRules(var1, MobSpawnType.SPAWNER) || !var20.checkSpawnObstruction(var1)) {
                         continue;
                      }
 
-                     if (var5.getEntityToSpawn().size() == 1 && var5.getEntityToSpawn().contains("id", 8)) {
-                        ((Mob)var21).finalizeSpawn(var1, var1.getCurrentDifficultyAt(var21.blockPosition()), MobSpawnType.SPAWNER, null, null);
+                     boolean var21 = var5.getEntityToSpawn().size() == 1 && var5.getEntityToSpawn().contains("id", 8);
+                     if (var21) {
+                        ((Mob)var22).finalizeSpawn(var1, var1.getCurrentDifficultyAt(var22.blockPosition()), MobSpawnType.SPAWNER, null);
                      }
                   }
 
-                  if (!var1.tryAddFreshEntityWithPassengers(var21)) {
+                  if (!var1.tryAddFreshEntityWithPassengers(var22)) {
                      this.delay(var1, var2);
                      return;
                   }
 
                   var1.levelEvent(2004, var2, 0);
-                  var1.gameEvent(var21, GameEvent.ENTITY_PLACE, var17);
-                  if (var21 instanceof Mob) {
-                     ((Mob)var21).spawnAnim();
+                  var1.gameEvent(var22, GameEvent.ENTITY_PLACE, var17);
+                  if (var22 instanceof Mob) {
+                     ((Mob)var22).spawnAnim();
                   }
 
                   var3 = true;
@@ -188,7 +188,7 @@ public abstract class BaseSpawner {
          this.spawnDelay = this.minSpawnDelay + var3.nextInt(this.maxSpawnDelay - this.minSpawnDelay);
       }
 
-      this.spawnPotentials.getRandom(var3).ifPresent(var3x -> this.setNextSpawnData(var1, var2, var3x.getData()));
+      this.spawnPotentials.getRandom(var3).ifPresent(var3x -> this.setNextSpawnData(var1, var2, (SpawnData)var3x.getData()));
       this.broadcastEvent(var1, var2, 1);
    }
 
@@ -196,7 +196,7 @@ public abstract class BaseSpawner {
       this.spawnDelay = var3.getShort("Delay");
       boolean var4 = var3.contains("SpawnData", 10);
       if (var4) {
-         SpawnData var5 = SpawnData.CODEC
+         SpawnData var5 = (SpawnData)SpawnData.CODEC
             .parse(NbtOps.INSTANCE, var3.getCompound("SpawnData"))
             .resultOrPartial(var0 -> LOGGER.warn("Invalid SpawnData: {}", var0))
             .orElseGet(SpawnData::new);
@@ -287,7 +287,7 @@ public abstract class BaseSpawner {
       if (this.nextSpawnData != null) {
          return this.nextSpawnData;
       } else {
-         this.setNextSpawnData(var1, var3, this.spawnPotentials.getRandom(var2).map(WeightedEntry.Wrapper::getData).orElseGet(SpawnData::new));
+         this.setNextSpawnData(var1, var3, (SpawnData)this.spawnPotentials.getRandom(var2).map(WeightedEntry.Wrapper::getData).orElseGet(SpawnData::new));
          return this.nextSpawnData;
       }
    }

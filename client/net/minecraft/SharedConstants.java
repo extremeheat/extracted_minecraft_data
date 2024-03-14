@@ -13,24 +13,24 @@ import net.minecraft.world.level.ChunkPos;
 
 public class SharedConstants {
    @Deprecated
-   public static final boolean SNAPSHOT = false;
+   public static final boolean SNAPSHOT = true;
    @Deprecated
-   public static final int WORLD_VERSION = 3700;
+   public static final int WORLD_VERSION = 3823;
    @Deprecated
    public static final String SERIES = "main";
    @Deprecated
-   public static final String VERSION_STRING = "1.20.4";
+   public static final String VERSION_STRING = "24w11a";
    @Deprecated
-   public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 765;
+   public static final int RELEASE_NETWORK_PROTOCOL_VERSION = 766;
    @Deprecated
-   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 169;
-   public static final int SNBT_NAG_VERSION = 3678;
+   public static final int SNAPSHOT_NETWORK_PROTOCOL_VERSION = 180;
+   public static final int SNBT_NAG_VERSION = 3798;
    private static final int SNAPSHOT_PROTOCOL_BIT = 30;
-   public static final boolean THROW_ON_TASK_FAILURE = false;
+   public static final boolean THROW_ON_TASK_FAILURE = true;
    @Deprecated
-   public static final int RESOURCE_PACK_FORMAT = 22;
+   public static final int RESOURCE_PACK_FORMAT = 29;
    @Deprecated
-   public static final int DATA_PACK_FORMAT = 26;
+   public static final int DATA_PACK_FORMAT = 35;
    @Deprecated
    public static final int LANGUAGE_FORMAT = 1;
    public static final int REPORT_FORMAT_VERSION = 1;
@@ -77,7 +77,6 @@ public class SharedConstants {
    public static final boolean DEBUG_KEEP_JIGSAW_BLOCKS_DURING_STRUCTURE_GEN = false;
    public static final boolean DEBUG_DONT_SAVE_WORLD = false;
    public static final boolean DEBUG_LARGE_DRIPSTONE = false;
-   public static final boolean DEBUG_PACKET_SERIALIZATION = false;
    public static final boolean DEBUG_CARVERS = false;
    public static final boolean DEBUG_ORE_VEINS = false;
    public static final boolean DEBUG_SCULK_CATALYST = false;
@@ -87,9 +86,9 @@ public class SharedConstants {
    public static final boolean DEBUG_UNLOCK_ALL_TRADES = false;
    public static final boolean DEBUG_BREEZE_MOB = false;
    public static final boolean DEBUG_TRIAL_SPAWNER_DETECTS_SHEEP_AS_PLAYERS = false;
+   public static final boolean DEBUG_VAULT_DETECTS_SHEEP_AS_PLAYERS = false;
    public static final boolean DEBUG_FORCE_ONBOARDING_SCREEN = false;
    public static final boolean DEBUG_IGNORE_LOCAL_MOB_CAP = false;
-   public static final boolean DEBUG_SMALL_SPAWN = false;
    public static final boolean DEBUG_DISABLE_LIQUID_SPREADING = false;
    public static final boolean DEBUG_AQUIFERS = false;
    public static final boolean DEBUG_JFR_PROFILING_ENABLE_LEVEL_LOADING = false;
@@ -120,13 +119,17 @@ public class SharedConstants {
    public static final boolean DEBUG_FORCE_TELEMETRY = false;
    public static final boolean DEBUG_DONT_SEND_TELEMETRY_TO_BACKEND = false;
    public static final long MAXIMUM_TICK_TIME_NANOS = Duration.ofMillis(300L).toNanos();
+   public static final float MAXIMUM_BLOCK_EXPLOSION_RESISTANCE = 3600000.0F;
    public static final boolean USE_WORKFLOWS_HOOKS = false;
+   public static final boolean USE_DEVONLY = false;
    public static boolean CHECK_DATA_FIXER_SCHEMA = true;
    public static boolean IS_RUNNING_IN_IDE;
    public static Set<TypeReference> DATA_FIX_TYPES_TO_OPTIMIZE = Set.of();
    public static final int WORLD_RESOLUTION = 16;
    public static final int MAX_CHAT_LENGTH = 256;
-   public static final int MAX_COMMAND_LENGTH = 32500;
+   public static final int MAX_USER_INPUT_COMMAND_LENGTH = 32500;
+   public static final int MAX_FUNCTION_COMMAND_LENGTH = 2000000;
+   public static final int MAX_PLAYER_NAME_LENGTH = 16;
    public static final int MAX_CHAINED_NEIGHBOR_UPDATES = 1000000;
    public static final int MAX_RENDER_DISTANCE = 32;
    public static final char[] ILLEGAL_FILE_CHARACTERS = new char[]{'/', '\n', '\r', '\t', '\u0000', '\f', '`', '?', '*', '\\', '<', '>', '|', '"', ':'};
@@ -143,28 +146,6 @@ public class SharedConstants {
 
    public SharedConstants() {
       super();
-   }
-
-   public static boolean isAllowedChatCharacter(char var0) {
-      return var0 != 167 && var0 >= ' ' && var0 != 127;
-   }
-
-   public static String filterText(String var0) {
-      return filterText(var0, false);
-   }
-
-   public static String filterText(String var0, boolean var1) {
-      StringBuilder var2 = new StringBuilder();
-
-      for(char var6 : var0.toCharArray()) {
-         if (isAllowedChatCharacter(var6)) {
-            var2.append(var6);
-         } else if (var1 && var6 == '\n') {
-            var2.append(var6);
-         }
-      }
-
-      return var2.toString();
    }
 
    public static void setVersion(WorldVersion var0) {
@@ -190,7 +171,7 @@ public class SharedConstants {
    }
 
    public static int getProtocolVersion() {
-      return 765;
+      return 1073742004;
    }
 
    public static boolean debugVoidTerrain(ChunkPos var0) {

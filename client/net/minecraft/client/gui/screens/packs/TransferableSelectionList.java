@@ -30,7 +30,7 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
    final PackSelectionScreen screen;
 
    public TransferableSelectionList(Minecraft var1, PackSelectionScreen var2, int var3, int var4, Component var5) {
-      super(var1, var3, var4 - 83, 32, 36);
+      super(var1, var3, var4, 33, 36);
       this.screen = var2;
       this.title = var5;
       this.centerListVertically = false;
@@ -40,7 +40,7 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
    @Override
    protected void renderHeader(GuiGraphics var1, int var2, int var3) {
       MutableComponent var4 = Component.empty().append(this.title).withStyle(ChatFormatting.UNDERLINE, ChatFormatting.BOLD);
-      var1.drawString(this.minecraft.font, var4, var2 + this.width / 2 - this.minecraft.font.width(var4) / 2, Math.min(this.getY() + 3, var3), 16777215, false);
+      var1.drawString(this.minecraft.font, var4, var2 + this.width / 2 - this.minecraft.font.width(var4) / 2, Math.min(this.getY() + 3, var3), -1, false);
    }
 
    @Override
@@ -51,6 +51,21 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
    @Override
    protected int getScrollbarPosition() {
       return this.getRight() - 6;
+   }
+
+   @Override
+   protected void renderSelection(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6) {
+      if (this.scrollbarVisible()) {
+         boolean var7 = true;
+         int var8 = this.getRowLeft() - 2;
+         int var9 = this.getRight() - 6 - 1;
+         int var10 = var2 - 2;
+         int var11 = var2 + var4 + 2;
+         var1.fill(var8, var10, var9, var11, var5);
+         var1.fill(var8 + 1, var10 + 1, var9 - 1, var11 - 1, var6);
+      } else {
+         super.renderSelection(var1, var2, var3, var4, var5, var6);
+      }
    }
 
    @Override
@@ -248,7 +263,7 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
             }
          }
 
-         return false;
+         return super.mouseClicked(var1, var3, var5);
       }
    }
 }

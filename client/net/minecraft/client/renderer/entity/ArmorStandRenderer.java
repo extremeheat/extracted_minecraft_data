@@ -37,11 +37,11 @@ public class ArmorStandRenderer extends LivingEntityRenderer<ArmorStand, ArmorSt
       return DEFAULT_SKIN_LOCATION;
    }
 
-   protected void setupRotations(ArmorStand var1, PoseStack var2, float var3, float var4, float var5) {
+   protected void setupRotations(ArmorStand var1, PoseStack var2, float var3, float var4, float var5, float var6) {
       var2.mulPose(Axis.YP.rotationDegrees(180.0F - var4));
-      float var6 = (float)(var1.level().getGameTime() - var1.lastHit) + var5;
-      if (var6 < 5.0F) {
-         var2.mulPose(Axis.YP.rotationDegrees(Mth.sin(var6 / 1.5F * 3.1415927F) * 3.0F));
+      float var7 = (float)(var1.level().getGameTime() - var1.lastHit) + var5;
+      if (var7 < 5.0F) {
+         var2.mulPose(Axis.YP.rotationDegrees(Mth.sin(var7 / 1.5F * 3.1415927F) * 3.0F));
       }
    }
 

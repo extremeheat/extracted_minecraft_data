@@ -4,7 +4,7 @@ import java.util.List;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.placement.PlacementUtils;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -22,7 +22,7 @@ public class FeatureUtils {
       super();
    }
 
-   public static void bootstrap(BootstapContext<ConfiguredFeature<?, ?>> var0) {
+   public static void bootstrap(BootstrapContext<ConfiguredFeature<?, ?>> var0) {
       AquaticFeatures.bootstrap(var0);
       CaveFeatures.bootstrap(var0);
       EndFeatures.bootstrap(var0);
@@ -68,14 +68,14 @@ public class FeatureUtils {
    }
 
    public static void register(
-      BootstapContext<ConfiguredFeature<?, ?>> var0, ResourceKey<ConfiguredFeature<?, ?>> var1, Feature<NoneFeatureConfiguration> var2
+      BootstrapContext<ConfiguredFeature<?, ?>> var0, ResourceKey<ConfiguredFeature<?, ?>> var1, Feature<NoneFeatureConfiguration> var2
    ) {
       register(var0, var1, var2, FeatureConfiguration.NONE);
    }
 
    public static <FC extends FeatureConfiguration, F extends Feature<FC>> void register(
-      BootstapContext<ConfiguredFeature<?, ?>> var0, ResourceKey<ConfiguredFeature<?, ?>> var1, F var2, FC var3
+      BootstrapContext<ConfiguredFeature<?, ?>> var0, ResourceKey<ConfiguredFeature<?, ?>> var1, F var2, FC var3
    ) {
-      var0.register(var1, new ConfiguredFeature<>((F)var2, var3));
+      var0.register(var1, new ConfiguredFeature((F)var2, var3));
    }
 }

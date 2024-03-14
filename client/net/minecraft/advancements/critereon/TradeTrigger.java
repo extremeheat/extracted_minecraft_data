@@ -61,7 +61,7 @@ public class TradeTrigger extends SimpleCriterionTrigger<TradeTrigger.TriggerIns
          if (this.villager.isPresent() && !this.villager.get().matches(var1)) {
             return false;
          } else {
-            return !this.item.isPresent() || this.item.get().matches(var2);
+            return !this.item.isPresent() || ((ItemPredicate)this.item.get()).matches(var2);
          }
       }
 

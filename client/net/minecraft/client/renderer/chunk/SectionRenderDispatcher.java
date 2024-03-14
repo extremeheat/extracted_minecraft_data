@@ -53,7 +53,7 @@ import net.minecraft.util.thread.ProcessorMailbox;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.ChunkStatus;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -270,9 +270,7 @@ public class SectionRenderDispatcher {
    public class RenderSection {
       public static final int SIZE = 16;
       public final int index;
-      public final AtomicReference<SectionRenderDispatcher.CompiledSection> compiled = new AtomicReference<>(
-         SectionRenderDispatcher.CompiledSection.UNCOMPILED
-      );
+      public final AtomicReference<SectionRenderDispatcher.CompiledSection> compiled = new AtomicReference<>(SectionRenderDispatcher.CompiledSection.UNCOMPILED);
       final AtomicInteger initialCompilationCancelCount = new AtomicInteger(0);
       @Nullable
       private SectionRenderDispatcher.RenderSection.RebuildTask lastRebuildTask;

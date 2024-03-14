@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -15,7 +16,6 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
@@ -72,8 +72,8 @@ public class Evoker extends SpellcasterIllager {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
    }
 
    @Override
@@ -104,12 +104,8 @@ public class Evoker extends SpellcasterIllager {
          return true;
       } else if (super.isAlliedTo(var1)) {
          return true;
-      } else if (var1 instanceof Vex) {
-         return this.isAlliedTo(((Vex)var1).getOwner());
-      } else if (var1 instanceof LivingEntity && ((LivingEntity)var1).getMobType() == MobType.ILLAGER) {
-         return this.getTeam() == null && var1.getTeam() == null;
       } else {
-         return false;
+         return var1 instanceof Vex var2 ? this.isAlliedTo(var2.getOwner()) : false;
       }
    }
 
@@ -258,9 +254,7 @@ public class Evoker extends SpellcasterIllager {
          if (!super.canUse()) {
             return false;
          } else {
-            int var1 = Evoker.this.level()
-               .getNearbyEntities(Vex.class, this.vexCountTargeting, Evoker.this, Evoker.this.getBoundingBox().inflate(16.0))
-               .size();
+            int var1 = Evoker.this.level().getNearbyEntities(Vex.class, this.vexCountTargeting, Evoker.this, Evoker.this.getBoundingBox().inflate(16.0)).size();
             return Evoker.this.random.nextInt(8) + 1 > var1;
          }
       }
@@ -285,7 +279,7 @@ public class Evoker extends SpellcasterIllager {
             Vex var5 = EntityType.VEX.create(Evoker.this.level());
             if (var5 != null) {
                var5.moveTo(var4, 0.0F, 0.0F);
-               var5.finalizeSpawn(var1, Evoker.this.level().getCurrentDifficultyAt(var4), MobSpawnType.MOB_SUMMONED, null, null);
+               var5.finalizeSpawn(var1, Evoker.this.level().getCurrentDifficultyAt(var4), MobSpawnType.MOB_SUMMONED, null);
                var5.setOwner(Evoker.this);
                var5.setBoundOrigin(var4);
                var5.setLimitedLife(20 * (30 + Evoker.this.random.nextInt(90)));

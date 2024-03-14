@@ -5,9 +5,6 @@ import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.collect.UnmodifiableIterator;
-import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.properties.Property;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
@@ -24,7 +21,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.SharedConstants;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
@@ -39,6 +35,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.StateHolder;
+import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.material.FluidState;
 import org.slf4j.Logger;
 
@@ -64,72 +61,6 @@ public final class NbtUtils {
       super();
    }
 
-   @Nullable
-   public static GameProfile readGameProfile(CompoundTag var0) {
-      UUID var1 = var0.hasUUID("Id") ? var0.getUUID("Id") : Util.NIL_UUID;
-      String var2 = var0.getString("Name");
-
-      try {
-         GameProfile var3 = new GameProfile(var1, var2);
-         if (var0.contains("Properties", 10)) {
-            CompoundTag var4 = var0.getCompound("Properties");
-
-            for(String var6 : var4.getAllKeys()) {
-               ListTag var7 = var4.getList(var6, 10);
-
-               for(int var8 = 0; var8 < var7.size(); ++var8) {
-                  CompoundTag var9 = var7.getCompound(var8);
-                  String var10 = var9.getString("Value");
-                  if (var9.contains("Signature", 8)) {
-                     var3.getProperties().put(var6, new Property(var6, var10, var9.getString("Signature")));
-                  } else {
-                     var3.getProperties().put(var6, new Property(var6, var10));
-                  }
-               }
-            }
-         }
-
-         return var3;
-      } catch (Throwable var11) {
-         return null;
-      }
-   }
-
-   public static CompoundTag writeGameProfile(CompoundTag var0, GameProfile var1) {
-      if (!var1.getName().isEmpty()) {
-         var0.putString("Name", var1.getName());
-      }
-
-      if (!var1.getId().equals(Util.NIL_UUID)) {
-         var0.putUUID("Id", var1.getId());
-      }
-
-      if (!var1.getProperties().isEmpty()) {
-         CompoundTag var2 = new CompoundTag();
-
-         for(String var4 : var1.getProperties().keySet()) {
-            ListTag var5 = new ListTag();
-
-            for(Property var7 : var1.getProperties().get(var4)) {
-               CompoundTag var8 = new CompoundTag();
-               var8.putString("Value", var7.value());
-               String var9 = var7.signature();
-               if (var9 != null) {
-                  var8.putString("Signature", var9);
-               }
-
-               var5.add(var8);
-            }
-
-            var2.put(var4, var5);
-         }
-
-         var0.put("Properties", var2);
-      }
-
-      return var0;
-   }
-
    // $VF: Could not properly define all variable types!
    // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @VisibleForTesting
@@ -144,20 +75,27 @@ public final class NbtUtils {
          return false;
       } else if (var0 instanceof CompoundTag var3) {
          CompoundTag var11 = (CompoundTag)var1;
-
-         for(String var13 : var3.getAllKeys()) {
-            Tag var14 = var3.get(var13);
-            if (!compareNbt(var14, var11.get(var13), var2)) {
-               return false;
+         if (var11.size() < var3.size()) {
+            return false;
+         } else {
+            for(String var13 : var3.getAllKeys()) {
+               Tag var14 = var3.get(var13);
+               if (!compareNbt(var14, var11.get(var13), var2)) {
+                  return false;
+               }
             }
-         }
 
-         return true;
+            return true;
+         }
       } else {
          if (var0 instanceof ListTag var4 && var2) {
             ListTag var5 = (ListTag)var1;
             if (var4.isEmpty()) {
                return var5.isEmpty();
+            }
+
+            if (var5.size() < var4.size()) {
+               return false;
             }
 
             for(Tag var7 : var4) {
@@ -199,16 +137,13 @@ public final class NbtUtils {
       }
    }
 
-   public static BlockPos readBlockPos(CompoundTag var0) {
-      return new BlockPos(var0.getInt("X"), var0.getInt("Y"), var0.getInt("Z"));
+   public static Optional<BlockPos> readBlockPos(CompoundTag var0, String var1) {
+      int[] var2 = var0.getIntArray(var1);
+      return var2.length == 3 ? Optional.of(new BlockPos(var2[0], var2[1], var2[2])) : Optional.empty();
    }
 
-   public static CompoundTag writeBlockPos(BlockPos var0) {
-      CompoundTag var1 = new CompoundTag();
-      var1.putInt("X", var0.getX());
-      var1.putInt("Y", var0.getY());
-      var1.putInt("Z", var0.getZ());
-      return var1;
+   public static Tag writeBlockPos(BlockPos var0) {
+      return new IntArrayTag(new int[]{var0.getX(), var0.getY(), var0.getZ()});
    }
 
    public static BlockState readBlockState(HolderGetter<Block> var0, CompoundTag var1) {
@@ -227,7 +162,7 @@ public final class NbtUtils {
                StateDefinition var7 = var4.getStateDefinition();
 
                for(String var9 : var6.getAllKeys()) {
-                  net.minecraft.world.level.block.state.properties.Property var10 = var7.getProperty(var9);
+                  Property var10 = var7.getProperty(var9);
                   if (var10 != null) {
                      var5 = setValueHelper(var5, var10, var9, var6, var1);
                   }
@@ -240,7 +175,7 @@ public final class NbtUtils {
    }
 
    private static <S extends StateHolder<?, S>, T extends Comparable<T>> S setValueHelper(
-      S var0, net.minecraft.world.level.block.state.properties.Property<T> var1, String var2, CompoundTag var3, CompoundTag var4
+      S var0, Property<T> var1, String var2, CompoundTag var3, CompoundTag var4
    ) {
       Optional var5 = var1.getValue(var3.getString(var2));
       if (var5.isPresent()) {
@@ -254,14 +189,12 @@ public final class NbtUtils {
    public static CompoundTag writeBlockState(BlockState var0) {
       CompoundTag var1 = new CompoundTag();
       var1.putString("Name", BuiltInRegistries.BLOCK.getKey(var0.getBlock()).toString());
-      ImmutableMap var2 = var0.getValues();
+      Map var2 = var0.getValues();
       if (!var2.isEmpty()) {
          CompoundTag var3 = new CompoundTag();
-         UnmodifiableIterator var4 = var2.entrySet().iterator();
 
-         while(var4.hasNext()) {
-            Entry var5 = (Entry)var4.next();
-            net.minecraft.world.level.block.state.properties.Property var6 = (net.minecraft.world.level.block.state.properties.Property)var5.getKey();
+         for(Entry var5 : var2.entrySet()) {
+            Property var6 = (Property)var5.getKey();
             var3.putString(var6.getName(), getName(var6, (Comparable<?>)var5.getValue()));
          }
 
@@ -274,14 +207,12 @@ public final class NbtUtils {
    public static CompoundTag writeFluidState(FluidState var0) {
       CompoundTag var1 = new CompoundTag();
       var1.putString("Name", BuiltInRegistries.FLUID.getKey(var0.getType()).toString());
-      ImmutableMap var2 = var0.getValues();
+      Map var2 = var0.getValues();
       if (!var2.isEmpty()) {
          CompoundTag var3 = new CompoundTag();
-         UnmodifiableIterator var4 = var2.entrySet().iterator();
 
-         while(var4.hasNext()) {
-            Entry var5 = (Entry)var4.next();
-            net.minecraft.world.level.block.state.properties.Property var6 = (net.minecraft.world.level.block.state.properties.Property)var5.getKey();
+         for(Entry var5 : var2.entrySet()) {
+            Property var6 = (Property)var5.getKey();
             var3.putString(var6.getName(), getName(var6, (Comparable<?>)var5.getValue()));
          }
 
@@ -291,7 +222,7 @@ public final class NbtUtils {
       return var1;
    }
 
-   private static <T extends Comparable<T>> String getName(net.minecraft.world.level.block.state.properties.Property<T> var0, Comparable<?> var1) {
+   private static <T extends Comparable<T>> String getName(Property<T> var0, Comparable<?> var1) {
       return var0.getName((T)var1);
    }
 

@@ -64,7 +64,7 @@ public class ServerFunctionManager {
       var3.push(() -> "function " + var1.id());
 
       try {
-         InstantiatedFunction var4 = var1.instantiate(null, this.getDispatcher(), var2);
+         InstantiatedFunction var4 = var1.instantiate(null, this.getDispatcher());
          Commands.executeCommandInContext(var2, var2x -> ExecutionContext.queueInitialFunctionCall(var2x, var4, var2, CommandResultCallback.EMPTY));
       } catch (FunctionInstantiationException var9) {
       } catch (Exception var10) {

@@ -210,9 +210,7 @@ public class BlockModel implements UnbakedModel {
                if (var13.cullForDirection == null) {
                   var8.addUnculledFace(bakeFace(var10, var13, var14, var12, var4, var5));
                } else {
-                  var8.addCulledFace(
-                     Direction.rotate(var4.getRotation().getMatrix(), var13.cullForDirection), bakeFace(var10, var13, var14, var12, var4, var5)
-                  );
+                  var8.addCulledFace(Direction.rotate(var4.getRotation().getMatrix(), var13.cullForDirection), bakeFace(var10, var13, var14, var12, var4, var5));
                }
             }
          }

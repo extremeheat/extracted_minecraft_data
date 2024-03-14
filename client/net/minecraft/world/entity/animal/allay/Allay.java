@@ -3,12 +3,15 @@ package net.minecraft.world.entity.animal.allay;
 import com.google.common.collect.ImmutableList;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.GlobalPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Vec3i;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
@@ -29,13 +32,11 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.PathfinderMob;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -52,6 +53,7 @@ import net.minecraft.world.entity.npc.InventoryCarrier;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.GameRules;
@@ -121,7 +123,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
       this.vibrationData = new VibrationSystem.Data();
       this.dynamicVibrationListener = new DynamicGameEventListener<>(new VibrationSystem.Listener(this));
       this.dynamicJukeboxListener = new DynamicGameEventListener<>(
-         new Allay.JukeboxListener(this.vibrationUser.getPositionSource(), GameEvent.JUKEBOX_PLAY.getNotificationRadius())
+         new Allay.JukeboxListener(this.vibrationUser.getPositionSource(), ((GameEvent)GameEvent.JUKEBOX_PLAY.value()).notificationRadius())
       );
    }
 
@@ -159,10 +161,10 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_DANCING, false);
-      this.entityData.define(DATA_CAN_DUPLICATE, true);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_DANCING, false);
+      var1.define(DATA_CAN_DUPLICATE, true);
    }
 
    @Override
@@ -184,11 +186,6 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
       }
 
       this.calculateEntityAnimation(false);
-   }
-
-   @Override
-   protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
-      return var2.height * 0.6F;
    }
 
    @Override
@@ -380,21 +377,9 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    }
 
    private boolean hasNonMatchingPotion(ItemStack var1, ItemStack var2) {
-      CompoundTag var3 = var1.getTag();
-      boolean var4 = var3 != null && var3.contains("Potion");
-      if (!var4) {
-         return false;
-      } else {
-         CompoundTag var5 = var2.getTag();
-         boolean var6 = var5 != null && var5.contains("Potion");
-         if (!var6) {
-            return true;
-         } else {
-            Tag var7 = var3.get("Potion");
-            Tag var8 = var5.get("Potion");
-            return var7 != null && var8 != null && !var7.equals(var8);
-         }
-      }
+      PotionContents var3 = var1.get(DataComponents.POTION_CONTENTS);
+      PotionContents var4 = var2.get(DataComponents.POTION_CONTENTS);
+      return !Objects.equals(var3, var4);
    }
 
    @Override
@@ -434,7 +419,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
 
    private boolean shouldStopDancing() {
       return this.jukeboxPos == null
-         || !this.jukeboxPos.closerToCenterThan(this.position(), (double)GameEvent.JUKEBOX_PLAY.getNotificationRadius())
+         || !this.jukeboxPos.closerToCenterThan(this.position(), (double)((GameEvent)GameEvent.JUKEBOX_PLAY.value()).notificationRadius())
          || !this.level().getBlockState(this.jukeboxPos).is(Blocks.JUKEBOX);
    }
 
@@ -475,7 +460,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      this.writeInventoryToTag(var1);
+      this.writeInventoryToTag(var1, this.registryAccess());
       VibrationSystem.Data.CODEC
          .encodeStart(NbtOps.INSTANCE, this.vibrationData)
          .resultOrPartial(LOGGER::error)
@@ -487,7 +472,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      this.readInventoryFromTag(var1);
+      this.readInventoryFromTag(var1, this.registryAccess());
       if (var1.contains("listener", 10)) {
          VibrationSystem.Data.CODEC
             .parse(new Dynamic(NbtOps.INSTANCE, var1.getCompound("listener")))
@@ -539,19 +524,12 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
    }
 
    private void removeInteractionItem(Player var1, ItemStack var2) {
-      if (!var1.getAbilities().instabuild) {
-         var2.shrink(1);
-      }
+      var2.consume(1, var1);
    }
 
    @Override
    public Vec3 getLeashOffset() {
       return new Vec3(0.0, (double)this.getEyeHeight() * 0.6, (double)this.getBbWidth() * 0.1);
-   }
-
-   @Override
-   protected float ridingOffset(Entity var1) {
-      return 0.04F;
    }
 
    @Override
@@ -603,11 +581,11 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
       }
 
       @Override
-      public boolean handleGameEvent(ServerLevel var1, GameEvent var2, GameEvent.Context var3, Vec3 var4) {
-         if (var2 == GameEvent.JUKEBOX_PLAY) {
+      public boolean handleGameEvent(ServerLevel var1, Holder<GameEvent> var2, GameEvent.Context var3, Vec3 var4) {
+         if (var2.is(GameEvent.JUKEBOX_PLAY)) {
             Allay.this.setJukeboxPlaying(BlockPos.containing(var4), true);
             return true;
-         } else if (var2 == GameEvent.JUKEBOX_STOP_PLAY) {
+         } else if (var2.is(GameEvent.JUKEBOX_STOP_PLAY)) {
             Allay.this.setJukeboxPlaying(BlockPos.containing(var4), false);
             return true;
          } else {
@@ -635,7 +613,7 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
       }
 
       @Override
-      public boolean canReceiveVibration(ServerLevel var1, BlockPos var2, GameEvent var3, GameEvent.Context var4) {
+      public boolean canReceiveVibration(ServerLevel var1, BlockPos var2, Holder<GameEvent> var3, GameEvent.Context var4) {
          if (Allay.this.isNoAi()) {
             return false;
          } else {
@@ -650,8 +628,8 @@ public class Allay extends PathfinderMob implements InventoryCarrier, VibrationS
       }
 
       @Override
-      public void onReceiveVibration(ServerLevel var1, BlockPos var2, GameEvent var3, @Nullable Entity var4, @Nullable Entity var5, float var6) {
-         if (var3 == GameEvent.NOTE_BLOCK_PLAY) {
+      public void onReceiveVibration(ServerLevel var1, BlockPos var2, Holder<GameEvent> var3, @Nullable Entity var4, @Nullable Entity var5, float var6) {
+         if (var3.is(GameEvent.NOTE_BLOCK_PLAY)) {
             AllayAi.hearNoteblock(Allay.this, new BlockPos(var2));
          }
       }

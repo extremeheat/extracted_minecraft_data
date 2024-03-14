@@ -16,8 +16,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Guardian;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Matrix3f;
-import org.joml.Matrix4f;
 
 public class GuardianRenderer extends MobRenderer<Guardian, GuardianModel> {
    private static final ResourceLocation GUARDIAN_LOCATION = new ResourceLocation("textures/entity/guardian.png");
@@ -105,38 +103,36 @@ public class GuardianRenderer extends MobRenderer<Guardian, GuardianModel> {
          float var46 = var15 * 2.5F + var45;
          VertexConsumer var47 = var5.getBuffer(BEAM_RENDER_TYPE);
          PoseStack.Pose var48 = var4.last();
-         Matrix4f var49 = var48.pose();
-         Matrix3f var50 = var48.normal();
-         vertex(var47, var49, var50, var34, var15, var35, var21, var22, var23, 0.4999F, var46);
-         vertex(var47, var49, var50, var34, 0.0F, var35, var21, var22, var23, 0.4999F, var45);
-         vertex(var47, var49, var50, var36, 0.0F, var37, var21, var22, var23, 0.0F, var45);
-         vertex(var47, var49, var50, var36, var15, var37, var21, var22, var23, 0.0F, var46);
-         vertex(var47, var49, var50, var38, var15, var39, var21, var22, var23, 0.4999F, var46);
-         vertex(var47, var49, var50, var38, 0.0F, var39, var21, var22, var23, 0.4999F, var45);
-         vertex(var47, var49, var50, var40, 0.0F, var41, var21, var22, var23, 0.0F, var45);
-         vertex(var47, var49, var50, var40, var15, var41, var21, var22, var23, 0.0F, var46);
-         float var51 = 0.0F;
+         vertex(var47, var48, var34, var15, var35, var21, var22, var23, 0.4999F, var46);
+         vertex(var47, var48, var34, 0.0F, var35, var21, var22, var23, 0.4999F, var45);
+         vertex(var47, var48, var36, 0.0F, var37, var21, var22, var23, 0.0F, var45);
+         vertex(var47, var48, var36, var15, var37, var21, var22, var23, 0.0F, var46);
+         vertex(var47, var48, var38, var15, var39, var21, var22, var23, 0.4999F, var46);
+         vertex(var47, var48, var38, 0.0F, var39, var21, var22, var23, 0.4999F, var45);
+         vertex(var47, var48, var40, 0.0F, var41, var21, var22, var23, 0.0F, var45);
+         vertex(var47, var48, var40, var15, var41, var21, var22, var23, 0.0F, var46);
+         float var49 = 0.0F;
          if (var1.tickCount % 2 == 0) {
-            var51 = 0.5F;
+            var49 = 0.5F;
          }
 
-         vertex(var47, var49, var50, var26, var15, var27, var21, var22, var23, 0.5F, var51 + 0.5F);
-         vertex(var47, var49, var50, var28, var15, var29, var21, var22, var23, 1.0F, var51 + 0.5F);
-         vertex(var47, var49, var50, var32, var15, var33, var21, var22, var23, 1.0F, var51);
-         vertex(var47, var49, var50, var30, var15, var31, var21, var22, var23, 0.5F, var51);
+         vertex(var47, var48, var26, var15, var27, var21, var22, var23, 0.5F, var49 + 0.5F);
+         vertex(var47, var48, var28, var15, var29, var21, var22, var23, 1.0F, var49 + 0.5F);
+         vertex(var47, var48, var32, var15, var33, var21, var22, var23, 1.0F, var49);
+         vertex(var47, var48, var30, var15, var31, var21, var22, var23, 0.5F, var49);
          var4.popPose();
       }
    }
 
    private static void vertex(
-      VertexConsumer var0, Matrix4f var1, Matrix3f var2, float var3, float var4, float var5, int var6, int var7, int var8, float var9, float var10
+      VertexConsumer var0, PoseStack.Pose var1, float var2, float var3, float var4, int var5, int var6, int var7, float var8, float var9
    ) {
-      var0.vertex(var1, var3, var4, var5)
-         .color(var6, var7, var8, 255)
-         .uv(var9, var10)
+      var0.vertex(var1, var2, var3, var4)
+         .color(var5, var6, var7, 255)
+         .uv(var8, var9)
          .overlayCoords(OverlayTexture.NO_OVERLAY)
          .uv2(15728880)
-         .normal(var2, 0.0F, 1.0F, 0.0F)
+         .normal(var1, 0.0F, 1.0F, 0.0F)
          .endVertex();
    }
 

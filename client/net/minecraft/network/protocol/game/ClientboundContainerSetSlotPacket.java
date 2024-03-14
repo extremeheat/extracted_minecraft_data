@@ -1,10 +1,15 @@
 package net.minecraft.network.protocol.game;
 
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.item.ItemStack;
 
 public class ClientboundContainerSetSlotPacket implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundContainerSetSlotPacket> STREAM_CODEC = Packet.codec(
+      ClientboundContainerSetSlotPacket::write, ClientboundContainerSetSlotPacket::new
+   );
    public static final int CARRIED_ITEM = -1;
    public static final int PLAYER_INVENTORY = -2;
    private final int containerId;
@@ -20,20 +25,24 @@ public class ClientboundContainerSetSlotPacket implements Packet<ClientGamePacke
       this.itemStack = var4.copy();
    }
 
-   public ClientboundContainerSetSlotPacket(FriendlyByteBuf var1) {
+   private ClientboundContainerSetSlotPacket(RegistryFriendlyByteBuf var1) {
       super();
       this.containerId = var1.readByte();
       this.stateId = var1.readVarInt();
       this.slot = var1.readShort();
-      this.itemStack = var1.readItem();
+      this.itemStack = ItemStack.OPTIONAL_STREAM_CODEC.decode(var1);
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(RegistryFriendlyByteBuf var1) {
       var1.writeByte(this.containerId);
       var1.writeVarInt(this.stateId);
       var1.writeShort(this.slot);
-      var1.writeItem(this.itemStack);
+      ItemStack.OPTIONAL_STREAM_CODEC.encode(var1, this.itemStack);
+   }
+
+   @Override
+   public PacketType<ClientboundContainerSetSlotPacket> type() {
+      return GamePacketTypes.CLIENTBOUND_CONTAINER_SET_SLOT;
    }
 
    public void handle(ClientGamePacketListener var1) {

@@ -43,7 +43,6 @@ import net.minecraft.world.entity.monster.CrossbowAttackMob;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.npc.InventoryCarrier;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ProjectileWeaponItem;
@@ -61,16 +60,15 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
    private static final EntityDataAccessor<Boolean> DATA_IS_DANCING = SynchedEntityData.defineId(Piglin.class, EntityDataSerializers.BOOLEAN);
    private static final UUID SPEED_MODIFIER_BABY_UUID = UUID.fromString("766bfa64-11f3-11ea-8d71-362b9e155667");
    private static final AttributeModifier SPEED_MODIFIER_BABY = new AttributeModifier(
-      SPEED_MODIFIER_BABY_UUID, "Baby speed boost", 0.20000000298023224, AttributeModifier.Operation.MULTIPLY_BASE
+      SPEED_MODIFIER_BABY_UUID, "Baby speed boost", 0.20000000298023224, AttributeModifier.Operation.ADD_MULTIPLIED_BASE
    );
    private static final int MAX_HEALTH = 16;
    private static final float MOVEMENT_SPEED_WHEN_FIGHTING = 0.35F;
    private static final int ATTACK_DAMAGE = 5;
-   private static final float CROSSBOW_POWER = 1.6F;
    private static final float CHANCE_OF_WEARING_EACH_ARMOUR_ITEM = 0.1F;
    private static final int MAX_PASSENGERS_ON_ONE_HOGLIN = 3;
    private static final float PROBABILITY_OF_SPAWNING_AS_BABY = 0.2F;
-   private static final float BABY_EYE_HEIGHT_ADJUSTMENT = 0.82F;
+   private static final EntityDimensions BABY_DIMENSIONS = EntityType.PIGLIN.getDimensions().scale(0.5F).withEyeHeight(0.97F);
    private static final double PROBABILITY_OF_SPAWNING_WITH_CROSSBOW_INSTEAD_OF_SWORD = 0.5;
    private final SimpleContainer inventory = new SimpleContainer(8);
    private boolean cannotHunt;
@@ -137,7 +135,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
          var1.putBoolean("CannotHunt", true);
       }
 
-      this.writeInventoryToTag(var1);
+      this.writeInventoryToTag(var1, this.registryAccess());
    }
 
    @Override
@@ -145,7 +143,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
       super.readAdditionalSaveData(var1);
       this.setBaby(var1.getBoolean("IsBaby"));
       this.setCannotHunt(var1.getBoolean("CannotHunt"));
-      this.readInventoryFromTag(var1);
+      this.readInventoryFromTag(var1, this.registryAccess());
    }
 
    @VisibleForDebug
@@ -178,11 +176,11 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_BABY_ID, false);
-      this.entityData.define(DATA_IS_CHARGING_CROSSBOW, false);
-      this.entityData.define(DATA_IS_DANCING, false);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_BABY_ID, false);
+      var1.define(DATA_IS_CHARGING_CROSSBOW, false);
+      var1.define(DATA_IS_DANCING, false);
    }
 
    @Override
@@ -206,12 +204,10 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
-      RandomSource var6 = var1.getRandom();
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+      RandomSource var5 = var1.getRandom();
       if (var3 != MobSpawnType.STRUCTURE) {
-         if (var6.nextFloat() < 0.2F) {
+         if (var5.nextFloat() < 0.2F) {
             this.setBaby(true);
          } else if (this.isAdult()) {
             this.setItemSlot(EquipmentSlot.MAINHAND, this.createSpawnWeapon());
@@ -219,9 +215,9 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
       }
 
       PiglinAi.initMemories(this, var1.getRandom());
-      this.populateDefaultEquipmentSlots(var6, var2);
-      this.populateDefaultEquipmentEnchantments(var6, var2);
-      return super.finalizeSpawn(var1, var2, var3, var4, var5);
+      this.populateDefaultEquipmentSlots(var5, var2);
+      this.populateDefaultEquipmentEnchantments(var5, var2);
+      return super.finalizeSpawn(var1, var2, var3, var4);
    }
 
    @Override
@@ -279,9 +275,8 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
    }
 
    @Override
-   protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
-      float var3 = super.getStandingEyeHeight(var1, var2);
-      return this.isBaby() ? var3 - 0.82F : var3;
+   public EntityDimensions getDefaultDimensions(Pose var1) {
+      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(var1);
    }
 
    @Override
@@ -289,7 +284,7 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
       this.getEntityData().set(DATA_BABY_ID, var1);
       if (!this.level().isClientSide) {
          AttributeInstance var2 = this.getAttribute(Attributes.MOVEMENT_SPEED);
-         var2.removeModifier(SPEED_MODIFIER_BABY.getId());
+         var2.removeModifier(SPEED_MODIFIER_BABY.id());
          if (var1) {
             var2.addTransientModifier(SPEED_MODIFIER_BABY);
          }
@@ -392,11 +387,6 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
    }
 
    @Override
-   public void shootCrossbowProjectile(LivingEntity var1, ItemStack var2, Projectile var3, float var4) {
-      this.shootCrossbowProjectile(this, var1, var3, var4, 1.6F);
-   }
-
-   @Override
    public boolean canFireProjectileWeapon(ProjectileWeaponItem var1) {
       return var1 == Items.CROSSBOW;
    }
@@ -482,12 +472,8 @@ public class Piglin extends AbstractPiglin implements CrossbowAttackMob, Invento
       this.playSound(SoundEvents.PIGLIN_STEP, 0.15F, 1.0F);
    }
 
-   protected void playSoundEvent(SoundEvent var1) {
-      this.playSound(var1, this.getSoundVolume(), this.getVoicePitch());
-   }
-
    @Override
    protected void playConvertedSound() {
-      this.playSoundEvent(SoundEvents.PIGLIN_CONVERTED_TO_ZOMBIFIED);
+      this.makeSound(SoundEvents.PIGLIN_CONVERTED_TO_ZOMBIFIED);
    }
 }

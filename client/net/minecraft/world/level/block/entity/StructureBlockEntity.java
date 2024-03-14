@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 import net.minecraft.ResourceLocationException;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
@@ -57,8 +58,8 @@ public class StructureBlockEntity extends BlockEntity {
    }
 
    @Override
-   protected void saveAdditional(CompoundTag var1) {
-      super.saveAdditional(var1);
+   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.saveAdditional(var1, var2);
       var1.putString("name", this.getStructureName());
       var1.putString("author", this.author);
       var1.putString("metadata", this.metaData);
@@ -80,35 +81,35 @@ public class StructureBlockEntity extends BlockEntity {
    }
 
    @Override
-   public void load(CompoundTag var1) {
-      super.load(var1);
+   public void load(CompoundTag var1, HolderLookup.Provider var2) {
+      super.load(var1, var2);
       this.setStructureName(var1.getString("name"));
       this.author = var1.getString("author");
       this.metaData = var1.getString("metadata");
-      int var2 = Mth.clamp(var1.getInt("posX"), -48, 48);
-      int var3 = Mth.clamp(var1.getInt("posY"), -48, 48);
-      int var4 = Mth.clamp(var1.getInt("posZ"), -48, 48);
-      this.structurePos = new BlockPos(var2, var3, var4);
-      int var5 = Mth.clamp(var1.getInt("sizeX"), 0, 48);
-      int var6 = Mth.clamp(var1.getInt("sizeY"), 0, 48);
-      int var7 = Mth.clamp(var1.getInt("sizeZ"), 0, 48);
-      this.structureSize = new Vec3i(var5, var6, var7);
+      int var3 = Mth.clamp(var1.getInt("posX"), -48, 48);
+      int var4 = Mth.clamp(var1.getInt("posY"), -48, 48);
+      int var5 = Mth.clamp(var1.getInt("posZ"), -48, 48);
+      this.structurePos = new BlockPos(var3, var4, var5);
+      int var6 = Mth.clamp(var1.getInt("sizeX"), 0, 48);
+      int var7 = Mth.clamp(var1.getInt("sizeY"), 0, 48);
+      int var8 = Mth.clamp(var1.getInt("sizeZ"), 0, 48);
+      this.structureSize = new Vec3i(var6, var7, var8);
 
       try {
          this.rotation = Rotation.valueOf(var1.getString("rotation"));
-      } catch (IllegalArgumentException var11) {
+      } catch (IllegalArgumentException var12) {
          this.rotation = Rotation.NONE;
       }
 
       try {
          this.mirror = Mirror.valueOf(var1.getString("mirror"));
-      } catch (IllegalArgumentException var10) {
+      } catch (IllegalArgumentException var11) {
          this.mirror = Mirror.NONE;
       }
 
       try {
          this.mode = StructureMode.valueOf(var1.getString("mode"));
-      } catch (IllegalArgumentException var9) {
+      } catch (IllegalArgumentException var10) {
          this.mode = StructureMode.DATA;
       }
 
@@ -141,8 +142,8 @@ public class StructureBlockEntity extends BlockEntity {
    }
 
    @Override
-   public CompoundTag getUpdateTag() {
-      return this.saveWithoutMetadata();
+   public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
+      return this.saveWithoutMetadata(var1);
    }
 
    public boolean usedBy(Player var1) {

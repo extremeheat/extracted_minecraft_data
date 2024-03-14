@@ -90,7 +90,7 @@ public class BucketItem extends Item implements DispensibleContainerItem {
    }
 
    public static ItemStack getEmptySuccessItem(ItemStack var0, Player var1) {
-      return !var1.getAbilities().instabuild ? new ItemStack(Items.BUCKET) : var0;
+      return !var1.hasInfiniteMaterials() ? new ItemStack(Items.BUCKET) : var0;
    }
 
    @Override
@@ -134,9 +134,7 @@ public class BucketItem extends Item implements DispensibleContainerItem {
             int var16 = var3.getX();
             int var11 = var3.getY();
             int var12 = var3.getZ();
-            var2.playSound(
-               var1, var3, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5F, 2.6F + (var2.random.nextFloat() - var2.random.nextFloat()) * 0.8F
-            );
+            var2.playSound(var1, var3, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5F, 2.6F + (var2.random.nextFloat() - var2.random.nextFloat()) * 0.8F);
 
             for(int var13 = 0; var13 < 8; ++var13) {
                var2.addParticle(

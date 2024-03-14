@@ -2,18 +2,21 @@ package net.minecraft.network.protocol.common.custom;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.codec.StreamCodec;
 
-public record WorldGenAttemptDebugPayload(BlockPos b, float c, float d, float e, float f, float g) implements CustomPacketPayload {
+public record WorldGenAttemptDebugPayload(BlockPos c, float d, float e, float f, float g, float h) implements CustomPacketPayload {
    private final BlockPos pos;
    private final float scale;
    private final float red;
    private final float green;
    private final float blue;
    private final float alpha;
-   public static final ResourceLocation ID = new ResourceLocation("debug/worldgen_attempt");
+   public static final StreamCodec<FriendlyByteBuf, WorldGenAttemptDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(
+      WorldGenAttemptDebugPayload::write, WorldGenAttemptDebugPayload::new
+   );
+   public static final CustomPacketPayload.Type<WorldGenAttemptDebugPayload> TYPE = CustomPacketPayload.createType("debug/worldgen_attempt");
 
-   public WorldGenAttemptDebugPayload(FriendlyByteBuf var1) {
+   private WorldGenAttemptDebugPayload(FriendlyByteBuf var1) {
       this(var1.readBlockPos(), var1.readFloat(), var1.readFloat(), var1.readFloat(), var1.readFloat(), var1.readFloat());
    }
 
@@ -27,8 +30,7 @@ public record WorldGenAttemptDebugPayload(BlockPos b, float c, float d, float e,
       this.alpha = var6;
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       var1.writeBlockPos(this.pos);
       var1.writeFloat(this.scale);
       var1.writeFloat(this.red);
@@ -38,7 +40,7 @@ public record WorldGenAttemptDebugPayload(BlockPos b, float c, float d, float e,
    }
 
    @Override
-   public ResourceLocation id() {
-      return ID;
+   public CustomPacketPayload.Type<WorldGenAttemptDebugPayload> type() {
+      return TYPE;
    }
 }

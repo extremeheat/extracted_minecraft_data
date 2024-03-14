@@ -9,7 +9,6 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Unit;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
@@ -26,9 +25,10 @@ import net.minecraft.util.thread.ProcessorMailbox;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.chunk.ChunkAccess;
-import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.ImposterProtoChunk;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
+import net.minecraft.world.level.chunk.status.WorldGenContext;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
@@ -91,94 +91,93 @@ public class ResetChunksCommand {
          }
       }
 
-      ProcessorMailbox var30 = ProcessorMailbox.create(Util.backgroundExecutor(), "worldgen-resetchunks");
-      long var31 = System.currentTimeMillis();
-      int var32 = (var1 * 2 + 1) * (var1 * 2 + 1);
-      UnmodifiableIterator var33 = ImmutableList.of(
+      ProcessorMailbox var31 = ProcessorMailbox.create(Util.backgroundExecutor(), "worldgen-resetchunks");
+      long var32 = System.currentTimeMillis();
+      int var33 = (var1 * 2 + 1) * (var1 * 2 + 1);
+      UnmodifiableIterator var34 = ImmutableList.of(
             ChunkStatus.BIOMES, ChunkStatus.NOISE, ChunkStatus.SURFACE, ChunkStatus.CARVERS, ChunkStatus.FEATURES, ChunkStatus.INITIALIZE_LIGHT
          )
          .iterator();
 
-      while(var33.hasNext()) {
-         ChunkStatus var35 = (ChunkStatus)var33.next();
+      while(var34.hasNext()) {
+         ChunkStatus var36 = (ChunkStatus)var34.next();
          long var17 = System.currentTimeMillis();
-         CompletableFuture var19 = CompletableFuture.supplyAsync(() -> Unit.INSTANCE, var30::tell);
+         CompletableFuture var19 = CompletableFuture.supplyAsync(() -> Unit.INSTANCE, var31::tell);
+         WorldGenContext var20 = new WorldGenContext(var3, var4.getGenerator(), var3.getStructureManager(), var4.getLightEngine());
 
-         for(int var20 = var6.z - var1; var20 <= var6.z + var1; ++var20) {
-            for(int var21 = var6.x - var1; var21 <= var6.x + var1; ++var21) {
-               ChunkPos var22 = new ChunkPos(var21, var20);
-               LevelChunk var23 = var4.getChunk(var21, var20, false);
-               if (var23 != null && (!var2 || !var23.isOldNoiseGeneration())) {
-                  ArrayList var24 = Lists.newArrayList();
-                  int var25 = Math.max(1, var35.getRange());
+         for(int var21 = var6.z - var1; var21 <= var6.z + var1; ++var21) {
+            for(int var22 = var6.x - var1; var22 <= var6.x + var1; ++var22) {
+               ChunkPos var23 = new ChunkPos(var22, var21);
+               LevelChunk var24 = var4.getChunk(var22, var21, false);
+               if (var24 != null && (!var2 || !var24.isOldNoiseGeneration())) {
+                  ArrayList var25 = Lists.newArrayList();
+                  int var26 = Math.max(1, var36.getRange());
 
-                  for(int var26 = var22.z - var25; var26 <= var22.z + var25; ++var26) {
-                     for(int var27 = var22.x - var25; var27 <= var22.x + var25; ++var27) {
-                        ChunkAccess var28 = var4.getChunk(var27, var26, var35.getParent(), true);
-                        Object var29;
-                        if (var28 instanceof ImposterProtoChunk) {
-                           var29 = new ImposterProtoChunk(((ImposterProtoChunk)var28).getWrapped(), true);
-                        } else if (var28 instanceof LevelChunk) {
-                           var29 = new ImposterProtoChunk((LevelChunk)var28, true);
+                  for(int var27 = var23.z - var26; var27 <= var23.z + var26; ++var27) {
+                     for(int var28 = var23.x - var26; var28 <= var23.x + var26; ++var28) {
+                        ChunkAccess var29 = var4.getChunk(var28, var27, var36.getParent(), true);
+                        Object var30;
+                        if (var29 instanceof ImposterProtoChunk) {
+                           var30 = new ImposterProtoChunk(((ImposterProtoChunk)var29).getWrapped(), true);
+                        } else if (var29 instanceof LevelChunk) {
+                           var30 = new ImposterProtoChunk((LevelChunk)var29, true);
                         } else {
-                           var29 = var28;
+                           var30 = var29;
                         }
 
-                        var24.add(var29);
+                        var25.add(var30);
                      }
                   }
 
-                  var19 = var19.thenComposeAsync(
-                     var5x -> var35.generate(var30::tell, var3, var4.getGenerator(), var3.getStructureManager(), var4.getLightEngine(), var0xx -> {
-                           throw new UnsupportedOperationException("Not creating full chunks here");
-                        }, var24).thenApply(var1xx -> {
-                           if (var35 == ChunkStatus.NOISE) {
-                              var1xx.left().ifPresent(var0xxx -> Heightmap.primeHeightmaps(var0xxx, ChunkStatus.POST_FEATURES));
-                           }
-   
-                           return Unit.INSTANCE;
-                        }), var30::tell
-                  );
+                  var19 = var19.thenComposeAsync(var4x -> var36.generate(var20, var31::tell, var0xx -> {
+                        throw new UnsupportedOperationException("Not creating full chunks here");
+                     }, var25).thenApply(var1xx -> {
+                        if (var36 == ChunkStatus.NOISE) {
+                           Heightmap.primeHeightmaps(var1xx, ChunkStatus.POST_FEATURES);
+                        }
+
+                        return Unit.INSTANCE;
+                     }), var31::tell);
                }
             }
          }
 
          var0.getServer().managedBlock(var19::isDone);
-         LOGGER.debug(var35 + " took " + (System.currentTimeMillis() - var17) + " ms");
+         LOGGER.debug(var36 + " took " + (System.currentTimeMillis() - var17) + " ms");
       }
 
-      long var34 = System.currentTimeMillis();
+      long var35 = System.currentTimeMillis();
 
-      for(int var36 = var6.z - var1; var36 <= var6.z + var1; ++var36) {
+      for(int var37 = var6.z - var1; var37 <= var6.z + var1; ++var37) {
          for(int var18 = var6.x - var1; var18 <= var6.x + var1; ++var18) {
-            ChunkPos var38 = new ChunkPos(var18, var36);
-            LevelChunk var39 = var4.getChunk(var18, var36, false);
-            if (var39 != null && (!var2 || !var39.isOldNoiseGeneration())) {
-               for(BlockPos var41 : BlockPos.betweenClosed(
-                  var38.getMinBlockX(),
+            ChunkPos var39 = new ChunkPos(var18, var37);
+            LevelChunk var40 = var4.getChunk(var18, var37, false);
+            if (var40 != null && (!var2 || !var40.isOldNoiseGeneration())) {
+               for(BlockPos var42 : BlockPos.betweenClosed(
+                  var39.getMinBlockX(),
                   var3.getMinBuildHeight(),
-                  var38.getMinBlockZ(),
-                  var38.getMaxBlockX(),
+                  var39.getMinBlockZ(),
+                  var39.getMaxBlockX(),
                   var3.getMaxBuildHeight() - 1,
-                  var38.getMaxBlockZ()
+                  var39.getMaxBlockZ()
                )) {
-                  var4.blockChanged(var41);
+                  var4.blockChanged(var42);
                }
             }
          }
       }
 
-      LOGGER.debug("blockChanged took " + (System.currentTimeMillis() - var34) + " ms");
-      long var37 = System.currentTimeMillis() - var31;
+      LOGGER.debug("blockChanged took " + (System.currentTimeMillis() - var35) + " ms");
+      long var38 = System.currentTimeMillis() - var32;
       var0.sendSuccess(
          () -> Component.literal(
                String.format(
                   Locale.ROOT,
                   "%d chunks have been reset. This took %d ms for %d chunks, or %02f ms per chunk",
-                  var32,
-                  var37,
-                  var32,
-                  (float)var37 / (float)var32
+                  var33,
+                  var38,
+                  var33,
+                  (float)var38 / (float)var33
                )
             ),
          true

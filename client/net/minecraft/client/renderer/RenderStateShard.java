@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.UnmodifiableIterator;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalDouble;
@@ -16,6 +15,7 @@ import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
 import org.apache.commons.lang3.tuple.Triple;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fStack;
 
 public abstract class RenderStateShard {
    private static final float VIEW_SCALE_Z_EPSILON = 0.99975586F;
@@ -229,6 +229,9 @@ public abstract class RenderStateShard {
    protected static final RenderStateShard.ShaderStateShard RENDERTYPE_END_GATEWAY_SHADER = new RenderStateShard.ShaderStateShard(
       GameRenderer::getRendertypeEndGatewayShader
    );
+   protected static final RenderStateShard.ShaderStateShard RENDERTYPE_CLOUDS_SHADER = new RenderStateShard.ShaderStateShard(
+      GameRenderer::getRendertypeCloudsShader
+   );
    protected static final RenderStateShard.ShaderStateShard RENDERTYPE_LINES_SHADER = new RenderStateShard.ShaderStateShard(
       GameRenderer::getRendertypeLinesShader
    );
@@ -286,13 +289,13 @@ public abstract class RenderStateShard {
    );
    protected static final RenderStateShard.LayeringStateShard VIEW_OFFSET_Z_LAYERING = new RenderStateShard.LayeringStateShard(
       "view_offset_z_layering", () -> {
-         PoseStack var0 = RenderSystem.getModelViewStack();
-         var0.pushPose();
+         Matrix4fStack var0 = RenderSystem.getModelViewStack();
+         var0.pushMatrix();
          var0.scale(0.99975586F, 0.99975586F, 0.99975586F);
          RenderSystem.applyModelViewMatrix();
       }, () -> {
-         PoseStack var0 = RenderSystem.getModelViewStack();
-         var0.popPose();
+         Matrix4fStack var0 = RenderSystem.getModelViewStack();
+         var0.popMatrix();
          RenderSystem.applyModelViewMatrix();
       }
    );

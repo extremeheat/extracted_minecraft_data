@@ -130,9 +130,7 @@ public class EndCityPieces {
       ) {
          Rotation var7 = var3.placeSettings().getRotation();
          int var8 = var6.nextInt(4) + 1;
-         EndCityPieces.EndCityPiece var9 = EndCityPieces.addHelper(
-            var5, EndCityPieces.addPiece(var1, var3, new BlockPos(0, 0, -4), "bridge_piece", var7, true)
-         );
+         EndCityPieces.EndCityPiece var9 = EndCityPieces.addHelper(var5, EndCityPieces.addPiece(var1, var3, new BlockPos(0, 0, -4), "bridge_piece", var7, true));
          var9.setGenDepth(-1);
          byte var10 = 0;
 

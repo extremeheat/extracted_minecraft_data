@@ -42,7 +42,7 @@ public class PathFinder {
       } else {
          Map var8 = var3.stream()
             .collect(
-               Collectors.toMap(var1x -> this.nodeEvaluator.getGoal((double)var1x.getX(), (double)var1x.getY(), (double)var1x.getZ()), Function.identity())
+               Collectors.toMap(var1x -> this.nodeEvaluator.getTarget((double)var1x.getX(), (double)var1x.getY(), (double)var1x.getZ()), Function.identity())
             );
          Path var9 = this.findPath(var1.getProfiler(), var7, var8, var4, var5, var6);
          this.nodeEvaluator.done();

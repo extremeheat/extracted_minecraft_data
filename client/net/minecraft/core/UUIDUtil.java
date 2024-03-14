@@ -9,6 +9,7 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import com.mojang.serialization.Lifecycle;
 import com.mojang.util.UndashedUuid;
+import io.netty.buffer.ByteBuf;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
@@ -17,11 +18,14 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.IntStream;
 import net.minecraft.Util;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 
 public final class UUIDUtil {
    public static final Codec<UUID> CODEC = Codec.INT_STREAM
       .comapFlatMap(var0 -> Util.fixedSize(var0, 4).map(UUIDUtil::uuidFromIntArray), var0 -> Arrays.stream(uuidToIntArray(var0)));
    public static final Codec<Set<UUID>> CODEC_SET = Codec.list(CODEC).xmap(Sets::newHashSet, Lists::newArrayList);
+   public static final Codec<Set<UUID>> CODEC_LINKED_SET = Codec.list(CODEC).xmap(Sets::newLinkedHashSet, Lists::newArrayList);
    public static final Codec<UUID> STRING_CODEC = Codec.STRING.comapFlatMap(var0 -> {
       try {
          return DataResult.success(UUID.fromString(var0), Lifecycle.stable());
@@ -37,6 +41,15 @@ public final class UUIDUtil {
       }
    }, UndashedUuid::toString)).xmap(var0 -> (UUID)var0.map(var0x -> var0x, var0x -> var0x), Either::right);
    public static Codec<UUID> LENIENT_CODEC = Codec.either(CODEC, STRING_CODEC).xmap(var0 -> (UUID)var0.map(var0x -> var0x, var0x -> var0x), Either::left);
+   public static StreamCodec<ByteBuf, UUID> STREAM_CODEC = new StreamCodec<ByteBuf, UUID>() {
+      public UUID decode(ByteBuf var1) {
+         return FriendlyByteBuf.readUUID(var1);
+      }
+
+      public void encode(ByteBuf var1, UUID var2) {
+         FriendlyByteBuf.writeUUID(var1, var2);
+      }
+   };
    public static final int UUID_BYTES = 16;
    private static final String UUID_PREFIX_OFFLINE_PLAYER = "OfflinePlayer:";
 

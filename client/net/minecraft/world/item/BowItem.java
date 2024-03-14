@@ -1,6 +1,8 @@
 package net.minecraft.world.item;
 
+import java.util.List;
 import java.util.function.Predicate;
+import javax.annotation.Nullable;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
@@ -8,12 +10,10 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.AbstractArrow;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.Enchantments;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.level.Level;
 
-public class BowItem extends ProjectileWeaponItem implements Vanishable {
+public class BowItem extends ProjectileWeaponItem {
    public static final int MAX_DRAW_DURATION = 20;
    public static final int DEFAULT_RANGE = 15;
 
@@ -25,45 +25,14 @@ public class BowItem extends ProjectileWeaponItem implements Vanishable {
    public void releaseUsing(ItemStack var1, Level var2, LivingEntity var3, int var4) {
       if (var3 instanceof Player) {
          Player var5 = (Player)var3;
-         boolean var6 = var5.getAbilities().instabuild || EnchantmentHelper.getItemEnchantmentLevel(Enchantments.INFINITY_ARROWS, var1) > 0;
-         ItemStack var7 = var5.getProjectile(var1);
-         if (!var7.isEmpty() || var6) {
-            if (var7.isEmpty()) {
-               var7 = new ItemStack(Items.ARROW);
-            }
-
-            int var8 = this.getUseDuration(var1) - var4;
-            float var9 = getPowerForTime(var8);
-            if (!((double)var9 < 0.1)) {
-               boolean var10 = var6 && var7.is(Items.ARROW);
-               if (!var2.isClientSide) {
-                  ArrowItem var11 = (ArrowItem)(var7.getItem() instanceof ArrowItem ? var7.getItem() : Items.ARROW);
-                  AbstractArrow var12 = var11.createArrow(var2, var7, var5);
-                  var12.shootFromRotation(var5, var5.getXRot(), var5.getYRot(), 0.0F, var9 * 3.0F, 1.0F);
-                  if (var9 == 1.0F) {
-                     var12.setCritArrow(true);
-                  }
-
-                  int var13 = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.POWER_ARROWS, var1);
-                  if (var13 > 0) {
-                     var12.setBaseDamage(var12.getBaseDamage() + (double)var13 * 0.5 + 0.5);
-                  }
-
-                  int var14 = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.PUNCH_ARROWS, var1);
-                  if (var14 > 0) {
-                     var12.setKnockback(var14);
-                  }
-
-                  if (EnchantmentHelper.getItemEnchantmentLevel(Enchantments.FLAMING_ARROWS, var1) > 0) {
-                     var12.setSecondsOnFire(100);
-                  }
-
-                  var1.hurtAndBreak(1, var5, var1x -> var1x.broadcastBreakEvent(var5.getUsedItemHand()));
-                  if (var10 || var5.getAbilities().instabuild && (var7.is(Items.SPECTRAL_ARROW) || var7.is(Items.TIPPED_ARROW))) {
-                     var12.pickup = AbstractArrow.Pickup.CREATIVE_ONLY;
-                  }
-
-                  var2.addFreshEntity(var12);
+         ItemStack var6 = var5.getProjectile(var1);
+         if (!var6.isEmpty()) {
+            int var7 = this.getUseDuration(var1) - var4;
+            float var8 = getPowerForTime(var7);
+            if (!((double)var8 < 0.1)) {
+               List var9 = draw(var1, var6, var5);
+               if (!var2.isClientSide() && !var9.isEmpty()) {
+                  this.shoot(var2, var5, var5.getUsedItemHand(), var1, var9, var8 * 3.0F, 1.0F, var8 == 1.0F, null);
                }
 
                var2.playSound(
@@ -74,19 +43,17 @@ public class BowItem extends ProjectileWeaponItem implements Vanishable {
                   SoundEvents.ARROW_SHOOT,
                   SoundSource.PLAYERS,
                   1.0F,
-                  1.0F / (var2.getRandom().nextFloat() * 0.4F + 1.2F) + var9 * 0.5F
+                  1.0F / (var2.getRandom().nextFloat() * 0.4F + 1.2F) + var8 * 0.5F
                );
-               if (!var10 && !var5.getAbilities().instabuild) {
-                  var7.shrink(1);
-                  if (var7.isEmpty()) {
-                     var5.getInventory().removeItem(var7);
-                  }
-               }
-
                var5.awardStat(Stats.ITEM_USED.get(this));
             }
          }
       }
+   }
+
+   @Override
+   protected void shootProjectile(LivingEntity var1, Projectile var2, int var3, float var4, float var5, float var6, @Nullable LivingEntity var7) {
+      var2.shootFromRotation(var1, var1.getXRot(), var1.getYRot() + var6, 0.0F, var4, var5);
    }
 
    public static float getPowerForTime(int var0) {
@@ -113,7 +80,7 @@ public class BowItem extends ProjectileWeaponItem implements Vanishable {
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
       ItemStack var4 = var2.getItemInHand(var3);
       boolean var5 = !var2.getProjectile(var4).isEmpty();
-      if (!var2.getAbilities().instabuild && !var5) {
+      if (!var2.hasInfiniteMaterials() && !var5) {
          return InteractionResultHolder.fail(var4);
       } else {
          var2.startUsingItem(var3);

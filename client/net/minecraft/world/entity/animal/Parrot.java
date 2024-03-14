@@ -37,12 +37,10 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.PathfinderMob;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.VariantHolder;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -69,9 +67,8 @@ import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Vector3f;
 
 public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot.Variant>, FlyingAnimal {
    private static final EntityDataAccessor<Integer> DATA_VARIANT_ID = SynchedEntityData.defineId(Parrot.class, EntityDataSerializers.INT);
@@ -86,6 +83,7 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
    );
    static final Map<EntityType<?>, SoundEvent> MOB_SOUND_MAP = Util.make(Maps.newHashMap(), var0 -> {
       var0.put(EntityType.BLAZE, SoundEvents.PARROT_IMITATE_BLAZE);
+      var0.put(EntityType.BOGGED, SoundEvents.PARROT_IMITATE_BOGGED);
       var0.put(EntityType.BREEZE, SoundEvents.PARROT_IMITATE_BREEZE);
       var0.put(EntityType.CAVE_SPIDER, SoundEvents.PARROT_IMITATE_SPIDER);
       var0.put(EntityType.CREEPER, SoundEvents.PARROT_IMITATE_CREEPER);
@@ -134,22 +132,20 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
    public Parrot(EntityType<? extends Parrot> var1, Level var2) {
       super(var1, var2);
       this.moveControl = new FlyingMoveControl(this, 10, false);
-      this.setPathfindingMalus(BlockPathTypes.DANGER_FIRE, -1.0F);
-      this.setPathfindingMalus(BlockPathTypes.DAMAGE_FIRE, -1.0F);
-      this.setPathfindingMalus(BlockPathTypes.COCOA, -1.0F);
+      this.setPathfindingMalus(PathType.DANGER_FIRE, -1.0F);
+      this.setPathfindingMalus(PathType.DAMAGE_FIRE, -1.0F);
+      this.setPathfindingMalus(PathType.COCOA, -1.0F);
    }
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
       this.setVariant(Util.getRandom(Parrot.Variant.values(), var1.getRandom()));
       if (var4 == null) {
          var4 = new AgeableMob.AgeableMobGroupData(false);
       }
 
-      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4, var5);
+      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4);
    }
 
    @Override
@@ -183,11 +179,6 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
       var2.setCanFloat(true);
       var2.setCanPassDoors(true);
       return var2;
-   }
-
-   @Override
-   protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
-      return var2.height * 0.6F;
    }
 
    @Override
@@ -255,10 +246,7 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
       if (!this.isTame() && TAME_FOOD.contains(var3.getItem())) {
-         if (!var1.getAbilities().instabuild) {
-            var3.shrink(1);
-         }
-
+         var3.consume(1, var1);
          if (!this.isSilent()) {
             this.level()
                .playSound(
@@ -283,25 +271,24 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
          }
 
          return InteractionResult.sidedSuccess(this.level().isClientSide);
-      } else if (var3.is(POISONOUS_FOOD)) {
-         if (!var1.getAbilities().instabuild) {
-            var3.shrink(1);
-         }
+      } else if (!var3.is(POISONOUS_FOOD)) {
+         if (!this.isFlying() && this.isTame() && this.isOwnedBy(var1)) {
+            if (!this.level().isClientSide) {
+               this.setOrderedToSit(!this.isOrderedToSit());
+            }
 
+            return InteractionResult.sidedSuccess(this.level().isClientSide);
+         } else {
+            return super.mobInteract(var1, var2);
+         }
+      } else {
+         var3.consume(1, var1);
          this.addEffect(new MobEffectInstance(MobEffects.POISON, 900));
          if (var1.isCreative() || !this.isInvulnerable()) {
             this.hurt(this.damageSources().playerAttack(var1), 3.4028235E38F);
          }
 
          return InteractionResult.sidedSuccess(this.level().isClientSide);
-      } else if (!this.isFlying() && this.isTame() && this.isOwnedBy(var1)) {
-         if (!this.level().isClientSide) {
-            this.setOrderedToSit(!this.isOrderedToSit());
-         }
-
-         return InteractionResult.sidedSuccess(this.level().isClientSide);
-      } else {
-         return super.mobInteract(var1, var2);
       }
    }
 
@@ -427,9 +414,9 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_VARIANT_ID, 0);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_VARIANT_ID, 0);
    }
 
    @Override
@@ -452,11 +439,6 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
    @Override
    public Vec3 getLeashOffset() {
       return new Vec3(0.0, (double)(0.5F * this.getEyeHeight()), (double)(this.getBbWidth() * 0.4F));
-   }
-
-   @Override
-   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      return new Vector3f(0.0F, var2.height - 0.4375F * var3, 0.0F);
    }
 
    static class ParrotWanderGoal extends WaterAvoidingRandomFlyingGoal {

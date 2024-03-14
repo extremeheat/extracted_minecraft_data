@@ -54,9 +54,7 @@ public class SuffixArray<T> {
       int[] var3 = new int[var1];
       int[] var4 = new int[var1];
       int[] var5 = new int[var1];
-      IntComparator var6 = (var2x, var3x) -> var3[var2x] == var3[var3x]
-            ? Integer.compare(var4[var2x], var4[var3x])
-            : Integer.compare(var3[var2x], var3[var3x]);
+      IntComparator var6 = (var2x, var3x) -> var3[var2x] == var3[var3x] ? Integer.compare(var4[var2x], var4[var3x]) : Integer.compare(var3[var2x], var3[var3x]);
       Swapper var7 = (var3x, var4x) -> {
          if (var3x != var4x) {
             int var5xx = var3[var3x];

@@ -2,47 +2,24 @@ package net.minecraft.gametest.framework;
 
 import java.util.Collection;
 import java.util.function.Consumer;
-import javax.annotation.Nullable;
 import net.minecraft.server.level.ServerLevel;
 
-public class GameTestBatch {
-   public static final String DEFAULT_BATCH_NAME = "defaultBatch";
+public record GameTestBatch(String b, Collection<GameTestInfo> c, Consumer<ServerLevel> d, Consumer<ServerLevel> e) {
    private final String name;
-   private final Collection<TestFunction> testFunctions;
-   @Nullable
+   private final Collection<GameTestInfo> gameTestInfos;
    private final Consumer<ServerLevel> beforeBatchFunction;
-   @Nullable
    private final Consumer<ServerLevel> afterBatchFunction;
+   public static final String DEFAULT_BATCH_NAME = "defaultBatch";
 
-   public GameTestBatch(String var1, Collection<TestFunction> var2, @Nullable Consumer<ServerLevel> var3, @Nullable Consumer<ServerLevel> var4) {
+   public GameTestBatch(String var1, Collection<GameTestInfo> var2, Consumer<ServerLevel> var3, Consumer<ServerLevel> var4) {
       super();
       if (var2.isEmpty()) {
-         throw new IllegalArgumentException("A GameTestBatch must include at least one TestFunction!");
+         throw new IllegalArgumentException("A GameTestBatch must include at least one GameTestInfo!");
       } else {
          this.name = var1;
-         this.testFunctions = var2;
+         this.gameTestInfos = var2;
          this.beforeBatchFunction = var3;
          this.afterBatchFunction = var4;
-      }
-   }
-
-   public String getName() {
-      return this.name;
-   }
-
-   public Collection<TestFunction> getTestFunctions() {
-      return this.testFunctions;
-   }
-
-   public void runBeforeBatchFunction(ServerLevel var1) {
-      if (this.beforeBatchFunction != null) {
-         this.beforeBatchFunction.accept(var1);
-      }
-   }
-
-   public void runAfterBatchFunction(ServerLevel var1) {
-      if (this.afterBatchFunction != null) {
-         this.afterBatchFunction.accept(var1);
       }
    }
 }

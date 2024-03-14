@@ -9,6 +9,7 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -47,7 +48,7 @@ public abstract class Raider extends PatrollingMonster {
    protected static final EntityDataAccessor<Boolean> IS_CELEBRATING = SynchedEntityData.defineId(Raider.class, EntityDataSerializers.BOOLEAN);
    static final Predicate<ItemEntity> ALLOWED_ITEMS = var0 -> !var0.hasPickUpDelay()
          && var0.isAlive()
-         && ItemStack.matches(var0.getItem(), Raid.getLeaderBannerInstance());
+         && ItemStack.matches(var0.getItem(), Raid.getLeaderBannerInstance(var0.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN)));
    @Nullable
    protected Raid raid;
    private int wave;
@@ -68,9 +69,9 @@ public abstract class Raider extends PatrollingMonster {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(IS_CELEBRATING, false);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(IS_CELEBRATING, false);
    }
 
    public abstract void applyRaidBuffs(int var1, boolean var2);
@@ -143,7 +144,9 @@ public abstract class Raider extends PatrollingMonster {
                }
             }
 
-            if (!var4.isEmpty() && ItemStack.matches(var4, Raid.getLeaderBannerInstance()) && var5 != null) {
+            if (!var4.isEmpty()
+               && ItemStack.matches(var4, Raid.getLeaderBannerInstance(this.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN)))
+               && var5 != null) {
                MobEffectInstance var10 = var5.getEffect(MobEffects.BAD_OMEN);
                int var11 = 1;
                if (var10 != null) {
@@ -232,7 +235,9 @@ public abstract class Raider extends PatrollingMonster {
    protected void pickUpItem(ItemEntity var1) {
       ItemStack var2 = var1.getItem();
       boolean var3 = this.hasActiveRaid() && this.getCurrentRaid().getLeader(this.getWave()) != null;
-      if (this.hasActiveRaid() && !var3 && ItemStack.matches(var2, Raid.getLeaderBannerInstance())) {
+      if (this.hasActiveRaid()
+         && !var3
+         && ItemStack.matches(var2, Raid.getLeaderBannerInstance(this.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN)))) {
          EquipmentSlot var4 = EquipmentSlot.HEAD;
          ItemStack var5 = this.getItemBySlot(var4);
          double var6 = (double)this.getEquipmentDropChance(var4);
@@ -280,11 +285,9 @@ public abstract class Raider extends PatrollingMonster {
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
       this.setCanJoinRaid(this.getType() != EntityType.WITCH || var3 != MobSpawnType.NATURAL);
-      return super.finalizeSpawn(var1, var2, var3, var4, var5);
+      return super.finalizeSpawn(var1, var2, var3, var4);
    }
 
    public abstract SoundEvent getCelebrateSound();
@@ -326,9 +329,7 @@ public abstract class Raider extends PatrollingMonster {
          super.stop();
          LivingEntity var1 = this.mob.getTarget();
          if (var1 != null) {
-            for(Raider var4 : this.mob
-               .level()
-               .getNearbyEntities(Raider.class, this.shoutTargeting, this.mob, this.mob.getBoundingBox().inflate(8.0, 8.0, 8.0))) {
+            for(Raider var4 : this.mob.level().getNearbyEntities(Raider.class, this.shoutTargeting, this.mob, this.mob.getBoundingBox().inflate(8.0, 8.0, 8.0))) {
                var4.setTarget(var1);
                var4.setAggressive(true);
             }
@@ -375,7 +376,9 @@ public abstract class Raider extends PatrollingMonster {
          if (this.mob.hasActiveRaid()
             && !this.mob.getCurrentRaid().isOver()
             && this.mob.canBeLeader()
-            && !ItemStack.matches(this.mob.getItemBySlot(EquipmentSlot.HEAD), Raid.getLeaderBannerInstance())) {
+            && !ItemStack.matches(
+               this.mob.getItemBySlot(EquipmentSlot.HEAD), Raid.getLeaderBannerInstance(this.mob.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN))
+            )) {
             Raider var2 = var1.getLeader(this.mob.getWave());
             if (var2 == null || !var2.isAlive()) {
                List var3 = this.mob.level().getEntitiesOfClass(ItemEntity.class, this.mob.getBoundingBox().inflate(16.0, 8.0, 16.0), Raider.ALLOWED_ITEMS);
@@ -431,7 +434,7 @@ public abstract class Raider extends PatrollingMonster {
       @Override
       public void tick() {
          if (!this.mob.isSilent() && this.mob.random.nextInt(this.adjustedTickDelay(100)) == 0) {
-            Raider.this.playSound(Raider.this.getCelebrateSound(), Raider.this.getSoundVolume(), Raider.this.getVoicePitch());
+            Raider.this.makeSound(Raider.this.getCelebrateSound());
          }
 
          if (!this.mob.isPassenger() && this.mob.random.nextInt(this.adjustedTickDelay(50)) == 0) {

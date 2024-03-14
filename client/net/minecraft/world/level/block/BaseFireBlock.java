@@ -45,7 +45,7 @@ public abstract class BaseFireBlock extends Block {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return DOWN_AABB;
    }
 
@@ -124,11 +124,11 @@ public abstract class BaseFireBlock extends Block {
    protected abstract boolean canBurn(BlockState var1);
 
    @Override
-   public void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
       if (!var4.fireImmune()) {
          var4.setRemainingFireTicks(var4.getRemainingFireTicks() + 1);
          if (var4.getRemainingFireTicks() == 0) {
-            var4.setSecondsOnFire(8);
+            var4.igniteForSeconds(8);
          }
       }
 
@@ -137,7 +137,7 @@ public abstract class BaseFireBlock extends Block {
    }
 
    @Override
-   public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var4.is(var1.getBlock())) {
          if (inPortalDimension(var2)) {
             Optional var6 = PortalShape.findEmptyPortalShape(var2, var3, Direction.Axis.X);

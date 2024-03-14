@@ -1,7 +1,6 @@
 package net.minecraft.client;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Queues;
 import com.google.common.collect.UnmodifiableIterator;
@@ -30,7 +29,6 @@ import com.mojang.blaze3d.systems.TimerQuery;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.BufferUploader;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexSorting;
@@ -87,12 +85,13 @@ import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.components.toasts.ToastComponent;
 import net.minecraft.client.gui.components.toasts.TutorialToast;
 import net.minecraft.client.gui.font.FontManager;
+import net.minecraft.client.gui.font.providers.FreeTypeUtil;
 import net.minecraft.client.gui.screens.AccessibilityOnboardingScreen;
 import net.minecraft.client.gui.screens.BanNoticeScreens;
 import net.minecraft.client.gui.screens.ChatScreen;
 import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.DeathScreen;
-import net.minecraft.client.gui.screens.GenericDirtMessageScreen;
+import net.minecraft.client.gui.screens.GenericMessageScreen;
 import net.minecraft.client.gui.screens.InBedChatScreen;
 import net.minecraft.client.gui.screens.LevelLoadingScreen;
 import net.minecraft.client.gui.screens.LoadingOverlay;
@@ -170,10 +169,10 @@ import net.minecraft.client.tutorial.Tutorial;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.CommonComponents;
@@ -234,8 +233,8 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.PlayerHeadItem;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
@@ -251,6 +250,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.apache.commons.io.FileUtils;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fStack;
 import org.lwjgl.util.tinyfd.TinyFileDialogs;
 import org.slf4j.Logger;
 
@@ -264,6 +264,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    public static final ResourceLocation ALT_FONT = new ResourceLocation("alt");
    private static final ResourceLocation REGIONAL_COMPLIANCIES = new ResourceLocation("regional_compliancies.json");
    private static final CompletableFuture<Unit> RESOURCE_RELOAD_INITIAL_TASK = CompletableFuture.completedFuture(Unit.INSTANCE);
+   private static final Component NBT_TOOLTIP = Component.literal("(+NBT)");
    private static final Component SOCIAL_INTERACTIONS_NOT_AVAILABLE = Component.translatable("multiplayer.socialInteractions.not_available");
    public static final String UPDATE_DRIVERS_ADVICE = "Please make sure you have up-to-date drivers (see aka.ms/mcdriver for instructions).";
    private final long canary = Double.doubleToLongBits(3.141592653589793);
@@ -503,7 +504,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.font = this.fontManager.createFont();
       this.fontFilterFishy = this.fontManager.createFontFilterFishy();
       this.resourceManager.registerReloadListener(this.fontManager);
-      this.selectMainFont(this.isEnforceUnicode());
+      this.updateFontOptions();
       this.resourceManager.registerReloadListener(new GrassColorReloadListener());
       this.resourceManager.registerReloadListener(new FoliageColorReloadListener());
       this.window.setErrorSection("Startup");
@@ -564,7 +565,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.gpuWarnlistManager = new GpuWarnlistManager();
       this.resourceManager.registerReloadListener(this.gpuWarnlistManager);
       this.resourceManager.registerReloadListener(this.regionalCompliancies);
-      this.gui = new Gui(this, this.itemRenderer);
+      this.gui = new Gui(this);
       this.debugRenderer = new DebugRenderer(this);
       RealmsClient var14 = RealmsClient.create(this);
       this.realmsDataFetcher = new RealmsDataFetcher(var14);
@@ -602,7 +603,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       this.chatListener.setMessageDelay(this.options.chatDelay().get());
       this.reportingContext = ReportingContext.create(ReportEnvironment.local(), this.userApiService);
       LoadingOverlay.registerTextures(this);
-      this.setScreen(new GenericDirtMessageScreen(Component.translatable("gui.loadingMinecraft")));
+      this.setScreen(new GenericMessageScreen(Component.translatable("gui.loadingMinecraft")));
       List var16 = this.resourcePackRepository.openAllSelected();
       this.reloadStateTracker.startReload(ResourceLoadStateTracker.ReloadReason.INITIAL, var16);
       ReloadInstance var10 = this.resourceManager.createReload(Util.backgroundExecutor(), this, RESOURCE_RELOAD_INITIAL_TASK, var16);
@@ -811,8 +812,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       }
    }
 
-   void selectMainFont(boolean var1) {
-      this.fontManager.setRenames(var1 ? ImmutableMap.of(DEFAULT_FONT, UNIFORM_FONT) : ImmutableMap.of());
+   void updateFontOptions() {
+      this.fontManager.updateOptions(this.options);
    }
 
    private void createSearchTrees() {
@@ -838,9 +839,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
                         .flatMap(var1 -> var1.value().getResultItem(var0x.registryAccess()).getTooltipLines(null, TooltipFlag.Default.NORMAL).stream())
                         .map(var0xx -> ChatFormatting.stripFormatting(var0xx.getString()).trim())
                         .filter(var0xx -> !var0xx.isEmpty()),
-                  var0x -> var0x.getRecipes()
-                        .stream()
-                        .map(var1 -> BuiltInRegistries.ITEM.getKey(var1.value().getResultItem(var0x.registryAccess()).getItem())),
+                  var0x -> var0x.getRecipes().stream().map(var1 -> BuiltInRegistries.ITEM.getKey(var1.value().getResultItem(var0x.registryAccess()).getItem())),
                   var0
                )
          );
@@ -1053,6 +1052,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
 
       if (this.screen != null) {
          this.screen.removed();
+      } else {
+         this.setLastInputType(InputType.NONE);
       }
 
       if (var1 == null && this.clientLevelTeardownInProgress) {
@@ -1143,6 +1144,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.guiSprites.close();
          this.textureManager.close();
          this.resourceManager.close();
+         FreeTypeUtil.destroy();
          Util.shutdownExecutors();
       } catch (Throwable var5) {
          LOGGER.error("Shutdown failure!", var5);
@@ -1186,7 +1188,6 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.profiler.pop();
       }
 
-      this.mouseHandler.turnPlayer();
       this.window.setErrorSection("Render");
       this.profiler.push("sound");
       this.soundManager.updateSource(this.gameRenderer.getMainCamera());
@@ -1209,6 +1210,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       FogRenderer.setupNoFog();
       this.profiler.push("display");
       RenderSystem.enableCull();
+      this.profiler.popPush("mouse");
+      this.mouseHandler.handleAccumulatedMovement();
       this.profiler.pop();
       if (!this.noRender) {
          this.profiler.popPush("gameRenderer");
@@ -1284,7 +1287,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             "%d fps T: %s%s%s%s B: %d%s",
             fps,
             var17 == 260 ? "inf" : var17,
-            this.options.enableVsync().get() ? " vsync" : "",
+            this.options.enableVsync().get() ? " vsync " : " ",
             this.options.graphicsMode().get(),
             this.options.cloudStatus().get() == CloudStatus.OFF
                ? ""
@@ -1385,7 +1388,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             this.singleplayerServer.halt(true);
          }
 
-         this.disconnect(new GenericDirtMessageScreen(Component.translatable("menu.savingLevel")));
+         this.disconnect(new GenericMessageScreen(Component.translatable("menu.savingLevel")));
       } catch (Throwable var2) {
       }
 
@@ -1529,10 +1532,9 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       RenderSystem.setShader(GameRenderer::getPositionColorShader);
       Matrix4f var5 = new Matrix4f().setOrtho(0.0F, (float)this.window.getWidth(), (float)this.window.getHeight(), 0.0F, 1000.0F, 3000.0F);
       RenderSystem.setProjectionMatrix(var5, VertexSorting.ORTHOGRAPHIC_Z);
-      PoseStack var6 = RenderSystem.getModelViewStack();
-      var6.pushPose();
-      var6.setIdentity();
-      var6.translate(0.0F, 0.0F, -2000.0F);
+      Matrix4fStack var6 = RenderSystem.getModelViewStack();
+      var6.pushMatrix();
+      var6.translation(0.0F, 0.0F, -2000.0F);
       RenderSystem.applyModelViewMatrix();
       RenderSystem.lineWidth(1.0F);
       Tesselator var7 = Tesselator.getInstance();
@@ -1621,7 +1623,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          var1.drawString(this.font, var34, var10 + 160 - this.font.width(var34), var11 + 80 + var27 * 8 + 20, var31.getColor());
       }
 
-      var6.popPose();
+      var6.popMatrix();
       RenderSystem.applyModelViewMatrix();
    }
 
@@ -2063,7 +2065,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          SkullBlockEntity.setup(var6, this);
          GameProfileCache.setUsesAuthentication(false);
          this.singleplayerServer = MinecraftServer.spin(var5x -> new IntegratedServer(var5x, this, var1, var2, var3, var6, var1xx -> {
-               StoringChunkProgressListener var2xxx = new StoringChunkProgressListener(var1xx + 0);
+               StoringChunkProgressListener var2xxx = StoringChunkProgressListener.createFromGameruleRadius(var1xx + 0);
                this.progressListener.set(var2xxx);
                return ProcessorChunkProgressListener.createStarted(var2xxx, this.progressTasks::add);
             }));
@@ -2101,7 +2103,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       SocketAddress var14 = this.singleplayerServer.getConnection().startMemoryChannel();
       Connection var9 = Connection.connectToLocalServer(var14);
       var9.initiateServerboundPlayConnection(var14.toString(), 0, new ClientHandshakePacketListenerImpl(var9, this, null, null, var4, var13, var0 -> {
-      }));
+      }, null));
       var9.send(new ServerboundHelloPacket(this.getUser().getName(), this.getUser().getProfileId()));
       this.pendingConnection = var9;
    }
@@ -2121,15 +2123,21 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    public void disconnect() {
-      this.disconnect(new ProgressScreen(true));
+      this.disconnect(new ProgressScreen(true), false);
    }
 
    public void disconnect(Screen var1) {
-      ClientPacketListener var2 = this.getConnection();
-      if (var2 != null) {
+      this.disconnect(var1, false);
+   }
+
+   public void disconnect(Screen var1, boolean var2) {
+      ClientPacketListener var3 = this.getConnection();
+      if (var3 != null) {
          this.dropAllTasks();
-         var2.close();
-         this.clearDownloadedResourcePacks();
+         var3.close();
+         if (!var2) {
+            this.clearDownloadedResourcePacks();
+         }
       }
 
       this.playerSocialManager.stopOnlineMode();
@@ -2137,7 +2145,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.debugClientMetricsCancel();
       }
 
-      IntegratedServer var3 = this.singleplayerServer;
+      IntegratedServer var4 = this.singleplayerServer;
       this.singleplayerServer = null;
       this.gameRenderer.resetData();
       this.gameMode = null;
@@ -2147,10 +2155,10 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       try {
          this.updateScreenAndTick(var1);
          if (this.level != null) {
-            if (var3 != null) {
+            if (var4 != null) {
                this.profiler.push("waitForServer");
 
-               while(!var3.isShutdown()) {
+               while(!var4.isShutdown()) {
                   this.runTick(false);
                }
 
@@ -2351,7 +2359,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          } else {
             Inventory var9 = this.player.getInventory();
             if (var2 != null) {
-               this.addCustomNbtData(var3, var2);
+               this.addCustomNbtData(var3, var2, this.level.registryAccess());
             }
 
             int var11 = var9.findSlotMatchingItem(var3);
@@ -2369,25 +2377,12 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       }
    }
 
-   private void addCustomNbtData(ItemStack var1, BlockEntity var2) {
-      CompoundTag var3 = var2.saveWithFullMetadata();
-      BlockItem.setBlockEntityData(var1, var2.getType(), var3);
-      if (var1.getItem() instanceof PlayerHeadItem && var3.contains("SkullOwner")) {
-         CompoundTag var7 = var3.getCompound("SkullOwner");
-         CompoundTag var8 = var1.getOrCreateTag();
-         var8.put("SkullOwner", var7);
-         CompoundTag var6 = var8.getCompound("BlockEntityTag");
-         var6.remove("SkullOwner");
-         var6.remove("x");
-         var6.remove("y");
-         var6.remove("z");
-      } else {
-         CompoundTag var4 = new CompoundTag();
-         ListTag var5 = new ListTag();
-         var5.add(StringTag.valueOf("\"(+NBT)\""));
-         var4.put("Lore", var5);
-         var1.addTagElement("display", var4);
-      }
+   private void addCustomNbtData(ItemStack var1, BlockEntity var2, RegistryAccess var3) {
+      CompoundTag var4 = var2.saveWithFullMetadata(var3);
+      var2.removeComponentsFromTag(var4);
+      BlockItem.setBlockEntityData(var1, var2.getType(), var4);
+      var1.applyComponents(var2.collectComponents());
+      var1.update(DataComponents.LORE, ItemLore.EMPTY, NBT_TOOLTIP, ItemLore::withLineAdded);
    }
 
    public CrashReport fillReport(CrashReport var1) {
@@ -2768,7 +2763,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
             this.player.yRotO = this.player.getYRot();
             this.player.xRotO = this.player.getXRot();
             var6.bindWrite(true);
-            this.gameRenderer.renderLevel(1.0F, 0L, new PoseStack());
+            this.gameRenderer.renderLevel(1.0F, 0L);
 
             try {
                Thread.sleep(10L);

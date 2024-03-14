@@ -6,7 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.SurfaceRuleData;
 import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.resources.ResourceKey;
@@ -102,7 +102,7 @@ public record NoiseGeneratorSettings(
       return this.useLegacyRandomSource ? WorldgenRandom.Algorithm.LEGACY : WorldgenRandom.Algorithm.XOROSHIRO;
    }
 
-   public static void bootstrap(BootstapContext<NoiseGeneratorSettings> var0) {
+   public static void bootstrap(BootstrapContext<NoiseGeneratorSettings> var0) {
       var0.register(OVERWORLD, overworld(var0, false, false));
       var0.register(LARGE_BIOMES, overworld(var0, false, true));
       var0.register(AMPLIFIED, overworld(var0, true, false));
@@ -112,7 +112,7 @@ public record NoiseGeneratorSettings(
       var0.register(FLOATING_ISLANDS, floatingIslands(var0));
    }
 
-   private static NoiseGeneratorSettings end(BootstapContext<?> var0) {
+   private static NoiseGeneratorSettings end(BootstrapContext<?> var0) {
       return new NoiseGeneratorSettings(
          NoiseSettings.END_NOISE_SETTINGS,
          Blocks.END_STONE.defaultBlockState(),
@@ -128,7 +128,7 @@ public record NoiseGeneratorSettings(
       );
    }
 
-   private static NoiseGeneratorSettings nether(BootstapContext<?> var0) {
+   private static NoiseGeneratorSettings nether(BootstrapContext<?> var0) {
       return new NoiseGeneratorSettings(
          NoiseSettings.NETHER_NOISE_SETTINGS,
          Blocks.NETHERRACK.defaultBlockState(),
@@ -144,7 +144,7 @@ public record NoiseGeneratorSettings(
       );
    }
 
-   private static NoiseGeneratorSettings overworld(BootstapContext<?> var0, boolean var1, boolean var2) {
+   private static NoiseGeneratorSettings overworld(BootstrapContext<?> var0, boolean var1, boolean var2) {
       return new NoiseGeneratorSettings(
          NoiseSettings.OVERWORLD_NOISE_SETTINGS,
          Blocks.STONE.defaultBlockState(),
@@ -160,7 +160,7 @@ public record NoiseGeneratorSettings(
       );
    }
 
-   private static NoiseGeneratorSettings caves(BootstapContext<?> var0) {
+   private static NoiseGeneratorSettings caves(BootstrapContext<?> var0) {
       return new NoiseGeneratorSettings(
          NoiseSettings.CAVES_NOISE_SETTINGS,
          Blocks.STONE.defaultBlockState(),
@@ -176,7 +176,7 @@ public record NoiseGeneratorSettings(
       );
    }
 
-   private static NoiseGeneratorSettings floatingIslands(BootstapContext<?> var0) {
+   private static NoiseGeneratorSettings floatingIslands(BootstrapContext<?> var0) {
       return new NoiseGeneratorSettings(
          NoiseSettings.FLOATING_ISLANDS_NOISE_SETTINGS,
          Blocks.STONE.defaultBlockState(),

@@ -24,7 +24,7 @@ public class Checkbox extends AbstractButton {
    private final Checkbox.OnValueChange onValueChange;
 
    Checkbox(int var1, int var2, Component var3, Font var4, boolean var5, Checkbox.OnValueChange var6) {
-      super(var1, var2, boxSize(var4) + 4 + var4.width(var3), boxSize(var4), var3);
+      super(var1, var2, getBoxSize(var4) + 4 + var4.width(var3), getBoxSize(var4), var3);
       this.selected = var5;
       this.onValueChange = var6;
    }
@@ -33,7 +33,7 @@ public class Checkbox extends AbstractButton {
       return new Checkbox.Builder(var0, var1);
    }
 
-   private static int boxSize(Font var0) {
+   public static int getBoxSize(Font var0) {
       return 9 + 8;
    }
 
@@ -73,7 +73,7 @@ public class Checkbox extends AbstractButton {
          var7 = this.isFocused() ? CHECKBOX_HIGHLIGHTED_SPRITE : CHECKBOX_SPRITE;
       }
 
-      int var8 = boxSize(var6);
+      int var8 = getBoxSize(var6);
       int var9 = this.getX() + var8 + 4;
       int var10 = this.getY() + (this.height >> 1) - (9 >> 1);
       var1.blitSprite(var7, this.getX(), this.getY(), var8, var8);

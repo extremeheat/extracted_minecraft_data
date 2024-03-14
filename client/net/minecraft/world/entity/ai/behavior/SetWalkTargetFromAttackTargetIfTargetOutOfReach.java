@@ -33,9 +33,7 @@ public class SetWalkTargetFromAttackTargetIfTargetOutOfReach {
                .apply(var1, (var2, var3, var4, var5) -> (var6, var7, var8) -> {
                      LivingEntity var10 = var1.get(var4);
                      Optional var11 = var1.tryGet(var5);
-                     if (var11.isPresent() && ((NearestVisibleLivingEntities)var11.get()).contains(var10) && BehaviorUtils.isWithinAttackRange(var7, var10, 1)
-                        )
-                      {
+                     if (var11.isPresent() && ((NearestVisibleLivingEntities)var11.get()).contains(var10) && BehaviorUtils.isWithinAttackRange(var7, var10, 1)) {
                         var2.erase();
                      } else {
                         var3.set(new EntityTracker(var10, true));

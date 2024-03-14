@@ -3,6 +3,7 @@ package net.minecraft.client.gui.screens.inventory;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.protocol.game.ServerboundRenameItemPacket;
@@ -42,8 +43,12 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
       this.name.setResponder(this::onNameChanged);
       this.name.setValue("");
       this.addWidget(this.name);
-      this.setInitialFocus(this.name);
       this.name.setEditable(this.menu.getSlot(0).hasItem());
+   }
+
+   @Override
+   protected void setInitialFocus() {
+      this.setInitialFocus(this.name);
    }
 
    @Override
@@ -66,7 +71,7 @@ public class AnvilScreen extends ItemCombinerScreen<AnvilMenu> {
       Slot var2 = this.menu.getSlot(0);
       if (var2.hasItem()) {
          String var3 = var1;
-         if (!var2.getItem().hasCustomHoverName() && var1.equals(var2.getItem().getHoverName().getString())) {
+         if (!var2.getItem().has(DataComponents.CUSTOM_NAME) && var1.equals(var2.getItem().getHoverName().getString())) {
             var3 = "";
          }
 

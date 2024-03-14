@@ -46,8 +46,8 @@ public class SectionOcclusionGraph {
    private Future<?> fullUpdateTask;
    @Nullable
    private ViewArea viewArea;
-   private final AtomicReference<SectionOcclusionGraph.GraphState> currentGraph = new AtomicReference<>();
-   private final AtomicReference<SectionOcclusionGraph.GraphEvents> nextGraphEvents = new AtomicReference<>();
+   private final AtomicReference<SectionOcclusionGraph.GraphState> currentGraph = new AtomicReference();
+   private final AtomicReference<SectionOcclusionGraph.GraphEvents> nextGraphEvents = new AtomicReference();
    private final AtomicBoolean needsFrustumUpdate = new AtomicBoolean(false);
 
    public SectionOcclusionGraph() {
@@ -78,7 +78,7 @@ public class SectionOcclusionGraph {
    }
 
    public void addSectionsInFrustum(Frustum var1, List<SectionRenderDispatcher.RenderSection> var2) {
-      for(SectionOcclusionGraph.Node var4 : this.currentGraph.get().storage().renderSections) {
+      for(SectionOcclusionGraph.Node var4 : ((SectionOcclusionGraph.GraphState)this.currentGraph.get()).storage().renderSections) {
          if (var1.isVisible(var4.section.getBoundingBox())) {
             var2.add(var4.section);
          }
@@ -90,24 +90,24 @@ public class SectionOcclusionGraph {
    }
 
    public void onChunkLoaded(ChunkPos var1) {
-      SectionOcclusionGraph.GraphEvents var2 = this.nextGraphEvents.get();
+      SectionOcclusionGraph.GraphEvents var2 = (SectionOcclusionGraph.GraphEvents)this.nextGraphEvents.get();
       if (var2 != null) {
          this.addNeighbors(var2, var1);
       }
 
-      SectionOcclusionGraph.GraphEvents var3 = this.currentGraph.get().events;
+      SectionOcclusionGraph.GraphEvents var3 = ((SectionOcclusionGraph.GraphState)this.currentGraph.get()).events;
       if (var3 != var2) {
          this.addNeighbors(var3, var1);
       }
    }
 
    public void onSectionCompiled(SectionRenderDispatcher.RenderSection var1) {
-      SectionOcclusionGraph.GraphEvents var2 = this.nextGraphEvents.get();
+      SectionOcclusionGraph.GraphEvents var2 = (SectionOcclusionGraph.GraphEvents)this.nextGraphEvents.get();
       if (var2 != null) {
          var2.sectionsToPropagateFrom.add(var1);
       }
 
-      SectionOcclusionGraph.GraphEvents var3 = this.currentGraph.get().events;
+      SectionOcclusionGraph.GraphEvents var3 = ((SectionOcclusionGraph.GraphState)this.currentGraph.get()).events;
       if (var3 != var2) {
          var3.sectionsToPropagateFrom.add(var1);
       }
@@ -139,7 +139,7 @@ public class SectionOcclusionGraph {
    }
 
    private void runPartialUpdate(boolean var1, Frustum var2, List<SectionRenderDispatcher.RenderSection> var3, Vec3 var4) {
-      SectionOcclusionGraph.GraphState var5 = this.currentGraph.get();
+      SectionOcclusionGraph.GraphState var5 = (SectionOcclusionGraph.GraphState)this.currentGraph.get();
       this.queueSectionsWithNewNeighbors(var5);
       if (!var5.events.sectionsToPropagateFrom.isEmpty()) {
          ArrayDeque var6 = Queues.newArrayDeque();
@@ -341,7 +341,7 @@ public class SectionOcclusionGraph {
    @Nullable
    @VisibleForDebug
    protected SectionOcclusionGraph.Node getNode(SectionRenderDispatcher.RenderSection var1) {
-      return this.currentGraph.get().storage.sectionToNodeMap.get(var1);
+      return ((SectionOcclusionGraph.GraphState)this.currentGraph.get()).storage.sectionToNodeMap.get(var1);
    }
 
    static record GraphEvents(LongSet a, BlockingQueue<SectionRenderDispatcher.RenderSection> b) {

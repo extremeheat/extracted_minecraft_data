@@ -7,6 +7,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.random.SimpleWeightedRandomList;
 import net.minecraft.world.level.SpawnData;
+import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 
 public record TrialSpawnerConfig(
    int c, int d, float e, float f, float g, float h, int i, int j, SimpleWeightedRandomList<SpawnData> k, SimpleWeightedRandomList<ResourceLocation> l
@@ -22,7 +23,19 @@ public record TrialSpawnerConfig(
    private final SimpleWeightedRandomList<SpawnData> spawnPotentialsDefinition;
    private final SimpleWeightedRandomList<ResourceLocation> lootTablesToEject;
    public static TrialSpawnerConfig DEFAULT = new TrialSpawnerConfig(
-      14, 4, 6.0F, 2.0F, 2.0F, 1.0F, 40, 36000, SimpleWeightedRandomList.empty(), SimpleWeightedRandomList.empty()
+      14,
+      4,
+      6.0F,
+      2.0F,
+      2.0F,
+      1.0F,
+      40,
+      36000,
+      SimpleWeightedRandomList.empty(),
+      SimpleWeightedRandomList.<ResourceLocation>builder()
+         .add(BuiltInLootTables.SPAWNER_TRIAL_CHAMBER_CONSUMABLES)
+         .add(BuiltInLootTables.SPAWNER_TRIAL_CHAMBER_KEY)
+         .build()
    );
    public static MapCodec<TrialSpawnerConfig> MAP_CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(
@@ -38,9 +51,7 @@ public record TrialSpawnerConfig(
                Codec.floatRange(0.0F, 3.4028235E38F)
                   .optionalFieldOf("simultaneous_mobs_added_per_player", DEFAULT.simultaneousMobsAddedPerPlayer)
                   .forGetter(TrialSpawnerConfig::simultaneousMobsAddedPerPlayer),
-               Codec.intRange(0, 2147483647)
-                  .optionalFieldOf("ticks_between_spawn", DEFAULT.ticksBetweenSpawn)
-                  .forGetter(TrialSpawnerConfig::ticksBetweenSpawn),
+               Codec.intRange(0, 2147483647).optionalFieldOf("ticks_between_spawn", DEFAULT.ticksBetweenSpawn).forGetter(TrialSpawnerConfig::ticksBetweenSpawn),
                Codec.intRange(0, 2147483647)
                   .optionalFieldOf("target_cooldown_length", DEFAULT.targetCooldownLength)
                   .forGetter(TrialSpawnerConfig::targetCooldownLength),
@@ -48,7 +59,7 @@ public record TrialSpawnerConfig(
                   .optionalFieldOf("spawn_potentials", SimpleWeightedRandomList.empty())
                   .forGetter(TrialSpawnerConfig::spawnPotentialsDefinition),
                SimpleWeightedRandomList.wrappedCodecAllowingEmpty(ResourceLocation.CODEC)
-                  .optionalFieldOf("loot_tables_to_eject", SimpleWeightedRandomList.empty())
+                  .optionalFieldOf("loot_tables_to_eject", DEFAULT.lootTablesToEject)
                   .forGetter(TrialSpawnerConfig::lootTablesToEject)
             )
             .apply(var0, TrialSpawnerConfig::new)

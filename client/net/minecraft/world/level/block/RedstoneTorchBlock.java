@@ -38,14 +38,14 @@ public class RedstoneTorchBlock extends BaseTorchBlock {
    }
 
    @Override
-   public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       for(Direction var9 : Direction.values()) {
          var2.updateNeighborsAt(var3.relative(var9), this);
       }
    }
 
    @Override
-   public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var5) {
          for(Direction var9 : Direction.values()) {
             var2.updateNeighborsAt(var3.relative(var9), this);
@@ -54,7 +54,7 @@ public class RedstoneTorchBlock extends BaseTorchBlock {
    }
 
    @Override
-   public int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
+   protected int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       return var1.getValue(LIT) && Direction.UP != var4 ? 15 : 0;
    }
 
@@ -63,7 +63,7 @@ public class RedstoneTorchBlock extends BaseTorchBlock {
    }
 
    @Override
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       boolean var5 = this.hasNeighborSignal(var2, var3, var1);
       List var6 = RECENT_TOGGLES.get(var2);
 
@@ -85,19 +85,19 @@ public class RedstoneTorchBlock extends BaseTorchBlock {
    }
 
    @Override
-   public void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
+   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
       if (var1.getValue(LIT) == this.hasNeighborSignal(var2, var3, var1) && !var2.getBlockTicks().willTickThisTick(var3, this)) {
          var2.scheduleTick(var3, this, 2);
       }
    }
 
    @Override
-   public int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
+   protected int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       return var4 == Direction.DOWN ? var1.getSignal(var2, var3, var4) : 0;
    }
 
    @Override
-   public boolean isSignalSource(BlockState var1) {
+   protected boolean isSignalSource(BlockState var1) {
       return true;
    }
 

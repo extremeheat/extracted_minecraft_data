@@ -13,7 +13,6 @@ import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
@@ -38,14 +37,14 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.AABB;
-import org.joml.Vector3f;
 
 public class ZombifiedPiglin extends Zombie implements NeutralMob {
+   private static final EntityDimensions BABY_DIMENSIONS = EntityType.ZOMBIFIED_PIGLIN.getDimensions().scale(0.5F).withEyeHeight(0.97F);
    private static final UUID SPEED_MODIFIER_ATTACKING_UUID = UUID.fromString("49455A49-7EC5-45BA-B886-3B90B23A1718");
    private static final AttributeModifier SPEED_MODIFIER_ATTACKING = new AttributeModifier(
-      SPEED_MODIFIER_ATTACKING_UUID, "Attacking speed boost", 0.05, AttributeModifier.Operation.ADDITION
+      SPEED_MODIFIER_ATTACKING_UUID, "Attacking speed boost", 0.05, AttributeModifier.Operation.ADD_VALUE
    );
    private static final UniformInt FIRST_ANGER_SOUND_DELAY = TimeUtil.rangeOfSeconds(0, 1);
    private int playFirstAngerSoundIn;
@@ -56,12 +55,10 @@ public class ZombifiedPiglin extends Zombie implements NeutralMob {
    private static final int ALERT_RANGE_Y = 10;
    private static final UniformInt ALERT_INTERVAL = TimeUtil.rangeOfSeconds(4, 6);
    private int ticksUntilNextAlert;
-   private static final float ZOMBIFIED_PIGLIN_EYE_HEIGHT = 1.79F;
-   private static final float ZOMBIFIED_PIGLIN_BABY_EYE_HEIGHT_ADJUSTMENT = 0.82F;
 
    public ZombifiedPiglin(EntityType<? extends ZombifiedPiglin> var1, Level var2) {
       super(var1, var2);
-      this.setPathfindingMalus(BlockPathTypes.LAVA, 8.0F);
+      this.setPathfindingMalus(PathType.LAVA, 8.0F);
    }
 
    @Override
@@ -86,8 +83,8 @@ public class ZombifiedPiglin extends Zombie implements NeutralMob {
    }
 
    @Override
-   protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
-      return this.isBaby() ? 0.96999997F : 1.79F;
+   public EntityDimensions getDefaultDimensions(Pose var1) {
+      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(var1);
    }
 
    @Override
@@ -105,7 +102,7 @@ public class ZombifiedPiglin extends Zombie implements NeutralMob {
 
          this.maybePlayFirstAngerSound();
       } else if (var1.hasModifier(SPEED_MODIFIER_ATTACKING)) {
-         var1.removeModifier(SPEED_MODIFIER_ATTACKING.getId());
+         var1.removeModifier(SPEED_MODIFIER_ATTACKING.id());
       }
 
       this.updatePersistentAnger((ServerLevel)this.level(), true);
@@ -253,10 +250,5 @@ public class ZombifiedPiglin extends Zombie implements NeutralMob {
    @Override
    public boolean wantsToPickUp(ItemStack var1) {
       return this.canHoldItem(var1);
-   }
-
-   @Override
-   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      return new Vector3f(0.0F, var2.height + 0.05F * var3, 0.0F);
    }
 }

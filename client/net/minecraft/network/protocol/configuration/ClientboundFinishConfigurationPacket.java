@@ -1,20 +1,21 @@
 package net.minecraft.network.protocol.configuration;
 
-import net.minecraft.network.ConnectionProtocol;
-import net.minecraft.network.FriendlyByteBuf;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 
-public record ClientboundFinishConfigurationPacket() implements Packet<ClientConfigurationPacketListener> {
-   public ClientboundFinishConfigurationPacket(FriendlyByteBuf var1) {
-      this();
-   }
+public class ClientboundFinishConfigurationPacket implements Packet<ClientConfigurationPacketListener> {
+   public static final ClientboundFinishConfigurationPacket INSTANCE = new ClientboundFinishConfigurationPacket();
+   public static final StreamCodec<ByteBuf, ClientboundFinishConfigurationPacket> STREAM_CODEC = StreamCodec.unit(INSTANCE);
 
-   public ClientboundFinishConfigurationPacket() {
+   private ClientboundFinishConfigurationPacket() {
       super();
    }
 
    @Override
-   public void write(FriendlyByteBuf var1) {
+   public PacketType<ClientboundFinishConfigurationPacket> type() {
+      return ConfigurationPacketTypes.CLIENTBOUND_FINISH_CONFIGURATION;
    }
 
    public void handle(ClientConfigurationPacketListener var1) {
@@ -22,7 +23,7 @@ public record ClientboundFinishConfigurationPacket() implements Packet<ClientCon
    }
 
    @Override
-   public ConnectionProtocol nextProtocol() {
-      return ConnectionProtocol.PLAY;
+   public boolean isTerminal() {
+      return true;
    }
 }

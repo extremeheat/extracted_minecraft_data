@@ -5,6 +5,9 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
@@ -16,8 +19,8 @@ import net.minecraft.world.level.levelgen.structure.Structure;
 
 public record LocationPredicate(
    Optional<LocationPredicate.PositionPredicate> b,
-   Optional<ResourceKey<Biome>> c,
-   Optional<ResourceKey<Structure>> d,
+   Optional<HolderSet<Biome>> c,
+   Optional<HolderSet<Structure>> d,
    Optional<ResourceKey<Level>> e,
    Optional<Boolean> f,
    Optional<LightPredicate> g,
@@ -25,8 +28,8 @@ public record LocationPredicate(
    Optional<FluidPredicate> i
 ) {
    private final Optional<LocationPredicate.PositionPredicate> position;
-   private final Optional<ResourceKey<Biome>> biome;
-   private final Optional<ResourceKey<Structure>> structure;
+   private final Optional<HolderSet<Biome>> biomes;
+   private final Optional<HolderSet<Structure>> structures;
    private final Optional<ResourceKey<Level>> dimension;
    private final Optional<Boolean> smokey;
    private final Optional<LightPredicate> light;
@@ -35,8 +38,8 @@ public record LocationPredicate(
    public static final Codec<LocationPredicate> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                ExtraCodecs.strictOptionalField(LocationPredicate.PositionPredicate.CODEC, "position").forGetter(LocationPredicate::position),
-               ExtraCodecs.strictOptionalField(ResourceKey.codec(Registries.BIOME), "biome").forGetter(LocationPredicate::biome),
-               ExtraCodecs.strictOptionalField(ResourceKey.codec(Registries.STRUCTURE), "structure").forGetter(LocationPredicate::structure),
+               ExtraCodecs.strictOptionalField(RegistryCodecs.homogeneousList(Registries.BIOME), "biomes").forGetter(LocationPredicate::biomes),
+               ExtraCodecs.strictOptionalField(RegistryCodecs.homogeneousList(Registries.STRUCTURE), "structures").forGetter(LocationPredicate::structures),
                ExtraCodecs.strictOptionalField(ResourceKey.codec(Registries.DIMENSION), "dimension").forGetter(LocationPredicate::dimension),
                ExtraCodecs.strictOptionalField(Codec.BOOL, "smokey").forGetter(LocationPredicate::smokey),
                ExtraCodecs.strictOptionalField(LightPredicate.CODEC, "light").forGetter(LocationPredicate::light),
@@ -48,8 +51,8 @@ public record LocationPredicate(
 
    public LocationPredicate(
       Optional<LocationPredicate.PositionPredicate> var1,
-      Optional<ResourceKey<Biome>> var2,
-      Optional<ResourceKey<Structure>> var3,
+      Optional<HolderSet<Biome>> var2,
+      Optional<HolderSet<Structure>> var3,
       Optional<ResourceKey<Level>> var4,
       Optional<Boolean> var5,
       Optional<LightPredicate> var6,
@@ -58,8 +61,8 @@ public record LocationPredicate(
    ) {
       super();
       this.position = var1;
-      this.biome = var2;
-      this.structure = var3;
+      this.biomes = var2;
+      this.structures = var3;
       this.dimension = var4;
       this.smokey = var5;
       this.light = var6;
@@ -67,38 +70,23 @@ public record LocationPredicate(
       this.fluid = var8;
    }
 
-   private static Optional<LocationPredicate> of(
-      Optional<LocationPredicate.PositionPredicate> var0,
-      Optional<ResourceKey<Biome>> var1,
-      Optional<ResourceKey<Structure>> var2,
-      Optional<ResourceKey<Level>> var3,
-      Optional<Boolean> var4,
-      Optional<LightPredicate> var5,
-      Optional<BlockPredicate> var6,
-      Optional<FluidPredicate> var7
-   ) {
-      return var0.isEmpty() && var1.isEmpty() && var2.isEmpty() && var3.isEmpty() && var4.isEmpty() && var5.isEmpty() && var6.isEmpty() && var7.isEmpty()
-         ? Optional.empty()
-         : Optional.of(new LocationPredicate(var0, var1, var2, var3, var4, var5, var6, var7));
-   }
-
    public boolean matches(ServerLevel var1, double var2, double var4, double var6) {
-      if (this.position.isPresent() && !this.position.get().matches(var2, var4, var6)) {
+      if (this.position.isPresent() && !((LocationPredicate.PositionPredicate)this.position.get()).matches(var2, var4, var6)) {
          return false;
       } else if (this.dimension.isPresent() && this.dimension.get() != var1.dimension()) {
          return false;
       } else {
          BlockPos var8 = BlockPos.containing(var2, var4, var6);
          boolean var9 = var1.isLoaded(var8);
-         if (!this.biome.isPresent() || var9 && var1.getBiome(var8).is(this.biome.get())) {
-            if (!this.structure.isPresent() || var9 && var1.structureManager().getStructureWithPieceAt(var8, this.structure.get()).isValid()) {
+         if (!this.biomes.isPresent() || var9 && this.biomes.get().contains(var1.getBiome(var8))) {
+            if (!this.structures.isPresent() || var9 && var1.structureManager().getStructureWithPieceAt(var8, this.structures.get()).isValid()) {
                if (!this.smokey.isPresent() || var9 && this.smokey.get() == CampfireBlock.isSmokeyPos(var1, var8)) {
-                  if (this.light.isPresent() && !this.light.get().matches(var1, var8)) {
+                  if (this.light.isPresent() && !((LightPredicate)this.light.get()).matches(var1, var8)) {
                      return false;
-                  } else if (this.block.isPresent() && !this.block.get().matches(var1, var8)) {
+                  } else if (this.block.isPresent() && !((BlockPredicate)this.block.get()).matches(var1, var8)) {
                      return false;
                   } else {
-                     return !this.fluid.isPresent() || this.fluid.get().matches(var1, var8);
+                     return !this.fluid.isPresent() || ((FluidPredicate)this.fluid.get()).matches(var1, var8);
                   }
                } else {
                   return false;
@@ -116,8 +104,8 @@ public record LocationPredicate(
       private MinMaxBounds.Doubles x = MinMaxBounds.Doubles.ANY;
       private MinMaxBounds.Doubles y = MinMaxBounds.Doubles.ANY;
       private MinMaxBounds.Doubles z = MinMaxBounds.Doubles.ANY;
-      private Optional<ResourceKey<Biome>> biome = Optional.empty();
-      private Optional<ResourceKey<Structure>> structure = Optional.empty();
+      private Optional<HolderSet<Biome>> biomes = Optional.empty();
+      private Optional<HolderSet<Structure>> structures = Optional.empty();
       private Optional<ResourceKey<Level>> dimension = Optional.empty();
       private Optional<Boolean> smokey = Optional.empty();
       private Optional<LightPredicate> light = Optional.empty();
@@ -132,16 +120,16 @@ public record LocationPredicate(
          return new LocationPredicate.Builder();
       }
 
-      public static LocationPredicate.Builder inBiome(ResourceKey<Biome> var0) {
-         return location().setBiome(var0);
+      public static LocationPredicate.Builder inBiome(Holder<Biome> var0) {
+         return location().setBiomes(HolderSet.direct(var0));
       }
 
       public static LocationPredicate.Builder inDimension(ResourceKey<Level> var0) {
          return location().setDimension(var0);
       }
 
-      public static LocationPredicate.Builder inStructure(ResourceKey<Structure> var0) {
-         return location().setStructure(var0);
+      public static LocationPredicate.Builder inStructure(Holder<Structure> var0) {
+         return location().setStructures(HolderSet.direct(var0));
       }
 
       public static LocationPredicate.Builder atYLocation(MinMaxBounds.Doubles var0) {
@@ -163,13 +151,13 @@ public record LocationPredicate(
          return this;
       }
 
-      public LocationPredicate.Builder setBiome(ResourceKey<Biome> var1) {
-         this.biome = Optional.of(var1);
+      public LocationPredicate.Builder setBiomes(HolderSet<Biome> var1) {
+         this.biomes = Optional.of(var1);
          return this;
       }
 
-      public LocationPredicate.Builder setStructure(ResourceKey<Structure> var1) {
-         this.structure = Optional.of(var1);
+      public LocationPredicate.Builder setStructures(HolderSet<Structure> var1) {
+         this.structures = Optional.of(var1);
          return this;
       }
 
@@ -200,7 +188,7 @@ public record LocationPredicate(
 
       public LocationPredicate build() {
          Optional var1 = LocationPredicate.PositionPredicate.of(this.x, this.y, this.z);
-         return new LocationPredicate(var1, this.biome, this.structure, this.dimension, this.smokey, this.light, this.block, this.fluid);
+         return new LocationPredicate(var1, this.biomes, this.structures, this.dimension, this.smokey, this.light, this.block, this.fluid);
       }
    }
 

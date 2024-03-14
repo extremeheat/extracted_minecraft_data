@@ -4,20 +4,15 @@ import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Direction;
-import net.minecraft.core.Holder;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.AbstractBannerBlock;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BannerPattern;
+import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import org.apache.commons.lang3.Validate;
 
 public class BannerItem extends StandingAndWallBlockItem {
-   private static final String PATTERN_PREFIX = "block.minecraft.banner.";
-
    public BannerItem(Block var1, Block var2, Item.Properties var3) {
       super(var1, var2, var3, Direction.DOWN);
       Validate.isInstanceOf(AbstractBannerBlock.class, var1);
@@ -25,21 +20,11 @@ public class BannerItem extends StandingAndWallBlockItem {
    }
 
    public static void appendHoverTextFromBannerBlockEntityTag(ItemStack var0, List<Component> var1) {
-      CompoundTag var2 = BlockItem.getBlockEntityData(var0);
-      if (var2 != null && var2.contains("Patterns")) {
-         ListTag var3 = var2.getList("Patterns", 10);
-
-         for(int var4 = 0; var4 < var3.size() && var4 < 6; ++var4) {
-            CompoundTag var5 = var3.getCompound(var4);
-            DyeColor var6 = DyeColor.byId(var5.getInt("Color"));
-            Holder var7 = BannerPattern.byHash(var5.getString("Pattern"));
-            if (var7 != null) {
-               var7.unwrapKey()
-                  .map(var0x -> var0x.location().toShortLanguageKey())
-                  .ifPresent(
-                     var2x -> var1.add(Component.translatable("block.minecraft.banner." + var2x + "." + var6.getName()).withStyle(ChatFormatting.GRAY))
-                  );
-            }
+      BannerPatternLayers var2 = var0.get(DataComponents.BANNER_PATTERNS);
+      if (var2 != null) {
+         for(int var3 = 0; var3 < Math.min(var2.layers().size(), 6); ++var3) {
+            BannerPatternLayers.Layer var4 = (BannerPatternLayers.Layer)var2.layers().get(var3);
+            var1.add(var4.description().withStyle(ChatFormatting.GRAY));
          }
       }
    }

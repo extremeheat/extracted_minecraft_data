@@ -214,8 +214,7 @@ public final class SkyLightEngine extends LightEngine<SkyLightSectionStorage.Sky
             int var12 = 0;
 
             while(
-               !this.storage.storingLightForSection(SectionPos.asLong(var9, var10 - var12 - 1, var11))
-                  && this.storage.hasLightDataAtOrBelow(var10 - var12 - 1)
+               !this.storage.storingLightForSection(SectionPos.asLong(var9, var10 - var12 - 1, var11)) && this.storage.hasLightDataAtOrBelow(var10 - var12 - 1)
             ) {
                ++var12;
             }

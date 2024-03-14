@@ -31,7 +31,9 @@ public class GoToPotentialJobSite extends Behavior<Villager> {
    }
 
    protected void tick(ServerLevel var1, Villager var2, long var3) {
-      BehaviorUtils.setWalkAndLookTargetMemories(var2, var2.getBrain().getMemory(MemoryModuleType.POTENTIAL_JOB_SITE).get().pos(), this.speedModifier, 1);
+      BehaviorUtils.setWalkAndLookTargetMemories(
+         var2, ((GlobalPos)var2.getBrain().getMemory(MemoryModuleType.POTENTIAL_JOB_SITE).get()).pos(), this.speedModifier, 1
+      );
    }
 
    protected void stop(ServerLevel var1, Villager var2, long var3) {

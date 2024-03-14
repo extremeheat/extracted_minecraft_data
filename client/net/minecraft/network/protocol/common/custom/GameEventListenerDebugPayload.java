@@ -1,18 +1,21 @@
 package net.minecraft.network.protocol.common.custom;
 
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.level.gameevent.PositionSource;
-import net.minecraft.world.level.gameevent.PositionSourceType;
 
-public record GameEventListenerDebugPayload(PositionSource b, int c) implements CustomPacketPayload {
+public record GameEventListenerDebugPayload(PositionSource c, int d) implements CustomPacketPayload {
    private final PositionSource listenerPos;
    private final int listenerRange;
-   public static final ResourceLocation ID = new ResourceLocation("debug/game_event_listeners");
-
-   public GameEventListenerDebugPayload(FriendlyByteBuf var1) {
-      this(PositionSourceType.fromNetwork(var1), var1.readVarInt());
-   }
+   public static final StreamCodec<RegistryFriendlyByteBuf, GameEventListenerDebugPayload> STREAM_CODEC = StreamCodec.composite(
+      PositionSource.STREAM_CODEC,
+      GameEventListenerDebugPayload::listenerPos,
+      ByteBufCodecs.VAR_INT,
+      GameEventListenerDebugPayload::listenerRange,
+      GameEventListenerDebugPayload::new
+   );
+   public static final CustomPacketPayload.Type<GameEventListenerDebugPayload> TYPE = CustomPacketPayload.createType("debug/game_event_listeners");
 
    public GameEventListenerDebugPayload(PositionSource var1, int var2) {
       super();
@@ -21,13 +24,7 @@ public record GameEventListenerDebugPayload(PositionSource b, int c) implements 
    }
 
    @Override
-   public void write(FriendlyByteBuf var1) {
-      PositionSourceType.toNetwork(this.listenerPos, var1);
-      var1.writeVarInt(this.listenerRange);
-   }
-
-   @Override
-   public ResourceLocation id() {
-      return ID;
+   public CustomPacketPayload.Type<GameEventListenerDebugPayload> type() {
+      return TYPE;
    }
 }

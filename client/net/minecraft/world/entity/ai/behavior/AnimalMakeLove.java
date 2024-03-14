@@ -16,9 +16,15 @@ public class AnimalMakeLove extends Behavior<Animal> {
    private static final int MAX_DURATION = 110;
    private final EntityType<? extends Animal> partnerType;
    private final float speedModifier;
+   private final int closeEnoughDistance;
+   private static final int DEFAULT_CLOSE_ENOUGH_DISTANCE = 2;
    private long spawnChildAtTime;
 
-   public AnimalMakeLove(EntityType<? extends Animal> var1, float var2) {
+   public AnimalMakeLove(EntityType<? extends Animal> var1) {
+      this(var1, 1.0F, 2);
+   }
+
+   public AnimalMakeLove(EntityType<? extends Animal> var1, float var2, int var3) {
       super(
          ImmutableMap.of(
             MemoryModuleType.NEAREST_VISIBLE_LIVING_ENTITIES,
@@ -36,6 +42,7 @@ public class AnimalMakeLove extends Behavior<Animal> {
       );
       this.partnerType = var1;
       this.speedModifier = var2;
+      this.closeEnoughDistance = var3;
    }
 
    protected boolean checkExtraStartConditions(ServerLevel var1, Animal var2) {
@@ -46,7 +53,7 @@ public class AnimalMakeLove extends Behavior<Animal> {
       Animal var5 = this.findValidBreedPartner(var2).get();
       var2.getBrain().setMemory(MemoryModuleType.BREED_TARGET, var5);
       var5.getBrain().setMemory(MemoryModuleType.BREED_TARGET, var2);
-      BehaviorUtils.lockGazeAndWalkToEachOther(var2, var5, this.speedModifier);
+      BehaviorUtils.lockGazeAndWalkToEachOther(var2, var5, this.speedModifier, this.closeEnoughDistance);
       int var6 = 60 + var2.getRandom().nextInt(50);
       this.spawnChildAtTime = var3 + (long)var6;
    }
@@ -67,7 +74,7 @@ public class AnimalMakeLove extends Behavior<Animal> {
 
    protected void tick(ServerLevel var1, Animal var2, long var3) {
       Animal var5 = this.getBreedTarget(var2);
-      BehaviorUtils.lockGazeAndWalkToEachOther(var2, var5, this.speedModifier);
+      BehaviorUtils.lockGazeAndWalkToEachOther(var2, var5, this.speedModifier, this.closeEnoughDistance);
       if (var2.closerThan(var5, 3.0)) {
          if (var3 >= this.spawnChildAtTime) {
             var2.spawnChildFromBreeding(var1, var5);

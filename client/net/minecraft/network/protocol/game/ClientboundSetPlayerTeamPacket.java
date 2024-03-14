@@ -6,11 +6,18 @@ import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.scores.PlayerTeam;
 
 public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSetPlayerTeamPacket> STREAM_CODEC = Packet.codec(
+      ClientboundSetPlayerTeamPacket::write, ClientboundSetPlayerTeamPacket::new
+   );
    private static final int METHOD_ADD = 0;
    private static final int METHOD_REMOVE = 1;
    private static final int METHOD_CHANGE = 2;
@@ -50,7 +57,7 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
       );
    }
 
-   public ClientboundSetPlayerTeamPacket(FriendlyByteBuf var1) {
+   private ClientboundSetPlayerTeamPacket(RegistryFriendlyByteBuf var1) {
       super();
       this.name = var1.readUtf();
       this.method = var1.readByte();
@@ -67,8 +74,7 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
       }
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(RegistryFriendlyByteBuf var1) {
       var1.writeUtf(this.name);
       var1.writeByte(this.method);
       if (shouldHaveParameters(this.method)) {
@@ -90,29 +96,25 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
 
    @Nullable
    public ClientboundSetPlayerTeamPacket.Action getPlayerAction() {
-      switch(this.method) {
-         case 0:
-         case 3:
-            return ClientboundSetPlayerTeamPacket.Action.ADD;
-         case 1:
-         case 2:
-         default:
-            return null;
-         case 4:
-            return ClientboundSetPlayerTeamPacket.Action.REMOVE;
-      }
+      return switch(this.method) {
+         case 0, 3 -> ClientboundSetPlayerTeamPacket.Action.ADD;
+         default -> null;
+         case 4 -> ClientboundSetPlayerTeamPacket.Action.REMOVE;
+      };
    }
 
    @Nullable
    public ClientboundSetPlayerTeamPacket.Action getTeamAction() {
-      switch(this.method) {
-         case 0:
-            return ClientboundSetPlayerTeamPacket.Action.ADD;
-         case 1:
-            return ClientboundSetPlayerTeamPacket.Action.REMOVE;
-         default:
-            return null;
-      }
+      return switch(this.method) {
+         case 0 -> ClientboundSetPlayerTeamPacket.Action.ADD;
+         case 1 -> ClientboundSetPlayerTeamPacket.Action.REMOVE;
+         default -> null;
+      };
+   }
+
+   @Override
+   public PacketType<ClientboundSetPlayerTeamPacket> type() {
+      return GamePacketTypes.CLIENTBOUND_SET_PLAYER_TEAM;
    }
 
    public void handle(ClientGamePacketListener var1) {
@@ -159,15 +161,15 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
          this.playerSuffix = var1.getPlayerSuffix();
       }
 
-      public Parameters(FriendlyByteBuf var1) {
+      public Parameters(RegistryFriendlyByteBuf var1) {
          super();
-         this.displayName = var1.readComponentTrusted();
+         this.displayName = ComponentSerialization.TRUSTED_STREAM_CODEC.decode(var1);
          this.options = var1.readByte();
          this.nametagVisibility = var1.readUtf(40);
          this.collisionRule = var1.readUtf(40);
          this.color = var1.readEnum(ChatFormatting.class);
-         this.playerPrefix = var1.readComponentTrusted();
-         this.playerSuffix = var1.readComponentTrusted();
+         this.playerPrefix = ComponentSerialization.TRUSTED_STREAM_CODEC.decode(var1);
+         this.playerSuffix = ComponentSerialization.TRUSTED_STREAM_CODEC.decode(var1);
       }
 
       public Component getDisplayName() {
@@ -198,14 +200,14 @@ public class ClientboundSetPlayerTeamPacket implements Packet<ClientGamePacketLi
          return this.playerSuffix;
       }
 
-      public void write(FriendlyByteBuf var1) {
-         var1.writeComponent(this.displayName);
+      public void write(RegistryFriendlyByteBuf var1) {
+         ComponentSerialization.TRUSTED_STREAM_CODEC.encode(var1, this.displayName);
          var1.writeByte(this.options);
          var1.writeUtf(this.nametagVisibility);
          var1.writeUtf(this.collisionRule);
          var1.writeEnum(this.color);
-         var1.writeComponent(this.playerPrefix);
-         var1.writeComponent(this.playerSuffix);
+         ComponentSerialization.TRUSTED_STREAM_CODEC.encode(var1, this.playerPrefix);
+         ComponentSerialization.TRUSTED_STREAM_CODEC.encode(var1, this.playerSuffix);
       }
    }
 }

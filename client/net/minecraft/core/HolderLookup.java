@@ -1,5 +1,6 @@
 package net.minecraft.core;
 
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.Lifecycle;
 import java.util.Map;
 import java.util.Optional;
@@ -7,6 +8,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.flag.FeatureElement;
@@ -25,49 +27,6 @@ public interface HolderLookup<T> extends HolderGetter<T> {
       return this.listTags().map(HolderSet.Named::key);
    }
 
-   default HolderLookup<T> filterElements(final Predicate<T> var1) {
-      return new HolderLookup.Delegate<T>(this) {
-         @Override
-         public Optional<Holder.Reference<T>> get(ResourceKey<T> var1x) {
-            return this.parent.get(var1x).filter(var1xxx -> var1.test(var1xxx.value()));
-         }
-
-         @Override
-         public Stream<Holder.Reference<T>> listElements() {
-            return this.parent.listElements().filter(var1xx -> var1.test(var1xx.value()));
-         }
-      };
-   }
-
-   public static class Delegate<T> implements HolderLookup<T> {
-      protected final HolderLookup<T> parent;
-
-      public Delegate(HolderLookup<T> var1) {
-         super();
-         this.parent = var1;
-      }
-
-      @Override
-      public Optional<Holder.Reference<T>> get(ResourceKey<T> var1) {
-         return this.parent.get(var1);
-      }
-
-      @Override
-      public Stream<Holder.Reference<T>> listElements() {
-         return this.parent.listElements();
-      }
-
-      @Override
-      public Optional<HolderSet.Named<T>> get(TagKey<T> var1) {
-         return this.parent.get(var1);
-      }
-
-      @Override
-      public Stream<HolderSet.Named<T>> listTags() {
-         return this.parent.listTags();
-      }
-   }
-
    public interface Provider {
       Stream<ResourceKey<? extends Registry<?>>> listRegistries();
 
@@ -75,6 +34,10 @@ public interface HolderLookup<T> extends HolderGetter<T> {
 
       default <T> HolderLookup.RegistryLookup<T> lookupOrThrow(ResourceKey<? extends Registry<? extends T>> var1) {
          return this.<T>lookup(var1).orElseThrow(() -> new IllegalStateException("Registry " + var1.location() + " not found"));
+      }
+
+      default <V> RegistryOps<V> createSerializationContext(DynamicOps<V> var1) {
+         return RegistryOps.create(var1, this);
       }
 
       default HolderGetter.Provider asGetterLookup() {
@@ -111,46 +74,59 @@ public interface HolderLookup<T> extends HolderGetter<T> {
 
       Lifecycle registryLifecycle();
 
-      default HolderLookup<T> filterFeatures(FeatureFlagSet var1) {
-         return (HolderLookup<T>)(FeatureElement.FILTERED_REGISTRIES.contains(this.key())
-            ? this.filterElements(var1x -> ((FeatureElement)var1x).isEnabled(var1))
-            : this);
+      default HolderLookup.RegistryLookup<T> filterFeatures(FeatureFlagSet var1) {
+         return FeatureElement.FILTERED_REGISTRIES.contains(this.key()) ? this.filterElements(var1x -> ((FeatureElement)var1x).isEnabled(var1)) : this;
       }
 
-      public abstract static class Delegate<T> implements HolderLookup.RegistryLookup<T> {
-         public Delegate() {
-            super();
-         }
+      default HolderLookup.RegistryLookup<T> filterElements(final Predicate<T> var1) {
+         return new HolderLookup.RegistryLookup.Delegate<T>() {
+            @Override
+            public HolderLookup.RegistryLookup<T> parent() {
+               return RegistryLookup.this;
+            }
 
-         protected abstract HolderLookup.RegistryLookup<T> parent();
+            @Override
+            public Optional<Holder.Reference<T>> get(ResourceKey<T> var1x) {
+               return this.parent().get(var1x).filter(var1xxx -> var1.test(var1xxx.value()));
+            }
+
+            @Override
+            public Stream<Holder.Reference<T>> listElements() {
+               return this.parent().listElements().filter(var1xx -> var1.test(var1xx.value()));
+            }
+         };
+      }
+
+      public interface Delegate<T> extends HolderLookup.RegistryLookup<T> {
+         HolderLookup.RegistryLookup<T> parent();
 
          @Override
-         public ResourceKey<? extends Registry<? extends T>> key() {
+         default ResourceKey<? extends Registry<? extends T>> key() {
             return this.parent().key();
          }
 
          @Override
-         public Lifecycle registryLifecycle() {
+         default Lifecycle registryLifecycle() {
             return this.parent().registryLifecycle();
          }
 
          @Override
-         public Optional<Holder.Reference<T>> get(ResourceKey<T> var1) {
+         default Optional<Holder.Reference<T>> get(ResourceKey<T> var1) {
             return this.parent().get(var1);
          }
 
          @Override
-         public Stream<Holder.Reference<T>> listElements() {
+         default Stream<Holder.Reference<T>> listElements() {
             return this.parent().listElements();
          }
 
          @Override
-         public Optional<HolderSet.Named<T>> get(TagKey<T> var1) {
+         default Optional<HolderSet.Named<T>> get(TagKey<T> var1) {
             return this.parent().get(var1);
          }
 
          @Override
-         public Stream<HolderSet.Named<T>> listTags() {
+         default Stream<HolderSet.Named<T>> listTags() {
             return this.parent().listTags();
          }
       }

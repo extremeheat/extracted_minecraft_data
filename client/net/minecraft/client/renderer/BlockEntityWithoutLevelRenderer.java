@@ -1,12 +1,12 @@
 package net.minecraft.client.renderer;
 
-import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.model.ShieldModel;
 import net.minecraft.client.model.SkullModelBase;
 import net.minecraft.client.model.TridentModel;
@@ -19,7 +19,7 @@ import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBakery;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceManagerReloadListener;
 import net.minecraft.world.item.BlockItem;
@@ -28,7 +28,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.ShieldItem;
+import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.block.AbstractBannerBlock;
 import net.minecraft.world.level.block.AbstractSkullBlock;
 import net.minecraft.world.level.block.BedBlock;
@@ -37,6 +37,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ShulkerBoxBlock;
 import net.minecraft.world.level.block.SkullBlock;
 import net.minecraft.world.level.block.entity.BannerBlockEntity;
+import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import net.minecraft.world.level.block.entity.BedBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
@@ -44,7 +45,6 @@ import net.minecraft.world.level.block.entity.ConduitBlockEntity;
 import net.minecraft.world.level.block.entity.DecoratedPotBlockEntity;
 import net.minecraft.world.level.block.entity.EnderChestBlockEntity;
 import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
-import net.minecraft.world.level.block.entity.SkullBlockEntity;
 import net.minecraft.world.level.block.entity.TrappedChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -85,70 +85,78 @@ public class BlockEntityWithoutLevelRenderer implements ResourceManagerReloadLis
    public void renderByItem(ItemStack var1, ItemDisplayContext var2, PoseStack var3, MultiBufferSource var4, int var5, int var6) {
       Item var7 = var1.getItem();
       if (var7 instanceof BlockItem) {
-         Block var15 = ((BlockItem)var7).getBlock();
-         if (var15 instanceof AbstractSkullBlock var17) {
-            CompoundTag var19 = var1.getTag();
-            GameProfile var21 = var19 != null ? SkullBlockEntity.getOrResolveGameProfile(var19) : null;
-            SkullModelBase var12 = this.skullModels.get(var17.getType());
-            RenderType var13 = SkullBlockRenderer.getRenderType(var17.getType(), var21);
-            SkullBlockRenderer.renderSkull(null, 180.0F, 0.0F, var3, var4, var5, var12, var13);
+         Block var14 = ((BlockItem)var7).getBlock();
+         if (var14 instanceof AbstractSkullBlock var16) {
+            ResolvableProfile var18 = var1.get(DataComponents.PROFILE);
+            if (var18 != null && !var18.isResolved()) {
+               var1.remove(DataComponents.PROFILE);
+               var18.resolve().thenAcceptAsync(var1x -> var1.set(DataComponents.PROFILE, var1x), Minecraft.getInstance());
+               var18 = null;
+            }
+
+            SkullModelBase var20 = this.skullModels.get(var16.getType());
+            RenderType var21 = SkullBlockRenderer.getRenderType(var16.getType(), var18);
+            SkullBlockRenderer.renderSkull(null, 180.0F, 0.0F, var3, var4, var5, var20, var21);
          } else {
-            BlockState var18 = var15.defaultBlockState();
-            Object var16;
-            if (var15 instanceof AbstractBannerBlock) {
-               this.banner.fromItem(var1, ((AbstractBannerBlock)var15).getColor());
-               var16 = this.banner;
-            } else if (var15 instanceof BedBlock) {
-               this.bed.setColor(((BedBlock)var15).getColor());
-               var16 = this.bed;
-            } else if (var18.is(Blocks.CONDUIT)) {
-               var16 = this.conduit;
-            } else if (var18.is(Blocks.CHEST)) {
-               var16 = this.chest;
-            } else if (var18.is(Blocks.ENDER_CHEST)) {
-               var16 = this.enderChest;
-            } else if (var18.is(Blocks.TRAPPED_CHEST)) {
-               var16 = this.trappedChest;
-            } else if (var18.is(Blocks.DECORATED_POT)) {
+            BlockState var17 = var14.defaultBlockState();
+            Object var15;
+            if (var14 instanceof AbstractBannerBlock) {
+               this.banner.fromItem(var1, ((AbstractBannerBlock)var14).getColor());
+               var15 = this.banner;
+            } else if (var14 instanceof BedBlock) {
+               this.bed.setColor(((BedBlock)var14).getColor());
+               var15 = this.bed;
+            } else if (var17.is(Blocks.CONDUIT)) {
+               var15 = this.conduit;
+            } else if (var17.is(Blocks.CHEST)) {
+               var15 = this.chest;
+            } else if (var17.is(Blocks.ENDER_CHEST)) {
+               var15 = this.enderChest;
+            } else if (var17.is(Blocks.TRAPPED_CHEST)) {
+               var15 = this.trappedChest;
+            } else if (var17.is(Blocks.DECORATED_POT)) {
                this.decoratedPot.setFromItem(var1);
-               var16 = this.decoratedPot;
+               var15 = this.decoratedPot;
             } else {
-               if (!(var15 instanceof ShulkerBoxBlock)) {
+               if (!(var14 instanceof ShulkerBoxBlock)) {
                   return;
                }
 
-               DyeColor var20 = ShulkerBoxBlock.getColorFromItem(var7);
-               if (var20 == null) {
-                  var16 = DEFAULT_SHULKER_BOX;
+               DyeColor var19 = ShulkerBoxBlock.getColorFromItem(var7);
+               if (var19 == null) {
+                  var15 = DEFAULT_SHULKER_BOX;
                } else {
-                  var16 = SHULKER_BOXES[var20.getId()];
+                  var15 = SHULKER_BOXES[var19.getId()];
                }
             }
 
-            this.blockEntityRenderDispatcher.renderItem((BlockEntity)var16, var3, var4, var5, var6);
+            this.blockEntityRenderDispatcher.renderItem((BlockEntity)var15, var3, var4, var5, var6);
          }
       } else {
          if (var1.is(Items.SHIELD)) {
-            boolean var8 = BlockItem.getBlockEntityData(var1) != null;
+            BannerPatternLayers var8 = var1.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
+            DyeColor var9 = var1.get(DataComponents.BASE_COLOR);
+            boolean var10 = !var8.layers().isEmpty() || var9 != null;
             var3.pushPose();
             var3.scale(1.0F, -1.0F, -1.0F);
-            Material var9 = var8 ? ModelBakery.SHIELD_BASE : ModelBakery.NO_PATTERN_SHIELD;
-            VertexConsumer var10 = var9.sprite()
-               .wrap(ItemRenderer.getFoilBufferDirect(var4, this.shieldModel.renderType(var9.atlasLocation()), true, var1.hasFoil()));
-            this.shieldModel.handle().render(var3, var10, var5, var6, 1.0F, 1.0F, 1.0F, 1.0F);
-            if (var8) {
-               List var11 = BannerBlockEntity.createPatterns(ShieldItem.getColor(var1), BannerBlockEntity.getItemPatterns(var1));
-               BannerRenderer.renderPatterns(var3, var4, var5, var6, this.shieldModel.plate(), var9, false, var11, var1.hasFoil());
+            Material var11 = var10 ? ModelBakery.SHIELD_BASE : ModelBakery.NO_PATTERN_SHIELD;
+            VertexConsumer var12 = var11.sprite()
+               .wrap(ItemRenderer.getFoilBufferDirect(var4, this.shieldModel.renderType(var11.atlasLocation()), true, var1.hasFoil()));
+            this.shieldModel.handle().render(var3, var12, var5, var6, 1.0F, 1.0F, 1.0F, 1.0F);
+            if (var10) {
+               BannerRenderer.renderPatterns(
+                  var3, var4, var5, var6, this.shieldModel.plate(), var11, false, Objects.requireNonNullElse(var9, DyeColor.WHITE), var8, var1.hasFoil()
+               );
             } else {
-               this.shieldModel.plate().render(var3, var10, var5, var6, 1.0F, 1.0F, 1.0F, 1.0F);
+               this.shieldModel.plate().render(var3, var12, var5, var6, 1.0F, 1.0F, 1.0F, 1.0F);
             }
 
             var3.popPose();
          } else if (var1.is(Items.TRIDENT)) {
             var3.pushPose();
             var3.scale(1.0F, -1.0F, -1.0F);
-            VertexConsumer var14 = ItemRenderer.getFoilBufferDirect(var4, this.tridentModel.renderType(TridentModel.TEXTURE), false, var1.hasFoil());
-            this.tridentModel.renderToBuffer(var3, var14, var5, var6, 1.0F, 1.0F, 1.0F, 1.0F);
+            VertexConsumer var13 = ItemRenderer.getFoilBufferDirect(var4, this.tridentModel.renderType(TridentModel.TEXTURE), false, var1.hasFoil());
+            this.tridentModel.renderToBuffer(var3, var13, var5, var6, 1.0F, 1.0F, 1.0F, 1.0F);
             var3.popPose();
          }
       }

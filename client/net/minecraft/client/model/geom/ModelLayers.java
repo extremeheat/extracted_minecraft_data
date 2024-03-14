@@ -11,6 +11,7 @@ public class ModelLayers {
    private static final String DEFAULT_LAYER = "main";
    private static final Set<ModelLayerLocation> ALL_MODELS = Sets.newHashSet();
    public static final ModelLayerLocation ALLAY = register("allay");
+   public static final ModelLayerLocation ARMADILLO = register("armadillo");
    public static final ModelLayerLocation ARMOR_STAND = register("armor_stand");
    public static final ModelLayerLocation ARMOR_STAND_INNER_ARMOR = registerInnerArmor("armor_stand");
    public static final ModelLayerLocation ARMOR_STAND_OUTER_ARMOR = registerOuterArmor("armor_stand");
@@ -22,10 +23,12 @@ public class ModelLayers {
    public static final ModelLayerLocation BEE = register("bee");
    public static final ModelLayerLocation BELL = register("bell");
    public static final ModelLayerLocation BLAZE = register("blaze");
+   public static final ModelLayerLocation BOGGED = register("bogged");
+   public static final ModelLayerLocation BOGGED_INNER_ARMOR = registerInnerArmor("bogged");
+   public static final ModelLayerLocation BOGGED_OUTER_ARMOR = registerOuterArmor("bogged");
+   public static final ModelLayerLocation BOGGED_OUTER_LAYER = register("bogged", "outer");
    public static final ModelLayerLocation BOOK = register("book");
    public static final ModelLayerLocation BREEZE = register("breeze");
-   public static final ModelLayerLocation BREEZE_WIND = register("breeze", "wind");
-   public static final ModelLayerLocation BREEZE_EYES = register("breeze", "eyes");
    public static final ModelLayerLocation CAT = register("cat");
    public static final ModelLayerLocation CAT_COLLAR = register("cat", "collar");
    public static final ModelLayerLocation CAMEL = register("camel");
@@ -166,6 +169,7 @@ public class ModelLayers {
    public static final ModelLayerLocation WITHER_SKELETON_SKULL = register("wither_skeleton_skull");
    public static final ModelLayerLocation WITHER_SKULL = register("wither_skull");
    public static final ModelLayerLocation WOLF = register("wolf");
+   public static final ModelLayerLocation WOLF_ARMOR = register("wolf_armor");
    public static final ModelLayerLocation ZOGLIN = register("zoglin");
    public static final ModelLayerLocation ZOMBIE = register("zombie");
    public static final ModelLayerLocation ZOMBIE_HEAD = register("zombie_head");

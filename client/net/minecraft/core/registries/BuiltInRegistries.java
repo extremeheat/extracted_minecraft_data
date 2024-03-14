@@ -10,13 +10,20 @@ import java.util.function.Supplier;
 import net.minecraft.Util;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.CriterionTrigger;
+import net.minecraft.advancements.critereon.EntitySubPredicate;
+import net.minecraft.advancements.critereon.EntitySubPredicates;
+import net.minecraft.advancements.critereon.ItemSubPredicate;
+import net.minecraft.advancements.critereon.ItemSubPredicates;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.commands.synchronization.ArgumentTypeInfos;
 import net.minecraft.core.DefaultedMappedRegistry;
 import net.minecraft.core.DefaultedRegistry;
 import net.minecraft.core.MappedRegistry;
+import net.minecraft.core.RegistrationInfo;
 import net.minecraft.core.Registry;
 import net.minecraft.core.WritableRegistry;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.numbers.NumberFormatType;
@@ -48,6 +55,8 @@ import net.minecraft.world.entity.npc.VillagerType;
 import net.minecraft.world.entity.schedule.Activity;
 import net.minecraft.world.entity.schedule.Schedule;
 import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.ArmorMaterial;
+import net.minecraft.world.item.ArmorMaterials;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.Instrument;
@@ -65,13 +74,11 @@ import net.minecraft.world.level.biome.BiomeSources;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.BlockTypes;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.entity.BannerPattern;
-import net.minecraft.world.level.block.entity.BannerPatterns;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.entity.DecoratedPotPatterns;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.ChunkGenerators;
-import net.minecraft.world.level.chunk.ChunkStatus;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.gameevent.PositionSourceType;
 import net.minecraft.world.level.levelgen.DensityFunction;
@@ -121,17 +128,17 @@ public class BuiltInRegistries {
    private static final WritableRegistry<WritableRegistry<?>> WRITABLE_REGISTRY = new MappedRegistry<>(
       ResourceKey.createRegistryKey(Registries.ROOT_REGISTRY_NAME), Lifecycle.stable()
    );
-   public static final DefaultedRegistry<GameEvent> GAME_EVENT = registerDefaultedWithIntrusiveHolders(Registries.GAME_EVENT, "step", var0 -> GameEvent.STEP);
+   public static final DefaultedRegistry<GameEvent> GAME_EVENT = registerDefaulted(Registries.GAME_EVENT, "step", GameEvent::bootstrap);
    public static final Registry<SoundEvent> SOUND_EVENT = registerSimple(Registries.SOUND_EVENT, var0 -> SoundEvents.ITEM_PICKUP);
    public static final DefaultedRegistry<Fluid> FLUID = registerDefaultedWithIntrusiveHolders(Registries.FLUID, "empty", var0 -> Fluids.EMPTY);
-   public static final Registry<MobEffect> MOB_EFFECT = registerSimpleWithIntrusiveHolders(Registries.MOB_EFFECT, var0 -> MobEffects.LUCK);
+   public static final Registry<MobEffect> MOB_EFFECT = registerSimple(Registries.MOB_EFFECT, MobEffects::bootstrap);
    public static final DefaultedRegistry<Block> BLOCK = registerDefaultedWithIntrusiveHolders(Registries.BLOCK, "air", var0 -> Blocks.AIR);
-   public static final Registry<Enchantment> ENCHANTMENT = registerSimpleWithIntrusiveHolders(Registries.ENCHANTMENT, var0 -> Enchantments.BLOCK_FORTUNE);
+   public static final Registry<Enchantment> ENCHANTMENT = registerSimpleWithIntrusiveHolders(Registries.ENCHANTMENT, var0 -> Enchantments.FORTUNE);
    public static final DefaultedRegistry<EntityType<?>> ENTITY_TYPE = registerDefaultedWithIntrusiveHolders(
       Registries.ENTITY_TYPE, "pig", var0 -> EntityType.PIG
    );
    public static final DefaultedRegistry<Item> ITEM = registerDefaultedWithIntrusiveHolders(Registries.ITEM, "air", var0 -> Items.AIR);
-   public static final DefaultedRegistry<Potion> POTION = registerDefaultedWithIntrusiveHolders(Registries.POTION, "empty", var0 -> Potions.EMPTY);
+   public static final Registry<Potion> POTION = registerSimple(Registries.POTION, Potions::bootstrap);
    public static final Registry<ParticleType<?>> PARTICLE_TYPE = registerSimple(Registries.PARTICLE_TYPE, var0 -> ParticleTypes.BLOCK);
    public static final Registry<BlockEntityType<?>> BLOCK_ENTITY_TYPE = registerSimpleWithIntrusiveHolders(
       Registries.BLOCK_ENTITY_TYPE, var0 -> BlockEntityType.FURNACE
@@ -148,10 +155,8 @@ public class BuiltInRegistries {
    public static final Registry<PosRuleTestType<?>> POS_RULE_TEST = registerSimple(Registries.POS_RULE_TEST, var0 -> PosRuleTestType.ALWAYS_TRUE_TEST);
    public static final Registry<MenuType<?>> MENU = registerSimple(Registries.MENU, var0 -> MenuType.ANVIL);
    public static final Registry<RecipeType<?>> RECIPE_TYPE = registerSimple(Registries.RECIPE_TYPE, var0 -> RecipeType.CRAFTING);
-   public static final Registry<RecipeSerializer<?>> RECIPE_SERIALIZER = registerSimple(
-      Registries.RECIPE_SERIALIZER, var0 -> RecipeSerializer.SHAPELESS_RECIPE
-   );
-   public static final Registry<Attribute> ATTRIBUTE = registerSimple(Registries.ATTRIBUTE, var0 -> Attributes.LUCK);
+   public static final Registry<RecipeSerializer<?>> RECIPE_SERIALIZER = registerSimple(Registries.RECIPE_SERIALIZER, var0 -> RecipeSerializer.SHAPELESS_RECIPE);
+   public static final Registry<Attribute> ATTRIBUTE = registerSimple(Registries.ATTRIBUTE, Attributes::bootstrap);
    public static final Registry<PositionSourceType<?>> POSITION_SOURCE_TYPE = registerSimple(Registries.POSITION_SOURCE_TYPE, var0 -> PositionSourceType.BLOCK);
    public static final Registry<ArgumentTypeInfo<?, ?>> COMMAND_ARGUMENT_TYPE = registerSimple(Registries.COMMAND_ARGUMENT_TYPE, ArgumentTypeInfos::bootstrap);
    public static final Registry<StatType<?>> STAT_TYPE = registerSimple(Registries.STAT_TYPE, var0 -> Stats.ITEM_USED);
@@ -168,9 +173,7 @@ public class BuiltInRegistries {
    public static final Registry<Activity> ACTIVITY = registerSimple(Registries.ACTIVITY, var0 -> Activity.IDLE);
    public static final Registry<LootPoolEntryType> LOOT_POOL_ENTRY_TYPE = registerSimple(Registries.LOOT_POOL_ENTRY_TYPE, var0 -> LootPoolEntries.EMPTY);
    public static final Registry<LootItemFunctionType> LOOT_FUNCTION_TYPE = registerSimple(Registries.LOOT_FUNCTION_TYPE, var0 -> LootItemFunctions.SET_COUNT);
-   public static final Registry<LootItemConditionType> LOOT_CONDITION_TYPE = registerSimple(
-      Registries.LOOT_CONDITION_TYPE, var0 -> LootItemConditions.INVERTED
-   );
+   public static final Registry<LootItemConditionType> LOOT_CONDITION_TYPE = registerSimple(Registries.LOOT_CONDITION_TYPE, var0 -> LootItemConditions.INVERTED);
    public static final Registry<LootNumberProviderType> LOOT_NUMBER_PROVIDER_TYPE = registerSimple(
       Registries.LOOT_NUMBER_PROVIDER_TYPE, var0 -> NumberProviders.CONSTANT
    );
@@ -204,18 +207,12 @@ public class BuiltInRegistries {
       Registries.TRUNK_PLACER_TYPE, var0 -> TrunkPlacerType.STRAIGHT_TRUNK_PLACER
    );
    public static final Registry<RootPlacerType<?>> ROOT_PLACER_TYPE = registerSimple(Registries.ROOT_PLACER_TYPE, var0 -> RootPlacerType.MANGROVE_ROOT_PLACER);
-   public static final Registry<TreeDecoratorType<?>> TREE_DECORATOR_TYPE = registerSimple(
-      Registries.TREE_DECORATOR_TYPE, var0 -> TreeDecoratorType.LEAVE_VINE
-   );
+   public static final Registry<TreeDecoratorType<?>> TREE_DECORATOR_TYPE = registerSimple(Registries.TREE_DECORATOR_TYPE, var0 -> TreeDecoratorType.LEAVE_VINE);
    public static final Registry<FeatureSizeType<?>> FEATURE_SIZE_TYPE = registerSimple(
       Registries.FEATURE_SIZE_TYPE, var0 -> FeatureSizeType.TWO_LAYERS_FEATURE_SIZE
    );
-   public static final Registry<Codec<? extends BiomeSource>> BIOME_SOURCE = registerSimple(
-      Registries.BIOME_SOURCE, Lifecycle.stable(), BiomeSources::bootstrap
-   );
-   public static final Registry<Codec<? extends ChunkGenerator>> CHUNK_GENERATOR = registerSimple(
-      Registries.CHUNK_GENERATOR, Lifecycle.stable(), ChunkGenerators::bootstrap
-   );
+   public static final Registry<Codec<? extends BiomeSource>> BIOME_SOURCE = registerSimple(Registries.BIOME_SOURCE, BiomeSources::bootstrap);
+   public static final Registry<Codec<? extends ChunkGenerator>> CHUNK_GENERATOR = registerSimple(Registries.CHUNK_GENERATOR, ChunkGenerators::bootstrap);
    public static final Registry<Codec<? extends SurfaceRules.ConditionSource>> MATERIAL_CONDITION = registerSimple(
       Registries.MATERIAL_CONDITION, SurfaceRules.ConditionSource::bootstrap
    );
@@ -237,12 +234,19 @@ public class BuiltInRegistries {
    );
    public static final Registry<CatVariant> CAT_VARIANT = registerSimple(Registries.CAT_VARIANT, CatVariant::bootstrap);
    public static final Registry<FrogVariant> FROG_VARIANT = registerSimple(Registries.FROG_VARIANT, var0 -> FrogVariant.TEMPERATE);
-   public static final Registry<BannerPattern> BANNER_PATTERN = registerSimple(Registries.BANNER_PATTERN, BannerPatterns::bootstrap);
    public static final Registry<Instrument> INSTRUMENT = registerSimple(Registries.INSTRUMENT, Instruments::bootstrap);
    public static final Registry<String> DECORATED_POT_PATTERNS = registerSimple(Registries.DECORATED_POT_PATTERNS, DecoratedPotPatterns::bootstrap);
    public static final Registry<CreativeModeTab> CREATIVE_MODE_TAB = registerSimple(Registries.CREATIVE_MODE_TAB, CreativeModeTabs::bootstrap);
    public static final Registry<CriterionTrigger<?>> TRIGGER_TYPES = registerSimple(Registries.TRIGGER_TYPE, CriteriaTriggers::bootstrap);
    public static final Registry<NumberFormatType<?>> NUMBER_FORMAT_TYPE = registerSimple(Registries.NUMBER_FORMAT_TYPE, NumberFormatTypes::bootstrap);
+   public static final Registry<ArmorMaterial> ARMOR_MATERIAL = registerSimple(Registries.ARMOR_MATERIAL, ArmorMaterials::bootstrap);
+   public static final Registry<DataComponentType<?>> DATA_COMPONENT_TYPE = registerSimple(Registries.DATA_COMPONENT_TYPE, DataComponents::bootstrap);
+   public static final Registry<MapCodec<? extends EntitySubPredicate>> ENTITY_SUB_PREDICATE_TYPE = registerSimple(
+      Registries.ENTITY_SUB_PREDICATE_TYPE, EntitySubPredicates::bootstrap
+   );
+   public static final Registry<ItemSubPredicate.Type<?>> ITEM_SUB_PREDICATE_TYPE = registerSimple(
+      Registries.ITEM_SUB_PREDICATE_TYPE, ItemSubPredicates::bootstrap
+   );
    public static final Registry<? extends Registry<?>> REGISTRY = WRITABLE_REGISTRY;
 
    public BuiltInRegistries() {
@@ -250,46 +254,30 @@ public class BuiltInRegistries {
    }
 
    private static <T> Registry<T> registerSimple(ResourceKey<? extends Registry<T>> var0, BuiltInRegistries.RegistryBootstrap<T> var1) {
-      return registerSimple(var0, Lifecycle.stable(), var1);
+      return internalRegister(var0, new MappedRegistry<>(var0, Lifecycle.stable(), false), var1);
    }
 
    private static <T> Registry<T> registerSimpleWithIntrusiveHolders(ResourceKey<? extends Registry<T>> var0, BuiltInRegistries.RegistryBootstrap<T> var1) {
-      return internalRegister(var0, new MappedRegistry<>(var0, Lifecycle.stable(), true), var1, Lifecycle.stable());
+      return internalRegister(var0, new MappedRegistry<>(var0, Lifecycle.stable(), true), var1);
    }
 
    private static <T> DefaultedRegistry<T> registerDefaulted(ResourceKey<? extends Registry<T>> var0, String var1, BuiltInRegistries.RegistryBootstrap<T> var2) {
-      return registerDefaulted(var0, var1, Lifecycle.stable(), var2);
+      return internalRegister(var0, new DefaultedMappedRegistry<>(var1, var0, Lifecycle.stable(), false), var2);
    }
 
    private static <T> DefaultedRegistry<T> registerDefaultedWithIntrusiveHolders(
       ResourceKey<? extends Registry<T>> var0, String var1, BuiltInRegistries.RegistryBootstrap<T> var2
    ) {
-      return registerDefaultedWithIntrusiveHolders(var0, var1, Lifecycle.stable(), var2);
-   }
-
-   private static <T> Registry<T> registerSimple(ResourceKey<? extends Registry<T>> var0, Lifecycle var1, BuiltInRegistries.RegistryBootstrap<T> var2) {
-      return internalRegister(var0, new MappedRegistry<>(var0, var1, false), var2, var1);
-   }
-
-   private static <T> DefaultedRegistry<T> registerDefaulted(
-      ResourceKey<? extends Registry<T>> var0, String var1, Lifecycle var2, BuiltInRegistries.RegistryBootstrap<T> var3
-   ) {
-      return internalRegister(var0, new DefaultedMappedRegistry<>(var1, var0, var2, false), var3, var2);
-   }
-
-   private static <T> DefaultedRegistry<T> registerDefaultedWithIntrusiveHolders(
-      ResourceKey<? extends Registry<T>> var0, String var1, Lifecycle var2, BuiltInRegistries.RegistryBootstrap<T> var3
-   ) {
-      return internalRegister(var0, new DefaultedMappedRegistry<>(var1, var0, var2, true), var3, var2);
+      return internalRegister(var0, new DefaultedMappedRegistry<>(var1, var0, Lifecycle.stable(), true), var2);
    }
 
    private static <T, R extends WritableRegistry<T>> R internalRegister(
-      ResourceKey<? extends Registry<T>> var0, R var1, BuiltInRegistries.RegistryBootstrap<T> var2, Lifecycle var3
+      ResourceKey<? extends Registry<T>> var0, R var1, BuiltInRegistries.RegistryBootstrap<T> var2
    ) {
       Bootstrap.checkBootstrapCalled(() -> "registry " + var0);
-      ResourceLocation var4 = var0.location();
-      LOADERS.put(var4, () -> var2.run(var1));
-      WRITABLE_REGISTRY.register(var0, var1, var3);
+      ResourceLocation var3 = var0.location();
+      LOADERS.put(var3, () -> var2.run(var1));
+      WRITABLE_REGISTRY.register(var0, var1, RegistrationInfo.BUILT_IN);
       return (R)var1;
    }
 
@@ -330,6 +318,6 @@ public class BuiltInRegistries {
 
    @FunctionalInterface
    interface RegistryBootstrap<T> {
-      T run(Registry<T> var1);
+      Object run(Registry<T> var1);
    }
 }

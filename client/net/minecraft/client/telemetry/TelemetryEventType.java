@@ -147,7 +147,7 @@ public class TelemetryEventType {
    public static class Builder {
       private final String id;
       private final String exportKey;
-      private final List<TelemetryProperty<?>> properties = new ArrayList<>();
+      private final List<TelemetryProperty<?>> properties = new ArrayList();
       private boolean isOptIn;
 
       Builder(String var1, String var2) {

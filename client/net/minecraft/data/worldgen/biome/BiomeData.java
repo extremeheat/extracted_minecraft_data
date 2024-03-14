@@ -2,7 +2,7 @@ package net.minecraft.data.worldgen.biome;
 
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.Biomes;
 
@@ -11,7 +11,7 @@ public abstract class BiomeData {
       super();
    }
 
-   public static void bootstrap(BootstapContext<Biome> var0) {
+   public static void bootstrap(BootstrapContext<Biome> var0) {
       HolderGetter var1 = var0.lookup(Registries.PLACED_FEATURE);
       HolderGetter var2 = var0.lookup(Registries.CONFIGURED_CARVER);
       var0.register(Biomes.THE_VOID, OverworldBiomes.theVoid(var1, var2));

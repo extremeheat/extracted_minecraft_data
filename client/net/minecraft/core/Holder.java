@@ -24,6 +24,9 @@ public interface Holder<T> {
 
    boolean is(TagKey<T> var1);
 
+   @Deprecated
+   boolean is(Holder<T> var1);
+
    Stream<TagKey<T>> tags();
 
    Either<ResourceKey<T>, T> unwrap();
@@ -33,6 +36,10 @@ public interface Holder<T> {
    Holder.Kind kind();
 
    boolean canSerializeIn(HolderOwner<T> var1);
+
+   default String getRegisteredName() {
+      return this.unwrapKey().map(var0 -> var0.location().toString()).orElse("[unregistered]");
+   }
 
    static <T> Holder<T> direct(T var0) {
       return new Holder.Direct<>((T)var0);
@@ -67,6 +74,11 @@ public interface Holder<T> {
       }
 
       @Override
+      public boolean is(Holder<T> var1) {
+         return this.value.equals(var1.value());
+      }
+
+      @Override
       public boolean is(Predicate<ResourceKey<T>> var1) {
          return false;
       }
@@ -98,7 +110,7 @@ public interface Holder<T> {
 
       @Override
       public Stream<TagKey<T>> tags() {
-         return Stream.of();
+         return Stream.of((T[])());
       }
    }
 
@@ -166,6 +178,11 @@ public interface Holder<T> {
       @Override
       public boolean is(TagKey<T> var1) {
          return this.tags.contains(var1);
+      }
+
+      @Override
+      public boolean is(Holder<T> var1) {
+         return var1.is(this.key());
       }
 
       @Override

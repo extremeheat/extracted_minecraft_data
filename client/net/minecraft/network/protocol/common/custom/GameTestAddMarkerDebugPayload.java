@@ -2,16 +2,19 @@ package net.minecraft.network.protocol.common.custom;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.codec.StreamCodec;
 
-public record GameTestAddMarkerDebugPayload(BlockPos b, int c, String d, int e) implements CustomPacketPayload {
+public record GameTestAddMarkerDebugPayload(BlockPos c, int d, String e, int f) implements CustomPacketPayload {
    private final BlockPos pos;
    private final int color;
    private final String text;
    private final int durationMs;
-   public static final ResourceLocation ID = new ResourceLocation("debug/game_test_add_marker");
+   public static final StreamCodec<FriendlyByteBuf, GameTestAddMarkerDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(
+      GameTestAddMarkerDebugPayload::write, GameTestAddMarkerDebugPayload::new
+   );
+   public static final CustomPacketPayload.Type<GameTestAddMarkerDebugPayload> TYPE = CustomPacketPayload.createType("debug/game_test_add_marker");
 
-   public GameTestAddMarkerDebugPayload(FriendlyByteBuf var1) {
+   private GameTestAddMarkerDebugPayload(FriendlyByteBuf var1) {
       this(var1.readBlockPos(), var1.readInt(), var1.readUtf(), var1.readInt());
    }
 
@@ -23,8 +26,7 @@ public record GameTestAddMarkerDebugPayload(BlockPos b, int c, String d, int e) 
       this.durationMs = var4;
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       var1.writeBlockPos(this.pos);
       var1.writeInt(this.color);
       var1.writeUtf(this.text);
@@ -32,7 +34,7 @@ public record GameTestAddMarkerDebugPayload(BlockPos b, int c, String d, int e) 
    }
 
    @Override
-   public ResourceLocation id() {
-      return ID;
+   public CustomPacketPayload.Type<GameTestAddMarkerDebugPayload> type() {
+      return TYPE;
    }
 }

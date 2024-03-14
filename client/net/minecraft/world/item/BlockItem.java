@@ -5,8 +5,8 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -16,6 +16,9 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.item.component.BlockItemStateProperties;
+import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
@@ -25,14 +28,10 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.shapes.CollisionContext;
 
 public class BlockItem extends Item {
-   public static final String BLOCK_ENTITY_TAG = "BlockEntityTag";
-   public static final String BLOCK_STATE_TAG = "BlockStateTag";
    @Deprecated
    private final Block block;
 
@@ -76,6 +75,7 @@ public class BlockItem extends Item {
                if (var8.is(var3.getBlock())) {
                   var8 = this.updateBlockStateFromTag(var4, var5, var7, var8);
                   this.updateCustomBlockEntityTag(var4, var5, var6, var7, var8);
+                  updateBlockEntityComponents(var5, var4, var7);
                   var8.getBlock().setPlacedBy(var5, var4, var8, var6, var7);
                   if (var6 instanceof ServerPlayer) {
                      CriteriaTriggers.PLACED_BLOCK.trigger((ServerPlayer)var6, var4, var7);
@@ -85,10 +85,7 @@ public class BlockItem extends Item {
                SoundType var9 = var8.getSoundType();
                var5.playSound(var6, var4, this.getPlaceSound(var8), SoundSource.BLOCKS, (var9.getVolume() + 1.0F) / 2.0F, var9.getPitch() * 0.8F);
                var5.gameEvent(GameEvent.BLOCK_PLACE, var4, GameEvent.Context.of(var6, var8));
-               if (var6 == null || !var6.getAbilities().instabuild) {
-                  var7.shrink(1);
-               }
-
+               var7.consume(1, var6);
                return InteractionResult.sidedSuccess(var5.isClientSide);
             }
          }
@@ -104,6 +101,13 @@ public class BlockItem extends Item {
       return var1;
    }
 
+   private static void updateBlockEntityComponents(Level var0, BlockPos var1, ItemStack var2) {
+      BlockEntity var3 = var0.getBlockEntity(var1);
+      if (var3 != null) {
+         var3.applyComponents(var2.getComponents());
+      }
+   }
+
    protected boolean updateCustomBlockEntityTag(BlockPos var1, Level var2, @Nullable Player var3, ItemStack var4, BlockState var5) {
       return updateCustomBlockEntityTag(var2, var3, var1, var4);
    }
@@ -115,30 +119,17 @@ public class BlockItem extends Item {
    }
 
    private BlockState updateBlockStateFromTag(BlockPos var1, Level var2, ItemStack var3, BlockState var4) {
-      BlockState var5 = var4;
-      CompoundTag var6 = var3.getTag();
-      if (var6 != null) {
-         CompoundTag var7 = var6.getCompound("BlockStateTag");
-         StateDefinition var8 = var4.getBlock().getStateDefinition();
-
-         for(String var10 : var7.getAllKeys()) {
-            Property var11 = var8.getProperty(var10);
-            if (var11 != null) {
-               String var12 = var7.get(var10).getAsString();
-               var5 = updateState(var5, var11, var12);
-            }
+      BlockItemStateProperties var5 = var3.getOrDefault(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY);
+      if (var5.isEmpty()) {
+         return var4;
+      } else {
+         BlockState var6 = var5.apply(var4);
+         if (var6 != var4) {
+            var2.setBlock(var1, var6, 2);
          }
+
+         return var6;
       }
-
-      if (var5 != var4) {
-         var2.setBlock(var1, var5, 2);
-      }
-
-      return var5;
-   }
-
-   private static <T extends Comparable<T>> BlockState updateState(BlockState var0, Property<T> var1, String var2) {
-      return var1.getValue(var2).map(var2x -> var0.setValue(var1, var2x)).orElse(var0);
    }
 
    protected boolean canPlace(BlockPlaceContext var1, BlockState var2) {
@@ -161,22 +152,15 @@ public class BlockItem extends Item {
       if (var4 == null) {
          return false;
       } else {
-         CompoundTag var5 = getBlockEntityData(var3);
-         if (var5 != null) {
+         CustomData var5 = var3.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY);
+         if (!var5.isEmpty()) {
             BlockEntity var6 = var0.getBlockEntity(var2);
             if (var6 != null) {
-               if (!var0.isClientSide && var6.onlyOpCanSetNbt() && (var1 == null || !var1.canUseGameMasterBlocks())) {
-                  return false;
+               if (var0.isClientSide || !var6.onlyOpCanSetNbt() || var1 != null && var1.canUseGameMasterBlocks()) {
+                  return var5.loadInto(var6, var0.registryAccess());
                }
 
-               CompoundTag var7 = var6.saveWithoutMetadata();
-               CompoundTag var8 = var7.copy();
-               var7.merge(var5);
-               if (!var7.equals(var8)) {
-                  var6.load(var7);
-                  var6.setChanged();
-                  return true;
-               }
+               return false;
             }
          }
 
@@ -192,7 +176,7 @@ public class BlockItem extends Item {
    @Override
    public void appendHoverText(ItemStack var1, @Nullable Level var2, List<Component> var3, TooltipFlag var4) {
       super.appendHoverText(var1, var2, var3, var4);
-      this.getBlock().appendHoverText(var1, var2, var3, var4);
+      this.getBlock().appendHoverText(var1, var2, var3, var4, var2 != null ? var2.registryAccess() : null);
    }
 
    public Block getBlock() {
@@ -205,32 +189,24 @@ public class BlockItem extends Item {
 
    @Override
    public boolean canFitInsideContainerItems() {
-      return !(this.block instanceof ShulkerBoxBlock);
+      return !(this.getBlock() instanceof ShulkerBoxBlock);
    }
 
    @Override
    public void onDestroyed(ItemEntity var1) {
-      if (this.block instanceof ShulkerBoxBlock) {
-         ItemStack var2 = var1.getItem();
-         CompoundTag var3 = getBlockEntityData(var2);
-         if (var3 != null && var3.contains("Items", 9)) {
-            ListTag var4 = var3.getList("Items", 10);
-            ItemUtils.onContainerDestroyed(var1, var4.stream().map(CompoundTag.class::cast).map(ItemStack::of));
-         }
+      ItemContainerContents var2 = var1.getItem().set(DataComponents.CONTAINER, ItemContainerContents.EMPTY);
+      if (var2 != null) {
+         ItemUtils.onContainerDestroyed(var1, var2.stream());
       }
    }
 
-   @Nullable
-   public static CompoundTag getBlockEntityData(ItemStack var0) {
-      return var0.getTagElement("BlockEntityTag");
-   }
-
    public static void setBlockEntityData(ItemStack var0, BlockEntityType<?> var1, CompoundTag var2) {
+      var2.remove("id");
       if (var2.isEmpty()) {
-         var0.removeTagKey("BlockEntityTag");
+         var0.remove(DataComponents.BLOCK_ENTITY_DATA);
       } else {
          BlockEntity.addEntityType(var2, var1);
-         var0.addTagElement("BlockEntityTag", var2);
+         var0.set(DataComponents.BLOCK_ENTITY_DATA, CustomData.of(var2));
       }
    }
 

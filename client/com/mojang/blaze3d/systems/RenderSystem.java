@@ -6,7 +6,6 @@ import com.mojang.blaze3d.pipeline.RenderCall;
 import com.mojang.blaze3d.platform.GLX;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.shaders.FogShape;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexSorting;
@@ -33,8 +32,8 @@ import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.TimeSource;
-import org.joml.Matrix3f;
 import org.joml.Matrix4f;
+import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWErrorCallbackI;
@@ -71,12 +70,11 @@ public class RenderSystem {
       var0.accept(var1 + 2);
       var0.accept(var1 + 1);
    });
-   private static Matrix3f inverseViewRotationMatrix = new Matrix3f().zero();
    private static Matrix4f projectionMatrix = new Matrix4f();
    private static Matrix4f savedProjectionMatrix = new Matrix4f();
    private static VertexSorting vertexSorting = VertexSorting.DISTANCE_TO_ORIGIN;
    private static VertexSorting savedVertexSorting = VertexSorting.DISTANCE_TO_ORIGIN;
-   private static final PoseStack modelViewStack = new PoseStack();
+   private static final Matrix4fStack modelViewStack = new Matrix4fStack(16);
    private static Matrix4f modelViewMatrix = new Matrix4f();
    private static Matrix4f textureMatrix = new Matrix4f();
    private static final int[] shaderTextures = new int[12];
@@ -708,9 +706,9 @@ public class RenderSystem {
       setShaderTexture(1, 0);
    }
 
-   public static void setupLevelDiffuseLighting(Vector3f var0, Vector3f var1, Matrix4f var2) {
+   public static void setupLevelDiffuseLighting(Vector3f var0, Vector3f var1) {
       assertOnRenderThread();
-      GlStateManager.setupLevelDiffuseLighting(var0, var1, var2);
+      setShaderLights(var0, var1);
    }
 
    public static void setupGuiFlatDiffuseLighting(Vector3f var0, Vector3f var1) {
@@ -841,15 +839,6 @@ public class RenderSystem {
       }
    }
 
-   public static void setInverseViewRotationMatrix(Matrix3f var0) {
-      Matrix3f var1 = new Matrix3f(var0);
-      if (!isOnRenderThread()) {
-         recordRenderCall(() -> inverseViewRotationMatrix = var1);
-      } else {
-         inverseViewRotationMatrix = var1;
-      }
-   }
-
    public static void setTextureMatrix(Matrix4f var0) {
       Matrix4f var1 = new Matrix4f(var0);
       if (!isOnRenderThread()) {
@@ -868,7 +857,7 @@ public class RenderSystem {
    }
 
    public static void applyModelViewMatrix() {
-      Matrix4f var0 = new Matrix4f(modelViewStack.last().pose());
+      Matrix4f var0 = new Matrix4f(modelViewStack);
       if (!isOnRenderThread()) {
          recordRenderCall(() -> modelViewMatrix = var0);
       } else {
@@ -907,17 +896,12 @@ public class RenderSystem {
       return projectionMatrix;
    }
 
-   public static Matrix3f getInverseViewRotationMatrix() {
-      assertOnRenderThread();
-      return inverseViewRotationMatrix;
-   }
-
    public static Matrix4f getModelViewMatrix() {
       assertOnRenderThread();
       return modelViewMatrix;
    }
 
-   public static PoseStack getModelViewStack() {
+   public static Matrix4fStack getModelViewStack() {
       return modelViewStack;
    }
 

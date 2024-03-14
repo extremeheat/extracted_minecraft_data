@@ -1,23 +1,16 @@
 package net.minecraft.world.item.alchemy;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.UnmodifiableIterator;
 import java.util.List;
+import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.effect.MobEffectInstance;
 
 public class Potion {
    @Nullable
    private final String name;
-   private final ImmutableList<MobEffectInstance> effects;
-   private final Holder.Reference<Potion> builtInRegistryHolder = BuiltInRegistries.POTION.createIntrusiveHolder(this);
-
-   public static Potion byName(String var0) {
-      return BuiltInRegistries.POTION.get(ResourceLocation.tryParse(var0));
-   }
+   private final List<MobEffectInstance> effects;
 
    public Potion(MobEffectInstance... var1) {
       this(null, var1);
@@ -26,11 +19,19 @@ public class Potion {
    public Potion(@Nullable String var1, MobEffectInstance... var2) {
       super();
       this.name = var1;
-      this.effects = ImmutableList.copyOf(var2);
+      this.effects = List.of(var2);
    }
 
-   public String getName(String var1) {
-      return var1 + (this.name == null ? BuiltInRegistries.POTION.getKey(this).getPath() : this.name);
+   public static String getName(Optional<Holder<Potion>> var0, String var1) {
+      if (var0.isPresent()) {
+         String var2 = ((Potion)((Holder)var0.get()).value()).name;
+         if (var2 != null) {
+            return var1 + var2;
+         }
+      }
+
+      String var3 = var0.flatMap(Holder::unwrapKey).map(var0x -> var0x.location().getPath()).orElse("empty");
+      return var1 + var3;
    }
 
    public List<MobEffectInstance> getEffects() {
@@ -39,21 +40,13 @@ public class Potion {
 
    public boolean hasInstantEffects() {
       if (!this.effects.isEmpty()) {
-         UnmodifiableIterator var1 = this.effects.iterator();
-
-         while(var1.hasNext()) {
-            MobEffectInstance var2 = (MobEffectInstance)var1.next();
-            if (var2.getEffect().isInstantenous()) {
+         for(MobEffectInstance var2 : this.effects) {
+            if (var2.getEffect().value().isInstantenous()) {
                return true;
             }
          }
       }
 
       return false;
-   }
-
-   @Deprecated
-   public Holder.Reference<Potion> builtInRegistryHolder() {
-      return this.builtInRegistryHolder;
    }
 }

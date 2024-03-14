@@ -6,14 +6,13 @@ import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Unit;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.Brain;
 import net.minecraft.world.entity.ai.behavior.Behavior;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
-import net.minecraft.world.entity.projectile.WindCharge;
+import net.minecraft.world.entity.projectile.windcharge.BreezeWindCharge;
 import net.minecraft.world.phys.Vec3;
 
 public class Shoot extends Behavior<Breeze> {
@@ -91,7 +90,7 @@ public class Shoot extends Behavior<Breeze> {
                double var7 = var6.getX() - var2.getX();
                double var9 = var6.getY(0.3) - var2.getY(0.5);
                double var11 = var6.getZ() - var2.getZ();
-               WindCharge var13 = new WindCharge(EntityType.WIND_CHARGE, var2, var1);
+               BreezeWindCharge var13 = new BreezeWindCharge(var2, var1);
                var2.playSound(SoundEvents.BREEZE_SHOOT, 1.5F, 1.0F);
                var13.shoot(var7, var9, var11, 0.7F, (float)(5 - var1.getDifficulty().getId() * 4));
                var1.addFreshEntity(var13);

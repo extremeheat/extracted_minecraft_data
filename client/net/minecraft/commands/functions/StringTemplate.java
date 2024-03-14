@@ -69,12 +69,14 @@ public record StringTemplate(List<String> a, List<String> b) {
 
       for(int var3 = 0; var3 < this.variables.size(); ++var3) {
          var2.append(this.segments.get(var3)).append((String)var1.get(var3));
+         CommandFunction.checkCommandLineLength(var2);
       }
 
       if (this.segments.size() > this.variables.size()) {
          var2.append(this.segments.get(this.segments.size() - 1));
       }
 
+      CommandFunction.checkCommandLineLength(var2);
       return var2.toString();
    }
 }

@@ -2,10 +2,15 @@ package net.minecraft.network.protocol.game;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.level.block.entity.CommandBlockEntity;
 
 public class ServerboundSetCommandBlockPacket implements Packet<ServerGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ServerboundSetCommandBlockPacket> STREAM_CODEC = Packet.codec(
+      ServerboundSetCommandBlockPacket::write, ServerboundSetCommandBlockPacket::new
+   );
    private static final int FLAG_TRACK_OUTPUT = 1;
    private static final int FLAG_CONDITIONAL = 2;
    private static final int FLAG_AUTOMATIC = 4;
@@ -26,7 +31,7 @@ public class ServerboundSetCommandBlockPacket implements Packet<ServerGamePacket
       this.mode = var3;
    }
 
-   public ServerboundSetCommandBlockPacket(FriendlyByteBuf var1) {
+   private ServerboundSetCommandBlockPacket(FriendlyByteBuf var1) {
       super();
       this.pos = var1.readBlockPos();
       this.command = var1.readUtf();
@@ -37,8 +42,7 @@ public class ServerboundSetCommandBlockPacket implements Packet<ServerGamePacket
       this.automatic = (var2 & 4) != 0;
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       var1.writeBlockPos(this.pos);
       var1.writeUtf(this.command);
       var1.writeEnum(this.mode);
@@ -56,6 +60,11 @@ public class ServerboundSetCommandBlockPacket implements Packet<ServerGamePacket
       }
 
       var1.writeByte(var2);
+   }
+
+   @Override
+   public PacketType<ServerboundSetCommandBlockPacket> type() {
+      return GamePacketTypes.SERVERBOUND_SET_COMMAND_BLOCK;
    }
 
    public void handle(ServerGamePacketListener var1) {

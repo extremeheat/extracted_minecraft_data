@@ -5,6 +5,7 @@ import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.Rotations;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -28,6 +29,8 @@ import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.item.ItemStack;
@@ -51,8 +54,8 @@ public class ArmorStand extends LivingEntity {
    private static final Rotations DEFAULT_RIGHT_ARM_POSE = new Rotations(-15.0F, 0.0F, 10.0F);
    private static final Rotations DEFAULT_LEFT_LEG_POSE = new Rotations(-1.0F, 0.0F, -1.0F);
    private static final Rotations DEFAULT_RIGHT_LEG_POSE = new Rotations(1.0F, 0.0F, 1.0F);
-   private static final EntityDimensions MARKER_DIMENSIONS = new EntityDimensions(0.0F, 0.0F, true);
-   private static final EntityDimensions BABY_DIMENSIONS = EntityType.ARMOR_STAND.getDimensions().scale(0.5F);
+   private static final EntityDimensions MARKER_DIMENSIONS = EntityDimensions.fixed(0.0F, 0.0F);
+   private static final EntityDimensions BABY_DIMENSIONS = EntityType.ARMOR_STAND.getDimensions().scale(0.5F).withEyeHeight(0.9875F);
    private static final double FEET_OFFSET = 0.1;
    private static final double CHEST_OFFSET = 0.9;
    private static final double LEGS_OFFSET = 0.4;
@@ -86,12 +89,15 @@ public class ArmorStand extends LivingEntity {
 
    public ArmorStand(EntityType<? extends ArmorStand> var1, Level var2) {
       super(var1, var2);
-      this.setMaxUpStep(0.0F);
    }
 
    public ArmorStand(Level var1, double var2, double var4, double var6) {
       this(EntityType.ARMOR_STAND, var1);
       this.setPos(var2, var4, var6);
+   }
+
+   public static AttributeSupplier.Builder createAttributes() {
+      return createLivingAttributes().add(Attributes.STEP_HEIGHT, 0.0);
    }
 
    @Override
@@ -113,15 +119,15 @@ public class ArmorStand extends LivingEntity {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_CLIENT_FLAGS, (byte)0);
-      this.entityData.define(DATA_HEAD_POSE, DEFAULT_HEAD_POSE);
-      this.entityData.define(DATA_BODY_POSE, DEFAULT_BODY_POSE);
-      this.entityData.define(DATA_LEFT_ARM_POSE, DEFAULT_LEFT_ARM_POSE);
-      this.entityData.define(DATA_RIGHT_ARM_POSE, DEFAULT_RIGHT_ARM_POSE);
-      this.entityData.define(DATA_LEFT_LEG_POSE, DEFAULT_LEFT_LEG_POSE);
-      this.entityData.define(DATA_RIGHT_LEG_POSE, DEFAULT_RIGHT_LEG_POSE);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_CLIENT_FLAGS, (byte)0);
+      var1.define(DATA_HEAD_POSE, DEFAULT_HEAD_POSE);
+      var1.define(DATA_BODY_POSE, DEFAULT_BODY_POSE);
+      var1.define(DATA_LEFT_ARM_POSE, DEFAULT_LEFT_ARM_POSE);
+      var1.define(DATA_RIGHT_ARM_POSE, DEFAULT_RIGHT_ARM_POSE);
+      var1.define(DATA_LEFT_LEG_POSE, DEFAULT_LEFT_LEG_POSE);
+      var1.define(DATA_RIGHT_LEG_POSE, DEFAULT_RIGHT_LEG_POSE);
    }
 
    @Override
@@ -144,6 +150,11 @@ public class ArmorStand extends LivingEntity {
          default:
             return ItemStack.EMPTY;
       }
+   }
+
+   @Override
+   public boolean canUseSlot(EquipmentSlot var1) {
+      return var1 != EquipmentSlot.BODY;
    }
 
    @Override
@@ -170,27 +181,17 @@ public class ArmorStand extends LivingEntity {
       ListTag var2 = new ListTag();
 
       for(ItemStack var4 : this.armorItems) {
-         CompoundTag var5 = new CompoundTag();
-         if (!var4.isEmpty()) {
-            var4.save(var5);
-         }
-
-         var2.add(var5);
+         var2.add(var4.saveOptional(this.registryAccess()));
       }
 
       var1.put("ArmorItems", var2);
-      ListTag var7 = new ListTag();
+      ListTag var6 = new ListTag();
 
-      for(ItemStack var9 : this.handItems) {
-         CompoundTag var6 = new CompoundTag();
-         if (!var9.isEmpty()) {
-            var9.save(var6);
-         }
-
-         var7.add(var6);
+      for(ItemStack var5 : this.handItems) {
+         var6.add(var5.saveOptional(this.registryAccess()));
       }
 
-      var1.put("HandItems", var7);
+      var1.put("HandItems", var6);
       var1.putBoolean("Invisible", this.isInvisible());
       var1.putBoolean("Small", this.isSmall());
       var1.putBoolean("ShowArms", this.isShowArms());
@@ -210,15 +211,17 @@ public class ArmorStand extends LivingEntity {
          ListTag var2 = var1.getList("ArmorItems", 10);
 
          for(int var3 = 0; var3 < this.armorItems.size(); ++var3) {
-            this.armorItems.set(var3, ItemStack.of(var2.getCompound(var3)));
+            CompoundTag var4 = var2.getCompound(var3);
+            this.armorItems.set(var3, ItemStack.parseOptional(this.registryAccess(), var4));
          }
       }
 
       if (var1.contains("HandItems", 9)) {
-         ListTag var4 = var1.getList("HandItems", 10);
+         ListTag var5 = var1.getList("HandItems", 10);
 
-         for(int var6 = 0; var6 < this.handItems.size(); ++var6) {
-            this.handItems.set(var6, ItemStack.of(var4.getCompound(var6)));
+         for(int var7 = 0; var7 < this.handItems.size(); ++var7) {
+            CompoundTag var8 = var5.getCompound(var7);
+            this.handItems.set(var7, ItemStack.parseOptional(this.registryAccess(), var8));
          }
       }
 
@@ -229,8 +232,8 @@ public class ArmorStand extends LivingEntity {
       this.setNoBasePlate(var1.getBoolean("NoBasePlate"));
       this.setMarker(var1.getBoolean("Marker"));
       this.noPhysics = !this.hasPhysics();
-      CompoundTag var5 = var1.getCompound("Pose");
-      this.readPose(var5);
+      CompoundTag var6 = var1.getCompound("Pose");
+      this.readPose(var6);
    }
 
    private void readPose(CompoundTag var1) {
@@ -333,7 +336,7 @@ public class ArmorStand extends LivingEntity {
    private EquipmentSlot getClickedSlot(Vec3 var1) {
       EquipmentSlot var2 = EquipmentSlot.MAINHAND;
       boolean var3 = this.isSmall();
-      double var4 = var3 ? var1.y * 2.0 : var1.y;
+      double var4 = var1.y / (double)(this.getScale() * this.getAgeScale());
       EquipmentSlot var6 = EquipmentSlot.FEET;
       if (var4 >= 0.1 && var4 < 0.1 + (var3 ? 0.8 : 0.45) && this.hasItemInSlot(var6)) {
          var2 = EquipmentSlot.FEET;
@@ -360,7 +363,7 @@ public class ArmorStand extends LivingEntity {
          return false;
       } else if (var5.isEmpty() && (this.disabledSlots & 1 << var2.getFilterFlag() + 16) != 0) {
          return false;
-      } else if (var1.getAbilities().instabuild && var5.isEmpty() && !var3.isEmpty()) {
+      } else if (var1.hasInfiniteMaterials() && var5.isEmpty() && !var3.isEmpty()) {
          this.setItemSlot(var2, var3.copyWithCount(1));
          return true;
       } else if (var3.isEmpty() || var3.getCount() <= 1) {
@@ -392,7 +395,7 @@ public class ArmorStand extends LivingEntity {
          if (this.isOnFire()) {
             this.causeDamage(var1, 0.15F);
          } else {
-            this.setSecondsOnFire(5);
+            this.igniteForSeconds(5);
          }
 
          return false;
@@ -487,10 +490,7 @@ public class ArmorStand extends LivingEntity {
 
    private void brokenByPlayer(DamageSource var1) {
       ItemStack var2 = new ItemStack(Items.ARMOR_STAND);
-      if (this.hasCustomName()) {
-         var2.setHoverName(this.getCustomName());
-      }
-
+      var2.set(DataComponents.CUSTOM_NAME, this.getCustomName());
       Block.popResource(this.level(), this.blockPosition(), var2);
       this.brokenByAnything(var1);
    }
@@ -525,11 +525,6 @@ public class ArmorStand extends LivingEntity {
       this.yBodyRotO = this.yRotO;
       this.yBodyRot = this.getYRot();
       return 0.0F;
-   }
-
-   @Override
-   protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
-      return var2.height * (this.isBaby() ? 0.5F : 0.9F);
    }
 
    @Override
@@ -775,7 +770,7 @@ public class ArmorStand extends LivingEntity {
    }
 
    @Override
-   public EntityDimensions getDimensions(Pose var1) {
+   public EntityDimensions getDefaultDimensions(Pose var1) {
       return this.getDimensionsMarker(this.isMarker());
    }
 

@@ -11,12 +11,10 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MoverType;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.Goal;
@@ -59,11 +57,6 @@ public class Squid extends WaterAnimal {
    }
 
    @Override
-   protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
-      return var2.height * 0.5F;
-   }
-
-   @Override
    protected SoundEvent getAmbientSound() {
       return SoundEvents.SQUID_AMBIENT;
    }
@@ -95,6 +88,11 @@ public class Squid extends WaterAnimal {
    @Override
    protected Entity.MovementEmission getMovementEmission() {
       return Entity.MovementEmission.EVENTS;
+   }
+
+   @Override
+   protected double getDefaultGravity() {
+      return 0.08;
    }
 
    @Override
@@ -150,8 +148,8 @@ public class Squid extends WaterAnimal {
             double var5 = this.getDeltaMovement().y;
             if (this.hasEffect(MobEffects.LEVITATION)) {
                var5 = 0.05 * (double)(this.getEffect(MobEffects.LEVITATION).getAmplifier() + 1);
-            } else if (!this.isNoGravity()) {
-               var5 -= 0.08;
+            } else {
+               var5 -= this.getGravity();
             }
 
             this.setDeltaMovement(0.0, var5 * 0.9800000190734863, 0.0);
@@ -180,7 +178,7 @@ public class Squid extends WaterAnimal {
    }
 
    private void spawnInk() {
-      this.playSound(this.getSquirtSound(), this.getSoundVolume(), this.getVoicePitch());
+      this.makeSound(this.getSquirtSound());
       Vec3 var1 = this.rotateVector(new Vec3(0.0, -1.0, 0.0)).add(this.getX(), this.getY(), this.getZ());
 
       for(int var2 = 0; var2 < 30; ++var2) {

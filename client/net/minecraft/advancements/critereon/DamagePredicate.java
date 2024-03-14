@@ -43,12 +43,12 @@ public record DamagePredicate(
          return false;
       } else if (!this.takenDamage.matches((double)var4)) {
          return false;
-      } else if (this.sourceEntity.isPresent() && !this.sourceEntity.get().matches(var1, var2.getEntity())) {
+      } else if (this.sourceEntity.isPresent() && !((EntityPredicate)this.sourceEntity.get()).matches(var1, var2.getEntity())) {
          return false;
       } else if (this.blocked.isPresent() && this.blocked.get() != var5) {
          return false;
       } else {
-         return !this.type.isPresent() || this.type.get().matches(var1, var2);
+         return !this.type.isPresent() || ((DamageSourcePredicate)this.type.get()).matches(var1, var2);
       }
    }
 

@@ -16,7 +16,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ClickType;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.Slot;
-import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
@@ -67,7 +66,6 @@ public class InventoryScreen extends EffectRenderingInventoryScreen<InventoryMen
             this.buttonClicked = true;
          }));
          this.addWidget(this.recipeBookComponent);
-         this.setInitialFocus(this.recipeBookComponent);
       }
    }
 
@@ -122,8 +120,10 @@ public class InventoryScreen extends EffectRenderingInventoryScreen<InventoryMen
       var9.setXRot(-var13 * 20.0F);
       var9.yHeadRot = var9.getYRot();
       var9.yHeadRotO = var9.getYRot();
-      Vector3f var21 = new Vector3f(0.0F, var9.getBbHeight() / 2.0F + var6, 0.0F);
-      renderEntityInInventory(var0, var10, var11, var5, var21, var14, var15, var9);
+      float var21 = var9.getScale();
+      Vector3f var22 = new Vector3f(0.0F, var9.getBbHeight() / 2.0F + var6 * var21, 0.0F);
+      float var23 = (float)var5 / var21;
+      renderEntityInInventory(var0, var10, var11, var23, var22, var14, var15, var9);
       var9.yBodyRot = var16;
       var9.setYRot(var17);
       var9.setXRot(var18);
@@ -133,11 +133,11 @@ public class InventoryScreen extends EffectRenderingInventoryScreen<InventoryMen
    }
 
    public static void renderEntityInInventory(
-      GuiGraphics var0, float var1, float var2, int var3, Vector3f var4, Quaternionf var5, @Nullable Quaternionf var6, LivingEntity var7
+      GuiGraphics var0, float var1, float var2, float var3, Vector3f var4, Quaternionf var5, @Nullable Quaternionf var6, LivingEntity var7
    ) {
       var0.pose().pushPose();
       var0.pose().translate((double)var1, (double)var2, 50.0);
-      var0.pose().mulPoseMatrix(new Matrix4f().scaling((float)var3, (float)var3, (float)(-var3)));
+      var0.pose().scale(var3, var3, -var3);
       var0.pose().translate(var4.x, var4.y, var4.z);
       var0.pose().mulPose(var5);
       Lighting.setupForEntityInInventory();
@@ -153,6 +153,16 @@ public class InventoryScreen extends EffectRenderingInventoryScreen<InventoryMen
       var8.setRenderShadow(true);
       var0.pose().popPose();
       Lighting.setupFor3DItems();
+   }
+
+   @Override
+   public boolean keyPressed(int var1, int var2, int var3) {
+      return this.recipeBookComponent.keyPressed(var1, var2, var3) ? true : super.keyPressed(var1, var2, var3);
+   }
+
+   @Override
+   public boolean charTyped(char var1, int var2) {
+      return this.recipeBookComponent.charTyped(var1, var2) ? true : super.charTyped(var1, var2);
    }
 
    @Override

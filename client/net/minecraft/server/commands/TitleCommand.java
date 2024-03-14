@@ -8,6 +8,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import java.util.Collection;
 import java.util.function.Function;
+import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.ComponentArgument;
@@ -28,7 +29,7 @@ public class TitleCommand {
       super();
    }
 
-   public static void register(CommandDispatcher<CommandSourceStack> var0) {
+   public static void register(CommandDispatcher<CommandSourceStack> var0, CommandBuildContext var1) {
       var0.register(
          (LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("title").requires(var0x -> var0x.hasPermission(2)))
             .then(
@@ -46,7 +47,7 @@ public class TitleCommand {
                            .then(
                               Commands.literal("title")
                                  .then(
-                                    Commands.argument("title", ComponentArgument.textComponent())
+                                    Commands.argument("title", ComponentArgument.textComponent(var1))
                                        .executes(
                                           var0x -> showTitle(
                                                 (CommandSourceStack)var0x.getSource(),
@@ -61,7 +62,7 @@ public class TitleCommand {
                         .then(
                            Commands.literal("subtitle")
                               .then(
-                                 Commands.argument("title", ComponentArgument.textComponent())
+                                 Commands.argument("title", ComponentArgument.textComponent(var1))
                                     .executes(
                                        var0x -> showTitle(
                                              (CommandSourceStack)var0x.getSource(),
@@ -76,7 +77,7 @@ public class TitleCommand {
                      .then(
                         Commands.literal("actionbar")
                            .then(
-                              Commands.argument("title", ComponentArgument.textComponent())
+                              Commands.argument("title", ComponentArgument.textComponent(var1))
                                  .executes(
                                     var0x -> showTitle(
                                           (CommandSourceStack)var0x.getSource(),

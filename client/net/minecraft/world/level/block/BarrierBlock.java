@@ -33,22 +33,22 @@ public class BarrierBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    @Override
-   public boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
       return true;
    }
 
    @Override
-   public RenderShape getRenderShape(BlockState var1) {
+   protected RenderShape getRenderShape(BlockState var1) {
       return RenderShape.INVISIBLE;
    }
 
    @Override
-   public float getShadeBrightness(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected float getShadeBrightness(BlockState var1, BlockGetter var2, BlockPos var3) {
       return 1.0F;
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var1.getValue(WATERLOGGED)) {
          var4.scheduleTick(var5, Fluids.WATER, Fluids.WATER.getTickDelay(var4));
       }
@@ -57,7 +57,7 @@ public class BarrierBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    @Override
-   public FluidState getFluidState(BlockState var1) {
+   protected FluidState getFluidState(BlockState var1) {
       return var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
    }
 

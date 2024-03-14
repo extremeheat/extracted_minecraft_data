@@ -17,7 +17,6 @@ import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.client.sounds.SoundManager;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.util.Mth;
-import org.joml.Matrix4f;
 
 public class PlayerSkinWidget extends AbstractWidget {
    private static final float MODEL_OFFSET = 0.0625F;
@@ -45,10 +44,13 @@ public class PlayerSkinWidget extends AbstractWidget {
       float var5 = (float)this.getHeight() / 2.125F;
       var1.pose().scale(var5, var5, var5);
       var1.pose().translate(0.0F, -0.0625F, 0.0F);
-      Matrix4f var6 = var1.pose().last().pose();
-      var6.rotateAround(Axis.XP.rotationDegrees(this.rotationX), 0.0F, -1.0625F, 0.0F);
+      var1.pose().rotateAround(Axis.XP.rotationDegrees(this.rotationX), 0.0F, -1.0625F, 0.0F);
       var1.pose().mulPose(Axis.YP.rotationDegrees(this.rotationY));
-      this.model.render(var1, this.skin.get());
+      var1.flush();
+      Lighting.setupForEntityInInventory(Axis.XP.rotationDegrees(this.rotationX));
+      this.model.render(var1, (PlayerSkin)this.skin.get());
+      var1.flush();
+      Lighting.setupFor3DItems();
       var1.pose().popPose();
    }
 
@@ -96,17 +98,13 @@ public class PlayerSkinWidget extends AbstractWidget {
       }
 
       public void render(GuiGraphics var1, PlayerSkin var2) {
-         var1.flush();
-         Lighting.setupForEntityInInventory();
          var1.pose().pushPose();
-         var1.pose().mulPoseMatrix(new Matrix4f().scaling(1.0F, 1.0F, -1.0F));
+         var1.pose().scale(1.0F, 1.0F, -1.0F);
          var1.pose().translate(0.0F, -1.5F, 0.0F);
          PlayerModel var3 = var2.model() == PlayerSkin.Model.SLIM ? this.slimModel : this.wideModel;
          RenderType var4 = var3.renderType(var2.texture());
          var3.renderToBuffer(var1.pose(), var1.bufferSource().getBuffer(var4), 15728880, OverlayTexture.NO_OVERLAY, 1.0F, 1.0F, 1.0F, 1.0F);
          var1.pose().popPose();
-         var1.flush();
-         Lighting.setupFor3DItems();
       }
    }
 }

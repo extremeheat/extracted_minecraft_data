@@ -1,6 +1,7 @@
 package net.minecraft.world.inventory;
 
 import javax.annotation.Nullable;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.world.SimpleContainer;
@@ -25,35 +26,34 @@ public class PlayerEnderChestContainer extends SimpleContainer {
    }
 
    @Override
-   public void fromTag(ListTag var1) {
-      for(int var2 = 0; var2 < this.getContainerSize(); ++var2) {
-         this.setItem(var2, ItemStack.EMPTY);
+   public void fromTag(ListTag var1, HolderLookup.Provider var2) {
+      for(int var3 = 0; var3 < this.getContainerSize(); ++var3) {
+         this.setItem(var3, ItemStack.EMPTY);
       }
 
-      for(int var5 = 0; var5 < var1.size(); ++var5) {
-         CompoundTag var3 = var1.getCompound(var5);
-         int var4 = var3.getByte("Slot") & 255;
-         if (var4 >= 0 && var4 < this.getContainerSize()) {
-            this.setItem(var4, ItemStack.of(var3));
+      for(int var6 = 0; var6 < var1.size(); ++var6) {
+         CompoundTag var4 = var1.getCompound(var6);
+         int var5 = var4.getByte("Slot") & 255;
+         if (var5 >= 0 && var5 < this.getContainerSize()) {
+            this.setItem(var5, ItemStack.parse(var2, var4).orElse(ItemStack.EMPTY));
          }
       }
    }
 
    @Override
-   public ListTag createTag() {
-      ListTag var1 = new ListTag();
+   public ListTag createTag(HolderLookup.Provider var1) {
+      ListTag var2 = new ListTag();
 
-      for(int var2 = 0; var2 < this.getContainerSize(); ++var2) {
-         ItemStack var3 = this.getItem(var2);
-         if (!var3.isEmpty()) {
-            CompoundTag var4 = new CompoundTag();
-            var4.putByte("Slot", (byte)var2);
-            var3.save(var4);
-            var1.add(var4);
+      for(int var3 = 0; var3 < this.getContainerSize(); ++var3) {
+         ItemStack var4 = this.getItem(var3);
+         if (!var4.isEmpty()) {
+            CompoundTag var5 = new CompoundTag();
+            var5.putByte("Slot", (byte)var3);
+            var2.add(var4.save(var1, var5));
          }
       }
 
-      return var1;
+      return var2;
    }
 
    @Override

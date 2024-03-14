@@ -19,11 +19,11 @@ public class Pools {
       return ResourceKey.create(Registries.TEMPLATE_POOL, new ResourceLocation(var0));
    }
 
-   public static void register(BootstapContext<StructureTemplatePool> var0, String var1, StructureTemplatePool var2) {
+   public static void register(BootstrapContext<StructureTemplatePool> var0, String var1, StructureTemplatePool var2) {
       var0.register(createKey(var1), var2);
    }
 
-   public static void bootstrap(BootstapContext<StructureTemplatePool> var0) {
+   public static void bootstrap(BootstrapContext<StructureTemplatePool> var0) {
       HolderGetter var1 = var0.lookup(Registries.TEMPLATE_POOL);
       Holder.Reference var2 = var1.getOrThrow(EMPTY);
       var0.register(EMPTY, new StructureTemplatePool(var2, ImmutableList.of(), StructureTemplatePool.Projection.RIGID));

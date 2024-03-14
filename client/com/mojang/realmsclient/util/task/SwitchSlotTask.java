@@ -9,13 +9,13 @@ import org.slf4j.Logger;
 public class SwitchSlotTask extends LongRunningTask {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Component TITLE = Component.translatable("mco.minigame.world.slot.screen.title");
-   private final long worldId;
+   private final long realmId;
    private final int slot;
    private final Runnable callback;
 
    public SwitchSlotTask(long var1, int var3, Runnable var4) {
       super();
-      this.worldId = var1;
+      this.realmId = var1;
       this.slot = var3;
       this.callback = var4;
    }
@@ -30,7 +30,7 @@ public class SwitchSlotTask extends LongRunningTask {
                return;
             }
 
-            if (var1.switchSlot(this.worldId, this.slot)) {
+            if (var1.switchSlot(this.realmId, this.slot)) {
                this.callback.run();
                break;
             }

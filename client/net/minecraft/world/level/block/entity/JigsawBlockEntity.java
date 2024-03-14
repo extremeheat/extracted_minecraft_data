@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -95,8 +96,8 @@ public class JigsawBlockEntity extends BlockEntity {
    }
 
    @Override
-   protected void saveAdditional(CompoundTag var1) {
-      super.saveAdditional(var1);
+   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.saveAdditional(var1, var2);
       var1.putString("name", this.name.toString());
       var1.putString("target", this.target.toString());
       var1.putString("pool", this.pool.location().toString());
@@ -107,8 +108,8 @@ public class JigsawBlockEntity extends BlockEntity {
    }
 
    @Override
-   public void load(CompoundTag var1) {
-      super.load(var1);
+   public void load(CompoundTag var1, HolderLookup.Provider var2) {
+      super.load(var1, var2);
       this.name = new ResourceLocation(var1.getString("name"));
       this.target = new ResourceLocation(var1.getString("target"));
       this.pool = ResourceKey.create(Registries.TEMPLATE_POOL, new ResourceLocation(var1.getString("pool")));
@@ -128,8 +129,8 @@ public class JigsawBlockEntity extends BlockEntity {
    }
 
    @Override
-   public CompoundTag getUpdateTag() {
-      return this.saveWithoutMetadata();
+   public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
+      return this.saveWithoutMetadata(var1);
    }
 
    public void generate(ServerLevel var1, int var2, boolean var3) {

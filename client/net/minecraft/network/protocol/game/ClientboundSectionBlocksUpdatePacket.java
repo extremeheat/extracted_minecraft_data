@@ -6,12 +6,17 @@ import java.util.function.BiConsumer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 
 public class ClientboundSectionBlocksUpdatePacket implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ClientboundSectionBlocksUpdatePacket> STREAM_CODEC = Packet.codec(
+      ClientboundSectionBlocksUpdatePacket::write, ClientboundSectionBlocksUpdatePacket::new
+   );
    private static final int POS_IN_SECTION_BITS = 12;
    private final SectionPos sectionPos;
    private final short[] positions;
@@ -32,7 +37,7 @@ public class ClientboundSectionBlocksUpdatePacket implements Packet<ClientGamePa
       }
    }
 
-   public ClientboundSectionBlocksUpdatePacket(FriendlyByteBuf var1) {
+   private ClientboundSectionBlocksUpdatePacket(FriendlyByteBuf var1) {
       super();
       this.sectionPos = SectionPos.of(var1.readLong());
       int var2 = var1.readVarInt();
@@ -46,14 +51,18 @@ public class ClientboundSectionBlocksUpdatePacket implements Packet<ClientGamePa
       }
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       var1.writeLong(this.sectionPos.asLong());
       var1.writeVarInt(this.positions.length);
 
       for(int var2 = 0; var2 < this.positions.length; ++var2) {
          var1.writeVarLong((long)Block.getId(this.states[var2]) << 12 | (long)this.positions[var2]);
       }
+   }
+
+   @Override
+   public PacketType<ClientboundSectionBlocksUpdatePacket> type() {
+      return GamePacketTypes.CLIENTBOUND_SECTION_BLOCKS_UPDATE;
    }
 
    public void handle(ClientGamePacketListener var1) {

@@ -1,11 +1,18 @@
 package net.minecraft.advancements;
 
-import net.minecraft.network.FriendlyByteBuf;
+import java.util.List;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
 
-public record AdvancementHolder(ResourceLocation a, Advancement b) {
+public record AdvancementHolder(ResourceLocation c, Advancement d) {
    private final ResourceLocation id;
    private final Advancement value;
+   public static final StreamCodec<RegistryFriendlyByteBuf, AdvancementHolder> STREAM_CODEC = StreamCodec.composite(
+      ResourceLocation.STREAM_CODEC, AdvancementHolder::id, Advancement.STREAM_CODEC, AdvancementHolder::value, AdvancementHolder::new
+   );
+   public static final StreamCodec<RegistryFriendlyByteBuf, List<AdvancementHolder>> LIST_STREAM_CODEC = STREAM_CODEC.apply(ByteBufCodecs.list());
 
    public AdvancementHolder(ResourceLocation var1, Advancement var2) {
       super();
@@ -13,16 +20,6 @@ public record AdvancementHolder(ResourceLocation a, Advancement b) {
       this.value = var2;
    }
 
-   public void write(FriendlyByteBuf var1) {
-      var1.writeResourceLocation(this.id);
-      this.value.write(var1);
-   }
-
-   public static AdvancementHolder read(FriendlyByteBuf var0) {
-      return new AdvancementHolder(var0.readResourceLocation(), Advancement.read(var0));
-   }
-
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
@@ -35,12 +32,10 @@ public record AdvancementHolder(ResourceLocation a, Advancement b) {
       }
    }
 
-   @Override
    public int hashCode() {
       return this.id.hashCode();
    }
 
-   @Override
    public String toString() {
       return this.id.toString();
    }

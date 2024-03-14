@@ -8,14 +8,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
@@ -55,53 +55,17 @@ public class SetLoreFunction extends LootItemConditionalFunction {
 
    @Override
    public ItemStack run(ItemStack var1, LootContext var2) {
-      ListTag var3 = this.getLoreTag(var1, !this.lore.isEmpty());
-      if (var3 != null) {
-         if (this.replace) {
-            var3.clear();
-         }
-
-         UnaryOperator var4 = SetNameFunction.createResolver(var2, this.resolutionContext.orElse(null));
-         this.lore.stream().map(var4).map(Component.Serializer::toJson).map(StringTag::valueOf).forEach(var3::add);
-      }
-
+      var1.update(DataComponents.LORE, ItemLore.EMPTY, var2x -> new ItemLore(this.updateLore(var2x, var2)));
       return var1;
    }
 
-   @Nullable
-   private ListTag getLoreTag(ItemStack var1, boolean var2) {
-      CompoundTag var3;
-      if (var1.hasTag()) {
-         var3 = var1.getTag();
+   private List<Component> updateLore(@Nullable ItemLore var1, LootContext var2) {
+      if (var1 == null && this.lore.isEmpty()) {
+         return List.of();
       } else {
-         if (!var2) {
-            return null;
-         }
-
-         var3 = new CompoundTag();
-         var1.setTag(var3);
-      }
-
-      CompoundTag var4;
-      if (var3.contains("display", 10)) {
-         var4 = var3.getCompound("display");
-      } else {
-         if (!var2) {
-            return null;
-         }
-
-         var4 = new CompoundTag();
-         var3.put("display", var4);
-      }
-
-      if (var4.contains("Lore", 9)) {
-         return var4.getList("Lore", 8);
-      } else if (var2) {
-         ListTag var5 = new ListTag();
-         var4.put("Lore", var5);
-         return var5;
-      } else {
-         return null;
+         UnaryOperator var3 = SetNameFunction.createResolver(var2, this.resolutionContext.orElse(null));
+         Stream var4 = this.lore.stream().map(var3);
+         return !this.replace && var1 != null ? Stream.concat(var1.lines().stream(), var4).toList() : var4.toList();
       }
    }
 

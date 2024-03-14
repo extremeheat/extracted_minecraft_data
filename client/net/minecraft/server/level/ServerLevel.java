@@ -77,6 +77,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.ProgressListener;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Unit;
+import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.UniformInt;
@@ -128,6 +129,8 @@ import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.chunk.storage.EntityStorage;
+import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
+import net.minecraft.world.level.chunk.storage.SimpleRegionStorage;
 import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
 import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.dimension.end.EndDragonFight;
@@ -146,7 +149,9 @@ import net.minecraft.world.level.levelgen.structure.StructureCheck;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.pathfinder.PathTypeCache;
 import net.minecraft.world.level.portal.PortalForcer;
+import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapIndex;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.level.storage.DimensionDataStorage;
@@ -173,6 +178,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
    private final ServerChunkCache chunkSource;
    private final MinecraftServer server;
    private final ServerLevelData serverLevelData;
+   private int lastSpawnChunkRadius;
    final EntityTickList entityTickList = new EntityTickList();
    private final PersistentEntitySectionManager<Entity> entityManager;
    private final GameEventDispatcher gameEventDispatcher;
@@ -182,11 +188,12 @@ public class ServerLevel extends Level implements WorldGenLevel {
    private final PortalForcer portalForcer;
    private final LevelTicks<Block> blockTicks = new LevelTicks<>(this::isPositionTickingWithEntitiesLoaded, this.getProfilerSupplier());
    private final LevelTicks<Fluid> fluidTicks = new LevelTicks<>(this::isPositionTickingWithEntitiesLoaded, this.getProfilerSupplier());
+   private final PathTypeCache pathTypesByPosCache = new PathTypeCache();
    final Set<Mob> navigatingMobs = new ObjectOpenHashSet();
    volatile boolean isUpdatingNavigations;
    protected final Raids raids;
    private final ObjectLinkedOpenHashSet<BlockEventData> blockEvents = new ObjectLinkedOpenHashSet();
-   private final List<BlockEventData> blockEventsToReschedule = new ArrayList<>(64);
+   private final List<BlockEventData> blockEventsToReschedule = new ArrayList(64);
    private boolean handlingTick;
    private final List<CustomSpawner> customSpawners;
    @Nullable
@@ -219,7 +226,17 @@ public class ServerLevel extends Level implements WorldGenLevel {
       ChunkGenerator var14 = var6.generator();
       boolean var15 = var1.forceSynchronousWrites();
       DataFixer var16 = var1.getFixerUpper();
-      EntityStorage var17 = new EntityStorage(this, var3.getDimensionPath(var5).resolve("entities"), var16, var15, var1);
+      EntityStorage var17 = new EntityStorage(
+         new SimpleRegionStorage(
+            new RegionStorageInfo(var3.getLevelId(), var5, "entities"),
+            var3.getDimensionPath(var5).resolve("entities"),
+            var16,
+            var15,
+            DataFixTypes.ENTITY_CHUNK
+         ),
+         this,
+         var1
+      );
       this.entityManager = new PersistentEntitySectionManager<>(Entity.class, new ServerLevel.EntityCallbacks(), var17);
       this.chunkSource = new ServerChunkCache(
          this,
@@ -981,7 +998,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
    }
 
    @Override
-   public void gameEvent(GameEvent var1, Vec3 var2, GameEvent.Context var3) {
+   public void gameEvent(Holder<GameEvent> var1, Vec3 var2, GameEvent.Context var3) {
       this.gameEventDispatcher.post(var1, var2, var3);
    }
 
@@ -993,6 +1010,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
       }
 
       this.getChunkSource().blockChanged(var1);
+      this.pathTypesByPosCache.invalidate(var1);
       VoxelShape var14 = var2.getCollisionShape(this, var1);
       VoxelShape var6 = var3.getCollisionShape(this, var1);
       if (Shapes.joinIsNotEmpty(var14, var6, BooleanOp.NOT_SAME)) {
@@ -1064,7 +1082,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
       Level.ExplosionInteraction var12,
       ParticleOptions var13,
       ParticleOptions var14,
-      SoundEvent var15
+      Holder<SoundEvent> var15
    ) {
       Explosion var16 = this.explode(var1, var2, var3, var4, var6, var8, var10, var11, var12, false, var13, var14, var15);
       if (!var16.interactsWithBlocks()) {
@@ -1256,26 +1274,38 @@ public class ServerLevel extends Level implements WorldGenLevel {
 
    @Nullable
    @Override
-   public MapItemSavedData getMapData(String var1) {
-      return this.getServer().overworld().getDataStorage().get(MapItemSavedData.factory(), var1);
+   public MapItemSavedData getMapData(MapId var1) {
+      return this.getServer().overworld().getDataStorage().get(MapItemSavedData.factory(), var1.key());
    }
 
    @Override
-   public void setMapData(String var1, MapItemSavedData var2) {
-      this.getServer().overworld().getDataStorage().set(var1, var2);
+   public void setMapData(MapId var1, MapItemSavedData var2) {
+      this.getServer().overworld().getDataStorage().set(var1.key(), var2);
    }
 
    @Override
-   public int getFreeMapId() {
+   public MapId getFreeMapId() {
       return this.getServer().overworld().getDataStorage().computeIfAbsent(MapIndex.factory(), "idcounts").getFreeAuxValueForMap();
    }
 
    public void setDefaultSpawnPos(BlockPos var1, float var2) {
-      ChunkPos var3 = new ChunkPos(new BlockPos(this.levelData.getXSpawn(), 0, this.levelData.getZSpawn()));
-      this.levelData.setSpawn(var1, var2);
-      this.getChunkSource().removeRegionTicket(TicketType.START, var3, 11, Unit.INSTANCE);
-      this.getChunkSource().addRegionTicket(TicketType.START, new ChunkPos(var1), 11, Unit.INSTANCE);
-      this.getServer().getPlayerList().broadcastAll(new ClientboundSetDefaultSpawnPositionPacket(var1, var2));
+      BlockPos var3 = this.levelData.getSpawnPos();
+      float var4 = this.levelData.getSpawnAngle();
+      if (!var3.equals(var1) || var4 != var2) {
+         this.levelData.setSpawn(var1, var2);
+         this.getServer().getPlayerList().broadcastAll(new ClientboundSetDefaultSpawnPositionPacket(var1, var2));
+      }
+
+      if (this.lastSpawnChunkRadius > 1) {
+         this.getChunkSource().removeRegionTicket(TicketType.START, new ChunkPos(var3), this.lastSpawnChunkRadius, Unit.INSTANCE);
+      }
+
+      int var5 = this.getGameRules().getInt(GameRules.RULE_SPAWN_CHUNK_RADIUS) + 1;
+      if (var5 > 1) {
+         this.getChunkSource().addRegionTicket(TicketType.START, new ChunkPos(var1), var5, Unit.INSTANCE);
+      }
+
+      this.lastSpawnChunkRadius = var5;
    }
 
    public LongSet getForcedChunks() {
@@ -1571,6 +1601,10 @@ public class ServerLevel extends Level implements WorldGenLevel {
 
    public void onStructureStartsAvailable(ChunkAccess var1) {
       this.server.execute(() -> this.structureCheck.onStructureLoad(var1.getPos(), var1.getAllStarts()));
+   }
+
+   public PathTypeCache getPathTypeCache() {
+      return this.pathTypesByPosCache;
    }
 
    @Override

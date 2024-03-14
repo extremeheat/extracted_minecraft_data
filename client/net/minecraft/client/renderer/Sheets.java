@@ -3,15 +3,16 @@ package net.minecraft.client.renderer;
 import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.Material;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -47,36 +48,17 @@ public class Sheets {
    private static final RenderType TRANSLUCENT_CULL_BLOCK_SHEET = RenderType.entityTranslucentCull(TextureAtlas.LOCATION_BLOCKS);
    public static final Material DEFAULT_SHULKER_TEXTURE_LOCATION = new Material(SHULKER_SHEET, new ResourceLocation("entity/shulker/shulker"));
    public static final List<Material> SHULKER_TEXTURE_LOCATION = Stream.of(
-         "white",
-         "orange",
-         "magenta",
-         "light_blue",
-         "yellow",
-         "lime",
-         "pink",
-         "gray",
-         "light_gray",
-         "cyan",
-         "purple",
-         "blue",
-         "brown",
-         "green",
-         "red",
-         "black"
+         "white", "orange", "magenta", "light_blue", "yellow", "lime", "pink", "gray", "light_gray", "cyan", "purple", "blue", "brown", "green", "red", "black"
       )
       .map(var0 -> new Material(SHULKER_SHEET, new ResourceLocation("entity/shulker/shulker_" + var0)))
       .collect(ImmutableList.toImmutableList());
    public static final Map<WoodType, Material> SIGN_MATERIALS = WoodType.values().collect(Collectors.toMap(Function.identity(), Sheets::createSignMaterial));
    public static final Map<WoodType, Material> HANGING_SIGN_MATERIALS = WoodType.values()
       .collect(Collectors.toMap(Function.identity(), Sheets::createHangingSignMaterial));
-   public static final Map<ResourceKey<BannerPattern>, Material> BANNER_MATERIALS = BuiltInRegistries.BANNER_PATTERN
-      .registryKeySet()
-      .stream()
-      .collect(Collectors.toMap(Function.identity(), Sheets::createBannerMaterial));
-   public static final Map<ResourceKey<BannerPattern>, Material> SHIELD_MATERIALS = BuiltInRegistries.BANNER_PATTERN
-      .registryKeySet()
-      .stream()
-      .collect(Collectors.toMap(Function.identity(), Sheets::createShieldMaterial));
+   public static final Material BANNER_BASE = new Material(BANNER_SHEET, new ResourceLocation("entity/banner/base"));
+   public static final Material SHIELD_BASE = new Material(SHIELD_SHEET, new ResourceLocation("entity/shield/base"));
+   private static final Map<ResourceLocation, Material> BANNER_MATERIALS = new HashMap<>();
+   private static final Map<ResourceLocation, Material> SHIELD_MATERIALS = new HashMap<>();
    public static final Map<ResourceKey<String>, Material> DECORATED_POT_MATERIALS = BuiltInRegistries.DECORATED_POT_PATTERNS
       .registryKeySet()
       .stream()
@@ -148,30 +130,6 @@ public class Sheets {
       return TRANSLUCENT_CULL_BLOCK_SHEET;
    }
 
-   public static void getAllMaterials(Consumer<Material> var0) {
-      var0.accept(DEFAULT_SHULKER_TEXTURE_LOCATION);
-      SHULKER_TEXTURE_LOCATION.forEach(var0);
-      BANNER_MATERIALS.values().forEach(var0);
-      SHIELD_MATERIALS.values().forEach(var0);
-      SIGN_MATERIALS.values().forEach(var0);
-      HANGING_SIGN_MATERIALS.values().forEach(var0);
-
-      for(Material var4 : BED_TEXTURES) {
-         var0.accept(var4);
-      }
-
-      var0.accept(CHEST_TRAP_LOCATION);
-      var0.accept(CHEST_TRAP_LOCATION_LEFT);
-      var0.accept(CHEST_TRAP_LOCATION_RIGHT);
-      var0.accept(CHEST_XMAS_LOCATION);
-      var0.accept(CHEST_XMAS_LOCATION_LEFT);
-      var0.accept(CHEST_XMAS_LOCATION_RIGHT);
-      var0.accept(CHEST_LOCATION);
-      var0.accept(CHEST_LOCATION_LEFT);
-      var0.accept(CHEST_LOCATION_RIGHT);
-      var0.accept(ENDER_CHEST_LOCATION);
-   }
-
    private static Material createSignMaterial(WoodType var0) {
       return new Material(SIGN_SHEET, new ResourceLocation("entity/signs/" + var0.name()));
    }
@@ -188,20 +146,18 @@ public class Sheets {
       return HANGING_SIGN_MATERIALS.get(var0);
    }
 
-   private static Material createBannerMaterial(ResourceKey<BannerPattern> var0) {
-      return new Material(BANNER_SHEET, BannerPattern.location(var0, true));
+   public static Material getBannerMaterial(Holder<BannerPattern> var0) {
+      return BANNER_MATERIALS.computeIfAbsent(((BannerPattern)var0.value()).assetId(), var0x -> {
+         ResourceLocation var1 = var0x.withPrefix("entity/banner/");
+         return new Material(BANNER_SHEET, var1);
+      });
    }
 
-   public static Material getBannerMaterial(ResourceKey<BannerPattern> var0) {
-      return BANNER_MATERIALS.get(var0);
-   }
-
-   private static Material createShieldMaterial(ResourceKey<BannerPattern> var0) {
-      return new Material(SHIELD_SHEET, BannerPattern.location(var0, false));
-   }
-
-   public static Material getShieldMaterial(ResourceKey<BannerPattern> var0) {
-      return SHIELD_MATERIALS.get(var0);
+   public static Material getShieldMaterial(Holder<BannerPattern> var0) {
+      return SHIELD_MATERIALS.computeIfAbsent(((BannerPattern)var0.value()).assetId(), var0x -> {
+         ResourceLocation var1 = var0x.withPrefix("entity/shield/");
+         return new Material(SHIELD_SHEET, var1);
+      });
    }
 
    private static Material chestMaterial(String var0) {

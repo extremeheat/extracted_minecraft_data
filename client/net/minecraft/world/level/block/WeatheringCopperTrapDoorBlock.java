@@ -32,12 +32,12 @@ public class WeatheringCopperTrapDoorBlock extends TrapDoorBlock implements Weat
    }
 
    @Override
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       this.changeOverTime(var1, var2, var3, var4);
    }
 
    @Override
-   public boolean isRandomlyTicking(BlockState var1) {
+   protected boolean isRandomlyTicking(BlockState var1) {
       return WeatheringCopper.getNext(var1.getBlock()).isPresent();
    }
 

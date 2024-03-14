@@ -2,16 +2,13 @@ package net.minecraft.world.level.storage;
 
 import java.util.Locale;
 import net.minecraft.CrashReportCategory;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.LevelHeightAccessor;
 
 public interface LevelData {
-   int getXSpawn();
-
-   int getYSpawn();
-
-   int getZSpawn();
+   BlockPos getSpawnPos();
 
    float getSpawnAngle();
 
@@ -34,7 +31,7 @@ public interface LevelData {
    boolean isDifficultyLocked();
 
    default void fillCrashReportCategory(CrashReportCategory var1, LevelHeightAccessor var2) {
-      var1.setDetail("Level spawn location", () -> CrashReportCategory.formatLocation(var2, this.getXSpawn(), this.getYSpawn(), this.getZSpawn()));
+      var1.setDetail("Level spawn location", () -> CrashReportCategory.formatLocation(var2, this.getSpawnPos()));
       var1.setDetail("Level time", () -> String.format(Locale.ROOT, "%d game time, %d day time", this.getGameTime(), this.getDayTime()));
    }
 }

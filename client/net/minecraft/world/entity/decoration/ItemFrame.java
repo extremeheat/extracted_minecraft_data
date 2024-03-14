@@ -1,10 +1,10 @@
 package net.minecraft.world.entity.decoration;
 
 import com.mojang.logging.LogUtils;
-import java.util.OptionalInt;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
@@ -20,10 +20,8 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MoverType;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SlotAccess;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -35,6 +33,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.DiodeBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
@@ -63,14 +62,9 @@ public class ItemFrame extends HangingEntity {
    }
 
    @Override
-   protected float getEyeHeight(Pose var1, EntityDimensions var2) {
-      return 0.0F;
-   }
-
-   @Override
-   protected void defineSynchedData() {
-      this.getEntityData().define(DATA_ITEM, ItemStack.EMPTY);
-      this.getEntityData().define(DATA_ROTATION, 0);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      var1.define(DATA_ITEM, ItemStack.EMPTY);
+      var1.define(DATA_ROTATION, 0);
    }
 
    @Override
@@ -223,7 +217,7 @@ public class ItemFrame extends HangingEntity {
                this.removeFramedMap(var3);
             }
          } else {
-            if (var1 instanceof Player var4 && var4.getAbilities().instabuild) {
+            if (var1 instanceof Player var4 && var4.hasInfiniteMaterials()) {
                this.removeFramedMap(var3);
                return;
             }
@@ -244,13 +238,15 @@ public class ItemFrame extends HangingEntity {
    }
 
    private void removeFramedMap(ItemStack var1) {
-      this.getFramedMapId().ifPresent(var1x -> {
-         MapItemSavedData var2 = MapItem.getSavedData(var1x, this.level());
-         if (var2 != null) {
-            var2.removedFromFrame(this.pos, this.getId());
-            var2.setDirty(true);
+      MapId var2 = this.getFramedMapId();
+      if (var2 != null) {
+         MapItemSavedData var3 = MapItem.getSavedData(var2, this.level());
+         if (var3 != null) {
+            var3.removedFromFrame(this.pos, this.getId());
+            var3.setDirty(true);
          }
-      });
+      }
+
       var1.setEntityRepresentation(null);
    }
 
@@ -258,20 +254,13 @@ public class ItemFrame extends HangingEntity {
       return this.getEntityData().get(DATA_ITEM);
    }
 
-   public OptionalInt getFramedMapId() {
-      ItemStack var1 = this.getItem();
-      if (var1.is(Items.FILLED_MAP)) {
-         Integer var2 = MapItem.getMapId(var1);
-         if (var2 != null) {
-            return OptionalInt.of(var2);
-         }
-      }
-
-      return OptionalInt.empty();
+   @Nullable
+   public MapId getFramedMapId() {
+      return this.getItem().get(DataComponents.MAP_ID);
    }
 
    public boolean hasFramedMap() {
-      return this.getFramedMapId().isPresent();
+      return this.getItem().has(DataComponents.MAP_ID);
    }
 
    public void setItem(ItemStack var1) {
@@ -348,7 +337,7 @@ public class ItemFrame extends HangingEntity {
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       if (!this.getItem().isEmpty()) {
-         var1.put("Item", this.getItem().save(new CompoundTag()));
+         var1.put("Item", this.getItem().save(this.registryAccess()));
          var1.putByte("ItemRotation", (byte)this.getRotation());
          var1.putFloat("ItemDropChance", this.dropChance);
       }
@@ -361,19 +350,21 @@ public class ItemFrame extends HangingEntity {
    @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      CompoundTag var2 = var1.getCompound("Item");
-      if (var2 != null && !var2.isEmpty()) {
-         ItemStack var3 = ItemStack.of(var2);
-         if (var3.isEmpty()) {
-            LOGGER.warn("Unable to load item from: {}", var2);
-         }
+      ItemStack var2;
+      if (var1.contains("Item", 10)) {
+         CompoundTag var3 = var1.getCompound("Item");
+         var2 = ItemStack.parse(this.registryAccess(), var3).orElse(ItemStack.EMPTY);
+      } else {
+         var2 = ItemStack.EMPTY;
+      }
 
-         ItemStack var4 = this.getItem();
-         if (!var4.isEmpty() && !ItemStack.matches(var3, var4)) {
-            this.removeFramedMap(var4);
-         }
+      ItemStack var4 = this.getItem();
+      if (!var4.isEmpty() && !ItemStack.matches(var2, var4)) {
+         this.removeFramedMap(var4);
+      }
 
-         this.setItem(var3, false);
+      this.setItem(var2, false);
+      if (!var2.isEmpty()) {
          this.setRotation(var1.getByte("ItemRotation"), false);
          if (var1.contains("ItemDropChance", 99)) {
             this.dropChance = var1.getFloat("ItemDropChance");
@@ -404,9 +395,7 @@ public class ItemFrame extends HangingEntity {
 
                this.setItem(var3);
                this.gameEvent(GameEvent.BLOCK_CHANGE, var1);
-               if (!var1.getAbilities().instabuild) {
-                  var3.shrink(1);
-               }
+               var3.consume(1, var1);
             }
          } else {
             this.playSound(this.getRotateItemSound(), 1.0F, 1.0F);

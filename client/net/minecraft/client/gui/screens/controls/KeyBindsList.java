@@ -24,11 +24,12 @@ import net.minecraft.network.chat.MutableComponent;
 import org.apache.commons.lang3.ArrayUtils;
 
 public class KeyBindsList extends ContainerObjectSelectionList<KeyBindsList.Entry> {
+   private static final int ITEM_HEIGHT = 20;
    final KeyBindsScreen keyBindsScreen;
-   int maxNameWidth;
+   private int maxNameWidth;
 
    public KeyBindsList(KeyBindsScreen var1, Minecraft var2) {
-      super(var2, var1.width + 45, var1.height - 52, 20, 20);
+      super(var2, var1.width, var1.layout.getContentHeight(), var1.layout.getHeaderHeight(), 20);
       this.keyBindsScreen = var1;
       KeyMapping[] var3 = (KeyMapping[])ArrayUtils.clone(var2.options.keyMappings);
       Arrays.sort((Object[])var3);
@@ -61,13 +62,8 @@ public class KeyBindsList extends ContainerObjectSelectionList<KeyBindsList.Entr
    }
 
    @Override
-   protected int getScrollbarPosition() {
-      return super.getScrollbarPosition() + 15;
-   }
-
-   @Override
    public int getRowWidth() {
-      return super.getRowWidth() + 32;
+      return 340;
    }
 
    public class CategoryEntry extends KeyBindsList.Entry {
@@ -82,9 +78,7 @@ public class KeyBindsList extends ContainerObjectSelectionList<KeyBindsList.Entr
 
       @Override
       public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         var1.drawString(
-            KeyBindsList.this.minecraft.font, this.name, KeyBindsList.this.minecraft.screen.width / 2 - this.width / 2, var3 + var6 - 9 - 1, 16777215, false
-         );
+         var1.drawString(KeyBindsList.this.minecraft.font, this.name, KeyBindsList.this.width / 2 - this.width / 2, var3 + var6 - 9 - 1, -1, false);
       }
 
       @Nullable
@@ -127,6 +121,8 @@ public class KeyBindsList extends ContainerObjectSelectionList<KeyBindsList.Entr
    }
 
    public class KeyEntry extends KeyBindsList.Entry {
+      private static final Component RESET_BUTTON_TITLE = Component.translatable("controls.reset");
+      private static final int PADDING = 10;
       private final KeyMapping key;
       private final Component name;
       private final Button changeButton;
@@ -148,7 +144,7 @@ public class KeyBindsList extends ContainerObjectSelectionList<KeyBindsList.Entr
                      : Component.translatable("narrator.controls.bound", var3, var2x.get())
             )
             .build();
-         this.resetButton = Button.builder(Component.translatable("controls.reset"), var2x -> {
+         this.resetButton = Button.builder(RESET_BUTTON_TITLE, var2x -> {
             KeyBindsList.this.minecraft.options.setKey(var2, var2.getDefaultKey());
             KeyBindsList.this.resetMappingAndUpdateButtons();
          }).bounds(0, 0, 50, 20).createNarration(var1x -> Component.translatable("narrator.controls.reset", var3)).build();
@@ -157,20 +153,19 @@ public class KeyBindsList extends ContainerObjectSelectionList<KeyBindsList.Entr
 
       @Override
       public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         int var10003 = var4 + 90 - KeyBindsList.this.maxNameWidth;
-         var1.drawString(KeyBindsList.this.minecraft.font, this.name, var10003, var3 + var6 / 2 - 9 / 2, 16777215, false);
-         this.resetButton.setX(var4 + 190);
-         this.resetButton.setY(var3);
+         int var11 = KeyBindsList.this.getScrollbarPosition() - this.resetButton.getWidth() - 10;
+         int var12 = var3 - 2;
+         this.resetButton.setPosition(var11, var12);
          this.resetButton.render(var1, var7, var8, var10);
-         this.changeButton.setX(var4 + 105);
-         this.changeButton.setY(var3);
-         if (this.hasCollision) {
-            boolean var11 = true;
-            int var12 = this.changeButton.getX() - 6;
-            var1.fill(var12, var3 + 2, var12 + 3, var3 + var6 + 2, ChatFormatting.RED.getColor() | 0xFF000000);
-         }
-
+         int var13 = var11 - 5 - this.changeButton.getWidth();
+         this.changeButton.setPosition(var13, var12);
          this.changeButton.render(var1, var7, var8, var10);
+         var1.drawString(KeyBindsList.this.minecraft.font, this.name, var4, var3 + var6 / 2 - 9 / 2, -1);
+         if (this.hasCollision) {
+            boolean var14 = true;
+            int var15 = this.changeButton.getX() - 6;
+            var1.fill(var15, var3 - 1, var15 + 3, var3 + var6, -65536);
+         }
       }
 
       @Override

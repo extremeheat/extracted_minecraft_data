@@ -94,6 +94,7 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.SOUL_FIRE, var3);
       var0.put(Blocks.SPAWNER, var3);
       var0.put(Blocks.TRIAL_SPAWNER, var3);
+      var0.put(Blocks.VAULT, var3);
       var0.put(Blocks.REDSTONE_WIRE, var3);
       var0.put(Blocks.WHEAT, var3);
       var0.put(Blocks.OAK_DOOR, var3);

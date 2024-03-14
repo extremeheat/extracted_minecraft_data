@@ -6,7 +6,7 @@ import net.minecraft.Util;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.chunk.ChunkStatus;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import org.slf4j.Logger;
 
 public class LoggerChunkProgressListener implements ChunkProgressListener {
@@ -16,10 +16,22 @@ public class LoggerChunkProgressListener implements ChunkProgressListener {
    private long startTime;
    private long nextTickTime = 9223372036854775807L;
 
-   public LoggerChunkProgressListener(int var1) {
+   private LoggerChunkProgressListener(int var1) {
       super();
-      int var2 = var1 * 2 + 1;
-      this.maxCount = var2 * var2;
+      this.maxCount = var1;
+   }
+
+   public static LoggerChunkProgressListener createFromGameruleRadius(int var0) {
+      return var0 > 0 ? create(var0 + 1) : createCompleted();
+   }
+
+   public static LoggerChunkProgressListener create(int var0) {
+      int var1 = ChunkProgressListener.calculateDiameter(var0);
+      return new LoggerChunkProgressListener(var1 * var1);
+   }
+
+   public static LoggerChunkProgressListener createCompleted() {
+      return new LoggerChunkProgressListener(0);
    }
 
    @Override
@@ -52,6 +64,6 @@ public class LoggerChunkProgressListener implements ChunkProgressListener {
    }
 
    public int getProgress() {
-      return Mth.floor((float)this.count * 100.0F / (float)this.maxCount);
+      return this.maxCount == 0 ? 100 : Mth.floor((float)this.count * 100.0F / (float)this.maxCount);
    }
 }

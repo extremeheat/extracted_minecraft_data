@@ -9,10 +9,13 @@ import java.util.function.Consumer;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.LongArrayTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.chunk.LevelChunk;
@@ -44,7 +47,7 @@ public class ClientboundLevelChunkPacketData {
       }
    }
 
-   public ClientboundLevelChunkPacketData(FriendlyByteBuf var1, int var2, int var3) {
+   public ClientboundLevelChunkPacketData(RegistryFriendlyByteBuf var1, int var2, int var3) {
       super();
       this.heightmaps = var1.readNbt();
       if (this.heightmaps == null) {
@@ -56,16 +59,16 @@ public class ClientboundLevelChunkPacketData {
          } else {
             this.buffer = new byte[var4];
             var1.readBytes(this.buffer);
-            this.blockEntitiesData = var1.readList(ClientboundLevelChunkPacketData.BlockEntityInfo::new);
+            this.blockEntitiesData = ClientboundLevelChunkPacketData.BlockEntityInfo.LIST_STREAM_CODEC.decode(var1);
          }
       }
    }
 
-   public void write(FriendlyByteBuf var1) {
+   public void write(RegistryFriendlyByteBuf var1) {
       var1.writeNbt(this.heightmaps);
       var1.writeVarInt(this.buffer.length);
       var1.writeBytes(this.buffer);
-      var1.writeCollection(this.blockEntitiesData, (var0, var1x) -> var1x.write(var0));
+      ClientboundLevelChunkPacketData.BlockEntityInfo.LIST_STREAM_CODEC.encode(var1, this.blockEntitiesData);
    }
 
    private static int calculateChunkSize(LevelChunk var0) {
@@ -116,6 +119,12 @@ public class ClientboundLevelChunkPacketData {
    }
 
    static class BlockEntityInfo {
+      public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundLevelChunkPacketData.BlockEntityInfo> STREAM_CODEC = StreamCodec.ofMember(
+         ClientboundLevelChunkPacketData.BlockEntityInfo::write, ClientboundLevelChunkPacketData.BlockEntityInfo::new
+      );
+      public static final StreamCodec<RegistryFriendlyByteBuf, List<ClientboundLevelChunkPacketData.BlockEntityInfo>> LIST_STREAM_CODEC = STREAM_CODEC.apply(
+         ByteBufCodecs.list()
+      );
       final int packedXZ;
       final int y;
       final BlockEntityType<?> type;
@@ -130,23 +139,23 @@ public class ClientboundLevelChunkPacketData {
          this.tag = var4;
       }
 
-      private BlockEntityInfo(FriendlyByteBuf var1) {
+      private BlockEntityInfo(RegistryFriendlyByteBuf var1) {
          super();
          this.packedXZ = var1.readByte();
          this.y = var1.readShort();
-         this.type = var1.readById(BuiltInRegistries.BLOCK_ENTITY_TYPE);
+         this.type = ByteBufCodecs.registry(Registries.BLOCK_ENTITY_TYPE).decode(var1);
          this.tag = var1.readNbt();
       }
 
-      void write(FriendlyByteBuf var1) {
+      private void write(RegistryFriendlyByteBuf var1) {
          var1.writeByte(this.packedXZ);
          var1.writeShort(this.y);
-         var1.writeId(BuiltInRegistries.BLOCK_ENTITY_TYPE, this.type);
+         ByteBufCodecs.registry(Registries.BLOCK_ENTITY_TYPE).encode(var1, this.type);
          var1.writeNbt(this.tag);
       }
 
       static ClientboundLevelChunkPacketData.BlockEntityInfo create(BlockEntity var0) {
-         CompoundTag var1 = var0.getUpdateTag();
+         CompoundTag var1 = var0.getUpdateTag(var0.getLevel().registryAccess());
          BlockPos var2 = var0.getBlockPos();
          int var3 = SectionPos.sectionRelative(var2.getX()) << 4 | SectionPos.sectionRelative(var2.getZ());
          return new ClientboundLevelChunkPacketData.BlockEntityInfo(var3, var2.getY(), var0.getType(), var1.isEmpty() ? null : var1);

@@ -52,7 +52,6 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.joml.Vector3f;
 
 public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
    private static final EntityDataAccessor<Integer> DATA_ID_TYPE = SynchedEntityData.defineId(Boat.class, EntityDataSerializers.INT);
@@ -104,22 +103,17 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
    }
 
    @Override
-   protected float getEyeHeight(Pose var1, EntityDimensions var2) {
-      return var2.height;
-   }
-
-   @Override
    protected Entity.MovementEmission getMovementEmission() {
       return Entity.MovementEmission.EVENTS;
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_ID_TYPE, Boat.Type.OAK.ordinal());
-      this.entityData.define(DATA_ID_PADDLE_LEFT, false);
-      this.entityData.define(DATA_ID_PADDLE_RIGHT, false);
-      this.entityData.define(DATA_ID_BUBBLE_TIME, 0);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_ID_TYPE, Boat.Type.OAK.ordinal());
+      var1.define(DATA_ID_PADDLE_LEFT, false);
+      var1.define(DATA_ID_PADDLE_RIGHT, false);
+      var1.define(DATA_ID_BUBBLE_TIME, 0);
    }
 
    @Override
@@ -147,7 +141,7 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
    }
 
    @Override
-   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
+   protected Vec3 getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
       float var4 = this.getSinglePassengerXOffset();
       if (this.getPassengers().size() > 1) {
          int var5 = this.getPassengers().indexOf(var1);
@@ -162,7 +156,8 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
          }
       }
 
-      return new Vector3f(0.0F, this.getVariant() == Boat.Type.BAMBOO ? var2.height * 0.8888889F : var2.height / 3.0F, var4);
+      return new Vec3(0.0, this.getVariant() == Boat.Type.BAMBOO ? (double)(var2.height() * 0.8888889F) : (double)(var2.height() / 3.0F), (double)var4)
+         .yRot(-this.getYRot() * 0.017453292F);
    }
 
    @Override
@@ -587,10 +582,14 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
       return var10 ? Boat.Status.UNDER_WATER : null;
    }
 
+   @Override
+   protected double getDefaultGravity() {
+      return 0.04;
+   }
+
    private void floatBoat() {
-      double var1 = -0.03999999910593033;
-      double var3 = this.isNoGravity() ? 0.0 : -0.03999999910593033;
-      double var5 = 0.0;
+      double var1 = -this.getGravity();
+      double var3 = 0.0;
       this.invFriction = 0.05F;
       if (this.oldStatus == Boat.Status.IN_AIR && this.status != Boat.Status.IN_AIR && this.status != Boat.Status.ON_LAND) {
          this.waterLevel = this.getY(1.0);
@@ -600,13 +599,13 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
          this.status = Boat.Status.IN_WATER;
       } else {
          if (this.status == Boat.Status.IN_WATER) {
-            var5 = (this.waterLevel - this.getY()) / (double)this.getBbHeight();
+            var3 = (this.waterLevel - this.getY()) / (double)this.getBbHeight();
             this.invFriction = 0.9F;
          } else if (this.status == Boat.Status.UNDER_FLOWING_WATER) {
-            var3 = -7.0E-4;
+            var1 = -7.0E-4;
             this.invFriction = 0.9F;
          } else if (this.status == Boat.Status.UNDER_WATER) {
-            var5 = 0.009999999776482582;
+            var3 = 0.009999999776482582;
             this.invFriction = 0.45F;
          } else if (this.status == Boat.Status.IN_AIR) {
             this.invFriction = 0.9F;
@@ -617,12 +616,12 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
             }
          }
 
-         Vec3 var7 = this.getDeltaMovement();
-         this.setDeltaMovement(var7.x * (double)this.invFriction, var7.y + var3, var7.z * (double)this.invFriction);
+         Vec3 var5 = this.getDeltaMovement();
+         this.setDeltaMovement(var5.x * (double)this.invFriction, var5.y + var1, var5.z * (double)this.invFriction);
          this.deltaRotation *= this.invFriction;
-         if (var5 > 0.0) {
-            Vec3 var8 = this.getDeltaMovement();
-            this.setDeltaMovement(var8.x, (var8.y + var5 * 0.06153846016296973) * 0.75, var8.z);
+         if (var3 > 0.0) {
+            Vec3 var6 = this.getDeltaMovement();
+            this.setDeltaMovement(var6.x, (var6.y + var3 * (this.getDefaultGravity() / 0.65)) * 0.75, var6.z);
          }
       }
    }
@@ -652,8 +651,7 @@ public class Boat extends VehicleEntity implements VariantHolder<Boat.Type> {
          }
 
          this.setDeltaMovement(
-            this.getDeltaMovement()
-               .add((double)(Mth.sin(-this.getYRot() * 0.017453292F) * var1), 0.0, (double)(Mth.cos(this.getYRot() * 0.017453292F) * var1))
+            this.getDeltaMovement().add((double)(Mth.sin(-this.getYRot() * 0.017453292F) * var1), 0.0, (double)(Mth.cos(this.getYRot() * 0.017453292F) * var1))
          );
          this.setPaddleState(this.inputRight && !this.inputLeft || this.inputUp, this.inputLeft && !this.inputRight || this.inputUp);
       }

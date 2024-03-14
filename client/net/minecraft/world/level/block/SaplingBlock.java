@@ -39,12 +39,12 @@ public class SaplingBlock extends BushBlock implements BonemealableBlock {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 
    @Override
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (var2.getMaxLocalRawBrightness(var3.above()) >= 9 && var4.nextInt(7) == 0) {
          this.advanceTree(var2, var3, var1, var4);
       }

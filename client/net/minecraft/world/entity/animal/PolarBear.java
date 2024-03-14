@@ -168,15 +168,15 @@ public class PolarBear extends Animal implements NeutralMob {
 
    protected void playWarningSound() {
       if (this.warningSoundTicks <= 0) {
-         this.playSound(SoundEvents.POLAR_BEAR_WARNING, 1.0F, this.getVoicePitch());
+         this.makeSound(SoundEvents.POLAR_BEAR_WARNING);
          this.warningSoundTicks = 40;
       }
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_STANDING_ID, false);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_STANDING_ID, false);
    }
 
    @Override
@@ -205,13 +205,13 @@ public class PolarBear extends Animal implements NeutralMob {
    }
 
    @Override
-   public EntityDimensions getDimensions(Pose var1) {
+   public EntityDimensions getDefaultDimensions(Pose var1) {
       if (this.clientSideStandAnimation > 0.0F) {
          float var2 = this.clientSideStandAnimation / 6.0F;
          float var3 = 1.0F + var2;
-         return super.getDimensions(var1).scale(1.0F, var3);
+         return super.getDefaultDimensions(var1).scale(1.0F, var3);
       } else {
-         return super.getDimensions(var1);
+         return super.getDefaultDimensions(var1);
       }
    }
 
@@ -243,14 +243,12 @@ public class PolarBear extends Animal implements NeutralMob {
    }
 
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
       if (var4 == null) {
          var4 = new AgeableMob.AgeableMobGroupData(1.0F);
       }
 
-      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4, var5);
+      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4);
    }
 
    class PolarBearAttackPlayersGoal extends NearestAttackableTargetGoal<Player> {

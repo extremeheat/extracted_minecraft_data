@@ -3,7 +3,9 @@ package net.minecraft.network.protocol.game;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
@@ -11,6 +13,9 @@ import net.minecraft.world.level.block.entity.StructureBlockEntity;
 import net.minecraft.world.level.block.state.properties.StructureMode;
 
 public class ServerboundSetStructureBlockPacket implements Packet<ServerGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ServerboundSetStructureBlockPacket> STREAM_CODEC = Packet.codec(
+      ServerboundSetStructureBlockPacket::write, ServerboundSetStructureBlockPacket::new
+   );
    private static final int FLAG_IGNORE_ENTITIES = 1;
    private static final int FLAG_SHOW_AIR = 2;
    private static final int FLAG_SHOW_BOUNDING_BOX = 4;
@@ -62,7 +67,7 @@ public class ServerboundSetStructureBlockPacket implements Packet<ServerGamePack
       this.seed = var14;
    }
 
-   public ServerboundSetStructureBlockPacket(FriendlyByteBuf var1) {
+   private ServerboundSetStructureBlockPacket(FriendlyByteBuf var1) {
       super();
       this.pos = var1.readBlockPos();
       this.updateType = var1.readEnum(StructureBlockEntity.UpdateType.class);
@@ -83,8 +88,7 @@ public class ServerboundSetStructureBlockPacket implements Packet<ServerGamePack
       this.showBoundingBox = (var4 & 4) != 0;
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       var1.writeBlockPos(this.pos);
       var1.writeEnum(this.updateType);
       var1.writeEnum(this.mode);
@@ -114,6 +118,11 @@ public class ServerboundSetStructureBlockPacket implements Packet<ServerGamePack
       }
 
       var1.writeByte(var2);
+   }
+
+   @Override
+   public PacketType<ServerboundSetStructureBlockPacket> type() {
+      return GamePacketTypes.SERVERBOUND_SET_STRUCTURE_BLOCK;
    }
 
    public void handle(ServerGamePacketListener var1) {

@@ -134,9 +134,7 @@ public class TextRenderingUtils {
             return true;
          } else if (var1 != null && this.getClass() == var1.getClass()) {
             TextRenderingUtils.LineSegment var2 = (TextRenderingUtils.LineSegment)var1;
-            return Objects.equals(this.fullText, var2.fullText)
-               && Objects.equals(this.linkTitle, var2.linkTitle)
-               && Objects.equals(this.linkUrl, var2.linkUrl);
+            return Objects.equals(this.fullText, var2.fullText) && Objects.equals(this.linkTitle, var2.linkTitle) && Objects.equals(this.linkUrl, var2.linkUrl);
          } else {
             return false;
          }

@@ -32,6 +32,7 @@ public class LootTable {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final LootTable EMPTY = new LootTable(LootContextParamSets.EMPTY, Optional.empty(), List.of(), List.of());
    public static final LootContextParamSet DEFAULT_PARAM_SET = LootContextParamSets.ALL_PARAMS;
+   public static final long RANDOMIZE_SEED = 0L;
    public static final Codec<LootTable> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                LootContextParamSets.CODEC.optionalFieldOf("type", DEFAULT_PARAM_SET).forGetter(var0x -> var0x.paramSet),
@@ -94,9 +95,7 @@ public class LootTable {
    }
 
    public void getRandomItems(LootParams var1, long var2, Consumer<ItemStack> var4) {
-      this.getRandomItemsRaw(
-         new LootContext.Builder(var1).withOptionalRandomSeed(var2).create(this.randomSequence), createStackSplitter(var1.getLevel(), var4)
-      );
+      this.getRandomItemsRaw(new LootContext.Builder(var1).withOptionalRandomSeed(var2).create(this.randomSequence), createStackSplitter(var1.getLevel(), var4));
    }
 
    public void getRandomItems(LootParams var1, Consumer<ItemStack> var2) {

@@ -77,13 +77,17 @@ public abstract class StructurePlacement {
    }
 
    public boolean isStructureChunk(ChunkGeneratorStructureState var1, int var2, int var3) {
-      if (!this.isPlacementChunk(var1, var2, var3)) {
-         return false;
-      } else if (this.frequency < 1.0F && !this.frequencyReductionMethod.shouldGenerate(var1.getLevelSeed(), this.salt, var2, var3, this.frequency)) {
-         return false;
-      } else {
-         return !this.exclusionZone.isPresent() || !this.exclusionZone.get().isPlacementForbidden(var1, var2, var3);
-      }
+      return this.isPlacementChunk(var1, var2, var3)
+         && this.applyAdditionalChunkRestrictions(var2, var3, var1.getLevelSeed())
+         && this.applyInteractionsWithOtherStructures(var1, var2, var3);
+   }
+
+   public boolean applyAdditionalChunkRestrictions(int var1, int var2, long var3) {
+      return !(this.frequency < 1.0F) || this.frequencyReductionMethod.shouldGenerate(var3, this.salt, var1, var2, this.frequency);
+   }
+
+   public boolean applyInteractionsWithOtherStructures(ChunkGeneratorStructureState var1, int var2, int var3) {
+      return !this.exclusionZone.isPresent() || !((StructurePlacement.ExclusionZone)this.exclusionZone.get()).isPlacementForbidden(var1, var2, var3);
    }
 
    protected abstract boolean isPlacementChunk(ChunkGeneratorStructureState var1, int var2, int var3);

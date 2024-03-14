@@ -62,9 +62,7 @@ public class BoatItem extends Item {
                if (!var1.isClientSide) {
                   var1.addFreshEntity(var14);
                   var1.gameEvent(var2, GameEvent.ENTITY_PLACE, var5.getLocation());
-                  if (!var2.getAbilities().instabuild) {
-                     var4.shrink(1);
-                  }
+                  var4.consume(1, var2);
                }
 
                var2.awardStat(Stats.ITEM_USED.get(this));

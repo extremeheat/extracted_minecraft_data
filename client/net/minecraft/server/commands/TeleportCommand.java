@@ -110,7 +110,7 @@ public class TeleportCommand {
                                                             ((CommandSourceStack)var0x.getSource()).getLevel(),
                                                             Vec3Argument.getCoordinates(var0x, "location"),
                                                             null,
-                                                            new TeleportCommand.LookAt(
+                                                            new TeleportCommand.LookAtEntity(
                                                                EntityArgument.getEntity(var0x, "facingEntity"), EntityAnchorArgument.Anchor.FEET
                                                             )
                                                          )
@@ -124,7 +124,7 @@ public class TeleportCommand {
                                                                ((CommandSourceStack)var0x.getSource()).getLevel(),
                                                                Vec3Argument.getCoordinates(var0x, "location"),
                                                                null,
-                                                               new TeleportCommand.LookAt(
+                                                               new TeleportCommand.LookAtEntity(
                                                                   EntityArgument.getEntity(var0x, "facingEntity"),
                                                                   EntityAnchorArgument.getAnchor(var0x, "facingAnchor")
                                                                )
@@ -142,7 +142,7 @@ public class TeleportCommand {
                                                 ((CommandSourceStack)var0x.getSource()).getLevel(),
                                                 Vec3Argument.getCoordinates(var0x, "location"),
                                                 null,
-                                                new TeleportCommand.LookAt(Vec3Argument.getVec3(var0x, "facingLocation"))
+                                                new TeleportCommand.LookAtPosition(Vec3Argument.getVec3(var0x, "facingLocation"))
                                              )
                                        )
                                  )
@@ -299,35 +299,44 @@ public class TeleportCommand {
       }
    }
 
-   static class LookAt {
-      private final Vec3 position;
+   @FunctionalInterface
+   interface LookAt {
+      void perform(CommandSourceStack var1, Entity var2);
+   }
+
+   static record LookAtEntity(Entity a, EntityAnchorArgument.Anchor b) implements TeleportCommand.LookAt {
       private final Entity entity;
       private final EntityAnchorArgument.Anchor anchor;
 
-      public LookAt(Entity var1, EntityAnchorArgument.Anchor var2) {
+      LookAtEntity(Entity var1, EntityAnchorArgument.Anchor var2) {
          super();
          this.entity = var1;
          this.anchor = var2;
-         this.position = var2.apply(var1);
       }
 
-      public LookAt(Vec3 var1) {
-         super();
-         this.entity = null;
-         this.position = var1;
-         this.anchor = null;
-      }
-
+      // $VF: Could not properly define all variable types!
+      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+      @Override
       public void perform(CommandSourceStack var1, Entity var2) {
-         if (this.entity != null) {
-            if (var2 instanceof ServerPlayer) {
-               ((ServerPlayer)var2).lookAt(var1.getAnchor(), this.entity, this.anchor);
-            } else {
-               var2.lookAt(var1.getAnchor(), this.position);
-            }
+         if (var2 instanceof ServerPlayer var3) {
+            var3.lookAt(var1.getAnchor(), this.entity, this.anchor);
          } else {
-            var2.lookAt(var1.getAnchor(), this.position);
+            var2.lookAt(var1.getAnchor(), this.anchor.apply(this.entity));
          }
+      }
+   }
+
+   static record LookAtPosition(Vec3 a) implements TeleportCommand.LookAt {
+      private final Vec3 position;
+
+      LookAtPosition(Vec3 var1) {
+         super();
+         this.position = var1;
+      }
+
+      @Override
+      public void perform(CommandSourceStack var1, Entity var2) {
+         var2.lookAt(var1.getAnchor(), this.position);
       }
    }
 }

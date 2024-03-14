@@ -1,23 +1,28 @@
 package net.minecraft.core;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
-import java.util.Objects;
+import io.netty.buffer.ByteBuf;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 
-public final class GlobalPos {
-   public static final Codec<GlobalPos> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(
-               Level.RESOURCE_KEY_CODEC.fieldOf("dimension").forGetter(GlobalPos::dimension), BlockPos.CODEC.fieldOf("pos").forGetter(GlobalPos::pos)
-            )
-            .apply(var0, GlobalPos::of)
-   );
+public record GlobalPos(ResourceKey<Level> d, BlockPos e) {
    private final ResourceKey<Level> dimension;
    private final BlockPos pos;
+   public static final MapCodec<GlobalPos> MAP_CODEC = RecordCodecBuilder.mapCodec(
+      var0 -> var0.group(Level.RESOURCE_KEY_CODEC.fieldOf("dimension").forGetter(GlobalPos::dimension), BlockPos.CODEC.fieldOf("pos").forGetter(GlobalPos::pos))
+            .apply(var0, GlobalPos::of)
+   );
+   public static final Codec<GlobalPos> CODEC = MAP_CODEC.codec();
+   public static final StreamCodec<ByteBuf, GlobalPos> STREAM_CODEC = StreamCodec.composite(
+      ResourceKey.streamCodec(Registries.DIMENSION), GlobalPos::dimension, BlockPos.STREAM_CODEC, GlobalPos::pos, GlobalPos::of
+   );
 
-   private GlobalPos(ResourceKey<Level> var1, BlockPos var2) {
+   public GlobalPos(ResourceKey<Level> var1, BlockPos var2) {
       super();
       this.dimension = var1;
       this.pos = var2;
@@ -27,32 +32,6 @@ public final class GlobalPos {
       return new GlobalPos(var0, var1);
    }
 
-   public ResourceKey<Level> dimension() {
-      return this.dimension;
-   }
-
-   public BlockPos pos() {
-      return this.pos;
-   }
-
-   @Override
-   public boolean equals(Object var1) {
-      if (this == var1) {
-         return true;
-      } else if (var1 != null && this.getClass() == var1.getClass()) {
-         GlobalPos var2 = (GlobalPos)var1;
-         return Objects.equals(this.dimension, var2.dimension) && Objects.equals(this.pos, var2.pos);
-      } else {
-         return false;
-      }
-   }
-
-   @Override
-   public int hashCode() {
-      return Objects.hash(this.dimension, this.pos);
-   }
-
-   @Override
    public String toString() {
       return this.dimension + " " + this.pos;
    }

@@ -111,6 +111,10 @@ public final class OptionInstance<T> {
       return (var0, var1) -> var1.getCaption();
    }
 
+   public AbstractWidget createButton(Options var1) {
+      return this.createButton(var1, 0, 0, 150);
+   }
+
    public AbstractWidget createButton(Options var1, int var2, int var3, int var4) {
       return this.createButton(var1, var2, var3, var4, var0 -> {
       });

@@ -126,7 +126,6 @@ public class TagLoader<T> {
          this.source = var2;
       }
 
-      @Override
       public String toString() {
          return this.entry + " (from " + this.source + ")";
       }

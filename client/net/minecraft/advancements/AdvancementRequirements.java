@@ -104,7 +104,6 @@ public record AdvancementRequirements(List<List<String>> c) {
       return this.requirements.isEmpty();
    }
 
-   @Override
    public String toString() {
       return this.requirements.toString();
    }

@@ -4,6 +4,10 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 
 public class VillagerData {
    public static final int MIN_VILLAGER_LEVEL = 1;
@@ -20,6 +24,15 @@ public class VillagerData {
                Codec.INT.fieldOf("level").orElse(1).forGetter(var0x -> var0x.level)
             )
             .apply(var0, VillagerData::new)
+   );
+   public static final StreamCodec<RegistryFriendlyByteBuf, VillagerData> STREAM_CODEC = StreamCodec.composite(
+      ByteBufCodecs.registry(Registries.VILLAGER_TYPE),
+      var0 -> var0.type,
+      ByteBufCodecs.registry(Registries.VILLAGER_PROFESSION),
+      var0 -> var0.profession,
+      ByteBufCodecs.VAR_INT,
+      var0 -> var0.level,
+      VillagerData::new
    );
    private final VillagerType type;
    private final VillagerProfession profession;

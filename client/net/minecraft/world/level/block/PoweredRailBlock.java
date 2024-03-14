@@ -153,7 +153,7 @@ public class PoweredRailBlock extends BaseRailBlock {
    }
 
    @Override
-   public BlockState rotate(BlockState var1, Rotation var2) {
+   protected BlockState rotate(BlockState var1, Rotation var2) {
       switch(var2) {
          case CLOCKWISE_180:
             switch((RailShape)var1.getValue(SHAPE)) {
@@ -226,7 +226,7 @@ public class PoweredRailBlock extends BaseRailBlock {
    }
 
    @Override
-   public BlockState mirror(BlockState var1, Mirror var2) {
+   protected BlockState mirror(BlockState var1, Mirror var2) {
       RailShape var3 = var1.getValue(SHAPE);
       switch(var2) {
          case LEFT_RIGHT:

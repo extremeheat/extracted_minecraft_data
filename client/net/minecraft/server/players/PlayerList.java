@@ -30,6 +30,7 @@ import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.Connection;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.ChatType;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -61,6 +62,7 @@ import net.minecraft.network.protocol.game.ClientboundSetTimePacket;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.network.protocol.game.ClientboundUpdateMobEffectPacket;
 import net.minecraft.network.protocol.game.ClientboundUpdateRecipesPacket;
+import net.minecraft.network.protocol.game.GameProtocols;
 import net.minecraft.network.protocol.status.ServerStatus;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -124,7 +126,7 @@ public abstract class PlayerList {
    protected final int maxPlayers;
    private int viewDistance;
    private int simulationDistance;
-   private boolean allowCheatsForAllPlayers;
+   private boolean allowCommandsForAllPlayers;
    private static final boolean ALLOW_LOGOUTIVATOR = false;
    private int sendAllPlayerInfoIn;
 
@@ -148,10 +150,11 @@ public abstract class PlayerList {
          var6 = var4.getName();
       }
 
-      CompoundTag var25 = this.load(var2);
-      ResourceKey var8 = var25 != null
-         ? DimensionType.parseLegacy(new Dynamic(NbtOps.INSTANCE, var25.get("Dimension"))).resultOrPartial(LOGGER::error).orElse(Level.OVERWORLD)
-         : Level.OVERWORLD;
+      Optional var25 = this.load(var2);
+      ResourceKey var8 = var25.<ResourceKey>flatMap(
+            var0 -> DimensionType.parseLegacy(new Dynamic(NbtOps.INSTANCE, var0.get("Dimension"))).resultOrPartial(LOGGER::error)
+         )
+         .orElse(Level.OVERWORLD);
       ServerLevel var9 = this.server.getLevel(var8);
       ServerLevel var10;
       if (var9 == null) {
@@ -168,8 +171,9 @@ public abstract class PlayerList {
          new Object[]{var2.getName().getString(), var11, var2.getId(), var2.getX(), var2.getY(), var2.getZ()}
       );
       LevelData var12 = var10.getLevelData();
-      var2.loadGameTypes(var25);
+      var2.loadGameTypes((CompoundTag)var25.orElse(null));
       ServerGamePacketListenerImpl var13 = new ServerGamePacketListenerImpl(this.server, var1, var2, var3);
+      var1.setupInboundProtocol(GameProtocols.SERVERBOUND.bind(RegistryFriendlyByteBuf.decorator(this.server.registryAccess())), var13);
       GameRules var14 = var10.getGameRules();
       boolean var15 = var14.getBoolean(GameRules.RULE_DO_IMMEDIATE_RESPAWN);
       boolean var16 = var14.getBoolean(GameRules.RULE_REDUCEDDEBUGINFO);
@@ -185,7 +189,8 @@ public abstract class PlayerList {
             var16,
             !var15,
             var17,
-            var2.createCommonSpawnInfo(var10)
+            var2.createCommonSpawnInfo(var10),
+            this.server.enforceSecureProfile()
          )
       );
       var13.send(new ClientboundChangeDifficultyPacket(var12.getDifficulty(), var12.isDifficultyLocked()));
@@ -207,7 +212,7 @@ public abstract class PlayerList {
       this.broadcastSystemMessage(var18.withStyle(ChatFormatting.YELLOW), false);
       var13.teleport(var2.getX(), var2.getY(), var2.getZ(), var2.getYRot(), var2.getXRot());
       ServerStatus var19 = this.server.getStatus();
-      if (var19 != null) {
+      if (var19 != null && !var3.transferred()) {
          var2.sendServerStatus(var19);
       }
 
@@ -220,11 +225,11 @@ public abstract class PlayerList {
       this.server.getCustomBossEvents().onPlayerConnect(var2);
 
       for(MobEffectInstance var21 : var2.getActiveEffects()) {
-         var13.send(new ClientboundUpdateMobEffectPacket(var2.getId(), var21));
+         var13.send(new ClientboundUpdateMobEffectPacket(var2.getId(), var21, false));
       }
 
-      if (var25 != null && var25.contains("RootVehicle", 10)) {
-         CompoundTag var26 = var25.getCompound("RootVehicle");
+      if (var25.isPresent() && ((CompoundTag)var25.get()).contains("RootVehicle", 10)) {
+         CompoundTag var26 = ((CompoundTag)var25.get()).getCompound("RootVehicle");
          Entity var27 = EntityType.loadEntityRecursive(var26.getCompound("Entity"), var10, var1x -> !var10.addWithUUID(var1x) ? null : var1x);
          if (var27 != null) {
             UUID var22;
@@ -315,12 +320,11 @@ public abstract class PlayerList {
       });
    }
 
-   @Nullable
-   public CompoundTag load(ServerPlayer var1) {
+   public Optional<CompoundTag> load(ServerPlayer var1) {
       CompoundTag var2 = this.server.getWorldData().getLoadedPlayerTag();
-      CompoundTag var3;
+      Optional var3;
       if (this.server.isSingleplayerOwner(var1.getGameProfile()) && var2 != null) {
-         var3 = var2;
+         var3 = Optional.of(var2);
          var1.load(var2);
          LOGGER.debug("loading single player");
       } else {
@@ -618,8 +622,8 @@ public abstract class PlayerList {
 
    public boolean isOp(GameProfile var1) {
       return this.ops.contains(var1)
-         || this.server.isSingleplayerOwner(var1) && this.server.getWorldData().getAllowCommands()
-         || this.allowCheatsForAllPlayers;
+         || this.server.isSingleplayerOwner(var1) && this.server.getWorldData().isAllowCommands()
+         || this.allowCommandsForAllPlayers;
    }
 
    @Nullable
@@ -741,8 +745,8 @@ public abstract class PlayerList {
       return null;
    }
 
-   public void setAllowCheatsForAllPlayers(boolean var1) {
-      this.allowCheatsForAllPlayers = var1;
+   public void setAllowCommandsForAllPlayers(boolean var1) {
+      this.allowCommandsForAllPlayers = var1;
    }
 
    public void removeAll() {
@@ -878,7 +882,7 @@ public abstract class PlayerList {
       }
    }
 
-   public boolean isAllowCheatsForAllPlayers() {
-      return this.allowCheatsForAllPlayers;
+   public boolean isAllowCommandsForAllPlayers() {
+      return this.allowCommandsForAllPlayers;
    }
 }

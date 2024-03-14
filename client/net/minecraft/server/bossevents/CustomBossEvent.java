@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
@@ -136,43 +137,43 @@ public class CustomBossEvent extends ServerBossEvent {
       return !var2.isEmpty() || !var3.isEmpty();
    }
 
-   public CompoundTag save() {
-      CompoundTag var1 = new CompoundTag();
-      var1.putString("Name", Component.Serializer.toJson(this.name));
-      var1.putBoolean("Visible", this.isVisible());
-      var1.putInt("Value", this.value);
-      var1.putInt("Max", this.max);
-      var1.putString("Color", this.getColor().getName());
-      var1.putString("Overlay", this.getOverlay().getName());
-      var1.putBoolean("DarkenScreen", this.shouldDarkenScreen());
-      var1.putBoolean("PlayBossMusic", this.shouldPlayBossMusic());
-      var1.putBoolean("CreateWorldFog", this.shouldCreateWorldFog());
-      ListTag var2 = new ListTag();
+   public CompoundTag save(HolderLookup.Provider var1) {
+      CompoundTag var2 = new CompoundTag();
+      var2.putString("Name", Component.Serializer.toJson(this.name, var1));
+      var2.putBoolean("Visible", this.isVisible());
+      var2.putInt("Value", this.value);
+      var2.putInt("Max", this.max);
+      var2.putString("Color", this.getColor().getName());
+      var2.putString("Overlay", this.getOverlay().getName());
+      var2.putBoolean("DarkenScreen", this.shouldDarkenScreen());
+      var2.putBoolean("PlayBossMusic", this.shouldPlayBossMusic());
+      var2.putBoolean("CreateWorldFog", this.shouldCreateWorldFog());
+      ListTag var3 = new ListTag();
 
-      for(UUID var4 : this.players) {
-         var2.add(NbtUtils.createUUID(var4));
+      for(UUID var5 : this.players) {
+         var3.add(NbtUtils.createUUID(var5));
       }
 
-      var1.put("Players", var2);
-      return var1;
+      var2.put("Players", var3);
+      return var2;
    }
 
-   public static CustomBossEvent load(CompoundTag var0, ResourceLocation var1) {
-      CustomBossEvent var2 = new CustomBossEvent(var1, Component.Serializer.fromJson(var0.getString("Name")));
-      var2.setVisible(var0.getBoolean("Visible"));
-      var2.setValue(var0.getInt("Value"));
-      var2.setMax(var0.getInt("Max"));
-      var2.setColor(BossEvent.BossBarColor.byName(var0.getString("Color")));
-      var2.setOverlay(BossEvent.BossBarOverlay.byName(var0.getString("Overlay")));
-      var2.setDarkenScreen(var0.getBoolean("DarkenScreen"));
-      var2.setPlayBossMusic(var0.getBoolean("PlayBossMusic"));
-      var2.setCreateWorldFog(var0.getBoolean("CreateWorldFog"));
+   public static CustomBossEvent load(CompoundTag var0, ResourceLocation var1, HolderLookup.Provider var2) {
+      CustomBossEvent var3 = new CustomBossEvent(var1, Component.Serializer.fromJson(var0.getString("Name"), var2));
+      var3.setVisible(var0.getBoolean("Visible"));
+      var3.setValue(var0.getInt("Value"));
+      var3.setMax(var0.getInt("Max"));
+      var3.setColor(BossEvent.BossBarColor.byName(var0.getString("Color")));
+      var3.setOverlay(BossEvent.BossBarOverlay.byName(var0.getString("Overlay")));
+      var3.setDarkenScreen(var0.getBoolean("DarkenScreen"));
+      var3.setPlayBossMusic(var0.getBoolean("PlayBossMusic"));
+      var3.setCreateWorldFog(var0.getBoolean("CreateWorldFog"));
 
-      for(Tag var5 : var0.getList("Players", 11)) {
-         var2.addOfflinePlayer(NbtUtils.loadUUID(var5));
+      for(Tag var6 : var0.getList("Players", 11)) {
+         var3.addOfflinePlayer(NbtUtils.loadUUID(var6));
       }
 
-      return var2;
+      return var3;
    }
 
    public void onPlayerConnect(ServerPlayer var1) {

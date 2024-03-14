@@ -1,6 +1,7 @@
 package net.minecraft.world.level.block.entity;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -60,19 +61,19 @@ public class DispenserBlockEntity extends RandomizableContainerBlockEntity {
    }
 
    @Override
-   public void load(CompoundTag var1) {
-      super.load(var1);
+   public void load(CompoundTag var1, HolderLookup.Provider var2) {
+      super.load(var1, var2);
       this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
       if (!this.tryLoadLootTable(var1)) {
-         ContainerHelper.loadAllItems(var1, this.items);
+         ContainerHelper.loadAllItems(var1, this.items, var2);
       }
    }
 
    @Override
-   protected void saveAdditional(CompoundTag var1) {
-      super.saveAdditional(var1);
+   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.saveAdditional(var1, var2);
       if (!this.trySaveLootTable(var1)) {
-         ContainerHelper.saveAllItems(var1, this.items);
+         ContainerHelper.saveAllItems(var1, this.items, var2);
       }
    }
 

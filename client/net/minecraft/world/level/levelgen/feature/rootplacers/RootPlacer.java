@@ -55,7 +55,7 @@ public abstract class RootPlacer {
       if (this.canPlaceRoot(var1, var4)) {
          var2.accept(var4, this.getPotentiallyWaterloggedState(var1, var4, this.rootProvider.getState(var3, var4)));
          if (this.aboveRootPlacement.isPresent()) {
-            AboveRootPlacement var6 = this.aboveRootPlacement.get();
+            AboveRootPlacement var6 = (AboveRootPlacement)this.aboveRootPlacement.get();
             BlockPos var7 = var4.above();
             if (var3.nextFloat() < var6.aboveRootPlacementChance() && var1.isStateAtPosition(var7, BlockBehaviour.BlockStateBase::isAir)) {
                var2.accept(var7, this.getPotentiallyWaterloggedState(var1, var7, var6.aboveRootProvider().getState(var3, var7)));

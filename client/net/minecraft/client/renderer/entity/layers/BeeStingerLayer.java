@@ -12,8 +12,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
-import org.joml.Matrix3f;
-import org.joml.Matrix4f;
 
 public class BeeStingerLayer<T extends LivingEntity, M extends PlayerModel<T>> extends StuckInBodyLayer<T, M> {
    private static final ResourceLocation BEE_STINGER_LOCATION = new ResourceLocation("textures/entity/bee/bee_stinger.png");
@@ -48,22 +46,20 @@ public class BeeStingerLayer<T extends LivingEntity, M extends PlayerModel<T>> e
       for(int var18 = 0; var18 < 4; ++var18) {
          var1.mulPose(Axis.XP.rotationDegrees(90.0F));
          PoseStack.Pose var19 = var1.last();
-         Matrix4f var20 = var19.pose();
-         Matrix3f var21 = var19.normal();
-         vertex(var17, var20, var21, -4.5F, -1, 0.0F, 0.0F, var3);
-         vertex(var17, var20, var21, 4.5F, -1, 0.125F, 0.0F, var3);
-         vertex(var17, var20, var21, 4.5F, 1, 0.125F, 0.0625F, var3);
-         vertex(var17, var20, var21, -4.5F, 1, 0.0F, 0.0625F, var3);
+         vertex(var17, var19, -4.5F, -1, 0.0F, 0.0F, var3);
+         vertex(var17, var19, 4.5F, -1, 0.125F, 0.0F, var3);
+         vertex(var17, var19, 4.5F, 1, 0.125F, 0.0625F, var3);
+         vertex(var17, var19, -4.5F, 1, 0.0F, 0.0625F, var3);
       }
    }
 
-   private static void vertex(VertexConsumer var0, Matrix4f var1, Matrix3f var2, float var3, int var4, float var5, float var6, int var7) {
-      var0.vertex(var1, var3, (float)var4, 0.0F)
+   private static void vertex(VertexConsumer var0, PoseStack.Pose var1, float var2, int var3, float var4, float var5, int var6) {
+      var0.vertex(var1, var2, (float)var3, 0.0F)
          .color(255, 255, 255, 255)
-         .uv(var5, var6)
+         .uv(var4, var5)
          .overlayCoords(OverlayTexture.NO_OVERLAY)
-         .uv2(var7)
-         .normal(var2, 0.0F, 1.0F, 0.0F)
+         .uv2(var6)
+         .normal(var1, 0.0F, 1.0F, 0.0F)
          .endVertex();
    }
 }

@@ -45,10 +45,11 @@ public class RealmsServer extends ValueObject {
    public int daysLeft;
    public RealmsServer.WorldType worldType;
    public int activeSlot;
+   @Nullable
    public String minigameName;
    public int minigameId;
    public String minigameImage;
-   public long parentWorldId = -1L;
+   public long parentRealmId = -1L;
    @Nullable
    public String parentWorldName;
    public String activeVersion = "";
@@ -67,6 +68,7 @@ public class RealmsServer extends ValueObject {
       return this.name;
    }
 
+   @Nullable
    public String getMinigameName() {
       return this.minigameName;
    }
@@ -135,7 +137,7 @@ public class RealmsServer extends ValueObject {
          var1.activeSlot = JsonUtils.getIntOr("activeSlot", var0, -1);
          var1.minigameId = JsonUtils.getIntOr("minigameId", var0, -1);
          var1.minigameImage = JsonUtils.getStringOr("minigameImage", var0, null);
-         var1.parentWorldId = JsonUtils.getLongOr("parentWorldId", var0, -1L);
+         var1.parentRealmId = JsonUtils.getLongOr("parentWorldId", var0, -1L);
          var1.parentWorldName = JsonUtils.getStringOr("parentWorldName", var0, null);
          var1.activeVersion = JsonUtils.getStringOr("activeVersion", var0, "");
          var1.compatibility = getCompatibility(JsonUtils.getStringOr("compatibility", var0, RealmsServer.Compatibility.UNVERIFIABLE.name()));
@@ -309,7 +311,7 @@ public class RealmsServer extends ValueObject {
       var1.minigameId = this.minigameId;
       var1.minigameImage = this.minigameImage;
       var1.parentWorldName = this.parentWorldName;
-      var1.parentWorldId = this.parentWorldId;
+      var1.parentRealmId = this.parentRealmId;
       var1.activeVersion = this.activeVersion;
       var1.compatibility = this.compatibility;
       return var1;
@@ -326,7 +328,7 @@ public class RealmsServer extends ValueObject {
    }
 
    public boolean isSnapshotRealm() {
-      return this.parentWorldId != -1L;
+      return this.parentRealmId != -1L;
    }
 
    public String getWorldName(int var1) {

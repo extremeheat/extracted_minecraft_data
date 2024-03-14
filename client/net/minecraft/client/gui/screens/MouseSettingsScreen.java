@@ -5,13 +5,13 @@ import java.util.Arrays;
 import java.util.stream.Stream;
 import net.minecraft.client.OptionInstance;
 import net.minecraft.client.Options;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.OptionsList;
-import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.network.chat.Component;
 
 public class MouseSettingsScreen extends OptionsSubScreen {
+   private static final Component TITLE = Component.translatable("options.mouse_settings.title");
+   private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
    private OptionsList list;
 
    private static OptionInstance<?>[] options(Options var0) {
@@ -19,12 +19,12 @@ public class MouseSettingsScreen extends OptionsSubScreen {
    }
 
    public MouseSettingsScreen(Screen var1, Options var2) {
-      super(var1, var2, Component.translatable("options.mouse_settings.title"));
+      super(var1, var2, TITLE);
    }
 
    @Override
    protected void init() {
-      this.list = this.addRenderableWidget(new OptionsList(this.minecraft, this.width, this.height - 64, 32, 25));
+      this.list = this.addRenderableWidget(new OptionsList(this.minecraft, this.width, this.height, this));
       if (InputConstants.isRawMouseInputSupported()) {
          this.list
             .addSmall(Stream.concat(Arrays.stream(options(this.options)), Stream.of(this.options.rawMouseInput())).toArray(var0 -> new OptionInstance[var0]));
@@ -32,20 +32,12 @@ public class MouseSettingsScreen extends OptionsSubScreen {
          this.list.addSmall(options(this.options));
       }
 
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, var1 -> {
-         this.options.save();
-         this.minecraft.setScreen(this.lastScreen);
-      }).bounds(this.width / 2 - 100, this.height - 27, 200, 20).build());
+      super.init();
    }
 
    @Override
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, this.title, this.width / 2, 5, 16777215);
-   }
-
-   @Override
-   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderDirtBackground(var1);
+   protected void repositionElements() {
+      super.repositionElements();
+      this.list.updateSize(this.width, this.layout);
    }
 }

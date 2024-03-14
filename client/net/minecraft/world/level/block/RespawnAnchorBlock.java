@@ -18,6 +18,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
@@ -73,18 +74,21 @@ public class RespawnAnchorBlock extends Block {
    }
 
    @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
-      ItemStack var7 = var4.getItemInHand(var5);
-      if (var5 == InteractionHand.MAIN_HAND && !isRespawnFuel(var7) && isRespawnFuel(var4.getItemInHand(InteractionHand.OFF_HAND))) {
-         return InteractionResult.PASS;
-      } else if (isRespawnFuel(var7) && canBeCharged(var1)) {
-         charge(var4, var2, var3, var1);
-         if (!var4.getAbilities().instabuild) {
-            var7.shrink(1);
-         }
+   protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
+      if (isRespawnFuel(var1) && canBeCharged(var2)) {
+         charge(var5, var3, var4, var2);
+         var1.consume(1, var5);
+         return ItemInteractionResult.sidedSuccess(var3.isClientSide);
+      } else {
+         return var6 == InteractionHand.MAIN_HAND && isRespawnFuel(var5.getItemInHand(InteractionHand.OFF_HAND)) && canBeCharged(var2)
+            ? ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION
+            : ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+      }
+   }
 
-         return InteractionResult.sidedSuccess(var2.isClientSide);
-      } else if (var1.getValue(CHARGE) == 0) {
+   @Override
+   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
+      if (var1.getValue(CHARGE) == 0) {
          return InteractionResult.PASS;
       } else if (!canSetSpawn(var2)) {
          if (!var2.isClientSide) {
@@ -94,9 +98,9 @@ public class RespawnAnchorBlock extends Block {
          return InteractionResult.sidedSuccess(var2.isClientSide);
       } else {
          if (!var2.isClientSide) {
-            ServerPlayer var8 = (ServerPlayer)var4;
-            if (var8.getRespawnDimension() != var2.dimension() || !var3.equals(var8.getRespawnPosition())) {
-               var8.setRespawnPosition(var2.dimension(), var3, 0.0F, false, true);
+            ServerPlayer var6 = (ServerPlayer)var4;
+            if (var6.getRespawnDimension() != var2.dimension() || !var3.equals(var6.getRespawnPosition())) {
+               var6.setRespawnPosition(var2.dimension(), var3, 0.0F, false, true);
                var2.playSound(
                   null,
                   (double)var3.getX() + 0.5,
@@ -180,16 +184,7 @@ public class RespawnAnchorBlock extends Block {
    public void animateTick(BlockState var1, Level var2, BlockPos var3, RandomSource var4) {
       if (var1.getValue(CHARGE) != 0) {
          if (var4.nextInt(100) == 0) {
-            var2.playSound(
-               null,
-               (double)var3.getX() + 0.5,
-               (double)var3.getY() + 0.5,
-               (double)var3.getZ() + 0.5,
-               SoundEvents.RESPAWN_ANCHOR_AMBIENT,
-               SoundSource.BLOCKS,
-               1.0F,
-               1.0F
-            );
+            var2.playLocalSound(var3, SoundEvents.RESPAWN_ANCHOR_AMBIENT, SoundSource.BLOCKS, 1.0F, 1.0F, false);
          }
 
          double var5 = (double)var3.getX() + 0.5 + (0.5 - var4.nextDouble());
@@ -206,7 +201,7 @@ public class RespawnAnchorBlock extends Block {
    }
 
    @Override
-   public boolean hasAnalogOutputSignal(BlockState var1) {
+   protected boolean hasAnalogOutputSignal(BlockState var1) {
       return true;
    }
 
@@ -215,7 +210,7 @@ public class RespawnAnchorBlock extends Block {
    }
 
    @Override
-   public int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
+   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
       return getScaledChargeLevel(var1, 15);
    }
 
@@ -241,7 +236,7 @@ public class RespawnAnchorBlock extends Block {
    }
 
    @Override
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
+   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
    }
 }

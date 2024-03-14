@@ -19,7 +19,7 @@ import net.minecraft.resources.ResourceLocation;
 public interface CommandFunction<T> {
    ResourceLocation id();
 
-   InstantiatedFunction<T> instantiate(@Nullable CompoundTag var1, CommandDispatcher<T> var2, T var3) throws FunctionInstantiationException;
+   InstantiatedFunction<T> instantiate(@Nullable CompoundTag var1, CommandDispatcher<T> var2) throws FunctionInstantiationException;
 
    private static boolean shouldConcatenateNextLine(CharSequence var0) {
       int var1 = var0.length();
@@ -44,6 +44,7 @@ public interface CommandFunction<T> {
                var9.deleteCharAt(var9.length() - 1);
                String var10 = ((String)var3.get(var5)).trim();
                var9.append(var10);
+               checkCommandLineLength(var9);
             } while(shouldConcatenateNextLine(var9));
 
             var8 = var9.toString();
@@ -51,6 +52,7 @@ public interface CommandFunction<T> {
             var8 = var7;
          }
 
+         checkCommandLineLength(var8);
          StringReader var12 = new StringReader(var8);
          if (var12.canRead() && var12.peek() != '#') {
             if (var12.peek() == '/') {
@@ -68,7 +70,7 @@ public interface CommandFunction<T> {
             }
 
             if (var12.peek() == '$') {
-               var4.addMacro(var8.substring(1), var6);
+               var4.addMacro(var8.substring(1), var6, (T)var2);
             } else {
                try {
                   var4.addCommand(parseCommand(var1, (T)var2, var12));
@@ -80,6 +82,13 @@ public interface CommandFunction<T> {
       }
 
       return var4.build(var0);
+   }
+
+   static void checkCommandLineLength(CharSequence var0) {
+      if (var0.length() > 2000000) {
+         CharSequence var1 = var0.subSequence(0, Math.min(512, 2000000));
+         throw new IllegalStateException("Command too long: " + var0.length() + " characters, contents: " + var1 + "...");
+      }
    }
 
    static <T extends ExecutionCommandSource<T>> UnboundEntryAction<T> parseCommand(CommandDispatcher<T> var0, T var1, StringReader var2) throws CommandSyntaxException {

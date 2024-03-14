@@ -30,8 +30,8 @@ public record FishingHookPredicate(Optional<Boolean> d) implements EntitySubPred
    }
 
    @Override
-   public EntitySubPredicate.Type type() {
-      return EntitySubPredicate.Types.FISHING_HOOK;
+   public MapCodec<FishingHookPredicate> codec() {
+      return EntitySubPredicates.FISHING_HOOK;
    }
 
    // $VF: Could not properly define all variable types!

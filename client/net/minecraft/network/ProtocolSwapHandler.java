@@ -1,18 +1,21 @@
 package net.minecraft.network;
 
-import io.netty.util.Attribute;
+import io.netty.channel.ChannelHandlerContext;
 import net.minecraft.network.protocol.Packet;
 
 public interface ProtocolSwapHandler {
-   static void swapProtocolIfNeeded(Attribute<ConnectionProtocol.CodecData<?>> var0, Packet<?> var1) {
-      ConnectionProtocol var2 = var1.nextProtocol();
-      if (var2 != null) {
-         ConnectionProtocol.CodecData var3 = (ConnectionProtocol.CodecData)var0.get();
-         ConnectionProtocol var4 = var3.protocol();
-         if (var2 != var4) {
-            ConnectionProtocol.CodecData var5 = var2.codec(var3.flow());
-            var0.set(var5);
-         }
+   static void handleInboundTerminalPacket(ChannelHandlerContext var0, Packet<?> var1) {
+      if (var1.isTerminal()) {
+         var0.channel().config().setAutoRead(false);
+         var0.pipeline().addBefore(var0.name(), "inbound_config", new UnconfiguredPipelineHandler.Inbound());
+         var0.pipeline().remove(var0.name());
+      }
+   }
+
+   static void handleOutboundTerminalPacket(ChannelHandlerContext var0, Packet<?> var1) {
+      if (var1.isTerminal()) {
+         var0.pipeline().addAfter(var0.name(), "outbound_config", new UnconfiguredPipelineHandler.Outbound());
+         var0.pipeline().remove(var0.name());
       }
    }
 }

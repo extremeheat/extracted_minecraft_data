@@ -6,7 +6,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.features.AquaticFeatures;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.block.Blocks;
@@ -45,7 +45,7 @@ public class AquaticPlacements {
       return List.of(InSquarePlacement.spread(), PlacementUtils.HEIGHTMAP_TOP_SOLID, CountPlacement.of(var0), BiomeFilter.biome());
    }
 
-   public static void bootstrap(BootstapContext<PlacedFeature> var0) {
+   public static void bootstrap(BootstrapContext<PlacedFeature> var0) {
       HolderGetter var1 = var0.lookup(Registries.CONFIGURED_FEATURE);
       Holder.Reference var2 = var1.getOrThrow(AquaticFeatures.SEAGRASS_SHORT);
       Holder.Reference var3 = var1.getOrThrow(AquaticFeatures.SEAGRASS_SLIGHTLY_LESS_SHORT);
@@ -91,13 +91,7 @@ public class AquaticPlacements {
          BiomeFilter.biome()
       );
       PlacementUtils.register(
-         var0,
-         KELP_WARM,
-         var8,
-         NoiseBasedCountPlacement.of(80, 80.0, 0.0),
-         InSquarePlacement.spread(),
-         PlacementUtils.HEIGHTMAP_TOP_SOLID,
-         BiomeFilter.biome()
+         var0, KELP_WARM, var8, NoiseBasedCountPlacement.of(80, 80.0, 0.0), InSquarePlacement.spread(), PlacementUtils.HEIGHTMAP_TOP_SOLID, BiomeFilter.biome()
       );
       PlacementUtils.register(
          var0,

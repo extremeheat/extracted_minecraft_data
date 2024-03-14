@@ -50,9 +50,7 @@ public class MobSpawnSettings {
    private final Map<MobCategory, WeightedRandomList<MobSpawnSettings.SpawnerData>> spawners;
    private final Map<EntityType<?>, MobSpawnSettings.MobSpawnCost> mobSpawnCosts;
 
-   MobSpawnSettings(
-      float var1, Map<MobCategory, WeightedRandomList<MobSpawnSettings.SpawnerData>> var2, Map<EntityType<?>, MobSpawnSettings.MobSpawnCost> var3
-   ) {
+   MobSpawnSettings(float var1, Map<MobCategory, WeightedRandomList<MobSpawnSettings.SpawnerData>> var2, Map<EntityType<?>, MobSpawnSettings.MobSpawnCost> var3) {
       super();
       this.creatureGenerationProbability = var1;
       this.spawners = ImmutableMap.copyOf(var2);
@@ -65,7 +63,7 @@ public class MobSpawnSettings {
 
    @Nullable
    public MobSpawnSettings.MobSpawnCost getMobSpawnCost(EntityType<?> var1) {
-      return this.mobSpawnCosts.get(var1);
+      return (MobSpawnSettings.MobSpawnCost)this.mobSpawnCosts.get(var1);
    }
 
    public float getCreatureProbability() {
@@ -111,8 +109,7 @@ public class MobSpawnSettings {
       private final double charge;
       public static final Codec<MobSpawnSettings.MobSpawnCost> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
-                  Codec.DOUBLE.fieldOf("energy_budget").forGetter(var0x -> var0x.energyBudget),
-                  Codec.DOUBLE.fieldOf("charge").forGetter(var0x -> var0x.charge)
+                  Codec.DOUBLE.fieldOf("energy_budget").forGetter(var0x -> var0x.energyBudget), Codec.DOUBLE.fieldOf("charge").forGetter(var0x -> var0x.charge)
                )
                .apply(var0, MobSpawnSettings.MobSpawnCost::new)
       );

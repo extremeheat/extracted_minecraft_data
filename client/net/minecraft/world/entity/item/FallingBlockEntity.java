@@ -107,13 +107,18 @@ public class FallingBlockEntity extends Entity {
    }
 
    @Override
-   protected void defineSynchedData() {
-      this.entityData.define(DATA_START_POS, BlockPos.ZERO);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      var1.define(DATA_START_POS, BlockPos.ZERO);
    }
 
    @Override
    public boolean isPickable() {
       return !this.isRemoved();
+   }
+
+   @Override
+   protected double getDefaultGravity() {
+      return 0.04;
    }
 
    @Override
@@ -123,10 +128,7 @@ public class FallingBlockEntity extends Entity {
       } else {
          Block var1 = this.blockState.getBlock();
          ++this.time;
-         if (!this.isNoGravity()) {
-            this.setDeltaMovement(this.getDeltaMovement().add(0.0, -0.04, 0.0));
-         }
-
+         this.applyGravity();
          this.move(MoverType.SELF, this.getDeltaMovement());
          if (!this.level().isClientSide) {
             BlockPos var2 = this.blockPosition();
@@ -168,14 +170,14 @@ public class FallingBlockEntity extends Entity {
                            if (this.blockData != null && this.blockState.hasBlockEntity()) {
                               BlockEntity var11 = this.level().getBlockEntity(var2);
                               if (var11 != null) {
-                                 CompoundTag var12 = var11.saveWithoutMetadata();
+                                 CompoundTag var12 = var11.saveWithoutMetadata(this.level().registryAccess());
 
                                  for(String var14 : this.blockData.getAllKeys()) {
                                     var12.put(var14, this.blockData.get(var14).copy());
                                  }
 
                                  try {
-                                    var11.load(var12);
+                                    var11.load(var12, this.level().registryAccess());
                                  } catch (Exception var15) {
                                     LOGGER.error("Failed to load block entity from falling block", var15);
                                  }

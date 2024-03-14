@@ -134,10 +134,7 @@ public class WorldGenSettingsFix extends DataFix {
                                           ),
                                           var0.createMap(
                                              ImmutableMap.of(
-                                                var0.createString("height"),
-                                                var0.createInt(2),
-                                                var0.createString("block"),
-                                                var0.createString("minecraft:dirt")
+                                                var0.createString("height"), var0.createInt(2), var0.createString("block"), var0.createString("minecraft:dirt")
                                              )
                                           ),
                                           var0.createMap(
@@ -224,10 +221,7 @@ public class WorldGenSettingsFix extends DataFix {
             var5.createString("minecraft:overworld"),
             var5.createMap(
                ImmutableMap.of(
-                  var5.createString("type"),
-                  var5.createString("minecraft:overworld" + (var4 ? "_caves" : "")),
-                  var5.createString("generator"),
-                  var3.getValue()
+                  var5.createString("type"), var5.createString("minecraft:overworld" + (var4 ? "_caves" : "")), var5.createString("generator"), var3.getValue()
                )
             ),
             var5.createString("minecraft:the_nether"),

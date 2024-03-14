@@ -27,6 +27,6 @@ public class RandomBooleanFeatureConfiguration implements FeatureConfiguration {
 
    @Override
    public Stream<ConfiguredFeature<?, ?>> getFeatures() {
-      return Stream.concat(this.featureTrue.value().getFeatures(), this.featureFalse.value().getFeatures());
+      return Stream.concat(((PlacedFeature)this.featureTrue.value()).getFeatures(), ((PlacedFeature)this.featureFalse.value()).getFeatures());
    }
 }

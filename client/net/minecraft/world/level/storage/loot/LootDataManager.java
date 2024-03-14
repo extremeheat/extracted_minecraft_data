@@ -8,12 +8,15 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.mojang.logging.LogUtils;
+import com.mojang.serialization.JsonOps;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import javax.annotation.Nullable;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.PreparableReloadListener;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -27,11 +30,13 @@ public class LootDataManager implements PreparableReloadListener, LootDataResolv
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Gson GSON = new GsonBuilder().create();
    public static final LootDataId<LootTable> EMPTY_LOOT_TABLE_KEY = new LootDataId<>(LootDataType.TABLE, BuiltInLootTables.EMPTY);
+   private final HolderLookup.Provider registries;
    private Map<LootDataId<?>, ?> elements = Map.of();
    private Multimap<LootDataType<?>, ResourceLocation> typeKeys = ImmutableMultimap.of();
 
-   public LootDataManager() {
+   public LootDataManager(HolderLookup.Provider var1) {
       super();
+      this.registries = var1;
    }
 
    @Override
@@ -40,21 +45,22 @@ public class LootDataManager implements PreparableReloadListener, LootDataResolv
    ) {
       HashMap var7 = new HashMap();
       CompletableFuture[] var8 = LootDataType.values()
-         .map(var3x -> scheduleElementParse(var3x, var2, var5, var7))
+         .map(var4x -> scheduleElementParse(var4x, this.registries, var2, var5, var7))
          .toArray(var0 -> new CompletableFuture[var0]);
       return CompletableFuture.allOf(var8).thenCompose(var1::wait).thenAcceptAsync(var2x -> this.apply(var7), var6);
    }
 
    private static <T> CompletableFuture<?> scheduleElementParse(
-      LootDataType<T> var0, ResourceManager var1, Executor var2, Map<LootDataType<?>, Map<ResourceLocation, ?>> var3
+      LootDataType<T> var0, HolderLookup.Provider var1, ResourceManager var2, Executor var3, Map<LootDataType<?>, Map<ResourceLocation, ?>> var4
    ) {
-      HashMap var4 = new HashMap();
-      var3.put(var0, var4);
+      RegistryOps var5 = var1.createSerializationContext(JsonOps.INSTANCE);
+      HashMap var6 = new HashMap();
+      var4.put(var0, var6);
       return CompletableFuture.runAsync(() -> {
-         HashMap var3xx = new HashMap();
-         SimpleJsonResourceReloadListener.scanDirectory(var1, var0.directory(), GSON, var3xx);
-         var3xx.forEach((var2xx, var3xx) -> var0.deserialize(var2xx, var3xx).ifPresent(var2xxx -> var4.put(var2xx, var2xxx)));
-      }, var2);
+         HashMap var4xx = new HashMap();
+         SimpleJsonResourceReloadListener.scanDirectory(var2, var0.directory(), GSON, var4xx);
+         var4xx.forEach((var3xx, var4xx) -> var0.deserialize(var3xx, var5, var4xx).ifPresent(var2xxx -> var6.put(var3xx, var2xxx)));
+      }, var3);
    }
 
    private void apply(Map<LootDataType<?>, Map<ResourceLocation, ?>> var1) {

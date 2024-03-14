@@ -22,7 +22,7 @@ import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.EmptyLootItem;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.entries.LootPoolSingletonContainer;
-import net.minecraft.world.level.storage.loot.entries.LootTableReference;
+import net.minecraft.world.level.storage.loot.entries.NestedLootTable;
 import net.minecraft.world.level.storage.loot.entries.TagEntry;
 import net.minecraft.world.level.storage.loot.functions.LootingEnchantFunction;
 import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
@@ -44,6 +44,7 @@ public class VanillaEntityLoot extends EntityLootSubProvider {
    @Override
    public void generate() {
       this.add(EntityType.ALLAY, LootTable.lootTable());
+      this.add(EntityType.ARMADILLO, LootTable.lootTable());
       this.add(EntityType.ARMOR_STAND, LootTable.lootTable());
       this.add(EntityType.AXOLOTL, LootTable.lootTable());
       this.add(EntityType.BAT, LootTable.lootTable());
@@ -62,6 +63,7 @@ public class VanillaEntityLoot extends EntityLootSubProvider {
                   .when(LootItemKilledByPlayerCondition.killedByPlayer())
             )
       );
+      this.add(EntityType.BOGGED, LootTable.lootTable());
       this.add(
          EntityType.CAT,
          LootTable.lootTable()
@@ -330,7 +332,7 @@ public class VanillaEntityLoot extends EntityLootSubProvider {
                LootPool.lootPool()
                   .setRolls(ConstantValue.exactly(1.0F))
                   .add(
-                     LootTableReference.lootTableReference(BuiltInLootTables.FISHING_FISH)
+                     NestedLootTable.lootTableReference(BuiltInLootTables.FISHING_FISH)
                         .apply(SmeltItemFunction.smelted().when(LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, ENTITY_ON_FIRE)))
                   )
                   .when(LootItemKilledByPlayerCondition.killedByPlayer())
@@ -1121,7 +1123,7 @@ public class VanillaEntityLoot extends EntityLootSubProvider {
             LootPool.lootPool()
                .setRolls(ConstantValue.exactly(1.0F))
                .add(
-                  LootTableReference.lootTableReference(BuiltInLootTables.FISHING_FISH)
+                  NestedLootTable.lootTableReference(BuiltInLootTables.FISHING_FISH)
                      .apply(SmeltItemFunction.smelted().when(LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, ENTITY_ON_FIRE)))
                )
                .when(LootItemKilledByPlayerCondition.killedByPlayer())

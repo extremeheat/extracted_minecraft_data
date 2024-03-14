@@ -44,7 +44,7 @@ public class NetherPortalBlock extends Block {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       switch((Direction.Axis)var1.getValue(AXIS)) {
          case Z:
             return Z_AXIS_AABB;
@@ -55,7 +55,7 @@ public class NetherPortalBlock extends Block {
    }
 
    @Override
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (var2.dimensionType().natural() && var2.getGameRules().getBoolean(GameRules.RULE_DOMOBSPAWNING) && var4.nextInt(2000) < var2.getDifficulty().getId()) {
          while(var2.getBlockState(var3).is(this)) {
             var3 = var3.below();
@@ -71,7 +71,7 @@ public class NetherPortalBlock extends Block {
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       Direction.Axis var7 = var2.getAxis();
       Direction.Axis var8 = var1.getValue(AXIS);
       boolean var9 = var8 != var7 && var7.isHorizontal();
@@ -81,7 +81,7 @@ public class NetherPortalBlock extends Block {
    }
 
    @Override
-   public void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
       if (var4.canChangeDimensions()) {
          var4.handleInsidePortal(var3);
       }
@@ -128,7 +128,7 @@ public class NetherPortalBlock extends Block {
    }
 
    @Override
-   public BlockState rotate(BlockState var1, Rotation var2) {
+   protected BlockState rotate(BlockState var1, Rotation var2) {
       switch(var2) {
          case COUNTERCLOCKWISE_90:
          case CLOCKWISE_90:

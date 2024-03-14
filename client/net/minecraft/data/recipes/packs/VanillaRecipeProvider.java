@@ -11,6 +11,7 @@ import net.minecraft.advancements.critereon.ImpossibleTrigger;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 import net.minecraft.advancements.critereon.MinMaxBounds;
 import net.minecraft.advancements.critereon.PlayerTrigger;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeBuilder;
@@ -61,16 +62,17 @@ public class VanillaRecipeProvider extends RecipeProvider {
    private static final ImmutableList<ItemLike> REDSTONE_SMELTABLES = ImmutableList.of(Items.REDSTONE_ORE, Items.DEEPSLATE_REDSTONE_ORE);
    private static final ImmutableList<ItemLike> EMERALD_SMELTABLES = ImmutableList.of(Items.EMERALD_ORE, Items.DEEPSLATE_EMERALD_ORE);
 
-   public VanillaRecipeProvider(PackOutput var1) {
-      super(var1);
+   public VanillaRecipeProvider(PackOutput var1, CompletableFuture<HolderLookup.Provider> var2) {
+      super(var1, var2);
    }
 
    @Override
-   public CompletableFuture<?> run(CachedOutput var1) {
+   public CompletableFuture<?> run(CachedOutput var1, HolderLookup.Provider var2) {
       return CompletableFuture.allOf(
-         super.run(var1),
+         super.run(var1, var2),
          this.buildAdvancement(
             var1,
+            var2,
             Advancement.Builder.recipeAdvancement()
                .addCriterion("impossible", CriteriaTriggers.IMPOSSIBLE.createCriterion(new ImpossibleTrigger.TriggerInstance()))
                .build(RecipeBuilder.ROOT_RECIPE_ADVANCEMENT)
@@ -484,11 +486,7 @@ public class VanillaRecipeProvider extends RecipeProvider {
          .unlockedBy("has_red_mushroom", has(Blocks.RED_MUSHROOM))
          .unlockedBy("has_mushroom_stew", has(Items.MUSHROOM_STEW))
          .save(var1);
-      ShapedRecipeBuilder.shaped(RecipeCategory.FOOD, Items.BREAD)
-         .define('#', Items.WHEAT)
-         .pattern("###")
-         .unlockedBy("has_wheat", has(Items.WHEAT))
-         .save(var1);
+      ShapedRecipeBuilder.shaped(RecipeCategory.FOOD, Items.BREAD).define('#', Items.WHEAT).pattern("###").unlockedBy("has_wheat", has(Items.WHEAT)).save(var1);
       ShapedRecipeBuilder.shaped(RecipeCategory.BREWING, Blocks.BREWING_STAND)
          .define('B', Items.BLAZE_ROD)
          .define('#', ItemTags.STONE_CRAFTING_MATERIALS)
@@ -1796,10 +1794,17 @@ public class VanillaRecipeProvider extends RecipeProvider {
          .unlockedBy("has_string", has(Items.STRING))
          .save(var1);
       ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, Items.TURTLE_HELMET)
-         .define('X', Items.SCUTE)
+         .define('X', Items.TURTLE_SCUTE)
          .pattern("XXX")
          .pattern("X X")
-         .unlockedBy("has_scute", has(Items.SCUTE))
+         .unlockedBy("has_turtle_scute", has(Items.TURTLE_SCUTE))
+         .save(var1);
+      ShapedRecipeBuilder.shaped(RecipeCategory.COMBAT, Items.WOLF_ARMOR)
+         .define('X', Items.ARMADILLO_SCUTE)
+         .pattern("X  ")
+         .pattern("XXX")
+         .pattern("X X")
+         .unlockedBy("has_armadillo_scute", has(Items.ARMADILLO_SCUTE))
          .save(var1);
       ShapelessRecipeBuilder.shapeless(RecipeCategory.MISC, Items.WHEAT, 9)
          .requires(Blocks.HAY_BLOCK)

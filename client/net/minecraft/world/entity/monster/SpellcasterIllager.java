@@ -3,6 +3,7 @@ package net.minecraft.world.entity.monster;
 import java.util.EnumSet;
 import java.util.function.IntFunction;
 import javax.annotation.Nullable;
+import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -26,9 +27,9 @@ public abstract class SpellcasterIllager extends AbstractIllager {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_SPELL_CASTING_ID, (byte)0);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_SPELL_CASTING_ID, (byte)0);
    }
 
    @Override
@@ -82,16 +83,34 @@ public abstract class SpellcasterIllager extends AbstractIllager {
       super.tick();
       if (this.level().isClientSide && this.isCastingSpell()) {
          SpellcasterIllager.IllagerSpell var1 = this.getCurrentSpell();
-         double var2 = var1.spellColor[0];
-         double var4 = var1.spellColor[1];
-         double var6 = var1.spellColor[2];
-         float var8 = this.yBodyRot * 0.017453292F + Mth.cos((float)this.tickCount * 0.6662F) * 0.25F;
-         float var9 = Mth.cos(var8);
-         float var10 = Mth.sin(var8);
+         float var2 = (float)var1.spellColor[0];
+         float var3 = (float)var1.spellColor[1];
+         float var4 = (float)var1.spellColor[2];
+         float var5 = this.yBodyRot * 0.017453292F + Mth.cos((float)this.tickCount * 0.6662F) * 0.25F;
+         float var6 = Mth.cos(var5);
+         float var7 = Mth.sin(var5);
+         double var8 = 0.6 * (double)this.getScale();
+         double var10 = 1.8 * (double)this.getScale();
          this.level()
-            .addParticle(ParticleTypes.ENTITY_EFFECT, this.getX() + (double)var9 * 0.6, this.getY() + 1.8, this.getZ() + (double)var10 * 0.6, var2, var4, var6);
+            .addParticle(
+               ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, var2, var3, var4),
+               this.getX() + (double)var6 * var8,
+               this.getY() + var10,
+               this.getZ() + (double)var7 * var8,
+               0.0,
+               0.0,
+               0.0
+            );
          this.level()
-            .addParticle(ParticleTypes.ENTITY_EFFECT, this.getX() - (double)var9 * 0.6, this.getY() + 1.8, this.getZ() - (double)var10 * 0.6, var2, var4, var6);
+            .addParticle(
+               ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, var2, var3, var4),
+               this.getX() - (double)var6 * var8,
+               this.getY() + var10,
+               this.getZ() - (double)var7 * var8,
+               0.0,
+               0.0,
+               0.0
+            );
       }
    }
 
@@ -150,9 +169,7 @@ public abstract class SpellcasterIllager extends AbstractIllager {
       public void tick() {
          if (SpellcasterIllager.this.getTarget() != null) {
             SpellcasterIllager.this.getLookControl()
-               .setLookAt(
-                  SpellcasterIllager.this.getTarget(), (float)SpellcasterIllager.this.getMaxHeadYRot(), (float)SpellcasterIllager.this.getMaxHeadXRot()
-               );
+               .setLookAt(SpellcasterIllager.this.getTarget(), (float)SpellcasterIllager.this.getMaxHeadYRot(), (float)SpellcasterIllager.this.getMaxHeadXRot());
          }
       }
    }

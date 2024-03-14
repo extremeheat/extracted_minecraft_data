@@ -44,7 +44,7 @@ public record LootItemEntityPropertyCondition(Optional<EntityPredicate> b, LootC
    public boolean test(LootContext var1) {
       Entity var2 = var1.getParamOrNull(this.entityTarget.getParam());
       Vec3 var3 = var1.getParamOrNull(LootContextParams.ORIGIN);
-      return this.predicate.isEmpty() || this.predicate.get().matches(var1.getLevel(), var3, var2);
+      return this.predicate.isEmpty() || ((EntityPredicate)this.predicate.get()).matches(var1.getLevel(), var3, var2);
    }
 
    public static LootItemCondition.Builder entityPresent(LootContext.EntityTarget var0) {

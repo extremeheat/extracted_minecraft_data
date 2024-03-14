@@ -52,8 +52,7 @@ public interface WeightedEntry {
       public static <E> Codec<WeightedEntry.Wrapper<E>> codec(Codec<E> var0) {
          return RecordCodecBuilder.create(
             var1 -> var1.group(
-                     var0.fieldOf("data").forGetter(WeightedEntry.Wrapper::getData),
-                     Weight.CODEC.fieldOf("weight").forGetter(WeightedEntry.Wrapper::getWeight)
+                     var0.fieldOf("data").forGetter(WeightedEntry.Wrapper::getData), Weight.CODEC.fieldOf("weight").forGetter(WeightedEntry.Wrapper::getWeight)
                   )
                   .apply(var1, WeightedEntry.Wrapper::new)
          );

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.SectionPos;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.server.level.ServerLevel;
@@ -18,8 +19,8 @@ public class GameEventDispatcher {
       this.level = var1;
    }
 
-   public void post(GameEvent var1, Vec3 var2, GameEvent.Context var3) {
-      int var4 = var1.getNotificationRadius();
+   public void post(Holder<GameEvent> var1, Vec3 var2, GameEvent.Context var3) {
+      int var4 = ((GameEvent)var1.value()).notificationRadius();
       BlockPos var5 = BlockPos.containing(var2);
       int var6 = SectionPos.blockToSectionCoord(var5.getX() - var4);
       int var7 = SectionPos.blockToSectionCoord(var5.getY() - var4);

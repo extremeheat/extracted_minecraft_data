@@ -510,9 +510,7 @@ public class CommandSuggestions {
                / (double)CommandSuggestions.this.minecraft.getWindow().getScreenHeight()
          );
          if (this.rect.contains(var3, var4)) {
-            this.offset = Mth.clamp(
-               (int)((double)this.offset - var1), 0, Math.max(this.suggestionList.size() - CommandSuggestions.this.suggestionLineLimit, 0)
-            );
+            this.offset = Mth.clamp((int)((double)this.offset - var1), 0, Math.max(this.suggestionList.size() - CommandSuggestions.this.suggestionLineLimit, 0));
             return true;
          } else {
             return false;

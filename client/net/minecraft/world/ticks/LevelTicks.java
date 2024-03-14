@@ -30,14 +30,14 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 
 public class LevelTicks<T> implements LevelTickAccess<T> {
    private static final Comparator<LevelChunkTicks<?>> CONTAINER_DRAIN_ORDER = (var0, var1) -> ScheduledTick.INTRA_TICK_DRAIN_ORDER
-         .compare(var0.peek(), var1.peek());
+         .compare((T)var0.peek(), (T)var1.peek());
    private final LongPredicate tickCheck;
    private final Supplier<ProfilerFiller> profiler;
    private final Long2ObjectMap<LevelChunkTicks<T>> allContainers = new Long2ObjectOpenHashMap();
    private final Long2LongMap nextTickForContainer = Util.make(new Long2LongOpenHashMap(), var0 -> var0.defaultReturnValue(9223372036854775807L));
    private final Queue<LevelChunkTicks<T>> containersToTick = new PriorityQueue<>(CONTAINER_DRAIN_ORDER);
-   private final Queue<ScheduledTick<T>> toRunThisTick = new ArrayDeque<>();
-   private final List<ScheduledTick<T>> alreadyRunThisTick = new ArrayList<>();
+   private final Queue<ScheduledTick<T>> toRunThisTick = new ArrayDeque();
+   private final List<ScheduledTick<T>> alreadyRunThisTick = new ArrayList();
    private final Set<ScheduledTick<?>> toRunThisTickSet = new ObjectOpenCustomHashSet(ScheduledTick.UNIQUE_TICK_HASH);
    private final BiConsumer<LevelChunkTicks<T>, ScheduledTick<T>> chunkScheduleUpdater = (var1x, var2x) -> {
       if (var2x.equals(var1x.peek())) {
@@ -181,7 +181,7 @@ public class LevelTicks<T> implements LevelTickAccess<T> {
 
    private void runCollectedTicks(BiConsumer<BlockPos, T> var1) {
       while(!this.toRunThisTick.isEmpty()) {
-         ScheduledTick var2 = this.toRunThisTick.poll();
+         ScheduledTick var2 = (ScheduledTick)this.toRunThisTick.poll();
          if (!this.toRunThisTickSet.isEmpty()) {
             this.toRunThisTickSet.remove(var2);
          }
@@ -207,7 +207,7 @@ public class LevelTicks<T> implements LevelTickAccess<T> {
    @Override
    public boolean willTickThisTick(BlockPos var1, T var2) {
       this.calculateTickSetIfNeeded();
-      return this.toRunThisTickSet.contains(ScheduledTick.probe(var2, var1));
+      return this.toRunThisTickSet.contains(ScheduledTick.<Object>probe(var2, var1));
    }
 
    private void calculateTickSetIfNeeded() {

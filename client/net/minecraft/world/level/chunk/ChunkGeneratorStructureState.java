@@ -76,7 +76,7 @@ public class ChunkGeneratorStructureState {
    private void generatePositions() {
       Set var1 = this.biomeSource.possibleBiomes();
       this.possibleStructureSets().forEach(var2 -> {
-         StructureSet var3 = var2.value();
+         StructureSet var3 = (StructureSet)var2.value();
          boolean var4 = false;
 
          for(StructureSet.StructureSelectionEntry var6 : var3.structures()) {

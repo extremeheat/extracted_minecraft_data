@@ -4,13 +4,17 @@ import com.mojang.logging.LogUtils;
 import java.util.Objects;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.block.ChiseledBookShelfBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
@@ -46,15 +50,15 @@ public class ChiseledBookShelfBlockEntity extends BlockEntity implements Contain
    }
 
    @Override
-   public void load(CompoundTag var1) {
+   public void load(CompoundTag var1, HolderLookup.Provider var2) {
       this.items.clear();
-      ContainerHelper.loadAllItems(var1, this.items);
+      ContainerHelper.loadAllItems(var1, this.items, var2);
       this.lastInteractedSlot = var1.getInt("last_interacted_slot");
    }
 
    @Override
-   protected void saveAdditional(CompoundTag var1) {
-      ContainerHelper.saveAllItems(var1, this.items, true);
+   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      ContainerHelper.saveAllItems(var1, this.items, true, var2);
       var1.putInt("last_interacted_slot", this.lastInteractedSlot);
    }
 
@@ -110,14 +114,16 @@ public class ChiseledBookShelfBlockEntity extends BlockEntity implements Contain
 
    @Override
    public boolean canTakeItem(Container var1, int var2, ItemStack var3) {
-      return var1.hasAnyMatching(var2x -> {
-         if (var2x.isEmpty()) {
-            return true;
-         } else {
-            return ItemStack.isSameItemSameTags(var3, var2x)
-               && var2x.getCount() + var3.getCount() <= Math.min(var2x.getMaxStackSize(), var1.getMaxStackSize());
+      return var1.hasAnyMatching(
+         var2x -> {
+            if (var2x.isEmpty()) {
+               return true;
+            } else {
+               return ItemStack.isSameItemSameComponents(var3, var2x)
+                  && var2x.getCount() + var3.getCount() <= Math.min(var2x.getMaxStackSize(), var1.getMaxStackSize());
+            }
          }
-      });
+      );
    }
 
    @Override
@@ -137,5 +143,20 @@ public class ChiseledBookShelfBlockEntity extends BlockEntity implements Contain
 
    public int getLastInteractedSlot() {
       return this.lastInteractedSlot;
+   }
+
+   @Override
+   public void applyComponents(DataComponentMap var1) {
+      var1.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY).copyInto(this.items);
+   }
+
+   @Override
+   public void collectComponents(DataComponentMap.Builder var1) {
+      var1.set(DataComponents.CONTAINER, ItemContainerContents.copyOf(this.items));
+   }
+
+   @Override
+   public void removeComponentsFromTag(CompoundTag var1) {
+      var1.remove("Items");
    }
 }

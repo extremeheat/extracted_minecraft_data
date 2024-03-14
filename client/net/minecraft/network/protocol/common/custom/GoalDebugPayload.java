@@ -3,15 +3,16 @@ package net.minecraft.network.protocol.common.custom;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.codec.StreamCodec;
 
-public record GoalDebugPayload(int b, BlockPos c, List<GoalDebugPayload.DebugGoal> d) implements CustomPacketPayload {
+public record GoalDebugPayload(int c, BlockPos d, List<GoalDebugPayload.DebugGoal> e) implements CustomPacketPayload {
    private final int entityId;
    private final BlockPos pos;
    private final List<GoalDebugPayload.DebugGoal> goals;
-   public static final ResourceLocation ID = new ResourceLocation("debug/goal_selector");
+   public static final StreamCodec<FriendlyByteBuf, GoalDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(GoalDebugPayload::write, GoalDebugPayload::new);
+   public static final CustomPacketPayload.Type<GoalDebugPayload> TYPE = CustomPacketPayload.createType("debug/goal_selector");
 
-   public GoalDebugPayload(FriendlyByteBuf var1) {
+   private GoalDebugPayload(FriendlyByteBuf var1) {
       this(var1.readInt(), var1.readBlockPos(), var1.readList(GoalDebugPayload.DebugGoal::new));
    }
 
@@ -22,16 +23,15 @@ public record GoalDebugPayload(int b, BlockPos c, List<GoalDebugPayload.DebugGoa
       this.goals = var3;
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       var1.writeInt(this.entityId);
       var1.writeBlockPos(this.pos);
       var1.writeCollection(this.goals, (var0, var1x) -> var1x.write(var0));
    }
 
    @Override
-   public ResourceLocation id() {
-      return ID;
+   public CustomPacketPayload.Type<GoalDebugPayload> type() {
+      return TYPE;
    }
 
    public static record DebugGoal(int a, boolean b, String c) {

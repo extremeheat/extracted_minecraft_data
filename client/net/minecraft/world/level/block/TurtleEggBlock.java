@@ -89,7 +89,7 @@ public class TurtleEggBlock extends Block {
    }
 
    @Override
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (this.shouldUpdateHatchLevel(var2) && onSand(var2, var3)) {
          int var5 = var1.getValue(HATCH);
          if (var5 < 2) {
@@ -124,9 +124,9 @@ public class TurtleEggBlock extends Block {
    }
 
    @Override
-   public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (onSand(var2, var3) && !var2.isClientSide) {
-         var2.levelEvent(2005, var3, 0);
+         var2.levelEvent(2012, var3, 15);
       }
    }
 
@@ -146,7 +146,7 @@ public class TurtleEggBlock extends Block {
    }
 
    @Override
-   public boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
+   protected boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
       return !var2.isSecondaryUseActive() && var2.getItemInHand().is(this.asItem()) && var1.getValue(EGGS) < 4 ? true : super.canBeReplaced(var1, var2);
    }
 
@@ -158,7 +158,7 @@ public class TurtleEggBlock extends Block {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return var1.getValue(EGGS) > 1 ? MULTIPLE_EGGS_AABB : ONE_EGG_AABB;
    }
 

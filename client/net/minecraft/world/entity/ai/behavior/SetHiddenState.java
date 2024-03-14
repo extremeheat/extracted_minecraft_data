@@ -25,7 +25,7 @@ public class SetHiddenState {
                      long var10 = var3x.<Long>get(var5);
                      boolean var12 = var10 + 300L <= var8;
                      if (var3.getValue() <= var2 && !var12) {
-                        BlockPos var13 = var3x.<GlobalPos>get(var4).pos();
+                        BlockPos var13 = ((GlobalPos)var3x.get(var4)).pos();
                         if (var13.closerThan(var7.blockPosition(), (double)var1)) {
                            var3.increment();
                         }

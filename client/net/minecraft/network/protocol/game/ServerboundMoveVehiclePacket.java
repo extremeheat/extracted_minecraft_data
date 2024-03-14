@@ -1,10 +1,15 @@
 package net.minecraft.network.protocol.game;
 
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.entity.Entity;
 
 public class ServerboundMoveVehiclePacket implements Packet<ServerGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ServerboundMoveVehiclePacket> STREAM_CODEC = Packet.codec(
+      ServerboundMoveVehiclePacket::write, ServerboundMoveVehiclePacket::new
+   );
    private final double x;
    private final double y;
    private final double z;
@@ -20,7 +25,7 @@ public class ServerboundMoveVehiclePacket implements Packet<ServerGamePacketList
       this.xRot = var1.getXRot();
    }
 
-   public ServerboundMoveVehiclePacket(FriendlyByteBuf var1) {
+   private ServerboundMoveVehiclePacket(FriendlyByteBuf var1) {
       super();
       this.x = var1.readDouble();
       this.y = var1.readDouble();
@@ -29,13 +34,17 @@ public class ServerboundMoveVehiclePacket implements Packet<ServerGamePacketList
       this.xRot = var1.readFloat();
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       var1.writeDouble(this.x);
       var1.writeDouble(this.y);
       var1.writeDouble(this.z);
       var1.writeFloat(this.yRot);
       var1.writeFloat(this.xRot);
+   }
+
+   @Override
+   public PacketType<ServerboundMoveVehiclePacket> type() {
+      return GamePacketTypes.SERVERBOUND_MOVE_VEHICLE;
    }
 
    public void handle(ServerGamePacketListener var1) {

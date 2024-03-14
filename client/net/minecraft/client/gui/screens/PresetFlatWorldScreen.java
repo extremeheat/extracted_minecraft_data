@@ -184,7 +184,7 @@ public class PresetFlatWorldScreen extends Screen {
       HolderLookup.RegistryLookup var4 = var2.lookupOrThrow(Registries.BIOME);
       HolderLookup.RegistryLookup var5 = var2.lookupOrThrow(Registries.STRUCTURE_SET);
       HolderLookup.RegistryLookup var6 = var2.lookupOrThrow(Registries.PLACED_FEATURE);
-      HolderLookup var7 = var2.lookupOrThrow(Registries.BLOCK).filterFeatures(var3);
+      HolderLookup.RegistryLookup var7 = var2.lookupOrThrow(Registries.BLOCK).filterFeatures(var3);
       this.export.setValue(save(this.parent.settings()));
       this.settings = this.parent.settings();
       this.addWidget(this.export);
@@ -300,7 +300,7 @@ public class PresetFlatWorldScreen extends Screen {
          @Override
          public boolean mouseClicked(double var1, double var3, int var5) {
             this.select();
-            return true;
+            return super.mouseClicked(var1, var3, var5);
          }
 
          void select() {

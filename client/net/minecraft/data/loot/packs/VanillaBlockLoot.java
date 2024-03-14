@@ -1,12 +1,12 @@
 package net.minecraft.data.loot.packs;
 
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.advancements.critereon.StatePropertiesPredicate;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.flag.FeatureFlags;
@@ -44,7 +44,7 @@ import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
 import net.minecraft.world.level.storage.loot.entries.LootPoolSingletonContainer;
 import net.minecraft.world.level.storage.loot.functions.ApplyBonusCount;
-import net.minecraft.world.level.storage.loot.functions.CopyNbtFunction;
+import net.minecraft.world.level.storage.loot.functions.CopyComponentsFunction;
 import net.minecraft.world.level.storage.loot.functions.LimitCount;
 import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
 import net.minecraft.world.level.storage.loot.predicates.BonusLevelTableCondition;
@@ -52,7 +52,6 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePrope
 import net.minecraft.world.level.storage.loot.predicates.LootItemEntityPropertyCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
 import net.minecraft.world.level.storage.loot.predicates.MatchTool;
-import net.minecraft.world.level.storage.loot.providers.nbt.ContextNbtProvider;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 
@@ -670,6 +669,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.add(Blocks.WAXED_EXPOSED_COPPER_BULB, noDrop());
       this.add(Blocks.WAXED_WEATHERED_COPPER_BULB, noDrop());
       this.add(Blocks.WAXED_OXIDIZED_COPPER_BULB, noDrop());
+      this.add(Blocks.HEAVY_CORE, noDrop());
       this.dropOther(Blocks.FARMLAND, Blocks.DIRT);
       this.dropOther(Blocks.TRIPWIRE, Items.STRING);
       this.dropOther(Blocks.DIRT_PATH, Blocks.DIRT);
@@ -987,9 +987,10 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
                         .add(
                            LootItem.lootTableItem(var1x)
                               .apply(
-                                 CopyNbtFunction.copyData(ContextNbtProvider.BLOCK_ENTITY)
-                                    .copy("SkullOwner", "SkullOwner")
-                                    .copy("note_block_sound", String.format(Locale.ROOT, "%s.%s", "BlockEntityTag", "note_block_sound"))
+                                 CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY)
+                                    .copy(DataComponents.PROFILE)
+                                    .copy(DataComponents.NOTE_BLOCK_SOUND)
+                                    .copy(DataComponents.CUSTOM_NAME)
                               )
                         )
                   )
@@ -1057,10 +1058,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
                .withPool(
                   LootPool.lootPool()
                      .when(var3)
-                     .add(
-                        LootItem.lootTableItem(Items.CARROT)
-                           .apply(ApplyBonusCount.addBonusBinomialDistributionCount(Enchantments.BLOCK_FORTUNE, 0.5714286F, 3))
-                     )
+                     .add(LootItem.lootTableItem(Items.CARROT).apply(ApplyBonusCount.addBonusBinomialDistributionCount(Enchantments.FORTUNE, 0.5714286F, 3)))
                )
          )
       );
@@ -1075,10 +1073,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
                .withPool(
                   LootPool.lootPool()
                      .when(var5)
-                     .add(
-                        LootItem.lootTableItem(Items.POTATO)
-                           .apply(ApplyBonusCount.addBonusBinomialDistributionCount(Enchantments.BLOCK_FORTUNE, 0.5714286F, 3))
-                     )
+                     .add(LootItem.lootTableItem(Items.POTATO).apply(ApplyBonusCount.addBonusBinomialDistributionCount(Enchantments.FORTUNE, 0.5714286F, 3)))
                )
                .withPool(
                   LootPool.lootPool().when(var5).add(LootItem.lootTableItem(Items.POISONOUS_POTATO).when(LootItemRandomChanceCondition.randomChance(0.02F)))
@@ -1098,7 +1093,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
                         )
                         .add(LootItem.lootTableItem(Items.SWEET_BERRIES))
                         .apply(SetItemCountFunction.setCount(UniformGenerator.between(2.0F, 3.0F)))
-                        .apply(ApplyBonusCount.addUniformBonusCount(Enchantments.BLOCK_FORTUNE))
+                        .apply(ApplyBonusCount.addUniformBonusCount(Enchantments.FORTUNE))
                   )
                   .withPool(
                      LootPool.lootPool()
@@ -1108,7 +1103,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
                         )
                         .add(LootItem.lootTableItem(Items.SWEET_BERRIES))
                         .apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 2.0F)))
-                        .apply(ApplyBonusCount.addUniformBonusCount(Enchantments.BLOCK_FORTUNE))
+                        .apply(ApplyBonusCount.addUniformBonusCount(Enchantments.FORTUNE))
                   )
             )
       );
@@ -1135,7 +1130,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
                   var1x,
                   LootItem.lootTableItem(Items.GOLD_NUGGET)
                      .apply(SetItemCountFunction.setCount(UniformGenerator.between(2.0F, 6.0F)))
-                     .apply(ApplyBonusCount.addOreBonusCount(Enchantments.BLOCK_FORTUNE))
+                     .apply(ApplyBonusCount.addOreBonusCount(Enchantments.FORTUNE))
                )
             )
       );
@@ -1185,7 +1180,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
                   var1x,
                   LootItem.lootTableItem(Items.GLOWSTONE_DUST)
                      .apply(SetItemCountFunction.setCount(UniformGenerator.between(2.0F, 4.0F)))
-                     .apply(ApplyBonusCount.addUniformBonusCount(Enchantments.BLOCK_FORTUNE))
+                     .apply(ApplyBonusCount.addUniformBonusCount(Enchantments.FORTUNE))
                      .apply(LimitCount.limitCount(IntRange.range(1, 4)))
                )
             )
@@ -1198,7 +1193,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
                   var1x,
                   LootItem.lootTableItem(Items.MELON_SLICE)
                      .apply(SetItemCountFunction.setCount(UniformGenerator.between(3.0F, 7.0F)))
-                     .apply(ApplyBonusCount.addUniformBonusCount(Enchantments.BLOCK_FORTUNE))
+                     .apply(ApplyBonusCount.addUniformBonusCount(Enchantments.FORTUNE))
                      .apply(LimitCount.limitCount(IntRange.upperBound(9)))
                )
             )
@@ -1213,7 +1208,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
                   var1x,
                   LootItem.lootTableItem(Items.PRISMARINE_CRYSTALS)
                      .apply(SetItemCountFunction.setCount(UniformGenerator.between(2.0F, 3.0F)))
-                     .apply(ApplyBonusCount.addUniformBonusCount(Enchantments.BLOCK_FORTUNE))
+                     .apply(ApplyBonusCount.addUniformBonusCount(Enchantments.FORTUNE))
                      .apply(LimitCount.limitCount(IntRange.range(1, 5)))
                )
             )
@@ -1236,7 +1231,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
                                     )
                               )
                               .apply(
-                                 ApplyBonusCount.addUniformBonusCount(Enchantments.BLOCK_FORTUNE)
+                                 ApplyBonusCount.addUniformBonusCount(Enchantments.FORTUNE)
                                     .when(
                                        LootItemBlockStatePropertyCondition.hasBlockStateProperties(var1x)
                                           .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(NetherWartBlock.AGE, 3))
@@ -1288,7 +1283,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
                this.applyExplosionCondition(
                   var1x,
                   ((LootPoolSingletonContainer.Builder)LootItem.lootTableItem(Items.FLINT)
-                        .when(BonusLevelTableCondition.bonusLevelFlatChance(Enchantments.BLOCK_FORTUNE, 0.1F, 0.14285715F, 0.25F, 1.0F)))
+                        .when(BonusLevelTableCondition.bonusLevelFlatChance(Enchantments.FORTUNE, 0.1F, 0.14285715F, 0.25F, 1.0F)))
                      .otherwise(LootItem.lootTableItem(var1x))
                )
             )
@@ -1308,7 +1303,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
                   var1x,
                   ((LootPoolSingletonContainer.Builder)LootItem.lootTableItem(Items.GOLD_NUGGET)
                         .apply(SetItemCountFunction.setCount(UniformGenerator.between(2.0F, 5.0F)))
-                        .when(BonusLevelTableCondition.bonusLevelFlatChance(Enchantments.BLOCK_FORTUNE, 0.1F, 0.14285715F, 0.25F, 1.0F)))
+                        .when(BonusLevelTableCondition.bonusLevelFlatChance(Enchantments.FORTUNE, 0.1F, 0.14285715F, 0.25F, 1.0F)))
                      .otherwise(LootItem.lootTableItem(var1x))
                )
             )
@@ -1326,7 +1321,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
                var1x,
                ((LootPoolSingletonContainer.Builder)LootItem.lootTableItem(Items.AMETHYST_SHARD)
                      .apply(SetItemCountFunction.setCount(ConstantValue.exactly(4.0F)))
-                     .apply(ApplyBonusCount.addOreBonusCount(Enchantments.BLOCK_FORTUNE))
+                     .apply(ApplyBonusCount.addOreBonusCount(Enchantments.FORTUNE))
                      .when(MatchTool.toolMatches(ItemPredicate.Builder.item().of(ItemTags.CLUSTER_MAX_HARVESTABLES))))
                   .otherwise(
                      this.applyExplosionDecay(
@@ -1427,6 +1422,7 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
       this.add(Blocks.FROSTED_ICE, noDrop());
       this.add(Blocks.SPAWNER, noDrop());
       this.add(Blocks.TRIAL_SPAWNER, noDrop());
+      this.add(Blocks.VAULT, noDrop());
       this.add(Blocks.FIRE, noDrop());
       this.add(Blocks.SOUL_FIRE, noDrop());
       this.add(Blocks.NETHER_PORTAL, noDrop());
@@ -1450,7 +1446,8 @@ public class VanillaBlockLoot extends BlockLootSubProvider {
                               .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(DecoratedPotBlock.CRACKED, true))
                         ))
                      .otherwise(
-                        LootItem.lootTableItem(var1).apply(CopyNbtFunction.copyData(ContextNbtProvider.BLOCK_ENTITY).copy("sherds", "BlockEntityTag.sherds"))
+                        LootItem.lootTableItem(var1)
+                           .apply(CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY).copy(DataComponents.POT_DECORATIONS))
                      )
                )
          );

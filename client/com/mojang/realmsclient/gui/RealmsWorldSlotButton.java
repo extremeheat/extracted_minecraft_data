@@ -30,8 +30,6 @@ public class RealmsWorldSlotButton extends Button {
    private final int slotIndex;
    @Nullable
    private RealmsWorldSlotButton.State state;
-   @Nullable
-   private Tooltip tooltip;
 
    public RealmsWorldSlotButton(int var1, int var2, int var3, int var4, int var5, Button.OnPress var6) {
       super(var1, var2, var3, var4, CommonComponents.EMPTY, var6, DEFAULT_NARRATION);
@@ -48,27 +46,22 @@ public class RealmsWorldSlotButton extends Button {
       this.setTooltipAndNarration(this.state, var1.minigameName);
    }
 
-   private void setTooltipAndNarration(RealmsWorldSlotButton.State var1, String var2) {
+   private void setTooltipAndNarration(RealmsWorldSlotButton.State var1, @Nullable String var2) {
       Component var3 = switch(var1.action) {
          case JOIN -> SLOT_ACTIVE_TOOLTIP;
          case SWITCH_SLOT -> var1.minigame ? SWITCH_TO_MINIGAME_SLOT_TOOLTIP : SWITCH_TO_WORLD_SLOT_TOOLTIP;
          default -> null;
       };
-      if (var3 == null) {
-         this.setMessage(Component.literal(var1.slotName));
-      } else {
-         this.tooltip = Tooltip.create(var3);
-         if (var1.empty) {
-            this.setMessage(var3);
-         } else {
-            MutableComponent var4 = var3.copy().append(CommonComponents.space()).append(Component.literal(var1.slotName));
-            if (var1.minigame) {
-               var4 = var4.append(CommonComponents.SPACE).append(var2);
-            }
-
-            this.setMessage(var4);
-         }
+      if (var3 != null) {
+         this.setTooltip(Tooltip.create(var3));
       }
+
+      MutableComponent var4 = Component.literal(var1.slotName);
+      if (var1.minigame && var2 != null) {
+         var4 = var4.append(CommonComponents.SPACE).append(var2);
+      }
+
+      this.setMessage(var4);
    }
 
    static RealmsWorldSlotButton.Action getAction(RealmsServer var0, boolean var1, boolean var2) {
@@ -85,10 +78,6 @@ public class RealmsWorldSlotButton extends Button {
          int var5 = this.getX();
          int var6 = this.getY();
          boolean var7 = this.isHoveredOrFocused();
-         if (this.tooltip != null) {
-            this.tooltip.refreshTooltipForNextRenderPass(this.isHovered(), this.isFocused(), this.getRectangle());
-         }
-
          ResourceLocation var8;
          if (this.state.minigame) {
             var8 = RealmsTextureManager.worldTemplate(String.valueOf(this.state.imageId), this.state.image);

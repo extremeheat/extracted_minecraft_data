@@ -21,7 +21,7 @@ public class WebBlock extends Block {
    }
 
    @Override
-   public void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
       var4.makeStuckInBlock(var1, new Vec3(0.25, 0.05000000074505806, 0.25));
    }
 }

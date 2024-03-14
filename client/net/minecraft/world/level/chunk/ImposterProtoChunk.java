@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
@@ -18,6 +19,7 @@ import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.blending.BlendingData;
@@ -35,11 +37,7 @@ public class ImposterProtoChunk extends ProtoChunk {
 
    public ImposterProtoChunk(LevelChunk var1, boolean var2) {
       super(
-         var1.getPos(),
-         UpgradeData.EMPTY,
-         var1.levelHeightAccessor,
-         var1.getLevel().registryAccess().registryOrThrow(Registries.BIOME),
-         var1.getBlendingData()
+         var1.getPos(), UpgradeData.EMPTY, var1.levelHeightAccessor, var1.getLevel().registryAccess().registryOrThrow(Registries.BIOME), var1.getBlendingData()
       );
       this.wrapped = var1;
       this.allowWrites = var2;
@@ -207,8 +205,8 @@ public class ImposterProtoChunk extends ProtoChunk {
 
    @Nullable
    @Override
-   public CompoundTag getBlockEntityNbtForSaving(BlockPos var1) {
-      return this.wrapped.getBlockEntityNbtForSaving(var1);
+   public CompoundTag getBlockEntityNbtForSaving(BlockPos var1, HolderLookup.Provider var2) {
+      return this.wrapped.getBlockEntityNbtForSaving(var1, var2);
    }
 
    @Override

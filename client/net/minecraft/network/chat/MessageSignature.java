@@ -41,7 +41,6 @@ public record MessageSignature(byte[] c) {
       return ByteBuffer.wrap(this.bytes);
    }
 
-   @Override
    public boolean equals(Object var1) {
       if (this == var1) {
          return true;
@@ -54,12 +53,10 @@ public record MessageSignature(byte[] c) {
       }
    }
 
-   @Override
    public int hashCode() {
       return Arrays.hashCode(this.bytes);
    }
 
-   @Override
    public String toString() {
       return Base64.getEncoder().encodeToString(this.bytes);
    }

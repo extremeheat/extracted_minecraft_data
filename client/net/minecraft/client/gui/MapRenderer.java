@@ -16,6 +16,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.saveddata.maps.MapDecoration;
+import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import org.joml.Matrix4f;
 
@@ -32,16 +33,16 @@ public class MapRenderer implements AutoCloseable {
       this.textureManager = var1;
    }
 
-   public void update(int var1, MapItemSavedData var2) {
+   public void update(MapId var1, MapItemSavedData var2) {
       this.getOrCreateMapInstance(var1, var2).forceUpload();
    }
 
-   public void render(PoseStack var1, MultiBufferSource var2, int var3, MapItemSavedData var4, boolean var5, int var6) {
+   public void render(PoseStack var1, MultiBufferSource var2, MapId var3, MapItemSavedData var4, boolean var5, int var6) {
       this.getOrCreateMapInstance(var3, var4).draw(var1, var2, var5, var6);
    }
 
-   private MapRenderer.MapInstance getOrCreateMapInstance(int var1, MapItemSavedData var2) {
-      return (MapRenderer.MapInstance)this.maps.compute(var1, (var2x, var3) -> {
+   private MapRenderer.MapInstance getOrCreateMapInstance(MapId var1, MapItemSavedData var2) {
+      return (MapRenderer.MapInstance)this.maps.compute(var1.id(), (var2x, var3) -> {
          if (var3 == null) {
             return new MapRenderer.MapInstance(var2x, var2);
          } else {
@@ -139,9 +140,9 @@ public class MapRenderer implements AutoCloseable {
                var20.vertex(var18, 1.0F, -1.0F, (float)var10 * -0.001F).color(255, 255, 255, 255).uv(var16, var17).uv2(var4).endVertex();
                var20.vertex(var18, -1.0F, -1.0F, (float)var10 * -0.001F).color(255, 255, 255, 255).uv(var14, var17).uv2(var4).endVertex();
                var1.popPose();
-               if (var12.name() != null) {
+               if (var12.name().isPresent()) {
                   Font var21 = Minecraft.getInstance().font;
-                  Component var22 = var12.name();
+                  Component var22 = var12.name().get();
                   float var23 = (float)var21.width(var22);
                   float var24 = Mth.clamp(25.0F / var23, 0.0F, 6.0F / 9.0F);
                   var1.pushPose();

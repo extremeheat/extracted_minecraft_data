@@ -48,7 +48,7 @@ public class MessageSignatureCache {
 
    @VisibleForTesting
    void push(List<MessageSignature> var1) {
-      this.push(new ArrayDeque<>(var1));
+      this.push(new ArrayDeque(var1));
    }
 
    private void push(ArrayDeque<MessageSignature> var1) {

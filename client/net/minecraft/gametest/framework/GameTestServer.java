@@ -31,6 +31,8 @@ import net.minecraft.server.level.progress.LoggerChunkProgressListener;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.util.datafix.DataFixers;
+import net.minecraft.util.debugchart.LocalSampleLogger;
+import net.minecraft.util.debugchart.SampleLogger;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.DataPackConfig;
@@ -38,7 +40,6 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
-import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.levelgen.WorldDimensions;
 import net.minecraft.world.level.levelgen.WorldOptions;
 import net.minecraft.world.level.levelgen.presets.WorldPreset;
@@ -52,8 +53,11 @@ public class GameTestServer extends MinecraftServer {
    private static final int PROGRESS_REPORT_INTERVAL = 20;
    private static final int TEST_POSITION_RANGE = 14999992;
    private static final Services NO_SERVICES = new Services(null, ServicesKeySet.EMPTY, null, null);
-   private final List<GameTestBatch> testBatches;
+   private final LocalSampleLogger sampleLogger = new LocalSampleLogger(4);
+   private List<GameTestBatch> testBatches = new ArrayList();
+   private final List<TestFunction> testFunctions;
    private final BlockPos spawnPos;
+   private final Stopwatch stopwatch = Stopwatch.createUnstarted();
    private static final GameRules TEST_GAME_RULES = Util.make(new GameRules(), var0 -> {
       var0.getRule(GameRules.RULE_DOMOBSPAWNING).set(false, null);
       var0.getRule(GameRules.RULE_WEATHER_CYCLE).set(false, null);
@@ -63,10 +67,10 @@ public class GameTestServer extends MinecraftServer {
    private MultipleTestTracker testTracker;
 
    public static GameTestServer create(
-      Thread var0, LevelStorageSource.LevelStorageAccess var1, PackRepository var2, Collection<GameTestBatch> var3, BlockPos var4
+      Thread var0, LevelStorageSource.LevelStorageAccess var1, PackRepository var2, Collection<TestFunction> var3, BlockPos var4
    ) {
       if (var3.isEmpty()) {
-         throw new IllegalArgumentException("No test batches were given!");
+         throw new IllegalArgumentException("No test functions were given!");
       } else {
          var2.reload();
          WorldDataConfiguration var5 = new WorldDataConfiguration(
@@ -83,7 +87,7 @@ public class GameTestServer extends MinecraftServer {
                   var2x -> WorldLoader.load(
                         var8,
                         var1xx -> {
-                           Registry var2xxx = new MappedRegistry<>(Registries.LEVEL_STEM, Lifecycle.stable()).freeze();
+                           Registry var2xxx = new MappedRegistry(Registries.LEVEL_STEM, Lifecycle.stable()).freeze();
                            WorldDimensions.Complete var3xx = var1xx.datapackWorldgen()
                               .<WorldPreset>registryOrThrow(Registries.WORLD_PRESET)
                               .getHolderOrThrow(WorldPresets.FLAT)
@@ -112,10 +116,10 @@ public class GameTestServer extends MinecraftServer {
    }
 
    private GameTestServer(
-      Thread var1, LevelStorageSource.LevelStorageAccess var2, PackRepository var3, WorldStem var4, Collection<GameTestBatch> var5, BlockPos var6
+      Thread var1, LevelStorageSource.LevelStorageAccess var2, PackRepository var3, WorldStem var4, Collection<TestFunction> var5, BlockPos var6
    ) {
-      super(var1, var2, var3, var4, Proxy.NO_PROXY, DataFixers.getDataFixer(), NO_SERVICES, LoggerChunkProgressListener::new);
-      this.testBatches = Lists.newArrayList(var5);
+      super(var1, var2, var3, var4, Proxy.NO_PROXY, DataFixers.getDataFixer(), NO_SERVICES, LoggerChunkProgressListener::createFromGameruleRadius);
+      this.testFunctions = Lists.newArrayList(var5);
       this.spawnPos = var6;
    }
 
@@ -125,6 +129,7 @@ public class GameTestServer extends MinecraftServer {
       });
       this.loadLevel();
       ServerLevel var1 = this.overworld();
+      this.testBatches = Lists.newArrayList(GameTestBatchFactory.fromTestFunction(this.testFunctions, var1));
       var1.setDefaultSpawnPos(this.spawnPos, 0.0F);
       int var2 = 20000000;
       var1.setWeatherParameters(20000000, 20000000, false, false);
@@ -148,7 +153,7 @@ public class GameTestServer extends MinecraftServer {
          this.halt(false);
          LOGGER.info(this.testTracker.getProgressBar());
          GlobalTestReporter.finish();
-         LOGGER.info("========= {} GAME TESTS COMPLETE ======================", this.testTracker.getTotalCount());
+         LOGGER.info("========= {} GAME TESTS COMPLETE IN {} ======================", this.testTracker.getTotalCount(), this.stopwatch.stop());
          if (this.testTracker.hasFailedRequired()) {
             LOGGER.info("{} required tests failed :(", this.testTracker.getFailedRequiredCount());
             this.testTracker.getFailedRequired().forEach(var0 -> LOGGER.info("   - {}", var0.getTestName()));
@@ -163,6 +168,16 @@ public class GameTestServer extends MinecraftServer {
 
          LOGGER.info("====================================================");
       }
+   }
+
+   @Override
+   public SampleLogger getTickTimeLogger() {
+      return this.sampleLogger;
+   }
+
+   @Override
+   public boolean isTickTimeLoggingEnabled() {
+      return false;
    }
 
    @Override
@@ -192,9 +207,13 @@ public class GameTestServer extends MinecraftServer {
 
    private void startTests(ServerLevel var1) {
       BlockPos var2 = new BlockPos(var1.random.nextIntBetweenInclusive(-14999992, 14999992), -59, var1.random.nextIntBetweenInclusive(-14999992, 14999992));
-      Collection var3 = GameTestRunner.runTestBatches(this.testBatches, var2, Rotation.NONE, var1, GameTestTicker.SINGLETON, 8);
-      this.testTracker = new MultipleTestTracker(var3);
+      GameTestRunner var3 = GameTestRunner.Builder.fromBatches(this.testBatches, var1).newStructureSpawner(new StructureGridSpawner(var2, 8)).build();
+      List var4 = var3.getTestInfos();
+      this.testTracker = new MultipleTestTracker(var4);
       LOGGER.info("{} tests are now running at position {}!", this.testTracker.getTotalCount(), var2.toShortString());
+      this.stopwatch.reset();
+      this.stopwatch.start();
+      var3.start();
    }
 
    private boolean haveTestsStarted() {

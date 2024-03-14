@@ -274,9 +274,7 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
 
       private int getPixel(SpriteContents.AnimatedTexture var1, int var2, int var3, int var4, int var5) {
          return SpriteContents.this.byMipLevel[var3]
-            .getPixelRGBA(
-               var4 + (var1.getFrameX(var2) * SpriteContents.this.width >> var3), var5 + (var1.getFrameY(var2) * SpriteContents.this.height >> var3)
-            );
+            .getPixelRGBA(var4 + (var1.getFrameX(var2) * SpriteContents.this.width >> var3), var5 + (var1.getFrameY(var2) * SpriteContents.this.height >> var3));
       }
 
       private int mix(double var1, int var3, int var4) {

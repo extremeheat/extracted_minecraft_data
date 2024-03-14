@@ -159,10 +159,6 @@ public final class ProjectileUtil {
       ArrowItem var3 = (ArrowItem)(var1.getItem() instanceof ArrowItem ? var1.getItem() : Items.ARROW);
       AbstractArrow var4 = var3.createArrow(var0.level(), var1, var0);
       var4.setEnchantmentEffectsFromEntity(var0, var2);
-      if (var1.is(Items.TIPPED_ARROW) && var4 instanceof Arrow) {
-         ((Arrow)var4).setEffectsFromItem(var1);
-      }
-
       return var4;
    }
 }

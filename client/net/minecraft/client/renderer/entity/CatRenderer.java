@@ -27,17 +27,17 @@ public class CatRenderer extends MobRenderer<Cat, CatModel<Cat>> {
       var2.scale(0.8F, 0.8F, 0.8F);
    }
 
-   protected void setupRotations(Cat var1, PoseStack var2, float var3, float var4, float var5) {
-      super.setupRotations(var1, var2, var3, var4, var5);
-      float var6 = var1.getLieDownAmount(var5);
-      if (var6 > 0.0F) {
-         var2.translate(0.4F * var6, 0.15F * var6, 0.1F * var6);
-         var2.mulPose(Axis.ZP.rotationDegrees(Mth.rotLerp(var6, 0.0F, 90.0F)));
-         BlockPos var7 = var1.blockPosition();
+   protected void setupRotations(Cat var1, PoseStack var2, float var3, float var4, float var5, float var6) {
+      super.setupRotations(var1, var2, var3, var4, var5, var6);
+      float var7 = var1.getLieDownAmount(var5);
+      if (var7 > 0.0F) {
+         var2.translate(0.4F * var7, 0.15F * var7, 0.1F * var7);
+         var2.mulPose(Axis.ZP.rotationDegrees(Mth.rotLerp(var7, 0.0F, 90.0F)));
+         BlockPos var8 = var1.blockPosition();
 
-         for(Player var10 : var1.level().getEntitiesOfClass(Player.class, new AABB(var7).inflate(2.0, 2.0, 2.0))) {
-            if (var10.isSleeping()) {
-               var2.translate(0.15F * var6, 0.0F, 0.0F);
+         for(Player var11 : var1.level().getEntitiesOfClass(Player.class, new AABB(var8).inflate(2.0, 2.0, 2.0))) {
+            if (var11.isSleeping()) {
+               var2.translate(0.15F * var7, 0.0F, 0.0F);
                break;
             }
          }

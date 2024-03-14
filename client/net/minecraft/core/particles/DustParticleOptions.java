@@ -5,7 +5,10 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
@@ -17,16 +20,15 @@ public class DustParticleOptions extends DustParticleOptionsBase {
       var0 -> var0.group(ExtraCodecs.VECTOR3F.fieldOf("color").forGetter(var0x -> var0x.color), Codec.FLOAT.fieldOf("scale").forGetter(var0x -> var0x.scale))
             .apply(var0, DustParticleOptions::new)
    );
+   public static final StreamCodec<RegistryFriendlyByteBuf, DustParticleOptions> STREAM_CODEC = StreamCodec.composite(
+      ByteBufCodecs.VECTOR3F, var0 -> var0.color, ByteBufCodecs.FLOAT, var0 -> var0.scale, DustParticleOptions::new
+   );
    public static final ParticleOptions.Deserializer<DustParticleOptions> DESERIALIZER = new ParticleOptions.Deserializer<DustParticleOptions>() {
-      public DustParticleOptions fromCommand(ParticleType<DustParticleOptions> var1, StringReader var2) throws CommandSyntaxException {
-         Vector3f var3 = DustParticleOptionsBase.readVector3f(var2);
+      public DustParticleOptions fromCommand(ParticleType<DustParticleOptions> var1, StringReader var2, HolderLookup.Provider var3) throws CommandSyntaxException {
+         Vector3f var4 = DustParticleOptionsBase.readVector3f(var2);
          var2.expect(' ');
-         float var4 = var2.readFloat();
-         return new DustParticleOptions(var3, var4);
-      }
-
-      public DustParticleOptions fromNetwork(ParticleType<DustParticleOptions> var1, FriendlyByteBuf var2) {
-         return new DustParticleOptions(DustParticleOptionsBase.readVector3f(var2), var2.readFloat());
+         float var5 = var2.readFloat();
+         return new DustParticleOptions(var4, var5);
       }
    };
 

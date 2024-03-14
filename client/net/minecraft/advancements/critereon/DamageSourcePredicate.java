@@ -45,10 +45,10 @@ public record DamageSourcePredicate(List<TagPredicate<DamageType>> b, Optional<E
          }
       }
 
-      if (this.directEntity.isPresent() && !this.directEntity.get().matches(var1, var2, var3.getDirectEntity())) {
+      if (this.directEntity.isPresent() && !((EntityPredicate)this.directEntity.get()).matches(var1, var2, var3.getDirectEntity())) {
          return false;
       } else {
-         return !this.sourceEntity.isPresent() || this.sourceEntity.get().matches(var1, var2, var3.getEntity());
+         return !this.sourceEntity.isPresent() || ((EntityPredicate)this.sourceEntity.get()).matches(var1, var2, var3.getEntity());
       }
    }
 

@@ -31,7 +31,7 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
       )
       .collect(Collectors.toMap(ApplyBonusCount.FormulaType::id, Function.identity()));
    private static final Codec<ApplyBonusCount.FormulaType> FORMULA_TYPE_CODEC = ResourceLocation.CODEC.comapFlatMap(var0 -> {
-      ApplyBonusCount.FormulaType var1 = FORMULAS.get(var0);
+      ApplyBonusCount.FormulaType var1 = (ApplyBonusCount.FormulaType)FORMULAS.get(var0);
       return var1 != null ? DataResult.success(var1) : DataResult.error(() -> "No formula type with id: '" + var0 + "'");
    }, ApplyBonusCount.FormulaType::id);
    private static final MapCodec<ApplyBonusCount.Formula> FORMULA_CODEC = ExtraCodecs.dispatchOptionalValue(

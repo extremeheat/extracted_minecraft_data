@@ -237,9 +237,7 @@ public class StrongholdPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          this.generateBox(var1, var5, 0, 0, 0, 4, 4, 6, true, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
          this.generateSmallDoor(var1, var4, var5, this.entryDoor, 1, 1, 0);
          this.generateSmallDoor(var1, var4, var5, StrongholdPieces.StrongholdPiece.SmallDoorType.OPENING, 1, 1, 6);
@@ -301,9 +299,7 @@ public class StrongholdPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          for(int var8 = 0; var8 < this.steps; ++var8) {
             this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 0, 0, var8, var5);
             this.placeBlock(var1, Blocks.STONE_BRICKS.defaultBlockState(), 1, 0, var8, var5);
@@ -400,9 +396,7 @@ public class StrongholdPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          this.generateBox(var1, var5, 0, 0, 0, 9, 8, 10, true, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
          this.generateSmallDoor(var1, var4, var5, this.entryDoor, 4, 3, 0);
          if (this.leftLow) {
@@ -480,9 +474,7 @@ public class StrongholdPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          this.generateBox(var1, var5, 0, 0, 0, 4, 4, 4, true, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
          this.generateSmallDoor(var1, var4, var5, this.entryDoor, 1, 1, 0);
          Direction var8 = this.getOrientation();
@@ -519,9 +511,7 @@ public class StrongholdPieces {
          var2.putBoolean("Tall", this.isTall);
       }
 
-      public static StrongholdPieces.Library createPiece(
-         StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5, int var6
-      ) {
+      public static StrongholdPieces.Library createPiece(StructurePieceAccessor var0, RandomSource var1, int var2, int var3, int var4, Direction var5, int var6) {
          BoundingBox var7 = BoundingBox.orientBox(var2, var3, var4, -4, -1, 0, 14, 11, 15, var5);
          if (!isOkBox(var7) || var0.findCollisionPiece(var7) != null) {
             var7 = BoundingBox.orientBox(var2, var3, var4, -4, -1, 0, 14, 6, 15, var5);
@@ -534,9 +524,7 @@ public class StrongholdPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          byte var8 = 11;
          if (!this.isTall) {
             var8 = 6;
@@ -741,9 +729,7 @@ public class StrongholdPieces {
       // $VF: Could not properly define all variable types!
       // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          this.generateBox(var1, var5, 0, 0, 0, 10, 7, 15, false, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
          this.generateSmallDoor(var1, var4, var5, StrongholdPieces.StrongholdPiece.SmallDoorType.GRATES, 4, 1, 0);
          boolean var8 = true;
@@ -865,9 +851,7 @@ public class StrongholdPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          this.generateBox(var1, var5, 0, 0, 0, 8, 4, 10, true, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
          this.generateSmallDoor(var1, var4, var5, this.entryDoor, 1, 1, 0);
          this.generateBox(var1, var5, 1, 1, 10, 3, 3, 10, CAVE_AIR, CAVE_AIR, false);
@@ -985,9 +969,7 @@ public class StrongholdPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          this.generateBox(var1, var5, 0, 0, 0, 4, 4, 4, true, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
          this.generateSmallDoor(var1, var4, var5, this.entryDoor, 1, 1, 0);
          Direction var8 = this.getOrientation();
@@ -1038,9 +1020,7 @@ public class StrongholdPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          this.generateBox(var1, var5, 0, 0, 0, 10, 6, 10, true, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
          this.generateSmallDoor(var1, var4, var5, this.entryDoor, 4, 1, 0);
          this.generateBox(var1, var5, 4, 1, 10, 6, 3, 10, CAVE_AIR, CAVE_AIR, false);
@@ -1204,9 +1184,7 @@ public class StrongholdPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          this.generateBox(var1, var5, 0, 0, 0, 4, 10, 4, true, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
          this.generateSmallDoor(var1, var4, var5, this.entryDoor, 1, 7, 0);
          this.generateSmallDoor(var1, var4, var5, StrongholdPieces.StrongholdPiece.SmallDoorType.OPENING, 1, 1, 4);
@@ -1298,9 +1276,7 @@ public class StrongholdPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          this.generateBox(var1, var5, 0, 0, 0, 4, 4, 6, true, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
          this.generateSmallDoor(var1, var4, var5, this.entryDoor, 1, 1, 0);
          this.generateSmallDoor(var1, var4, var5, StrongholdPieces.StrongholdPiece.SmallDoorType.OPENING, 1, 1, 6);
@@ -1348,9 +1324,7 @@ public class StrongholdPieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          this.generateBox(var1, var5, 0, 0, 0, 4, 10, 7, true, var4, StrongholdPieces.SMOOTH_STONE_SELECTOR);
          this.generateSmallDoor(var1, var4, var5, this.entryDoor, 1, 7, 0);
          this.generateSmallDoor(var1, var4, var5, StrongholdPieces.StrongholdPiece.SmallDoorType.OPENING, 1, 1, 7);
@@ -1552,9 +1526,7 @@ public class StrongholdPieces {
       }
 
       @Nullable
-      protected StructurePiece generateSmallDoorChildRight(
-         StrongholdPieces.StartPiece var1, StructurePieceAccessor var2, RandomSource var3, int var4, int var5
-      ) {
+      protected StructurePiece generateSmallDoorChildRight(StrongholdPieces.StartPiece var1, StructurePieceAccessor var2, RandomSource var3, int var4, int var5) {
          Direction var6 = this.getOrientation();
          if (var6 != null) {
             switch(var6) {

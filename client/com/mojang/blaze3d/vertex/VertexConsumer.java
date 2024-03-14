@@ -5,7 +5,6 @@ import java.nio.IntBuffer;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.core.Vec3i;
 import net.minecraft.util.FastColor;
-import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -71,77 +70,83 @@ public interface VertexConsumer {
       return this.overlayCoords(var1 & 65535, var1 >> 16 & 65535);
    }
 
-   default void putBulkData(PoseStack.Pose var1, BakedQuad var2, float var3, float var4, float var5, int var6, int var7) {
-      this.putBulkData(var1, var2, new float[]{1.0F, 1.0F, 1.0F, 1.0F}, var3, var4, var5, new int[]{var6, var6, var6, var6}, var7, false);
+   default void putBulkData(PoseStack.Pose var1, BakedQuad var2, float var3, float var4, float var5, float var6, int var7, int var8) {
+      this.putBulkData(var1, var2, new float[]{1.0F, 1.0F, 1.0F, 1.0F}, var3, var4, var5, var6, new int[]{var7, var7, var7, var7}, var8, false);
    }
 
-   default void putBulkData(PoseStack.Pose var1, BakedQuad var2, float[] var3, float var4, float var5, float var6, int[] var7, int var8, boolean var9) {
-      float[] var10 = new float[]{var3[0], var3[1], var3[2], var3[3]};
-      int[] var11 = new int[]{var7[0], var7[1], var7[2], var7[3]};
-      int[] var12 = var2.getVertices();
-      Vec3i var13 = var2.getDirection().getNormal();
-      Matrix4f var14 = var1.pose();
-      Vector3f var15 = var1.normal().transform(new Vector3f((float)var13.getX(), (float)var13.getY(), (float)var13.getZ()));
-      boolean var16 = true;
-      int var17 = var12.length / 8;
-      MemoryStack var18 = MemoryStack.stackPush();
+   default void putBulkData(
+      PoseStack.Pose var1, BakedQuad var2, float[] var3, float var4, float var5, float var6, float var7, int[] var8, int var9, boolean var10
+   ) {
+      float[] var11 = new float[]{var3[0], var3[1], var3[2], var3[3]};
+      int[] var12 = new int[]{var8[0], var8[1], var8[2], var8[3]};
+      int[] var13 = var2.getVertices();
+      Vec3i var14 = var2.getDirection().getNormal();
+      Matrix4f var15 = var1.pose();
+      Vector3f var16 = var1.transformNormal((float)var14.getX(), (float)var14.getY(), (float)var14.getZ(), new Vector3f());
+      boolean var17 = true;
+      int var18 = var13.length / 8;
+      MemoryStack var19 = MemoryStack.stackPush();
 
       try {
-         ByteBuffer var19 = var18.malloc(DefaultVertexFormat.BLOCK.getVertexSize());
-         IntBuffer var20 = var19.asIntBuffer();
+         ByteBuffer var20 = var19.malloc(DefaultVertexFormat.BLOCK.getVertexSize());
+         IntBuffer var21 = var20.asIntBuffer();
 
-         for(int var21 = 0; var21 < var17; ++var21) {
-            var20.clear();
-            var20.put(var12, var21 * 8, 8);
-            float var22 = var19.getFloat(0);
-            float var23 = var19.getFloat(4);
-            float var24 = var19.getFloat(8);
-            float var25;
+         for(int var22 = 0; var22 < var18; ++var22) {
+            var21.clear();
+            var21.put(var13, var22 * 8, 8);
+            float var23 = var20.getFloat(0);
+            float var24 = var20.getFloat(4);
+            float var25 = var20.getFloat(8);
             float var26;
             float var27;
-            if (var9) {
-               float var28 = (float)(var19.get(12) & 255) / 255.0F;
-               float var29 = (float)(var19.get(13) & 255) / 255.0F;
-               float var30 = (float)(var19.get(14) & 255) / 255.0F;
-               var25 = var28 * var10[var21] * var4;
-               var26 = var29 * var10[var21] * var5;
-               var27 = var30 * var10[var21] * var6;
+            float var28;
+            if (var10) {
+               float var29 = (float)(var20.get(12) & 255) / 255.0F;
+               float var30 = (float)(var20.get(13) & 255) / 255.0F;
+               float var31 = (float)(var20.get(14) & 255) / 255.0F;
+               var26 = var29 * var11[var22] * var4;
+               var27 = var30 * var11[var22] * var5;
+               var28 = var31 * var11[var22] * var6;
             } else {
-               var25 = var10[var21] * var4;
-               var26 = var10[var21] * var5;
-               var27 = var10[var21] * var6;
+               var26 = var11[var22] * var4;
+               var27 = var11[var22] * var5;
+               var28 = var11[var22] * var6;
             }
 
-            int var34 = var11[var21];
-            float var35 = var19.getFloat(16);
-            float var36 = var19.getFloat(20);
-            Vector4f var31 = var14.transform(new Vector4f(var22, var23, var24, 1.0F));
-            this.vertex(var31.x(), var31.y(), var31.z(), var25, var26, var27, 1.0F, var35, var36, var8, var34, var15.x(), var15.y(), var15.z());
+            int var35 = var12[var22];
+            float var36 = var20.getFloat(16);
+            float var37 = var20.getFloat(20);
+            Vector4f var32 = var15.transform(new Vector4f(var23, var24, var25, 1.0F));
+            this.vertex(var32.x(), var32.y(), var32.z(), var26, var27, var28, var7, var36, var37, var9, var35, var16.x(), var16.y(), var16.z());
          }
-      } catch (Throwable var33) {
-         if (var18 != null) {
+      } catch (Throwable var34) {
+         if (var19 != null) {
             try {
-               var18.close();
-            } catch (Throwable var32) {
-               var33.addSuppressed(var32);
+               var19.close();
+            } catch (Throwable var33) {
+               var34.addSuppressed(var33);
             }
          }
 
-         throw var33;
+         throw var34;
       }
 
-      if (var18 != null) {
-         var18.close();
+      if (var19 != null) {
+         var19.close();
       }
+   }
+
+   default VertexConsumer vertex(PoseStack.Pose var1, float var2, float var3, float var4) {
+      return this.vertex(var1.pose(), var2, var3, var4);
    }
 
    default VertexConsumer vertex(Matrix4f var1, float var2, float var3, float var4) {
-      Vector4f var5 = var1.transform(new Vector4f(var2, var3, var4, 1.0F));
+      Vector3f var5 = var1.transformPosition(var2, var3, var4, new Vector3f());
       return this.vertex((double)var5.x(), (double)var5.y(), (double)var5.z());
    }
 
-   default VertexConsumer normal(Matrix3f var1, float var2, float var3, float var4) {
-      Vector3f var5 = var1.transform(new Vector3f(var2, var3, var4));
+   default VertexConsumer normal(PoseStack.Pose var1, float var2, float var3, float var4) {
+      Vector3f var5 = var1.transformNormal(var2, var3, var4, new Vector3f());
       return this.normal(var5.x(), var5.y(), var5.z());
    }
 }

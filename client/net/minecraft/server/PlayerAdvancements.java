@@ -53,8 +53,8 @@ public class PlayerAdvancements {
    private final Path playerSavePath;
    private AdvancementTree tree;
    private final Map<AdvancementHolder, AdvancementProgress> progress = new LinkedHashMap<>();
-   private final Set<AdvancementHolder> visible = new HashSet<>();
-   private final Set<AdvancementHolder> progressChanged = new HashSet<>();
+   private final Set<AdvancementHolder> visible = new HashSet();
+   private final Set<AdvancementHolder> progressChanged = new HashSet();
    private final Set<AdvancementNode> rootsToUpdate = new HashSet<>();
    private ServerPlayer player;
    @Nullable

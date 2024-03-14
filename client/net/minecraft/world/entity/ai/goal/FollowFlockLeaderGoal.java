@@ -34,9 +34,7 @@ public class FollowFlockLeaderGoal extends Goal {
          this.nextStartTick = this.nextStartTick(this.mob);
          Predicate var1 = var0 -> var0.canBeFollowed() || !var0.isFollower();
          List var2 = this.mob.level().getEntitiesOfClass(this.mob.getClass(), this.mob.getBoundingBox().inflate(8.0, 8.0, 8.0), var1);
-         AbstractSchoolingFish var3 = (AbstractSchoolingFish)DataFixUtils.orElse(
-            var2.stream().filter(AbstractSchoolingFish::canBeFollowed).findAny(), this.mob
-         );
+         AbstractSchoolingFish var3 = (AbstractSchoolingFish)DataFixUtils.orElse(var2.stream().filter(AbstractSchoolingFish::canBeFollowed).findAny(), this.mob);
          var3.addFollowers(var2.stream().filter(var0 -> !var0.isFollower()));
          return this.mob.isFollower();
       }

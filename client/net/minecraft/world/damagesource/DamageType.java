@@ -10,7 +10,7 @@ public record DamageType(String b, DamageScaling c, float d, DamageEffects e, De
    private final float exhaustion;
    private final DamageEffects effects;
    private final DeathMessageType deathMessageType;
-   public static final Codec<DamageType> CODEC = RecordCodecBuilder.create(
+   public static final Codec<DamageType> DIRECT_CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                Codec.STRING.fieldOf("message_id").forGetter(DamageType::msgId),
                DamageScaling.CODEC.fieldOf("scaling").forGetter(DamageType::scaling),

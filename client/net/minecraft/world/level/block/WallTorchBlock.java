@@ -59,7 +59,7 @@ public class WallTorchBlock extends TorchBlock {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return getShape(var1);
    }
 
@@ -68,11 +68,14 @@ public class WallTorchBlock extends TorchBlock {
    }
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
-      Direction var4 = var1.getValue(FACING);
-      BlockPos var5 = var3.relative(var4.getOpposite());
-      BlockState var6 = var2.getBlockState(var5);
-      return var6.isFaceSturdy(var2, var5, var4);
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+      return canSurvive(var2, var3, var1.getValue(FACING));
+   }
+
+   public static boolean canSurvive(LevelReader var0, BlockPos var1, Direction var2) {
+      BlockPos var3 = var1.relative(var2.getOpposite());
+      BlockState var4 = var0.getBlockState(var3);
+      return var4.isFaceSturdy(var0, var3, var2);
    }
 
    @Nullable
@@ -97,7 +100,7 @@ public class WallTorchBlock extends TorchBlock {
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       return var2.getOpposite() == var1.getValue(FACING) && !var1.canSurvive(var4, var5) ? Blocks.AIR.defaultBlockState() : var1;
    }
 
@@ -115,12 +118,12 @@ public class WallTorchBlock extends TorchBlock {
    }
 
    @Override
-   public BlockState rotate(BlockState var1, Rotation var2) {
+   protected BlockState rotate(BlockState var1, Rotation var2) {
       return var1.setValue(FACING, var2.rotate(var1.getValue(FACING)));
    }
 
    @Override
-   public BlockState mirror(BlockState var1, Mirror var2) {
+   protected BlockState mirror(BlockState var1, Mirror var2) {
       return var1.rotate(var2.getRotation(var1.getValue(FACING)));
    }
 

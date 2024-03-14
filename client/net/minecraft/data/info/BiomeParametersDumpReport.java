@@ -40,7 +40,7 @@ public class BiomeParametersDumpReport implements DataProvider {
    @Override
    public CompletableFuture<?> run(CachedOutput var1) {
       return this.registries.thenCompose(var2 -> {
-         RegistryOps var3 = RegistryOps.create(JsonOps.INSTANCE, var2);
+         RegistryOps var3 = var2.createSerializationContext(JsonOps.INSTANCE);
          ArrayList var4 = new ArrayList();
          MultiNoiseBiomeSourceParameterList.knownPresets().forEach((var4x, var5) -> var4.add(dumpValue(this.createPath(var4x.id()), var1, var3, CODEC, var5)));
          return CompletableFuture.allOf(var4.toArray(var0 -> new CompletableFuture[var0]));

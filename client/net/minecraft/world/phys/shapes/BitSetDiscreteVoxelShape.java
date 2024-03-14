@@ -211,4 +211,16 @@ public final class BitSetDiscreteVoxelShape extends DiscreteVoxelShape {
    private void clearZStrip(int var1, int var2, int var3, int var4) {
       this.storage.clear(this.getIndex(var3, var4, var1), this.getIndex(var3, var4, var2));
    }
+
+   public boolean isInterior(int var1, int var2, int var3) {
+      boolean var4 = var1 > 0 && var1 < this.xSize - 1 && var2 > 0 && var2 < this.ySize - 1 && var3 > 0 && var3 < this.zSize - 1;
+      return var4
+         && this.isFull(var1, var2, var3)
+         && this.isFull(var1 - 1, var2, var3)
+         && this.isFull(var1 + 1, var2, var3)
+         && this.isFull(var1, var2 - 1, var3)
+         && this.isFull(var1, var2 + 1, var3)
+         && this.isFull(var1, var2, var3 - 1)
+         && this.isFull(var1, var2, var3 + 1);
+   }
 }

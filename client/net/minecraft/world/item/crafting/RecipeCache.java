@@ -86,7 +86,7 @@ public class RecipeCache {
             return false;
          } else {
             for(int var2 = 0; var2 < this.key.size(); ++var2) {
-               if (!ItemStack.isSameItemSameTags(this.key.get(var2), (ItemStack)var1.get(var2))) {
+               if (!ItemStack.isSameItemSameComponents(this.key.get(var2), (ItemStack)var1.get(var2))) {
                   return false;
                }
             }

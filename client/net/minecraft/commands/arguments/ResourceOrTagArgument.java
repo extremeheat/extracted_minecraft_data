@@ -43,7 +43,7 @@ public class ResourceOrTagArgument<T> implements ArgumentType<ResourceOrTagArgum
    public ResourceOrTagArgument(CommandBuildContext var1, ResourceKey<? extends Registry<T>> var2) {
       super();
       this.registryKey = var2;
-      this.registryLookup = var1.holderLookup(var2);
+      this.registryLookup = var1.lookupOrThrow(var2);
    }
 
    public static <T> ResourceOrTagArgument<T> resourceOrTag(CommandBuildContext var0, ResourceKey<? extends Registry<T>> var1) {
@@ -70,7 +70,9 @@ public class ResourceOrTagArgument<T> implements ArgumentType<ResourceOrTagArgum
             var1.skip();
             ResourceLocation var8 = ResourceLocation.read(var1);
             TagKey var9 = TagKey.create(this.registryKey, var8);
-            HolderSet.Named var5 = this.registryLookup.get(var9).orElseThrow(() -> ERROR_UNKNOWN_TAG.create(var8, this.registryKey.location()));
+            HolderSet.Named var5 = this.registryLookup
+               .get(var9)
+               .orElseThrow(() -> ERROR_UNKNOWN_TAG.createWithContext(var1, var8, this.registryKey.location()));
             return new ResourceOrTagArgument.TagResult<>(var5);
          } catch (CommandSyntaxException var6) {
             var1.setCursor(var7);
@@ -81,7 +83,7 @@ public class ResourceOrTagArgument<T> implements ArgumentType<ResourceOrTagArgum
          ResourceKey var3 = ResourceKey.create(this.registryKey, var2);
          Holder.Reference var4 = this.registryLookup
             .get(var3)
-            .orElseThrow(() -> ResourceArgument.ERROR_UNKNOWN_RESOURCE.create(var2, this.registryKey.location()));
+            .orElseThrow(() -> ResourceArgument.ERROR_UNKNOWN_RESOURCE.createWithContext(var1, var2, this.registryKey.location()));
          return new ResourceOrTagArgument.ResourceResult<>(var4);
       }
    }

@@ -118,13 +118,12 @@ public class RealmsSlotOptionsScreen extends RealmsScreen {
          this.addLabel(new RealmsLabel(var2, this.width / 2, 26, 16711680));
       }
 
-      this.nameEdit = new EditBox(
-         this.minecraft.font, this.column1X, row(1), this.columnWidth, 20, null, Component.translatable("mco.configure.world.edit.slot.name")
+      this.nameEdit = this.addWidget(
+         new EditBox(this.minecraft.font, this.column1X, row(1), this.columnWidth, 20, null, Component.translatable("mco.configure.world.edit.slot.name"))
       );
       this.nameEdit.setMaxLength(10);
       this.nameEdit.setValue(this.worldName);
       this.nameEdit.setResponder(this::setWorldName);
-      this.magicalSpecialHackyFocus(this.nameEdit);
       CycleButton var9 = this.addRenderableWidget(
          CycleButton.onOffBuilder(this.pvp)
             .create(var1, row(1), this.columnWidth, 20, Component.translatable("mco.configure.world.pvp"), (var1x, var2x) -> this.pvp = var2x)
@@ -223,7 +222,6 @@ public class RealmsSlotOptionsScreen extends RealmsScreen {
       this.addRenderableWidget(
          Button.builder(CommonComponents.GUI_CANCEL, var1x -> this.minecraft.setScreen(this.parent)).bounds(var1, row(13), this.columnWidth, 20).build()
       );
-      this.addWidget(this.nameEdit);
    }
 
    private CycleButton.OnValueChange<Boolean> confirmDangerousOption(Component var1, Consumer<Boolean> var2) {

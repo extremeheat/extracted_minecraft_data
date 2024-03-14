@@ -153,7 +153,7 @@ public class DataFetcher {
 
       void updateIfNeeded(long var1) {
          if (this.pendingTask != null) {
-            DataFetcher.ComputationResult var3 = this.pendingTask.getNow(null);
+            DataFetcher.ComputationResult var3 = (DataFetcher.ComputationResult)this.pendingTask.getNow((T)null);
             if (var3 == null) {
                return;
             }
@@ -175,10 +175,10 @@ public class DataFetcher {
                try {
                   Object var1xx = this.updater.call();
                   long var5 = DataFetcher.this.timeSource.get(DataFetcher.this.resolution);
-                  return new DataFetcher.ComputationResult<>(Either.left(var1xx), var5);
+                  return new DataFetcher.ComputationResult(Either.left(var1xx), var5);
                } catch (Exception var4xx) {
                   long var2 = DataFetcher.this.timeSource.get(DataFetcher.this.resolution);
-                  return new DataFetcher.ComputationResult<>(Either.right(var4xx), var2);
+                  return new DataFetcher.ComputationResult(Either.right(var4xx), var2);
                }
             }, DataFetcher.this.executor);
          }

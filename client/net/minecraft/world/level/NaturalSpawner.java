@@ -18,7 +18,6 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.BlockTags;
-import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.VisibleForDebug;
@@ -43,7 +42,6 @@ import net.minecraft.world.level.levelgen.structure.BuiltinStructures;
 import net.minecraft.world.level.levelgen.structure.Structure;
 import net.minecraft.world.level.levelgen.structure.structures.NetherFortressStructure;
 import net.minecraft.world.level.material.FluidState;
-import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
@@ -170,7 +168,7 @@ public final class NaturalSpawner {
 
                         var29.moveTo(var21, (double)var8, var23, var1.random.nextFloat() * 360.0F, 0.0F);
                         if (isValidPositionForMob(var1, var29, var26)) {
-                           var17 = var29.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var29.blockPosition()), MobSpawnType.NATURAL, var17, null);
+                           var17 = var29.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var29.blockPosition()), MobSpawnType.NATURAL, var17);
                            ++var11;
                            ++var19;
                            var1.addFreshEntityWithPassengers(var29);
@@ -215,17 +213,14 @@ public final class NaturalSpawner {
          return false;
       } else if (!var8.canSpawnFarFromPlayer() && var6 > (double)(var8.getCategory().getDespawnDistance() * var8.getCategory().getDespawnDistance())) {
          return false;
-      } else if (var8.canSummon() && canSpawnMobAt(var0, var2, var3, var1, var4, var5)) {
-         SpawnPlacements.Type var9 = SpawnPlacements.getPlacementType(var8);
-         if (!isSpawnPositionOk(var9, var0, var5, var8)) {
-            return false;
-         } else if (!SpawnPlacements.checkSpawnRules(var8, var0, MobSpawnType.NATURAL, var5, var0.random)) {
-            return false;
-         } else {
-            return var0.noCollision(var8.getAABB((double)var5.getX() + 0.5, (double)var5.getY(), (double)var5.getZ() + 0.5));
-         }
-      } else {
+      } else if (!var8.canSummon() || !canSpawnMobAt(var0, var2, var3, var1, var4, var5)) {
          return false;
+      } else if (!SpawnPlacements.isSpawnPositionOk(var8, var0, var5)) {
+         return false;
+      } else if (!SpawnPlacements.checkSpawnRules(var8, var0, MobSpawnType.NATURAL, var5, var0.random)) {
+         return false;
+      } else {
+         return var0.noCollision(var8.getAABB((double)var5.getX() + 0.5, (double)var5.getY(), (double)var5.getZ() + 0.5));
       }
    }
 
@@ -309,34 +304,6 @@ public final class NaturalSpawner {
       }
    }
 
-   public static boolean isSpawnPositionOk(SpawnPlacements.Type var0, LevelReader var1, BlockPos var2, @Nullable EntityType<?> var3) {
-      if (var0 == SpawnPlacements.Type.NO_RESTRICTIONS) {
-         return true;
-      } else if (var3 != null && var1.getWorldBorder().isWithinBounds(var2)) {
-         BlockState var4 = var1.getBlockState(var2);
-         FluidState var5 = var1.getFluidState(var2);
-         BlockPos var6 = var2.above();
-         BlockPos var7 = var2.below();
-         switch(var0) {
-            case IN_WATER:
-               return var5.is(FluidTags.WATER) && !var1.getBlockState(var6).isRedstoneConductor(var1, var6);
-            case IN_LAVA:
-               return var5.is(FluidTags.LAVA);
-            case ON_GROUND:
-            default:
-               BlockState var8 = var1.getBlockState(var7);
-               if (!var8.isValidSpawn(var1, var7, var3)) {
-                  return false;
-               } else {
-                  return isValidEmptySpawnBlock(var1, var2, var4, var5, var3)
-                     && isValidEmptySpawnBlock(var1, var6, var1.getBlockState(var6), var1.getFluidState(var6), var3);
-               }
-         }
-      } else {
-         return false;
-      }
-   }
-
    public static void spawnMobsForChunkGeneration(ServerLevelAccessor var0, Holder<Biome> var1, ChunkPos var2, RandomSource var3) {
       MobSpawnSettings var4 = ((Biome)var1.value()).getMobSettings();
       WeightedRandomList var5 = var4.getMobs(MobCategory.CREATURE);
@@ -360,7 +327,7 @@ public final class NaturalSpawner {
 
                   for(int var18 = 0; !var17 && var18 < 4; ++var18) {
                      BlockPos var19 = getTopNonCollidingPos(var0, var9.type, var12, var13);
-                     if (var9.type.canSummon() && isSpawnPositionOk(SpawnPlacements.getPlacementType(var9.type), var0, var19, var9.type)) {
+                     if (var9.type.canSummon() && SpawnPlacements.isSpawnPositionOk(var9.type, var0, var19)) {
                         float var20 = var9.type.getWidth();
                         double var21 = Mth.clamp((double)var12, (double)var6 + (double)var20, (double)var6 + 16.0 - (double)var20);
                         double var23 = Mth.clamp((double)var13, (double)var7 + (double)var20, (double)var7 + 16.0 - (double)var20);
@@ -388,7 +355,7 @@ public final class NaturalSpawner {
                            && ((Mob)var26).checkSpawnRules(var0, MobSpawnType.CHUNK_GENERATION)
                            && ((Mob)var26).checkSpawnObstruction(var0)) {
                            var11 = ((Mob)var26).finalizeSpawn(
-                              var0, var0.getCurrentDifficultyAt(((Mob)var26).blockPosition()), MobSpawnType.CHUNK_GENERATION, var11, null
+                              var0, var0.getCurrentDifficultyAt(((Mob)var26).blockPosition()), MobSpawnType.CHUNK_GENERATION, var11
                            );
                            var0.addFreshEntityWithPassengers((Entity)var26);
                            var17 = true;
@@ -423,14 +390,7 @@ public final class NaturalSpawner {
          } while(var0.getBlockState(var5).isAir() && var5.getY() > var0.getMinBuildHeight());
       }
 
-      if (SpawnPlacements.getPlacementType(var1) == SpawnPlacements.Type.ON_GROUND) {
-         BlockPos var6 = var5.below();
-         if (var0.getBlockState(var6).isPathfindable(var0, var6, PathComputationType.LAND)) {
-            return var6;
-         }
-      }
-
-      return var5.immutable();
+      return SpawnPlacements.getPlacementType(var1).adjustSpawnPosition(var0, var5.immutable());
    }
 
    @FunctionalInterface

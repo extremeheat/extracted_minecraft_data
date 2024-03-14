@@ -2,7 +2,9 @@ package net.minecraft.network.protocol.game;
 
 import javax.annotation.Nullable;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 
@@ -29,6 +31,9 @@ public abstract class ClientboundMoveEntityPacket implements Packet<ClientGamePa
       this.hasRot = var8;
       this.hasPos = var9;
    }
+
+   @Override
+   public abstract PacketType<? extends ClientboundMoveEntityPacket> type();
 
    public void handle(ClientGamePacketListener var1) {
       var1.handleMoveEntity(this);
@@ -77,11 +82,15 @@ public abstract class ClientboundMoveEntityPacket implements Packet<ClientGamePa
    }
 
    public static class Pos extends ClientboundMoveEntityPacket {
+      public static final StreamCodec<FriendlyByteBuf, ClientboundMoveEntityPacket.Pos> STREAM_CODEC = Packet.codec(
+         ClientboundMoveEntityPacket.Pos::write, ClientboundMoveEntityPacket.Pos::read
+      );
+
       public Pos(int var1, short var2, short var3, short var4, boolean var5) {
          super(var1, var2, var3, var4, (byte)0, (byte)0, var5, false, true);
       }
 
-      public static ClientboundMoveEntityPacket.Pos read(FriendlyByteBuf var0) {
+      private static ClientboundMoveEntityPacket.Pos read(FriendlyByteBuf var0) {
          int var1 = var0.readVarInt();
          short var2 = var0.readShort();
          short var3 = var0.readShort();
@@ -90,22 +99,30 @@ public abstract class ClientboundMoveEntityPacket implements Packet<ClientGamePa
          return new ClientboundMoveEntityPacket.Pos(var1, var2, var3, var4, var5);
       }
 
-      @Override
-      public void write(FriendlyByteBuf var1) {
+      private void write(FriendlyByteBuf var1) {
          var1.writeVarInt(this.entityId);
          var1.writeShort(this.xa);
          var1.writeShort(this.ya);
          var1.writeShort(this.za);
          var1.writeBoolean(this.onGround);
       }
+
+      @Override
+      public PacketType<ClientboundMoveEntityPacket.Pos> type() {
+         return GamePacketTypes.CLIENTBOUND_MOVE_ENTITY_POS;
+      }
    }
 
    public static class PosRot extends ClientboundMoveEntityPacket {
+      public static final StreamCodec<FriendlyByteBuf, ClientboundMoveEntityPacket.PosRot> STREAM_CODEC = Packet.codec(
+         ClientboundMoveEntityPacket.PosRot::write, ClientboundMoveEntityPacket.PosRot::read
+      );
+
       public PosRot(int var1, short var2, short var3, short var4, byte var5, byte var6, boolean var7) {
          super(var1, var2, var3, var4, var5, var6, var7, true, true);
       }
 
-      public static ClientboundMoveEntityPacket.PosRot read(FriendlyByteBuf var0) {
+      private static ClientboundMoveEntityPacket.PosRot read(FriendlyByteBuf var0) {
          int var1 = var0.readVarInt();
          short var2 = var0.readShort();
          short var3 = var0.readShort();
@@ -116,8 +133,7 @@ public abstract class ClientboundMoveEntityPacket implements Packet<ClientGamePa
          return new ClientboundMoveEntityPacket.PosRot(var1, var2, var3, var4, var5, var6, var7);
       }
 
-      @Override
-      public void write(FriendlyByteBuf var1) {
+      private void write(FriendlyByteBuf var1) {
          var1.writeVarInt(this.entityId);
          var1.writeShort(this.xa);
          var1.writeShort(this.ya);
@@ -126,14 +142,23 @@ public abstract class ClientboundMoveEntityPacket implements Packet<ClientGamePa
          var1.writeByte(this.xRot);
          var1.writeBoolean(this.onGround);
       }
+
+      @Override
+      public PacketType<ClientboundMoveEntityPacket.PosRot> type() {
+         return GamePacketTypes.CLIENTBOUND_MOVE_ENTITY_POS_ROT;
+      }
    }
 
    public static class Rot extends ClientboundMoveEntityPacket {
+      public static final StreamCodec<FriendlyByteBuf, ClientboundMoveEntityPacket.Rot> STREAM_CODEC = Packet.codec(
+         ClientboundMoveEntityPacket.Rot::write, ClientboundMoveEntityPacket.Rot::read
+      );
+
       public Rot(int var1, byte var2, byte var3, boolean var4) {
          super(var1, (short)0, (short)0, (short)0, var2, var3, var4, true, false);
       }
 
-      public static ClientboundMoveEntityPacket.Rot read(FriendlyByteBuf var0) {
+      private static ClientboundMoveEntityPacket.Rot read(FriendlyByteBuf var0) {
          int var1 = var0.readVarInt();
          byte var2 = var0.readByte();
          byte var3 = var0.readByte();
@@ -141,12 +166,16 @@ public abstract class ClientboundMoveEntityPacket implements Packet<ClientGamePa
          return new ClientboundMoveEntityPacket.Rot(var1, var2, var3, var4);
       }
 
-      @Override
-      public void write(FriendlyByteBuf var1) {
+      private void write(FriendlyByteBuf var1) {
          var1.writeVarInt(this.entityId);
          var1.writeByte(this.yRot);
          var1.writeByte(this.xRot);
          var1.writeBoolean(this.onGround);
+      }
+
+      @Override
+      public PacketType<ClientboundMoveEntityPacket.Rot> type() {
+         return GamePacketTypes.CLIENTBOUND_MOVE_ENTITY_ROT;
       }
    }
 }

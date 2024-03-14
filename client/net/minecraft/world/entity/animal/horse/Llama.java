@@ -22,11 +22,15 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityAttachment;
+import net.minecraft.world.entity.EntityAttachments;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.VariantHolder;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -60,14 +64,16 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.WoolCarpetBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Vector3f;
 
 public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.Variant>, RangedAttackMob {
    private static final int MAX_STRENGTH = 5;
    private static final Ingredient FOOD_ITEMS = Ingredient.of(Items.WHEAT, Blocks.HAY_BLOCK.asItem());
    private static final EntityDataAccessor<Integer> DATA_STRENGTH_ID = SynchedEntityData.defineId(Llama.class, EntityDataSerializers.INT);
-   private static final EntityDataAccessor<Integer> DATA_SWAG_ID = SynchedEntityData.defineId(Llama.class, EntityDataSerializers.INT);
    private static final EntityDataAccessor<Integer> DATA_VARIANT_ID = SynchedEntityData.defineId(Llama.class, EntityDataSerializers.INT);
+   private static final EntityDimensions BABY_DIMENSIONS = EntityType.LLAMA
+      .getDimensions()
+      .withAttachments(EntityAttachments.builder().attach(EntityAttachment.PASSENGER, 0.0F, EntityType.LLAMA.getHeight() - 0.8125F, -0.3F))
+      .scale(0.5F);
    boolean didSpit;
    @Nullable
    private Llama caravanHead;
@@ -100,9 +106,6 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.V
       super.addAdditionalSaveData(var1);
       var1.putInt("Variant", this.getVariant().id);
       var1.putInt("Strength", this.getStrength());
-      if (!this.inventory.getItem(1).isEmpty()) {
-         var1.put("DecorItem", this.inventory.getItem(1).save(new CompoundTag()));
-      }
    }
 
    @Override
@@ -110,11 +113,6 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.V
       this.setStrength(var1.getInt("Strength"));
       super.readAdditionalSaveData(var1);
       this.setVariant(Llama.Variant.byId(var1.getInt("Variant")));
-      if (var1.contains("DecorItem", 10)) {
-         this.inventory.setItem(1, ItemStack.of(var1.getCompound("DecorItem")));
-      }
-
-      this.updateContainerEquipment();
    }
 
    @Override
@@ -139,11 +137,10 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.V
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_STRENGTH_ID, 0);
-      this.entityData.define(DATA_SWAG_ID, -1);
-      this.entityData.define(DATA_VARIANT_ID, 0);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_STRENGTH_ID, 0);
+      var1.define(DATA_VARIANT_ID, 0);
    }
 
    public Llama.Variant getVariant() {
@@ -156,7 +153,7 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.V
 
    @Override
    protected int getInventorySize() {
-      return this.hasChest() ? 2 + 3 * this.getInventoryColumns() : super.getInventorySize();
+      return this.hasChest() ? 1 + 3 * this.getInventoryColumns() : super.getInventorySize();
    }
 
    @Override
@@ -232,21 +229,19 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.V
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
-      RandomSource var6 = var1.getRandom();
-      this.setRandomStrength(var6);
-      Llama.Variant var7;
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
+      RandomSource var5 = var1.getRandom();
+      this.setRandomStrength(var5);
+      Llama.Variant var6;
       if (var4 instanceof Llama.LlamaGroupData) {
-         var7 = ((Llama.LlamaGroupData)var4).variant;
+         var6 = ((Llama.LlamaGroupData)var4).variant;
       } else {
-         var7 = Util.getRandom(Llama.Variant.values(), var6);
-         var4 = new Llama.LlamaGroupData(var7);
+         var6 = Util.getRandom(Llama.Variant.values(), var5);
+         var4 = new Llama.LlamaGroupData(var6);
       }
 
-      this.setVariant(var7);
-      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4, var5);
+      this.setVariant(var6);
+      return super.finalizeSpawn(var1, var2, var3, (SpawnGroupData)var4);
    }
 
    @Override
@@ -296,17 +291,12 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.V
    }
 
    @Override
-   public boolean canWearArmor() {
+   public boolean canWearBodyArmor() {
       return true;
    }
 
    @Override
-   public boolean isWearingArmor() {
-      return !this.inventory.getItem(1).isEmpty();
-   }
-
-   @Override
-   public boolean isArmor(ItemStack var1) {
+   public boolean isBodyArmorItem(ItemStack var1) {
       return var1.is(ItemTags.WOOL_CARPETS);
    }
 
@@ -325,18 +315,6 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.V
       }
    }
 
-   @Override
-   protected void updateContainerEquipment() {
-      if (!this.level().isClientSide) {
-         super.updateContainerEquipment();
-         this.setSwag(getDyeColor(this.inventory.getItem(1)));
-      }
-   }
-
-   private void setSwag(@Nullable DyeColor var1) {
-      this.entityData.set(DATA_SWAG_ID, var1 == null ? -1 : var1.getId());
-   }
-
    @Nullable
    private static DyeColor getDyeColor(ItemStack var0) {
       Block var1 = Block.byItem(var0.getItem());
@@ -345,8 +323,7 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.V
 
    @Nullable
    public DyeColor getSwag() {
-      int var1 = this.entityData.get(DATA_SWAG_ID);
-      return var1 == -1 ? null : DyeColor.byId(var1);
+      return getDyeColor(this.getItemBySlot(EquipmentSlot.BODY));
    }
 
    @Override
@@ -485,8 +462,13 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.V
    }
 
    @Override
-   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      return new Vector3f(0.0F, var2.height - (this.isBaby() ? 0.8125F : 0.5F) * var3, -0.3F * var3);
+   public EntityDimensions getDefaultDimensions(Pose var1) {
+      return this.isBaby() ? BABY_DIMENSIONS : super.getDefaultDimensions(var1);
+   }
+
+   @Override
+   protected Vec3 getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
+      return getDefaultPassengerAttachmentPoint(this, var1, var2.attachments());
    }
 
    static class LlamaAttackWolfGoal extends NearestAttackableTargetGoal<Wolf> {

@@ -46,7 +46,7 @@ public class GlowLichenBlock extends MultifaceBlock implements BonemealableBlock
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var1.getValue(WATERLOGGED)) {
          var4.scheduleTick(var5, Fluids.WATER, Fluids.WATER.getTickDelay(var4));
       }
@@ -55,7 +55,7 @@ public class GlowLichenBlock extends MultifaceBlock implements BonemealableBlock
    }
 
    @Override
-   public boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
+   protected boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
       return !var2.getItemInHand().is(Items.GLOW_LICHEN) || super.canBeReplaced(var1, var2);
    }
 
@@ -75,12 +75,12 @@ public class GlowLichenBlock extends MultifaceBlock implements BonemealableBlock
    }
 
    @Override
-   public FluidState getFluidState(BlockState var1) {
+   protected FluidState getFluidState(BlockState var1) {
       return var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
    }
 
    @Override
-   public boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected boolean propagatesSkylightDown(BlockState var1, BlockGetter var2, BlockPos var3) {
       return var1.getFluidState().isEmpty();
    }
 

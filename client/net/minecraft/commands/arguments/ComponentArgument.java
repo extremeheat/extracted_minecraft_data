@@ -7,8 +7,10 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import java.util.Arrays;
 import java.util.Collection;
+import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.ParserUtils;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentSerialization;
 
@@ -17,22 +19,24 @@ public class ComponentArgument implements ArgumentType<Component> {
    public static final DynamicCommandExceptionType ERROR_INVALID_JSON = new DynamicCommandExceptionType(
       var0 -> Component.translatableEscape("argument.component.invalid", var0)
    );
+   private final HolderLookup.Provider registries;
 
-   private ComponentArgument() {
+   private ComponentArgument(HolderLookup.Provider var1) {
       super();
+      this.registries = var1;
    }
 
    public static Component getComponent(CommandContext<CommandSourceStack> var0, String var1) {
       return (Component)var0.getArgument(var1, Component.class);
    }
 
-   public static ComponentArgument textComponent() {
-      return new ComponentArgument();
+   public static ComponentArgument textComponent(CommandBuildContext var0) {
+      return new ComponentArgument(var0);
    }
 
    public Component parse(StringReader var1) throws CommandSyntaxException {
       try {
-         return ParserUtils.parseJson(var1, ComponentSerialization.CODEC);
+         return ParserUtils.parseJson(this.registries, var1, ComponentSerialization.CODEC);
       } catch (Exception var4) {
          String var3 = var4.getCause() != null ? var4.getCause().getMessage() : var4.getMessage();
          throw ERROR_INVALID_JSON.createWithContext(var1, var3);

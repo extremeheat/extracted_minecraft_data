@@ -94,7 +94,7 @@ public class SwampHutPiece extends ScatteredFeaturePiece {
                if (var15 != null) {
                   var15.setPersistenceRequired();
                   var15.moveTo((double)var14.getX() + 0.5, (double)var14.getY(), (double)var14.getZ() + 0.5, 0.0F, 0.0F);
-                  var15.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var14), MobSpawnType.STRUCTURE, null, null);
+                  var15.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var14), MobSpawnType.STRUCTURE, null);
                   var1.addFreshEntityWithPassengers(var15);
                }
             }
@@ -113,7 +113,7 @@ public class SwampHutPiece extends ScatteredFeaturePiece {
             if (var4 != null) {
                var4.setPersistenceRequired();
                var4.moveTo((double)var3.getX() + 0.5, (double)var3.getY(), (double)var3.getZ() + 0.5, 0.0F, 0.0F);
-               var4.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var3), MobSpawnType.STRUCTURE, null, null);
+               var4.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var3), MobSpawnType.STRUCTURE, null);
                var1.addFreshEntityWithPassengers(var4);
             }
          }

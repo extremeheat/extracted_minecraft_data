@@ -1,6 +1,7 @@
 package net.minecraft.data.loot.packs;
 
 import java.util.function.BiConsumer;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.loot.LootTableSubProvider;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -35,8 +36,8 @@ public class VanillaChestLoot implements LootTableSubProvider {
    }
 
    @Override
-   public void generate(BiConsumer<ResourceLocation, LootTable.Builder> var1) {
-      var1.accept(
+   public void generate(HolderLookup.Provider var1, BiConsumer<ResourceLocation, LootTable.Builder> var2) {
+      var2.accept(
          BuiltInLootTables.ABANDONED_MINESHAFT,
          LootTable.lootTable()
             .withPool(
@@ -74,11 +75,11 @@ public class VanillaChestLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Blocks.TORCH).setWeight(15).apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 16.0F))))
             )
       );
-      var1.accept(BuiltInLootTables.BASTION_BRIDGE, bastionBridgeLootTable());
-      var1.accept(BuiltInLootTables.BASTION_HOGLIN_STABLE, bastionHoglinStableLootTable());
-      var1.accept(BuiltInLootTables.BASTION_OTHER, bastionOtherLootTable());
-      var1.accept(BuiltInLootTables.BASTION_TREASURE, bastionTreasureLootTable());
-      var1.accept(
+      var2.accept(BuiltInLootTables.BASTION_BRIDGE, bastionBridgeLootTable());
+      var2.accept(BuiltInLootTables.BASTION_HOGLIN_STABLE, bastionHoglinStableLootTable());
+      var2.accept(BuiltInLootTables.BASTION_OTHER, bastionOtherLootTable());
+      var2.accept(BuiltInLootTables.BASTION_TREASURE, bastionTreasureLootTable());
+      var2.accept(
          BuiltInLootTables.BURIED_TREASURE,
          LootTable.lootTable()
             .withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(Items.HEART_OF_THE_SEA)))
@@ -117,8 +118,8 @@ public class VanillaChestLoot implements LootTableSubProvider {
                   .apply(SetPotionFunction.setPotion(Potions.WATER_BREATHING))
             )
       );
-      var1.accept(BuiltInLootTables.ANCIENT_CITY, ancientCityLootTable());
-      var1.accept(
+      var2.accept(BuiltInLootTables.ANCIENT_CITY, ancientCityLootTable());
+      var2.accept(
          BuiltInLootTables.ANCIENT_CITY_ICE_BOX,
          LootTable.lootTable()
             .withPool(
@@ -140,9 +141,9 @@ public class VanillaChestLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Items.SNOWBALL).setWeight(4).apply(SetItemCountFunction.setCount(UniformGenerator.between(2.0F, 6.0F))))
             )
       );
-      var1.accept(BuiltInLootTables.DESERT_PYRAMID, desertPyramidLootTable());
-      var1.accept(BuiltInLootTables.END_CITY_TREASURE, endCityTreasureLootTable());
-      var1.accept(
+      var2.accept(BuiltInLootTables.DESERT_PYRAMID, desertPyramidLootTable());
+      var2.accept(BuiltInLootTables.END_CITY_TREASURE, endCityTreasureLootTable());
+      var2.accept(
          BuiltInLootTables.IGLOO_CHEST,
          LootTable.lootTable()
             .withPool(
@@ -158,8 +159,8 @@ public class VanillaChestLoot implements LootTableSubProvider {
             )
             .withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(Items.GOLDEN_APPLE)))
       );
-      var1.accept(BuiltInLootTables.JUNGLE_TEMPLE, jungleTempleLootTable());
-      var1.accept(
+      var2.accept(BuiltInLootTables.JUNGLE_TEMPLE, jungleTempleLootTable());
+      var2.accept(
          BuiltInLootTables.JUNGLE_TEMPLE_DISPENSER,
          LootTable.lootTable()
             .withPool(
@@ -168,12 +169,12 @@ public class VanillaChestLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Items.ARROW).setWeight(30).apply(SetItemCountFunction.setCount(UniformGenerator.between(2.0F, 7.0F))))
             )
       );
-      var1.accept(BuiltInLootTables.NETHER_BRIDGE, netherBridgeLootTable());
-      var1.accept(BuiltInLootTables.PILLAGER_OUTPOST, pillagerOutpostLootTable());
-      var1.accept(BuiltInLootTables.SHIPWRECK_MAP, shipwreckMapLootTable());
-      var1.accept(BuiltInLootTables.SHIPWRECK_SUPPLY, shipwreckSupplyLootTable());
-      var1.accept(BuiltInLootTables.SHIPWRECK_TREASURE, shipwreckTreasureLootTable());
-      var1.accept(
+      var2.accept(BuiltInLootTables.NETHER_BRIDGE, netherBridgeLootTable());
+      var2.accept(BuiltInLootTables.PILLAGER_OUTPOST, pillagerOutpostLootTable());
+      var2.accept(BuiltInLootTables.SHIPWRECK_MAP, shipwreckMapLootTable());
+      var2.accept(BuiltInLootTables.SHIPWRECK_SUPPLY, shipwreckSupplyLootTable());
+      var2.accept(BuiltInLootTables.SHIPWRECK_TREASURE, shipwreckTreasureLootTable());
+      var2.accept(
          BuiltInLootTables.SIMPLE_DUNGEON,
          LootTable.lootTable()
             .withPool(
@@ -214,7 +215,7 @@ public class VanillaChestLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Items.STRING).setWeight(10).apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 8.0F))))
             )
       );
-      var1.accept(
+      var2.accept(
          BuiltInLootTables.SPAWN_BONUS_CHEST,
          LootTable.lootTable()
             .withPool(
@@ -250,8 +251,8 @@ public class VanillaChestLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Blocks.MANGROVE_LOG).setWeight(3).apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 3.0F))))
             )
       );
-      var1.accept(BuiltInLootTables.STRONGHOLD_CORRIDOR, strongholdCorridorLootTable());
-      var1.accept(
+      var2.accept(BuiltInLootTables.STRONGHOLD_CORRIDOR, strongholdCorridorLootTable());
+      var2.accept(
          BuiltInLootTables.STRONGHOLD_CROSSING,
          LootTable.lootTable()
             .withPool(
@@ -267,8 +268,8 @@ public class VanillaChestLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Items.BOOK).apply(EnchantWithLevelsFunction.enchantWithLevels(ConstantValue.exactly(30.0F)).allowTreasure()))
             )
       );
-      var1.accept(BuiltInLootTables.STRONGHOLD_LIBRARY, strongholdLibraryLootTable());
-      var1.accept(
+      var2.accept(BuiltInLootTables.STRONGHOLD_LIBRARY, strongholdLibraryLootTable());
+      var2.accept(
          BuiltInLootTables.UNDERWATER_RUIN_BIG,
          LootTable.lootTable()
             .withPool(
@@ -301,7 +302,7 @@ public class VanillaChestLoot implements LootTableSubProvider {
                   )
             )
       );
-      var1.accept(
+      var2.accept(
          BuiltInLootTables.UNDERWATER_RUIN_SMALL,
          LootTable.lootTable()
             .withPool(
@@ -333,7 +334,7 @@ public class VanillaChestLoot implements LootTableSubProvider {
                   )
             )
       );
-      var1.accept(
+      var2.accept(
          BuiltInLootTables.VILLAGE_WEAPONSMITH,
          LootTable.lootTable()
             .withPool(
@@ -358,7 +359,7 @@ public class VanillaChestLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Items.DIAMOND_HORSE_ARMOR))
             )
       );
-      var1.accept(
+      var2.accept(
          BuiltInLootTables.VILLAGE_TOOLSMITH,
          LootTable.lootTable()
             .withPool(
@@ -374,7 +375,7 @@ public class VanillaChestLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Items.IRON_SHOVEL).setWeight(5))
             )
       );
-      var1.accept(
+      var2.accept(
          BuiltInLootTables.VILLAGE_CARTOGRAPHER,
          LootTable.lootTable()
             .withPool(
@@ -387,7 +388,7 @@ public class VanillaChestLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Items.STICK).setWeight(5).apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 2.0F))))
             )
       );
-      var1.accept(
+      var2.accept(
          BuiltInLootTables.VILLAGE_MASON,
          LootTable.lootTable()
             .withPool(
@@ -403,7 +404,7 @@ public class VanillaChestLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Items.EMERALD).setWeight(1))
             )
       );
-      var1.accept(
+      var2.accept(
          BuiltInLootTables.VILLAGE_ARMORER,
          LootTable.lootTable()
             .withPool(
@@ -415,7 +416,7 @@ public class VanillaChestLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Items.EMERALD).setWeight(1))
             )
       );
-      var1.accept(
+      var2.accept(
          BuiltInLootTables.VILLAGE_SHEPHERD,
          LootTable.lootTable()
             .withPool(
@@ -431,7 +432,7 @@ public class VanillaChestLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Items.WHEAT).setWeight(6).apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 6.0F))))
             )
       );
-      var1.accept(
+      var2.accept(
          BuiltInLootTables.VILLAGE_BUTCHER,
          LootTable.lootTable()
             .withPool(
@@ -445,7 +446,7 @@ public class VanillaChestLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Items.COAL).setWeight(3).apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 3.0F))))
             )
       );
-      var1.accept(
+      var2.accept(
          BuiltInLootTables.VILLAGE_FLETCHER,
          LootTable.lootTable()
             .withPool(
@@ -459,7 +460,7 @@ public class VanillaChestLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Items.STICK).setWeight(6).apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 3.0F))))
             )
       );
-      var1.accept(
+      var2.accept(
          BuiltInLootTables.VILLAGE_FISHER,
          LootTable.lootTable()
             .withPool(
@@ -474,7 +475,7 @@ public class VanillaChestLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Items.COAL).setWeight(2).apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 3.0F))))
             )
       );
-      var1.accept(
+      var2.accept(
          BuiltInLootTables.VILLAGE_TANNERY,
          LootTable.lootTable()
             .withPool(
@@ -490,7 +491,7 @@ public class VanillaChestLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Items.EMERALD).setWeight(1).apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 4.0F))))
             )
       );
-      var1.accept(
+      var2.accept(
          BuiltInLootTables.VILLAGE_TEMPLE,
          LootTable.lootTable()
             .withPool(
@@ -504,7 +505,7 @@ public class VanillaChestLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Items.EMERALD).setWeight(1).apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 4.0F))))
             )
       );
-      var1.accept(
+      var2.accept(
          BuiltInLootTables.VILLAGE_PLAINS_HOUSE,
          LootTable.lootTable()
             .withPool(
@@ -522,7 +523,7 @@ public class VanillaChestLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Blocks.OAK_SAPLING).setWeight(5).apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 2.0F))))
             )
       );
-      var1.accept(
+      var2.accept(
          BuiltInLootTables.VILLAGE_TAIGA_HOUSE,
          LootTable.lootTable()
             .withPool(
@@ -542,7 +543,7 @@ public class VanillaChestLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Items.SPRUCE_LOG).setWeight(10).apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 5.0F))))
             )
       );
-      var1.accept(
+      var2.accept(
          BuiltInLootTables.VILLAGE_SAVANNA_HOUSE,
          LootTable.lootTable()
             .withPool(
@@ -560,7 +561,7 @@ public class VanillaChestLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Items.BUCKET).setWeight(1))
             )
       );
-      var1.accept(
+      var2.accept(
          BuiltInLootTables.VILLAGE_SNOWY_HOUSE,
          LootTable.lootTable()
             .withPool(
@@ -578,7 +579,7 @@ public class VanillaChestLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Items.COAL).setWeight(5).apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 4.0F))))
             )
       );
-      var1.accept(
+      var2.accept(
          BuiltInLootTables.VILLAGE_DESERT_HOUSE,
          LootTable.lootTable()
             .withPool(
@@ -594,8 +595,8 @@ public class VanillaChestLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Items.EMERALD).setWeight(1).apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 3.0F))))
             )
       );
-      var1.accept(BuiltInLootTables.WOODLAND_MANSION, woodlandMansionLootTable());
-      var1.accept(
+      var2.accept(BuiltInLootTables.WOODLAND_MANSION, woodlandMansionLootTable());
+      var2.accept(
          BuiltInLootTables.RUINED_PORTAL,
          LootTable.lootTable()
             .withPool(
@@ -632,17 +633,20 @@ public class VanillaChestLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Items.GOLD_BLOCK).setWeight(1).apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 2.0F))))
             )
       );
-      var1.accept(BuiltInLootTables.TRIAL_CHAMBERS_REWARD, LootTable.lootTable());
-      var1.accept(BuiltInLootTables.TRIAL_CHAMBERS_SUPPLY, LootTable.lootTable());
-      var1.accept(BuiltInLootTables.TRIAL_CHAMBERS_CORRIDOR, LootTable.lootTable());
-      var1.accept(BuiltInLootTables.TRIAL_CHAMBERS_ENTRANCE, LootTable.lootTable());
-      var1.accept(BuiltInLootTables.TRIAL_CHAMBERS_INTERSECTION, LootTable.lootTable());
-      var1.accept(BuiltInLootTables.TRIAL_CHAMBERS_INTERSECTION_BARREL, LootTable.lootTable());
-      var1.accept(BuiltInLootTables.TRIAL_CHAMBERS_CHAMBER_DISPENSER, LootTable.lootTable());
-      var1.accept(BuiltInLootTables.TRIAL_CHAMBERS_CORRIDOR_DISPENSER, LootTable.lootTable());
-      var1.accept(BuiltInLootTables.TRIAL_CHAMBERS_WATER_DISPENSER, LootTable.lootTable());
-      var1.accept(BuiltInLootTables.TRIAL_CHAMBERS_CORRIDOR_POT, LootTable.lootTable());
-      spawnerLootTables(var1);
+      var2.accept(BuiltInLootTables.TRIAL_CHAMBERS_REWARD, LootTable.lootTable());
+      var2.accept(BuiltInLootTables.TRIAL_CHAMBERS_REWARD_COMMON, LootTable.lootTable());
+      var2.accept(BuiltInLootTables.TRIAL_CHAMBERS_REWARD_RARE, LootTable.lootTable());
+      var2.accept(BuiltInLootTables.TRIAL_CHAMBERS_REWARD_UNIQUE, LootTable.lootTable());
+      var2.accept(BuiltInLootTables.TRIAL_CHAMBERS_SUPPLY, LootTable.lootTable());
+      var2.accept(BuiltInLootTables.TRIAL_CHAMBERS_CORRIDOR, LootTable.lootTable());
+      var2.accept(BuiltInLootTables.TRIAL_CHAMBERS_ENTRANCE, LootTable.lootTable());
+      var2.accept(BuiltInLootTables.TRIAL_CHAMBERS_INTERSECTION, LootTable.lootTable());
+      var2.accept(BuiltInLootTables.TRIAL_CHAMBERS_INTERSECTION_BARREL, LootTable.lootTable());
+      var2.accept(BuiltInLootTables.TRIAL_CHAMBERS_CHAMBER_DISPENSER, LootTable.lootTable());
+      var2.accept(BuiltInLootTables.TRIAL_CHAMBERS_CORRIDOR_DISPENSER, LootTable.lootTable());
+      var2.accept(BuiltInLootTables.TRIAL_CHAMBERS_WATER_DISPENSER, LootTable.lootTable());
+      var2.accept(BuiltInLootTables.TRIAL_CHAMBERS_CORRIDOR_POT, LootTable.lootTable());
+      spawnerLootTables(var2);
    }
 
    public static void spawnerLootTables(BiConsumer<ResourceLocation, LootTable.Builder> var0) {

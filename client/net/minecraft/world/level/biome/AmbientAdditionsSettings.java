@@ -9,8 +9,7 @@ import net.minecraft.sounds.SoundEvent;
 public class AmbientAdditionsSettings {
    public static final Codec<AmbientAdditionsSettings> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               SoundEvent.CODEC.fieldOf("sound").forGetter(var0x -> var0x.soundEvent),
-               Codec.DOUBLE.fieldOf("tick_chance").forGetter(var0x -> var0x.tickChance)
+               SoundEvent.CODEC.fieldOf("sound").forGetter(var0x -> var0x.soundEvent), Codec.DOUBLE.fieldOf("tick_chance").forGetter(var0x -> var0x.tickChance)
             )
             .apply(var0, AmbientAdditionsSettings::new)
    );

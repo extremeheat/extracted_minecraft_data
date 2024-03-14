@@ -2,6 +2,7 @@ package net.minecraft.world.scores;
 
 import com.mojang.logging.LogUtils;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtOps;
@@ -25,78 +26,78 @@ public class ScoreboardSaveData extends SavedData {
       this.scoreboard = var1;
    }
 
-   public ScoreboardSaveData load(CompoundTag var1) {
-      this.loadObjectives(var1.getList("Objectives", 10));
-      this.scoreboard.loadPlayerScores(var1.getList("PlayerScores", 10));
+   public ScoreboardSaveData load(CompoundTag var1, HolderLookup.Provider var2) {
+      this.loadObjectives(var1.getList("Objectives", 10), var2);
+      this.scoreboard.loadPlayerScores(var1.getList("PlayerScores", 10), var2);
       if (var1.contains("DisplaySlots", 10)) {
          this.loadDisplaySlots(var1.getCompound("DisplaySlots"));
       }
 
       if (var1.contains("Teams", 9)) {
-         this.loadTeams(var1.getList("Teams", 10));
+         this.loadTeams(var1.getList("Teams", 10), var2);
       }
 
       return this;
    }
 
-   private void loadTeams(ListTag var1) {
-      for(int var2 = 0; var2 < var1.size(); ++var2) {
-         CompoundTag var3 = var1.getCompound(var2);
-         String var4 = var3.getString("Name");
-         PlayerTeam var5 = this.scoreboard.addPlayerTeam(var4);
-         MutableComponent var6 = Component.Serializer.fromJson(var3.getString("DisplayName"));
-         if (var6 != null) {
-            var5.setDisplayName(var6);
+   private void loadTeams(ListTag var1, HolderLookup.Provider var2) {
+      for(int var3 = 0; var3 < var1.size(); ++var3) {
+         CompoundTag var4 = var1.getCompound(var3);
+         String var5 = var4.getString("Name");
+         PlayerTeam var6 = this.scoreboard.addPlayerTeam(var5);
+         MutableComponent var7 = Component.Serializer.fromJson(var4.getString("DisplayName"), var2);
+         if (var7 != null) {
+            var6.setDisplayName(var7);
          }
 
-         if (var3.contains("TeamColor", 8)) {
-            var5.setColor(ChatFormatting.getByName(var3.getString("TeamColor")));
+         if (var4.contains("TeamColor", 8)) {
+            var6.setColor(ChatFormatting.getByName(var4.getString("TeamColor")));
          }
 
-         if (var3.contains("AllowFriendlyFire", 99)) {
-            var5.setAllowFriendlyFire(var3.getBoolean("AllowFriendlyFire"));
+         if (var4.contains("AllowFriendlyFire", 99)) {
+            var6.setAllowFriendlyFire(var4.getBoolean("AllowFriendlyFire"));
          }
 
-         if (var3.contains("SeeFriendlyInvisibles", 99)) {
-            var5.setSeeFriendlyInvisibles(var3.getBoolean("SeeFriendlyInvisibles"));
+         if (var4.contains("SeeFriendlyInvisibles", 99)) {
+            var6.setSeeFriendlyInvisibles(var4.getBoolean("SeeFriendlyInvisibles"));
          }
 
-         if (var3.contains("MemberNamePrefix", 8)) {
-            MutableComponent var7 = Component.Serializer.fromJson(var3.getString("MemberNamePrefix"));
-            if (var7 != null) {
-               var5.setPlayerPrefix(var7);
-            }
-         }
-
-         if (var3.contains("MemberNameSuffix", 8)) {
-            MutableComponent var8 = Component.Serializer.fromJson(var3.getString("MemberNameSuffix"));
+         if (var4.contains("MemberNamePrefix", 8)) {
+            MutableComponent var8 = Component.Serializer.fromJson(var4.getString("MemberNamePrefix"), var2);
             if (var8 != null) {
-               var5.setPlayerSuffix(var8);
+               var6.setPlayerPrefix(var8);
             }
          }
 
-         if (var3.contains("NameTagVisibility", 8)) {
-            Team.Visibility var9 = Team.Visibility.byName(var3.getString("NameTagVisibility"));
+         if (var4.contains("MemberNameSuffix", 8)) {
+            MutableComponent var9 = Component.Serializer.fromJson(var4.getString("MemberNameSuffix"), var2);
             if (var9 != null) {
-               var5.setNameTagVisibility(var9);
+               var6.setPlayerSuffix(var9);
             }
          }
 
-         if (var3.contains("DeathMessageVisibility", 8)) {
-            Team.Visibility var10 = Team.Visibility.byName(var3.getString("DeathMessageVisibility"));
+         if (var4.contains("NameTagVisibility", 8)) {
+            Team.Visibility var10 = Team.Visibility.byName(var4.getString("NameTagVisibility"));
             if (var10 != null) {
-               var5.setDeathMessageVisibility(var10);
+               var6.setNameTagVisibility(var10);
             }
          }
 
-         if (var3.contains("CollisionRule", 8)) {
-            Team.CollisionRule var11 = Team.CollisionRule.byName(var3.getString("CollisionRule"));
+         if (var4.contains("DeathMessageVisibility", 8)) {
+            Team.Visibility var11 = Team.Visibility.byName(var4.getString("DeathMessageVisibility"));
             if (var11 != null) {
-               var5.setCollisionRule(var11);
+               var6.setDeathMessageVisibility(var11);
             }
          }
 
-         this.loadTeamPlayers(var5, var3.getList("Players", 8));
+         if (var4.contains("CollisionRule", 8)) {
+            Team.CollisionRule var12 = Team.CollisionRule.byName(var4.getString("CollisionRule"));
+            if (var12 != null) {
+               var6.setCollisionRule(var12);
+            }
+         }
+
+         this.loadTeamPlayers(var6, var4.getList("Players", 8));
       }
    }
 
@@ -117,61 +118,64 @@ public class ScoreboardSaveData extends SavedData {
       }
    }
 
-   private void loadObjectives(ListTag var1) {
-      for(int var2 = 0; var2 < var1.size(); ++var2) {
-         CompoundTag var3 = var1.getCompound(var2);
-         String var4 = var3.getString("CriteriaName");
-         ObjectiveCriteria var5 = ObjectiveCriteria.byName(var4).orElseGet(() -> {
-            LOGGER.warn("Unknown scoreboard criteria {}, replacing with {}", var4, ObjectiveCriteria.DUMMY.getName());
+   private void loadObjectives(ListTag var1, HolderLookup.Provider var2) {
+      for(int var3 = 0; var3 < var1.size(); ++var3) {
+         CompoundTag var4 = var1.getCompound(var3);
+         String var5 = var4.getString("CriteriaName");
+         ObjectiveCriteria var6 = ObjectiveCriteria.byName(var5).orElseGet(() -> {
+            LOGGER.warn("Unknown scoreboard criteria {}, replacing with {}", var5, ObjectiveCriteria.DUMMY.getName());
             return ObjectiveCriteria.DUMMY;
          });
-         String var6 = var3.getString("Name");
-         MutableComponent var7 = Component.Serializer.fromJson(var3.getString("DisplayName"));
-         ObjectiveCriteria.RenderType var8 = ObjectiveCriteria.RenderType.byId(var3.getString("RenderType"));
-         boolean var9 = var3.getBoolean("display_auto_update");
-         NumberFormat var10 = (NumberFormat)NumberFormatTypes.CODEC.parse(NbtOps.INSTANCE, var3.get("format")).result().orElse(null);
-         this.scoreboard.addObjective(var6, var5, var7, var8, var9, var10);
+         String var7 = var4.getString("Name");
+         MutableComponent var8 = Component.Serializer.fromJson(var4.getString("DisplayName"), var2);
+         ObjectiveCriteria.RenderType var9 = ObjectiveCriteria.RenderType.byId(var4.getString("RenderType"));
+         boolean var10 = var4.getBoolean("display_auto_update");
+         NumberFormat var11 = (NumberFormat)NumberFormatTypes.CODEC
+            .parse(var2.createSerializationContext(NbtOps.INSTANCE), var4.get("format"))
+            .result()
+            .orElse(null);
+         this.scoreboard.addObjective(var7, var6, var8, var9, var10, var11);
       }
    }
 
    @Override
-   public CompoundTag save(CompoundTag var1) {
-      var1.put("Objectives", this.saveObjectives());
-      var1.put("PlayerScores", this.scoreboard.savePlayerScores());
-      var1.put("Teams", this.saveTeams());
+   public CompoundTag save(CompoundTag var1, HolderLookup.Provider var2) {
+      var1.put("Objectives", this.saveObjectives(var2));
+      var1.put("PlayerScores", this.scoreboard.savePlayerScores(var2));
+      var1.put("Teams", this.saveTeams(var2));
       this.saveDisplaySlots(var1);
       return var1;
    }
 
-   private ListTag saveTeams() {
-      ListTag var1 = new ListTag();
+   private ListTag saveTeams(HolderLookup.Provider var1) {
+      ListTag var2 = new ListTag();
 
-      for(PlayerTeam var4 : this.scoreboard.getPlayerTeams()) {
-         CompoundTag var5 = new CompoundTag();
-         var5.putString("Name", var4.getName());
-         var5.putString("DisplayName", Component.Serializer.toJson(var4.getDisplayName()));
-         if (var4.getColor().getId() >= 0) {
-            var5.putString("TeamColor", var4.getColor().getName());
+      for(PlayerTeam var5 : this.scoreboard.getPlayerTeams()) {
+         CompoundTag var6 = new CompoundTag();
+         var6.putString("Name", var5.getName());
+         var6.putString("DisplayName", Component.Serializer.toJson(var5.getDisplayName(), var1));
+         if (var5.getColor().getId() >= 0) {
+            var6.putString("TeamColor", var5.getColor().getName());
          }
 
-         var5.putBoolean("AllowFriendlyFire", var4.isAllowFriendlyFire());
-         var5.putBoolean("SeeFriendlyInvisibles", var4.canSeeFriendlyInvisibles());
-         var5.putString("MemberNamePrefix", Component.Serializer.toJson(var4.getPlayerPrefix()));
-         var5.putString("MemberNameSuffix", Component.Serializer.toJson(var4.getPlayerSuffix()));
-         var5.putString("NameTagVisibility", var4.getNameTagVisibility().name);
-         var5.putString("DeathMessageVisibility", var4.getDeathMessageVisibility().name);
-         var5.putString("CollisionRule", var4.getCollisionRule().name);
-         ListTag var6 = new ListTag();
+         var6.putBoolean("AllowFriendlyFire", var5.isAllowFriendlyFire());
+         var6.putBoolean("SeeFriendlyInvisibles", var5.canSeeFriendlyInvisibles());
+         var6.putString("MemberNamePrefix", Component.Serializer.toJson(var5.getPlayerPrefix(), var1));
+         var6.putString("MemberNameSuffix", Component.Serializer.toJson(var5.getPlayerSuffix(), var1));
+         var6.putString("NameTagVisibility", var5.getNameTagVisibility().name);
+         var6.putString("DeathMessageVisibility", var5.getDeathMessageVisibility().name);
+         var6.putString("CollisionRule", var5.getCollisionRule().name);
+         ListTag var7 = new ListTag();
 
-         for(String var8 : var4.getPlayers()) {
-            var6.add(StringTag.valueOf(var8));
+         for(String var9 : var5.getPlayers()) {
+            var7.add(StringTag.valueOf(var9));
          }
 
-         var5.put("Players", var6);
-         var1.add(var5);
+         var6.put("Players", var7);
+         var2.add(var6);
       }
 
-      return var1;
+      return var2;
    }
 
    private void saveDisplaySlots(CompoundTag var1) {
@@ -189,24 +193,24 @@ public class ScoreboardSaveData extends SavedData {
       }
    }
 
-   private ListTag saveObjectives() {
-      ListTag var1 = new ListTag();
+   private ListTag saveObjectives(HolderLookup.Provider var1) {
+      ListTag var2 = new ListTag();
 
-      for(Objective var4 : this.scoreboard.getObjectives()) {
-         CompoundTag var5 = new CompoundTag();
-         var5.putString("Name", var4.getName());
-         var5.putString("CriteriaName", var4.getCriteria().getName());
-         var5.putString("DisplayName", Component.Serializer.toJson(var4.getDisplayName()));
-         var5.putString("RenderType", var4.getRenderType().getId());
-         var5.putBoolean("display_auto_update", var4.displayAutoUpdate());
-         NumberFormat var6 = var4.numberFormat();
-         if (var6 != null) {
-            NumberFormatTypes.CODEC.encodeStart(NbtOps.INSTANCE, var6).result().ifPresent(var1x -> var5.put("format", var1x));
+      for(Objective var5 : this.scoreboard.getObjectives()) {
+         CompoundTag var6 = new CompoundTag();
+         var6.putString("Name", var5.getName());
+         var6.putString("CriteriaName", var5.getCriteria().getName());
+         var6.putString("DisplayName", Component.Serializer.toJson(var5.getDisplayName(), var1));
+         var6.putString("RenderType", var5.getRenderType().getId());
+         var6.putBoolean("display_auto_update", var5.displayAutoUpdate());
+         NumberFormat var7 = var5.numberFormat();
+         if (var7 != null) {
+            NumberFormatTypes.CODEC.encodeStart(var1.createSerializationContext(NbtOps.INSTANCE), var7).result().ifPresent(var1x -> var6.put("format", var1x));
          }
 
-         var1.add(var5);
+         var2.add(var6);
       }
 
-      return var1;
+      return var2;
    }
 }

@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.ArgumentBuilder;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -15,17 +16,16 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
+import java.util.function.Function;
+import java.util.function.ToIntFunction;
+import java.util.stream.Stream;
 import net.minecraft.ChatFormatting;
 import net.minecraft.FileUtil;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.commands.arguments.blocks.BlockInput;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Vec3i;
 import net.minecraft.data.CachedOutput;
@@ -42,7 +42,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.StructureBlockEntity;
@@ -50,227 +50,254 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.BlockHitResult;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.slf4j.Logger;
 
 public class TestCommand {
+   public static final int STRUCTURE_BLOCK_NEARBY_SEARCH_RADIUS = 15;
+   public static final int STRUCTURE_BLOCK_FULL_SEARCH_RADIUS = 200;
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int DEFAULT_CLEAR_RADIUS = 200;
    private static final int MAX_CLEAR_RADIUS = 1024;
-   private static final int STRUCTURE_BLOCK_NEARBY_SEARCH_RADIUS = 15;
-   private static final int STRUCTURE_BLOCK_FULL_SEARCH_RADIUS = 200;
    private static final int TEST_POS_Z_OFFSET_FROM_PLAYER = 3;
    private static final int SHOW_POS_DURATION_MS = 10000;
    private static final int DEFAULT_X_SIZE = 5;
    private static final int DEFAULT_Y_SIZE = 5;
    private static final int DEFAULT_Z_SIZE = 5;
+   private static final String STRUCTURE_BLOCK_ENTITY_COULD_NOT_BE_FOUND = "Structure block entity could not be found";
+   private static final TestFinder.Builder<TestCommand.Runner> testFinder = new TestFinder.Builder<>(TestCommand.Runner::new);
 
    public TestCommand() {
       super();
    }
 
+   private static ArgumentBuilder<CommandSourceStack, ?> runWithRetryOptions(
+      ArgumentBuilder<CommandSourceStack, ?> var0,
+      Function<CommandContext<CommandSourceStack>, TestCommand.Runner> var1,
+      Function<ArgumentBuilder<CommandSourceStack, ?>, ArgumentBuilder<CommandSourceStack, ?>> var2
+   ) {
+      return var0.executes(var1x -> ((TestCommand.Runner)var1.apply(var1x)).run())
+         .then(
+            ((RequiredArgumentBuilder)Commands.argument("numberOfTimes", IntegerArgumentType.integer(0))
+                  .executes(
+                     var1x -> ((TestCommand.Runner)var1.apply(var1x)).run(new RetryOptions(IntegerArgumentType.getInteger(var1x, "numberOfTimes"), false))
+                  ))
+               .then(
+                  (ArgumentBuilder)var2.apply(
+                     Commands.argument("untilFailed", BoolArgumentType.bool())
+                        .executes(
+                           var1x -> ((TestCommand.Runner)var1.apply(var1x))
+                                 .run(new RetryOptions(IntegerArgumentType.getInteger(var1x, "numberOfTimes"), BoolArgumentType.getBool(var1x, "untilFailed")))
+                        )
+                  )
+               )
+         );
+   }
+
+   private static ArgumentBuilder<CommandSourceStack, ?> runWithRetryOptions(
+      ArgumentBuilder<CommandSourceStack, ?> var0, Function<CommandContext<CommandSourceStack>, TestCommand.Runner> var1
+   ) {
+      return runWithRetryOptions(var0, var1, var0x -> var0x);
+   }
+
+   private static ArgumentBuilder<CommandSourceStack, ?> runWithRetryOptionsAndBuildInfo(
+      ArgumentBuilder<CommandSourceStack, ?> var0, Function<CommandContext<CommandSourceStack>, TestCommand.Runner> var1
+   ) {
+      return runWithRetryOptions(
+         var0,
+         var1,
+         var1x -> var1x.then(
+               ((RequiredArgumentBuilder)Commands.argument("rotationSteps", IntegerArgumentType.integer())
+                     .executes(
+                        var1xx -> ((TestCommand.Runner)var1.apply(var1xx))
+                              .run(
+                                 new RetryOptions(IntegerArgumentType.getInteger(var1xx, "numberOfTimes"), BoolArgumentType.getBool(var1xx, "untilFailed")),
+                                 IntegerArgumentType.getInteger(var1xx, "rotationSteps")
+                              )
+                     ))
+                  .then(
+                     Commands.argument("testsPerRow", IntegerArgumentType.integer())
+                        .executes(
+                           var1xx -> ((TestCommand.Runner)var1.apply(var1xx))
+                                 .run(
+                                    new RetryOptions(IntegerArgumentType.getInteger(var1xx, "numberOfTimes"), BoolArgumentType.getBool(var1xx, "untilFailed")),
+                                    IntegerArgumentType.getInteger(var1xx, "rotationSteps"),
+                                    IntegerArgumentType.getInteger(var1xx, "testsPerRow")
+                                 )
+                        )
+                  )
+            )
+      );
+   }
+
    public static void register(CommandDispatcher<CommandSourceStack> var0) {
+      ArgumentBuilder var1 = runWithRetryOptionsAndBuildInfo(
+         Commands.argument("onlyRequiredTests", BoolArgumentType.bool()),
+         var0x -> testFinder.failedTests(var0x, BoolArgumentType.getBool(var0x, "onlyRequiredTests"))
+      );
+      ArgumentBuilder var2 = runWithRetryOptionsAndBuildInfo(
+         Commands.argument("testClassName", TestClassNameArgument.testClassName()),
+         var0x -> testFinder.allTestsInClass(var0x, TestClassNameArgument.getTestClassName(var0x, "testClassName"))
+      );
       var0.register(
-         (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal(
-                                                   "test"
-                                                )
-                                                .then(
-                                                   ((LiteralArgumentBuilder)Commands.literal("runthis")
-                                                         .executes(var0x -> runNearbyTest((CommandSourceStack)var0x.getSource(), false)))
-                                                      .then(
-                                                         Commands.literal("untilFailed")
-                                                            .executes(var0x -> runNearbyTest((CommandSourceStack)var0x.getSource(), true))
-                                                      )
-                                                ))
-                                             .then(Commands.literal("resetthis").executes(var0x -> resetNearbyTest((CommandSourceStack)var0x.getSource()))))
-                                          .then(
-                                             Commands.literal("runthese").executes(var0x -> runAllNearbyTests((CommandSourceStack)var0x.getSource(), false))
-                                          ))
-                                       .then(
-                                          ((LiteralArgumentBuilder)Commands.literal("runfailed")
-                                                .executes(var0x -> runLastFailedTests((CommandSourceStack)var0x.getSource(), false, 0, 8)))
-                                             .then(
-                                                ((RequiredArgumentBuilder)Commands.argument("onlyRequiredTests", BoolArgumentType.bool())
-                                                      .executes(
-                                                         var0x -> runLastFailedTests(
-                                                               (CommandSourceStack)var0x.getSource(),
-                                                               BoolArgumentType.getBool(var0x, "onlyRequiredTests"),
-                                                               0,
-                                                               8
-                                                            )
-                                                      ))
-                                                   .then(
-                                                      ((RequiredArgumentBuilder)Commands.argument("rotationSteps", IntegerArgumentType.integer())
-                                                            .executes(
-                                                               var0x -> runLastFailedTests(
-                                                                     (CommandSourceStack)var0x.getSource(),
-                                                                     BoolArgumentType.getBool(var0x, "onlyRequiredTests"),
-                                                                     IntegerArgumentType.getInteger(var0x, "rotationSteps"),
-                                                                     8
-                                                                  )
-                                                            ))
-                                                         .then(
-                                                            Commands.argument("testsPerRow", IntegerArgumentType.integer())
-                                                               .executes(
-                                                                  var0x -> runLastFailedTests(
-                                                                        (CommandSourceStack)var0x.getSource(),
-                                                                        BoolArgumentType.getBool(var0x, "onlyRequiredTests"),
-                                                                        IntegerArgumentType.getInteger(var0x, "rotationSteps"),
-                                                                        IntegerArgumentType.getInteger(var0x, "testsPerRow")
+         (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal(
+                                                                           "test"
+                                                                        )
+                                                                        .then(
+                                                                           Commands.literal("run")
+                                                                              .then(
+                                                                                 runWithRetryOptionsAndBuildInfo(
+                                                                                    Commands.argument("testName", TestFunctionArgument.testFunctionArgument()),
+                                                                                    var0x -> testFinder.byArgument(var0x, "testName")
+                                                                                 )
+                                                                              )
+                                                                        ))
+                                                                     .then(
+                                                                        Commands.literal("runmultiple")
+                                                                           .then(
+                                                                              ((RequiredArgumentBuilder)Commands.argument(
+                                                                                       "testName", TestFunctionArgument.testFunctionArgument()
+                                                                                    )
+                                                                                    .executes(var0x -> testFinder.byArgument(var0x, "testName").run()))
+                                                                                 .then(
+                                                                                    Commands.argument("amount", IntegerArgumentType.integer())
+                                                                                       .executes(
+                                                                                          var0x -> testFinder.createMultipleCopies(
+                                                                                                   IntegerArgumentType.getInteger(var0x, "amount")
+                                                                                                )
+                                                                                                .byArgument(var0x, "testName")
+                                                                                                .run()
+                                                                                       )
+                                                                                 )
+                                                                           )
+                                                                     ))
+                                                                  .then(
+                                                                     runWithRetryOptionsAndBuildInfo(
+                                                                        Commands.literal("runall").then(var2), testFinder::allTests
                                                                      )
-                                                               )
-                                                         )
-                                                   )
-                                             )
-                                       ))
-                                    .then(
-                                       Commands.literal("run")
+                                                                  ))
+                                                               .then(runWithRetryOptions(Commands.literal("runthese"), testFinder::allNearby)))
+                                                            .then(runWithRetryOptions(Commands.literal("runclosest"), testFinder::nearest)))
+                                                         .then(runWithRetryOptions(Commands.literal("runthat"), testFinder::lookedAt)))
+                                                      .then(runWithRetryOptionsAndBuildInfo(Commands.literal("runfailed").then(var1), testFinder::failedTests)))
+                                                   .then(Commands.literal("resetclosest").executes(var0x -> testFinder.nearest(var0x).reset())))
+                                                .then(Commands.literal("resetthese").executes(var0x -> testFinder.allNearby(var0x).reset())))
+                                             .then(Commands.literal("resetthat").executes(var0x -> testFinder.lookedAt(var0x).reset())))
                                           .then(
-                                             ((RequiredArgumentBuilder)Commands.argument("testName", TestFunctionArgument.testFunctionArgument())
-                                                   .executes(
-                                                      var0x -> runTest(
-                                                            (CommandSourceStack)var0x.getSource(), TestFunctionArgument.getTestFunction(var0x, "testName"), 0
-                                                         )
-                                                   ))
+                                             Commands.literal("export")
                                                 .then(
-                                                   Commands.argument("rotationSteps", IntegerArgumentType.integer())
+                                                   Commands.argument("testName", StringArgumentType.word())
                                                       .executes(
-                                                         var0x -> runTest(
+                                                         var0x -> exportTestStructure(
                                                                (CommandSourceStack)var0x.getSource(),
-                                                               TestFunctionArgument.getTestFunction(var0x, "testName"),
-                                                               IntegerArgumentType.getInteger(var0x, "rotationSteps")
-                                                            )
-                                                      )
-                                                )
-                                          )
-                                    ))
-                                 .then(
-                                    ((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("runall")
-                                             .executes(var0x -> runAllTests((CommandSourceStack)var0x.getSource(), 0, 8)))
-                                          .then(
-                                             ((RequiredArgumentBuilder)Commands.argument("testClassName", TestClassNameArgument.testClassName())
-                                                   .executes(
-                                                      var0x -> runAllTestsInClass(
-                                                            (CommandSourceStack)var0x.getSource(),
-                                                            TestClassNameArgument.getTestClassName(var0x, "testClassName"),
-                                                            0,
-                                                            8
-                                                         )
-                                                   ))
-                                                .then(
-                                                   ((RequiredArgumentBuilder)Commands.argument("rotationSteps", IntegerArgumentType.integer())
-                                                         .executes(
-                                                            var0x -> runAllTestsInClass(
-                                                                  (CommandSourceStack)var0x.getSource(),
-                                                                  TestClassNameArgument.getTestClassName(var0x, "testClassName"),
-                                                                  IntegerArgumentType.getInteger(var0x, "rotationSteps"),
-                                                                  8
-                                                               )
-                                                         ))
-                                                      .then(
-                                                         Commands.argument("testsPerRow", IntegerArgumentType.integer())
-                                                            .executes(
-                                                               var0x -> runAllTestsInClass(
-                                                                     (CommandSourceStack)var0x.getSource(),
-                                                                     TestClassNameArgument.getTestClassName(var0x, "testClassName"),
-                                                                     IntegerArgumentType.getInteger(var0x, "rotationSteps"),
-                                                                     IntegerArgumentType.getInteger(var0x, "testsPerRow")
-                                                                  )
+                                                               "minecraft:" + StringArgumentType.getString(var0x, "testName")
                                                             )
                                                       )
                                                 )
                                           ))
-                                       .then(
-                                          ((RequiredArgumentBuilder)Commands.argument("rotationSteps", IntegerArgumentType.integer())
-                                                .executes(
-                                                   var0x -> runAllTests(
-                                                         (CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "rotationSteps"), 8
-                                                      )
-                                                ))
-                                             .then(
-                                                Commands.argument("testsPerRow", IntegerArgumentType.integer())
-                                                   .executes(
-                                                      var0x -> runAllTests(
-                                                            (CommandSourceStack)var0x.getSource(),
-                                                            IntegerArgumentType.getInteger(var0x, "rotationSteps"),
-                                                            IntegerArgumentType.getInteger(var0x, "testsPerRow")
-                                                         )
-                                                   )
-                                             )
-                                       )
-                                 ))
+                                       .then(Commands.literal("exportclosest").executes(var0x -> testFinder.nearest(var0x).export())))
+                                    .then(Commands.literal("exportthese").executes(var0x -> testFinder.allNearby(var0x).export())))
+                                 .then(Commands.literal("exportthat").executes(var0x -> testFinder.lookedAt(var0x).export())))
+                              .then(Commands.literal("clearthat").executes(var0x -> testFinder.lookedAt(var0x).clear())))
+                           .then(Commands.literal("clearthese").executes(var0x -> testFinder.allNearby(var0x).clear())))
+                        .then(
+                           ((LiteralArgumentBuilder)Commands.literal("clearall").executes(var0x -> testFinder.radius(var0x, 200).clear()))
                               .then(
-                                 Commands.literal("export")
-                                    .then(
-                                       Commands.argument("testName", StringArgumentType.word())
-                                          .executes(
-                                             var0x -> exportTestStructure(
-                                                   (CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "testName")
-                                                )
-                                          )
-                                    )
-                              ))
-                           .then(Commands.literal("exportthis").executes(var0x -> exportNearestTestStructure((CommandSourceStack)var0x.getSource()))))
-                        .then(Commands.literal("exportthese").executes(var0x -> exportAllNearbyTests((CommandSourceStack)var0x.getSource()))))
+                                 Commands.argument("radius", IntegerArgumentType.integer())
+                                    .executes(var0x -> testFinder.radius(var0x, Mth.clamp(IntegerArgumentType.getInteger(var0x, "radius"), 0, 1024)).clear())
+                              )
+                        ))
                      .then(
                         Commands.literal("import")
                            .then(
                               Commands.argument("testName", StringArgumentType.word())
-                                 .executes(
-                                    var0x -> importTestStructure((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "testName"))
-                                 )
+                                 .executes(var0x -> importTestStructure((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "testName")))
                            )
                      ))
-                  .then(
-                     ((LiteralArgumentBuilder)Commands.literal("pos").executes(var0x -> showPos((CommandSourceStack)var0x.getSource(), "pos")))
-                        .then(
-                           Commands.argument("var", StringArgumentType.word())
-                              .executes(var0x -> showPos((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "var")))
-                        )
-                  ))
+                  .then(Commands.literal("stop").executes(var0x -> stopTests())))
                .then(
-                  Commands.literal("create")
+                  ((LiteralArgumentBuilder)Commands.literal("pos").executes(var0x -> showPos((CommandSourceStack)var0x.getSource(), "pos")))
                      .then(
-                        ((RequiredArgumentBuilder)Commands.argument("testName", StringArgumentType.word())
-                              .executes(
-                                 var0x -> createNewStructure((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "testName"), 5, 5, 5)
-                              ))
-                           .then(
-                              ((RequiredArgumentBuilder)Commands.argument("width", IntegerArgumentType.integer())
-                                    .executes(
-                                       var0x -> createNewStructure(
-                                             (CommandSourceStack)var0x.getSource(),
-                                             StringArgumentType.getString(var0x, "testName"),
-                                             IntegerArgumentType.getInteger(var0x, "width"),
-                                             IntegerArgumentType.getInteger(var0x, "width"),
-                                             IntegerArgumentType.getInteger(var0x, "width")
-                                          )
-                                    ))
-                                 .then(
-                                    Commands.argument("height", IntegerArgumentType.integer())
-                                       .then(
-                                          Commands.argument("depth", IntegerArgumentType.integer())
-                                             .executes(
-                                                var0x -> createNewStructure(
-                                                      (CommandSourceStack)var0x.getSource(),
-                                                      StringArgumentType.getString(var0x, "testName"),
-                                                      IntegerArgumentType.getInteger(var0x, "width"),
-                                                      IntegerArgumentType.getInteger(var0x, "height"),
-                                                      IntegerArgumentType.getInteger(var0x, "depth")
-                                                   )
-                                             )
-                                       )
-                                 )
-                           )
+                        Commands.argument("var", StringArgumentType.word())
+                           .executes(var0x -> showPos((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "var")))
                      )
                ))
             .then(
-               ((LiteralArgumentBuilder)Commands.literal("clearall").executes(var0x -> clearAllTests((CommandSourceStack)var0x.getSource(), 200)))
+               Commands.literal("create")
                   .then(
-                     Commands.argument("radius", IntegerArgumentType.integer())
-                        .executes(var0x -> clearAllTests((CommandSourceStack)var0x.getSource(), IntegerArgumentType.getInteger(var0x, "radius")))
+                     ((RequiredArgumentBuilder)Commands.argument("testName", StringArgumentType.word())
+                           .suggests(TestFunctionArgument::suggestTestFunction)
+                           .executes(
+                              var0x -> createNewStructure((CommandSourceStack)var0x.getSource(), StringArgumentType.getString(var0x, "testName"), 5, 5, 5)
+                           ))
+                        .then(
+                           ((RequiredArgumentBuilder)Commands.argument("width", IntegerArgumentType.integer())
+                                 .executes(
+                                    var0x -> createNewStructure(
+                                          (CommandSourceStack)var0x.getSource(),
+                                          StringArgumentType.getString(var0x, "testName"),
+                                          IntegerArgumentType.getInteger(var0x, "width"),
+                                          IntegerArgumentType.getInteger(var0x, "width"),
+                                          IntegerArgumentType.getInteger(var0x, "width")
+                                       )
+                                 ))
+                              .then(
+                                 Commands.argument("height", IntegerArgumentType.integer())
+                                    .then(
+                                       Commands.argument("depth", IntegerArgumentType.integer())
+                                          .executes(
+                                             var0x -> createNewStructure(
+                                                   (CommandSourceStack)var0x.getSource(),
+                                                   StringArgumentType.getString(var0x, "testName"),
+                                                   IntegerArgumentType.getInteger(var0x, "width"),
+                                                   IntegerArgumentType.getInteger(var0x, "height"),
+                                                   IntegerArgumentType.getInteger(var0x, "depth")
+                                                )
+                                          )
+                                    )
+                              )
+                        )
                   )
             )
       );
+   }
+
+   private static int resetGameTestInfo(GameTestInfo var0) {
+      var0.getLevel().getEntities(null, var0.getStructureBounds()).stream().forEach(var0x -> var0x.remove(Entity.RemovalReason.DISCARDED));
+      var0.getStructureBlockEntity().placeStructure(var0.getLevel());
+      StructureUtils.removeBarriers(var0.getStructureBounds(), var0.getLevel());
+      say(var0.getLevel(), "Reset succeded for: " + var0.getTestName(), ChatFormatting.GREEN);
+      return 1;
+   }
+
+   static Stream<GameTestInfo> toGameTestInfos(CommandSourceStack var0, RetryOptions var1, StructureBlockPosFinder var2) {
+      return var2.findStructureBlockPos().map(var2x -> createGameTestInfo(var2x, var0.getLevel(), var1)).flatMap(Optional::stream);
+   }
+
+   static Stream<GameTestInfo> toGameTestInfo(CommandSourceStack var0, RetryOptions var1, TestFunctionFinder var2, int var3) {
+      return var2.findTestFunctions()
+         .filter(var1x -> verifyStructureExists(var0.getLevel(), var1x.structureName()))
+         .map(var3x -> new GameTestInfo(var3x, StructureUtils.getRotationForRotationSteps(var3), var0.getLevel(), var1));
+   }
+
+   private static Optional<GameTestInfo> createGameTestInfo(BlockPos var0, ServerLevel var1, RetryOptions var2) {
+      StructureBlockEntity var3 = (StructureBlockEntity)var1.getBlockEntity(var0);
+      if (var3 == null) {
+         say(var1, "Structure block entity could not be found", ChatFormatting.RED);
+         return Optional.empty();
+      } else {
+         String var4 = var3.getMetaData();
+         Optional var5 = GameTestRegistry.findTestFunction(var4);
+         if (var5.isEmpty()) {
+            say(var1, "Test function for test " + var4 + " could not be found", ChatFormatting.RED);
+            return Optional.empty();
+         } else {
+            TestFunction var6 = (TestFunction)var5.get();
+            GameTestInfo var7 = new GameTestInfo(var6, var3.getRotation(), var1, var2);
+            var7.setStructureBlockPos(var0);
+            return !verifyStructureExists(var1, var7.getStructureName()) ? Optional.empty() : Optional.of(var7);
+         }
+      }
    }
 
    private static int createNewStructure(CommandSourceStack var0, String var1, int var2, int var3, int var4) {
@@ -278,16 +305,9 @@ public class TestCommand {
          ServerLevel var5 = var0.getLevel();
          BlockPos var6 = createTestPositionAround(var0).below();
          StructureUtils.createNewEmptyStructureBlock(var1.toLowerCase(), var6, new Vec3i(var2, var3, var4), Rotation.NONE, var5);
-
-         for(int var7 = 0; var7 < var2; ++var7) {
-            for(int var8 = 0; var8 < var4; ++var8) {
-               BlockPos var9 = new BlockPos(var6.getX() + var7, var6.getY() + 1, var6.getZ() + var8);
-               Block var10 = Blocks.POLISHED_ANDESITE;
-               BlockInput var11 = new BlockInput(var10.defaultBlockState(), Collections.emptySet(), null);
-               var11.place(var5, var9, 2);
-            }
-         }
-
+         BlockPos var7 = var6.above();
+         BlockPos var8 = var7.offset(var2 - 1, 0, var4 - 1);
+         BlockPos.betweenClosedStream(var7, var8).forEach(var1x -> var5.setBlockAndUpdate(var1x, Blocks.BEDROCK.defaultBlockState()));
          StructureUtils.addCommandBlockAndButtonToStartTest(var6, new BlockPos(1, 0, -1), Rotation.NONE, var5);
          return 0;
       } else {
@@ -309,244 +329,43 @@ public class TestCommand {
          return 0;
       } else {
          StructureBlockEntity var6 = (StructureBlockEntity)var4.getBlockEntity((BlockPos)var5.get());
-         BlockPos var7 = var3.subtract((Vec3i)var5.get());
-         String var8 = var7.getX() + ", " + var7.getY() + ", " + var7.getZ();
-         String var9 = var6.getMetaData();
-         MutableComponent var10 = Component.literal(var8)
-            .setStyle(
-               Style.EMPTY
-                  .withBold(true)
-                  .withColor(ChatFormatting.GREEN)
-                  .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Click to copy to clipboard")))
-                  .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, "final BlockPos " + var1 + " = new BlockPos(" + var8 + ");"))
-            );
-         var0.sendSuccess(() -> Component.literal("Position relative to " + var9 + ": ").append(var10), false);
-         DebugPackets.sendGameTestAddMarker(var4, new BlockPos(var3), var8, -2147418368, 10000);
-         return 1;
-      }
-   }
-
-   private static int runNearbyTest(CommandSourceStack var0, boolean var1) {
-      BlockPos var2 = BlockPos.containing(var0.getPosition());
-      ServerLevel var3 = var0.getLevel();
-      BlockPos var4 = StructureUtils.findNearestStructureBlock(var2, 15, var3);
-      if (var4 == null) {
-         say(var3, "Couldn't find any structure block within 15 radius", ChatFormatting.RED);
-         return 0;
-      } else {
-         GameTestRunner.clearMarkers(var3);
-         runTest(var3, var4, null, var1);
-         return 1;
-      }
-   }
-
-   private static int resetNearbyTest(CommandSourceStack var0) {
-      BlockPos var1 = BlockPos.containing(var0.getPosition());
-      ServerLevel var2 = var0.getLevel();
-      BlockPos var3 = StructureUtils.findNearestStructureBlock(var1, 15, var2);
-      if (var3 == null) {
-         say(var2, "Couldn't find any structure block within 15 radius", ChatFormatting.RED);
-         return 0;
-      } else {
-         StructureBlockEntity var4 = (StructureBlockEntity)var2.getBlockEntity(var3);
-         var4.placeStructure(var2);
-         String var5 = var4.getMetaData();
-         TestFunction var6 = GameTestRegistry.getTestFunction(var5);
-         say(var2, "Reset succeded for: " + var6, ChatFormatting.GREEN);
-         return 1;
-      }
-   }
-
-   private static int runAllNearbyTests(CommandSourceStack var0, boolean var1) {
-      BlockPos var2 = BlockPos.containing(var0.getPosition());
-      ServerLevel var3 = var0.getLevel();
-      Collection var4 = StructureUtils.findStructureBlocks(var2, 200, var3);
-      if (var4.isEmpty()) {
-         say(var3, "Couldn't find any structure blocks within 200 block radius", ChatFormatting.RED);
-         return 1;
-      } else {
-         GameTestRunner.clearMarkers(var3);
-         say(var0, "Running " + var4.size() + " tests...");
-         MultipleTestTracker var5 = new MultipleTestTracker();
-         var4.forEach(var3x -> runTest(var3, var3x, var5, var1));
-         return 1;
-      }
-   }
-
-   private static void runTest(ServerLevel var0, BlockPos var1, @Nullable MultipleTestTracker var2, boolean var3) {
-      StructureBlockEntity var4 = (StructureBlockEntity)var0.getBlockEntity(var1);
-      String var5 = var4.getMetaData();
-      Optional var6 = GameTestRegistry.findTestFunction(var5);
-      if (var6.isEmpty()) {
-         say(var0, "Test function for test " + var5 + " could not be found", ChatFormatting.RED);
-      } else {
-         TestFunction var7 = (TestFunction)var6.get();
-         GameTestInfo var8 = new GameTestInfo(var7, var4.getRotation(), var0);
-         var8.setRerunUntilFailed(var3);
-         if (var2 != null) {
-            var2.addTestToTrack(var8);
-            var8.addListener(new TestCommand.TestSummaryDisplayer(var0, var2));
-         }
-
-         if (verifyStructureExists(var0, var8)) {
-            runTestPreparation(var7, var0);
-            BoundingBox var9 = StructureUtils.getStructureBoundingBox(var4);
-            BlockPos var10 = new BlockPos(var9.minX(), var9.minY(), var9.minZ());
-            GameTestRunner.runTest(var8, var10, GameTestTicker.SINGLETON);
-         }
-      }
-   }
-
-   private static boolean verifyStructureExists(ServerLevel var0, GameTestInfo var1) {
-      if (var0.getStructureManager().get(new ResourceLocation(var1.getStructureName())).isEmpty()) {
-         say(var0, "Test structure " + var1.getStructureName() + " could not be found", ChatFormatting.RED);
-         return false;
-      } else {
-         return true;
-      }
-   }
-
-   static void showTestSummaryIfAllDone(ServerLevel var0, MultipleTestTracker var1) {
-      if (var1.isDone()) {
-         say(var0, "GameTest done! " + var1.getTotalCount() + " tests were run", ChatFormatting.WHITE);
-         if (var1.hasFailedRequired()) {
-            say(var0, var1.getFailedRequiredCount() + " required tests failed :(", ChatFormatting.RED);
+         if (var6 == null) {
+            say(var4, "Structure block entity could not be found", ChatFormatting.RED);
+            return 0;
          } else {
-            say(var0, "All required tests passed :)", ChatFormatting.GREEN);
-         }
-
-         if (var1.hasFailedOptional()) {
-            say(var0, var1.getFailedOptionalCount() + " optional tests failed", ChatFormatting.GRAY);
+            BlockPos var7 = var3.subtract((Vec3i)var5.get());
+            String var8 = var7.getX() + ", " + var7.getY() + ", " + var7.getZ();
+            String var9 = var6.getMetaData();
+            MutableComponent var10 = Component.literal(var8)
+               .setStyle(
+                  Style.EMPTY
+                     .withBold(true)
+                     .withColor(ChatFormatting.GREEN)
+                     .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal("Click to copy to clipboard")))
+                     .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, "final BlockPos " + var1 + " = new BlockPos(" + var8 + ");"))
+               );
+            var0.sendSuccess(() -> Component.literal("Position relative to " + var9 + ": ").append(var10), false);
+            DebugPackets.sendGameTestAddMarker(var4, new BlockPos(var3), var8, -2147418368, 10000);
+            return 1;
          }
       }
    }
 
-   private static int clearAllTests(CommandSourceStack var0, int var1) {
-      ServerLevel var2 = var0.getLevel();
-      GameTestRunner.clearMarkers(var2);
-      BlockPos var3 = BlockPos.containing(
-         var0.getPosition().x,
-         (double)var0.getLevel().getHeightmapPos(Heightmap.Types.WORLD_SURFACE, BlockPos.containing(var0.getPosition())).getY(),
-         var0.getPosition().z
-      );
-      GameTestRunner.clearAllTests(var2, var3, GameTestTicker.SINGLETON, Mth.clamp(var1, 0, 1024));
+   static int stopTests() {
+      GameTestTicker.SINGLETON.clear();
       return 1;
    }
 
-   private static int runTest(CommandSourceStack var0, TestFunction var1, int var2) {
-      ServerLevel var3 = var0.getLevel();
-      BlockPos var4 = createTestPositionAround(var0);
-      GameTestRunner.clearMarkers(var3);
-      runTestPreparation(var1, var3);
-      Rotation var5 = StructureUtils.getRotationForRotationSteps(var2);
-      GameTestInfo var6 = new GameTestInfo(var1, var5, var3);
-      if (!verifyStructureExists(var3, var6)) {
-         return 0;
-      } else {
-         GameTestRunner.runTest(var6, var4, GameTestTicker.SINGLETON);
-         return 1;
-      }
-   }
-
-   private static BlockPos createTestPositionAround(CommandSourceStack var0) {
-      BlockPos var1 = BlockPos.containing(var0.getPosition());
-      int var2 = var0.getLevel().getHeightmapPos(Heightmap.Types.WORLD_SURFACE, var1).getY();
-      return new BlockPos(var1.getX(), var2 + 1, var1.getZ() + 3);
-   }
-
-   private static void runTestPreparation(TestFunction var0, ServerLevel var1) {
-      Consumer var2 = GameTestRegistry.getBeforeBatchFunction(var0.getBatchName());
-      if (var2 != null) {
-         var2.accept(var1);
-      }
-   }
-
-   private static int runAllTests(CommandSourceStack var0, int var1, int var2) {
-      GameTestRunner.clearMarkers(var0.getLevel());
-      Collection var3 = GameTestRegistry.getAllTestFunctions();
-      say(var0, "Running all " + var3.size() + " tests...");
-      GameTestRegistry.forgetFailedTests();
-      runTests(var0, var3, var1, var2);
+   static int trackAndStartRunner(CommandSourceStack var0, ServerLevel var1, GameTestRunner var2) {
+      var2.addListener(new TestCommand.TestBatchSummaryDisplayer(var0));
+      MultipleTestTracker var3 = new MultipleTestTracker(var2.getTestInfos());
+      var3.addListener(new TestCommand.TestSummaryDisplayer(var1, var3));
+      var3.addFailureListener(var0x -> GameTestRegistry.rememberFailedTest(var0x.getTestFunction()));
+      var2.start();
       return 1;
    }
 
-   private static int runAllTestsInClass(CommandSourceStack var0, String var1, int var2, int var3) {
-      Collection var4 = GameTestRegistry.getTestFunctionsForClassName(var1);
-      GameTestRunner.clearMarkers(var0.getLevel());
-      say(var0, "Running " + var4.size() + " tests from " + var1 + "...");
-      GameTestRegistry.forgetFailedTests();
-      runTests(var0, var4, var2, var3);
-      return 1;
-   }
-
-   private static int runLastFailedTests(CommandSourceStack var0, boolean var1, int var2, int var3) {
-      Collection var4;
-      if (var1) {
-         var4 = GameTestRegistry.getLastFailedTests().stream().filter(TestFunction::isRequired).collect(Collectors.toList());
-      } else {
-         var4 = GameTestRegistry.getLastFailedTests();
-      }
-
-      if (var4.isEmpty()) {
-         say(var0, "No failed tests to rerun");
-         return 0;
-      } else {
-         GameTestRunner.clearMarkers(var0.getLevel());
-         say(var0, "Rerunning " + var4.size() + " failed tests (" + (var1 ? "only required tests" : "including optional tests") + ")");
-         runTests(var0, var4, var2, var3);
-         return 1;
-      }
-   }
-
-   private static void runTests(CommandSourceStack var0, Collection<TestFunction> var1, int var2, int var3) {
-      BlockPos var4 = createTestPositionAround(var0);
-      ServerLevel var5 = var0.getLevel();
-      Rotation var6 = StructureUtils.getRotationForRotationSteps(var2);
-      Collection var7 = GameTestRunner.runTests(var1, var4, var6, var5, GameTestTicker.SINGLETON, var3);
-      MultipleTestTracker var8 = new MultipleTestTracker(var7);
-      var8.addListener(new TestCommand.TestSummaryDisplayer(var5, var8));
-      var8.addFailureListener(var0x -> GameTestRegistry.rememberFailedTest(var0x.getTestFunction()));
-   }
-
-   private static void say(CommandSourceStack var0, String var1) {
-      var0.sendSuccess(() -> Component.literal(var1), false);
-   }
-
-   private static int exportNearestTestStructure(CommandSourceStack var0) {
-      BlockPos var1 = BlockPos.containing(var0.getPosition());
-      ServerLevel var2 = var0.getLevel();
-      BlockPos var3 = StructureUtils.findNearestStructureBlock(var1, 15, var2);
-      if (var3 == null) {
-         say(var2, "Couldn't find any structure block within 15 radius", ChatFormatting.RED);
-         return 0;
-      } else {
-         StructureBlockEntity var4 = (StructureBlockEntity)var2.getBlockEntity(var3);
-         return saveAndExportTestStructure(var0, var4);
-      }
-   }
-
-   private static int exportAllNearbyTests(CommandSourceStack var0) {
-      BlockPos var1 = BlockPos.containing(var0.getPosition());
-      ServerLevel var2 = var0.getLevel();
-      Collection var3 = StructureUtils.findStructureBlocks(var1, 200, var2);
-      if (var3.isEmpty()) {
-         say(var2, "Couldn't find any structure blocks within 200 block radius", ChatFormatting.RED);
-         return 1;
-      } else {
-         boolean var4 = true;
-
-         for(BlockPos var6 : var3) {
-            StructureBlockEntity var7 = (StructureBlockEntity)var2.getBlockEntity(var6);
-            if (saveAndExportTestStructure(var0, var7) != 0) {
-               var4 = false;
-            }
-         }
-
-         return var4 ? 0 : 1;
-      }
-   }
-
-   private static int saveAndExportTestStructure(CommandSourceStack var0, StructureBlockEntity var1) {
+   static int saveAndExportTestStructure(CommandSourceStack var0, StructureBlockEntity var1) {
       String var2 = var1.getStructureName();
       if (!var1.saveStructure(true)) {
          say(var0, "Failed to save structure " + var2);
@@ -577,9 +396,28 @@ public class TestCommand {
       }
    }
 
+   private static boolean verifyStructureExists(ServerLevel var0, String var1) {
+      if (var0.getStructureManager().get(new ResourceLocation(var1)).isEmpty()) {
+         say(var0, "Test structure " + var1 + " could not be found", ChatFormatting.RED);
+         return false;
+      } else {
+         return true;
+      }
+   }
+
+   static BlockPos createTestPositionAround(CommandSourceStack var0) {
+      BlockPos var1 = BlockPos.containing(var0.getPosition());
+      int var2 = var0.getLevel().getHeightmapPos(Heightmap.Types.WORLD_SURFACE, var1).getY();
+      return new BlockPos(var1.getX(), var2 + 1, var1.getZ() + 3);
+   }
+
+   static void say(CommandSourceStack var0, String var1) {
+      var0.sendSuccess(() -> Component.literal(var1), false);
+   }
+
    private static int importTestStructure(CommandSourceStack var0, String var1) {
       Path var2 = Paths.get(StructureUtils.testStructuresDir, var1 + ".snbt");
-      ResourceLocation var3 = new ResourceLocation(var1);
+      ResourceLocation var3 = new ResourceLocation("minecraft", var1);
       Path var4 = var0.getLevel().getStructureManager().getPathToGeneratedStructure(var3, ".nbt");
 
       try {
@@ -591,6 +429,7 @@ public class TestCommand {
             NbtIo.writeCompressed(NbtUtils.snbtToStructure(var6), var7);
          }
 
+         var0.getLevel().getStructureManager().remove(var3);
          say(var0, "Imported to " + var4.toAbsolutePath());
          return 0;
       } catch (CommandSyntaxException | IOException var12) {
@@ -599,11 +438,141 @@ public class TestCommand {
       }
    }
 
-   private static void say(ServerLevel var0, String var1, ChatFormatting var2) {
+   static void say(ServerLevel var0, String var1, ChatFormatting var2) {
       var0.getPlayers(var0x -> true).forEach(var2x -> var2x.sendSystemMessage(Component.literal(var1).withStyle(var2)));
    }
 
-   static class TestSummaryDisplayer implements GameTestListener {
+   public static class Runner {
+      private final TestFinder<TestCommand.Runner> finder;
+
+      public Runner(TestFinder<TestCommand.Runner> var1) {
+         super();
+         this.finder = var1;
+      }
+
+      public int reset() {
+         TestCommand.stopTests();
+         return TestCommand.toGameTestInfos(this.finder.source(), RetryOptions.noRetries(), this.finder).map(TestCommand::resetGameTestInfo).toList().isEmpty()
+            ? 0
+            : 1;
+      }
+
+      private <T> void logAndRun(Stream<T> var1, ToIntFunction<T> var2, Runnable var3, Consumer<Integer> var4) {
+         int var5 = var1.mapToInt(var2).sum();
+         if (var5 == 0) {
+            var3.run();
+         } else {
+            var4.accept(var5);
+         }
+      }
+
+      public int clear() {
+         TestCommand.stopTests();
+         CommandSourceStack var1 = this.finder.source();
+         ServerLevel var2 = var1.getLevel();
+         GameTestRunner.clearMarkers(var2);
+         this.logAndRun(
+            this.finder.findStructureBlockPos(),
+            var1x -> {
+               StructureBlockEntity var2xx = (StructureBlockEntity)var2.getBlockEntity(var1x);
+               if (var2xx == null) {
+                  return 0;
+               } else {
+                  BoundingBox var3 = StructureUtils.getStructureBoundingBox(var2xx);
+                  StructureUtils.clearSpaceForStructure(var3, var2);
+                  return 1;
+               }
+            },
+            () -> TestCommand.say(var2, "Could not find any structures to clear", ChatFormatting.RED),
+            var1x -> TestCommand.say(var1, "Cleared " + var1x + " structures")
+         );
+         return 1;
+      }
+
+      public int export() {
+         MutableBoolean var1 = new MutableBoolean(true);
+         CommandSourceStack var2 = this.finder.source();
+         ServerLevel var3 = var2.getLevel();
+         this.logAndRun(
+            this.finder.findStructureBlockPos(),
+            var3x -> {
+               StructureBlockEntity var4 = (StructureBlockEntity)var3.getBlockEntity(var3x);
+               if (var4 == null) {
+                  TestCommand.say(var3, "Structure block entity could not be found", ChatFormatting.RED);
+                  var1.setFalse();
+                  return 0;
+               } else {
+                  if (TestCommand.saveAndExportTestStructure(var2, var4) != 0) {
+                     var1.setFalse();
+                  }
+   
+                  return 1;
+               }
+            },
+            () -> TestCommand.say(var3, "Could not find any structures to export", ChatFormatting.RED),
+            var1x -> TestCommand.say(var2, "Exported " + var1x + " structures")
+         );
+         return var1.getValue() ? 0 : 1;
+      }
+
+      public int run(RetryOptions var1, int var2, int var3) {
+         TestCommand.stopTests();
+         CommandSourceStack var4 = this.finder.source();
+         ServerLevel var5 = var4.getLevel();
+         BlockPos var6 = TestCommand.createTestPositionAround(var4);
+         List var7 = Stream.concat(TestCommand.toGameTestInfos(var4, var1, this.finder), TestCommand.toGameTestInfo(var4, var1, this.finder, var2)).toList();
+         if (var7.isEmpty()) {
+            TestCommand.say(var4, "No tests found");
+            return 0;
+         } else {
+            GameTestRunner.clearMarkers(var5);
+            GameTestRegistry.forgetFailedTests();
+            TestCommand.say(var4, "Running " + var7.size() + " tests...");
+            GameTestRunner var8 = GameTestRunner.Builder.fromInfo(var7, var5).newStructureSpawner(new StructureGridSpawner(var6, var3)).build();
+            return TestCommand.trackAndStartRunner(var4, var5, var8);
+         }
+      }
+
+      public int run(int var1, int var2) {
+         return this.run(RetryOptions.noRetries(), var1, var2);
+      }
+
+      public int run(int var1) {
+         return this.run(RetryOptions.noRetries(), var1, 8);
+      }
+
+      public int run(RetryOptions var1, int var2) {
+         return this.run(var1, var2, 8);
+      }
+
+      public int run(RetryOptions var1) {
+         return this.run(var1, 0, 8);
+      }
+
+      public int run() {
+         return this.run(RetryOptions.noRetries());
+      }
+   }
+
+   static record TestBatchSummaryDisplayer(CommandSourceStack a) implements GameTestBatchListener {
+      private final CommandSourceStack source;
+
+      TestBatchSummaryDisplayer(CommandSourceStack var1) {
+         super();
+         this.source = var1;
+      }
+
+      @Override
+      public void testBatchStarting(GameTestBatch var1) {
+         TestCommand.say(this.source, "Starting batch: " + var1.name());
+      }
+
+      @Override
+      public void testBatchFinished(GameTestBatch var1) {
+      }
+   }
+
+   public static record TestSummaryDisplayer(ServerLevel a, MultipleTestTracker b) implements GameTestListener {
       private final ServerLevel level;
       private final MultipleTestTracker tracker;
 
@@ -618,13 +587,33 @@ public class TestCommand {
       }
 
       @Override
-      public void testPassed(GameTestInfo var1) {
-         TestCommand.showTestSummaryIfAllDone(this.level, this.tracker);
+      public void testPassed(GameTestInfo var1, GameTestRunner var2) {
+         showTestSummaryIfAllDone(this.level, this.tracker);
       }
 
       @Override
-      public void testFailed(GameTestInfo var1) {
-         TestCommand.showTestSummaryIfAllDone(this.level, this.tracker);
+      public void testFailed(GameTestInfo var1, GameTestRunner var2) {
+         showTestSummaryIfAllDone(this.level, this.tracker);
+      }
+
+      @Override
+      public void testAddedForRerun(GameTestInfo var1, GameTestInfo var2, GameTestRunner var3) {
+         this.tracker.addTestToTrack(var2);
+      }
+
+      private static void showTestSummaryIfAllDone(ServerLevel var0, MultipleTestTracker var1) {
+         if (var1.isDone()) {
+            TestCommand.say(var0, "GameTest done! " + var1.getTotalCount() + " tests were run", ChatFormatting.WHITE);
+            if (var1.hasFailedRequired()) {
+               TestCommand.say(var0, var1.getFailedRequiredCount() + " required tests failed :(", ChatFormatting.RED);
+            } else {
+               TestCommand.say(var0, "All required tests passed :)", ChatFormatting.GREEN);
+            }
+
+            if (var1.hasFailedOptional()) {
+               TestCommand.say(var0, var1.getFailedOptionalCount() + " optional tests failed", ChatFormatting.GRAY);
+            }
+         }
       }
    }
 }

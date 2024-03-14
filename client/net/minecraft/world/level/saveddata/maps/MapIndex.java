@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.level.saveddata.SavedData;
@@ -21,34 +22,34 @@ public class MapIndex extends SavedData {
       this.usedAuxIds.defaultReturnValue(-1);
    }
 
-   public static MapIndex load(CompoundTag var0) {
-      MapIndex var1 = new MapIndex();
+   public static MapIndex load(CompoundTag var0, HolderLookup.Provider var1) {
+      MapIndex var2 = new MapIndex();
 
-      for(String var3 : var0.getAllKeys()) {
-         if (var0.contains(var3, 99)) {
-            var1.usedAuxIds.put(var3, var0.getInt(var3));
+      for(String var4 : var0.getAllKeys()) {
+         if (var0.contains(var4, 99)) {
+            var2.usedAuxIds.put(var4, var0.getInt(var4));
          }
       }
 
-      return var1;
+      return var2;
    }
 
    @Override
-   public CompoundTag save(CompoundTag var1) {
-      ObjectIterator var2 = this.usedAuxIds.object2IntEntrySet().iterator();
+   public CompoundTag save(CompoundTag var1, HolderLookup.Provider var2) {
+      ObjectIterator var3 = this.usedAuxIds.object2IntEntrySet().iterator();
 
-      while(var2.hasNext()) {
-         Entry var3 = (Entry)var2.next();
-         var1.putInt((String)var3.getKey(), var3.getIntValue());
+      while(var3.hasNext()) {
+         Entry var4 = (Entry)var3.next();
+         var1.putInt((String)var4.getKey(), var4.getIntValue());
       }
 
       return var1;
    }
 
-   public int getFreeAuxValueForMap() {
+   public MapId getFreeAuxValueForMap() {
       int var1 = this.usedAuxIds.getInt("map") + 1;
       this.usedAuxIds.put("map", var1);
       this.setDirty();
-      return var1;
+      return new MapId(var1);
    }
 }

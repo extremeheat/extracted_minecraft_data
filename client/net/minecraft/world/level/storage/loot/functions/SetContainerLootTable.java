@@ -5,12 +5,12 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.SeededContainerLoot;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootDataId;
@@ -51,17 +51,7 @@ public class SetContainerLootTable extends LootItemConditionalFunction {
       if (var1.isEmpty()) {
          return var1;
       } else {
-         CompoundTag var3 = BlockItem.getBlockEntityData(var1);
-         if (var3 == null) {
-            var3 = new CompoundTag();
-         }
-
-         var3.putString("LootTable", this.name.toString());
-         if (this.seed != 0L) {
-            var3.putLong("LootTableSeed", this.seed);
-         }
-
-         BlockItem.setBlockEntityData(var1, this.type.value(), var3);
+         var1.set(DataComponents.CONTAINER_LOOT, new SeededContainerLoot(this.name, this.seed));
          return var1;
       }
    }

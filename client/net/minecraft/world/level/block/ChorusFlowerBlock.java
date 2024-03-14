@@ -44,14 +44,14 @@ public class ChorusFlowerBlock extends Block {
    }
 
    @Override
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (!var1.canSurvive(var2, var3)) {
          var2.destroyBlock(var3, true);
       }
    }
 
    @Override
-   public boolean isRandomlyTicking(BlockState var1) {
+   protected boolean isRandomlyTicking(BlockState var1) {
       return var1.getValue(AGE) < 5;
    }
 
@@ -61,7 +61,7 @@ public class ChorusFlowerBlock extends Block {
    }
 
    @Override
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       BlockPos var5 = var3.above();
       if (var2.isEmptyBlock(var5) && var5.getY() < var2.getMaxBuildHeight()) {
          int var6 = var1.getValue(AGE);
@@ -146,7 +146,7 @@ public class ChorusFlowerBlock extends Block {
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var2 != Direction.UP && !var1.canSurvive(var4, var5)) {
          var4.scheduleTick(var5, this, 1);
       }
@@ -155,7 +155,7 @@ public class ChorusFlowerBlock extends Block {
    }
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       BlockState var4 = var2.getBlockState(var3.below());
       if (!var4.is(this.plant) && !var4.is(Blocks.END_STONE)) {
          if (!var4.isAir()) {
@@ -243,7 +243,7 @@ public class ChorusFlowerBlock extends Block {
    }
 
    @Override
-   public void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
+   protected void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
       BlockPos var5 = var3.getBlockPos();
       if (!var1.isClientSide && var4.mayInteract(var1, var5) && var4.mayBreak(var1)) {
          var1.destroyBlock(var5, true, var4);

@@ -29,9 +29,7 @@ public class MultifaceSpreader {
       return Direction.stream().anyMatch(var5 -> this.getSpreadFromFaceTowardDirection(var1, var2, var3, var4, var5, this.config::canSpreadInto).isPresent());
    }
 
-   public Optional<MultifaceSpreader.SpreadPos> spreadFromRandomFaceTowardRandomDirection(
-      BlockState var1, LevelAccessor var2, BlockPos var3, RandomSource var4
-   ) {
+   public Optional<MultifaceSpreader.SpreadPos> spreadFromRandomFaceTowardRandomDirection(BlockState var1, LevelAccessor var2, BlockPos var3, RandomSource var4) {
       return Direction.allShuffled(var4)
          .stream()
          .filter(var2x -> this.config.canSpreadFrom(var1, var2x))

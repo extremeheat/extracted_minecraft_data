@@ -48,7 +48,7 @@ public class CropBlock extends BushBlock implements BonemealableBlock {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE_BY_AGE[this.getAge(var1)];
    }
 
@@ -78,12 +78,12 @@ public class CropBlock extends BushBlock implements BonemealableBlock {
    }
 
    @Override
-   public boolean isRandomlyTicking(BlockState var1) {
+   protected boolean isRandomlyTicking(BlockState var1) {
       return !this.isMaxAge(var1);
    }
 
    @Override
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (var2.getRawBrightness(var3, 0) >= 9) {
          int var5 = this.getAge(var1);
          if (var5 < this.getMaxAge()) {
@@ -154,7 +154,7 @@ public class CropBlock extends BushBlock implements BonemealableBlock {
    }
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       return hasSufficientLight(var2, var3) && super.canSurvive(var1, var2, var3);
    }
 
@@ -163,7 +163,7 @@ public class CropBlock extends BushBlock implements BonemealableBlock {
    }
 
    @Override
-   public void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
+   protected void entityInside(BlockState var1, Level var2, BlockPos var3, Entity var4) {
       if (var4 instanceof Ravager && var2.getGameRules().getBoolean(GameRules.RULE_MOBGRIEFING)) {
          var2.destroyBlock(var3, true, var4);
       }

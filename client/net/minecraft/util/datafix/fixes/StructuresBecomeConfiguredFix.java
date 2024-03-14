@@ -123,8 +123,7 @@ public class StructuresBecomeConfiguredFix extends DataFix {
 
    private Dynamic<?> fix(Dynamic<?> var1) {
       return var1.update(
-         "structures",
-         var2 -> var2.update("starts", var2x -> this.updateStarts(var2x, var1)).update("References", var2x -> this.updateReferences(var2x, var1))
+         "structures", var2 -> var2.update("starts", var2x -> this.updateStarts(var2x, var1)).update("References", var2x -> this.updateReferences(var2x, var1))
       );
    }
 
@@ -171,7 +170,7 @@ public class StructuresBecomeConfiguredFix extends DataFix {
 
    private Dynamic<?> findUpdatedStructureType(Pair<Dynamic<?>, Dynamic<?>> var1, Dynamic<?> var2) {
       String var3 = ((Dynamic)var1.getFirst()).asString("UNKNOWN").toLowerCase(Locale.ROOT);
-      StructuresBecomeConfiguredFix.Conversion var4 = CONVERSION_MAP.get(var3);
+      StructuresBecomeConfiguredFix.Conversion var4 = (StructuresBecomeConfiguredFix.Conversion)CONVERSION_MAP.get(var3);
       if (var4 == null) {
          throw new IllegalStateException("Found unknown structure: " + var3);
       } else {

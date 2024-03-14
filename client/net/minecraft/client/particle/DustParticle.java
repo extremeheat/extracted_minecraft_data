@@ -18,9 +18,7 @@ public class DustParticle extends DustParticleBase<DustParticleOptions> {
          this.sprites = var1;
       }
 
-      public Particle createParticle(
-         DustParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13
-      ) {
+      public Particle createParticle(DustParticleOptions var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          return new DustParticle(var2, var3, var5, var7, var9, var11, var13, var1, this.sprites);
       }
    }

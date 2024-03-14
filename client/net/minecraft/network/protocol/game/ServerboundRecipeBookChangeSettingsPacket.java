@@ -1,10 +1,15 @@
 package net.minecraft.network.protocol.game;
 
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.inventory.RecipeBookType;
 
 public class ServerboundRecipeBookChangeSettingsPacket implements Packet<ServerGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ServerboundRecipeBookChangeSettingsPacket> STREAM_CODEC = Packet.codec(
+      ServerboundRecipeBookChangeSettingsPacket::write, ServerboundRecipeBookChangeSettingsPacket::new
+   );
    private final RecipeBookType bookType;
    private final boolean isOpen;
    private final boolean isFiltering;
@@ -16,18 +21,22 @@ public class ServerboundRecipeBookChangeSettingsPacket implements Packet<ServerG
       this.isFiltering = var3;
    }
 
-   public ServerboundRecipeBookChangeSettingsPacket(FriendlyByteBuf var1) {
+   private ServerboundRecipeBookChangeSettingsPacket(FriendlyByteBuf var1) {
       super();
       this.bookType = var1.readEnum(RecipeBookType.class);
       this.isOpen = var1.readBoolean();
       this.isFiltering = var1.readBoolean();
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       var1.writeEnum(this.bookType);
       var1.writeBoolean(this.isOpen);
       var1.writeBoolean(this.isFiltering);
+   }
+
+   @Override
+   public PacketType<ServerboundRecipeBookChangeSettingsPacket> type() {
+      return GamePacketTypes.SERVERBOUND_RECIPE_BOOK_CHANGE_SETTINGS;
    }
 
    public void handle(ServerGamePacketListener var1) {

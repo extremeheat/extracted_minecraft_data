@@ -1,9 +1,14 @@
 package net.minecraft.network.protocol.common;
 
-import com.google.common.collect.ImmutableMap;
-import java.util.Map;
+import com.google.common.collect.Lists;
+import java.util.ArrayList;
+import java.util.List;
+import net.minecraft.Util;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.network.protocol.common.custom.BeeDebugPayload;
 import net.minecraft.network.protocol.common.custom.BrainDebugPayload;
 import net.minecraft.network.protocol.common.custom.BrandPayload;
@@ -27,59 +32,54 @@ import net.minecraft.network.protocol.common.custom.VillageSectionsDebugPayload;
 import net.minecraft.network.protocol.common.custom.WorldGenAttemptDebugPayload;
 import net.minecraft.resources.ResourceLocation;
 
-public record ClientboundCustomPayloadPacket(CustomPacketPayload a) implements Packet<ClientCommonPacketListener> {
+public record ClientboundCustomPayloadPacket(CustomPacketPayload c) implements Packet<ClientCommonPacketListener> {
    private final CustomPacketPayload payload;
    private static final int MAX_PAYLOAD_SIZE = 1048576;
-   private static final Map<ResourceLocation, FriendlyByteBuf.Reader<? extends CustomPacketPayload>> KNOWN_TYPES = ImmutableMap.builder()
-      .put(BrandPayload.ID, BrandPayload::new)
-      .put(BeeDebugPayload.ID, BeeDebugPayload::new)
-      .put(BrainDebugPayload.ID, BrainDebugPayload::new)
-      .put(BreezeDebugPayload.ID, BreezeDebugPayload::new)
-      .put(GameEventDebugPayload.ID, GameEventDebugPayload::new)
-      .put(GameEventListenerDebugPayload.ID, GameEventListenerDebugPayload::new)
-      .put(GameTestAddMarkerDebugPayload.ID, GameTestAddMarkerDebugPayload::new)
-      .put(GameTestClearMarkersDebugPayload.ID, GameTestClearMarkersDebugPayload::new)
-      .put(GoalDebugPayload.ID, GoalDebugPayload::new)
-      .put(HiveDebugPayload.ID, HiveDebugPayload::new)
-      .put(NeighborUpdatesDebugPayload.ID, NeighborUpdatesDebugPayload::new)
-      .put(PathfindingDebugPayload.ID, PathfindingDebugPayload::new)
-      .put(PoiAddedDebugPayload.ID, PoiAddedDebugPayload::new)
-      .put(PoiRemovedDebugPayload.ID, PoiRemovedDebugPayload::new)
-      .put(PoiTicketCountDebugPayload.ID, PoiTicketCountDebugPayload::new)
-      .put(RaidsDebugPayload.ID, RaidsDebugPayload::new)
-      .put(StructuresDebugPayload.ID, StructuresDebugPayload::new)
-      .put(VillageSectionsDebugPayload.ID, VillageSectionsDebugPayload::new)
-      .put(WorldGenAttemptDebugPayload.ID, WorldGenAttemptDebugPayload::new)
-      .build();
-
-   public ClientboundCustomPayloadPacket(FriendlyByteBuf var1) {
-      this(readPayload(var1.readResourceLocation(), var1));
-   }
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundCustomPayloadPacket> GAMEPLAY_STREAM_CODEC = CustomPacketPayload.codec(
+         var0 -> DiscardedPayload.codec(var0, 1048576),
+         Util.make(
+            Lists.newArrayList(
+               new CustomPacketPayload.TypeAndCodec[]{
+                  new CustomPacketPayload.TypeAndCodec<>(BrandPayload.TYPE, BrandPayload.STREAM_CODEC),
+                  new CustomPacketPayload.TypeAndCodec<>(BeeDebugPayload.TYPE, BeeDebugPayload.STREAM_CODEC),
+                  new CustomPacketPayload.TypeAndCodec<>(BrainDebugPayload.TYPE, BrainDebugPayload.STREAM_CODEC),
+                  new CustomPacketPayload.TypeAndCodec<>(BreezeDebugPayload.TYPE, BreezeDebugPayload.STREAM_CODEC),
+                  new CustomPacketPayload.TypeAndCodec<>(GameEventDebugPayload.TYPE, GameEventDebugPayload.STREAM_CODEC),
+                  new CustomPacketPayload.TypeAndCodec<>(GameEventListenerDebugPayload.TYPE, GameEventListenerDebugPayload.STREAM_CODEC),
+                  new CustomPacketPayload.TypeAndCodec<>(GameTestAddMarkerDebugPayload.TYPE, GameTestAddMarkerDebugPayload.STREAM_CODEC),
+                  new CustomPacketPayload.TypeAndCodec<>(GameTestClearMarkersDebugPayload.TYPE, GameTestClearMarkersDebugPayload.STREAM_CODEC),
+                  new CustomPacketPayload.TypeAndCodec<>(GoalDebugPayload.TYPE, GoalDebugPayload.STREAM_CODEC),
+                  new CustomPacketPayload.TypeAndCodec<>(HiveDebugPayload.TYPE, HiveDebugPayload.STREAM_CODEC),
+                  new CustomPacketPayload.TypeAndCodec<>(NeighborUpdatesDebugPayload.TYPE, NeighborUpdatesDebugPayload.STREAM_CODEC),
+                  new CustomPacketPayload.TypeAndCodec<>(PathfindingDebugPayload.TYPE, PathfindingDebugPayload.STREAM_CODEC),
+                  new CustomPacketPayload.TypeAndCodec<>(PoiAddedDebugPayload.TYPE, PoiAddedDebugPayload.STREAM_CODEC),
+                  new CustomPacketPayload.TypeAndCodec<>(PoiRemovedDebugPayload.TYPE, PoiRemovedDebugPayload.STREAM_CODEC),
+                  new CustomPacketPayload.TypeAndCodec<>(PoiTicketCountDebugPayload.TYPE, PoiTicketCountDebugPayload.STREAM_CODEC),
+                  new CustomPacketPayload.TypeAndCodec<>(RaidsDebugPayload.TYPE, RaidsDebugPayload.STREAM_CODEC),
+                  new CustomPacketPayload.TypeAndCodec<>(StructuresDebugPayload.TYPE, StructuresDebugPayload.STREAM_CODEC),
+                  new CustomPacketPayload.TypeAndCodec<>(VillageSectionsDebugPayload.TYPE, VillageSectionsDebugPayload.STREAM_CODEC),
+                  new CustomPacketPayload.TypeAndCodec<>(WorldGenAttemptDebugPayload.TYPE, WorldGenAttemptDebugPayload.STREAM_CODEC)
+               }
+            ),
+            var0 -> {
+            }
+         )
+      )
+      .map(ClientboundCustomPayloadPacket::new, ClientboundCustomPayloadPacket::payload);
+   public static final StreamCodec<FriendlyByteBuf, ClientboundCustomPayloadPacket> CONFIG_STREAM_CODEC = CustomPacketPayload.codec(
+         var0 -> DiscardedPayload.codec(var0, 1048576),
+         List.of(new CustomPacketPayload.TypeAndCodec<FriendlyByteBuf, BrandPayload>(BrandPayload.TYPE, BrandPayload.STREAM_CODEC))
+      )
+      .map(ClientboundCustomPayloadPacket::new, ClientboundCustomPayloadPacket::payload);
 
    public ClientboundCustomPayloadPacket(CustomPacketPayload var1) {
       super();
       this.payload = var1;
    }
 
-   private static CustomPacketPayload readPayload(ResourceLocation var0, FriendlyByteBuf var1) {
-      FriendlyByteBuf.Reader var2 = KNOWN_TYPES.get(var0);
-      return (CustomPacketPayload)(var2 != null ? (CustomPacketPayload)var2.apply(var1) : readUnknownPayload(var0, var1));
-   }
-
-   private static DiscardedPayload readUnknownPayload(ResourceLocation var0, FriendlyByteBuf var1) {
-      int var2 = var1.readableBytes();
-      if (var2 >= 0 && var2 <= 1048576) {
-         var1.skipBytes(var2);
-         return new DiscardedPayload(var0);
-      } else {
-         throw new IllegalArgumentException("Payload may not be larger than 1048576 bytes");
-      }
-   }
-
    @Override
-   public void write(FriendlyByteBuf var1) {
-      var1.writeResourceLocation(this.payload.id());
-      this.payload.write(var1);
+   public PacketType<ClientboundCustomPayloadPacket> type() {
+      return CommonPacketTypes.CLIENTBOUND_CUSTOM_PAYLOAD;
    }
 
    public void handle(ClientCommonPacketListener var1) {

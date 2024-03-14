@@ -24,6 +24,8 @@ import net.minecraft.client.searchtree.SearchRegistry;
 import net.minecraft.client.searchtree.SearchTree;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -31,6 +33,7 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
+import net.minecraft.util.Unit;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
@@ -87,7 +90,6 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
       new ResourceLocation("container/creative_inventory/tab_bottom_selected_7")
    };
    private static final String GUI_CREATIVE_TAB_PREFIX = "textures/gui/container/creative_inventory/tab_";
-   private static final String CUSTOM_SLOT_LOCK = "CustomCreativeLock";
    private static final int NUM_ROWS = 5;
    private static final int NUM_COLS = 9;
    private static final int TAB_WIDTH = 26;
@@ -108,7 +110,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
    private CreativeInventoryListener listener;
    private boolean ignoreTextInput;
    private boolean hasClickedOutside;
-   private final Set<TagKey<Item>> visibleTags = new HashSet<>();
+   private final Set<TagKey<Item>> visibleTags = new HashSet();
    private final boolean displayOperatorCreativeTab;
 
    public CreativeModeInventoryScreen(Player var1, FeatureFlagSet var2, boolean var3) {
@@ -251,7 +253,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
                return;
             }
 
-            if (!var12.isEmpty() && !var17.isEmpty() && ItemStack.isSameItemSameTags(var12, var17)) {
+            if (!var12.isEmpty() && !var17.isEmpty() && ItemStack.isSameItemSameComponents(var12, var17)) {
                if (var3 == 0) {
                   if (var5) {
                      var12.setCount(var12.getMaxStackSize());
@@ -504,17 +506,17 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
                for(int var6 = 0; var6 < 9; ++var6) {
                   if (var6 == var4) {
                      ItemStack var7 = new ItemStack(Items.PAPER);
-                     var7.getOrCreateTagElement("CustomCreativeLock");
+                     var7.set(DataComponents.CREATIVE_SLOT_LOCK, Unit.INSTANCE);
                      Component var8 = this.minecraft.options.keyHotbarSlots[var4].getTranslatedKeyMessage();
                      Component var9 = this.minecraft.options.keySaveHotbarActivator.getTranslatedKeyMessage();
-                     var7.setHoverName(Component.translatable("inventory.hotbarInfo", var9, var8));
+                     var7.set(DataComponents.CUSTOM_NAME, Component.translatable("inventory.hotbarInfo", var9, var8));
                      this.menu.items.add(var7);
                   } else {
                      this.menu.items.add(ItemStack.EMPTY);
                   }
                }
             } else {
-               this.menu.items.addAll(var5);
+               this.menu.items.addAll(var5.load(this.minecraft.level.registryAccess()));
             }
          }
       } else if (selectedTab.getType() == CreativeModeTab.Type.CATEGORY) {
@@ -784,28 +786,27 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
 
    public static void handleHotbarLoadOrSave(Minecraft var0, int var1, boolean var2, boolean var3) {
       LocalPlayer var4 = var0.player;
-      HotbarManager var5 = var0.getHotbarManager();
-      Hotbar var6 = var5.get(var1);
+      RegistryAccess var5 = var4.level().registryAccess();
+      HotbarManager var6 = var0.getHotbarManager();
+      Hotbar var7 = var6.get(var1);
       if (var2) {
-         for(int var7 = 0; var7 < Inventory.getSelectionSize(); ++var7) {
-            ItemStack var8 = (ItemStack)var6.get(var7);
-            ItemStack var9 = var8.isItemEnabled(var4.level().enabledFeatures()) ? var8.copy() : ItemStack.EMPTY;
-            var4.getInventory().setItem(var7, var9);
-            var0.gameMode.handleCreativeModeItemAdd(var9, 36 + var7);
+         List var8 = var7.load(var5);
+
+         for(int var9 = 0; var9 < Inventory.getSelectionSize(); ++var9) {
+            ItemStack var10 = (ItemStack)var8.get(var9);
+            var4.getInventory().setItem(var9, var10);
+            var0.gameMode.handleCreativeModeItemAdd(var10, 36 + var9);
          }
 
          var4.inventoryMenu.broadcastChanges();
       } else if (var3) {
-         for(int var10 = 0; var10 < Inventory.getSelectionSize(); ++var10) {
-            var6.set(var10, var4.getInventory().getItem(var10).copy());
-         }
-
+         var7.storeFrom(var4.getInventory(), var5);
          Component var11 = var0.options.keyHotbarSlots[var1].getTranslatedKeyMessage();
          Component var12 = var0.options.keyLoadHotbarActivator.getTranslatedKeyMessage();
          MutableComponent var13 = Component.translatable("inventory.hotbarSaved", var12, var11);
          var0.gui.setOverlayMessage(var13, false);
          var0.getNarrator().sayNow(var13);
-         var5.save();
+         var6.save();
       }
    }
 
@@ -818,7 +819,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
       public boolean mayPickup(Player var1) {
          ItemStack var2 = this.getItem();
          if (super.mayPickup(var1) && !var2.isEmpty()) {
-            return var2.isItemEnabled(var1.level().enabledFeatures()) && var2.getTagElement("CustomCreativeLock") == null;
+            return var2.isItemEnabled(var1.level().enabledFeatures()) && !var2.has(DataComponents.CREATIVE_SLOT_LOCK);
          } else {
             return var2.isEmpty();
          }

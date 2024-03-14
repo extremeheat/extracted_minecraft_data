@@ -5,11 +5,13 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.core.HolderSet;
+import net.minecraft.core.component.DataComponentPredicate;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.player.Inventory;
@@ -58,9 +60,7 @@ public class InventoryChangeTrigger extends SimpleCriterionTrigger<InventoryChan
       public static final Codec<InventoryChangeTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
                   ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player").forGetter(InventoryChangeTrigger.TriggerInstance::player),
-                  ExtraCodecs.strictOptionalField(
-                        InventoryChangeTrigger.TriggerInstance.Slots.CODEC, "slots", InventoryChangeTrigger.TriggerInstance.Slots.ANY
-                     )
+                  ExtraCodecs.strictOptionalField(InventoryChangeTrigger.TriggerInstance.Slots.CODEC, "slots", InventoryChangeTrigger.TriggerInstance.Slots.ANY)
                      .forGetter(InventoryChangeTrigger.TriggerInstance::slots),
                   ExtraCodecs.strictOptionalField(ItemPredicate.CODEC.listOf(), "items", List.of()).forGetter(InventoryChangeTrigger.TriggerInstance::items)
                )
@@ -88,14 +88,7 @@ public class InventoryChangeTrigger extends SimpleCriterionTrigger<InventoryChan
 
          for(int var2 = 0; var2 < var0.length; ++var2) {
             var1[var2] = new ItemPredicate(
-               Optional.empty(),
-               Optional.of(HolderSet.direct(var0[var2].asItem().builtInRegistryHolder())),
-               MinMaxBounds.Ints.ANY,
-               MinMaxBounds.Ints.ANY,
-               List.of(),
-               List.of(),
-               Optional.empty(),
-               Optional.empty()
+               Optional.of(HolderSet.direct(var0[var2].asItem().builtInRegistryHolder())), MinMaxBounds.Ints.ANY, DataComponentPredicate.EMPTY, Map.of()
             );
          }
 
@@ -124,7 +117,7 @@ public class InventoryChangeTrigger extends SimpleCriterionTrigger<InventoryChan
 
             return var6.isEmpty();
          } else {
-            return !var2.isEmpty() && this.items.get(0).matches(var2);
+            return !var2.isEmpty() && ((ItemPredicate)this.items.get(0)).matches(var2);
          }
       }
 

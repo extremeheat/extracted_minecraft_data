@@ -1,13 +1,19 @@
 package net.minecraft.network.protocol.game;
 
 import java.util.UUID;
-import java.util.function.Function;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.codec.StreamDecoder;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.BossEvent;
 
 public class ClientboundBossEventPacket implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundBossEventPacket> STREAM_CODEC = Packet.codec(
+      ClientboundBossEventPacket::write, ClientboundBossEventPacket::new
+   );
    private static final int FLAG_DARKEN = 1;
    private static final int FLAG_MUSIC = 2;
    private static final int FLAG_FOG = 4;
@@ -25,7 +31,7 @@ public class ClientboundBossEventPacket implements Packet<ClientGamePacketListen
       }
 
       @Override
-      public void write(FriendlyByteBuf var1) {
+      public void write(RegistryFriendlyByteBuf var1) {
       }
    };
 
@@ -35,11 +41,11 @@ public class ClientboundBossEventPacket implements Packet<ClientGamePacketListen
       this.operation = var2;
    }
 
-   public ClientboundBossEventPacket(FriendlyByteBuf var1) {
+   private ClientboundBossEventPacket(RegistryFriendlyByteBuf var1) {
       super();
       this.id = var1.readUUID();
       ClientboundBossEventPacket.OperationType var2 = var1.readEnum(ClientboundBossEventPacket.OperationType.class);
-      this.operation = var2.reader.apply(var1);
+      this.operation = var2.reader.decode(var1);
    }
 
    public static ClientboundBossEventPacket createAddPacket(BossEvent var0) {
@@ -69,8 +75,7 @@ public class ClientboundBossEventPacket implements Packet<ClientGamePacketListen
       );
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(RegistryFriendlyByteBuf var1) {
       var1.writeUUID(this.id);
       var1.writeEnum(this.operation.getType());
       this.operation.write(var1);
@@ -91,6 +96,11 @@ public class ClientboundBossEventPacket implements Packet<ClientGamePacketListen
       }
 
       return var3;
+   }
+
+   @Override
+   public PacketType<ClientboundBossEventPacket> type() {
+      return GamePacketTypes.CLIENTBOUND_BOSS_EVENT;
    }
 
    public void handle(ClientGamePacketListener var1) {
@@ -121,9 +131,9 @@ public class ClientboundBossEventPacket implements Packet<ClientGamePacketListen
          this.createWorldFog = var1.shouldCreateWorldFog();
       }
 
-      private AddOperation(FriendlyByteBuf var1) {
+      private AddOperation(RegistryFriendlyByteBuf var1) {
          super();
-         this.name = var1.readComponentTrusted();
+         this.name = ComponentSerialization.TRUSTED_STREAM_CODEC.decode(var1);
          this.progress = var1.readFloat();
          this.color = var1.readEnum(BossEvent.BossBarColor.class);
          this.overlay = var1.readEnum(BossEvent.BossBarOverlay.class);
@@ -144,8 +154,8 @@ public class ClientboundBossEventPacket implements Packet<ClientGamePacketListen
       }
 
       @Override
-      public void write(FriendlyByteBuf var1) {
-         var1.writeComponent(this.name);
+      public void write(RegistryFriendlyByteBuf var1) {
+         ComponentSerialization.TRUSTED_STREAM_CODEC.encode(var1, this.name);
          var1.writeFloat(this.progress);
          var1.writeEnum(this.color);
          var1.writeEnum(this.overlay);
@@ -180,7 +190,7 @@ public class ClientboundBossEventPacket implements Packet<ClientGamePacketListen
 
       void dispatch(UUID var1, ClientboundBossEventPacket.Handler var2);
 
-      void write(FriendlyByteBuf var1);
+      void write(RegistryFriendlyByteBuf var1);
    }
 
    static enum OperationType {
@@ -191,24 +201,23 @@ public class ClientboundBossEventPacket implements Packet<ClientGamePacketListen
       UPDATE_STYLE(ClientboundBossEventPacket.UpdateStyleOperation::new),
       UPDATE_PROPERTIES(ClientboundBossEventPacket.UpdatePropertiesOperation::new);
 
-      final Function<FriendlyByteBuf, ClientboundBossEventPacket.Operation> reader;
+      final StreamDecoder<RegistryFriendlyByteBuf, ClientboundBossEventPacket.Operation> reader;
 
-      private OperationType(Function<FriendlyByteBuf, ClientboundBossEventPacket.Operation> var3) {
+      private OperationType(StreamDecoder<RegistryFriendlyByteBuf, ClientboundBossEventPacket.Operation> var3) {
          this.reader = var3;
       }
    }
 
-   static class UpdateNameOperation implements ClientboundBossEventPacket.Operation {
+   static record UpdateNameOperation(Component a) implements ClientboundBossEventPacket.Operation {
       private final Component name;
+
+      private UpdateNameOperation(RegistryFriendlyByteBuf var1) {
+         this(ComponentSerialization.TRUSTED_STREAM_CODEC.decode(var1));
+      }
 
       UpdateNameOperation(Component var1) {
          super();
          this.name = var1;
-      }
-
-      private UpdateNameOperation(FriendlyByteBuf var1) {
-         super();
-         this.name = var1.readComponentTrusted();
       }
 
       @Override
@@ -222,22 +231,21 @@ public class ClientboundBossEventPacket implements Packet<ClientGamePacketListen
       }
 
       @Override
-      public void write(FriendlyByteBuf var1) {
-         var1.writeComponent(this.name);
+      public void write(RegistryFriendlyByteBuf var1) {
+         ComponentSerialization.TRUSTED_STREAM_CODEC.encode(var1, this.name);
       }
    }
 
-   static class UpdateProgressOperation implements ClientboundBossEventPacket.Operation {
+   static record UpdateProgressOperation(float a) implements ClientboundBossEventPacket.Operation {
       private final float progress;
+
+      private UpdateProgressOperation(RegistryFriendlyByteBuf var1) {
+         this(var1.readFloat());
+      }
 
       UpdateProgressOperation(float var1) {
          super();
          this.progress = var1;
-      }
-
-      private UpdateProgressOperation(FriendlyByteBuf var1) {
-         super();
-         this.progress = var1.readFloat();
       }
 
       @Override
@@ -251,7 +259,7 @@ public class ClientboundBossEventPacket implements Packet<ClientGamePacketListen
       }
 
       @Override
-      public void write(FriendlyByteBuf var1) {
+      public void write(RegistryFriendlyByteBuf var1) {
          var1.writeFloat(this.progress);
       }
    }
@@ -268,7 +276,7 @@ public class ClientboundBossEventPacket implements Packet<ClientGamePacketListen
          this.createWorldFog = var3;
       }
 
-      private UpdatePropertiesOperation(FriendlyByteBuf var1) {
+      private UpdatePropertiesOperation(RegistryFriendlyByteBuf var1) {
          super();
          short var2 = var1.readUnsignedByte();
          this.darkenScreen = (var2 & 1) > 0;
@@ -287,7 +295,7 @@ public class ClientboundBossEventPacket implements Packet<ClientGamePacketListen
       }
 
       @Override
-      public void write(FriendlyByteBuf var1) {
+      public void write(RegistryFriendlyByteBuf var1) {
          var1.writeByte(ClientboundBossEventPacket.encodeProperties(this.darkenScreen, this.playMusic, this.createWorldFog));
       }
    }
@@ -302,7 +310,7 @@ public class ClientboundBossEventPacket implements Packet<ClientGamePacketListen
          this.overlay = var2;
       }
 
-      private UpdateStyleOperation(FriendlyByteBuf var1) {
+      private UpdateStyleOperation(RegistryFriendlyByteBuf var1) {
          super();
          this.color = var1.readEnum(BossEvent.BossBarColor.class);
          this.overlay = var1.readEnum(BossEvent.BossBarOverlay.class);
@@ -319,7 +327,7 @@ public class ClientboundBossEventPacket implements Packet<ClientGamePacketListen
       }
 
       @Override
-      public void write(FriendlyByteBuf var1) {
+      public void write(RegistryFriendlyByteBuf var1) {
          var1.writeEnum(this.color);
          var1.writeEnum(this.overlay);
       }

@@ -1,32 +1,37 @@
 package net.minecraft.network.protocol.game;
 
-import javax.annotation.Nullable;
-import net.minecraft.network.FriendlyByteBuf;
+import java.util.Optional;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.network.chat.numbers.NumberFormat;
 import net.minecraft.network.chat.numbers.NumberFormatTypes;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 
-public record ClientboundSetScorePacket(String a, String b, int c, @Nullable Component d, @Nullable NumberFormat e) implements Packet<ClientGamePacketListener> {
+public record ClientboundSetScorePacket(String b, String c, int d, Optional<Component> e, Optional<NumberFormat> f) implements Packet<ClientGamePacketListener> {
    private final String owner;
    private final String objectiveName;
    private final int score;
-   @Nullable
-   private final Component display;
-   @Nullable
-   private final NumberFormat numberFormat;
+   private final Optional<Component> display;
+   private final Optional<NumberFormat> numberFormat;
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundSetScorePacket> STREAM_CODEC = StreamCodec.composite(
+      ByteBufCodecs.STRING_UTF8,
+      ClientboundSetScorePacket::owner,
+      ByteBufCodecs.STRING_UTF8,
+      ClientboundSetScorePacket::objectiveName,
+      ByteBufCodecs.VAR_INT,
+      ClientboundSetScorePacket::score,
+      ComponentSerialization.TRUSTED_OPTIONAL_STREAM_CODEC,
+      ClientboundSetScorePacket::display,
+      NumberFormatTypes.OPTIONAL_STREAM_CODEC,
+      ClientboundSetScorePacket::numberFormat,
+      ClientboundSetScorePacket::new
+   );
 
-   public ClientboundSetScorePacket(FriendlyByteBuf var1) {
-      this(
-         var1.readUtf(),
-         var1.readUtf(),
-         var1.readVarInt(),
-         var1.readNullable(FriendlyByteBuf::readComponentTrusted),
-         var1.readNullable(NumberFormatTypes::readFromStream)
-      );
-   }
-
-   public ClientboundSetScorePacket(String var1, String var2, int var3, @Nullable Component var4, @Nullable NumberFormat var5) {
+   public ClientboundSetScorePacket(String var1, String var2, int var3, Optional<Component> var4, Optional<NumberFormat> var5) {
       super();
       this.owner = var1;
       this.objectiveName = var2;
@@ -36,12 +41,8 @@ public record ClientboundSetScorePacket(String a, String b, int c, @Nullable Com
    }
 
    @Override
-   public void write(FriendlyByteBuf var1) {
-      var1.writeUtf(this.owner);
-      var1.writeUtf(this.objectiveName);
-      var1.writeVarInt(this.score);
-      var1.writeNullable(this.display, FriendlyByteBuf::writeComponent);
-      var1.writeNullable(this.numberFormat, NumberFormatTypes::writeToStream);
+   public PacketType<ClientboundSetScorePacket> type() {
+      return GamePacketTypes.CLIENTBOUND_SET_SCORE;
    }
 
    public void handle(ClientGamePacketListener var1) {

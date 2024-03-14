@@ -4,6 +4,8 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
@@ -19,7 +21,7 @@ import net.minecraft.world.level.gameevent.PositionSource;
 import net.minecraft.world.level.gameevent.vibrations.VibrationSystem;
 import org.slf4j.Logger;
 
-public class SculkSensorBlockEntity extends BlockEntity implements GameEventListener.Holder<VibrationSystem.Listener>, VibrationSystem {
+public class SculkSensorBlockEntity extends BlockEntity implements GameEventListener.Provider<VibrationSystem.Listener>, VibrationSystem {
    private static final Logger LOGGER = LogUtils.getLogger();
    private VibrationSystem.Data vibrationData;
    private final VibrationSystem.Listener vibrationListener;
@@ -41,8 +43,8 @@ public class SculkSensorBlockEntity extends BlockEntity implements GameEventList
    }
 
    @Override
-   public void load(CompoundTag var1) {
-      super.load(var1);
+   public void load(CompoundTag var1, HolderLookup.Provider var2) {
+      super.load(var1, var2);
       this.lastVibrationFrequency = var1.getInt("last_vibration_frequency");
       if (var1.contains("listener", 10)) {
          VibrationSystem.Data.CODEC
@@ -53,8 +55,8 @@ public class SculkSensorBlockEntity extends BlockEntity implements GameEventList
    }
 
    @Override
-   protected void saveAdditional(CompoundTag var1) {
-      super.saveAdditional(var1);
+   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.saveAdditional(var1, var2);
       var1.putInt("last_vibration_frequency", this.lastVibrationFrequency);
       VibrationSystem.Data.CODEC
          .encodeStart(NbtOps.INSTANCE, this.vibrationData)
@@ -111,8 +113,8 @@ public class SculkSensorBlockEntity extends BlockEntity implements GameEventList
       }
 
       @Override
-      public boolean canReceiveVibration(ServerLevel var1, BlockPos var2, GameEvent var3, @Nullable GameEvent.Context var4) {
-         return !var2.equals(this.blockPos) || var3 != GameEvent.BLOCK_DESTROY && var3 != GameEvent.BLOCK_PLACE
+      public boolean canReceiveVibration(ServerLevel var1, BlockPos var2, Holder<GameEvent> var3, @Nullable GameEvent.Context var4) {
+         return !var2.equals(this.blockPos) || !var3.is(GameEvent.BLOCK_DESTROY) && !var3.is(GameEvent.BLOCK_PLACE)
             ? SculkSensorBlock.canActivate(SculkSensorBlockEntity.this.getBlockState())
             : false;
       }
@@ -120,7 +122,7 @@ public class SculkSensorBlockEntity extends BlockEntity implements GameEventList
       // $VF: Could not properly define all variable types!
       // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       @Override
-      public void onReceiveVibration(ServerLevel var1, BlockPos var2, GameEvent var3, @Nullable Entity var4, @Nullable Entity var5, float var6) {
+      public void onReceiveVibration(ServerLevel var1, BlockPos var2, Holder<GameEvent> var3, @Nullable Entity var4, @Nullable Entity var5, float var6) {
          BlockState var7 = SculkSensorBlockEntity.this.getBlockState();
          if (SculkSensorBlock.canActivate(var7)) {
             SculkSensorBlockEntity.this.setLastVibrationFrequency(VibrationSystem.getGameEventFrequency(var3));

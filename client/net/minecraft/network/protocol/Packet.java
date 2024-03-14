@@ -1,12 +1,13 @@
 package net.minecraft.network.protocol;
 
-import javax.annotation.Nullable;
-import net.minecraft.network.ConnectionProtocol;
-import net.minecraft.network.FriendlyByteBuf;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.network.PacketListener;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.codec.StreamDecoder;
+import net.minecraft.network.codec.StreamMemberEncoder;
 
 public interface Packet<T extends PacketListener> {
-   void write(FriendlyByteBuf var1);
+   PacketType<? extends Packet<T>> type();
 
    void handle(T var1);
 
@@ -14,8 +15,11 @@ public interface Packet<T extends PacketListener> {
       return false;
    }
 
-   @Nullable
-   default ConnectionProtocol nextProtocol() {
-      return null;
+   default boolean isTerminal() {
+      return false;
+   }
+
+   static <B extends ByteBuf, T extends Packet<?>> StreamCodec<B, T> codec(StreamMemberEncoder<B, T> var0, StreamDecoder<B, T> var1) {
+      return StreamCodec.ofMember(var0, var1);
    }
 }

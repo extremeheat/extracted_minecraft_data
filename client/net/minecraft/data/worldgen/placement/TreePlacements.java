@@ -5,7 +5,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.features.TreeFeatures;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.block.Blocks;
@@ -51,7 +51,7 @@ public class TreePlacements {
       super();
    }
 
-   public static void bootstrap(BootstapContext<PlacedFeature> var0) {
+   public static void bootstrap(BootstrapContext<PlacedFeature> var0) {
       HolderGetter var1 = var0.lookup(Registries.CONFIGURED_FEATURE);
       Holder.Reference var2 = var1.getOrThrow(TreeFeatures.CRIMSON_FUNGUS);
       Holder.Reference var3 = var1.getOrThrow(TreeFeatures.WARPED_FUNGUS);

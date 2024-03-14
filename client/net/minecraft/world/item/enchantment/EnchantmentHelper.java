@@ -1,31 +1,29 @@
 package net.minecraft.world.item.enchantment;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.random.WeightedRandom;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.EnchantedBookItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -33,103 +31,57 @@ import org.apache.commons.lang3.mutable.MutableFloat;
 import org.apache.commons.lang3.mutable.MutableInt;
 
 public class EnchantmentHelper {
-   private static final String TAG_ENCH_ID = "id";
-   private static final String TAG_ENCH_LEVEL = "lvl";
    private static final float SWIFT_SNEAK_EXTRA_FACTOR = 0.15F;
 
    public EnchantmentHelper() {
       super();
    }
 
-   public static CompoundTag storeEnchantment(@Nullable ResourceLocation var0, int var1) {
-      CompoundTag var2 = new CompoundTag();
-      var2.putString("id", String.valueOf(var0));
-      var2.putShort("lvl", (short)var1);
-      return var2;
-   }
-
-   public static void setEnchantmentLevel(CompoundTag var0, int var1) {
-      var0.putShort("lvl", (short)var1);
-   }
-
-   public static int getEnchantmentLevel(CompoundTag var0) {
-      return Mth.clamp(var0.getInt("lvl"), 0, 255);
-   }
-
-   @Nullable
-   public static ResourceLocation getEnchantmentId(CompoundTag var0) {
-      return ResourceLocation.tryParse(var0.getString("id"));
-   }
-
-   @Nullable
-   public static ResourceLocation getEnchantmentId(Enchantment var0) {
-      return BuiltInRegistries.ENCHANTMENT.getKey(var0);
-   }
-
    public static int getItemEnchantmentLevel(Enchantment var0, ItemStack var1) {
-      if (var1.isEmpty()) {
-         return 0;
+      ItemEnchantments var2 = var1.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
+      return var2.getLevel(var0);
+   }
+
+   public static ItemEnchantments updateEnchantments(ItemStack var0, Consumer<ItemEnchantments.Mutable> var1) {
+      DataComponentType var2 = getComponentType(var0);
+      ItemEnchantments var3 = var0.get(var2);
+      if (var3 == null) {
+         return ItemEnchantments.EMPTY;
       } else {
-         ResourceLocation var2 = getEnchantmentId(var0);
-         ListTag var3 = var1.getEnchantmentTags();
-
-         for(int var4 = 0; var4 < var3.size(); ++var4) {
-            CompoundTag var5 = var3.getCompound(var4);
-            ResourceLocation var6 = getEnchantmentId(var5);
-            if (var6 != null && var6.equals(var2)) {
-               return getEnchantmentLevel(var5);
-            }
-         }
-
-         return 0;
+         ItemEnchantments.Mutable var4 = new ItemEnchantments.Mutable(var3);
+         var1.accept(var4);
+         ItemEnchantments var5 = var4.toImmutable();
+         var0.set(var2, var5);
+         return var5;
       }
    }
 
-   public static Map<Enchantment, Integer> getEnchantments(ItemStack var0) {
-      ListTag var1 = var0.is(Items.ENCHANTED_BOOK) ? EnchantedBookItem.getEnchantments(var0) : var0.getEnchantmentTags();
-      return deserializeEnchantments(var1);
+   public static boolean canStoreEnchantments(ItemStack var0) {
+      return var0.has(getComponentType(var0));
    }
 
-   public static Map<Enchantment, Integer> deserializeEnchantments(ListTag var0) {
-      LinkedHashMap var1 = Maps.newLinkedHashMap();
-
-      for(int var2 = 0; var2 < var0.size(); ++var2) {
-         CompoundTag var3 = var0.getCompound(var2);
-         BuiltInRegistries.ENCHANTMENT.getOptional(getEnchantmentId(var3)).ifPresent(var2x -> var1.put(var2x, getEnchantmentLevel(var3)));
-      }
-
-      return var1;
+   public static void setEnchantments(ItemStack var0, ItemEnchantments var1) {
+      var0.set(getComponentType(var0), var1);
    }
 
-   public static void setEnchantments(Map<Enchantment, Integer> var0, ItemStack var1) {
-      ListTag var2 = new ListTag();
+   public static ItemEnchantments getEnchantmentsForCrafting(ItemStack var0) {
+      return var0.getOrDefault(getComponentType(var0), ItemEnchantments.EMPTY);
+   }
 
-      for(Entry var4 : var0.entrySet()) {
-         Enchantment var5 = (Enchantment)var4.getKey();
-         if (var5 != null) {
-            int var6 = var4.getValue();
-            var2.add(storeEnchantment(getEnchantmentId(var5), var6));
-            if (var1.is(Items.ENCHANTED_BOOK)) {
-               EnchantedBookItem.addEnchantment(var1, new EnchantmentInstance(var5, var6));
-            }
-         }
-      }
+   private static DataComponentType<ItemEnchantments> getComponentType(ItemStack var0) {
+      return var0.is(Items.ENCHANTED_BOOK) ? DataComponents.STORED_ENCHANTMENTS : DataComponents.ENCHANTMENTS;
+   }
 
-      if (var2.isEmpty()) {
-         var1.removeTagKey("Enchantments");
-      } else if (!var1.is(Items.ENCHANTED_BOOK)) {
-         var1.addTagElement("Enchantments", var2);
-      }
+   public static boolean hasAnyEnchantments(ItemStack var0) {
+      return !var0.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY).isEmpty()
+         || !var0.getOrDefault(DataComponents.STORED_ENCHANTMENTS, ItemEnchantments.EMPTY).isEmpty();
    }
 
    private static void runIterationOnItem(EnchantmentHelper.EnchantmentVisitor var0, ItemStack var1) {
-      if (!var1.isEmpty()) {
-         ListTag var2 = var1.getEnchantmentTags();
+      ItemEnchantments var2 = var1.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
 
-         for(int var3 = 0; var3 < var2.size(); ++var3) {
-            CompoundTag var4 = var2.getCompound(var3);
-            BuiltInRegistries.ENCHANTMENT.getOptional(getEnchantmentId(var4)).ifPresent(var2x -> var0.accept(var2x, getEnchantmentLevel(var4)));
-         }
+      for(Entry var4 : var2.entrySet()) {
+         var0.accept((Enchantment)((Holder)var4.getKey()).value(), var4.getIntValue());
       }
    }
 
@@ -145,7 +97,7 @@ public class EnchantmentHelper {
       return var2.intValue();
    }
 
-   public static float getDamageBonus(ItemStack var0, MobType var1) {
+   public static float getDamageBonus(ItemStack var0, @Nullable EntityType<?> var1) {
       MutableFloat var2 = new MutableFloat();
       runIterationOnItem((var2x, var3) -> var2.add(var2x.getDamageBonus(var3, var1)), var0);
       return var2.floatValue();
@@ -217,19 +169,19 @@ public class EnchantmentHelper {
    }
 
    public static int getBlockEfficiency(LivingEntity var0) {
-      return getEnchantmentLevel(Enchantments.BLOCK_EFFICIENCY, var0);
+      return getEnchantmentLevel(Enchantments.EFFICIENCY, var0);
    }
 
    public static int getFishingLuckBonus(ItemStack var0) {
-      return getItemEnchantmentLevel(Enchantments.FISHING_LUCK, var0);
+      return getItemEnchantmentLevel(Enchantments.LUCK_OF_THE_SEA, var0);
    }
 
    public static int getFishingSpeedBonus(ItemStack var0) {
-      return getItemEnchantmentLevel(Enchantments.FISHING_SPEED, var0);
+      return getItemEnchantmentLevel(Enchantments.LURE, var0);
    }
 
    public static int getMobLooting(LivingEntity var0) {
-      return getEnchantmentLevel(Enchantments.MOB_LOOTING, var0);
+      return getEnchantmentLevel(Enchantments.LOOTING, var0);
    }
 
    public static boolean hasAquaAffinity(LivingEntity var0) {
@@ -269,26 +221,26 @@ public class EnchantmentHelper {
    }
 
    @Nullable
-   public static Entry<EquipmentSlot, ItemStack> getRandomItemWith(Enchantment var0, LivingEntity var1) {
+   public static java.util.Map.Entry<EquipmentSlot, ItemStack> getRandomItemWith(Enchantment var0, LivingEntity var1) {
       return getRandomItemWith(var0, var1, var0x -> true);
    }
 
    @Nullable
-   public static Entry<EquipmentSlot, ItemStack> getRandomItemWith(Enchantment var0, LivingEntity var1, Predicate<ItemStack> var2) {
+   public static java.util.Map.Entry<EquipmentSlot, ItemStack> getRandomItemWith(Enchantment var0, LivingEntity var1, Predicate<ItemStack> var2) {
       Map var3 = var0.getSlotItems(var1);
       if (var3.isEmpty()) {
          return null;
       } else {
          ArrayList var4 = Lists.newArrayList();
 
-         for(Entry var6 : var3.entrySet()) {
+         for(java.util.Map.Entry var6 : var3.entrySet()) {
             ItemStack var7 = (ItemStack)var6.getValue();
             if (!var7.isEmpty() && getItemEnchantmentLevel(var0, var7) > 0 && var2.test(var7)) {
                var4.add(var6);
             }
          }
 
-         return var4.isEmpty() ? null : (Entry)var4.get(var1.getRandom().nextInt(var4.size()));
+         return var4.isEmpty() ? null : (java.util.Map.Entry)var4.get(var1.getRandom().nextInt(var4.size()));
       }
    }
 
@@ -313,17 +265,12 @@ public class EnchantmentHelper {
 
    public static ItemStack enchantItem(RandomSource var0, ItemStack var1, int var2, boolean var3) {
       List var4 = selectEnchantment(var0, var1, var2, var3);
-      boolean var5 = var1.is(Items.BOOK);
-      if (var5) {
+      if (var1.is(Items.BOOK)) {
          var1 = new ItemStack(Items.ENCHANTED_BOOK);
       }
 
-      for(EnchantmentInstance var7 : var4) {
-         if (var5) {
-            EnchantedBookItem.addEnchantment(var1, var7);
-         } else {
-            var1.enchant(var7.enchantment, var7.level);
-         }
+      for(EnchantmentInstance var6 : var4) {
+         var1.enchant(var6.enchantment, var6.level);
       }
 
       return var1;
@@ -371,9 +318,9 @@ public class EnchantmentHelper {
       }
    }
 
-   public static boolean isEnchantmentCompatible(Collection<Enchantment> var0, Enchantment var1) {
-      for(Enchantment var3 : var0) {
-         if (!var3.isCompatibleWith(var1)) {
+   public static boolean isEnchantmentCompatible(Collection<Holder<Enchantment>> var0, Enchantment var1) {
+      for(Holder var3 : var0) {
+         if (!((Enchantment)var3.value()).isCompatibleWith(var1)) {
             return false;
          }
       }
@@ -383,14 +330,13 @@ public class EnchantmentHelper {
 
    public static List<EnchantmentInstance> getAvailableEnchantmentResults(int var0, ItemStack var1, boolean var2) {
       ArrayList var3 = Lists.newArrayList();
-      Item var4 = var1.getItem();
-      boolean var5 = var1.is(Items.BOOK);
+      boolean var4 = var1.is(Items.BOOK);
 
-      for(Enchantment var7 : BuiltInRegistries.ENCHANTMENT) {
-         if ((!var7.isTreasureOnly() || var2) && var7.isDiscoverable() && (var7.category.canEnchant(var4) || var5)) {
-            for(int var8 = var7.getMaxLevel(); var8 > var7.getMinLevel() - 1; --var8) {
-               if (var0 >= var7.getMinCost(var8) && var0 <= var7.getMaxCost(var8)) {
-                  var3.add(new EnchantmentInstance(var7, var8));
+      for(Enchantment var6 : BuiltInRegistries.ENCHANTMENT) {
+         if ((!var6.isTreasureOnly() || var2) && var6.isDiscoverable() && (var6.canEnchant(var1) || var4)) {
+            for(int var7 = var6.getMaxLevel(); var7 > var6.getMinLevel() - 1; --var7) {
+               if (var0 >= var6.getMinCost(var7) && var0 <= var6.getMaxCost(var7)) {
+                  var3.add(new EnchantmentInstance(var6, var7));
                   break;
                }
             }

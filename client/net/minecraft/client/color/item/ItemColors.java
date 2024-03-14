@@ -1,17 +1,20 @@
 package net.minecraft.client.color.item;
 
+import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.client.color.block.BlockColors;
 import net.minecraft.core.IdMapper;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.FastColor;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.DyeableLeatherItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.MapItem;
 import net.minecraft.world.item.SpawnEggItem;
-import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.PotionContents;
+import net.minecraft.world.item.component.DyedItemColor;
+import net.minecraft.world.item.component.FireworkExplosion;
+import net.minecraft.world.item.component.MapItemColor;
 import net.minecraft.world.level.FoliageColor;
 import net.minecraft.world.level.GrassColor;
 import net.minecraft.world.level.ItemLike;
@@ -29,48 +32,54 @@ public class ItemColors {
    public static ItemColors createDefault(BlockColors var0) {
       ItemColors var1 = new ItemColors();
       var1.register(
-         (var0x, var1x) -> var1x > 0 ? -1 : ((DyeableLeatherItem)var0x.getItem()).getColor(var0x),
+         (var0x, var1x) -> var1x > 0 ? -1 : DyedItemColor.getOrDefault(var0x, -6265536),
          Items.LEATHER_HELMET,
          Items.LEATHER_CHESTPLATE,
          Items.LEATHER_LEGGINGS,
          Items.LEATHER_BOOTS,
          Items.LEATHER_HORSE_ARMOR
       );
+      var1.register((var0x, var1x) -> var1x != 1 ? -1 : DyedItemColor.getOrDefault(var0x, 0), Items.WOLF_ARMOR);
       var1.register((var0x, var1x) -> GrassColor.get(0.5, 1.0), Blocks.TALL_GRASS, Blocks.LARGE_FERN);
       var1.register((var0x, var1x) -> {
          if (var1x != 1) {
             return -1;
          } else {
-            CompoundTag var2 = var0x.getTagElement("Explosion");
-            int[] var3xx = var2 != null && var2.contains("Colors", 11) ? var2.getIntArray("Colors") : null;
-            if (var3xx != null && var3xx.length != 0) {
-               if (var3xx.length == 1) {
-                  return var3xx[0];
-               } else {
-                  int var4 = 0;
-                  int var5 = 0;
-                  int var6 = 0;
-
-                  for(int var10 : var3xx) {
-                     var4 += (var10 & 0xFF0000) >> 16;
-                     var5 += (var10 & 0xFF00) >> 8;
-                     var6 += (var10 & 0xFF) >> 0;
-                  }
-
-                  var4 /= var3xx.length;
-                  var5 /= var3xx.length;
-                  var6 /= var3xx.length;
-                  return var4 << 16 | var5 << 8 | var6;
-               }
+            FireworkExplosion var2 = var0x.get(DataComponents.FIREWORK_EXPLOSION);
+            IntList var3xx = var2 != null ? var2.colors() : IntList.of();
+            int var4 = var3xx.size();
+            if (var4 == 0) {
+               return -7697782;
+            } else if (var4 == 1) {
+               return FastColor.ARGB32.opaque(var3xx.getInt(0));
             } else {
-               return 9079434;
+               int var5 = 0;
+               int var6 = 0;
+               int var7 = 0;
+
+               for(int var8 = 0; var8 < var4; ++var8) {
+                  int var9 = var3xx.getInt(var8);
+                  var5 += FastColor.ARGB32.red(var9);
+                  var6 += FastColor.ARGB32.green(var9);
+                  var7 += FastColor.ARGB32.blue(var9);
+               }
+
+               return FastColor.ARGB32.color(var5 / var4, var6 / var4, var7 / var4);
             }
          }
       }, Items.FIREWORK_STAR);
-      var1.register((var0x, var1x) -> var1x > 0 ? -1 : PotionUtils.getColor(var0x), Items.POTION, Items.SPLASH_POTION, Items.LINGERING_POTION);
+      var1.register(
+         (var0x, var1x) -> var1x > 0
+               ? -1
+               : FastColor.ARGB32.opaque(((PotionContents)var0x.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY)).getColor()),
+         Items.POTION,
+         Items.SPLASH_POTION,
+         Items.LINGERING_POTION,
+         Items.TIPPED_ARROW
+      );
 
       for(SpawnEggItem var3 : SpawnEggItem.eggs()) {
-         var1.register((var1x, var2) -> var3.getColor(var2), var3);
+         var1.register((var1x, var2) -> FastColor.ARGB32.opaque(var3.getColor(var2)), var3);
       }
 
       var1.register(
@@ -91,8 +100,10 @@ public class ItemColors {
          Blocks.LILY_PAD
       );
       var1.register((var0x, var1x) -> FoliageColor.getMangroveColor(), Blocks.MANGROVE_LEAVES);
-      var1.register((var0x, var1x) -> var1x == 0 ? PotionUtils.getColor(var0x) : -1, Items.TIPPED_ARROW);
-      var1.register((var0x, var1x) -> var1x == 0 ? -1 : MapItem.getColor(var0x), Items.FILLED_MAP);
+      var1.register(
+         (var0x, var1x) -> var1x == 0 ? -1 : FastColor.ARGB32.opaque(((MapItemColor)var0x.getOrDefault(DataComponents.MAP_COLOR, MapItemColor.DEFAULT)).rgb()),
+         Items.FILLED_MAP
+      );
       return var1;
    }
 

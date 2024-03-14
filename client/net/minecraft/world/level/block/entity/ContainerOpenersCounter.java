@@ -1,5 +1,6 @@
 package net.minecraft.world.level.block.entity;
 
+import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -11,6 +12,7 @@ import net.minecraft.world.phys.AABB;
 public abstract class ContainerOpenersCounter {
    private static final int CHECK_TICK_DELAY = 5;
    private int openCount;
+   private double maxInteractionRange;
 
    public ContainerOpenersCounter() {
       super();
@@ -33,6 +35,7 @@ public abstract class ContainerOpenersCounter {
       }
 
       this.openerCountChanged(var2, var3, var4, var5, this.openCount);
+      this.maxInteractionRange = Math.max(var1.blockInteractionRange(), this.maxInteractionRange);
    }
 
    public void decrementOpeners(Player var1, Level var2, BlockPos var3, BlockState var4) {
@@ -40,46 +43,44 @@ public abstract class ContainerOpenersCounter {
       if (this.openCount == 0) {
          this.onClose(var2, var3, var4);
          var2.gameEvent(var1, GameEvent.CONTAINER_CLOSE, var3);
+         this.maxInteractionRange = 0.0;
       }
 
       this.openerCountChanged(var2, var3, var4, var5, this.openCount);
    }
 
-   private int getOpenCount(Level var1, BlockPos var2) {
-      int var3 = var2.getX();
-      int var4 = var2.getY();
-      int var5 = var2.getZ();
-      float var6 = 5.0F;
-      AABB var7 = new AABB(
-         (double)((float)var3 - 5.0F),
-         (double)((float)var4 - 5.0F),
-         (double)((float)var5 - 5.0F),
-         (double)((float)(var3 + 1) + 5.0F),
-         (double)((float)(var4 + 1) + 5.0F),
-         (double)((float)(var5 + 1) + 5.0F)
-      );
-      return var1.getEntities(EntityTypeTest.forClass(Player.class), var7, this::isOwnContainer).size();
+   private List<Player> getPlayersWithContainerOpen(Level var1, BlockPos var2) {
+      double var3 = this.maxInteractionRange + 4.0;
+      AABB var5 = new AABB(var2).inflate(var3);
+      return var1.getEntities(EntityTypeTest.forClass(Player.class), var5, this::isOwnContainer);
    }
 
    public void recheckOpeners(Level var1, BlockPos var2, BlockState var3) {
-      int var4 = this.getOpenCount(var1, var2);
-      int var5 = this.openCount;
-      if (var5 != var4) {
-         boolean var6 = var4 != 0;
-         boolean var7 = var5 != 0;
-         if (var6 && !var7) {
+      List var4 = this.getPlayersWithContainerOpen(var1, var2);
+      this.maxInteractionRange = 0.0;
+
+      for(Player var6 : var4) {
+         this.maxInteractionRange = Math.max(var6.blockInteractionRange(), this.maxInteractionRange);
+      }
+
+      int var9 = var4.size();
+      int var10 = this.openCount;
+      if (var10 != var9) {
+         boolean var7 = var9 != 0;
+         boolean var8 = var10 != 0;
+         if (var7 && !var8) {
             this.onOpen(var1, var2, var3);
             var1.gameEvent(null, GameEvent.CONTAINER_OPEN, var2);
-         } else if (!var6) {
+         } else if (!var7) {
             this.onClose(var1, var2, var3);
             var1.gameEvent(null, GameEvent.CONTAINER_CLOSE, var2);
          }
 
-         this.openCount = var4;
+         this.openCount = var9;
       }
 
-      this.openerCountChanged(var1, var2, var3, var5, var4);
-      if (var4 > 0) {
+      this.openerCountChanged(var1, var2, var3, var10, var9);
+      if (var9 > 0) {
          scheduleRecheck(var1, var2, var3);
       }
    }

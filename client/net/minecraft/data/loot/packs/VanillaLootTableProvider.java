@@ -1,6 +1,8 @@
 package net.minecraft.data.loot.packs;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.loot.LootTableProvider;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
@@ -11,7 +13,7 @@ public class VanillaLootTableProvider {
       super();
    }
 
-   public static LootTableProvider create(PackOutput var0) {
+   public static LootTableProvider create(PackOutput var0, CompletableFuture<HolderLookup.Provider> var1) {
       return new LootTableProvider(
          var0,
          BuiltInLootTables.all(),
@@ -22,8 +24,10 @@ public class VanillaLootTableProvider {
             new LootTableProvider.SubProviderEntry(VanillaBlockLoot::new, LootContextParamSets.BLOCK),
             new LootTableProvider.SubProviderEntry(VanillaPiglinBarterLoot::new, LootContextParamSets.PIGLIN_BARTER),
             new LootTableProvider.SubProviderEntry(VanillaGiftLoot::new, LootContextParamSets.GIFT),
-            new LootTableProvider.SubProviderEntry(VanillaArchaeologyLoot::new, LootContextParamSets.ARCHAEOLOGY)
-         )
+            new LootTableProvider.SubProviderEntry(VanillaArchaeologyLoot::new, LootContextParamSets.ARCHAEOLOGY),
+            new LootTableProvider.SubProviderEntry(VanillaShearingLoot::new, LootContextParamSets.SHEARING)
+         ),
+         var1
       );
    }
 }

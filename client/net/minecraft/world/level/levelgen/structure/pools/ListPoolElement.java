@@ -58,8 +58,7 @@ public class ListPoolElement extends StructurePoolElement {
    @Override
    public BoundingBox getBoundingBox(StructureTemplateManager var1, BlockPos var2, Rotation var3) {
       Stream var4 = this.elements.stream().filter(var0 -> var0 != EmptyPoolElement.INSTANCE).map(var3x -> var3x.getBoundingBox(var1, var2, var3));
-      return BoundingBox.encapsulatingBoxes(var4::iterator)
-         .orElseThrow(() -> new IllegalStateException("Unable to calculate boundingbox for ListPoolElement"));
+      return BoundingBox.encapsulatingBoxes(var4::iterator).orElseThrow(() -> new IllegalStateException("Unable to calculate boundingbox for ListPoolElement"));
    }
 
    @Override

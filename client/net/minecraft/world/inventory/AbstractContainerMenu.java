@@ -418,14 +418,14 @@ public abstract class AbstractContainerMenu {
                         var27.onTake(var4, var3x);
                      });
                   } else if (var27.mayPlace(var37)) {
-                     if (ItemStack.isSameItemSameTags(var33, var37)) {
+                     if (ItemStack.isSameItemSameComponents(var33, var37)) {
                         int var41 = var19 == ClickAction.PRIMARY ? var37.getCount() : 1;
                         this.setCarried(var27.safeInsert(var37, var41));
                      } else if (var37.getCount() <= var27.getMaxStackSize(var37)) {
                         this.setCarried(var33);
                         var27.setByPlayer(var37);
                      }
-                  } else if (ItemStack.isSameItemSameTags(var33, var37)) {
+                  } else if (ItemStack.isSameItemSameComponents(var33, var37)) {
                      Optional var42 = var27.tryRemove(var33.getCount(), var37.getMaxStackSize() - var37.getCount(), var4);
                      var42.ifPresent(var3x -> {
                         var37.grow(var3x.getCount());
@@ -474,7 +474,7 @@ public abstract class AbstractContainerMenu {
                }
             }
          }
-      } else if (var3 == ClickType.CLONE && var4.getAbilities().instabuild && this.getCarried().isEmpty() && var1 >= 0) {
+      } else if (var3 == ClickType.CLONE && var4.hasInfiniteMaterials() && this.getCarried().isEmpty() && var1 >= 0) {
          Slot var17 = this.slots.get(var1);
          if (var17.hasItem()) {
             ItemStack var24 = var17.getItem();
@@ -601,7 +601,7 @@ public abstract class AbstractContainerMenu {
          while(!var1.isEmpty() && (var4 ? var6 >= var2 : var6 < var3)) {
             Slot var7 = this.slots.get(var6);
             ItemStack var8 = var7.getItem();
-            if (!var8.isEmpty() && ItemStack.isSameItemSameTags(var1, var8)) {
+            if (!var8.isEmpty() && ItemStack.isSameItemSameComponents(var1, var8)) {
                int var9 = var8.getCount() + var1.getCount();
                if (var9 <= var1.getMaxStackSize()) {
                   var1.setCount(0);
@@ -675,7 +675,7 @@ public abstract class AbstractContainerMenu {
       } else if (var0 == 1) {
          return true;
       } else {
-         return var0 == 2 && var1.getAbilities().instabuild;
+         return var0 == 2 && var1.hasInfiniteMaterials();
       }
    }
 
@@ -686,7 +686,7 @@ public abstract class AbstractContainerMenu {
 
    public static boolean canItemQuickReplace(@Nullable Slot var0, ItemStack var1, boolean var2) {
       boolean var3 = var0 == null || !var0.hasItem();
-      if (!var3 && ItemStack.isSameItemSameTags(var1, var0.getItem())) {
+      if (!var3 && ItemStack.isSameItemSameComponents(var1, var0.getItem())) {
          return var0.getItem().getCount() + (var2 ? 0 : var1.getCount()) <= var1.getMaxStackSize();
       } else {
          return var3;
@@ -697,7 +697,7 @@ public abstract class AbstractContainerMenu {
       return switch(var1) {
          case 0 -> Mth.floor((float)var2.getCount() / (float)var0.size());
          case 1 -> 1;
-         case 2 -> var2.getItem().getMaxStackSize();
+         case 2 -> var2.getMaxStackSize();
          default -> var2.getCount();
       };
    }

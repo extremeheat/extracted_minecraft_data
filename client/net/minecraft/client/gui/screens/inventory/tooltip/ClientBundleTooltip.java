@@ -3,10 +3,9 @@ package net.minecraft.client.gui.screens.inventory.tooltip;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.core.NonNullList;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.tooltip.BundleTooltip;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.BundleContents;
 
 public class ClientBundleTooltip implements ClientTooltipComponent {
    private static final ResourceLocation BACKGROUND_SPRITE = new ResourceLocation("container/bundle/background");
@@ -14,13 +13,11 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
    private static final int BORDER_WIDTH = 1;
    private static final int SLOT_SIZE_X = 18;
    private static final int SLOT_SIZE_Y = 20;
-   private final NonNullList<ItemStack> items;
-   private final int weight;
+   private final BundleContents contents;
 
-   public ClientBundleTooltip(BundleTooltip var1) {
+   public ClientBundleTooltip(BundleContents var1) {
       super();
-      this.items = var1.getItems();
-      this.weight = var1.getWeight();
+      this.contents = var1;
    }
 
    @Override
@@ -46,7 +43,7 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
       int var5 = this.gridSizeX();
       int var6 = this.gridSizeY();
       var4.blitSprite(BACKGROUND_SPRITE, var2, var3, this.backgroundWidth(), this.backgroundHeight());
-      boolean var7 = this.weight >= 64;
+      boolean var7 = this.contents.weight() >= 64;
       int var8 = 0;
 
       for(int var9 = 0; var9 < var6; ++var9) {
@@ -59,10 +56,10 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
    }
 
    private void renderSlot(int var1, int var2, int var3, boolean var4, GuiGraphics var5, Font var6) {
-      if (var3 >= this.items.size()) {
+      if (var3 >= this.contents.size()) {
          this.blit(var5, var1, var2, var4 ? ClientBundleTooltip.Texture.BLOCKED_SLOT : ClientBundleTooltip.Texture.SLOT);
       } else {
-         ItemStack var7 = this.items.get(var3);
+         ItemStack var7 = this.contents.getItemUnsafe(var3);
          this.blit(var5, var1, var2, ClientBundleTooltip.Texture.SLOT);
          var5.renderItem(var7, var1 + 1, var2 + 1, var3);
          var5.renderItemDecorations(var6, var7, var1 + 1, var2 + 1);
@@ -77,11 +74,11 @@ public class ClientBundleTooltip implements ClientTooltipComponent {
    }
 
    private int gridSizeX() {
-      return Math.max(2, (int)Math.ceil(Math.sqrt((double)this.items.size() + 1.0)));
+      return Math.max(2, (int)Math.ceil(Math.sqrt((double)this.contents.size() + 1.0)));
    }
 
    private int gridSizeY() {
-      return (int)Math.ceil(((double)this.items.size() + 1.0) / (double)this.gridSizeX());
+      return (int)Math.ceil(((double)this.contents.size() + 1.0) / (double)this.gridSizeX());
    }
 
    static enum Texture {

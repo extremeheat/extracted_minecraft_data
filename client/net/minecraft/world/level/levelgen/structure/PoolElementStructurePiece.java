@@ -47,7 +47,7 @@ public class PoolElementStructurePiece extends StructurePiece {
       this.structureTemplateManager = var1.structureTemplateManager();
       this.position = new BlockPos(var2.getInt("PosX"), var2.getInt("PosY"), var2.getInt("PosZ"));
       this.groundLevelDelta = var2.getInt("ground_level_delta");
-      RegistryOps var3 = RegistryOps.create(NbtOps.INSTANCE, var1.registryAccess());
+      RegistryOps var3 = var1.registryAccess().createSerializationContext(NbtOps.INSTANCE);
       this.element = (StructurePoolElement)StructurePoolElement.CODEC
          .parse(var3, var2.getCompound("pool_element"))
          .resultOrPartial(LOGGER::error)
@@ -65,7 +65,7 @@ public class PoolElementStructurePiece extends StructurePiece {
       var2.putInt("PosY", this.position.getY());
       var2.putInt("PosZ", this.position.getZ());
       var2.putInt("ground_level_delta", this.groundLevelDelta);
-      RegistryOps var3 = RegistryOps.create(NbtOps.INSTANCE, var1.registryAccess());
+      RegistryOps var3 = var1.registryAccess().createSerializationContext(NbtOps.INSTANCE);
       StructurePoolElement.CODEC.encodeStart(var3, this.element).resultOrPartial(LOGGER::error).ifPresent(var1x -> var2.put("pool_element", var1x));
       var2.putString("rotation", this.rotation.name());
       ListTag var4 = new ListTag();

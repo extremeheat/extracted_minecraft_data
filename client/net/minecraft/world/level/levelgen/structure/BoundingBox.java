@@ -205,9 +205,7 @@ public class BoundingBox {
    }
 
    public BlockPos getCenter() {
-      return new BlockPos(
-         this.minX + (this.maxX - this.minX + 1) / 2, this.minY + (this.maxY - this.minY + 1) / 2, this.minZ + (this.maxZ - this.minZ + 1) / 2
-      );
+      return new BlockPos(this.minX + (this.maxX - this.minX + 1) / 2, this.minY + (this.maxY - this.minY + 1) / 2, this.minZ + (this.maxZ - this.minZ + 1) / 2);
    }
 
    public void forAllCorners(Consumer<BlockPos> var1) {

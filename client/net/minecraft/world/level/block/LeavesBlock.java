@@ -49,17 +49,17 @@ public class LeavesBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    @Override
-   public VoxelShape getBlockSupportShape(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected VoxelShape getBlockSupportShape(BlockState var1, BlockGetter var2, BlockPos var3) {
       return Shapes.empty();
    }
 
    @Override
-   public boolean isRandomlyTicking(BlockState var1) {
+   protected boolean isRandomlyTicking(BlockState var1) {
       return var1.getValue(DISTANCE) == 7 && !var1.getValue(PERSISTENT);
    }
 
    @Override
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (this.decaying(var1)) {
          dropResources(var1, var2, var3);
          var2.removeBlock(var3, false);
@@ -71,17 +71,17 @@ public class LeavesBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    @Override
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       var2.setBlock(var3, updateDistance(var1, var2, var3), 3);
    }
 
    @Override
-   public int getLightBlock(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected int getLightBlock(BlockState var1, BlockGetter var2, BlockPos var3) {
       return 1;
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var1.getValue(WATERLOGGED)) {
          var4.scheduleTick(var5, Fluids.WATER, Fluids.WATER.getTickDelay(var4));
       }
@@ -122,7 +122,7 @@ public class LeavesBlock extends Block implements SimpleWaterloggedBlock {
    }
 
    @Override
-   public FluidState getFluidState(BlockState var1) {
+   protected FluidState getFluidState(BlockState var1) {
       return var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
    }
 

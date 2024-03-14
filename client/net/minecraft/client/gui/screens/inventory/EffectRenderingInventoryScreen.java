@@ -7,11 +7,11 @@ import java.util.Optional;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.MobEffectTextureManager;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffectUtil;
 import net.minecraft.world.entity.player.Inventory;
@@ -92,7 +92,7 @@ public abstract class EffectRenderingInventoryScreen<T extends AbstractContainer
       int var7 = this.topPos;
 
       for(MobEffectInstance var9 : var4) {
-         MobEffect var10 = var9.getEffect();
+         Holder var10 = var9.getEffect();
          TextureAtlasSprite var11 = var6.get(var10);
          var1.blit(var2 + (var5 ? 6 : 7), var7 + 7, 0, 18, 18, var11);
          var7 += var3;
@@ -112,7 +112,7 @@ public abstract class EffectRenderingInventoryScreen<T extends AbstractContainer
    }
 
    private Component getEffectName(MobEffectInstance var1) {
-      MutableComponent var2 = var1.getEffect().getDisplayName().copy();
+      MutableComponent var2 = var1.getEffect().value().getDisplayName().copy();
       if (var1.getAmplifier() >= 1 && var1.getAmplifier() <= 9) {
          var2.append(CommonComponents.SPACE).append(Component.translatable("enchantment.level." + (var1.getAmplifier() + 1)));
       }

@@ -30,9 +30,12 @@ import net.minecraft.FileUtil;
 import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.network.ConnectionProtocol;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.profiling.jfr.callback.ProfiledDuration;
 import net.minecraft.util.profiling.jfr.event.ChunkGenerationEvent;
+import net.minecraft.util.profiling.jfr.event.ChunkRegionReadEvent;
+import net.minecraft.util.profiling.jfr.event.ChunkRegionWriteEvent;
 import net.minecraft.util.profiling.jfr.event.NetworkSummaryEvent;
 import net.minecraft.util.profiling.jfr.event.PacketReceivedEvent;
 import net.minecraft.util.profiling.jfr.event.PacketSentEvent;
@@ -40,6 +43,8 @@ import net.minecraft.util.profiling.jfr.event.ServerTickTimeEvent;
 import net.minecraft.util.profiling.jfr.event.WorldLoadFinishedEvent;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.storage.RegionFileVersion;
+import net.minecraft.world.level.chunk.storage.RegionStorageInfo;
 import org.slf4j.Logger;
 
 public class JfrProfiler implements JvmProfiler {
@@ -48,8 +53,11 @@ public class JfrProfiler implements JvmProfiler {
    public static final String WORLD_GEN_CATEGORY = "World Generation";
    public static final String TICK_CATEGORY = "Ticking";
    public static final String NETWORK_CATEGORY = "Network";
+   public static final String STORAGE_CATEGORY = "Storage";
    private static final List<Class<? extends Event>> CUSTOM_EVENTS = List.of(
       ChunkGenerationEvent.class,
+      ChunkRegionReadEvent.class,
+      ChunkRegionWriteEvent.class,
       PacketReceivedEvent.class,
       PacketSentEvent.class,
       NetworkSummaryEvent.class,
@@ -182,9 +190,9 @@ public class JfrProfiler implements JvmProfiler {
    }
 
    @Override
-   public void onPacketReceived(ConnectionProtocol var1, int var2, SocketAddress var3, int var4) {
+   public void onPacketReceived(ConnectionProtocol var1, PacketType<?> var2, SocketAddress var3, int var4) {
       if (PacketReceivedEvent.TYPE.isEnabled()) {
-         new PacketReceivedEvent(var1.id(), var2, var3, var4).commit();
+         new PacketReceivedEvent(var1.id(), var2.flow().id(), var2.id().toString(), var3, var4).commit();
       }
 
       if (NetworkSummaryEvent.TYPE.isEnabled()) {
@@ -193,9 +201,9 @@ public class JfrProfiler implements JvmProfiler {
    }
 
    @Override
-   public void onPacketSent(ConnectionProtocol var1, int var2, SocketAddress var3, int var4) {
+   public void onPacketSent(ConnectionProtocol var1, PacketType<?> var2, SocketAddress var3, int var4) {
       if (PacketSentEvent.TYPE.isEnabled()) {
-         new PacketSentEvent(var1.id(), var2, var3, var4).commit();
+         new PacketSentEvent(var1.id(), var2.flow().id(), var2.id().toString(), var3, var4).commit();
       }
 
       if (NetworkSummaryEvent.TYPE.isEnabled()) {
@@ -205,6 +213,20 @@ public class JfrProfiler implements JvmProfiler {
 
    private NetworkSummaryEvent.SumAggregation networkStatFor(SocketAddress var1) {
       return this.networkTrafficByAddress.computeIfAbsent(var1.toString(), NetworkSummaryEvent.SumAggregation::new);
+   }
+
+   @Override
+   public void onRegionFileRead(RegionStorageInfo var1, ChunkPos var2, RegionFileVersion var3, int var4) {
+      if (ChunkRegionReadEvent.TYPE.isEnabled()) {
+         new ChunkRegionReadEvent(var1, var2, var3, var4).commit();
+      }
+   }
+
+   @Override
+   public void onRegionFileWrite(RegionStorageInfo var1, ChunkPos var2, RegionFileVersion var3, int var4) {
+      if (ChunkRegionWriteEvent.TYPE.isEnabled()) {
+         new ChunkRegionWriteEvent(var1, var2, var3, var4).commit();
+      }
    }
 
    @Nullable

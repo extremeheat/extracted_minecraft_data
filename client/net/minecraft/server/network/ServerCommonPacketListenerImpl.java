@@ -19,6 +19,7 @@ import net.minecraft.network.protocol.common.ServerboundCustomPayloadPacket;
 import net.minecraft.network.protocol.common.ServerboundKeepAlivePacket;
 import net.minecraft.network.protocol.common.ServerboundPongPacket;
 import net.minecraft.network.protocol.common.ServerboundResourcePackPacket;
+import net.minecraft.network.protocol.cookie.ServerboundCookieResponsePacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ClientInformation;
 import net.minecraft.util.VisibleForDebug;
@@ -28,8 +29,10 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final int LATENCY_CHECK_INTERVAL = 15000;
    private static final Component TIMEOUT_DISCONNECTION_MESSAGE = Component.translatable("disconnect.timeout");
+   static final Component DISCONNECT_UNEXPECTED_QUERY = Component.translatable("multiplayer.disconnect.unexpected_query_response");
    protected final MinecraftServer server;
    protected final Connection connection;
+   private final boolean transferred;
    private long keepAliveTime;
    private boolean keepAlivePending;
    private long keepAliveChallenge;
@@ -42,6 +45,7 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
       this.connection = var2;
       this.keepAliveTime = Util.getMillis();
       this.latency = var3.latency();
+      this.transferred = var3.transferred();
    }
 
    @Override
@@ -78,6 +82,11 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
          LOGGER.info("Disconnecting {} due to resource pack {} rejection", this.playerProfile().getName(), var1.id());
          this.disconnect(Component.translatable("multiplayer.requiredTexturePrompt.disconnect"));
       }
+   }
+
+   @Override
+   public void handleCookieResponse(ServerboundCookieResponsePacket var1) {
+      this.disconnect(DISCONNECT_UNEXPECTED_QUERY);
    }
 
    protected void keepConnectionAlive() {
@@ -145,6 +154,6 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
    }
 
    protected CommonListenerCookie createCookie(ClientInformation var1) {
-      return new CommonListenerCookie(this.playerProfile(), this.latency, var1);
+      return new CommonListenerCookie(this.playerProfile(), this.latency, var1, this.transferred);
    }
 }

@@ -1,18 +1,18 @@
 package net.minecraft.world.item.enchantment;
 
 import java.util.Map.Entry;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ItemStack;
 
 public class ThornsEnchantment extends Enchantment {
    private static final float CHANCE_PER_LEVEL = 0.15F;
 
    public ThornsEnchantment(Enchantment.Rarity var1, EquipmentSlot... var2) {
-      super(var1, EnchantmentCategory.ARMOR_CHEST, var2);
+      super(var1, ItemTags.ARMOR_ENCHANTABLE, var2);
    }
 
    @Override
@@ -31,11 +31,6 @@ public class ThornsEnchantment extends Enchantment {
    }
 
    @Override
-   public boolean canEnchant(ItemStack var1) {
-      return var1.getItem() instanceof ArmorItem ? true : super.canEnchant(var1);
-   }
-
-   @Override
    public void doPostHurt(LivingEntity var1, Entity var2, int var3) {
       RandomSource var4 = var1.getRandom();
       Entry var5 = EnchantmentHelper.getRandomItemWith(Enchantments.THORNS, var1);
@@ -45,7 +40,7 @@ public class ThornsEnchantment extends Enchantment {
          }
 
          if (var5 != null) {
-            ((ItemStack)var5.getValue()).hurtAndBreak(2, var1, var1x -> var1x.broadcastBreakEvent((EquipmentSlot)var5.getKey()));
+            ((ItemStack)var5.getValue()).hurtAndBreak(2, var1, (EquipmentSlot)var5.getKey());
          }
       }
    }

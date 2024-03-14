@@ -251,6 +251,14 @@ public class TextureMapping {
          .put(TextureSlot.BOTTOM, getBlockTexture(var0, "_bottom"));
    }
 
+   public static TextureMapping vault(Block var0, String var1, String var2, String var3, String var4) {
+      return new TextureMapping()
+         .put(TextureSlot.FRONT, getBlockTexture(var0, var1))
+         .put(TextureSlot.SIDE, getBlockTexture(var0, var2))
+         .put(TextureSlot.TOP, getBlockTexture(var0, var3))
+         .put(TextureSlot.BOTTOM, getBlockTexture(var0, var4));
+   }
+
    public static TextureMapping particleFromItem(Item var0) {
       return new TextureMapping().put(TextureSlot.PARTICLE, getItemTexture(var0));
    }

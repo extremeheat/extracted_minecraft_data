@@ -2,13 +2,16 @@ package net.minecraft.network.protocol.common.custom;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.codec.StreamCodec;
 
-public record PoiRemovedDebugPayload(BlockPos b) implements CustomPacketPayload {
+public record PoiRemovedDebugPayload(BlockPos c) implements CustomPacketPayload {
    private final BlockPos pos;
-   public static final ResourceLocation ID = new ResourceLocation("debug/poi_removed");
+   public static final StreamCodec<FriendlyByteBuf, PoiRemovedDebugPayload> STREAM_CODEC = CustomPacketPayload.codec(
+      PoiRemovedDebugPayload::write, PoiRemovedDebugPayload::new
+   );
+   public static final CustomPacketPayload.Type<PoiRemovedDebugPayload> TYPE = CustomPacketPayload.createType("debug/poi_removed");
 
-   public PoiRemovedDebugPayload(FriendlyByteBuf var1) {
+   private PoiRemovedDebugPayload(FriendlyByteBuf var1) {
       this(var1.readBlockPos());
    }
 
@@ -17,13 +20,12 @@ public record PoiRemovedDebugPayload(BlockPos b) implements CustomPacketPayload 
       this.pos = var1;
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       var1.writeBlockPos(this.pos);
    }
 
    @Override
-   public ResourceLocation id() {
-      return ID;
+   public CustomPacketPayload.Type<PoiRemovedDebugPayload> type() {
+      return TYPE;
    }
 }

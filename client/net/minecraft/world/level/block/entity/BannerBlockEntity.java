@@ -1,37 +1,32 @@
 package net.minecraft.world.level.block.entity;
 
-import com.google.common.collect.Lists;
-import com.mojang.datafixers.util.Pair;
-import java.util.ArrayList;
-import java.util.List;
+import com.mojang.logging.LogUtils;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.Nameable;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.AbstractBannerBlock;
 import net.minecraft.world.level.block.BannerBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import org.slf4j.Logger;
 
 public class BannerBlockEntity extends BlockEntity implements Nameable {
+   private static final Logger LOGGER = LogUtils.getLogger();
    public static final int MAX_PATTERNS = 6;
-   public static final String TAG_PATTERNS = "Patterns";
-   public static final String TAG_PATTERN = "Pattern";
-   public static final String TAG_COLOR = "Color";
+   private static final String TAG_PATTERNS = "patterns";
    @Nullable
    private Component name;
    private DyeColor baseColor;
-   @Nullable
-   private ListTag itemPatterns;
-   @Nullable
-   private List<Pair<Holder<BannerPattern>, DyeColor>> patterns;
+   private BannerPatternLayers patterns = BannerPatternLayers.EMPTY;
 
    public BannerBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.BANNER, var1, var2);
@@ -43,26 +38,9 @@ public class BannerBlockEntity extends BlockEntity implements Nameable {
       this.baseColor = var3;
    }
 
-   @Nullable
-   public static ListTag getItemPatterns(ItemStack var0) {
-      ListTag var1 = null;
-      CompoundTag var2 = BlockItem.getBlockEntityData(var0);
-      if (var2 != null && var2.contains("Patterns", 9)) {
-         var1 = var2.getList("Patterns", 10).copy();
-      }
-
-      return var1;
-   }
-
    public void fromItem(ItemStack var1, DyeColor var2) {
       this.baseColor = var2;
-      this.fromItem(var1);
-   }
-
-   public void fromItem(ItemStack var1) {
-      this.itemPatterns = getItemPatterns(var1);
-      this.patterns = null;
-      this.name = var1.hasCustomHoverName() ? var1.getHoverName() : null;
+      this.applyComponents(var1.getComponents());
    }
 
    @Override
@@ -76,31 +54,34 @@ public class BannerBlockEntity extends BlockEntity implements Nameable {
       return this.name;
    }
 
-   public void setCustomName(Component var1) {
-      this.name = var1;
-   }
-
    @Override
-   protected void saveAdditional(CompoundTag var1) {
-      super.saveAdditional(var1);
-      if (this.itemPatterns != null) {
-         var1.put("Patterns", this.itemPatterns);
+   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.saveAdditional(var1, var2);
+      if (!this.patterns.equals(BannerPatternLayers.EMPTY)) {
+         var1.put(
+            "patterns",
+            Util.getOrThrow(BannerPatternLayers.CODEC.encodeStart(var2.createSerializationContext(NbtOps.INSTANCE), this.patterns), IllegalStateException::new)
+         );
       }
 
       if (this.name != null) {
-         var1.putString("CustomName", Component.Serializer.toJson(this.name));
+         var1.putString("CustomName", Component.Serializer.toJson(this.name, var2));
       }
    }
 
    @Override
-   public void load(CompoundTag var1) {
-      super.load(var1);
+   public void load(CompoundTag var1, HolderLookup.Provider var2) {
+      super.load(var1, var2);
       if (var1.contains("CustomName", 8)) {
-         this.name = Component.Serializer.fromJson(var1.getString("CustomName"));
+         this.name = Component.Serializer.fromJson(var1.getString("CustomName"), var2);
       }
 
-      this.itemPatterns = var1.getList("Patterns", 10);
-      this.patterns = null;
+      if (var1.contains("patterns")) {
+         BannerPatternLayers.CODEC
+            .parse(var2.createSerializationContext(NbtOps.INSTANCE), var1.get("patterns"))
+            .resultOrPartial(var0 -> LOGGER.error("Failed to parse banner patterns: '{}'", var0))
+            .ifPresent(var1x -> this.patterns = var1x);
+      }
    }
 
    public ClientboundBlockEntityDataPacket getUpdatePacket() {
@@ -108,72 +89,39 @@ public class BannerBlockEntity extends BlockEntity implements Nameable {
    }
 
    @Override
-   public CompoundTag getUpdateTag() {
-      return this.saveWithoutMetadata();
+   public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
+      return this.saveWithoutMetadata(var1);
    }
 
-   public static int getPatternCount(ItemStack var0) {
-      CompoundTag var1 = BlockItem.getBlockEntityData(var0);
-      return var1 != null && var1.contains("Patterns") ? var1.getList("Patterns", 10).size() : 0;
-   }
-
-   public List<Pair<Holder<BannerPattern>, DyeColor>> getPatterns() {
-      if (this.patterns == null) {
-         this.patterns = createPatterns(this.baseColor, this.itemPatterns);
-      }
-
+   public BannerPatternLayers getPatterns() {
       return this.patterns;
-   }
-
-   public static List<Pair<Holder<BannerPattern>, DyeColor>> createPatterns(DyeColor var0, @Nullable ListTag var1) {
-      ArrayList var2 = Lists.newArrayList();
-      var2.add(Pair.of(BuiltInRegistries.BANNER_PATTERN.getHolderOrThrow(BannerPatterns.BASE), var0));
-      if (var1 != null) {
-         for(int var3 = 0; var3 < var1.size(); ++var3) {
-            CompoundTag var4 = var1.getCompound(var3);
-            Holder var5 = BannerPattern.byHash(var4.getString("Pattern"));
-            if (var5 != null) {
-               int var6 = var4.getInt("Color");
-               var2.add(Pair.of(var5, DyeColor.byId(var6)));
-            }
-         }
-      }
-
-      return var2;
-   }
-
-   public static void removeLastPattern(ItemStack var0) {
-      CompoundTag var1 = BlockItem.getBlockEntityData(var0);
-      if (var1 != null && var1.contains("Patterns", 9)) {
-         ListTag var2 = var1.getList("Patterns", 10);
-         if (!var2.isEmpty()) {
-            var2.remove(var2.size() - 1);
-            if (var2.isEmpty()) {
-               var1.remove("Patterns");
-            }
-         }
-
-         var1.remove("id");
-         BlockItem.setBlockEntityData(var0, BlockEntityType.BANNER, var1);
-      }
    }
 
    public ItemStack getItem() {
       ItemStack var1 = new ItemStack(BannerBlock.byColor(this.baseColor));
-      if (this.itemPatterns != null && !this.itemPatterns.isEmpty()) {
-         CompoundTag var2 = new CompoundTag();
-         var2.put("Patterns", this.itemPatterns.copy());
-         BlockItem.setBlockEntityData(var1, this.getType(), var2);
-      }
-
-      if (this.name != null) {
-         var1.setHoverName(this.name);
-      }
-
+      var1.applyComponents(this.collectComponents());
       return var1;
    }
 
    public DyeColor getBaseColor() {
       return this.baseColor;
+   }
+
+   @Override
+   public void applyComponents(DataComponentMap var1) {
+      this.patterns = var1.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
+      this.name = var1.get(DataComponents.CUSTOM_NAME);
+   }
+
+   @Override
+   public void collectComponents(DataComponentMap.Builder var1) {
+      var1.set(DataComponents.BANNER_PATTERNS, this.patterns);
+      var1.set(DataComponents.CUSTOM_NAME, this.name);
+   }
+
+   @Override
+   public void removeComponentsFromTag(CompoundTag var1) {
+      var1.remove("patterns");
+      var1.remove("CustomName");
    }
 }

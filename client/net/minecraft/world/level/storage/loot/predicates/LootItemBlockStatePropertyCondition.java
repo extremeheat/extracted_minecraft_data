@@ -55,7 +55,7 @@ public record LootItemBlockStatePropertyCondition(Holder<Block> b, Optional<Stat
 
    public boolean test(LootContext var1) {
       BlockState var2 = var1.getParamOrNull(LootContextParams.BLOCK_STATE);
-      return var2 != null && var2.is(this.block) && (this.properties.isEmpty() || this.properties.get().matches(var2));
+      return var2 != null && var2.is(this.block) && (this.properties.isEmpty() || ((StatePropertiesPredicate)this.properties.get()).matches(var2));
    }
 
    public static LootItemBlockStatePropertyCondition.Builder hasBlockStateProperties(Block var0) {

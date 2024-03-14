@@ -2,11 +2,13 @@ package net.minecraft.world.level;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.arguments.BoolArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DynamicLike;
 import java.util.Comparator;
@@ -22,6 +24,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundEntityEventPacket;
 import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import org.slf4j.Logger;
 
@@ -192,6 +195,12 @@ public class GameRules {
    );
    public static final GameRules.Key<GameRules.BooleanValue> RULE_ENDER_PEARLS_VANISH_ON_DEATH = register(
       "enderPearlsVanishOnDeath", GameRules.Category.PLAYER, GameRules.BooleanValue.create(true)
+   );
+   public static final GameRules.Key<GameRules.IntegerValue> RULE_SPAWN_CHUNK_RADIUS = register(
+      "spawnChunkRadius", GameRules.Category.MISC, GameRules.IntegerValue.create(2, 0, 32, (var0, var1) -> {
+         ServerLevel var2 = var0.overworld();
+         var2.setDefaultSpawnPos(var2.getSharedSpawnPos(), var2.getSharedSpawnAngle());
+      })
    );
    private final Map<GameRules.Key<?>, GameRules.Value<?>> rules;
 
@@ -370,6 +379,12 @@ public class GameRules {
          );
       }
 
+      static GameRules.Type<GameRules.IntegerValue> create(int var0, int var1, int var2, BiConsumer<MinecraftServer, GameRules.IntegerValue> var3) {
+         return new GameRules.Type<>(
+            () -> IntegerArgumentType.integer(var1, var2), var1x -> new GameRules.IntegerValue(var1x, var0), var3, GameRules.GameRuleTypeVisitor::visitInteger
+         );
+      }
+
       static GameRules.Type<GameRules.IntegerValue> create(int var0) {
          return create(var0, (var0x, var1) -> {
          });
@@ -406,9 +421,10 @@ public class GameRules {
 
       public boolean tryDeserialize(String var1) {
          try {
-            this.value = Integer.parseInt(var1);
-            return true;
-         } catch (NumberFormatException var3) {
+            StringReader var2 = new StringReader(var1);
+            this.value = ((ArgumentType)this.type.argument.get()).parse(var2);
+            return !var2.canRead();
+         } catch (CommandSyntaxException var3) {
             return false;
          }
       }
@@ -487,7 +503,7 @@ public class GameRules {
    }
 
    public static class Type<T extends GameRules.Value<T>> {
-      private final Supplier<ArgumentType<?>> argument;
+      final Supplier<ArgumentType<?>> argument;
       private final Function<GameRules.Type<T>, T> constructor;
       final BiConsumer<MinecraftServer, T> callback;
       private final GameRules.VisitorCaller<T> visitorCaller;

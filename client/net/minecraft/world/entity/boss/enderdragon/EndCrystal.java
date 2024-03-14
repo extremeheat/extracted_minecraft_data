@@ -43,9 +43,9 @@ public class EndCrystal extends Entity {
    }
 
    @Override
-   protected void defineSynchedData() {
-      this.getEntityData().define(DATA_BEAM_TARGET, Optional.empty());
-      this.getEntityData().define(DATA_SHOW_BOTTOM, true);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      var1.define(DATA_BEAM_TARGET, Optional.empty());
+      var1.define(DATA_SHOW_BOTTOM, true);
    }
 
    @Override
@@ -62,7 +62,7 @@ public class EndCrystal extends Entity {
    @Override
    protected void addAdditionalSaveData(CompoundTag var1) {
       if (this.getBeamTarget() != null) {
-         var1.put("BeamTarget", NbtUtils.writeBlockPos(this.getBeamTarget()));
+         var1.put("beam_target", NbtUtils.writeBlockPos(this.getBeamTarget()));
       }
 
       var1.putBoolean("ShowBottom", this.showsBottom());
@@ -70,10 +70,7 @@ public class EndCrystal extends Entity {
 
    @Override
    protected void readAdditionalSaveData(CompoundTag var1) {
-      if (var1.contains("BeamTarget", 10)) {
-         this.setBeamTarget(NbtUtils.readBlockPos(var1.getCompound("BeamTarget")));
-      }
-
+      NbtUtils.readBlockPos(var1, "beam_target").ifPresent(this::setBeamTarget);
       if (var1.contains("ShowBottom", 1)) {
          this.setShowBottom(var1.getBoolean("ShowBottom"));
       }

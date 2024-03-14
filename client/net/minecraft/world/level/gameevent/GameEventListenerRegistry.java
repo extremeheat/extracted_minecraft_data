@@ -1,5 +1,6 @@
 package net.minecraft.world.level.gameevent;
 
+import net.minecraft.core.Holder;
 import net.minecraft.world.phys.Vec3;
 
 public interface GameEventListenerRegistry {
@@ -18,7 +19,7 @@ public interface GameEventListenerRegistry {
       }
 
       @Override
-      public boolean visitInRangeListeners(GameEvent var1, Vec3 var2, GameEvent.Context var3, GameEventListenerRegistry.ListenerVisitor var4) {
+      public boolean visitInRangeListeners(Holder<GameEvent> var1, Vec3 var2, GameEvent.Context var3, GameEventListenerRegistry.ListenerVisitor var4) {
          return false;
       }
    };
@@ -29,7 +30,7 @@ public interface GameEventListenerRegistry {
 
    void unregister(GameEventListener var1);
 
-   boolean visitInRangeListeners(GameEvent var1, Vec3 var2, GameEvent.Context var3, GameEventListenerRegistry.ListenerVisitor var4);
+   boolean visitInRangeListeners(Holder<GameEvent> var1, Vec3 var2, GameEvent.Context var3, GameEventListenerRegistry.ListenerVisitor var4);
 
    @FunctionalInterface
    public interface ListenerVisitor {

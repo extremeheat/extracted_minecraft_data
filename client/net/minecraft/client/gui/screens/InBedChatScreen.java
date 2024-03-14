@@ -32,10 +32,6 @@ public class InBedChatScreen extends ChatScreen {
    }
 
    @Override
-   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-   }
-
-   @Override
    public void onClose() {
       this.sendWakeUp();
    }
@@ -56,12 +52,9 @@ public class InBedChatScreen extends ChatScreen {
       } else if (var1 != 257 && var1 != 335) {
          return super.keyPressed(var1, var2, var3);
       } else {
-         if (this.handleChatInput(this.input.getValue(), true)) {
-            this.minecraft.setScreen(null);
-            this.input.setValue("");
-            this.minecraft.gui.getChat().resetChatScroll();
-         }
-
+         this.handleChatInput(this.input.getValue(), true);
+         this.input.setValue("");
+         this.minecraft.gui.getChat().resetChatScroll();
          return true;
       }
    }

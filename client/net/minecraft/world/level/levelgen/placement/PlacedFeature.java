@@ -30,9 +30,7 @@ public record PlacedFeature(Holder<ConfiguredFeature<?, ?>> e, List<PlacementMod
    );
    public static final Codec<Holder<PlacedFeature>> CODEC = RegistryFileCodec.create(Registries.PLACED_FEATURE, DIRECT_CODEC);
    public static final Codec<HolderSet<PlacedFeature>> LIST_CODEC = RegistryCodecs.homogeneousList(Registries.PLACED_FEATURE, DIRECT_CODEC);
-   public static final Codec<List<HolderSet<PlacedFeature>>> LIST_OF_LISTS_CODEC = RegistryCodecs.homogeneousList(
-         Registries.PLACED_FEATURE, DIRECT_CODEC, true
-      )
+   public static final Codec<List<HolderSet<PlacedFeature>>> LIST_OF_LISTS_CODEC = RegistryCodecs.homogeneousList(Registries.PLACED_FEATURE, DIRECT_CODEC, true)
       .listOf();
 
    public PlacedFeature(Holder<ConfiguredFeature<?, ?>> var1, List<PlacementModifier> var2) {
@@ -56,7 +54,7 @@ public record PlacedFeature(Holder<ConfiguredFeature<?, ?>> e, List<PlacementMod
          var4 = var4.flatMap(var3x -> var6.getPositions(var1, var2, var3x));
       }
 
-      ConfiguredFeature var7 = this.feature.value();
+      ConfiguredFeature var7 = (ConfiguredFeature)this.feature.value();
       MutableBoolean var8 = new MutableBoolean();
       var4.forEach(var4x -> {
          if (var7.place(var1.getLevel(), var1.generator(), var2, var4x)) {
@@ -67,10 +65,9 @@ public record PlacedFeature(Holder<ConfiguredFeature<?, ?>> e, List<PlacementMod
    }
 
    public Stream<ConfiguredFeature<?, ?>> getFeatures() {
-      return this.feature.value().getFeatures();
+      return ((ConfiguredFeature)this.feature.value()).getFeatures();
    }
 
-   @Override
    public String toString() {
       return "Placed " + this.feature;
    }

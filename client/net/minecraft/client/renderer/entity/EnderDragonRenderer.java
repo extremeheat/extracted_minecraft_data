@@ -19,7 +19,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
-import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 
 public class EnderDragonRenderer extends EntityRenderer<EnderDragon> {
@@ -141,44 +140,42 @@ public class EnderDragonRenderer extends EntityRenderer<EnderDragon> {
       float var15 = 0.75F;
       float var16 = 0.0F;
       PoseStack.Pose var17 = var5.last();
-      Matrix4f var18 = var17.pose();
-      Matrix3f var19 = var17.normal();
 
-      for(int var20 = 1; var20 <= 8; ++var20) {
-         float var21 = Mth.sin((float)var20 * 6.2831855F / 8.0F) * 0.75F;
-         float var22 = Mth.cos((float)var20 * 6.2831855F / 8.0F) * 0.75F;
-         float var23 = (float)var20 / 8.0F;
-         var10.vertex(var18, var14 * 0.2F, var15 * 0.2F, 0.0F)
+      for(int var18 = 1; var18 <= 8; ++var18) {
+         float var19 = Mth.sin((float)var18 * 6.2831855F / 8.0F) * 0.75F;
+         float var20 = Mth.cos((float)var18 * 6.2831855F / 8.0F) * 0.75F;
+         float var21 = (float)var18 / 8.0F;
+         var10.vertex(var17, var14 * 0.2F, var15 * 0.2F, 0.0F)
             .color(0, 0, 0, 255)
             .uv(var16, var11)
             .overlayCoords(OverlayTexture.NO_OVERLAY)
             .uv2(var7)
-            .normal(var19, 0.0F, -1.0F, 0.0F)
+            .normal(var17, 0.0F, -1.0F, 0.0F)
             .endVertex();
-         var10.vertex(var18, var14, var15, var9)
+         var10.vertex(var17, var14, var15, var9)
             .color(255, 255, 255, 255)
             .uv(var16, var12)
             .overlayCoords(OverlayTexture.NO_OVERLAY)
             .uv2(var7)
-            .normal(var19, 0.0F, -1.0F, 0.0F)
+            .normal(var17, 0.0F, -1.0F, 0.0F)
             .endVertex();
-         var10.vertex(var18, var21, var22, var9)
+         var10.vertex(var17, var19, var20, var9)
             .color(255, 255, 255, 255)
-            .uv(var23, var12)
+            .uv(var21, var12)
             .overlayCoords(OverlayTexture.NO_OVERLAY)
             .uv2(var7)
-            .normal(var19, 0.0F, -1.0F, 0.0F)
+            .normal(var17, 0.0F, -1.0F, 0.0F)
             .endVertex();
-         var10.vertex(var18, var21 * 0.2F, var22 * 0.2F, 0.0F)
+         var10.vertex(var17, var19 * 0.2F, var20 * 0.2F, 0.0F)
             .color(0, 0, 0, 255)
-            .uv(var23, var11)
+            .uv(var21, var11)
             .overlayCoords(OverlayTexture.NO_OVERLAY)
             .uv2(var7)
-            .normal(var19, 0.0F, -1.0F, 0.0F)
+            .normal(var17, 0.0F, -1.0F, 0.0F)
             .endVertex();
-         var14 = var21;
-         var15 = var22;
-         var16 = var23;
+         var14 = var19;
+         var15 = var20;
+         var16 = var21;
       }
 
       var5.popPose();

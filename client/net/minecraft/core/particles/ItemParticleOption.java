@@ -5,21 +5,19 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
 import net.minecraft.commands.arguments.item.ItemInput;
 import net.minecraft.commands.arguments.item.ItemParser;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
 
 public class ItemParticleOption implements ParticleOptions {
    public static final ParticleOptions.Deserializer<ItemParticleOption> DESERIALIZER = new ParticleOptions.Deserializer<ItemParticleOption>() {
-      public ItemParticleOption fromCommand(ParticleType<ItemParticleOption> var1, StringReader var2) throws CommandSyntaxException {
+      public ItemParticleOption fromCommand(ParticleType<ItemParticleOption> var1, StringReader var2, HolderLookup.Provider var3) throws CommandSyntaxException {
          var2.expect(' ');
-         ItemParser.ItemResult var3 = ItemParser.parseForItem(BuiltInRegistries.ITEM.asLookup(), var2);
-         ItemStack var4 = new ItemInput(var3.item(), var3.nbt()).createItemStack(1, false);
-         return new ItemParticleOption(var1, var4);
-      }
-
-      public ItemParticleOption fromNetwork(ParticleType<ItemParticleOption> var1, FriendlyByteBuf var2) {
-         return new ItemParticleOption(var1, var2.readItem());
+         ItemParser.ItemResult var4 = new ItemParser(var3).parse(var2);
+         ItemStack var5 = new ItemInput(var4.item(), var4.components()).createItemStack(1, false);
+         return new ItemParticleOption(var1, var5);
       }
    };
    private final ParticleType<ItemParticleOption> type;
@@ -29,6 +27,10 @@ public class ItemParticleOption implements ParticleOptions {
       return ItemStack.CODEC.xmap(var1 -> new ItemParticleOption(var0, var1), var0x -> var0x.itemStack);
    }
 
+   public static StreamCodec<? super RegistryFriendlyByteBuf, ItemParticleOption> streamCodec(ParticleType<ItemParticleOption> var0) {
+      return ItemStack.STREAM_CODEC.map(var1 -> new ItemParticleOption(var0, var1), var0x -> var0x.itemStack);
+   }
+
    public ItemParticleOption(ParticleType<ItemParticleOption> var1, ItemStack var2) {
       super();
       this.type = var1;
@@ -36,13 +38,9 @@ public class ItemParticleOption implements ParticleOptions {
    }
 
    @Override
-   public void writeToNetwork(FriendlyByteBuf var1) {
-      var1.writeItem(this.itemStack);
-   }
-
-   @Override
-   public String writeToString() {
-      return BuiltInRegistries.PARTICLE_TYPE.getKey(this.getType()) + " " + new ItemInput(this.itemStack.getItemHolder(), this.itemStack.getTag()).serialize();
+   public String writeToString(HolderLookup.Provider var1) {
+      ItemInput var2 = new ItemInput(this.itemStack.getItemHolder(), this.itemStack.getComponents());
+      return BuiltInRegistries.PARTICLE_TYPE.getKey(this.getType()) + " " + var2.serialize(var1);
    }
 
    @Override

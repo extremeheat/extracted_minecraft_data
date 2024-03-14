@@ -1,6 +1,8 @@
 package net.minecraft.world.item;
 
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Interner;
+import com.google.common.collect.Interners;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.mojang.logging.LogUtils;
@@ -13,8 +15,10 @@ import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.component.DataComponentType;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
@@ -40,6 +44,7 @@ import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.inventory.ClickAction;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.inventory.tooltip.TooltipComponent;
+import net.minecraft.world.item.component.ItemAttributeModifiers;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.ItemLike;
@@ -53,12 +58,13 @@ import org.slf4j.Logger;
 public class Item implements FeatureElement, ItemLike {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final Map<Block, Item> BY_BLOCK = Maps.newHashMap();
-   protected static final UUID BASE_ATTACK_DAMAGE_UUID = UUID.fromString("CB3F55D3-645C-4F38-A497-9C13A33DB5CF");
-   protected static final UUID BASE_ATTACK_SPEED_UUID = UUID.fromString("FA233E1C-4180-4865-B01B-BCCE9785ACA3");
+   public static final UUID BASE_ATTACK_DAMAGE_UUID = UUID.fromString("CB3F55D3-645C-4F38-A497-9C13A33DB5CF");
+   public static final UUID BASE_ATTACK_SPEED_UUID = UUID.fromString("FA233E1C-4180-4865-B01B-BCCE9785ACA3");
    public static final int MAX_STACK_SIZE = 64;
    public static final int EAT_DURATION = 32;
    public static final int MAX_BAR_WIDTH = 13;
    private final Holder.Reference<Item> builtInRegistryHolder = BuiltInRegistries.ITEM.createIntrusiveHolder(this);
+   private final DataComponentMap components;
    private final Rarity rarity;
    private final int maxStackSize;
    private final int maxDamage;
@@ -86,6 +92,7 @@ public class Item implements FeatureElement, ItemLike {
 
    public Item(Item.Properties var1) {
       super();
+      this.components = var1.buildComponents();
       this.rarity = var1.rarity;
       this.craftingRemainingItem = var1.craftingRemainingItem;
       this.maxDamage = var1.maxDamage;
@@ -106,13 +113,17 @@ public class Item implements FeatureElement, ItemLike {
       return this.builtInRegistryHolder;
    }
 
+   public DataComponentMap components() {
+      return this.components;
+   }
+
    public void onUseTick(Level var1, LivingEntity var2, ItemStack var3, int var4) {
    }
 
    public void onDestroyed(ItemEntity var1) {
    }
 
-   public void verifyTagAfterLoad(CompoundTag var1) {
+   public void verifyComponentsAfterLoad(ItemStack var1) {
    }
 
    public boolean canAttackBlock(BlockState var1, Level var2, BlockPos var3, Player var4) {
@@ -167,7 +178,7 @@ public class Item implements FeatureElement, ItemLike {
    }
 
    public int getBarWidth(ItemStack var1) {
-      return Math.round(13.0F - (float)var1.getDamageValue() * 13.0F / (float)this.maxDamage);
+      return Mth.clamp(Math.round(13.0F - (float)var1.getDamageValue() * 13.0F / (float)this.maxDamage), 0, 13);
    }
 
    public int getBarColor(ItemStack var1) {
@@ -222,10 +233,6 @@ public class Item implements FeatureElement, ItemLike {
 
    public String getDescriptionId(ItemStack var1) {
       return this.getDescriptionId();
-   }
-
-   public boolean shouldOverrideMultiplayerNbt() {
-      return true;
    }
 
    @Nullable
@@ -303,18 +310,9 @@ public class Item implements FeatureElement, ItemLike {
    }
 
    protected static BlockHitResult getPlayerPOVHitResult(Level var0, Player var1, ClipContext.Fluid var2) {
-      float var3 = var1.getXRot();
-      float var4 = var1.getYRot();
-      Vec3 var5 = var1.getEyePosition();
-      float var6 = Mth.cos(-var4 * 0.017453292F - 3.1415927F);
-      float var7 = Mth.sin(-var4 * 0.017453292F - 3.1415927F);
-      float var8 = -Mth.cos(-var3 * 0.017453292F);
-      float var9 = Mth.sin(-var3 * 0.017453292F);
-      float var10 = var7 * var8;
-      float var12 = var6 * var8;
-      double var13 = 5.0;
-      Vec3 var15 = var5.add((double)var10 * 5.0, (double)var9 * 5.0, (double)var12 * 5.0);
-      return var0.clip(new ClipContext(var5, var15, ClipContext.Block.OUTLINE, var2, var1));
+      Vec3 var3 = var1.getEyePosition();
+      Vec3 var4 = var3.add(var1.calculateViewVector(var1.getXRot(), var1.getYRot()).scale(var1.blockInteractionRange()));
+      return var0.clip(new ClipContext(var3, var4, ClipContext.Block.OUTLINE, var2, var1));
    }
 
    public int getEnchantmentValue() {
@@ -325,7 +323,8 @@ public class Item implements FeatureElement, ItemLike {
       return false;
    }
 
-   public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot var1) {
+   @Deprecated
+   public Multimap<Holder<Attribute>, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot var1) {
       return ImmutableMultimap.of();
    }
 
@@ -354,6 +353,10 @@ public class Item implements FeatureElement, ItemLike {
       return SoundEvents.GENERIC_EAT;
    }
 
+   public SoundEvent getBreakingSound() {
+      return SoundEvents.ITEM_BREAK;
+   }
+
    public boolean isFireResistant() {
       return this.isFireResistant;
    }
@@ -372,6 +375,9 @@ public class Item implements FeatureElement, ItemLike {
    }
 
    public static class Properties {
+      private static final Interner<DataComponentMap> COMPONENT_INTERNER = Interners.newStrongInterner();
+      @Nullable
+      private DataComponentMap.Builder components;
       int maxStackSize = 64;
       int maxDamage;
       @Nullable
@@ -407,6 +413,7 @@ public class Item implements FeatureElement, ItemLike {
       public Item.Properties durability(int var1) {
          this.maxDamage = var1;
          this.maxStackSize = 1;
+         this.component(DataComponents.DAMAGE, 0);
          return this;
       }
 
@@ -428,6 +435,23 @@ public class Item implements FeatureElement, ItemLike {
       public Item.Properties requiredFeatures(FeatureFlag... var1) {
          this.requiredFeatures = FeatureFlags.REGISTRY.subset(var1);
          return this;
+      }
+
+      public <T> Item.Properties component(DataComponentType<T> var1, T var2) {
+         if (this.components == null) {
+            this.components = DataComponentMap.builder().addAll(DataComponents.COMMON_ITEM_COMPONENTS);
+         }
+
+         this.components.set(var1, (T)var2);
+         return this;
+      }
+
+      public Item.Properties attributes(ItemAttributeModifiers var1) {
+         return this.component(DataComponents.ATTRIBUTE_MODIFIERS, var1);
+      }
+
+      DataComponentMap buildComponents() {
+         return this.components == null ? DataComponents.COMMON_ITEM_COMPONENTS : (DataComponentMap)COMPONENT_INTERNER.intern(this.components.build());
       }
    }
 }

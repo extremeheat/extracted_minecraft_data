@@ -9,11 +9,9 @@ import java.util.Set;
 import java.util.stream.Stream;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
-import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-import org.joml.Vector4f;
 
 public final class ModelPart {
    public static final float DEFAULT_SCALE = 1.0F;
@@ -298,10 +296,10 @@ public final class ModelPart {
 
       public void compile(PoseStack.Pose var1, VertexConsumer var2, int var3, int var4, float var5, float var6, float var7, float var8) {
          Matrix4f var9 = var1.pose();
-         Matrix3f var10 = var1.normal();
+         Vector3f var10 = new Vector3f();
 
          for(ModelPart.Polygon var14 : this.polygons) {
-            Vector3f var15 = var10.transform(new Vector3f(var14.normal));
+            Vector3f var15 = var1.transformNormal(var14.normal, var10);
             float var16 = var15.x();
             float var17 = var15.y();
             float var18 = var15.z();
@@ -310,7 +308,7 @@ public final class ModelPart {
                float var23 = var22.pos.x() / 16.0F;
                float var24 = var22.pos.y() / 16.0F;
                float var25 = var22.pos.z() / 16.0F;
-               Vector4f var26 = var9.transform(new Vector4f(var23, var24, var25, 1.0F));
+               Vector3f var26 = var9.transformPosition(var23, var24, var25, var10);
                var2.vertex(var26.x(), var26.y(), var26.z(), var5, var6, var7, var8, var22.u, var22.v, var4, var3, var16, var17, var18);
             }
          }

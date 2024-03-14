@@ -3,6 +3,7 @@ package net.minecraft.world.level.block.state.properties;
 import net.minecraft.core.Direction;
 import net.minecraft.core.FrontAndTop;
 import net.minecraft.world.level.block.entity.trialspawner.TrialSpawnerState;
+import net.minecraft.world.level.block.entity.vault.VaultState;
 
 public class BlockStateProperties {
    public static final BooleanProperty ATTACHED = BooleanProperty.create("attached");
@@ -140,6 +141,7 @@ public class BlockStateProperties {
    public static final BooleanProperty CRACKED = BooleanProperty.create("cracked");
    public static final BooleanProperty CRAFTING = BooleanProperty.create("crafting");
    public static final EnumProperty<TrialSpawnerState> TRIAL_SPAWNER_STATE = EnumProperty.create("trial_spawner_state", TrialSpawnerState.class);
+   public static final EnumProperty<VaultState> VAULT_STATE = EnumProperty.create("vault_state", VaultState.class);
 
    public BlockStateProperties() {
       super();

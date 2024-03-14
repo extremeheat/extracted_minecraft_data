@@ -6,11 +6,12 @@ import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.ArmorMaterials;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -32,7 +33,7 @@ public class TrimMaterials {
       super();
    }
 
-   public static void bootstrap(BootstapContext<TrimMaterial> var0) {
+   public static void bootstrap(BootstrapContext<TrimMaterial> var0) {
       register(var0, QUARTZ, Items.QUARTZ, Style.EMPTY.withColor(14931140), 0.1F);
       register(var0, IRON, Items.IRON_INGOT, Style.EMPTY.withColor(15527148), 0.2F, Map.of(ArmorMaterials.IRON, "iron_darker"));
       register(var0, NETHERITE, Items.NETHERITE_INGOT, Style.EMPTY.withColor(6445145), 0.3F, Map.of(ArmorMaterials.NETHERITE, "netherite_darker"));
@@ -46,15 +47,15 @@ public class TrimMaterials {
    }
 
    public static Optional<Holder.Reference<TrimMaterial>> getFromIngredient(RegistryAccess var0, ItemStack var1) {
-      return var0.registryOrThrow(Registries.TRIM_MATERIAL).holders().filter(var1x -> var1.is(var1x.value().ingredient())).findFirst();
+      return var0.registryOrThrow(Registries.TRIM_MATERIAL).holders().filter(var1x -> var1.is(((TrimMaterial)var1x.value()).ingredient())).findFirst();
    }
 
-   private static void register(BootstapContext<TrimMaterial> var0, ResourceKey<TrimMaterial> var1, Item var2, Style var3, float var4) {
+   private static void register(BootstrapContext<TrimMaterial> var0, ResourceKey<TrimMaterial> var1, Item var2, Style var3, float var4) {
       register(var0, var1, var2, var3, var4, Map.of());
    }
 
    private static void register(
-      BootstapContext<TrimMaterial> var0, ResourceKey<TrimMaterial> var1, Item var2, Style var3, float var4, Map<ArmorMaterials, String> var5
+      BootstrapContext<TrimMaterial> var0, ResourceKey<TrimMaterial> var1, Item var2, Style var3, float var4, Map<Holder<ArmorMaterial>, String> var5
    ) {
       TrimMaterial var6 = TrimMaterial.create(
          var1.location().getPath(), var2, var4, Component.translatable(Util.makeDescriptionId("trim_material", var1.location())).withStyle(var3), var5

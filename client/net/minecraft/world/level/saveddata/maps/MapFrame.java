@@ -1,5 +1,7 @@
 package net.minecraft.world.level.saveddata.maps;
 
+import java.util.Optional;
+import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
@@ -16,18 +18,23 @@ public class MapFrame {
       this.entityId = var3;
    }
 
+   @Nullable
    public static MapFrame load(CompoundTag var0) {
-      BlockPos var1 = NbtUtils.readBlockPos(var0.getCompound("Pos"));
-      int var2 = var0.getInt("Rotation");
-      int var3 = var0.getInt("EntityId");
-      return new MapFrame(var1, var2, var3);
+      Optional var1 = NbtUtils.readBlockPos(var0, "pos");
+      if (var1.isEmpty()) {
+         return null;
+      } else {
+         int var2 = var0.getInt("rotation");
+         int var3 = var0.getInt("entity_id");
+         return new MapFrame((BlockPos)var1.get(), var2, var3);
+      }
    }
 
    public CompoundTag save() {
       CompoundTag var1 = new CompoundTag();
-      var1.put("Pos", NbtUtils.writeBlockPos(this.pos));
-      var1.putInt("Rotation", this.rotation);
-      var1.putInt("EntityId", this.entityId);
+      var1.put("pos", NbtUtils.writeBlockPos(this.pos));
+      var1.putInt("rotation", this.rotation);
+      var1.putInt("entity_id", this.entityId);
       return var1;
    }
 

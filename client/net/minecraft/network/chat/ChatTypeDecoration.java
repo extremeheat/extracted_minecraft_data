@@ -4,8 +4,6 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
-import java.util.Objects;
-import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.util.StringRepresentable;
 
@@ -67,7 +65,7 @@ public record ChatTypeDecoration(String b, List<ChatTypeDecoration.Parameter> c,
 
    public static enum Parameter implements StringRepresentable {
       SENDER("sender", (var0, var1) -> var1.name()),
-      TARGET("target", (var0, var1) -> var1.targetName()),
+      TARGET("target", (var0, var1) -> var1.targetName().orElse(CommonComponents.EMPTY)),
       CONTENT("content", (var0, var1) -> var0);
 
       public static final Codec<ChatTypeDecoration.Parameter> CODEC = StringRepresentable.fromEnum(ChatTypeDecoration.Parameter::values);
@@ -80,8 +78,7 @@ public record ChatTypeDecoration(String b, List<ChatTypeDecoration.Parameter> c,
       }
 
       public Component select(Component var1, ChatType.Bound var2) {
-         Component var3 = this.selector.select(var1, var2);
-         return Objects.requireNonNullElse(var3, CommonComponents.EMPTY);
+         return this.selector.select(var1, var2);
       }
 
       @Override
@@ -90,7 +87,6 @@ public record ChatTypeDecoration(String b, List<ChatTypeDecoration.Parameter> c,
       }
 
       public interface Selector {
-         @Nullable
          Component select(Component var1, ChatType.Bound var2);
       }
    }

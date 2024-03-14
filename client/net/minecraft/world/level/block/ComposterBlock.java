@@ -15,6 +15,7 @@ import net.minecraft.stats.Stats;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.WorldlyContainerHolder;
@@ -207,43 +208,48 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPES[var1.getValue(LEVEL)];
    }
 
    @Override
-   public VoxelShape getInteractionShape(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected VoxelShape getInteractionShape(BlockState var1, BlockGetter var2, BlockPos var3) {
       return OUTER_SHAPE;
    }
 
    @Override
-   public VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPES[0];
    }
 
    @Override
-   public void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (var1.getValue(LEVEL) == 7) {
          var2.scheduleTick(var3, var1.getBlock(), 20);
       }
    }
 
    @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
-      int var7 = var1.getValue(LEVEL);
-      ItemStack var8 = var4.getItemInHand(var5);
-      if (var7 < 8 && COMPOSTABLES.containsKey(var8.getItem())) {
-         if (var7 < 7 && !var2.isClientSide) {
-            BlockState var9 = addItem(var4, var1, var2, var3, var8);
-            var2.levelEvent(1500, var3, var1 != var9 ? 1 : 0);
-            var4.awardStat(Stats.ITEM_USED.get(var8.getItem()));
-            if (!var4.getAbilities().instabuild) {
-               var8.shrink(1);
-            }
+   protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
+      int var8 = var2.getValue(LEVEL);
+      if (var8 < 8 && COMPOSTABLES.containsKey(var1.getItem())) {
+         if (var8 < 7 && !var3.isClientSide) {
+            BlockState var9 = addItem(var5, var2, var3, var4, var1);
+            var3.levelEvent(1500, var4, var2 != var9 ? 1 : 0);
+            var5.awardStat(Stats.ITEM_USED.get(var1.getItem()));
+            var1.consume(1, var5);
          }
 
-         return InteractionResult.sidedSuccess(var2.isClientSide);
-      } else if (var7 == 8) {
+         return ItemInteractionResult.sidedSuccess(var3.isClientSide);
+      } else {
+         return super.useItemOn(var1, var2, var3, var4, var5, var6, var7);
+      }
+   }
+
+   @Override
+   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
+      int var6 = var1.getValue(LEVEL);
+      if (var6 == 8) {
          extractProduce(var4, var1, var2, var3);
          return InteractionResult.sidedSuccess(var2.isClientSide);
       } else {
@@ -301,7 +307,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
    }
 
    @Override
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (var1.getValue(LEVEL) == 7) {
          var2.setBlock(var3, var1.cycle(LEVEL), 3);
          var2.playSound(null, var3, SoundEvents.COMPOSTER_READY, SoundSource.BLOCKS, 1.0F, 1.0F);
@@ -309,12 +315,12 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
    }
 
    @Override
-   public boolean hasAnalogOutputSignal(BlockState var1) {
+   protected boolean hasAnalogOutputSignal(BlockState var1) {
       return true;
    }
 
    @Override
-   public int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
+   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
       return var1.getValue(LEVEL);
    }
 
@@ -324,7 +330,7 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
    }
 
    @Override
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
+   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
    }
 

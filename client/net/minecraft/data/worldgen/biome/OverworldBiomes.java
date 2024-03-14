@@ -124,6 +124,7 @@ public class OverworldBiomes {
    public static Biome sparseJungle(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
       MobSpawnSettings.Builder var2 = new MobSpawnSettings.Builder();
       BiomeDefaultFeatures.baseJungleSpawns(var2);
+      var2.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.WOLF, 8, 2, 4));
       return baseJungle(var0, var1, 0.8F, false, true, false, var2, Musics.createGameMusic(SoundEvents.MUSIC_BIOME_SPARSE_JUNGLE));
    }
 
@@ -305,10 +306,12 @@ public class OverworldBiomes {
       MobSpawnSettings.Builder var5 = new MobSpawnSettings.Builder();
       BiomeDefaultFeatures.farmAnimals(var5);
       var5.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.HORSE, 1, 2, 6))
-         .addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.DONKEY, 1, 1, 1));
+         .addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.DONKEY, 1, 1, 1))
+         .addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.ARMADILLO, 10, 2, 3));
       BiomeDefaultFeatures.commonSpawns(var5);
       if (var3) {
          var5.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.LLAMA, 8, 4, 4));
+         var5.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.WOLF, 8, 4, 8));
       }
 
       return biome(false, 2.0F, 0.0F, var5, var4, NORMAL_MUSIC);
@@ -317,6 +320,13 @@ public class OverworldBiomes {
    public static Biome badlands(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1, boolean var2) {
       MobSpawnSettings.Builder var3 = new MobSpawnSettings.Builder();
       BiomeDefaultFeatures.commonSpawns(var3);
+      var3.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.ARMADILLO, 6, 1, 2));
+      var3.creatureGenerationProbability(0.03F);
+      if (var2) {
+         var3.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.WOLF, 2, 4, 8));
+         var3.creatureGenerationProbability(0.04F);
+      }
+
       BiomeGenerationSettings.Builder var4 = new BiomeGenerationSettings.Builder(var0, var1);
       globalOverworldGeneration(var4);
       BiomeDefaultFeatures.addDefaultOres(var4);
@@ -573,6 +583,7 @@ public class OverworldBiomes {
       BiomeDefaultFeatures.farmAnimals(var2);
       BiomeDefaultFeatures.commonSpawns(var2);
       var2.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.SLIME, 1, 1, 1));
+      var2.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.BOGGED, 50, 4, 4));
       var2.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.FROG, 10, 2, 5));
       BiomeGenerationSettings.Builder var3 = new BiomeGenerationSettings.Builder(var0, var1);
       BiomeDefaultFeatures.addFossilDecoration(var3);
@@ -609,6 +620,7 @@ public class OverworldBiomes {
       MobSpawnSettings.Builder var2 = new MobSpawnSettings.Builder();
       BiomeDefaultFeatures.commonSpawns(var2);
       var2.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.SLIME, 1, 1, 1));
+      var2.addSpawn(MobCategory.MONSTER, new MobSpawnSettings.SpawnerData(EntityType.BOGGED, 50, 4, 4));
       var2.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.FROG, 10, 2, 5));
       var2.addSpawn(MobCategory.WATER_AMBIENT, new MobSpawnSettings.SpawnerData(EntityType.TROPICAL_FISH, 25, 8, 8));
       BiomeGenerationSettings.Builder var3 = new BiomeGenerationSettings.Builder(var0, var1);
@@ -785,10 +797,9 @@ public class OverworldBiomes {
    public static Biome grove(HolderGetter<PlacedFeature> var0, HolderGetter<ConfiguredWorldCarver<?>> var1) {
       BiomeGenerationSettings.Builder var2 = new BiomeGenerationSettings.Builder(var0, var1);
       MobSpawnSettings.Builder var3 = new MobSpawnSettings.Builder();
-      BiomeDefaultFeatures.farmAnimals(var3);
-      var3.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.WOLF, 8, 4, 4))
-         .addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.RABBIT, 4, 2, 3))
-         .addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.FOX, 8, 2, 4));
+      var3.addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.WOLF, 1, 1, 1))
+         .addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.RABBIT, 8, 2, 3))
+         .addSpawn(MobCategory.CREATURE, new MobSpawnSettings.SpawnerData(EntityType.FOX, 4, 2, 4));
       BiomeDefaultFeatures.commonSpawns(var3);
       globalOverworldGeneration(var2);
       BiomeDefaultFeatures.addFrozenSprings(var2);

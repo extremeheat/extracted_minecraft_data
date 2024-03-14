@@ -11,8 +11,8 @@ public abstract class SpriteIconButton extends Button {
    protected final int spriteWidth;
    protected final int spriteHeight;
 
-   SpriteIconButton(int var1, int var2, Component var3, int var4, int var5, ResourceLocation var6, Button.OnPress var7) {
-      super(0, 0, var1, var2, var3, var7, DEFAULT_NARRATION);
+   SpriteIconButton(int var1, int var2, Component var3, int var4, int var5, ResourceLocation var6, Button.OnPress var7, @Nullable Button.CreateNarration var8) {
+      super(0, 0, var1, var2, var3, var7, var8 == null ? DEFAULT_NARRATION : var8);
       this.spriteWidth = var4;
       this.spriteHeight = var5;
       this.sprite = var6;
@@ -32,6 +32,8 @@ public abstract class SpriteIconButton extends Button {
       private ResourceLocation sprite;
       private int spriteWidth;
       private int spriteHeight;
+      @Nullable
+      Button.CreateNarration narration;
 
       public Builder(Component var1, Button.OnPress var2, boolean var3) {
          super();
@@ -58,20 +60,31 @@ public abstract class SpriteIconButton extends Button {
          return this;
       }
 
+      public SpriteIconButton.Builder narration(Button.CreateNarration var1) {
+         this.narration = var1;
+         return this;
+      }
+
       public SpriteIconButton build() {
          if (this.sprite == null) {
             throw new IllegalStateException("Sprite not set");
          } else {
             return (SpriteIconButton)(this.iconOnly
-               ? new SpriteIconButton.CenteredIcon(this.width, this.height, this.message, this.spriteWidth, this.spriteHeight, this.sprite, this.onPress)
-               : new SpriteIconButton.TextAndIcon(this.width, this.height, this.message, this.spriteWidth, this.spriteHeight, this.sprite, this.onPress));
+               ? new SpriteIconButton.CenteredIcon(
+                  this.width, this.height, this.message, this.spriteWidth, this.spriteHeight, this.sprite, this.onPress, this.narration
+               )
+               : new SpriteIconButton.TextAndIcon(
+                  this.width, this.height, this.message, this.spriteWidth, this.spriteHeight, this.sprite, this.onPress, this.narration
+               ));
          }
       }
    }
 
    public static class CenteredIcon extends SpriteIconButton {
-      protected CenteredIcon(int var1, int var2, Component var3, int var4, int var5, ResourceLocation var6, Button.OnPress var7) {
-         super(var1, var2, var3, var4, var5, var6, var7);
+      protected CenteredIcon(
+         int var1, int var2, Component var3, int var4, int var5, ResourceLocation var6, Button.OnPress var7, @Nullable Button.CreateNarration var8
+      ) {
+         super(var1, var2, var3, var4, var5, var6, var7, var8);
       }
 
       @Override
@@ -88,8 +101,10 @@ public abstract class SpriteIconButton extends Button {
    }
 
    public static class TextAndIcon extends SpriteIconButton {
-      protected TextAndIcon(int var1, int var2, Component var3, int var4, int var5, ResourceLocation var6, Button.OnPress var7) {
-         super(var1, var2, var3, var4, var5, var6, var7);
+      protected TextAndIcon(
+         int var1, int var2, Component var3, int var4, int var5, ResourceLocation var6, Button.OnPress var7, @Nullable Button.CreateNarration var8
+      ) {
+         super(var1, var2, var3, var4, var5, var6, var7, var8);
       }
 
       @Override

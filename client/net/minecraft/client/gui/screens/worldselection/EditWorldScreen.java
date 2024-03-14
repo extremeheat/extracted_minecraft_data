@@ -27,6 +27,7 @@ import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.util.Mth;
+import net.minecraft.util.StringUtil;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.LevelSummary;
@@ -50,6 +51,7 @@ public class EditWorldScreen extends Screen {
    private final LinearLayout layout = LinearLayout.vertical().spacing(5);
    private final BooleanConsumer callback;
    private final LevelStorageSource.LevelStorageAccess levelAccess;
+   private final EditBox nameEdit;
 
    public static EditWorldScreen create(Minecraft var0, LevelStorageSource.LevelStorageAccess var1, BooleanConsumer var2) throws IOException {
       LevelSummary var3 = var1.getSummary(var1.getDataTag());
@@ -63,12 +65,12 @@ public class EditWorldScreen extends Screen {
       Font var5 = var1.font;
       this.layout.addChild(new SpacerElement(200, 20));
       this.layout.addChild(new StringWidget(NAME_LABEL, var5));
-      EditBox var6 = this.layout.addChild(new EditBox(var5, 200, 20, NAME_LABEL));
-      var6.setValue(var3);
-      LinearLayout var7 = LinearLayout.horizontal().spacing(4);
-      Button var8 = var7.addChild(Button.builder(SAVE_BUTTON, var2x -> this.onRename(var6.getValue())).width(98).build());
-      var7.addChild(Button.builder(CommonComponents.GUI_CANCEL, var1x -> this.onClose()).width(98).build());
-      var6.setResponder(var1x -> var8.active = !Util.isBlank(var1x));
+      this.nameEdit = this.layout.addChild(new EditBox(var5, 200, 20, NAME_LABEL));
+      this.nameEdit.setValue(var3);
+      LinearLayout var6 = LinearLayout.horizontal().spacing(4);
+      Button var7 = var6.addChild(Button.builder(SAVE_BUTTON, var1x -> this.onRename(this.nameEdit.getValue())).width(98).build());
+      var6.addChild(Button.builder(CommonComponents.GUI_CANCEL, var1x -> this.onClose()).width(98).build());
+      this.nameEdit.setResponder(var1x -> var7.active = !StringUtil.isBlank(var1x));
       this.layout.addChild(Button.builder(RESET_ICON_BUTTON, var1x -> {
          var2.getIconFile().ifPresent(var0x -> FileUtils.deleteQuietly(var0x.toFile()));
          var1x.active = false;
@@ -99,10 +101,14 @@ public class EditWorldScreen extends Screen {
             var1.setScreen(OptimizeWorldScreen.create(var1, this.callback, var1.getFixerUpper(), var2, var4x));
          }, OPTIMIZE_TITLE, OPTIMIIZE_DESCRIPTION, true))).width(200).build());
       this.layout.addChild(new SpacerElement(200, 20));
-      this.layout.addChild(var7);
-      this.setInitialFocus(var6);
+      this.layout.addChild(var6);
       this.layout.visitWidgets(var1x -> {
       });
+   }
+
+   @Override
+   protected void setInitialFocus() {
+      this.setInitialFocus(this.nameEdit);
    }
 
    @Override

@@ -52,7 +52,9 @@ import net.minecraft.world.level.block.LayeredCauldronBlock;
 import net.minecraft.world.level.block.MangrovePropaguleBlock;
 import net.minecraft.world.level.block.PitcherCropBlock;
 import net.minecraft.world.level.block.SnifferEggBlock;
+import net.minecraft.world.level.block.VaultBlock;
 import net.minecraft.world.level.block.entity.trialspawner.TrialSpawnerState;
+import net.minecraft.world.level.block.entity.vault.VaultState;
 import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.level.block.state.properties.BambooLeaves;
 import net.minecraft.world.level.block.state.properties.BellAttachType;
@@ -510,10 +512,7 @@ public class BlockModelGenerators {
             configureDoorHalf(
                configureDoorHalf(
                   PropertyDispatch.properties(
-                     BlockStateProperties.HORIZONTAL_FACING,
-                     BlockStateProperties.DOUBLE_BLOCK_HALF,
-                     BlockStateProperties.DOOR_HINGE,
-                     BlockStateProperties.OPEN
+                     BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.DOUBLE_BLOCK_HALF, BlockStateProperties.DOOR_HINGE, BlockStateProperties.OPEN
                   ),
                   DoubleBlockHalf.LOWER,
                   var1,
@@ -3408,6 +3407,32 @@ public class BlockModelGenerators {
          })));
    }
 
+   private void createVault() {
+      Block var1 = Blocks.VAULT;
+      TextureMapping var2 = TextureMapping.vault(var1, "_front_off", "_side_off", "_top", "_bottom");
+      TextureMapping var3 = TextureMapping.vault(var1, "_front_on", "_side_on", "_top", "_bottom");
+      TextureMapping var4 = TextureMapping.vault(var1, "_front_ejecting", "_side_on", "_top", "_bottom");
+      TextureMapping var5 = TextureMapping.vault(var1, "_front_ejecting", "_side_on", "_top_ejecting", "_bottom");
+      ResourceLocation var6 = ModelTemplates.VAULT.create(var1, var2, this.modelOutput);
+      ResourceLocation var7 = ModelTemplates.VAULT.createWithSuffix(var1, "_active", var3, this.modelOutput);
+      ResourceLocation var8 = ModelTemplates.VAULT.createWithSuffix(var1, "_unlocking", var4, this.modelOutput);
+      ResourceLocation var9 = ModelTemplates.VAULT.createWithSuffix(var1, "_ejecting_reward", var5, this.modelOutput);
+      this.delegateItemModel(var1, var6);
+      this.blockStateOutput
+         .accept(
+            MultiVariantGenerator.multiVariant(var1)
+               .with(createHorizontalFacingDispatch())
+               .with(PropertyDispatch.property(VaultBlock.STATE).generate(var4x -> {
+                  return switch(var4x) {
+                     case INACTIVE -> Variant.variant().with(VariantProperties.MODEL, var6);
+                     case ACTIVE -> Variant.variant().with(VariantProperties.MODEL, var7);
+                     case UNLOCKING -> Variant.variant().with(VariantProperties.MODEL, var8);
+                     case EJECTING -> Variant.variant().with(VariantProperties.MODEL, var9);
+                  };
+               }))
+         );
+   }
+
    private void createSculkSensor() {
       ResourceLocation var1 = ModelLocationUtils.getModelLocation(Blocks.SCULK_SENSOR, "_inactive");
       ResourceLocation var2 = ModelLocationUtils.getModelLocation(Blocks.SCULK_SENSOR, "_active");
@@ -3945,8 +3970,7 @@ public class BlockModelGenerators {
                      .generate(
                         (var0, var1) -> Variant.variant()
                               .with(
-                                 VariantProperties.MODEL,
-                                 TextureMapping.getBlockTexture(Blocks.TRIPWIRE_HOOK, (var0 ? "_attached" : "") + (var1 ? "_on" : ""))
+                                 VariantProperties.MODEL, TextureMapping.getBlockTexture(Blocks.TRIPWIRE_HOOK, (var0 ? "_attached" : "") + (var1 ? "_on" : ""))
                               )
                      )
                )
@@ -4057,8 +4081,7 @@ public class BlockModelGenerators {
          .accept(
             MultiVariantGenerator.multiVariant(Blocks.SCULK_CATALYST)
                .with(
-                  PropertyDispatch.property(BlockStateProperties.BLOOM)
-                     .generate(var2x -> Variant.variant().with(VariantProperties.MODEL, var2x ? var5 : var4))
+                  PropertyDispatch.property(BlockStateProperties.BLOOM).generate(var2x -> Variant.variant().with(VariantProperties.MODEL, var2x ? var5 : var4))
                )
          );
       this.delegateItemModel(Items.SCULK_CATALYST, var4);
@@ -4068,20 +4091,18 @@ public class BlockModelGenerators {
       Block var1 = Blocks.CHISELED_BOOKSHELF;
       ResourceLocation var2 = ModelLocationUtils.getModelLocation(var1);
       MultiPartGenerator var3 = MultiPartGenerator.multiPart(var1);
-      Map.of(
-            Direction.NORTH,
-            VariantProperties.Rotation.R0,
-            Direction.EAST,
-            VariantProperties.Rotation.R90,
-            Direction.SOUTH,
-            VariantProperties.Rotation.R180,
-            Direction.WEST,
-            VariantProperties.Rotation.R270
+      List.of(
+            Pair.of(Direction.NORTH, VariantProperties.Rotation.R0),
+            Pair.of(Direction.EAST, VariantProperties.Rotation.R90),
+            Pair.of(Direction.SOUTH, VariantProperties.Rotation.R180),
+            Pair.of(Direction.WEST, VariantProperties.Rotation.R270)
          )
-         .forEach((var3x, var4) -> {
-            Condition.TerminalCondition var5 = Condition.condition().term(BlockStateProperties.HORIZONTAL_FACING, var3x);
-            var3.with(var5, Variant.variant().with(VariantProperties.MODEL, var2).with(VariantProperties.Y_ROT, var4).with(VariantProperties.UV_LOCK, true));
-            this.addSlotStateAndRotationVariants(var3, var5, var4);
+         .forEach(var3x -> {
+            Direction var4 = (Direction)var3x.getFirst();
+            VariantProperties.Rotation var5 = (VariantProperties.Rotation)var3x.getSecond();
+            Condition.TerminalCondition var6 = Condition.condition().term(BlockStateProperties.HORIZONTAL_FACING, var4);
+            var3.with(var6, Variant.variant().with(VariantProperties.MODEL, var2).with(VariantProperties.Y_ROT, var5).with(VariantProperties.UV_LOCK, true));
+            this.addSlotStateAndRotationVariants(var3, var6, var5);
          });
       this.blockStateOutput.accept(var3);
       this.delegateItemModel(var1, ModelLocationUtils.getModelLocation(var1, "_inventory"));
@@ -4398,6 +4419,7 @@ public class BlockModelGenerators {
       this.createTrivialCube(Blocks.RAW_COPPER_BLOCK);
       this.createTrivialCube(Blocks.RAW_GOLD_BLOCK);
       this.createRotatedMirroredVariantBlock(Blocks.SCULK);
+      this.createNonTemplateModelBlock(Blocks.HEAVY_CORE);
       this.createPetrifiedOakSlab();
       this.createTrivialCube(Blocks.COPPER_ORE);
       this.createTrivialCube(Blocks.DEEPSLATE_COPPER_ORE);
@@ -4493,6 +4515,7 @@ public class BlockModelGenerators {
       this.createMangrovePropagule();
       this.createMuddyMangroveRoots();
       this.createTrialSpawner();
+      this.createVault();
       this.createNonTemplateHorizontalBlock(Blocks.LADDER);
       this.createSimpleFlatItemModel(Blocks.LADDER);
       this.createNonTemplateHorizontalBlock(Blocks.LECTERN);

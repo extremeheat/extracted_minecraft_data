@@ -35,24 +35,22 @@ public class ClearInventoryCommands {
       var0.register(
          (LiteralArgumentBuilder)((LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("clear").requires(var0x -> var0x.hasPermission(2)))
                .executes(
-                  var0x -> clearInventory(
+                  var0x -> clearUnlimited(
                         (CommandSourceStack)var0x.getSource(),
                         Collections.singleton(((CommandSourceStack)var0x.getSource()).getPlayerOrException()),
-                        var0xx -> true,
-                        -1
+                        var0xx -> true
                      )
                ))
             .then(
                ((RequiredArgumentBuilder)Commands.argument("targets", EntityArgument.players())
-                     .executes(var0x -> clearInventory((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), var0xx -> true, -1)))
+                     .executes(var0x -> clearUnlimited((CommandSourceStack)var0x.getSource(), EntityArgument.getPlayers(var0x, "targets"), var0xx -> true)))
                   .then(
                      ((RequiredArgumentBuilder)Commands.argument("item", ItemPredicateArgument.itemPredicate(var1))
                            .executes(
-                              var0x -> clearInventory(
+                              var0x -> clearUnlimited(
                                     (CommandSourceStack)var0x.getSource(),
                                     EntityArgument.getPlayers(var0x, "targets"),
-                                    ItemPredicateArgument.getItemPredicate(var0x, "item"),
-                                    -1
+                                    ItemPredicateArgument.getItemPredicate(var0x, "item")
                                  )
                            ))
                         .then(
@@ -69,6 +67,10 @@ public class ClearInventoryCommands {
                   )
             )
       );
+   }
+
+   private static int clearUnlimited(CommandSourceStack var0, Collection<ServerPlayer> var1, Predicate<ItemStack> var2) throws CommandSyntaxException {
+      return clearInventory(var0, var1, var2, -1);
    }
 
    private static int clearInventory(CommandSourceStack var0, Collection<ServerPlayer> var1, Predicate<ItemStack> var2, int var3) throws CommandSyntaxException {
@@ -90,16 +92,12 @@ public class ClearInventoryCommands {
          int var7 = var4;
          if (var3 == 0) {
             if (var1.size() == 1) {
-               var0.sendSuccess(
-                  () -> Component.translatable("commands.clear.test.single", var7, ((ServerPlayer)var1.iterator().next()).getDisplayName()), true
-               );
+               var0.sendSuccess(() -> Component.translatable("commands.clear.test.single", var7, ((ServerPlayer)var1.iterator().next()).getDisplayName()), true);
             } else {
                var0.sendSuccess(() -> Component.translatable("commands.clear.test.multiple", var7, var1.size()), true);
             }
          } else if (var1.size() == 1) {
-            var0.sendSuccess(
-               () -> Component.translatable("commands.clear.success.single", var7, ((ServerPlayer)var1.iterator().next()).getDisplayName()), true
-            );
+            var0.sendSuccess(() -> Component.translatable("commands.clear.success.single", var7, ((ServerPlayer)var1.iterator().next()).getDisplayName()), true);
          } else {
             var0.sendSuccess(() -> Component.translatable("commands.clear.success.multiple", var7, var1.size()), true);
          }

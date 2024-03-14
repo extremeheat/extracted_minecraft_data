@@ -11,9 +11,9 @@ import org.slf4j.Logger;
 public class PendingInvite extends ValueObject {
    private static final Logger LOGGER = LogUtils.getLogger();
    public String invitationId;
-   public String worldName;
-   public String worldOwnerName;
-   public UUID worldOwnerUuid;
+   public String realmName;
+   public String realmOwnerName;
+   public UUID realmOwnerUuid;
    public Date date;
 
    public PendingInvite() {
@@ -25,9 +25,9 @@ public class PendingInvite extends ValueObject {
 
       try {
          var1.invitationId = JsonUtils.getStringOr("invitationId", var0, "");
-         var1.worldName = JsonUtils.getStringOr("worldName", var0, "");
-         var1.worldOwnerName = JsonUtils.getStringOr("worldOwnerName", var0, "");
-         var1.worldOwnerUuid = JsonUtils.getUuidOr("worldOwnerUuid", var0, Util.NIL_UUID);
+         var1.realmName = JsonUtils.getStringOr("worldName", var0, "");
+         var1.realmOwnerName = JsonUtils.getStringOr("worldOwnerName", var0, "");
+         var1.realmOwnerUuid = JsonUtils.getUuidOr("worldOwnerUuid", var0, Util.NIL_UUID);
          var1.date = JsonUtils.getDateOr("date", var0);
       } catch (Exception var3) {
          LOGGER.error("Could not parse PendingInvite: {}", var3.getMessage());

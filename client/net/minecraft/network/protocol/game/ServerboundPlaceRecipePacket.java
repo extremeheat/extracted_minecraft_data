@@ -1,11 +1,16 @@
 package net.minecraft.network.protocol.game;
 
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.crafting.RecipeHolder;
 
 public class ServerboundPlaceRecipePacket implements Packet<ServerGamePacketListener> {
+   public static final StreamCodec<FriendlyByteBuf, ServerboundPlaceRecipePacket> STREAM_CODEC = Packet.codec(
+      ServerboundPlaceRecipePacket::write, ServerboundPlaceRecipePacket::new
+   );
    private final int containerId;
    private final ResourceLocation recipe;
    private final boolean shiftDown;
@@ -17,18 +22,22 @@ public class ServerboundPlaceRecipePacket implements Packet<ServerGamePacketList
       this.shiftDown = var3;
    }
 
-   public ServerboundPlaceRecipePacket(FriendlyByteBuf var1) {
+   private ServerboundPlaceRecipePacket(FriendlyByteBuf var1) {
       super();
       this.containerId = var1.readByte();
       this.recipe = var1.readResourceLocation();
       this.shiftDown = var1.readBoolean();
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(FriendlyByteBuf var1) {
       var1.writeByte(this.containerId);
       var1.writeResourceLocation(this.recipe);
       var1.writeBoolean(this.shiftDown);
+   }
+
+   @Override
+   public PacketType<ServerboundPlaceRecipePacket> type() {
+      return GamePacketTypes.SERVERBOUND_PLACE_RECIPE;
    }
 
    public void handle(ServerGamePacketListener var1) {

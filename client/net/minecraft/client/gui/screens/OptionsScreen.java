@@ -1,17 +1,19 @@
 package net.minecraft.client.gui.screens;
 
 import java.util.function.Supplier;
+import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
-import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.LockIconButton;
+import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.layouts.EqualSpacingLayout;
-import net.minecraft.client.gui.layouts.FrameLayout;
 import net.minecraft.client.gui.layouts.GridLayout;
+import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LayoutElement;
-import net.minecraft.client.gui.layouts.SpacerElement;
+import net.minecraft.client.gui.layouts.LayoutSettings;
+import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.controls.ControlsScreen;
 import net.minecraft.client.gui.screens.packs.PackSelectionScreen;
 import net.minecraft.client.gui.screens.telemetry.TelemetryInfoScreen;
@@ -23,6 +25,7 @@ import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.world.Difficulty;
 
 public class OptionsScreen extends Screen {
+   private static final Component TITLE = Component.translatable("options.title");
    private static final Component SKIN_CUSTOMIZATION = Component.translatable("options.skinCustomisation");
    private static final Component SOUNDS = Component.translatable("options.sounds");
    private static final Component VIDEO = Component.translatable("options.video");
@@ -34,32 +37,37 @@ public class OptionsScreen extends Screen {
    private static final Component TELEMETRY = Component.translatable("options.telemetry");
    private static final Component CREDITS_AND_ATTRIBUTION = Component.translatable("options.credits_and_attribution");
    private static final int COLUMNS = 2;
+   private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this, 61, 33);
    private final Screen lastScreen;
    private final Options options;
+   @Nullable
    private CycleButton<Difficulty> difficultyButton;
+   @Nullable
    private LockIconButton lockButton;
 
    public OptionsScreen(Screen var1, Options var2) {
-      super(Component.translatable("options.title"));
+      super(TITLE);
       this.lastScreen = var1;
       this.options = var2;
    }
 
    @Override
    protected void init() {
-      GridLayout var1 = new GridLayout();
-      var1.defaultCellSetting().paddingHorizontal(5).paddingBottom(4).alignHorizontallyCenter();
-      GridLayout.RowHelper var2 = var1.createRowHelper(2);
-      var2.addChild(this.options.fov().createButton(this.minecraft.options, 0, 0, 150));
+      LinearLayout var1 = this.layout.addToHeader(LinearLayout.vertical().spacing(8));
+      var1.addChild(new StringWidget(TITLE, this.font), LayoutSettings::alignHorizontallyCenter);
+      LinearLayout var2 = var1.addChild(LinearLayout.horizontal()).spacing(8);
+      var2.addChild(this.options.fov().createButton(this.minecraft.options));
       var2.addChild(this.createOnlineButton());
-      var2.addChild(SpacerElement.height(26), 2);
-      var2.addChild(this.openScreenButton(SKIN_CUSTOMIZATION, () -> new SkinCustomizationScreen(this, this.options)));
-      var2.addChild(this.openScreenButton(SOUNDS, () -> new SoundOptionsScreen(this, this.options)));
-      var2.addChild(this.openScreenButton(VIDEO, () -> new VideoSettingsScreen(this, this.options)));
-      var2.addChild(this.openScreenButton(CONTROLS, () -> new ControlsScreen(this, this.options)));
-      var2.addChild(this.openScreenButton(LANGUAGE, () -> new LanguageSelectScreen(this, this.options, this.minecraft.getLanguageManager())));
-      var2.addChild(this.openScreenButton(CHAT, () -> new ChatOptionsScreen(this, this.options)));
-      var2.addChild(
+      GridLayout var3 = new GridLayout();
+      var3.defaultCellSetting().paddingHorizontal(4).paddingBottom(4).alignHorizontallyCenter();
+      GridLayout.RowHelper var4 = var3.createRowHelper(2);
+      var4.addChild(this.openScreenButton(SKIN_CUSTOMIZATION, () -> new SkinCustomizationScreen(this, this.options)));
+      var4.addChild(this.openScreenButton(SOUNDS, () -> new SoundOptionsScreen(this, this.options)));
+      var4.addChild(this.openScreenButton(VIDEO, () -> new VideoSettingsScreen(this, this.options)));
+      var4.addChild(this.openScreenButton(CONTROLS, () -> new ControlsScreen(this, this.options)));
+      var4.addChild(this.openScreenButton(LANGUAGE, () -> new LanguageSelectScreen(this, this.options, this.minecraft.getLanguageManager())));
+      var4.addChild(this.openScreenButton(CHAT, () -> new ChatOptionsScreen(this, this.options)));
+      var4.addChild(
          this.openScreenButton(
             RESOURCEPACK,
             () -> new PackSelectionScreen(
@@ -70,17 +78,23 @@ public class OptionsScreen extends Screen {
                )
          )
       );
-      var2.addChild(this.openScreenButton(ACCESSIBILITY, () -> new AccessibilityOptionsScreen(this, this.options)));
-      var2.addChild(this.openScreenButton(TELEMETRY, () -> new TelemetryInfoScreen(this, this.options)));
-      var2.addChild(this.openScreenButton(CREDITS_AND_ATTRIBUTION, () -> new CreditsAndAttributionScreen(this)));
-      var2.addChild(
-         Button.builder(CommonComponents.GUI_DONE, var1x -> this.minecraft.setScreen(this.lastScreen)).width(200).build(),
-         2,
-         var2.newCellSettings().paddingTop(6)
-      );
-      var1.arrangeElements();
-      FrameLayout.alignInRectangle(var1, 0, this.height / 6 - 12, this.width, this.height, 0.5F, 0.0F);
-      var1.visitWidgets(this::addRenderableWidget);
+      var4.addChild(this.openScreenButton(ACCESSIBILITY, () -> new AccessibilityOptionsScreen(this, this.options)));
+      var4.addChild(this.openScreenButton(TELEMETRY, () -> new TelemetryInfoScreen(this, this.options)));
+      var4.addChild(this.openScreenButton(CREDITS_AND_ATTRIBUTION, () -> new CreditsAndAttributionScreen(this)));
+      this.layout.addToContents(var3);
+      this.layout.addToFooter(Button.builder(CommonComponents.GUI_DONE, var1x -> this.onClose()).width(200).build());
+      this.layout.visitWidgets(this::addRenderableWidget);
+      this.repositionElements();
+   }
+
+   @Override
+   protected void repositionElements() {
+      this.layout.arrangeElements();
+   }
+
+   @Override
+   public void onClose() {
+      this.minecraft.setScreen(this.lastScreen);
    }
 
    private void applyPacks(PackRepository var1) {
@@ -135,7 +149,7 @@ public class OptionsScreen extends Screen {
 
    private void lockCallback(boolean var1) {
       this.minecraft.setScreen(this);
-      if (var1 && this.minecraft.level != null) {
+      if (var1 && this.minecraft.level != null && this.lockButton != null && this.difficultyButton != null) {
          this.minecraft.getConnection().send(new ServerboundLockDifficultyPacket(true));
          this.lockButton.setLocked(true);
          this.lockButton.active = false;
@@ -146,12 +160,6 @@ public class OptionsScreen extends Screen {
    @Override
    public void removed() {
       this.options.save();
-   }
-
-   @Override
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, this.title, this.width / 2, 15, 16777215);
    }
 
    private Button openScreenButton(Component var1, Supplier<Screen> var2) {

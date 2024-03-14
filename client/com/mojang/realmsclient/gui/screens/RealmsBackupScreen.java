@@ -13,39 +13,41 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.function.Supplier;
 import javax.annotation.Nullable;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.ImageButton;
-import net.minecraft.client.gui.components.ObjectSelectionList;
-import net.minecraft.client.gui.components.Tooltip;
-import net.minecraft.client.gui.components.WidgetSprites;
+import net.minecraft.client.gui.components.ContainerObjectSelectionList;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
+import net.minecraft.client.gui.layouts.LinearLayout;
+import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.realms.RealmsObjectSelectionList;
 import net.minecraft.realms.RealmsScreen;
-import net.minecraft.resources.ResourceLocation;
 import org.slf4j.Logger;
 
 public class RealmsBackupScreen extends RealmsScreen {
    static final Logger LOGGER = LogUtils.getLogger();
+   private static final Component TITLE = Component.translatable("mco.configure.world.backup");
    static final Component RESTORE_TOOLTIP = Component.translatable("mco.backup.button.restore");
    static final Component HAS_CHANGES_TOOLTIP = Component.translatable("mco.backup.changes.tooltip");
-   private static final Component TITLE = Component.translatable("mco.configure.world.backup");
    private static final Component NO_BACKUPS_LABEL = Component.translatable("mco.backup.nobackups");
-   private final RealmsConfigureWorldScreen lastScreen;
-   List<Backup> backups = Collections.emptyList();
-   RealmsBackupScreen.BackupObjectSelectionList backupObjectSelectionList;
-   int selectedBackup = -1;
-   private final int slotId;
-   private Button downloadButton;
-   private Button restoreButton;
-   private Button changesButton;
-   Boolean noBackups = false;
-   final RealmsServer serverData;
    private static final String UPLOADED_KEY = "uploaded";
+   private static final int PADDING = 8;
+   final RealmsConfigureWorldScreen lastScreen;
+   List<Backup> backups = Collections.emptyList();
+   @Nullable
+   RealmsBackupScreen.BackupObjectSelectionList backupList;
+   final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
+   private final int slotId;
+   @Nullable
+   Button downloadButton;
+   final RealmsServer serverData;
+   boolean noBackups = false;
 
    public RealmsBackupScreen(RealmsConfigureWorldScreen var1, RealmsServer var2, int var3) {
       super(TITLE);
@@ -56,6 +58,42 @@ public class RealmsBackupScreen extends RealmsScreen {
 
    @Override
    public void init() {
+      this.layout.addTitleHeader(TITLE, this.font);
+      this.backupList = this.layout.addToContents(new RealmsBackupScreen.BackupObjectSelectionList());
+      LinearLayout var1 = this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
+      this.downloadButton = var1.addChild(Button.builder(Component.translatable("mco.backup.button.download"), var1x -> this.downloadClicked()).build());
+      this.downloadButton.active = false;
+      var1.addChild(Button.builder(CommonComponents.GUI_BACK, var1x -> this.onClose()).build());
+      this.layout.visitWidgets(var1x -> {
+      });
+      this.repositionElements();
+      this.fetchRealmsBackups();
+   }
+
+   @Override
+   public void render(GuiGraphics var1, int var2, int var3, float var4) {
+      super.render(var1, var2, var3, var4);
+      if (this.noBackups && this.backupList != null) {
+         var1.drawString(
+            this.font,
+            NO_BACKUPS_LABEL,
+            this.width / 2 - this.font.width(NO_BACKUPS_LABEL) / 2,
+            this.backupList.getY() + this.backupList.getHeight() / 2 - 9 / 2,
+            -1,
+            false
+         );
+      }
+   }
+
+   @Override
+   protected void repositionElements() {
+      this.layout.arrangeElements();
+      if (this.backupList != null) {
+         this.backupList.updateSize(this.width, this.layout);
+      }
+   }
+
+   private void fetchRealmsBackups() {
       (new Thread("Realms-fetch-backups") {
          @Override
          public void run() {
@@ -66,10 +104,16 @@ public class RealmsBackupScreen extends RealmsScreen {
                RealmsBackupScreen.this.minecraft.execute(() -> {
                   RealmsBackupScreen.this.backups = var2;
                   RealmsBackupScreen.this.noBackups = RealmsBackupScreen.this.backups.isEmpty();
-                  RealmsBackupScreen.this.backupObjectSelectionList.clear();
+                  if (!RealmsBackupScreen.this.noBackups && RealmsBackupScreen.this.downloadButton != null) {
+                     RealmsBackupScreen.this.downloadButton.active = true;
+                  }
 
-                  for(Backup var3xx : RealmsBackupScreen.this.backups) {
-                     RealmsBackupScreen.this.backupObjectSelectionList.addEntry(var3xx);
+                  if (RealmsBackupScreen.this.backupList != null) {
+                     RealmsBackupScreen.this.backupList.children().clear();
+
+                     for(Backup var3xx : RealmsBackupScreen.this.backups) {
+                        RealmsBackupScreen.this.backupList.addEntry(var3xx);
+                     }
                   }
                });
             } catch (RealmsServiceException var3) {
@@ -77,127 +121,59 @@ public class RealmsBackupScreen extends RealmsScreen {
             }
          }
       }).start();
-      this.downloadButton = this.addRenderableWidget(
-         Button.builder(Component.translatable("mco.backup.button.download"), var1 -> this.downloadClicked())
-            .bounds(this.width - 135, row(1), 120, 20)
-            .build()
-      );
-      this.restoreButton = this.addRenderableWidget(
-         Button.builder(Component.translatable("mco.backup.button.restore"), var1 -> this.restoreClicked(this.selectedBackup))
-            .bounds(this.width - 135, row(3), 120, 20)
-            .build()
-      );
-      this.changesButton = this.addRenderableWidget(Button.builder(Component.translatable("mco.backup.changes.tooltip"), var1 -> {
-         this.minecraft.setScreen(new RealmsBackupInfoScreen(this, this.backups.get(this.selectedBackup)));
-         this.selectedBackup = -1;
-      }).bounds(this.width - 135, row(5), 120, 20).build());
-      this.addRenderableWidget(
-         Button.builder(CommonComponents.GUI_BACK, var1 -> this.minecraft.setScreen(this.lastScreen))
-            .bounds(this.width - 100, this.height - 35, 85, 20)
-            .build()
-      );
-      this.backupObjectSelectionList = this.addRenderableWidget(new RealmsBackupScreen.BackupObjectSelectionList());
-      this.magicalSpecialHackyFocus(this.backupObjectSelectionList);
-      this.updateButtonStates();
-   }
-
-   void updateButtonStates() {
-      this.restoreButton.visible = this.shouldRestoreButtonBeVisible();
-      this.changesButton.visible = this.shouldChangesButtonBeVisible();
-   }
-
-   private boolean shouldChangesButtonBeVisible() {
-      if (this.selectedBackup == -1) {
-         return false;
-      } else {
-         return !this.backups.get(this.selectedBackup).changeList.isEmpty();
-      }
-   }
-
-   private boolean shouldRestoreButtonBeVisible() {
-      if (this.selectedBackup == -1) {
-         return false;
-      } else {
-         return !this.serverData.expired;
-      }
    }
 
    @Override
-   public boolean keyPressed(int var1, int var2, int var3) {
-      if (var1 == 256) {
-         this.minecraft.setScreen(this.lastScreen);
-         return true;
-      } else {
-         return super.keyPressed(var1, var2, var3);
-      }
-   }
-
-   void restoreClicked(int var1) {
-      if (var1 >= 0 && var1 < this.backups.size() && !this.serverData.expired) {
-         this.selectedBackup = var1;
-         Date var2 = this.backups.get(var1).lastModifiedDate;
-         String var3 = DateFormat.getDateTimeInstance(3, 3).format(var2);
-         Component var4 = RealmsUtil.convertToAgePresentationFromInstant(var2);
-         MutableComponent var5 = Component.translatable("mco.configure.world.restore.question.line1", var3, var4);
-         MutableComponent var6 = Component.translatable("mco.configure.world.restore.question.line2");
-         this.minecraft.setScreen(new RealmsLongConfirmationScreen(var1x -> {
-            if (var1x) {
-               this.restore();
-            } else {
-               this.selectedBackup = -1;
-               this.minecraft.setScreen(this);
-            }
-         }, RealmsLongConfirmationScreen.Type.WARNING, var5, var6, true));
-      }
+   public void onClose() {
+      this.minecraft.setScreen(this.lastScreen);
    }
 
    private void downloadClicked() {
       MutableComponent var1 = Component.translatable("mco.configure.world.restore.download.question.line1");
       MutableComponent var2 = Component.translatable("mco.configure.world.restore.download.question.line2");
-      this.minecraft.setScreen(new RealmsLongConfirmationScreen(var1x -> {
-         if (var1x) {
-            this.downloadWorldData();
-         } else {
-            this.minecraft.setScreen(this);
-         }
-      }, RealmsLongConfirmationScreen.Type.INFO, var1, var2, true));
-   }
-
-   private void downloadWorldData() {
       this.minecraft
          .setScreen(
-            new RealmsLongRunningMcoTaskScreen(
-               this.lastScreen.getNewScreen(),
-               new DownloadTask(
-                  this.serverData.id,
-                  this.slotId,
-                  this.serverData.name + " (" + this.serverData.slots.get(this.serverData.activeSlot).getSlotName(this.serverData.activeSlot) + ")",
-                  this
-               )
+            new RealmsLongConfirmationScreen(
+               var1x -> {
+                  if (var1x) {
+                     this.minecraft
+                        .setScreen(
+                           new RealmsLongRunningMcoTaskScreen(
+                              this.lastScreen.getNewScreen(),
+                              new DownloadTask(
+                                 this.serverData.id,
+                                 this.slotId,
+                                 this.serverData.name
+                                    + " ("
+                                    + this.serverData.slots.get(this.serverData.activeSlot).getSlotName(this.serverData.activeSlot)
+                                    + ")",
+                                 this
+                              )
+                           )
+                        );
+                  } else {
+                     this.minecraft.setScreen(this);
+                  }
+               },
+               RealmsLongConfirmationScreen.Type.INFO,
+               var1,
+               var2,
+               true
             )
          );
    }
 
-   private void restore() {
-      Backup var1 = this.backups.get(this.selectedBackup);
-      this.selectedBackup = -1;
-      this.minecraft.setScreen(new RealmsLongRunningMcoTaskScreen(this.lastScreen.getNewScreen(), new RestoreTask(var1, this.serverData.id, this.lastScreen)));
-   }
+   class BackupObjectSelectionList extends ContainerObjectSelectionList<RealmsBackupScreen.Entry> {
+      private static final int ITEM_HEIGHT = 36;
 
-   @Override
-   public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, this.title, this.width / 2, 12, -1);
-      if (this.noBackups) {
-         var1.drawString(this.font, NO_BACKUPS_LABEL, 20, this.height / 2 - 10, -1, false);
-      }
-
-      this.downloadButton.active = !this.noBackups;
-   }
-
-   class BackupObjectSelectionList extends RealmsObjectSelectionList<RealmsBackupScreen.Entry> {
       public BackupObjectSelectionList() {
-         super(RealmsBackupScreen.this.width - 150, RealmsBackupScreen.this.height - 47, 32, 36);
+         super(
+            Minecraft.getInstance(),
+            RealmsBackupScreen.this.width,
+            RealmsBackupScreen.this.layout.getContentHeight(),
+            RealmsBackupScreen.this.layout.getHeaderHeight(),
+            36
+         );
       }
 
       public void addEntry(Backup var1) {
@@ -205,64 +181,50 @@ public class RealmsBackupScreen extends RealmsScreen {
       }
 
       @Override
-      public int getRowWidth() {
-         return (int)((double)this.width * 0.93);
-      }
-
-      @Override
       public int getMaxPosition() {
-         return this.getItemCount() * 36;
+         return this.getItemCount() * 36 + this.headerHeight;
       }
 
       @Override
-      public int getScrollbarPosition() {
-         return this.width - 5;
-      }
-
-      @Override
-      public void selectItem(int var1) {
-         super.selectItem(var1);
-         this.selectInviteListItem(var1);
-      }
-
-      public void selectInviteListItem(int var1) {
-         RealmsBackupScreen.this.selectedBackup = var1;
-         RealmsBackupScreen.this.updateButtonStates();
-      }
-
-      public void setSelected(@Nullable RealmsBackupScreen.Entry var1) {
-         super.setSelected(var1);
-         RealmsBackupScreen.this.selectedBackup = this.children().indexOf(var1);
-         RealmsBackupScreen.this.updateButtonStates();
+      public int getRowWidth() {
+         return 300;
       }
    }
 
-   class Entry extends ObjectSelectionList.Entry<RealmsBackupScreen.Entry> {
+   class Entry extends ContainerObjectSelectionList.Entry<RealmsBackupScreen.Entry> {
       private static final int Y_PADDING = 2;
-      private static final int X_PADDING = 7;
-      private static final WidgetSprites CHANGES_BUTTON_SPRITES = new WidgetSprites(
-         new ResourceLocation("backup/changes"), new ResourceLocation("backup/changes_highlighted")
-      );
-      private static final WidgetSprites RESTORE_BUTTON_SPRITES = new WidgetSprites(
-         new ResourceLocation("backup/restore"), new ResourceLocation("backup/restore_highlighted")
-      );
       private final Backup backup;
+      @Nullable
+      private Button changesButton;
+      @Nullable
+      private Button restoreButton;
       private final List<AbstractWidget> children = new ArrayList<>();
-      @Nullable
-      private ImageButton restoreButton;
-      @Nullable
-      private ImageButton changesButton;
 
       public Entry(Backup var2) {
          super();
          this.backup = var2;
          this.populateChangeList(var2);
          if (!var2.changeList.isEmpty()) {
-            this.addChangesButton();
+            this.restoreButton = Button.builder(
+                  RealmsBackupScreen.HAS_CHANGES_TOOLTIP,
+                  var1x -> RealmsBackupScreen.this.minecraft.setScreen(new RealmsBackupInfoScreen(RealmsBackupScreen.this, this.backup))
+               )
+               .width(8 + RealmsBackupScreen.this.font.width(RealmsBackupScreen.HAS_CHANGES_TOOLTIP))
+               .createNarration(
+                  var1x -> CommonComponents.joinForNarration(Component.translatable("mco.backup.narration", this.getShortBackupDate()), var1x.get())
+               )
+               .build();
+            this.children.add(this.restoreButton);
          }
 
          if (!RealmsBackupScreen.this.serverData.expired) {
-            this.addRestoreButton();
+            this.changesButton = Button.builder(RealmsBackupScreen.RESTORE_TOOLTIP, var1x -> this.restoreClicked())
+               .width(8 + RealmsBackupScreen.this.font.width(RealmsBackupScreen.HAS_CHANGES_TOOLTIP))
+               .createNarration(
+                  var1x -> CommonComponents.joinForNarration(Component.translatable("mco.backup.narration", this.getShortBackupDate()), var1x.get())
+               )
+               .build();
+            this.children.add(this.changesButton);
          }
       }
 
@@ -293,80 +255,82 @@ public class RealmsBackupScreen extends RealmsScreen {
          }
       }
 
-      private void addChangesButton() {
-         boolean var1 = true;
-         boolean var2 = true;
-         int var3 = RealmsBackupScreen.this.backupObjectSelectionList.getRowRight() - 9 - 28;
-         int var4 = RealmsBackupScreen.this.backupObjectSelectionList.getRowTop(RealmsBackupScreen.this.backups.indexOf(this.backup)) + 2;
-         this.changesButton = new ImageButton(
-            var3,
-            var4,
-            9,
-            9,
-            CHANGES_BUTTON_SPRITES,
-            var1x -> RealmsBackupScreen.this.minecraft.setScreen(new RealmsBackupInfoScreen(RealmsBackupScreen.this, this.backup)),
-            CommonComponents.EMPTY
-         );
-         this.changesButton.setTooltip(Tooltip.create(RealmsBackupScreen.HAS_CHANGES_TOOLTIP));
-         this.children.add(this.changesButton);
+      private String getShortBackupDate() {
+         return DateFormat.getDateTimeInstance(3, 3).format(this.backup.lastModifiedDate);
       }
 
-      private void addRestoreButton() {
-         boolean var1 = true;
-         boolean var2 = true;
-         int var3 = RealmsBackupScreen.this.backupObjectSelectionList.getRowRight() - 17 - 7;
-         int var4 = RealmsBackupScreen.this.backupObjectSelectionList.getRowTop(RealmsBackupScreen.this.backups.indexOf(this.backup)) + 2;
-         this.restoreButton = new ImageButton(
-            var3,
-            var4,
-            17,
-            10,
-            RESTORE_BUTTON_SPRITES,
-            var1x -> RealmsBackupScreen.this.restoreClicked(RealmsBackupScreen.this.backups.indexOf(this.backup)),
-            CommonComponents.EMPTY
-         );
-         this.restoreButton.setTooltip(Tooltip.create(RealmsBackupScreen.RESTORE_TOOLTIP));
-         this.children.add(this.restoreButton);
+      private void restoreClicked() {
+         Component var1 = RealmsUtil.convertToAgePresentationFromInstant(this.backup.lastModifiedDate);
+         MutableComponent var2 = Component.translatable("mco.configure.world.restore.question.line1", this.getShortBackupDate(), var1);
+         MutableComponent var3 = Component.translatable("mco.configure.world.restore.question.line2");
+         RealmsBackupScreen.this.minecraft
+            .setScreen(
+               new RealmsLongConfirmationScreen(
+                  var1x -> {
+                     if (var1x) {
+                        RealmsBackupScreen.this.minecraft
+                           .setScreen(
+                              new RealmsLongRunningMcoTaskScreen(
+                                 RealmsBackupScreen.this.lastScreen.getNewScreen(),
+                                 new RestoreTask(this.backup, RealmsBackupScreen.this.serverData.id, RealmsBackupScreen.this.lastScreen)
+                              )
+                           );
+                     } else {
+                        RealmsBackupScreen.this.minecraft.setScreen(RealmsBackupScreen.this);
+                     }
+                  },
+                  RealmsLongConfirmationScreen.Type.WARNING,
+                  var2,
+                  var3,
+                  true
+               )
+            );
       }
 
       @Override
-      public boolean mouseClicked(double var1, double var3, int var5) {
-         if (this.restoreButton != null) {
-            this.restoreButton.mouseClicked(var1, var3, var5);
-         }
+      public List<? extends GuiEventListener> children() {
+         return this.children;
+      }
 
-         if (this.changesButton != null) {
-            this.changesButton.mouseClicked(var1, var3, var5);
-         }
-
-         return true;
+      @Override
+      public List<? extends NarratableEntry> narratables() {
+         return this.children;
       }
 
       @Override
       public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
-         int var11 = this.backup.isUploadedVersion() ? -8388737 : 16777215;
+         int var11 = var3 + var6 / 2;
+         int var12 = var11 - 9 - 2;
+         int var13 = var11 + 2;
+         int var14 = this.backup.isUploadedVersion() ? -8388737 : -1;
          var1.drawString(
             RealmsBackupScreen.this.font,
             Component.translatable("mco.backup.entry", RealmsUtil.convertToAgePresentationFromInstant(this.backup.lastModifiedDate)),
             var4,
-            var3 + 1,
-            var11,
+            var12,
+            var14,
             false
          );
-         var1.drawString(RealmsBackupScreen.this.font, this.getMediumDatePresentation(this.backup.lastModifiedDate), var4, var3 + 12, 5000268, false);
-         this.children.forEach(var5x -> {
-            var5x.setY(var3 + 2);
-            var5x.render(var1, var7, var8, var10);
-         });
+         var1.drawString(RealmsBackupScreen.this.font, this.getMediumDatePresentation(this.backup.lastModifiedDate), var4, var13, 5000268, false);
+         int var15 = 0;
+         int var16 = var3 + var6 / 2 - 10;
+         if (this.changesButton != null) {
+            var15 += this.changesButton.getWidth() + 8;
+            this.changesButton.setX(var4 + var5 - var15);
+            this.changesButton.setY(var16);
+            this.changesButton.render(var1, var7, var8, var10);
+         }
+
+         if (this.restoreButton != null) {
+            var15 += this.restoreButton.getWidth() + 8;
+            this.restoreButton.setX(var4 + var5 - var15);
+            this.restoreButton.setY(var16);
+            this.restoreButton.render(var1, var7, var8, var10);
+         }
       }
 
       private String getMediumDatePresentation(Date var1) {
          return DateFormat.getDateTimeInstance(3, 3).format(var1);
-      }
-
-      @Override
-      public Component getNarration() {
-         return Component.translatable("narrator.select", this.backup.lastModifiedDate.toString());
       }
    }
 }

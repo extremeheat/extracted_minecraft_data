@@ -107,12 +107,7 @@ public class SinglePoolElement extends StructurePoolElement {
 
    @VisibleForTesting
    static void sortBySelectionPriority(List<StructureTemplate.StructureBlockInfo> var0) {
-      var0.sort(
-         Comparator.<StructureTemplate.StructureBlockInfo>comparingInt(
-               var0x -> Optionull.mapOrDefault(var0x.nbt(), var0xx -> var0xx.getInt("selection_priority"), 0)
-            )
-            .reversed()
-      );
+      var0.sort(Comparator.comparingInt(var0x -> Optionull.mapOrDefault(var0x.nbt(), var0xx -> var0xx.getInt("selection_priority"), 0)).reversed());
    }
 
    @Override

@@ -1,7 +1,8 @@
 package net.minecraft.world.entity.monster;
 
-import java.util.List;
 import java.util.UUID;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -11,14 +12,10 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -36,18 +33,16 @@ import net.minecraft.world.entity.projectile.ThrownPotion;
 import net.minecraft.world.entity.raid.Raider;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.alchemy.Potion;
-import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Vector3f;
 
 public class Witch extends Raider implements RangedAttackMob {
    private static final UUID SPEED_MODIFIER_DRINKING_UUID = UUID.fromString("5CD17E52-A79A-43D3-A529-90FDE04B181E");
    private static final AttributeModifier SPEED_MODIFIER_DRINKING = new AttributeModifier(
-      SPEED_MODIFIER_DRINKING_UUID, "Drinking speed penalty", -0.25, AttributeModifier.Operation.ADDITION
+      SPEED_MODIFIER_DRINKING_UUID, "Drinking speed penalty", -0.25, AttributeModifier.Operation.ADD_VALUE
    );
    private static final EntityDataAccessor<Boolean> DATA_USING_ITEM = SynchedEntityData.defineId(Witch.class, EntityDataSerializers.BOOLEAN);
    private int usingTime;
@@ -76,9 +71,9 @@ public class Witch extends Raider implements RangedAttackMob {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.getEntityData().define(DATA_USING_ITEM, false);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_USING_ITEM, false);
    }
 
    @Override
@@ -121,22 +116,18 @@ public class Witch extends Raider implements RangedAttackMob {
          if (this.isDrinkingPotion()) {
             if (this.usingTime-- <= 0) {
                this.setUsingItem(false);
-               ItemStack var5 = this.getMainHandItem();
+               ItemStack var3 = this.getMainHandItem();
                this.setItemSlot(EquipmentSlot.MAINHAND, ItemStack.EMPTY);
-               if (var5.is(Items.POTION)) {
-                  List var6 = PotionUtils.getMobEffects(var5);
-                  if (var6 != null) {
-                     for(MobEffectInstance var4 : var6) {
-                        this.addEffect(new MobEffectInstance(var4));
-                     }
-                  }
+               PotionContents var4 = var3.get(DataComponents.POTION_CONTENTS);
+               if (var3.is(Items.POTION) && var4 != null) {
+                  var4.forEachEffect(this::addEffect);
                }
 
                this.gameEvent(GameEvent.DRINK);
-               this.getAttribute(Attributes.MOVEMENT_SPEED).removeModifier(SPEED_MODIFIER_DRINKING.getId());
+               this.getAttribute(Attributes.MOVEMENT_SPEED).removeModifier(SPEED_MODIFIER_DRINKING.id());
             }
          } else {
-            Potion var1 = null;
+            Holder var1 = null;
             if (this.random.nextFloat() < 0.15F && this.isEyeInFluid(FluidTags.WATER) && !this.hasEffect(MobEffects.WATER_BREATHING)) {
                var1 = Potions.WATER_BREATHING;
             } else if (this.random.nextFloat() < 0.15F
@@ -153,7 +144,7 @@ public class Witch extends Raider implements RangedAttackMob {
             }
 
             if (var1 != null) {
-               this.setItemSlot(EquipmentSlot.MAINHAND, PotionUtils.setPotion(new ItemStack(Items.POTION), var1));
+               this.setItemSlot(EquipmentSlot.MAINHAND, PotionContents.createItemStack(Items.POTION, var1));
                this.usingTime = this.getMainHandItem().getUseDuration();
                this.setUsingItem(true);
                if (!this.isSilent()) {
@@ -171,7 +162,7 @@ public class Witch extends Raider implements RangedAttackMob {
                }
 
                AttributeInstance var2 = this.getAttribute(Attributes.MOVEMENT_SPEED);
-               var2.removeModifier(SPEED_MODIFIER_DRINKING.getId());
+               var2.removeModifier(SPEED_MODIFIER_DRINKING.id());
                var2.addTransientModifier(SPEED_MODIFIER_DRINKING);
             }
          }
@@ -231,7 +222,7 @@ public class Witch extends Raider implements RangedAttackMob {
          double var6 = var1.getEyeY() - 1.100000023841858 - this.getY();
          double var8 = var1.getZ() + var3.z - this.getZ();
          double var10 = Math.sqrt(var4 * var4 + var8 * var8);
-         Potion var12 = Potions.HARMING;
+         Holder var12 = Potions.HARMING;
          if (var1 instanceof Raider) {
             if (var1.getHealth() <= 4.0F) {
                var12 = Potions.HEALING;
@@ -249,7 +240,7 @@ public class Witch extends Raider implements RangedAttackMob {
          }
 
          ThrownPotion var13 = new ThrownPotion(this.level(), this);
-         var13.setItem(PotionUtils.setPotion(new ItemStack(Items.SPLASH_POTION), var12));
+         var13.setItem(PotionContents.createItemStack(Items.SPLASH_POTION, var12));
          var13.setXRot(var13.getXRot() - -20.0F);
          var13.shoot(var4, var6 + var10 * 0.2, var8, 0.75F, 8.0F);
          if (!this.isSilent()) {
@@ -261,16 +252,6 @@ public class Witch extends Raider implements RangedAttackMob {
 
          this.level().addFreshEntity(var13);
       }
-   }
-
-   @Override
-   protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
-      return 1.62F;
-   }
-
-   @Override
-   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      return new Vector3f(0.0F, var2.height + 0.3125F * var3, 0.0F);
    }
 
    @Override

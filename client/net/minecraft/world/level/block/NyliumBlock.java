@@ -38,7 +38,7 @@ public class NyliumBlock extends Block implements BonemealableBlock {
    }
 
    @Override
-   public void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void randomTick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (!canBeNylium(var1, var2, var3)) {
          var2.setBlockAndUpdate(var3, Blocks.NETHERRACK.defaultBlockState());
       }
@@ -80,5 +80,10 @@ public class NyliumBlock extends Block implements BonemealableBlock {
       BlockPos var6
    ) {
       var1.getHolder(var2).ifPresent(var4x -> ((ConfiguredFeature)var4x.value()).place(var3, var4, var5, var6));
+   }
+
+   @Override
+   public BonemealableBlock.Type getType() {
+      return BonemealableBlock.Type.NEIGHBOR_SPREADER;
    }
 }

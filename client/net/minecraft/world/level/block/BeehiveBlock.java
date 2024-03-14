@@ -7,8 +7,8 @@ import net.minecraft.Util;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -17,8 +17,9 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.Bee;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -27,10 +28,10 @@ import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.WitherSkull;
 import net.minecraft.world.entity.vehicle.MinecartTNT;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
@@ -72,12 +73,12 @@ public class BeehiveBlock extends BaseEntityBlock {
    }
 
    @Override
-   public boolean hasAnalogOutputSignal(BlockState var1) {
+   protected boolean hasAnalogOutputSignal(BlockState var1) {
       return true;
    }
 
    @Override
-   public int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
+   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
       return var1.getValue(HONEY_LEVEL);
    }
 
@@ -120,50 +121,49 @@ public class BeehiveBlock extends BaseEntityBlock {
    }
 
    @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
-      ItemStack var7 = var4.getItemInHand(var5);
-      int var8 = var1.getValue(HONEY_LEVEL);
+   protected ItemInteractionResult useItemOn(ItemStack var1, BlockState var2, Level var3, BlockPos var4, Player var5, InteractionHand var6, BlockHitResult var7) {
+      int var8 = var2.getValue(HONEY_LEVEL);
       boolean var9 = false;
       if (var8 >= 5) {
-         Item var10 = var7.getItem();
-         if (var7.is(Items.SHEARS)) {
-            var2.playSound(var4, var4.getX(), var4.getY(), var4.getZ(), SoundEvents.BEEHIVE_SHEAR, SoundSource.BLOCKS, 1.0F, 1.0F);
-            dropHoneycomb(var2, var3);
-            var7.hurtAndBreak(1, var4, var1x -> var1x.broadcastBreakEvent(var5));
+         Item var10 = var1.getItem();
+         if (var1.is(Items.SHEARS)) {
+            var3.playSound(var5, var5.getX(), var5.getY(), var5.getZ(), SoundEvents.BEEHIVE_SHEAR, SoundSource.BLOCKS, 1.0F, 1.0F);
+            dropHoneycomb(var3, var4);
+            var1.hurtAndBreak(1, var5, LivingEntity.getSlotForHand(var6));
             var9 = true;
-            var2.gameEvent(var4, GameEvent.SHEAR, var3);
-         } else if (var7.is(Items.GLASS_BOTTLE)) {
-            var7.shrink(1);
-            var2.playSound(var4, var4.getX(), var4.getY(), var4.getZ(), SoundEvents.BOTTLE_FILL, SoundSource.BLOCKS, 1.0F, 1.0F);
-            if (var7.isEmpty()) {
-               var4.setItemInHand(var5, new ItemStack(Items.HONEY_BOTTLE));
-            } else if (!var4.getInventory().add(new ItemStack(Items.HONEY_BOTTLE))) {
-               var4.drop(new ItemStack(Items.HONEY_BOTTLE), false);
+            var3.gameEvent(var5, GameEvent.SHEAR, var4);
+         } else if (var1.is(Items.GLASS_BOTTLE)) {
+            var1.shrink(1);
+            var3.playSound(var5, var5.getX(), var5.getY(), var5.getZ(), SoundEvents.BOTTLE_FILL, SoundSource.BLOCKS, 1.0F, 1.0F);
+            if (var1.isEmpty()) {
+               var5.setItemInHand(var6, new ItemStack(Items.HONEY_BOTTLE));
+            } else if (!var5.getInventory().add(new ItemStack(Items.HONEY_BOTTLE))) {
+               var5.drop(new ItemStack(Items.HONEY_BOTTLE), false);
             }
 
             var9 = true;
-            var2.gameEvent(var4, GameEvent.FLUID_PICKUP, var3);
+            var3.gameEvent(var5, GameEvent.FLUID_PICKUP, var4);
          }
 
-         if (!var2.isClientSide() && var9) {
-            var4.awardStat(Stats.ITEM_USED.get(var10));
+         if (!var3.isClientSide() && var9) {
+            var5.awardStat(Stats.ITEM_USED.get(var10));
          }
       }
 
       if (var9) {
-         if (!CampfireBlock.isSmokeyPos(var2, var3)) {
-            if (this.hiveContainsBees(var2, var3)) {
-               this.angerNearbyBees(var2, var3);
+         if (!CampfireBlock.isSmokeyPos(var3, var4)) {
+            if (this.hiveContainsBees(var3, var4)) {
+               this.angerNearbyBees(var3, var4);
             }
 
-            this.releaseBeesAndResetHoneyLevel(var2, var1, var3, var4, BeehiveBlockEntity.BeeReleaseStatus.EMERGENCY);
+            this.releaseBeesAndResetHoneyLevel(var3, var2, var4, var5, BeehiveBlockEntity.BeeReleaseStatus.EMERGENCY);
          } else {
-            this.resetHoneyLevel(var2, var1, var3);
+            this.resetHoneyLevel(var3, var2, var4);
          }
 
-         return InteractionResult.sidedSuccess(var2.isClientSide);
+         return ItemInteractionResult.sidedSuccess(var3.isClientSide);
       } else {
-         return super.use(var1, var2, var3, var4, var5, var6);
+         return super.useItemOn(var1, var2, var3, var4, var5, var6, var7);
       }
    }
 
@@ -250,7 +250,7 @@ public class BeehiveBlock extends BaseEntityBlock {
    }
 
    @Override
-   public RenderShape getRenderShape(BlockState var1) {
+   protected RenderShape getRenderShape(BlockState var1) {
       return RenderShape.MODEL;
    }
 
@@ -273,22 +273,15 @@ public class BeehiveBlock extends BaseEntityBlock {
       if (!var1.isClientSide && var4.isCreative() && var1.getGameRules().getBoolean(GameRules.RULE_DOBLOCKDROPS)) {
          BlockEntity var5 = var1.getBlockEntity(var2);
          if (var5 instanceof BeehiveBlockEntity var6) {
-            ItemStack var7 = new ItemStack(this);
-            int var8 = var3.getValue(HONEY_LEVEL);
-            boolean var9 = !var6.isEmpty();
-            if (var9 || var8 > 0) {
-               if (var9) {
-                  CompoundTag var10 = new CompoundTag();
-                  var10.put("Bees", var6.writeBees());
-                  BlockItem.setBlockEntityData(var7, BlockEntityType.BEEHIVE, var10);
-               }
-
-               CompoundTag var12 = new CompoundTag();
-               var12.putInt("honey_level", var8);
-               var7.addTagElement("BlockStateTag", var12);
-               ItemEntity var11 = new ItemEntity(var1, (double)var2.getX(), (double)var2.getY(), (double)var2.getZ(), var7);
-               var11.setDefaultPickUpDelay();
-               var1.addFreshEntity(var11);
+            int var7 = var3.getValue(HONEY_LEVEL);
+            boolean var8 = !var6.isEmpty();
+            if (var8 || var7 > 0) {
+               ItemStack var9 = new ItemStack(this);
+               var9.applyComponents(var6.collectComponents());
+               var9.set(DataComponents.BLOCK_STATE, BlockItemStateProperties.EMPTY.with(HONEY_LEVEL, var7));
+               ItemEntity var10 = new ItemEntity(var1, (double)var2.getX(), (double)var2.getY(), (double)var2.getZ(), var9);
+               var10.setDefaultPickUpDelay();
+               var1.addFreshEntity(var10);
             }
          }
       }
@@ -299,7 +292,7 @@ public class BeehiveBlock extends BaseEntityBlock {
    // $VF: Could not properly define all variable types!
    // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
-   public List<ItemStack> getDrops(BlockState var1, LootParams.Builder var2) {
+   protected List<ItemStack> getDrops(BlockState var1, LootParams.Builder var2) {
       Entity var3 = var2.getOptionalParameter(LootContextParams.THIS_ENTITY);
       if (var3 instanceof PrimedTnt || var3 instanceof Creeper || var3 instanceof WitherSkull || var3 instanceof WitherBoss || var3 instanceof MinecartTNT) {
          BlockEntity var4 = var2.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
@@ -314,7 +307,7 @@ public class BeehiveBlock extends BaseEntityBlock {
    // $VF: Could not properly define all variable types!
    // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var4.getBlockState(var6).getBlock() instanceof FireBlock) {
          BlockEntity var7 = var4.getBlockEntity(var5);
          if (var7 instanceof BeehiveBlockEntity var8) {

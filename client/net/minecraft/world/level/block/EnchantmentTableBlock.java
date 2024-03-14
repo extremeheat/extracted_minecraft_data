@@ -8,17 +8,14 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.Nameable;
 import net.minecraft.world.SimpleMenuProvider;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerLevelAccess;
 import net.minecraft.world.inventory.EnchantmentMenu;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -55,12 +52,12 @@ public class EnchantmentTableBlock extends BaseEntityBlock {
    }
 
    @Override
-   public boolean useShapeForLightOcclusion(BlockState var1) {
+   protected boolean useShapeForLightOcclusion(BlockState var1) {
       return true;
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 
@@ -84,7 +81,7 @@ public class EnchantmentTableBlock extends BaseEntityBlock {
    }
 
    @Override
-   public RenderShape getRenderShape(BlockState var1) {
+   protected RenderShape getRenderShape(BlockState var1) {
       return RenderShape.MODEL;
    }
 
@@ -100,7 +97,7 @@ public class EnchantmentTableBlock extends BaseEntityBlock {
    }
 
    @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       if (var2.isClientSide) {
          return InteractionResult.SUCCESS;
       } else {
@@ -111,7 +108,7 @@ public class EnchantmentTableBlock extends BaseEntityBlock {
 
    @Nullable
    @Override
-   public MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
+   protected MenuProvider getMenuProvider(BlockState var1, Level var2, BlockPos var3) {
       BlockEntity var4 = var2.getBlockEntity(var3);
       if (var4 instanceof EnchantmentTableBlockEntity) {
          Component var5 = ((Nameable)var4).getDisplayName();
@@ -122,17 +119,7 @@ public class EnchantmentTableBlock extends BaseEntityBlock {
    }
 
    @Override
-   public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, LivingEntity var4, ItemStack var5) {
-      if (var5.hasCustomHoverName()) {
-         BlockEntity var6 = var1.getBlockEntity(var2);
-         if (var6 instanceof EnchantmentTableBlockEntity) {
-            ((EnchantmentTableBlockEntity)var6).setCustomName(var5.getHoverName());
-         }
-      }
-   }
-
-   @Override
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
+   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
    }
 }

@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.protocol.game.ClientboundEntityEventPacket;
@@ -34,7 +35,7 @@ public class Raids extends SavedData {
    private int tick;
 
    public static SavedData.Factory<Raids> factory(ServerLevel var0) {
-      return new SavedData.Factory<>(() -> new Raids(var0), var1 -> load(var0, var1), DataFixTypes.SAVED_DATA_RAIDS);
+      return new SavedData.Factory<>(() -> new Raids(var0), (var1, var2) -> load(var0, var1), DataFixTypes.SAVED_DATA_RAIDS);
    }
 
    public Raids(ServerLevel var1) {
@@ -162,18 +163,18 @@ public class Raids extends SavedData {
    }
 
    @Override
-   public CompoundTag save(CompoundTag var1) {
+   public CompoundTag save(CompoundTag var1, HolderLookup.Provider var2) {
       var1.putInt("NextAvailableID", this.nextAvailableID);
       var1.putInt("Tick", this.tick);
-      ListTag var2 = new ListTag();
+      ListTag var3 = new ListTag();
 
-      for(Raid var4 : this.raidMap.values()) {
-         CompoundTag var5 = new CompoundTag();
-         var4.save(var5);
-         var2.add(var5);
+      for(Raid var5 : this.raidMap.values()) {
+         CompoundTag var6 = new CompoundTag();
+         var5.save(var6);
+         var3.add(var6);
       }
 
-      var1.put("Raids", var2);
+      var1.put("Raids", var3);
       return var1;
    }
 

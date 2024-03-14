@@ -1,12 +1,10 @@
 package net.minecraft.world.level.chunk.storage;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.datafixers.DataFixer;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -17,7 +15,6 @@ import net.minecraft.nbt.IntArrayTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.util.thread.ProcessorMailbox;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -31,24 +28,22 @@ public class EntityStorage implements EntityPersistentStorage<Entity> {
    private static final String ENTITIES_TAG = "Entities";
    private static final String POSITION_TAG = "Position";
    private final ServerLevel level;
-   private final IOWorker worker;
+   private final SimpleRegionStorage simpleRegionStorage;
    private final LongSet emptyChunks = new LongOpenHashSet();
    private final ProcessorMailbox<Runnable> entityDeserializerQueue;
-   protected final DataFixer fixerUpper;
 
-   public EntityStorage(ServerLevel var1, Path var2, DataFixer var3, boolean var4, Executor var5) {
+   public EntityStorage(SimpleRegionStorage var1, ServerLevel var2, Executor var3) {
       super();
-      this.level = var1;
-      this.fixerUpper = var3;
-      this.entityDeserializerQueue = ProcessorMailbox.create(var5, "entity-deserializer");
-      this.worker = new IOWorker(var2, var4, "entities");
+      this.simpleRegionStorage = var1;
+      this.level = var2;
+      this.entityDeserializerQueue = ProcessorMailbox.create(var3, "entity-deserializer");
    }
 
    @Override
    public CompletableFuture<ChunkEntities<Entity>> loadEntities(ChunkPos var1) {
       return this.emptyChunks.contains(var1.toLong())
          ? CompletableFuture.completedFuture(emptyChunk(var1))
-         : this.worker.loadAsync(var1).thenApplyAsync(var2 -> {
+         : this.simpleRegionStorage.read(var1).thenApplyAsync(var2 -> {
             if (var2.isEmpty()) {
                this.emptyChunks.add(var1.toLong());
                return emptyChunk(var1);
@@ -62,7 +57,7 @@ public class EntityStorage implements EntityPersistentStorage<Entity> {
                   LOGGER.warn("Failed to parse chunk {} position info", var1, var6);
                }
    
-               CompoundTag var7 = this.upgradeChunkTag(var2.get());
+               CompoundTag var7 = this.simpleRegionStorage.upgradeChunkTag(var2.get(), -1);
                ListTag var4 = var7.getList("Entities", 10);
                List var5 = EntityType.loadEntitiesRecursive(var4, this.level).collect(ImmutableList.toImmutableList());
                return new ChunkEntities<>(var1, var5);
@@ -88,7 +83,7 @@ public class EntityStorage implements EntityPersistentStorage<Entity> {
       ChunkPos var2 = var1.getPos();
       if (var1.isEmpty()) {
          if (this.emptyChunks.add(var2.toLong())) {
-            this.worker.store(var2, null);
+            this.simpleRegionStorage.write(var2, null);
          }
       } else {
          ListTag var3 = new ListTag();
@@ -101,7 +96,7 @@ public class EntityStorage implements EntityPersistentStorage<Entity> {
          CompoundTag var4 = NbtUtils.addCurrentDataVersion(new CompoundTag());
          var4.put("Entities", var3);
          writeChunkPos(var4, var2);
-         this.worker.store(var2, var4).exceptionally(var1x -> {
+         this.simpleRegionStorage.write(var2, var4).exceptionally(var1x -> {
             LOGGER.error("Failed to store chunk {}", var2, var1x);
             return null;
          });
@@ -111,17 +106,12 @@ public class EntityStorage implements EntityPersistentStorage<Entity> {
 
    @Override
    public void flush(boolean var1) {
-      this.worker.synchronize(var1).join();
+      this.simpleRegionStorage.synchronize(var1).join();
       this.entityDeserializerQueue.runAll();
-   }
-
-   private CompoundTag upgradeChunkTag(CompoundTag var1) {
-      int var2 = NbtUtils.getDataVersion(var1, -1);
-      return DataFixTypes.ENTITY_CHUNK.updateToCurrentVersion(this.fixerUpper, var1, var2);
    }
 
    @Override
    public void close() throws IOException {
-      this.worker.close();
+      this.simpleRegionStorage.close();
    }
 }

@@ -1,55 +1,45 @@
 package net.minecraft.network.protocol.game;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 
-public class ServerboundEditBookPacket implements Packet<ServerGamePacketListener> {
+public record ServerboundEditBookPacket(int c, List<String> d, Optional<String> e) implements Packet<ServerGamePacketListener> {
+   private final int slot;
+   private final List<String> pages;
+   private final Optional<String> title;
    public static final int MAX_BYTES_PER_CHAR = 4;
    private static final int TITLE_MAX_CHARS = 128;
    private static final int PAGE_MAX_CHARS = 8192;
    private static final int MAX_PAGES_COUNT = 200;
-   private final int slot;
-   private final List<String> pages;
-   private final Optional<String> title;
+   public static final StreamCodec<FriendlyByteBuf, ServerboundEditBookPacket> STREAM_CODEC = StreamCodec.composite(
+      ByteBufCodecs.VAR_INT,
+      ServerboundEditBookPacket::slot,
+      ByteBufCodecs.stringUtf8(8192).apply(ByteBufCodecs.list(200)),
+      ServerboundEditBookPacket::pages,
+      ByteBufCodecs.stringUtf8(128).apply(ByteBufCodecs::optional),
+      ServerboundEditBookPacket::title,
+      ServerboundEditBookPacket::new
+   );
 
    public ServerboundEditBookPacket(int var1, List<String> var2, Optional<String> var3) {
       super();
+      var2 = List.copyOf(var2);
       this.slot = var1;
-      this.pages = ImmutableList.copyOf(var2);
+      this.pages = var2;
       this.title = var3;
    }
 
-   public ServerboundEditBookPacket(FriendlyByteBuf var1) {
-      super();
-      this.slot = var1.readVarInt();
-      this.pages = var1.readCollection(FriendlyByteBuf.limitValue(Lists::newArrayListWithCapacity, 200), var0 -> var0.readUtf(8192));
-      this.title = var1.readOptional(var0 -> var0.readUtf(128));
-   }
-
    @Override
-   public void write(FriendlyByteBuf var1) {
-      var1.writeVarInt(this.slot);
-      var1.writeCollection(this.pages, (var0, var1x) -> var0.writeUtf(var1x, 8192));
-      var1.writeOptional(this.title, (var0, var1x) -> var0.writeUtf(var1x, 128));
+   public PacketType<ServerboundEditBookPacket> type() {
+      return GamePacketTypes.SERVERBOUND_EDIT_BOOK;
    }
 
    public void handle(ServerGamePacketListener var1) {
       var1.handleEditBook(this);
-   }
-
-   public List<String> getPages() {
-      return this.pages;
-   }
-
-   public Optional<String> getTitle() {
-      return this.title;
-   }
-
-   public int getSlot() {
-      return this.slot;
    }
 }

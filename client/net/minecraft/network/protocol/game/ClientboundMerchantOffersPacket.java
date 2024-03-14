@@ -1,10 +1,15 @@
 package net.minecraft.network.protocol.game;
 
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.item.trading.MerchantOffers;
 
 public class ClientboundMerchantOffersPacket implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundMerchantOffersPacket> STREAM_CODEC = Packet.codec(
+      ClientboundMerchantOffersPacket::write, ClientboundMerchantOffersPacket::new
+   );
    private final int containerId;
    private final MerchantOffers offers;
    private final int villagerLevel;
@@ -22,24 +27,28 @@ public class ClientboundMerchantOffersPacket implements Packet<ClientGamePacketL
       this.canRestock = var6;
    }
 
-   public ClientboundMerchantOffersPacket(FriendlyByteBuf var1) {
+   private ClientboundMerchantOffersPacket(RegistryFriendlyByteBuf var1) {
       super();
       this.containerId = var1.readVarInt();
-      this.offers = MerchantOffers.createFromStream(var1);
+      this.offers = MerchantOffers.STREAM_CODEC.decode(var1);
       this.villagerLevel = var1.readVarInt();
       this.villagerXp = var1.readVarInt();
       this.showProgress = var1.readBoolean();
       this.canRestock = var1.readBoolean();
    }
 
-   @Override
-   public void write(FriendlyByteBuf var1) {
+   private void write(RegistryFriendlyByteBuf var1) {
       var1.writeVarInt(this.containerId);
-      this.offers.writeToStream(var1);
+      MerchantOffers.STREAM_CODEC.encode(var1, this.offers);
       var1.writeVarInt(this.villagerLevel);
       var1.writeVarInt(this.villagerXp);
       var1.writeBoolean(this.showProgress);
       var1.writeBoolean(this.canRestock);
+   }
+
+   @Override
+   public PacketType<ClientboundMerchantOffersPacket> type() {
+      return GamePacketTypes.CLIENTBOUND_MERCHANT_OFFERS;
    }
 
    public void handle(ClientGamePacketListener var1) {

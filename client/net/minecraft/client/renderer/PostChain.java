@@ -21,14 +21,14 @@ import net.minecraft.client.renderer.texture.TextureManager;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.ChainedJsonException;
 import net.minecraft.server.packs.resources.Resource;
-import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.util.GsonHelper;
 import org.joml.Matrix4f;
 
 public class PostChain implements AutoCloseable {
    private static final String MAIN_RENDER_TARGET = "minecraft:main";
    private final RenderTarget screenTarget;
-   private final ResourceManager resourceManager;
+   private final ResourceProvider resourceProvider;
    private final String name;
    private final List<PostPass> passes = Lists.newArrayList();
    private final Map<String, RenderTarget> customRenderTargets = Maps.newHashMap();
@@ -39,9 +39,9 @@ public class PostChain implements AutoCloseable {
    private float time;
    private float lastStamp;
 
-   public PostChain(TextureManager var1, ResourceManager var2, RenderTarget var3, ResourceLocation var4) throws IOException, JsonSyntaxException {
+   public PostChain(TextureManager var1, ResourceProvider var2, RenderTarget var3, ResourceLocation var4) throws IOException, JsonSyntaxException {
       super();
-      this.resourceManager = var2;
+      this.resourceProvider = var2;
       this.screenTarget = var3;
       this.time = 0.0F;
       this.lastStamp = 0.0F;
@@ -53,7 +53,7 @@ public class PostChain implements AutoCloseable {
    }
 
    private void load(TextureManager var1, ResourceLocation var2) throws IOException, JsonSyntaxException {
-      Resource var3 = this.resourceManager.getResourceOrThrow(var2);
+      Resource var3 = this.resourceProvider.getResourceOrThrow(var2);
 
       try {
          try (BufferedReader var4 = var3.openAsReader()) {
@@ -122,48 +122,49 @@ public class PostChain implements AutoCloseable {
       String var6 = GsonHelper.getAsString(var3, "outtarget");
       RenderTarget var7 = this.getRenderTarget(var5);
       RenderTarget var8 = this.getRenderTarget(var6);
+      boolean var9 = GsonHelper.getAsBoolean(var3, "use_linear_filter", false);
       if (var7 == null) {
          throw new ChainedJsonException("Input target '" + var5 + "' does not exist");
       } else if (var8 == null) {
          throw new ChainedJsonException("Output target '" + var6 + "' does not exist");
       } else {
-         PostPass var9 = this.addPass(var4, var7, var8);
-         JsonArray var10 = GsonHelper.getAsJsonArray(var3, "auxtargets", null);
-         if (var10 != null) {
-            int var11 = 0;
+         PostPass var10 = this.addPass(var4, var7, var8, var9);
+         JsonArray var11 = GsonHelper.getAsJsonArray(var3, "auxtargets", null);
+         if (var11 != null) {
+            int var12 = 0;
 
-            for(JsonElement var13 : var10) {
+            for(JsonElement var14 : var11) {
                try {
-                  JsonObject var14 = GsonHelper.convertToJsonObject(var13, "auxtarget");
-                  String var31 = GsonHelper.getAsString(var14, "name");
-                  String var16 = GsonHelper.getAsString(var14, "id");
-                  boolean var17;
-                  String var18;
-                  if (var16.endsWith(":depth")) {
-                     var17 = true;
-                     var18 = var16.substring(0, var16.lastIndexOf(58));
+                  JsonObject var15 = GsonHelper.convertToJsonObject(var14, "auxtarget");
+                  String var32 = GsonHelper.getAsString(var15, "name");
+                  String var17 = GsonHelper.getAsString(var15, "id");
+                  boolean var18;
+                  String var19;
+                  if (var17.endsWith(":depth")) {
+                     var18 = true;
+                     var19 = var17.substring(0, var17.lastIndexOf(58));
                   } else {
-                     var17 = false;
-                     var18 = var16;
+                     var18 = false;
+                     var19 = var17;
                   }
 
-                  RenderTarget var19 = this.getRenderTarget(var18);
-                  if (var19 == null) {
-                     if (var17) {
-                        throw new ChainedJsonException("Render target '" + var18 + "' can't be used as depth buffer");
+                  RenderTarget var20 = this.getRenderTarget(var19);
+                  if (var20 == null) {
+                     if (var18) {
+                        throw new ChainedJsonException("Render target '" + var19 + "' can't be used as depth buffer");
                      }
 
-                     ResourceLocation var20 = new ResourceLocation("textures/effect/" + var18 + ".png");
-                     this.resourceManager
-                        .getResource(var20)
-                        .orElseThrow(() -> new ChainedJsonException("Render target or texture '" + var18 + "' does not exist"));
-                     RenderSystem.setShaderTexture(0, var20);
-                     var1.bindForSetup(var20);
-                     AbstractTexture var21 = var1.getTexture(var20);
-                     int var22 = GsonHelper.getAsInt(var14, "width");
-                     int var23 = GsonHelper.getAsInt(var14, "height");
-                     boolean var24 = GsonHelper.getAsBoolean(var14, "bilinear");
-                     if (var24) {
+                     ResourceLocation var21 = new ResourceLocation("textures/effect/" + var19 + ".png");
+                     this.resourceProvider
+                        .getResource(var21)
+                        .orElseThrow(() -> new ChainedJsonException("Render target or texture '" + var19 + "' does not exist"));
+                     RenderSystem.setShaderTexture(0, var21);
+                     var1.bindForSetup(var21);
+                     AbstractTexture var22 = var1.getTexture(var21);
+                     int var23 = GsonHelper.getAsInt(var15, "width");
+                     int var24 = GsonHelper.getAsInt(var15, "height");
+                     boolean var25 = GsonHelper.getAsBoolean(var15, "bilinear");
+                     if (var25) {
                         RenderSystem.texParameter(3553, 10241, 9729);
                         RenderSystem.texParameter(3553, 10240, 9729);
                      } else {
@@ -171,36 +172,36 @@ public class PostChain implements AutoCloseable {
                         RenderSystem.texParameter(3553, 10240, 9728);
                      }
 
-                     var9.addAuxAsset(var31, var21::getId, var22, var23);
-                  } else if (var17) {
-                     var9.addAuxAsset(var31, var19::getDepthTextureId, var19.width, var19.height);
+                     var10.addAuxAsset(var32, var22::getId, var23, var24);
+                  } else if (var18) {
+                     var10.addAuxAsset(var32, var20::getDepthTextureId, var20.width, var20.height);
                   } else {
-                     var9.addAuxAsset(var31, var19::getColorTextureId, var19.width, var19.height);
+                     var10.addAuxAsset(var32, var20::getColorTextureId, var20.width, var20.height);
                   }
-               } catch (Exception var26) {
-                  ChainedJsonException var15 = ChainedJsonException.forException(var26);
-                  var15.prependJsonKey("auxtargets[" + var11 + "]");
-                  throw var15;
+               } catch (Exception var27) {
+                  ChainedJsonException var16 = ChainedJsonException.forException(var27);
+                  var16.prependJsonKey("auxtargets[" + var12 + "]");
+                  throw var16;
                }
 
-               ++var11;
+               ++var12;
             }
          }
 
-         JsonArray var27 = GsonHelper.getAsJsonArray(var3, "uniforms", null);
-         if (var27 != null) {
-            int var28 = 0;
+         JsonArray var28 = GsonHelper.getAsJsonArray(var3, "uniforms", null);
+         if (var28 != null) {
+            int var29 = 0;
 
-            for(JsonElement var30 : var27) {
+            for(JsonElement var31 : var28) {
                try {
-                  this.parseUniformNode(var30);
-               } catch (Exception var25) {
-                  ChainedJsonException var32 = ChainedJsonException.forException(var25);
-                  var32.prependJsonKey("uniforms[" + var28 + "]");
-                  throw var32;
+                  this.parseUniformNode(var31);
+               } catch (Exception var26) {
+                  ChainedJsonException var33 = ChainedJsonException.forException(var26);
+                  var33.prependJsonKey("uniforms[" + var29 + "]");
+                  throw var33;
                }
 
-               ++var28;
+               ++var29;
             }
          }
       }
@@ -273,10 +274,10 @@ public class PostChain implements AutoCloseable {
       this.passes.clear();
    }
 
-   public PostPass addPass(String var1, RenderTarget var2, RenderTarget var3) throws IOException {
-      PostPass var4 = new PostPass(this.resourceManager, var1, var2, var3);
-      this.passes.add(this.passes.size(), var4);
-      return var4;
+   public PostPass addPass(String var1, RenderTarget var2, RenderTarget var3, boolean var4) throws IOException {
+      PostPass var5 = new PostPass(this.resourceProvider, var1, var2, var3, var4);
+      this.passes.add(this.passes.size(), var5);
+      return var5;
    }
 
    private void updateOrthoMatrix() {
@@ -297,6 +298,14 @@ public class PostChain implements AutoCloseable {
       }
    }
 
+   private void setFilterMode(int var1) {
+      this.screenTarget.setFilterMode(var1);
+
+      for(RenderTarget var3 : this.customRenderTargets.values()) {
+         var3.setFilterMode(var1);
+      }
+   }
+
    public void process(float var1) {
       if (var1 < this.lastStamp) {
          this.time += 1.0F - this.lastStamp;
@@ -311,8 +320,24 @@ public class PostChain implements AutoCloseable {
          this.time -= 20.0F;
       }
 
-      for(PostPass var3 : this.passes) {
-         var3.process(this.time / 20.0F);
+      int var2 = 9728;
+
+      for(PostPass var4 : this.passes) {
+         int var5 = var4.getFilterMode();
+         if (var2 != var5) {
+            this.setFilterMode(var5);
+            var2 = var5;
+         }
+
+         var4.process(this.time / 20.0F);
+      }
+
+      this.setFilterMode(9728);
+   }
+
+   public void setUniform(String var1, float var2) {
+      for(PostPass var4 : this.passes) {
+         var4.getEffect().safeGetUniform(var1).set(var2);
       }
    }
 

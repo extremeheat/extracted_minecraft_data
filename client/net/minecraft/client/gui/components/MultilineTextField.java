@@ -4,7 +4,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.function.Consumer;
-import net.minecraft.SharedConstants;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.Screen;
@@ -72,7 +71,7 @@ public class MultilineTextField {
 
    public void insertText(String var1) {
       if (!var1.isEmpty() || this.hasSelection()) {
-         String var2 = this.truncateInsertionText(SharedConstants.filterText(var1, true));
+         String var2 = this.truncateInsertionText(StringUtil.filterText(var1, true));
          MultilineTextField.StringView var3 = this.getSelected();
          this.value = new StringBuilder(this.value).replace(var3.beginIndex, var3.endIndex, var2).toString();
          this.cursor = var3.beginIndex + var2.length();
@@ -107,7 +106,7 @@ public class MultilineTextField {
 
    public int getLineAtCursor() {
       for(int var1 = 0; var1 < this.displayLines.size(); ++var1) {
-         MultilineTextField.StringView var2 = this.displayLines.get(var1);
+         MultilineTextField.StringView var2 = (MultilineTextField.StringView)this.displayLines.get(var1);
          if (this.cursor >= var2.beginIndex && this.cursor <= var2.endIndex) {
             return var1;
          }
@@ -117,7 +116,7 @@ public class MultilineTextField {
    }
 
    public MultilineTextField.StringView getLineView(int var1) {
-      return this.displayLines.get(Mth.clamp(var1, 0, this.displayLines.size() - 1));
+      return (MultilineTextField.StringView)this.displayLines.get(Mth.clamp(var1, 0, this.displayLines.size() - 1));
    }
 
    public void seekCursor(Whence var1, int var2) {
@@ -151,7 +150,7 @@ public class MultilineTextField {
    public void seekCursorToPoint(double var1, double var3) {
       int var5 = Mth.floor(var1);
       int var6 = Mth.floor(var3 / 9.0);
-      MultilineTextField.StringView var7 = this.displayLines.get(Mth.clamp(var6, 0, this.displayLines.size() - 1));
+      MultilineTextField.StringView var7 = (MultilineTextField.StringView)this.displayLines.get(Mth.clamp(var6, 0, this.displayLines.size() - 1));
       int var8 = this.font.plainSubstrByWidth(this.value.substring(var7.beginIndex, var7.endIndex), var5).length();
       this.seekCursor(Whence.ABSOLUTE, var7.beginIndex + var8);
    }
@@ -277,7 +276,7 @@ public class MultilineTextField {
       if (var2 < 0) {
          throw new IllegalStateException("Cursor is not within text (cursor = " + this.cursor + ", length = " + this.value.length() + ")");
       } else {
-         return this.displayLines.get(Mth.clamp(var2 + var1, 0, this.displayLines.size() - 1));
+         return (MultilineTextField.StringView)this.displayLines.get(Mth.clamp(var2 + var1, 0, this.displayLines.size() - 1));
       }
    }
 

@@ -35,7 +35,7 @@ public class RecipeToast implements Toast {
          var1.blitSprite(BACKGROUND_SPRITE, 0, 0, this.width(), this.height());
          var1.drawString(var2.getMinecraft().font, TITLE_TEXT, 30, 7, -11534256, false);
          var1.drawString(var2.getMinecraft().font, DESCRIPTION_TEXT, 30, 18, -16777216, false);
-         RecipeHolder var5 = this.recipes
+         RecipeHolder var5 = (RecipeHolder)this.recipes
             .get(
                (int)(
                   (double)var3

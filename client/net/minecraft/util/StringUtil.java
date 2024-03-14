@@ -62,4 +62,38 @@ public class StringUtil {
    public static String trimChatMessage(String var0) {
       return truncateStringIfNecessary(var0, 256, false);
    }
+
+   public static boolean isAllowedChatCharacter(char var0) {
+      return var0 != 167 && var0 >= ' ' && var0 != 127;
+   }
+
+   public static boolean isValidPlayerName(String var0) {
+      return var0.length() > 16 ? false : var0.chars().filter(var0x -> var0x <= 32 || var0x >= 127).findAny().isEmpty();
+   }
+
+   public static String filterText(String var0) {
+      return filterText(var0, false);
+   }
+
+   public static String filterText(String var0, boolean var1) {
+      StringBuilder var2 = new StringBuilder();
+
+      for(char var6 : var0.toCharArray()) {
+         if (isAllowedChatCharacter(var6)) {
+            var2.append(var6);
+         } else if (var1 && var6 == '\n') {
+            var2.append(var6);
+         }
+      }
+
+      return var2.toString();
+   }
+
+   public static boolean isWhitespace(int var0) {
+      return Character.isWhitespace(var0) || Character.isSpaceChar(var0);
+   }
+
+   public static boolean isBlank(@Nullable String var0) {
+      return var0 != null && var0.length() != 0 ? var0.chars().allMatch(StringUtil::isWhitespace) : true;
+   }
 }

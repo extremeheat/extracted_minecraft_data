@@ -3,10 +3,13 @@ package net.minecraft.sounds;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
+import io.netty.buffer.ByteBuf;
 import java.util.Optional;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.resources.ResourceLocation;
 
@@ -19,6 +22,10 @@ public class SoundEvent {
             .apply(var0, SoundEvent::create)
    );
    public static final Codec<Holder<SoundEvent>> CODEC = RegistryFileCodec.create(Registries.SOUND_EVENT, DIRECT_CODEC);
+   public static final StreamCodec<ByteBuf, SoundEvent> DIRECT_STREAM_CODEC = StreamCodec.composite(
+      ResourceLocation.STREAM_CODEC, SoundEvent::getLocation, ByteBufCodecs.FLOAT.apply(ByteBufCodecs::optional), SoundEvent::fixedRange, SoundEvent::create
+   );
+   public static final StreamCodec<RegistryFriendlyByteBuf, Holder<SoundEvent>> STREAM_CODEC = ByteBufCodecs.holder(Registries.SOUND_EVENT, DIRECT_STREAM_CODEC);
    private static final float DEFAULT_RANGE = 16.0F;
    private final ResourceLocation location;
    private final float range;
@@ -57,16 +64,5 @@ public class SoundEvent {
 
    private Optional<Float> fixedRange() {
       return this.newSystem ? Optional.of(this.range) : Optional.empty();
-   }
-
-   public void writeToNetwork(FriendlyByteBuf var1) {
-      var1.writeResourceLocation(this.location);
-      var1.writeOptional(this.fixedRange(), FriendlyByteBuf::writeFloat);
-   }
-
-   public static SoundEvent readFromNetwork(FriendlyByteBuf var0) {
-      ResourceLocation var1 = var0.readResourceLocation();
-      Optional var2 = var0.readOptional(FriendlyByteBuf::readFloat);
-      return create(var1, var2);
    }
 }

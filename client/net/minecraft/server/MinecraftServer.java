@@ -82,7 +82,6 @@ import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerPlayerGameMode;
-import net.minecraft.server.level.TicketType;
 import net.minecraft.server.level.progress.ChunkProgressListener;
 import net.minecraft.server.level.progress.ChunkProgressListenerFactory;
 import net.minecraft.server.network.ServerConnectionListener;
@@ -105,7 +104,9 @@ import net.minecraft.util.NativeModuleLister;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.SignatureValidator;
 import net.minecraft.util.TimeUtil;
-import net.minecraft.util.Unit;
+import net.minecraft.util.debugchart.RemoteDebugSampleType;
+import net.minecraft.util.debugchart.SampleLogger;
+import net.minecraft.util.debugchart.TpsDebugDimensions;
 import net.minecraft.util.profiling.EmptyProfileResults;
 import net.minecraft.util.profiling.ProfileResults;
 import net.minecraft.util.profiling.ProfilerFiller;
@@ -144,6 +145,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.PatrolSpawner;
 import net.minecraft.world.level.levelgen.PhantomSpawner;
 import net.minecraft.world.level.levelgen.WorldOptions;
+import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import net.minecraft.world.level.storage.CommandStorage;
 import net.minecraft.world.level.storage.DerivedLevelData;
@@ -171,8 +173,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    private static final long STATUS_EXPIRE_TIME_NANOS = 5L * TimeUtil.NANOSECONDS_PER_SECOND;
    private static final long PREPARE_LEVELS_DEFAULT_DELAY_NANOS = 10L * TimeUtil.NANOSECONDS_PER_MILLISECOND;
    private static final int MAX_STATUS_PLAYER_SAMPLE = 12;
-   public static final int START_CHUNK_RADIUS = 11;
-   private static final int START_TICKING_CHUNK_COUNT = 441;
+   private static final int SPAWN_POSITION_SEARCH_RADIUS = 5;
    private static final int AUTOSAVE_INTERVAL = 6000;
    private static final int MIMINUM_AUTOSAVE_TICKS = 100;
    private static final int MAX_TICK_LATENCY = 3;
@@ -230,6 +231,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    protected final Services services;
    private long lastServerStatus;
    private final Thread serverThread;
+   private long lastTickNanos = Util.getNanos();
+   private long taskExecutionStartNanos = Util.getNanos();
+   private long idleTimeNanos;
    private long nextTickTimeNanos = Util.getNanos();
    private long delayedTasksMaxNextTickTimeNanos;
    private boolean mayHaveDelayedTasks;
@@ -295,7 +299,11 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          this.playerDataStorage = var2.createPlayerStorage();
          this.fixerUpper = var6;
          this.functionManager = new ServerFunctionManager(this, this.resources.managers.getFunctionLibrary());
-         HolderLookup var9 = this.registries.compositeAccess().registryOrThrow(Registries.BLOCK).asLookup().filterFeatures(this.worldData.enabledFeatures());
+         HolderLookup.RegistryLookup var9 = this.registries
+            .compositeAccess()
+            .registryOrThrow(Registries.BLOCK)
+            .asLookup()
+            .filterFeatures(this.worldData.enabledFeatures());
          this.structureTemplateManager = new StructureTemplateManager(var4.resourceManager(), var2, var6, var9);
          this.serverThread = var1;
          this.executor = Util.backgroundExecutor();
@@ -315,7 +323,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       boolean var1 = false;
       ProfiledDuration var2 = JvmProfiler.INSTANCE.onWorldLoadedStarted();
       this.worldData.setModdedInfo(this.getServerModName(), this.getModdedStatus().shouldReportAsModified());
-      ChunkProgressListener var3 = this.progressListenerFactory.create(11);
+      ChunkProgressListener var3 = this.progressListenerFactory.create(this.worldData.getGameRules().getInt(GameRules.RULE_SPAWN_CHUNK_RADIUS));
       this.createLevels(var3);
       this.forceDifficulty();
       this.prepareLevels(var3);
@@ -343,7 +351,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       long var6 = var5.seed();
       long var8 = BiomeManager.obfuscateSeed(var6);
       ImmutableList var10 = ImmutableList.of(new PhantomSpawner(), new PatrolSpawner(), new CatSpawner(), new VillageSiege(), new WanderingTraderSpawner(var2));
-      LevelStem var11 = var4.get(LevelStem.OVERWORLD);
+      LevelStem var11 = (LevelStem)var4.get(LevelStem.OVERWORLD);
       ServerLevel var12 = new ServerLevel(this, this.executor, this.storageSource, var2, Level.OVERWORLD, var11, var1, var3, var8, var10, true, null);
       this.levels.put(Level.OVERWORLD, var12);
       DimensionDataStorage var13 = var12.getDataStorage();
@@ -373,7 +381,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
       this.getPlayerList().addWorldborderListener(var12);
       if (this.worldData.getCustomBossEvents() != null) {
-         this.getCustomBossEvents().load(this.worldData.getCustomBossEvents());
+         this.getCustomBossEvents().load(this.worldData.getCustomBossEvents(), this.registryAccess());
       }
 
       RandomSequences var15 = var12.getRandomSequences();
@@ -407,28 +415,27 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          }
 
          var1.setSpawn(var5.getWorldPosition().offset(8, var6, 8), 0.0F);
-         int var14 = 0;
+         int var13 = 0;
          int var8 = 0;
          int var9 = 0;
          int var10 = -1;
-         boolean var11 = true;
 
-         for(int var12 = 0; var12 < Mth.square(11); ++var12) {
-            if (var14 >= -5 && var14 <= 5 && var8 >= -5 && var8 <= 5) {
-               BlockPos var13 = PlayerRespawnLogic.getSpawnPosInChunk(var0, new ChunkPos(var5.x + var14, var5.z + var8));
-               if (var13 != null) {
-                  var1.setSpawn(var13, 0.0F);
+         for(int var11 = 0; var11 < Mth.square(11); ++var11) {
+            if (var13 >= -5 && var13 <= 5 && var8 >= -5 && var8 <= 5) {
+               BlockPos var12 = PlayerRespawnLogic.getSpawnPosInChunk(var0, new ChunkPos(var5.x + var13, var5.z + var8));
+               if (var12 != null) {
+                  var1.setSpawn(var12, 0.0F);
                   break;
                }
             }
 
-            if (var14 == var8 || var14 < 0 && var14 == -var8 || var14 > 0 && var14 == 1 - var8) {
-               int var15 = var9;
+            if (var13 == var8 || var13 < 0 && var13 == -var8 || var13 > 0 && var13 == 1 - var8) {
+               int var14 = var9;
                var9 = -var10;
-               var10 = var15;
+               var10 = var14;
             }
 
-            var14 += var9;
+            var13 += var9;
             var8 += var10;
          }
 
@@ -436,9 +443,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
             var0.registryAccess()
                .registry(Registries.CONFIGURED_FEATURE)
                .flatMap(var0x -> var0x.getHolder(MiscOverworldFeatures.BONUS_CHEST))
-               .ifPresent(
-                  var3x -> var3x.value().place(var0, var4.getGenerator(), var0.random, new BlockPos(var1.getXSpawn(), var1.getYSpawn(), var1.getZSpawn()))
-               );
+               .ifPresent(var3x -> ((ConfiguredFeature)var3x.value()).place(var0, var4.getGenerator(), var0.random, var1.getSpawnPos()));
          }
       }
    }
@@ -461,9 +466,11 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       var1.updateSpawnPos(new ChunkPos(var3));
       ServerChunkCache var4 = var2.getChunkSource();
       this.nextTickTimeNanos = Util.getNanos();
-      var4.addRegionTicket(TicketType.START, new ChunkPos(var3), 11, Unit.INSTANCE);
+      var2.setDefaultSpawnPos(var3, var2.getSharedSpawnAngle());
+      int var5 = this.getGameRules().getInt(GameRules.RULE_SPAWN_CHUNK_RADIUS);
+      int var6 = var5 > 0 ? Mth.square(ChunkProgressListener.calculateDiameter(var5)) : 0;
 
-      while(var4.getTickingGenerated() != 441) {
+      while(var4.getTickingGenerated() < var6) {
          this.nextTickTimeNanos = Util.getNanos() + PREPARE_LEVELS_DEFAULT_DELAY_NANOS;
          this.waitUntilNextTick();
       }
@@ -471,15 +478,15 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       this.nextTickTimeNanos = Util.getNanos() + PREPARE_LEVELS_DEFAULT_DELAY_NANOS;
       this.waitUntilNextTick();
 
-      for(ServerLevel var6 : this.levels.values()) {
-         ForcedChunksSavedData var7 = var6.getDataStorage().get(ForcedChunksSavedData.factory(), "chunks");
-         if (var7 != null) {
-            LongIterator var8 = var7.getChunks().iterator();
+      for(ServerLevel var8 : this.levels.values()) {
+         ForcedChunksSavedData var9 = var8.getDataStorage().get(ForcedChunksSavedData.factory(), "chunks");
+         if (var9 != null) {
+            LongIterator var10 = var9.getChunks().iterator();
 
-            while(var8.hasNext()) {
-               long var9 = var8.nextLong();
-               ChunkPos var11 = new ChunkPos(var9);
-               var6.getChunkSource().updateChunkForced(var11, true);
+            while(var10.hasNext()) {
+               long var11 = var10.nextLong();
+               ChunkPos var13 = new ChunkPos(var11);
+               var8.getChunkSource().updateChunkForced(var13, true);
             }
          }
       }
@@ -519,7 +526,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       ServerLevel var9 = this.overworld();
       ServerLevelData var10 = this.worldData.overworldData();
       var10.setWorldBorder(var9.getWorldBorder().createSettings());
-      this.worldData.setCustomBossEvents(this.getCustomBossEvents().save());
+      this.worldData.setCustomBossEvents(this.getCustomBossEvents().save(this.registryAccess()));
       this.storageSource.saveDataTag(this.registryAccess(), this.worldData, this.getPlayerList().getSingleplayerData());
       if (var2) {
          for(ServerLevel var8 : this.getAllLevels()) {
@@ -635,7 +642,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          }
 
          this.nextTickTimeNanos = Util.getNanos();
-         this.statusIcon = this.loadStatusIcon().orElse(null);
+         this.statusIcon = (ServerStatus.Favicon)this.loadStatusIcon().orElse(null);
          this.status = this.buildServerStatus();
 
          while(this.running) {
@@ -669,12 +676,15 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
             this.profiler.popPush("nextTickWait");
             this.mayHaveDelayedTasks = true;
             this.delayedTasksMaxNextTickTimeNanos = Math.max(Util.getNanos() + var1, this.nextTickTimeNanos);
+            this.startMeasuringTaskExecutionTime();
             this.waitUntilNextTick();
+            this.finishMeasuringTaskExecutionTime();
             if (var49) {
                this.tickRateManager.endTickWork();
             }
 
             this.profiler.pop();
+            this.logFullTickTime();
             this.endMetricsRecordingTick();
             this.isReady = true;
             JvmProfiler.INSTANCE.onServerTick(this.smoothedTickTimeMillis);
@@ -707,6 +717,30 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       }
    }
 
+   private void logFullTickTime() {
+      long var1 = Util.getNanos();
+      if (this.isTickTimeLoggingEnabled()) {
+         this.getTickTimeLogger().logSample(var1 - this.lastTickNanos);
+      }
+
+      this.lastTickNanos = var1;
+   }
+
+   private void startMeasuringTaskExecutionTime() {
+      if (this.isTickTimeLoggingEnabled()) {
+         this.taskExecutionStartNanos = Util.getNanos();
+         this.idleTimeNanos = 0L;
+      }
+   }
+
+   private void finishMeasuringTaskExecutionTime() {
+      if (this.isTickTimeLoggingEnabled()) {
+         SampleLogger var1 = this.getTickTimeLogger();
+         var1.logPartialSample(Util.getNanos() - this.taskExecutionStartNanos - this.idleTimeNanos, TpsDebugDimensions.SCHEDULED_TASKS.ordinal());
+         var1.logPartialSample(this.idleTimeNanos, TpsDebugDimensions.IDLE.ordinal());
+      }
+   }
+
    private static CrashReport constructOrExtractCrashReport(Throwable var0) {
       Object var1 = null;
 
@@ -736,6 +770,16 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    protected void waitUntilNextTick() {
       this.runAllTasks();
       this.managedBlock(() -> !this.haveTime());
+   }
+
+   @Override
+   public void waitForTasks() {
+      boolean var1 = this.isTickTimeLoggingEnabled();
+      long var2 = var1 ? Util.getNanos() : 0L;
+      super.waitForTasks();
+      if (var1) {
+         this.idleTimeNanos += Util.getNanos() - var2;
+      }
    }
 
    protected TickTask wrapRunnable(Runnable var1) {
@@ -838,9 +882,14 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       this.aggregatedTickTimesNanos += var4;
       this.tickTimesNanos[var6] = var4;
       this.smoothedTickTimeMillis = this.smoothedTickTimeMillis * 0.8F + (float)var4 / (float)TimeUtil.NANOSECONDS_PER_MILLISECOND * 0.19999999F;
-      long var7 = Util.getNanos();
-      this.logTickTime(var7 - var2);
+      this.logTickMethodTime(var2);
       this.profiler.pop();
+   }
+
+   private void logTickMethodTime(long var1) {
+      if (this.isTickTimeLoggingEnabled()) {
+         this.getTickTimeLogger().logPartialSample(Util.getNanos() - var1, TpsDebugDimensions.TICK_SERVER_METHOD.ordinal());
+      }
    }
 
    private int computeNextAutosaveInterval() {
@@ -863,8 +912,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       }
    }
 
-   protected void logTickTime(long var1) {
-   }
+   protected abstract SampleLogger getTickTimeLogger();
+
+   public abstract boolean isTickTimeLoggingEnabled();
 
    private ServerStatus buildServerStatus() {
       ServerStatus.Players var1 = this.buildPlayerStatus();
@@ -1046,6 +1096,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          () -> FeatureFlags.REGISTRY.toNames(this.worldData.enabledFeatures()).stream().map(ResourceLocation::toString).collect(Collectors.joining(", "))
       );
       var1.setDetail("World Generation", () -> this.worldData.worldGenSettingsLifecycle().toString());
+      var1.setDetail("World Seed", () -> String.valueOf(this.worldData.worldGenOptions().seed()));
       if (this.serverId != null) {
          var1.setDetail("Server Id", () -> this.serverId);
       }
@@ -1474,15 +1525,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    public CommandSourceStack createCommandSourceStack() {
       ServerLevel var1 = this.overworld();
       return new CommandSourceStack(
-         this,
-         var1 == null ? Vec3.ZERO : Vec3.atLowerCornerOf(var1.getSharedSpawnPos()),
-         Vec2.ZERO,
-         var1,
-         4,
-         "Server",
-         Component.literal("Server"),
-         this,
-         null
+         this, var1 == null ? Vec3.ZERO : Vec3.atLowerCornerOf(var1.getSharedSpawnPos()), Vec2.ZERO, var1, 4, "Server", Component.literal("Server"), this, null
       );
    }
 
@@ -1559,7 +1602,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          } else if (this.isSingleplayerOwner(var1)) {
             return 4;
          } else if (this.isSingleplayer()) {
-            return this.getPlayerList().isAllowCheatsForAllPlayers() ? 4 : 0;
+            return this.getPlayerList().isAllowCommandsForAllPlayers() ? 4 : 0;
          } else {
             return this.getOperatorUserPermissionLevel();
          }
@@ -1690,7 +1733,7 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       this.profiler.startTick();
    }
 
-   private void endMetricsRecordingTick() {
+   public void endMetricsRecordingTick() {
       this.profiler.endTick();
       this.metricsRecorder.endTick();
    }
@@ -1803,6 +1846,19 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
    public boolean logIPs() {
       return true;
+   }
+
+   public void subscribeToDebugSample(ServerPlayer var1, RemoteDebugSampleType var2) {
+   }
+
+   public boolean acceptsTransfers() {
+      return false;
+   }
+
+   public void reportChunkLoadFailure(ChunkPos var1) {
+   }
+
+   public void reportChunkSaveFailure(ChunkPos var1) {
    }
 
    static record ReloadableResources(CloseableResourceManager a, ReloadableServerResources b) implements AutoCloseable {

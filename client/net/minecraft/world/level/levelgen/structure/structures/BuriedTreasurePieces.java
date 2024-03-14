@@ -36,9 +36,7 @@ public class BuriedTreasurePieces {
       }
 
       @Override
-      public void postProcess(
-         WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7
-      ) {
+      public void postProcess(WorldGenLevel var1, StructureManager var2, ChunkGenerator var3, RandomSource var4, BoundingBox var5, ChunkPos var6, BlockPos var7) {
          int var8 = var1.getHeight(Heightmap.Types.OCEAN_FLOOR_WG, this.boundingBox.minX(), this.boundingBox.minZ());
          BlockPos.MutableBlockPos var9 = new BlockPos.MutableBlockPos(this.boundingBox.minX(), var8, this.boundingBox.minZ());
 

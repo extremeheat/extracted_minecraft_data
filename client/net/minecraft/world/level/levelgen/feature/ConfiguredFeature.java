@@ -37,7 +37,6 @@ public record ConfiguredFeature<FC extends FeatureConfiguration, F extends Featu
       return Stream.concat(Stream.of(this), this.config.getFeatures());
    }
 
-   @Override
    public String toString() {
       return "Configured: " + this.feature + ": " + this.config;
    }

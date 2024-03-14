@@ -9,18 +9,16 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.FlyingMob;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.MoveControl;
@@ -32,7 +30,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Vector3f;
 
 public class Ghast extends FlyingMob implements Enemy {
    private static final EntityDataAccessor<Boolean> DATA_IS_CHARGING = SynchedEntityData.defineId(Ghast.class, EntityDataSerializers.BOOLEAN);
@@ -76,7 +73,7 @@ public class Ghast extends FlyingMob implements Enemy {
 
    @Override
    public boolean isInvulnerableTo(DamageSource var1) {
-      return !isReflectedFireball(var1) && super.isInvulnerableTo(var1);
+      return this.isInvulnerable() && !var1.is(DamageTypeTags.BYPASSES_INVULNERABILITY) || !isReflectedFireball(var1) && super.isInvulnerableTo(var1);
    }
 
    @Override
@@ -90,9 +87,9 @@ public class Ghast extends FlyingMob implements Enemy {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_IS_CHARGING, false);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_IS_CHARGING, false);
    }
 
    public static AttributeSupplier.Builder createAttributes() {
@@ -134,16 +131,6 @@ public class Ghast extends FlyingMob implements Enemy {
    }
 
    @Override
-   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      return new Vector3f(0.0F, var2.height + 0.0625F * var3, 0.0F);
-   }
-
-   @Override
-   protected float ridingOffset(Entity var1) {
-      return 0.5F;
-   }
-
-   @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       var1.putByte("ExplosionPower", (byte)this.explosionPower);
@@ -155,11 +142,6 @@ public class Ghast extends FlyingMob implements Enemy {
       if (var1.contains("ExplosionPower", 99)) {
          this.explosionPower = var1.getByte("ExplosionPower");
       }
-   }
-
-   @Override
-   protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
-      return 2.6F;
    }
 
    static class GhastLookGoal extends Goal {

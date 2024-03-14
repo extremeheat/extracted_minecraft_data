@@ -130,8 +130,7 @@ public class NativeModuleLister {
 
    public static void addCrashSection(CrashReportCategory var0) {
       var0.setDetail(
-         "Modules",
-         () -> listModules().stream().sorted(Comparator.comparing(var0x -> var0x.name)).map(var0x -> "\n\t\t" + var0x).collect(Collectors.joining())
+         "Modules", () -> listModules().stream().sorted(Comparator.comparing(var0x -> var0x.name)).map(var0x -> "\n\t\t" + var0x).collect(Collectors.joining())
       );
    }
 

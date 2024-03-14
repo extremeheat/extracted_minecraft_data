@@ -1,42 +1,38 @@
 package net.minecraft.network.protocol.game;
 
 import java.util.Optional;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.effect.MobEffect;
 
-public class ServerboundSetBeaconPacket implements Packet<ServerGamePacketListener> {
-   private final Optional<MobEffect> primary;
-   private final Optional<MobEffect> secondary;
+public record ServerboundSetBeaconPacket(Optional<Holder<MobEffect>> b, Optional<Holder<MobEffect>> c) implements Packet<ServerGamePacketListener> {
+   private final Optional<Holder<MobEffect>> primary;
+   private final Optional<Holder<MobEffect>> secondary;
+   public static final StreamCodec<RegistryFriendlyByteBuf, ServerboundSetBeaconPacket> STREAM_CODEC = StreamCodec.composite(
+      ByteBufCodecs.holderRegistry(Registries.MOB_EFFECT).apply(ByteBufCodecs::optional),
+      ServerboundSetBeaconPacket::primary,
+      ByteBufCodecs.holderRegistry(Registries.MOB_EFFECT).apply(ByteBufCodecs::optional),
+      ServerboundSetBeaconPacket::secondary,
+      ServerboundSetBeaconPacket::new
+   );
 
-   public ServerboundSetBeaconPacket(Optional<MobEffect> var1, Optional<MobEffect> var2) {
+   public ServerboundSetBeaconPacket(Optional<Holder<MobEffect>> var1, Optional<Holder<MobEffect>> var2) {
       super();
       this.primary = var1;
       this.secondary = var2;
    }
 
-   public ServerboundSetBeaconPacket(FriendlyByteBuf var1) {
-      super();
-      this.primary = var1.readOptional(var0 -> var0.readById(BuiltInRegistries.MOB_EFFECT));
-      this.secondary = var1.readOptional(var0 -> var0.readById(BuiltInRegistries.MOB_EFFECT));
-   }
-
    @Override
-   public void write(FriendlyByteBuf var1) {
-      var1.writeOptional(this.primary, (var0, var1x) -> var0.writeId(BuiltInRegistries.MOB_EFFECT, var1x));
-      var1.writeOptional(this.secondary, (var0, var1x) -> var0.writeId(BuiltInRegistries.MOB_EFFECT, var1x));
+   public PacketType<ServerboundSetBeaconPacket> type() {
+      return GamePacketTypes.SERVERBOUND_SET_BEACON;
    }
 
    public void handle(ServerGamePacketListener var1) {
       var1.handleSetBeaconPacket(this);
-   }
-
-   public Optional<MobEffect> getPrimary() {
-      return this.primary;
-   }
-
-   public Optional<MobEffect> getSecondary() {
-      return this.secondary;
    }
 }

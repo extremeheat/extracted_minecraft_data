@@ -33,7 +33,7 @@ public record FileIOStat(Duration a, @Nullable String b, long c) {
             .collect(Collectors.groupingBy(var0x -> var0x.path, Collectors.summingLong(var0x -> var0x.bytes)))
             .entrySet()
             .stream()
-            .sorted(Entry.<String, Long>comparingByValue().reversed())
+            .sorted(Entry.comparingByValue().reversed())
             .map(var0x -> Pair.of((String)var0x.getKey(), (Long)var0x.getValue()))
             .limit(10L)
             .toList()

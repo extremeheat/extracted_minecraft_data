@@ -5,6 +5,7 @@ import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderGetter;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -55,8 +56,8 @@ public class PistonMovingBlockEntity extends BlockEntity {
    }
 
    @Override
-   public CompoundTag getUpdateTag() {
-      return this.saveWithoutMetadata();
+   public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
+      return this.saveWithoutMetadata(var1);
    }
 
    public boolean isExtending() {
@@ -313,10 +314,10 @@ public class PistonMovingBlockEntity extends BlockEntity {
    }
 
    @Override
-   public void load(CompoundTag var1) {
-      super.load(var1);
-      Object var2 = this.level != null ? this.level.holderLookup(Registries.BLOCK) : BuiltInRegistries.BLOCK.asLookup();
-      this.movedState = NbtUtils.readBlockState((HolderGetter<Block>)var2, var1.getCompound("blockState"));
+   public void load(CompoundTag var1, HolderLookup.Provider var2) {
+      super.load(var1, var2);
+      Object var3 = this.level != null ? this.level.holderLookup(Registries.BLOCK) : BuiltInRegistries.BLOCK.asLookup();
+      this.movedState = NbtUtils.readBlockState((HolderGetter<Block>)var3, var1.getCompound("blockState"));
       this.direction = Direction.from3DDataValue(var1.getInt("facing"));
       this.progress = var1.getFloat("progress");
       this.progressO = this.progress;
@@ -325,8 +326,8 @@ public class PistonMovingBlockEntity extends BlockEntity {
    }
 
    @Override
-   protected void saveAdditional(CompoundTag var1) {
-      super.saveAdditional(var1);
+   protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.saveAdditional(var1, var2);
       var1.put("blockState", NbtUtils.writeBlockState(this.movedState));
       var1.putInt("facing", this.direction.get3DDataValue());
       var1.putFloat("progress", this.progressO);

@@ -4,6 +4,7 @@ import java.util.EnumSet;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.util.RandomSource;
@@ -42,7 +43,7 @@ public abstract class PatrollingMonster extends Monster {
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
       if (this.patrolTarget != null) {
-         var1.put("PatrolTarget", NbtUtils.writeBlockPos(this.patrolTarget));
+         var1.put("patrol_target", NbtUtils.writeBlockPos(this.patrolTarget));
       }
 
       var1.putBoolean("PatrolLeader", this.patrolLeader);
@@ -52,10 +53,7 @@ public abstract class PatrollingMonster extends Monster {
    @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      if (var1.contains("PatrolTarget")) {
-         this.patrolTarget = NbtUtils.readBlockPos(var1.getCompound("PatrolTarget"));
-      }
-
+      NbtUtils.readBlockPos(var1, "patrol_target").ifPresent(var1x -> this.patrolTarget = var1x);
       this.patrolLeader = var1.getBoolean("PatrolLeader");
       this.patrolling = var1.getBoolean("Patrolling");
    }
@@ -66,9 +64,7 @@ public abstract class PatrollingMonster extends Monster {
 
    @Nullable
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
       if (var3 != MobSpawnType.PATROL
          && var3 != MobSpawnType.EVENT
          && var3 != MobSpawnType.STRUCTURE
@@ -78,7 +74,7 @@ public abstract class PatrollingMonster extends Monster {
       }
 
       if (this.isPatrolLeader()) {
-         this.setItemSlot(EquipmentSlot.HEAD, Raid.getLeaderBannerInstance());
+         this.setItemSlot(EquipmentSlot.HEAD, Raid.getLeaderBannerInstance(this.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN)));
          this.setDropChance(EquipmentSlot.HEAD, 2.0F);
       }
 
@@ -86,7 +82,7 @@ public abstract class PatrollingMonster extends Monster {
          this.patrolling = true;
       }
 
-      return super.finalizeSpawn(var1, var2, var3, var4, var5);
+      return super.finalizeSpawn(var1, var2, var3, var4);
    }
 
    public static boolean checkPatrollingMonsterSpawnRules(

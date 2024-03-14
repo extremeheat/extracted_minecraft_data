@@ -22,7 +22,7 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.SmallFireball;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
 
 public class Blaze extends Monster {
@@ -32,10 +32,10 @@ public class Blaze extends Monster {
 
    public Blaze(EntityType<? extends Blaze> var1, Level var2) {
       super(var1, var2);
-      this.setPathfindingMalus(BlockPathTypes.WATER, -1.0F);
-      this.setPathfindingMalus(BlockPathTypes.LAVA, 8.0F);
-      this.setPathfindingMalus(BlockPathTypes.DANGER_FIRE, 0.0F);
-      this.setPathfindingMalus(BlockPathTypes.DAMAGE_FIRE, 0.0F);
+      this.setPathfindingMalus(PathType.WATER, -1.0F);
+      this.setPathfindingMalus(PathType.LAVA, 8.0F);
+      this.setPathfindingMalus(PathType.DANGER_FIRE, 0.0F);
+      this.setPathfindingMalus(PathType.DAMAGE_FIRE, 0.0F);
       this.xpReward = 10;
    }
 
@@ -58,9 +58,9 @@ public class Blaze extends Monster {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_FLAGS_ID, (byte)0);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_FLAGS_ID, (byte)0);
    }
 
    @Override

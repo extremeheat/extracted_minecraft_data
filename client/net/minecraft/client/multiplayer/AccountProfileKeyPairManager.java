@@ -44,7 +44,7 @@ public class AccountProfileKeyPairManager implements ProfileKeyPairManager {
       super();
       this.userApiService = var1;
       this.profileKeyPairPath = var3.resolve(PROFILE_KEY_PAIR_DIR).resolve(var2 + ".json");
-      this.keyPair = CompletableFuture.<Optional<ProfileKeyPair>>supplyAsync(
+      this.keyPair = CompletableFuture.<Optional>supplyAsync(
             () -> this.readProfileKeyPair().filter(var0 -> !var0.publicKey().data().hasExpired()), Util.backgroundExecutor()
          )
          .thenCompose(this::readOrFetchProfileKeyPair);

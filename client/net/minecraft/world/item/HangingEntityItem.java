@@ -7,7 +7,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.Mth;
@@ -18,7 +18,9 @@ import net.minecraft.world.entity.decoration.GlowItemFrame;
 import net.minecraft.world.entity.decoration.HangingEntity;
 import net.minecraft.world.entity.decoration.ItemFrame;
 import net.minecraft.world.entity.decoration.Painting;
+import net.minecraft.world.entity.decoration.PaintingVariant;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -61,8 +63,8 @@ public class HangingEntityItem extends Item {
             var8 = new GlowItemFrame(var7, var4, var3);
          }
 
-         CompoundTag var10 = var6.getTag();
-         if (var10 != null) {
+         CustomData var10 = var6.getOrDefault(DataComponents.ENTITY_DATA, CustomData.EMPTY);
+         if (!var10.isEmpty()) {
             EntityType.updateCustomEntityTag(var7, var5, (Entity)var8, var10);
          }
 
@@ -89,10 +91,10 @@ public class HangingEntityItem extends Item {
    public void appendHoverText(ItemStack var1, @Nullable Level var2, List<Component> var3, TooltipFlag var4) {
       super.appendHoverText(var1, var2, var3, var4);
       if (this.type == EntityType.PAINTING) {
-         CompoundTag var5 = var1.getTag();
-         if (var5 != null && var5.contains("EntityTag", 10)) {
-            CompoundTag var6 = var5.getCompound("EntityTag");
-            Painting.loadVariant(var6)
+         CustomData var5 = var1.getOrDefault(DataComponents.ENTITY_DATA, CustomData.EMPTY);
+         if (!var5.isEmpty()) {
+            var5.read(Painting.VARIANT_MAP_CODEC)
+               .result()
                .ifPresentOrElse(
                   var1x -> {
                      var1x.unwrapKey().ifPresent(var1xx -> {
@@ -101,7 +103,9 @@ public class HangingEntityItem extends Item {
                      });
                      var3.add(
                         Component.translatable(
-                           "painting.dimensions", Mth.positiveCeilDiv(var1x.value().getWidth(), 16), Mth.positiveCeilDiv(var1x.value().getHeight(), 16)
+                           "painting.dimensions",
+                           Mth.positiveCeilDiv(((PaintingVariant)var1x.value()).getWidth(), 16),
+                           Mth.positiveCeilDiv(((PaintingVariant)var1x.value()).getHeight(), 16)
                         )
                      );
                   },

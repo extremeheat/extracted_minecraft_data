@@ -102,7 +102,7 @@ public class VillageSiege implements CustomSpawner {
          Zombie var3;
          try {
             var3 = new Zombie(var1);
-            var3.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var3.blockPosition()), MobSpawnType.EVENT, null, null);
+            var3.finalizeSpawn(var1, var1.getCurrentDifficultyAt(var3.blockPosition()), MobSpawnType.EVENT, null);
          } catch (Exception var5) {
             LOGGER.warn("Failed to create zombie for village siege at {}", var2, var5);
             return;

@@ -82,9 +82,7 @@ public class RabbitModel<T extends Rabbit> extends EntityModel<T> {
          CubeListBuilder.create().texOffs(0, 15).addBox(-1.0F, 0.0F, -1.0F, 2.0F, 7.0F, 2.0F),
          PartPose.offsetAndRotation(-3.0F, 17.0F, -1.0F, -0.17453292F, 0.0F, 0.0F)
       );
-      var1.addOrReplaceChild(
-         "head", CubeListBuilder.create().texOffs(32, 0).addBox(-2.5F, -4.0F, -5.0F, 5.0F, 4.0F, 5.0F), PartPose.offset(0.0F, 16.0F, -1.0F)
-      );
+      var1.addOrReplaceChild("head", CubeListBuilder.create().texOffs(32, 0).addBox(-2.5F, -4.0F, -5.0F, 5.0F, 4.0F, 5.0F), PartPose.offset(0.0F, 16.0F, -1.0F));
       var1.addOrReplaceChild(
          "right_ear",
          CubeListBuilder.create().texOffs(52, 0).addBox(-2.5F, -9.0F, -1.0F, 2.0F, 5.0F, 1.0F),
@@ -100,9 +98,7 @@ public class RabbitModel<T extends Rabbit> extends EntityModel<T> {
          CubeListBuilder.create().texOffs(52, 6).addBox(-1.5F, -1.5F, 0.0F, 3.0F, 3.0F, 2.0F),
          PartPose.offsetAndRotation(0.0F, 20.0F, 7.0F, -0.3490659F, 0.0F, 0.0F)
       );
-      var1.addOrReplaceChild(
-         "nose", CubeListBuilder.create().texOffs(32, 9).addBox(-0.5F, -2.5F, -5.5F, 1.0F, 1.0F, 1.0F), PartPose.offset(0.0F, 16.0F, -1.0F)
-      );
+      var1.addOrReplaceChild("nose", CubeListBuilder.create().texOffs(32, 9).addBox(-0.5F, -2.5F, -5.5F, 1.0F, 1.0F, 1.0F), PartPose.offset(0.0F, 16.0F, -1.0F));
       return LayerDefinition.create(var0, 64, 32);
    }
 
@@ -118,9 +114,7 @@ public class RabbitModel<T extends Rabbit> extends EntityModel<T> {
          var1.pushPose();
          var1.scale(0.4F, 0.4F, 0.4F);
          var1.translate(0.0F, 2.25F, 0.0F);
-         ImmutableList.of(
-               this.leftRearFoot, this.rightRearFoot, this.leftHaunch, this.rightHaunch, this.body, this.leftFrontLeg, this.rightFrontLeg, this.tail
-            )
+         ImmutableList.of(this.leftRearFoot, this.rightRearFoot, this.leftHaunch, this.rightHaunch, this.body, this.leftFrontLeg, this.rightFrontLeg, this.tail)
             .forEach(var8x -> var8x.render(var1, var2, var3, var4, var5, var6, var7, var8));
          var1.popPose();
       } else {

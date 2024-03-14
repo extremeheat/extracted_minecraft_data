@@ -1,6 +1,5 @@
 package net.minecraft.client.renderer.entity.layers;
 
-import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import java.util.Map;
@@ -13,8 +12,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.NbtUtils;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -26,6 +24,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.level.block.AbstractSkullBlock;
 import net.minecraft.world.level.block.SkullBlock;
 
@@ -74,18 +73,11 @@ public class CustomHeadLayer<T extends LivingEntity, M extends EntityModel<T> & 
                var1.translate(0.0F, 0.0625F, 0.0F);
             }
 
-            GameProfile var16 = null;
-            if (var11.hasTag()) {
-               CompoundTag var17 = var11.getTag();
-               if (var17.contains("SkullOwner", 10)) {
-                  var16 = NbtUtils.readGameProfile(var17.getCompound("SkullOwner"));
-               }
-            }
-
+            ResolvableProfile var16 = var11.get(DataComponents.PROFILE);
             var1.translate(-0.5, 0.0, -0.5);
-            SkullBlock.Type var25 = ((AbstractSkullBlock)((BlockItem)var12).getBlock()).getType();
-            SkullModelBase var18 = this.skullModels.get(var25);
-            RenderType var19 = SkullBlockRenderer.getRenderType(var25, var16);
+            SkullBlock.Type var17 = ((AbstractSkullBlock)((BlockItem)var12).getBlock()).getType();
+            SkullModelBase var18 = this.skullModels.get(var17);
+            RenderType var19 = SkullBlockRenderer.getRenderType(var17, var16);
             Entity var22 = var4.getVehicle();
             WalkAnimationState var20;
             if (var22 instanceof LivingEntity var21) {
@@ -94,8 +86,8 @@ public class CustomHeadLayer<T extends LivingEntity, M extends EntityModel<T> & 
                var20 = var4.walkAnimation;
             }
 
-            float var26 = var20.position(var7);
-            SkullBlockRenderer.renderSkull(null, 180.0F, var26, var1, var2, var3, var18, var19);
+            float var25 = var20.position(var7);
+            SkullBlockRenderer.renderSkull(null, 180.0F, var25, var1, var2, var3, var18, var19);
          } else if (!(var12 instanceof ArmorItem var23) || var23.getEquipmentSlot() != EquipmentSlot.HEAD) {
             translateToHead(var1, var13);
             this.itemInHandRenderer.renderItem(var4, var11, ItemDisplayContext.HEAD, false, var1, var2, var3);

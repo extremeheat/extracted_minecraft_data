@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
@@ -352,28 +353,28 @@ public class Scoreboard {
       }
    }
 
-   protected ListTag savePlayerScores() {
-      ListTag var1 = new ListTag();
-      this.playerScores.forEach((var1x, var2) -> var2.listRawScores().forEach((var2x, var3) -> {
-            CompoundTag var4 = var3.write();
-            var4.putString("Name", var1x);
-            var4.putString("Objective", var2x.getName());
-            var1.add(var4);
+   protected ListTag savePlayerScores(HolderLookup.Provider var1) {
+      ListTag var2 = new ListTag();
+      this.playerScores.forEach((var2x, var3) -> var3.listRawScores().forEach((var3x, var4) -> {
+            CompoundTag var5 = var4.write(var1);
+            var5.putString("Name", var2x);
+            var5.putString("Objective", var3x.getName());
+            var2.add(var5);
          }));
-      return var1;
+      return var2;
    }
 
-   protected void loadPlayerScores(ListTag var1) {
-      for(int var2 = 0; var2 < var1.size(); ++var2) {
-         CompoundTag var3 = var1.getCompound(var2);
-         Score var4 = Score.read(var3);
-         String var5 = var3.getString("Name");
-         String var6 = var3.getString("Objective");
-         Objective var7 = this.getObjective(var6);
-         if (var7 == null) {
-            LOGGER.error("Unknown objective {} for name {}, ignoring", var6, var5);
+   protected void loadPlayerScores(ListTag var1, HolderLookup.Provider var2) {
+      for(int var3 = 0; var3 < var1.size(); ++var3) {
+         CompoundTag var4 = var1.getCompound(var3);
+         Score var5 = Score.read(var4, var2);
+         String var6 = var4.getString("Name");
+         String var7 = var4.getString("Objective");
+         Objective var8 = this.getObjective(var7);
+         if (var8 == null) {
+            LOGGER.error("Unknown objective {} for name {}, ignoring", var7, var6);
          } else {
-            this.getOrCreatePlayerInfo(var5).setScore(var7, var4);
+            this.getOrCreatePlayerInfo(var6).setScore(var8, var5);
          }
       }
    }

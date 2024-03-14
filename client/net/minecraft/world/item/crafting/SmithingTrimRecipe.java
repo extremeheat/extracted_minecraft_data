@@ -7,8 +7,10 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import net.minecraft.core.Holder;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -43,17 +45,14 @@ public class SmithingTrimRecipe implements SmithingRecipe {
          Optional var4 = TrimMaterials.getFromIngredient(var2, var1.getItem(2));
          Optional var5 = TrimPatterns.getFromTemplate(var2, var1.getItem(0));
          if (var4.isPresent() && var5.isPresent()) {
-            Optional var6 = ArmorTrim.getTrim(var2, var3, false);
-            if (var6.isPresent() && ((ArmorTrim)var6.get()).hasPatternAndMaterial((Holder<TrimPattern>)var5.get(), (Holder<TrimMaterial>)var4.get())) {
+            ArmorTrim var6 = var3.get(DataComponents.TRIM);
+            if (var6 != null && var6.hasPatternAndMaterial((Holder<TrimPattern>)var5.get(), (Holder<TrimMaterial>)var4.get())) {
                return ItemStack.EMPTY;
             }
 
-            ItemStack var7 = var3.copy();
-            var7.setCount(1);
-            ArmorTrim var8 = new ArmorTrim((Holder<TrimMaterial>)var4.get(), (Holder<TrimPattern>)var5.get());
-            if (ArmorTrim.setTrim(var2, var7, var8)) {
-               return var7;
-            }
+            ItemStack var7 = var3.copyWithCount(1);
+            var7.set(DataComponents.TRIM, new ArmorTrim((Holder<TrimMaterial>)var4.get(), (Holder<TrimPattern>)var5.get()));
+            return var7;
          }
       }
 
@@ -64,12 +63,9 @@ public class SmithingTrimRecipe implements SmithingRecipe {
    public ItemStack getResultItem(RegistryAccess var1) {
       ItemStack var2 = new ItemStack(Items.IRON_CHESTPLATE);
       Optional var3 = var1.registryOrThrow(Registries.TRIM_PATTERN).holders().findFirst();
-      if (var3.isPresent()) {
-         Optional var4 = var1.registryOrThrow(Registries.TRIM_MATERIAL).getHolder(TrimMaterials.REDSTONE);
-         if (var4.isPresent()) {
-            ArmorTrim var5 = new ArmorTrim((Holder<TrimMaterial>)var4.get(), (Holder<TrimPattern>)var3.get());
-            ArmorTrim.setTrim(var1, var2, var5);
-         }
+      Optional var4 = var1.registryOrThrow(Registries.TRIM_MATERIAL).getHolder(TrimMaterials.REDSTONE);
+      if (var3.isPresent() && var4.isPresent()) {
+         var2.set(DataComponents.TRIM, new ArmorTrim((Holder<TrimMaterial>)var4.get(), (Holder<TrimPattern>)var3.get()));
       }
 
       return var2;
@@ -109,6 +105,9 @@ public class SmithingTrimRecipe implements SmithingRecipe {
                )
                .apply(var0, SmithingTrimRecipe::new)
       );
+      public static final StreamCodec<RegistryFriendlyByteBuf, SmithingTrimRecipe> STREAM_CODEC = StreamCodec.of(
+         SmithingTrimRecipe.Serializer::toNetwork, SmithingTrimRecipe.Serializer::fromNetwork
+      );
 
       public Serializer() {
          super();
@@ -119,17 +118,22 @@ public class SmithingTrimRecipe implements SmithingRecipe {
          return CODEC;
       }
 
-      public SmithingTrimRecipe fromNetwork(FriendlyByteBuf var1) {
-         Ingredient var2 = Ingredient.fromNetwork(var1);
-         Ingredient var3 = Ingredient.fromNetwork(var1);
-         Ingredient var4 = Ingredient.fromNetwork(var1);
-         return new SmithingTrimRecipe(var2, var3, var4);
+      @Override
+      public StreamCodec<RegistryFriendlyByteBuf, SmithingTrimRecipe> streamCodec() {
+         return STREAM_CODEC;
       }
 
-      public void toNetwork(FriendlyByteBuf var1, SmithingTrimRecipe var2) {
-         var2.template.toNetwork(var1);
-         var2.base.toNetwork(var1);
-         var2.addition.toNetwork(var1);
+      private static SmithingTrimRecipe fromNetwork(RegistryFriendlyByteBuf var0) {
+         Ingredient var1 = Ingredient.CONTENTS_STREAM_CODEC.decode(var0);
+         Ingredient var2 = Ingredient.CONTENTS_STREAM_CODEC.decode(var0);
+         Ingredient var3 = Ingredient.CONTENTS_STREAM_CODEC.decode(var0);
+         return new SmithingTrimRecipe(var1, var2, var3);
+      }
+
+      private static void toNetwork(RegistryFriendlyByteBuf var0, SmithingTrimRecipe var1) {
+         Ingredient.CONTENTS_STREAM_CODEC.encode(var0, var1.template);
+         Ingredient.CONTENTS_STREAM_CODEC.encode(var0, var1.base);
+         Ingredient.CONTENTS_STREAM_CODEC.encode(var0, var1.addition);
       }
    }
 }

@@ -78,11 +78,11 @@ public class ProcessorLists {
       return ResourceKey.create(Registries.PROCESSOR_LIST, new ResourceLocation(var0));
    }
 
-   private static void register(BootstapContext<StructureProcessorList> var0, ResourceKey<StructureProcessorList> var1, List<StructureProcessor> var2) {
+   private static void register(BootstrapContext<StructureProcessorList> var0, ResourceKey<StructureProcessorList> var1, List<StructureProcessor> var2) {
       var0.register(var1, new StructureProcessorList(var2));
    }
 
-   public static void bootstrap(BootstapContext<StructureProcessorList> var0) {
+   public static void bootstrap(BootstrapContext<StructureProcessorList> var0) {
       HolderGetter var1 = var0.lookup(Registries.BLOCK);
       ProcessorRule var2 = new ProcessorRule(
          new RandomBlockMatchTest(Blocks.BLACKSTONE, 0.01F), AlwaysTrueTest.INSTANCE, Blocks.GILDED_BLACKSTONE.defaultBlockState()
@@ -306,9 +306,7 @@ public class ProcessorLists {
                   new ProcessorRule(new RandomBlockMatchTest(Blocks.SMOOTH_SANDSTONE, 0.08F), AlwaysTrueTest.INSTANCE, Blocks.COBWEB.defaultBlockState()),
                   new ProcessorRule(new RandomBlockMatchTest(Blocks.CUT_SANDSTONE, 0.1F), AlwaysTrueTest.INSTANCE, Blocks.COBWEB.defaultBlockState()),
                   new ProcessorRule(new RandomBlockMatchTest(Blocks.TERRACOTTA, 0.08F), AlwaysTrueTest.INSTANCE, Blocks.COBWEB.defaultBlockState()),
-                  new ProcessorRule(
-                     new RandomBlockMatchTest(Blocks.SMOOTH_SANDSTONE_STAIRS, 0.08F), AlwaysTrueTest.INSTANCE, Blocks.COBWEB.defaultBlockState()
-                  ),
+                  new ProcessorRule(new RandomBlockMatchTest(Blocks.SMOOTH_SANDSTONE_STAIRS, 0.08F), AlwaysTrueTest.INSTANCE, Blocks.COBWEB.defaultBlockState()),
                   new ProcessorRule(new RandomBlockMatchTest(Blocks.SMOOTH_SANDSTONE_SLAB, 0.08F), AlwaysTrueTest.INSTANCE, Blocks.COBWEB.defaultBlockState()),
                   new ProcessorRule(new RandomBlockMatchTest(Blocks.WHEAT, 0.2F), AlwaysTrueTest.INSTANCE, Blocks.BEETROOTS.defaultBlockState()),
                   new ProcessorRule(new RandomBlockMatchTest(Blocks.WHEAT, 0.1F), AlwaysTrueTest.INSTANCE, Blocks.MELON_STEM.defaultBlockState())
@@ -410,9 +408,7 @@ public class ProcessorLists {
          FARM_SAVANNA,
          ImmutableList.of(
             new RuleProcessor(
-               ImmutableList.of(
-                  new ProcessorRule(new RandomBlockMatchTest(Blocks.WHEAT, 0.1F), AlwaysTrueTest.INSTANCE, Blocks.MELON_STEM.defaultBlockState())
-               )
+               ImmutableList.of(new ProcessorRule(new RandomBlockMatchTest(Blocks.WHEAT, 0.1F), AlwaysTrueTest.INSTANCE, Blocks.MELON_STEM.defaultBlockState()))
             )
          )
       );
@@ -584,9 +580,7 @@ public class ProcessorLists {
                      Blocks.CRACKED_POLISHED_BLACKSTONE_BRICKS.defaultBlockState()
                   ),
                   new ProcessorRule(
-                     new RandomBlockMatchTest(Blocks.BLACKSTONE, 0.01F),
-                     AlwaysTrueTest.INSTANCE,
-                     Blocks.CRACKED_POLISHED_BLACKSTONE_BRICKS.defaultBlockState()
+                     new RandomBlockMatchTest(Blocks.BLACKSTONE, 0.01F), AlwaysTrueTest.INSTANCE, Blocks.CRACKED_POLISHED_BLACKSTONE_BRICKS.defaultBlockState()
                   ),
                   new ProcessorRule(
                      new RandomBlockMatchTest(Blocks.POLISHED_BLACKSTONE_BRICKS, 1.0E-4F), AlwaysTrueTest.INSTANCE, Blocks.AIR.defaultBlockState()
@@ -646,9 +640,7 @@ public class ProcessorLists {
                      AlwaysTrueTest.INSTANCE,
                      Blocks.CRACKED_POLISHED_BLACKSTONE_BRICKS.defaultBlockState()
                   ),
-                  new ProcessorRule(
-                     new RandomBlockMatchTest(Blocks.POLISHED_BLACKSTONE_BRICKS, 0.15F), AlwaysTrueTest.INSTANCE, Blocks.AIR.defaultBlockState()
-                  ),
+                  new ProcessorRule(new RandomBlockMatchTest(Blocks.POLISHED_BLACKSTONE_BRICKS, 0.15F), AlwaysTrueTest.INSTANCE, Blocks.AIR.defaultBlockState()),
                   new ProcessorRule(
                      new RandomBlockMatchTest(Blocks.POLISHED_BLACKSTONE_BRICKS, 0.3F), AlwaysTrueTest.INSTANCE, Blocks.BLACKSTONE.defaultBlockState()
                   )
@@ -662,9 +654,7 @@ public class ProcessorLists {
          ImmutableList.of(
             new RuleProcessor(
                ImmutableList.of(
-                  new ProcessorRule(
-                     new RandomBlockMatchTest(Blocks.POLISHED_BLACKSTONE_BRICKS, 0.01F), AlwaysTrueTest.INSTANCE, Blocks.AIR.defaultBlockState()
-                  ),
+                  new ProcessorRule(new RandomBlockMatchTest(Blocks.POLISHED_BLACKSTONE_BRICKS, 0.01F), AlwaysTrueTest.INSTANCE, Blocks.AIR.defaultBlockState()),
                   new ProcessorRule(
                      new RandomBlockMatchTest(Blocks.POLISHED_BLACKSTONE_BRICKS, 0.5F),
                      AlwaysTrueTest.INSTANCE,

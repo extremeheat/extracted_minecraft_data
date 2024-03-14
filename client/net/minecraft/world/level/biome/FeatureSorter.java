@@ -77,7 +77,7 @@ public class FeatureSorter {
             throw new IllegalStateException("You somehow broke the universe; DFS bork (iteration finished with non-empty in-progress vertex set");
          }
 
-         if (!var19.contains(var25) && Graph.depthFirstSearch(var6, var19, var20, var21::add, var25)) {
+         if (!var19.contains(var25) && Graph.depthFirstSearch(var6, var19, var20, var21::add, (T)var25)) {
             if (!var2) {
                throw new IllegalStateException("Feature order cycle found");
             }

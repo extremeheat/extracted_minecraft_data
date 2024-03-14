@@ -17,6 +17,8 @@ import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.profiling.jfr.JvmProfiler;
 import net.minecraft.world.level.ChunkPos;
 import org.slf4j.Logger;
 
@@ -32,6 +34,8 @@ public class RegionFile implements AutoCloseable {
    private static final int EXTERNAL_STREAM_FLAG = 128;
    private static final int EXTERNAL_CHUNK_THRESHOLD = 256;
    private static final int CHUNK_NOT_PRESENT = 0;
+   final RegionStorageInfo info;
+   private final Path path;
    private final FileChannel file;
    private final Path externalFileDir;
    final RegionFileVersion version;
@@ -41,58 +45,64 @@ public class RegionFile implements AutoCloseable {
    @VisibleForTesting
    protected final RegionBitmap usedSectors = new RegionBitmap();
 
-   public RegionFile(Path var1, Path var2, boolean var3) throws IOException {
-      this(var1, var2, RegionFileVersion.VERSION_DEFLATE, var3);
+   public RegionFile(RegionStorageInfo var1, Path var2, Path var3, boolean var4) throws IOException {
+      this(var1, var2, var3, RegionFileVersion.getSelected(), var4);
    }
 
-   public RegionFile(Path var1, Path var2, RegionFileVersion var3, boolean var4) throws IOException {
+   public RegionFile(RegionStorageInfo var1, Path var2, Path var3, RegionFileVersion var4, boolean var5) throws IOException {
       super();
-      this.version = var3;
-      if (!Files.isDirectory(var2)) {
-         throw new IllegalArgumentException("Expected directory, got " + var2.toAbsolutePath());
+      this.info = var1;
+      this.path = var2;
+      this.version = var4;
+      if (!Files.isDirectory(var3)) {
+         throw new IllegalArgumentException("Expected directory, got " + var3.toAbsolutePath());
       } else {
-         this.externalFileDir = var2;
+         this.externalFileDir = var3;
          this.offsets = this.header.asIntBuffer();
          this.offsets.limit(1024);
          this.header.position(4096);
          this.timestamps = this.header.asIntBuffer();
-         if (var4) {
-            this.file = FileChannel.open(var1, StandardOpenOption.CREATE, StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.DSYNC);
+         if (var5) {
+            this.file = FileChannel.open(var2, StandardOpenOption.CREATE, StandardOpenOption.READ, StandardOpenOption.WRITE, StandardOpenOption.DSYNC);
          } else {
-            this.file = FileChannel.open(var1, StandardOpenOption.CREATE, StandardOpenOption.READ, StandardOpenOption.WRITE);
+            this.file = FileChannel.open(var2, StandardOpenOption.CREATE, StandardOpenOption.READ, StandardOpenOption.WRITE);
          }
 
          this.usedSectors.force(0, 2);
          this.header.position(0);
-         int var5 = this.file.read(this.header, 0L);
-         if (var5 != -1) {
-            if (var5 != 8192) {
-               LOGGER.warn("Region file {} has truncated header: {}", var1, var5);
+         int var6 = this.file.read(this.header, 0L);
+         if (var6 != -1) {
+            if (var6 != 8192) {
+               LOGGER.warn("Region file {} has truncated header: {}", var2, var6);
             }
 
-            long var6 = Files.size(var1);
+            long var7 = Files.size(var2);
 
-            for(int var8 = 0; var8 < 1024; ++var8) {
-               int var9 = this.offsets.get(var8);
-               if (var9 != 0) {
-                  int var10 = getSectorNumber(var9);
-                  int var11 = getNumSectors(var9);
-                  if (var10 < 2) {
-                     LOGGER.warn("Region file {} has invalid sector at index: {}; sector {} overlaps with header", new Object[]{var1, var8, var10});
-                     this.offsets.put(var8, 0);
-                  } else if (var11 == 0) {
-                     LOGGER.warn("Region file {} has an invalid sector at index: {}; size has to be > 0", var1, var8);
-                     this.offsets.put(var8, 0);
-                  } else if ((long)var10 * 4096L > var6) {
-                     LOGGER.warn("Region file {} has an invalid sector at index: {}; sector {} is out of bounds", new Object[]{var1, var8, var10});
-                     this.offsets.put(var8, 0);
+            for(int var9 = 0; var9 < 1024; ++var9) {
+               int var10 = this.offsets.get(var9);
+               if (var10 != 0) {
+                  int var11 = getSectorNumber(var10);
+                  int var12 = getNumSectors(var10);
+                  if (var11 < 2) {
+                     LOGGER.warn("Region file {} has invalid sector at index: {}; sector {} overlaps with header", new Object[]{var2, var9, var11});
+                     this.offsets.put(var9, 0);
+                  } else if (var12 == 0) {
+                     LOGGER.warn("Region file {} has an invalid sector at index: {}; size has to be > 0", var2, var9);
+                     this.offsets.put(var9, 0);
+                  } else if ((long)var11 * 4096L > var7) {
+                     LOGGER.warn("Region file {} has an invalid sector at index: {}; sector {} is out of bounds", new Object[]{var2, var9, var11});
+                     this.offsets.put(var9, 0);
                   } else {
-                     this.usedSectors.force(var10, var11);
+                     this.usedSectors.force(var11, var12);
                   }
                }
             }
          }
       }
+   }
+
+   public Path getPath() {
+      return this.path;
    }
 
    private Path getExternalChunkPath(ChunkPos var1) {
@@ -136,6 +146,7 @@ public class RegionFile implements AutoCloseable {
                   LOGGER.error("Declared size {} of chunk {} is negative", var7, var1);
                   return null;
                } else {
+                  JvmProfiler.INSTANCE.onRegionFileRead(this.info, var1, this.version, var9);
                   return this.createChunkInputStream(var1, var8, createStream(var6, var9));
                }
             }
@@ -158,7 +169,17 @@ public class RegionFile implements AutoCloseable {
    @Nullable
    private DataInputStream createChunkInputStream(ChunkPos var1, byte var2, InputStream var3) throws IOException {
       RegionFileVersion var4 = RegionFileVersion.fromId(var2);
-      if (var4 == null) {
+      if (var4 == RegionFileVersion.VERSION_CUSTOM) {
+         String var5 = new DataInputStream(var3).readUTF();
+         ResourceLocation var6 = ResourceLocation.tryParse(var5);
+         if (var6 != null) {
+            LOGGER.error("Unrecognized custom compression {}", var6);
+            return null;
+         } else {
+            LOGGER.error("Invalid custom compression id {}", var5);
+            return null;
+         }
+      } else if (var4 == null) {
          LOGGER.error("Chunk {} has invalid chunk stream version {}", var1, var2);
          return null;
       } else {
@@ -372,7 +393,9 @@ public class RegionFile implements AutoCloseable {
       @Override
       public void close() throws IOException {
          ByteBuffer var1 = ByteBuffer.wrap(this.buf, 0, this.count);
-         var1.putInt(0, this.count - 5 + 1);
+         int var2 = this.count - 5 + 1;
+         JvmProfiler.INSTANCE.onRegionFileWrite(RegionFile.this.info, this.pos, RegionFile.this.version, var2);
+         var1.putInt(0, var2);
          RegionFile.this.write(this.pos, var1);
       }
    }

@@ -22,7 +22,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.components.ObjectSelectionList;
-import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -84,7 +83,7 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
 
    @Override
    public void init() {
-      this.layout.addToHeader(new StringWidget(this.title, this.font));
+      this.layout.addTitleHeader(this.title, this.font);
       this.worldTemplateList = this.layout.addToContents(new RealmsSelectWorldTemplateScreen.WorldTemplateList(this.worldTemplateList.getTemplates()));
       LinearLayout var1 = this.layout.addToFooter(LinearLayout.horizontal().spacing(10));
       var1.defaultCellSetting().alignHorizontallyCenter();
@@ -159,9 +158,7 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
                            if (var3.right().isPresent()) {
                               RealmsSelectWorldTemplateScreen.LOGGER.error("Couldn't fetch templates", (Throwable)var3.right().get());
                               if (RealmsSelectWorldTemplateScreen.this.worldTemplateList.isEmpty()) {
-                                 RealmsSelectWorldTemplateScreen.this.noTemplatesMessage = TextRenderingUtils.decompose(
-                                    I18n.get("mco.template.select.failure")
-                                 );
+                                 RealmsSelectWorldTemplateScreen.this.noTemplatesMessage = TextRenderingUtils.decompose(I18n.get("mco.template.select.failure"));
                               }
             
                               return null;
@@ -242,7 +239,7 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
    }
 
    int getHeaderHeight() {
-      return this.warning != null ? row(1) : 36;
+      return this.warning != null ? row(1) : 33;
    }
 
    class Entry extends ObjectSelectionList.Entry<RealmsSelectWorldTemplateScreen.Entry> {
@@ -281,26 +278,22 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
 
       @Override
       public boolean mouseClicked(double var1, double var3, int var5) {
-         if (var5 == 0) {
-            RealmsSelectWorldTemplateScreen.this.selectedTemplate = this.template;
-            RealmsSelectWorldTemplateScreen.this.updateButtonStates();
-            if (Util.getMillis() - this.lastClickTime < 250L && this.isFocused()) {
-               RealmsSelectWorldTemplateScreen.this.callback.accept(this.template);
-            }
-
-            this.lastClickTime = Util.getMillis();
-            if (this.websiteButton != null) {
-               this.websiteButton.mouseClicked(var1, var3, var5);
-            }
-
-            if (this.trailerButton != null) {
-               this.trailerButton.mouseClicked(var1, var3, var5);
-            }
-
-            return true;
-         } else {
-            return super.mouseClicked(var1, var3, var5);
+         RealmsSelectWorldTemplateScreen.this.selectedTemplate = this.template;
+         RealmsSelectWorldTemplateScreen.this.updateButtonStates();
+         if (Util.getMillis() - this.lastClickTime < 250L && this.isFocused()) {
+            RealmsSelectWorldTemplateScreen.this.callback.accept(this.template);
          }
+
+         this.lastClickTime = Util.getMillis();
+         if (this.websiteButton != null) {
+            this.websiteButton.mouseClicked(var1, var3, var5);
+         }
+
+         if (this.trailerButton != null) {
+            this.trailerButton.mouseClicked(var1, var3, var5);
+         }
+
+         return super.mouseClicked(var1, var3, var5);
       }
 
       @Override
@@ -349,7 +342,7 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
       public WorldTemplateList(Iterable<WorldTemplate> var2) {
          super(
             RealmsSelectWorldTemplateScreen.this.width,
-            RealmsSelectWorldTemplateScreen.this.height - 36 - RealmsSelectWorldTemplateScreen.this.getHeaderHeight(),
+            RealmsSelectWorldTemplateScreen.this.height - 33 - RealmsSelectWorldTemplateScreen.this.getHeaderHeight(),
             RealmsSelectWorldTemplateScreen.this.getHeaderHeight(),
             46
          );

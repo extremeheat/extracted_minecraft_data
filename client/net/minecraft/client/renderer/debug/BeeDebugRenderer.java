@@ -94,12 +94,12 @@ public class BeeDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
    }
 
    private void clearRemovedBees() {
-      this.beeInfosPerEntity.entrySet().removeIf(var1 -> this.minecraft.level.getEntity(var1.getValue().id()) == null);
+      this.beeInfosPerEntity.entrySet().removeIf(var1 -> this.minecraft.level.getEntity(((BeeDebugPayload.BeeInfo)var1.getValue()).id()) == null);
    }
 
    private void clearRemovedHives() {
       long var1 = this.minecraft.level.getGameTime() - 20L;
-      this.hives.entrySet().removeIf(var2 -> var2.getValue().lastSeen() < var1);
+      this.hives.entrySet().removeIf(var2 -> ((BeeDebugRenderer.HiveDebugInfo)var2.getValue()).lastSeen() < var1);
    }
 
    private void doRender(PoseStack var1, MultiBufferSource var2) {

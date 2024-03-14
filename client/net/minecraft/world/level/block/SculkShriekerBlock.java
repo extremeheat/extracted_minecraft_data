@@ -73,7 +73,7 @@ public class SculkShriekerBlock extends BaseEntityBlock implements SimpleWaterlo
    }
 
    @Override
-   public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (var2 instanceof ServerLevel var6 && var1.getValue(SHRIEKING) && !var1.is(var4.getBlock())) {
          ((ServerLevel)var6).getBlockEntity(var3, BlockEntityType.SCULK_SHRIEKER).ifPresent(var1x -> var1x.tryRespond(var6));
       }
@@ -82,7 +82,7 @@ public class SculkShriekerBlock extends BaseEntityBlock implements SimpleWaterlo
    }
 
    @Override
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       if (var1.getValue(SHRIEKING)) {
          var2.setBlock(var3, var1.setValue(SHRIEKING, Boolean.valueOf(false)), 3);
          var2.getBlockEntity(var3, BlockEntityType.SCULK_SHRIEKER).ifPresent(var1x -> var1x.tryRespond(var2));
@@ -90,22 +90,22 @@ public class SculkShriekerBlock extends BaseEntityBlock implements SimpleWaterlo
    }
 
    @Override
-   public RenderShape getRenderShape(BlockState var1) {
+   protected RenderShape getRenderShape(BlockState var1) {
       return RenderShape.MODEL;
    }
 
    @Override
-   public VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getCollisionShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return COLLIDER;
    }
 
    @Override
-   public VoxelShape getOcclusionShape(BlockState var1, BlockGetter var2, BlockPos var3) {
+   protected VoxelShape getOcclusionShape(BlockState var1, BlockGetter var2, BlockPos var3) {
       return COLLIDER;
    }
 
    @Override
-   public boolean useShapeForLightOcclusion(BlockState var1) {
+   protected boolean useShapeForLightOcclusion(BlockState var1) {
       return true;
    }
 
@@ -116,7 +116,7 @@ public class SculkShriekerBlock extends BaseEntityBlock implements SimpleWaterlo
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (var1.getValue(WATERLOGGED)) {
          var4.scheduleTick(var5, Fluids.WATER, Fluids.WATER.getTickDelay(var4));
       }
@@ -131,12 +131,12 @@ public class SculkShriekerBlock extends BaseEntityBlock implements SimpleWaterlo
    }
 
    @Override
-   public FluidState getFluidState(BlockState var1) {
+   protected FluidState getFluidState(BlockState var1) {
       return var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
    }
 
    @Override
-   public void spawnAfterBreak(BlockState var1, ServerLevel var2, BlockPos var3, ItemStack var4, boolean var5) {
+   protected void spawnAfterBreak(BlockState var1, ServerLevel var2, BlockPos var3, ItemStack var4, boolean var5) {
       super.spawnAfterBreak(var1, var2, var3, var4, var5);
       if (var5) {
          this.tryDropExperience(var2, var3, var4, ConstantInt.of(5));

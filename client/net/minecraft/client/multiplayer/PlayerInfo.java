@@ -42,7 +42,7 @@ public class PlayerInfo {
       boolean var4 = !var1.isLocalPlayer(var0.getId());
       PlayerSkin var5 = DefaultPlayerSkin.get(var0);
       return () -> {
-         PlayerSkin var3xx = var3.getNow(var5);
+         PlayerSkin var3xx = (PlayerSkin)var3.getNow(var5);
          return var4 && !var3xx.secure() ? var5 : var3xx;
       };
    }
@@ -95,7 +95,7 @@ public class PlayerInfo {
    }
 
    public PlayerSkin getSkin() {
-      return this.skinLookup.get();
+      return (PlayerSkin)this.skinLookup.get();
    }
 
    @Nullable

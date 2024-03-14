@@ -219,9 +219,7 @@ public class DataCommands {
                      var2x -> var5.wrap(
                            Commands.literal("string"),
                            var3xx -> var3xx.executes(
-                                    var3xxx -> manipulateData(
-                                          var3xxx, var3, var2x, stringifyTagList(getSingletonSource(var3xxx, var5), var0xxxxx -> var0xxxxx)
-                                       )
+                                    var3xxx -> manipulateData(var3xxx, var3, var2x, stringifyTagList(getSingletonSource(var3xxx, var5), var0xxxxx -> var0xxxxx))
                                  )
                                  .then(
                                     ((RequiredArgumentBuilder)Commands.argument("sourcePath", NbtPathArgument.nbtPath())
@@ -314,9 +312,7 @@ public class DataCommands {
       return var3.get(var2.getData());
    }
 
-   private static int manipulateData(
-      CommandContext<CommandSourceStack> var0, DataCommands.DataProvider var1, DataCommands.DataManipulator var2, List<Tag> var3
-   ) throws CommandSyntaxException {
+   private static int manipulateData(CommandContext<CommandSourceStack> var0, DataCommands.DataProvider var1, DataCommands.DataManipulator var2, List<Tag> var3) throws CommandSyntaxException {
       DataAccessor var4 = var1.access(var0);
       NbtPathArgument.NbtPath var5 = NbtPathArgument.getPath(var0, "targetPath");
       CompoundTag var6 = var4.getData();

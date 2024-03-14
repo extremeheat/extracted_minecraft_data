@@ -10,7 +10,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -27,12 +26,11 @@ import net.minecraft.world.phys.Vec3;
 public class ThrownTrident extends AbstractArrow {
    private static final EntityDataAccessor<Byte> ID_LOYALTY = SynchedEntityData.defineId(ThrownTrident.class, EntityDataSerializers.BYTE);
    private static final EntityDataAccessor<Boolean> ID_FOIL = SynchedEntityData.defineId(ThrownTrident.class, EntityDataSerializers.BOOLEAN);
-   private static final ItemStack DEFAULT_ARROW_STACK = new ItemStack(Items.TRIDENT);
    private boolean dealtDamage;
    public int clientSideReturnTridentTickCount;
 
    public ThrownTrident(EntityType<? extends ThrownTrident> var1, Level var2) {
-      super(var1, var2, DEFAULT_ARROW_STACK);
+      super(var1, var2);
    }
 
    public ThrownTrident(Level var1, LivingEntity var2, ItemStack var3) {
@@ -42,10 +40,10 @@ public class ThrownTrident extends AbstractArrow {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(ID_LOYALTY, (byte)0);
-      this.entityData.define(ID_FOIL, false);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(ID_LOYALTY, (byte)0);
+      var1.define(ID_FOIL, false);
    }
 
    @Override
@@ -110,7 +108,7 @@ public class ThrownTrident extends AbstractArrow {
       Entity var2 = var1.getEntity();
       float var3 = 8.0F;
       if (var2 instanceof LivingEntity var4) {
-         var3 += EnchantmentHelper.getDamageBonus(this.getPickupItemStackOrigin(), var4.getMobType());
+         var3 += EnchantmentHelper.getDamageBonus(this.getPickupItemStackOrigin(), var4.getType());
       }
 
       Entity var10 = this.getOwner();
@@ -130,9 +128,6 @@ public class ThrownTrident extends AbstractArrow {
 
             this.doPostHurtEffects((LivingEntity)var7);
          }
-      } else if (var2.getType().is(EntityTypeTags.DEFLECTS_TRIDENTS)) {
-         this.deflect();
-         return;
       }
 
       this.setDeltaMovement(this.getDeltaMovement().multiply(-0.01, -0.1, -0.01));
@@ -161,6 +156,11 @@ public class ThrownTrident extends AbstractArrow {
    @Override
    protected boolean tryPickup(Player var1) {
       return super.tryPickup(var1) || this.isNoPhysics() && this.ownedBy(var1) && var1.getInventory().add(this.getPickupItem());
+   }
+
+   @Override
+   protected ItemStack getDefaultPickupItem() {
+      return new ItemStack(Items.TRIDENT);
    }
 
    @Override

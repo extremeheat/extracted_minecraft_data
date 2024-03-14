@@ -5,7 +5,9 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
@@ -70,6 +72,7 @@ public abstract class SingleItemRecipe implements Recipe<Container> {
    public static class Serializer<T extends SingleItemRecipe> implements RecipeSerializer<T> {
       final SingleItemRecipe.Factory<T> factory;
       private final Codec<T> codec;
+      private final StreamCodec<RegistryFriendlyByteBuf, T> streamCodec;
 
       protected Serializer(SingleItemRecipe.Factory<T> var1) {
          super();
@@ -78,9 +81,18 @@ public abstract class SingleItemRecipe implements Recipe<Container> {
             var1x -> var1x.group(
                      ExtraCodecs.strictOptionalField(Codec.STRING, "group", "").forGetter(var0x -> var0x.group),
                      Ingredient.CODEC_NONEMPTY.fieldOf("ingredient").forGetter(var0x -> var0x.ingredient),
-                     ItemStack.RESULT_CODEC.forGetter(var0x -> var0x.result)
+                     ItemStack.CODEC.fieldOf("result").forGetter(var0x -> var0x.result)
                   )
                   .apply(var1x, var1::create)
+         );
+         this.streamCodec = StreamCodec.composite(
+            ByteBufCodecs.STRING_UTF8,
+            var0 -> var0.group,
+            Ingredient.CONTENTS_STREAM_CODEC,
+            var0 -> var0.ingredient,
+            ItemStack.STREAM_CODEC,
+            var0 -> var0.result,
+            var1::create
          );
       }
 
@@ -89,17 +101,9 @@ public abstract class SingleItemRecipe implements Recipe<Container> {
          return this.codec;
       }
 
-      public T fromNetwork(FriendlyByteBuf var1) {
-         String var2 = var1.readUtf();
-         Ingredient var3 = Ingredient.fromNetwork(var1);
-         ItemStack var4 = var1.readItem();
-         return this.factory.create(var2, var3, var4);
-      }
-
-      public void toNetwork(FriendlyByteBuf var1, T var2) {
-         var1.writeUtf(var2.group);
-         var2.ingredient.toNetwork(var1);
-         var1.writeItem(var2.result);
+      @Override
+      public StreamCodec<RegistryFriendlyByteBuf, T> streamCodec() {
+         return this.streamCodec;
       }
    }
 }

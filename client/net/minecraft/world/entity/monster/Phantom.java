@@ -24,7 +24,6 @@ import net.minecraft.world.entity.FlyingMob;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -39,7 +38,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
-import org.joml.Vector3f;
 
 public class Phantom extends FlyingMob implements Enemy {
    public static final float FLAP_DEGREES_PER_TICK = 7.448451F;
@@ -75,9 +73,9 @@ public class Phantom extends FlyingMob implements Enemy {
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(ID_SIZE, 0);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(ID_SIZE, 0);
    }
 
    public void setPhantomSize(int var1) {
@@ -91,11 +89,6 @@ public class Phantom extends FlyingMob implements Enemy {
 
    public int getPhantomSize() {
       return this.entityData.get(ID_SIZE);
-   }
-
-   @Override
-   protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
-      return var2.height * 0.35F;
    }
 
    @Override
@@ -136,10 +129,10 @@ public class Phantom extends FlyingMob implements Enemy {
                );
          }
 
-         int var3 = this.getPhantomSize();
-         float var4 = Mth.cos(this.getYRot() * 0.017453292F) * (1.3F + 0.21F * (float)var3);
-         float var5 = Mth.sin(this.getYRot() * 0.017453292F) * (1.3F + 0.21F * (float)var3);
-         float var6 = (0.3F + var1 * 0.45F) * ((float)var3 * 0.2F + 1.0F);
+         float var3 = this.getBbWidth() * 1.48F;
+         float var4 = Mth.cos(this.getYRot() * 0.017453292F) * var3;
+         float var5 = Mth.sin(this.getYRot() * 0.017453292F) * var3;
+         float var6 = (0.3F + var1 * 0.45F) * this.getBbHeight() * 2.5F;
          this.level().addParticle(ParticleTypes.MYCELIUM, this.getX() + (double)var4, this.getY() + (double)var6, this.getZ() + (double)var5, 0.0, 0.0, 0.0);
          this.level().addParticle(ParticleTypes.MYCELIUM, this.getX() - (double)var4, this.getY() + (double)var6, this.getZ() - (double)var5, 0.0, 0.0, 0.0);
       }
@@ -148,7 +141,7 @@ public class Phantom extends FlyingMob implements Enemy {
    @Override
    public void aiStep() {
       if (this.isAlive() && this.isSunBurnTick()) {
-         this.setSecondsOnFire(8);
+         this.igniteForSeconds(8);
       }
 
       super.aiStep();
@@ -160,12 +153,10 @@ public class Phantom extends FlyingMob implements Enemy {
    }
 
    @Override
-   public SpawnGroupData finalizeSpawn(
-      ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4, @Nullable CompoundTag var5
-   ) {
+   public SpawnGroupData finalizeSpawn(ServerLevelAccessor var1, DifficultyInstance var2, MobSpawnType var3, @Nullable SpawnGroupData var4) {
       this.anchorPoint = this.blockPosition().above(5);
       this.setPhantomSize(0);
-      return super.finalizeSpawn(var1, var2, var3, var4, var5);
+      return super.finalizeSpawn(var1, var2, var3, var4);
    }
 
    @Override
@@ -213,11 +204,6 @@ public class Phantom extends FlyingMob implements Enemy {
    }
 
    @Override
-   public MobType getMobType() {
-      return MobType.UNDEAD;
-   }
-
-   @Override
    protected float getSoundVolume() {
       return 1.0F;
    }
@@ -228,20 +214,10 @@ public class Phantom extends FlyingMob implements Enemy {
    }
 
    @Override
-   public EntityDimensions getDimensions(Pose var1) {
+   public EntityDimensions getDefaultDimensions(Pose var1) {
       int var2 = this.getPhantomSize();
-      EntityDimensions var3 = super.getDimensions(var1);
+      EntityDimensions var3 = super.getDefaultDimensions(var1);
       return var3.scale(1.0F + 0.15F * (float)var2);
-   }
-
-   @Override
-   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      return new Vector3f(0.0F, var2.height * 0.675F, 0.0F);
-   }
-
-   @Override
-   protected float ridingOffset(Entity var1) {
-      return -0.125F;
    }
 
    static enum AttackPhase {

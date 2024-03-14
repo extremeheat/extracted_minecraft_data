@@ -1,10 +1,11 @@
 package net.minecraft.world.item.crafting;
 
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.alchemy.PotionUtils;
+import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.level.Level;
 
 public class TippedArrowRecipe extends CustomRecipe {
@@ -43,8 +44,7 @@ public class TippedArrowRecipe extends CustomRecipe {
          return ItemStack.EMPTY;
       } else {
          ItemStack var4 = new ItemStack(Items.TIPPED_ARROW, 8);
-         PotionUtils.setPotion(var4, PotionUtils.getPotion(var3));
-         PotionUtils.setCustomEffects(var4, PotionUtils.getCustomEffects(var3));
+         var4.set(DataComponents.POTION_CONTENTS, (PotionContents)var3.get(DataComponents.POTION_CONTENTS));
          return var4;
       }
    }

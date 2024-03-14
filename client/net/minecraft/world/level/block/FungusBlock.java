@@ -47,7 +47,7 @@ public class FungusBlock extends BushBlock implements BonemealableBlock {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       return SHAPE;
    }
 
@@ -73,6 +73,6 @@ public class FungusBlock extends BushBlock implements BonemealableBlock {
 
    @Override
    public void performBonemeal(ServerLevel var1, RandomSource var2, BlockPos var3, BlockState var4) {
-      this.getFeature(var1).ifPresent(var3x -> var3x.value().place(var1, var1.getChunkSource().getGenerator(), var2, var3));
+      this.getFeature(var1).ifPresent(var3x -> ((ConfiguredFeature)var3x.value()).place(var1, var1.getChunkSource().getGenerator(), var2, var3));
    }
 }

@@ -4,7 +4,7 @@ import java.time.Duration;
 import jdk.jfr.consumer.RecordedEvent;
 import net.minecraft.server.level.ColumnPos;
 import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.chunk.ChunkStatus;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 
 public record ChunkGenStat(Duration a, ChunkPos b, ColumnPos c, ChunkStatus d, String e) implements TimedStat {
    private final Duration duration;

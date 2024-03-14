@@ -104,9 +104,9 @@ public class FishingHook extends Projectile {
    }
 
    @Override
-   protected void defineSynchedData() {
-      this.getEntityData().define(DATA_HOOKED_ENTITY, 0);
-      this.getEntityData().define(DATA_BITING, false);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      var1.define(DATA_HOOKED_ENTITY, 0);
+      var1.define(DATA_BITING, false);
    }
 
    @Override

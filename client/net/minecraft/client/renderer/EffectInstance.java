@@ -27,7 +27,7 @@ import javax.annotation.Nullable;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.ChainedJsonException;
 import net.minecraft.server.packs.resources.Resource;
-import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.util.GsonHelper;
 import org.slf4j.Logger;
 
@@ -53,7 +53,7 @@ public class EffectInstance implements Effect, AutoCloseable {
    private final EffectProgram vertexProgram;
    private final EffectProgram fragmentProgram;
 
-   public EffectInstance(ResourceManager var1, String var2) throws IOException {
+   public EffectInstance(ResourceProvider var1, String var2) throws IOException {
       super();
       ResourceLocation var3 = new ResourceLocation("shaders/program/" + var2 + ".json");
       this.name = var2;
@@ -140,7 +140,7 @@ public class EffectInstance implements Effect, AutoCloseable {
       this.markDirty();
    }
 
-   public static EffectProgram getOrCreate(ResourceManager var0, Program.Type var1, String var2) throws IOException {
+   public static EffectProgram getOrCreate(ResourceProvider var0, Program.Type var1, String var2) throws IOException {
       Program var3 = var1.getPrograms().get(var2);
       if (var3 != null && !(var3 instanceof EffectProgram)) {
          throw new InvalidClassException("Program is not of type EffectProgram");

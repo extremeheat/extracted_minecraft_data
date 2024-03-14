@@ -42,10 +42,9 @@ public record TagKey<T>(ResourceKey<? extends Registry<T>> a, ResourceLocation b
    }
 
    public <E> Optional<TagKey<E>> cast(ResourceKey<? extends Registry<E>> var1) {
-      return this.isFor(var1) ? Optional.of(this) : Optional.empty();
+      return this.isFor(var1) ? Optional.of((T)this) : Optional.empty();
    }
 
-   @Override
    public String toString() {
       return "TagKey[" + this.registry.location() + " / " + this.location + "]";
    }

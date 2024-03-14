@@ -58,6 +58,8 @@ public class EntityEvent {
    public static final byte TENDRILS_SHIVER = 61;
    public static final byte SONIC_CHARGE = 62;
    public static final byte SNIFFER_DIGGING_SOUND = 63;
+   public static final byte ARMADILLO_PEEK = 64;
+   public static final byte BODY_BREAK = 65;
 
    public EntityEvent() {
       super();

@@ -4,7 +4,7 @@ import java.util.List;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.data.worldgen.BootstapContext;
+import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.data.worldgen.features.OreFeatures;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.valueproviders.UniformInt;
@@ -75,7 +75,7 @@ public class OrePlacements {
       return orePlacement(RarityFilter.onAverageOnceEvery(var0), var1);
    }
 
-   public static void bootstrap(BootstapContext<PlacedFeature> var0) {
+   public static void bootstrap(BootstrapContext<PlacedFeature> var0) {
       HolderGetter var1 = var0.lookup(Registries.CONFIGURED_FEATURE);
       Holder.Reference var2 = var1.getOrThrow(OreFeatures.ORE_MAGMA);
       Holder.Reference var3 = var1.getOrThrow(OreFeatures.ORE_SOUL_SAND);
@@ -179,10 +179,7 @@ public class OrePlacements {
          var0, ORE_REDSTONE, var20, commonOrePlacement(4, HeightRangePlacement.uniform(VerticalAnchor.bottom(), VerticalAnchor.absolute(15)))
       );
       PlacementUtils.register(
-         var0,
-         ORE_REDSTONE_LOWER,
-         var20,
-         commonOrePlacement(8, HeightRangePlacement.triangle(VerticalAnchor.aboveBottom(-32), VerticalAnchor.aboveBottom(32)))
+         var0, ORE_REDSTONE_LOWER, var20, commonOrePlacement(8, HeightRangePlacement.triangle(VerticalAnchor.aboveBottom(-32), VerticalAnchor.aboveBottom(32)))
       );
       PlacementUtils.register(
          var0, ORE_DIAMOND, var21, commonOrePlacement(7, HeightRangePlacement.triangle(VerticalAnchor.aboveBottom(-80), VerticalAnchor.aboveBottom(80)))
@@ -194,10 +191,7 @@ public class OrePlacements {
          var0, ORE_DIAMOND_LARGE, var23, rareOrePlacement(9, HeightRangePlacement.triangle(VerticalAnchor.aboveBottom(-80), VerticalAnchor.aboveBottom(80)))
       );
       PlacementUtils.register(
-         var0,
-         ORE_DIAMOND_BURIED,
-         var24,
-         commonOrePlacement(4, HeightRangePlacement.triangle(VerticalAnchor.aboveBottom(-80), VerticalAnchor.aboveBottom(80)))
+         var0, ORE_DIAMOND_BURIED, var24, commonOrePlacement(4, HeightRangePlacement.triangle(VerticalAnchor.aboveBottom(-80), VerticalAnchor.aboveBottom(80)))
       );
       PlacementUtils.register(
          var0, ORE_LAPIS, var25, commonOrePlacement(2, HeightRangePlacement.triangle(VerticalAnchor.absolute(-32), VerticalAnchor.absolute(32)))

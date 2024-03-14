@@ -34,8 +34,7 @@ public class ExplorationMapFunction extends LootItemConditionalFunction {
       var0 -> commonFields(var0)
             .and(
                var0.group(
-                  ExtraCodecs.strictOptionalField(TagKey.codec(Registries.STRUCTURE), "destination", DEFAULT_DESTINATION)
-                     .forGetter(var0x -> var0x.destination),
+                  ExtraCodecs.strictOptionalField(TagKey.codec(Registries.STRUCTURE), "destination", DEFAULT_DESTINATION).forGetter(var0x -> var0x.destination),
                   MapDecoration.Type.CODEC.optionalFieldOf("decoration", DEFAULT_DECORATION).forGetter(var0x -> var0x.mapDecoration),
                   ExtraCodecs.strictOptionalField(Codec.BYTE, "zoom", (byte)2).forGetter(var0x -> var0x.zoom),
                   ExtraCodecs.strictOptionalField(Codec.INT, "search_radius", 50).forGetter(var0x -> var0x.searchRadius),

@@ -13,14 +13,14 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Difficulty;
-import org.apache.commons.compress.utils.Lists;
 
 public class OnlineOptionsScreen extends SimpleOptionsSubScreen {
+   private static final Component TITLE = Component.translatable("options.online.title");
    @Nullable
    private final OptionInstance<Unit> difficultyDisplay;
 
    public static OnlineOptionsScreen createOnlineOptionsScreen(Minecraft var0, Screen var1, Options var2) {
-      ArrayList var3 = Lists.newArrayList();
+      ArrayList var3 = new ArrayList();
       var3.add(var2.realmsNotifications());
       var3.add(var2.allowServerListing());
       OptionInstance var4 = Optionull.map(
@@ -46,7 +46,7 @@ public class OnlineOptionsScreen extends SimpleOptionsSubScreen {
    }
 
    private OnlineOptionsScreen(Screen var1, Options var2, OptionInstance<?>[] var3, @Nullable OptionInstance<Unit> var4) {
-      super(var1, var2, Component.translatable("options.online.title"), var3);
+      super(var1, var2, TITLE, var3);
       this.difficultyDisplay = var4;
    }
 

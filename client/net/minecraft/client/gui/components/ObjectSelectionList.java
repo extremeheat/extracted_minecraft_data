@@ -65,6 +65,11 @@ public abstract class ObjectSelectionList<E extends ObjectSelectionList.Entry<E>
       public abstract Component getNarration();
 
       @Override
+      public boolean mouseClicked(double var1, double var3, int var5) {
+         return true;
+      }
+
+      @Override
       public void updateNarration(NarrationElementOutput var1) {
          var1.add(NarratedElementType.TITLE, this.getNarration());
       }

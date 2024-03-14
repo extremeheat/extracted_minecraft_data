@@ -148,7 +148,7 @@ public class FunctionCommand {
       boolean var7
    ) throws CommandSyntaxException {
       try {
-         InstantiatedFunction var8 = var4.instantiate(var0, var2, var3);
+         InstantiatedFunction var8 = var4.instantiate(var0, var2);
          var1.queueNext(new CallFunction<T>(var8, var6, var7).bind((T)var3));
       } catch (FunctionInstantiationException var9) {
          throw ERROR_FUNCTION_INSTANTATION_FAILURE.create(var5, var9.messageComponent());
@@ -160,7 +160,7 @@ public class FunctionCommand {
    ) {
       return var0.isSilent() ? var3 : (var4, var5) -> {
          var1.signalResult(var0, var2, var5);
-         var3.onSuccess(var5);
+         var3.onResult(var4, var5);
       };
    }
 
@@ -177,9 +177,7 @@ public class FunctionCommand {
          instantiateAndQueueFunctions(var1, var4, var6, (T)var7, var10, var11, var12, true);
       }
 
-      if (var8 != CommandResultCallback.EMPTY) {
-         var4.queueNext(FallthroughTask.instance());
-      }
+      var4.queueNext(FallthroughTask.instance());
    }
 
    private static <T extends ExecutionCommandSource<T>> void queueFunctionsNoReturn(

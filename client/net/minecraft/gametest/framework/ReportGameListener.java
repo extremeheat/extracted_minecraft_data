@@ -2,17 +2,19 @@ package net.minecraft.gametest.framework;
 
 import com.google.common.base.MoreObjects;
 import java.util.Arrays;
+import java.util.List;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.StringTag;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.network.Filterable;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.WritableBookContent;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LecternBlock;
@@ -22,67 +24,83 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 class ReportGameListener implements GameTestListener {
-   private final GameTestInfo originalTestInfo;
-   private final GameTestTicker testTicker;
-   private final BlockPos structurePos;
-   int attempts;
-   int successes;
+   private int attempts = 0;
+   private int successes = 0;
 
-   public ReportGameListener(GameTestInfo var1, GameTestTicker var2, BlockPos var3) {
+   public ReportGameListener() {
       super();
-      this.originalTestInfo = var1;
-      this.testTicker = var2;
-      this.structurePos = var3;
-      this.attempts = 0;
-      this.successes = 0;
    }
 
    @Override
    public void testStructureLoaded(GameTestInfo var1) {
-      spawnBeacon(this.originalTestInfo, Blocks.LIGHT_GRAY_STAINED_GLASS);
+      spawnBeacon(var1, Blocks.LIGHT_GRAY_STAINED_GLASS);
       ++this.attempts;
    }
 
+   private void handleRetry(GameTestInfo var1, GameTestRunner var2, boolean var3) {
+      RetryOptions var4 = var1.retryOptions();
+      String var5 = String.format("[Run: %4d, Ok: %4d, Fail: %4d", this.attempts, this.successes, this.attempts - this.successes);
+      if (!var4.unlimitedTries()) {
+         var5 = var5 + String.format(", Left: %4d", var4.numberOfTries() - this.attempts);
+      }
+
+      var5 = var5 + "]";
+      String var6 = var1.getTestName() + " " + (var3 ? "passed" : "failed") + "! " + var1.getRunTime() + "ms";
+      String var7 = String.format("%-53s%s", var5, var6);
+      if (var3) {
+         reportPassed(var1, var7);
+      } else {
+         say(var1.getLevel(), ChatFormatting.RED, var7);
+      }
+
+      if (var4.hasTriesLeft(this.attempts, this.successes)) {
+         var2.rerunTest(var1);
+      }
+   }
+
    @Override
-   public void testPassed(GameTestInfo var1) {
+   public void testPassed(GameTestInfo var1, GameTestRunner var2) {
       ++this.successes;
-      if (var1.rerunUntilFailed()) {
-         reportPassed(var1, var1.getTestName() + " passed! (" + var1.getRunTime() + "ms). Rerunning until failed.");
-         this.rerunTest();
+      if (var1.retryOptions().hasRetries()) {
+         this.handleRetry(var1, var2, true);
       } else if (!var1.isFlaky()) {
          reportPassed(var1, var1.getTestName() + " passed! (" + var1.getRunTime() + "ms)");
       } else {
          if (this.successes >= var1.requiredSuccesses()) {
             reportPassed(var1, var1 + " passed " + this.successes + " times of " + this.attempts + " attempts.");
          } else {
-            say(
-               this.originalTestInfo.getLevel(),
-               ChatFormatting.GREEN,
-               "Flaky test " + this.originalTestInfo + " succeeded, attempt: " + this.attempts + " successes: " + this.successes
-            );
-            this.rerunTest();
+            say(var1.getLevel(), ChatFormatting.GREEN, "Flaky test " + var1 + " succeeded, attempt: " + this.attempts + " successes: " + this.successes);
+            var2.rerunTest(var1);
          }
       }
    }
 
    @Override
-   public void testFailed(GameTestInfo var1) {
+   public void testFailed(GameTestInfo var1, GameTestRunner var2) {
       if (!var1.isFlaky()) {
          reportFailure(var1, var1.getError());
+         if (var1.retryOptions().hasRetries()) {
+            this.handleRetry(var1, var2, false);
+         }
       } else {
-         TestFunction var2 = this.originalTestInfo.getTestFunction();
-         String var3 = "Flaky test " + this.originalTestInfo + " failed, attempt: " + this.attempts + "/" + var2.getMaxAttempts();
-         if (var2.getRequiredSuccesses() > 1) {
-            var3 = var3 + ", successes: " + this.successes + " (" + var2.getRequiredSuccesses() + " required)";
+         TestFunction var3 = var1.getTestFunction();
+         String var4 = "Flaky test " + var1 + " failed, attempt: " + this.attempts + "/" + var3.maxAttempts();
+         if (var3.requiredSuccesses() > 1) {
+            var4 = var4 + ", successes: " + this.successes + " (" + var3.requiredSuccesses() + " required)";
          }
 
-         say(this.originalTestInfo.getLevel(), ChatFormatting.YELLOW, var3);
+         say(var1.getLevel(), ChatFormatting.YELLOW, var4);
          if (var1.maxAttempts() - this.attempts + this.successes >= var1.requiredSuccesses()) {
-            this.rerunTest();
+            var2.rerunTest(var1);
          } else {
             reportFailure(var1, new ExhaustedAttemptsException(this.attempts, this.successes, var1));
          }
       }
+   }
+
+   @Override
+   public void testAddedForRerun(GameTestInfo var1, GameTestInfo var2, GameTestRunner var3) {
+      var2.addListener(this);
    }
 
    public static void reportPassed(GameTestInfo var0, String var1) {
@@ -115,15 +133,6 @@ class ReportGameListener implements GameTestListener {
       GlobalTestReporter.onTestFailed(var0);
    }
 
-   private void rerunTest() {
-      this.originalTestInfo.clearStructure();
-      GameTestInfo var1 = new GameTestInfo(this.originalTestInfo.getTestFunction(), this.originalTestInfo.getRotation(), this.originalTestInfo.getLevel());
-      var1.setRerunUntilFailed(this.originalTestInfo.rerunUntilFailed());
-      this.testTicker.add(var1);
-      var1.addListener(this);
-      var1.prepareTestStructure(this.structurePos);
-   }
-
    protected static void spawnBeacon(GameTestInfo var0, Block var1) {
       ServerLevel var2 = var0.getLevel();
       BlockPos var3 = var0.getStructureBlockPos();
@@ -153,18 +162,16 @@ class ReportGameListener implements GameTestListener {
    }
 
    private static ItemStack createBook(String var0, boolean var1, String var2) {
-      ItemStack var3 = new ItemStack(Items.WRITABLE_BOOK);
-      ListTag var4 = new ListTag();
-      StringBuffer var5 = new StringBuffer();
-      Arrays.stream(var0.split("\\.")).forEach(var1x -> var5.append(var1x).append('\n'));
+      StringBuffer var3 = new StringBuffer();
+      Arrays.stream(var0.split("\\.")).forEach(var1x -> var3.append(var1x).append('\n'));
       if (!var1) {
-         var5.append("(optional)\n");
+         var3.append("(optional)\n");
       }
 
-      var5.append("-------------------\n");
-      var4.add(StringTag.valueOf(var5 + var2));
-      var3.addTagElement("pages", var4);
-      return var3;
+      var3.append("-------------------\n");
+      ItemStack var4 = new ItemStack(Items.WRITABLE_BOOK);
+      var4.set(DataComponents.WRITABLE_BOOK_CONTENT, new WritableBookContent(List.of(Filterable.<String>passThrough(var3 + var2))));
+      return var4;
    }
 
    protected static void say(ServerLevel var0, ChatFormatting var1, String var2) {

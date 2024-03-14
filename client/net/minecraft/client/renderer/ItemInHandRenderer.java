@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
 import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -22,6 +23,7 @@ import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.MapItem;
+import net.minecraft.world.level.saveddata.maps.MapId;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import org.joml.Matrix4f;
 
@@ -196,7 +198,7 @@ public class ItemInHandRenderer {
       var1.scale(0.38F, 0.38F, 0.38F);
       var1.translate(-0.5F, -0.5F, 0.0F);
       var1.scale(0.0078125F, 0.0078125F, 0.0078125F);
-      Integer var5 = MapItem.getMapId(var4);
+      MapId var5 = var4.get(DataComponents.MAP_ID);
       MapItemSavedData var6 = MapItem.getSavedData(var5, this.minecraft.level);
       VertexConsumer var7 = var2.getBuffer(var6 == null ? MAP_BACKGROUND : MAP_BACKGROUND_CHECKERBOARD);
       Matrix4f var8 = var1.last().pose();

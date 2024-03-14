@@ -10,11 +10,8 @@ import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
-import net.minecraft.world.entity.MobType;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.ClimbOnTopOfPowderSnowGoal;
@@ -32,7 +29,6 @@ import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.InfestedBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import org.joml.Vector3f;
 
 public class Silverfish extends Monster {
    @Nullable
@@ -52,11 +48,6 @@ public class Silverfish extends Monster {
       this.goalSelector.addGoal(5, new Silverfish.SilverfishMergeWithStoneGoal(this));
       this.targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers());
       this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
-   }
-
-   @Override
-   protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
-      return 0.13F;
    }
 
    public static AttributeSupplier.Builder createAttributes() {
@@ -125,16 +116,6 @@ public class Silverfish extends Monster {
       } else {
          return false;
       }
-   }
-
-   @Override
-   public MobType getMobType() {
-      return MobType.ARTHROPOD;
-   }
-
-   @Override
-   protected Vector3f getPassengerAttachmentPoint(Entity var1, EntityDimensions var2, float var3) {
-      return new Vector3f(0.0F, var2.height - 0.0625F * var3, 0.0F);
    }
 
    static class SilverfishMergeWithStoneGoal extends RandomStrollGoal {

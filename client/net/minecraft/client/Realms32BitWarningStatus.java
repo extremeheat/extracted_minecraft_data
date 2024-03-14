@@ -48,7 +48,7 @@ public class Realms32BitWarningStatus {
    private boolean hasRealmsSubscription() {
       try {
          return RealmsClient.create(this.minecraft)
-            .listWorlds()
+            .listRealms()
             .servers
             .stream()
             .anyMatch(var1 -> !var1.expired && this.minecraft.isLocalPlayer(var1.ownerUUID));

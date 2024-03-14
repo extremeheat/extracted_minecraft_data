@@ -2,6 +2,8 @@ package net.minecraft.client.gui.screens.multiplayer;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.layouts.Layout;
+import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
@@ -19,14 +21,16 @@ public class Realms32bitWarningScreen extends WarningScreen {
    }
 
    @Override
-   protected void initButtons(int var1) {
-      this.addRenderableWidget(Button.builder(CommonComponents.GUI_DONE, var1x -> {
+   protected Layout addFooterButtons() {
+      LinearLayout var1 = LinearLayout.horizontal().spacing(8);
+      var1.addChild(Button.builder(CommonComponents.GUI_DONE, var1x -> {
          if (this.stopShowing.selected()) {
             this.minecraft.options.skipRealms32bitWarning = true;
             this.minecraft.options.save();
          }
 
          this.minecraft.setScreen(this.previous);
-      }).bounds(this.width / 2 - 75, 100 + var1, 150, 20).build());
+      }).build());
+      return var1;
    }
 }

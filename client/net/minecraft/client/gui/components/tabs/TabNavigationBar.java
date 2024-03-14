@@ -2,6 +2,7 @@ package net.minecraft.client.gui.components.tabs;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.UnmodifiableIterator;
+import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -15,14 +16,13 @@ import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.TabButton;
 import net.minecraft.client.gui.components.events.AbstractContainerEventHandler;
 import net.minecraft.client.gui.components.events.GuiEventListener;
-import net.minecraft.client.gui.layouts.GridLayout;
+import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
@@ -32,7 +32,7 @@ public class TabNavigationBar extends AbstractContainerEventHandler implements R
    private static final int HEIGHT = 24;
    private static final int MARGIN = 14;
    private static final Component USAGE_NARRATION = Component.translatable("narration.tab_navigation.usage");
-   private final GridLayout layout;
+   private final LinearLayout layout = LinearLayout.horizontal();
    private int width;
    private final TabManager tabManager;
    private final ImmutableList<Tab> tabs;
@@ -43,13 +43,11 @@ public class TabNavigationBar extends AbstractContainerEventHandler implements R
       this.width = var1;
       this.tabManager = var2;
       this.tabs = ImmutableList.copyOf(var3);
-      this.layout = new GridLayout(0, 0);
       this.layout.defaultCellSetting().alignHorizontallyCenter();
       com.google.common.collect.ImmutableList.Builder var4 = ImmutableList.builder();
-      int var5 = 0;
 
-      for(Tab var7 : var3) {
-         var4.add(this.layout.addChild(new TabButton(var2, var7, 0, 24), 0, var5++));
+      for(Tab var6 : var3) {
+         var4.add(this.layout.addChild(new TabButton(var2, var6, 0, 24)));
       }
 
       this.tabButtons = var4.build();
@@ -127,13 +125,16 @@ public class TabNavigationBar extends AbstractContainerEventHandler implements R
 
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
-      var1.fill(0, 0, this.width, 24, -16777216);
-      var1.blit(CreateWorldScreen.HEADER_SEPERATOR, 0, this.layout.getY() + this.layout.getHeight() - 2, 0.0F, 0.0F, this.width, 2, 32, 2);
-      UnmodifiableIterator var5 = this.tabButtons.iterator();
+      RenderSystem.enableBlend();
+      var1.blit(Screen.HEADER_SEPARATOR, 0, this.layout.getY() + this.layout.getHeight() - 2, 0.0F, 0.0F, ((TabButton)this.tabButtons.get(0)).getX(), 2, 32, 2);
+      int var5 = ((TabButton)this.tabButtons.get(this.tabButtons.size() - 1)).getRight();
+      var1.blit(Screen.HEADER_SEPARATOR, var5, this.layout.getY() + this.layout.getHeight() - 2, 0.0F, 0.0F, this.width, 2, 32, 2);
+      RenderSystem.disableBlend();
+      UnmodifiableIterator var6 = this.tabButtons.iterator();
 
-      while(var5.hasNext()) {
-         TabButton var6 = (TabButton)var5.next();
-         var6.render(var1, var2, var3, var4);
+      while(var6.hasNext()) {
+         TabButton var7 = (TabButton)var6.next();
+         var7.render(var1, var2, var3, var4);
       }
    }
 

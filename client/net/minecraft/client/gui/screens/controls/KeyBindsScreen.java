@@ -7,12 +7,14 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.OptionsSubScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
 public class KeyBindsScreen extends OptionsSubScreen {
+   private static final Component TITLE = Component.translatable("controls.keybinds.title");
    @Nullable
    public KeyMapping selectedKey;
    public long lastKeySelection;
@@ -20,24 +22,33 @@ public class KeyBindsScreen extends OptionsSubScreen {
    private Button resetButton;
 
    public KeyBindsScreen(Screen var1, Options var2) {
-      super(var1, var2, Component.translatable("controls.keybinds.title"));
+      super(var1, var2, TITLE);
    }
 
    @Override
    protected void init() {
       this.keyBindsList = this.addRenderableWidget(new KeyBindsList(this, this.minecraft));
-      this.resetButton = this.addRenderableWidget(Button.builder(Component.translatable("controls.resetAll"), var1 -> {
+      this.resetButton = Button.builder(Component.translatable("controls.resetAll"), var1 -> {
          for(KeyMapping var5 : this.options.keyMappings) {
             var5.setKey(var5.getDefaultKey());
          }
 
          this.keyBindsList.resetMappingAndUpdateButtons();
-      }).bounds(this.width / 2 - 155, this.height - 29, 150, 20).build());
-      this.addRenderableWidget(
-         Button.builder(CommonComponents.GUI_DONE, var1 -> this.minecraft.setScreen(this.lastScreen))
-            .bounds(this.width / 2 - 155 + 160, this.height - 29, 150, 20)
-            .build()
-      );
+      }).build();
+      super.init();
+   }
+
+   @Override
+   protected void addFooter() {
+      LinearLayout var1 = this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
+      var1.addChild(this.resetButton);
+      var1.addChild(Button.builder(CommonComponents.GUI_DONE, var1x -> this.onClose()).build());
+   }
+
+   @Override
+   protected void repositionElements() {
+      this.layout.arrangeElements();
+      this.keyBindsList.updateSize(this.width, this.layout);
    }
 
    @Override
@@ -73,7 +84,6 @@ public class KeyBindsScreen extends OptionsSubScreen {
    @Override
    public void render(GuiGraphics var1, int var2, int var3, float var4) {
       super.render(var1, var2, var3, var4);
-      var1.drawCenteredString(this.font, this.title, this.width / 2, 8, 16777215);
       boolean var5 = false;
 
       for(KeyMapping var9 : this.options.keyMappings) {
@@ -84,10 +94,5 @@ public class KeyBindsScreen extends OptionsSubScreen {
       }
 
       this.resetButton.active = var5;
-   }
-
-   @Override
-   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      this.renderDirtBackground(var1);
    }
 }

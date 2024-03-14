@@ -40,11 +40,7 @@ public class RavagerModel extends HierarchicalModel<Ravager> {
       );
       PartDefinition var4 = var3.addOrReplaceChild(
          "head",
-         CubeListBuilder.create()
-            .texOffs(0, 0)
-            .addBox(-8.0F, -20.0F, -14.0F, 16.0F, 20.0F, 16.0F)
-            .texOffs(0, 0)
-            .addBox(-2.0F, -6.0F, -18.0F, 4.0F, 8.0F, 4.0F),
+         CubeListBuilder.create().texOffs(0, 0).addBox(-8.0F, -20.0F, -14.0F, 16.0F, 20.0F, 16.0F).texOffs(0, 0).addBox(-2.0F, -6.0F, -18.0F, 4.0F, 8.0F, 4.0F),
          PartPose.offset(0.0F, 16.0F, -17.0F)
       );
       var4.addOrReplaceChild(
@@ -79,9 +75,7 @@ public class RavagerModel extends HierarchicalModel<Ravager> {
          "right_front_leg", CubeListBuilder.create().texOffs(64, 0).addBox(-4.0F, 0.0F, -4.0F, 8.0F, 37.0F, 8.0F), PartPose.offset(-8.0F, -13.0F, -5.0F)
       );
       var1.addOrReplaceChild(
-         "left_front_leg",
-         CubeListBuilder.create().texOffs(64, 0).mirror().addBox(-4.0F, 0.0F, -4.0F, 8.0F, 37.0F, 8.0F),
-         PartPose.offset(8.0F, -13.0F, -5.0F)
+         "left_front_leg", CubeListBuilder.create().texOffs(64, 0).mirror().addBox(-4.0F, 0.0F, -4.0F, 8.0F, 37.0F, 8.0F), PartPose.offset(8.0F, -13.0F, -5.0F)
       );
       return LayerDefinition.create(var0, 128, 128);
    }

@@ -3,6 +3,7 @@ package net.minecraft.core;
 import com.google.common.collect.AbstractIterator;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
+import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import java.util.ArrayDeque;
 import java.util.Optional;
@@ -14,6 +15,8 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.annotation.concurrent.Immutable;
 import net.minecraft.Util;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.Rotation;
@@ -31,6 +34,15 @@ public class BlockPos extends Vec3i {
          var0 -> Util.fixedSize(var0, 3).map(var0x -> new BlockPos(var0x[0], var0x[1], var0x[2])), var0 -> IntStream.of(var0.getX(), var0.getY(), var0.getZ())
       )
       .stable();
+   public static final StreamCodec<ByteBuf, BlockPos> STREAM_CODEC = new StreamCodec<ByteBuf, BlockPos>() {
+      public BlockPos decode(ByteBuf var1) {
+         return FriendlyByteBuf.readBlockPos(var1);
+      }
+
+      public void encode(ByteBuf var1, BlockPos var2) {
+         FriendlyByteBuf.writeBlockPos(var1, var2);
+      }
+   };
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final BlockPos ZERO = new BlockPos(0, 0, 0);
    private static final int PACKED_X_LENGTH = 1 + Mth.log2(Mth.smallestEncompassingPowerOfTwo(30000000));
@@ -81,6 +93,14 @@ public class BlockPos extends Vec3i {
 
    public static BlockPos containing(Position var0) {
       return containing(var0.x(), var0.y(), var0.z());
+   }
+
+   public static BlockPos min(BlockPos var0, BlockPos var1) {
+      return new BlockPos(Math.min(var0.getX(), var1.getX()), Math.min(var0.getY(), var1.getY()), Math.min(var0.getZ(), var1.getZ()));
+   }
+
+   public static BlockPos max(BlockPos var0, BlockPos var1) {
+      return new BlockPos(Math.max(var0.getX(), var1.getX()), Math.max(var0.getY(), var1.getY()), Math.max(var0.getZ(), var1.getZ()));
    }
 
    public long asLong() {

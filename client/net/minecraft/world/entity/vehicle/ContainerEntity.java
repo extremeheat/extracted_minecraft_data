@@ -2,6 +2,7 @@ package net.minecraft.world.entity.vehicle;
 
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -26,10 +27,13 @@ import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 public interface ContainerEntity extends Container, MenuProvider {
    Vec3 position();
+
+   AABB getBoundingBox();
 
    @Nullable
    ResourceLocation getLootTable();
@@ -53,24 +57,24 @@ public interface ContainerEntity extends Container, MenuProvider {
       return this.isChestVehicleEmpty();
    }
 
-   default void addChestVehicleSaveData(CompoundTag var1) {
+   default void addChestVehicleSaveData(CompoundTag var1, HolderLookup.Provider var2) {
       if (this.getLootTable() != null) {
          var1.putString("LootTable", this.getLootTable().toString());
          if (this.getLootTableSeed() != 0L) {
             var1.putLong("LootTableSeed", this.getLootTableSeed());
          }
       } else {
-         ContainerHelper.saveAllItems(var1, this.getItemStacks());
+         ContainerHelper.saveAllItems(var1, this.getItemStacks(), var2);
       }
    }
 
-   default void readChestVehicleSaveData(CompoundTag var1) {
+   default void readChestVehicleSaveData(CompoundTag var1, HolderLookup.Provider var2) {
       this.clearItemStacks();
       if (var1.contains("LootTable", 8)) {
          this.setLootTable(new ResourceLocation(var1.getString("LootTable")));
          this.setLootTableSeed(var1.getLong("LootTableSeed"));
       } else {
-         ContainerHelper.loadAllItems(var1, this.getItemStacks());
+         ContainerHelper.loadAllItems(var1, this.getItemStacks(), var2);
       }
    }
 
@@ -169,6 +173,6 @@ public interface ContainerEntity extends Container, MenuProvider {
    }
 
    default boolean isChestVehicleStillValid(Player var1) {
-      return !this.isRemoved() && this.position().closerThan(var1.position(), 8.0);
+      return !this.isRemoved() && var1.canInteractWithEntity(this.getBoundingBox(), 4.0);
    }
 }

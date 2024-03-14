@@ -69,9 +69,7 @@ public class FallingDustParticle extends TextureSheetParticle {
       }
 
       @Nullable
-      public Particle createParticle(
-         BlockParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13
-      ) {
+      public Particle createParticle(BlockParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          BlockState var15 = var1.getState();
          if (!var15.isAir() && var15.getRenderShape() == RenderShape.INVISIBLE) {
             return null;

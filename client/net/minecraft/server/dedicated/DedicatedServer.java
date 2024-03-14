@@ -44,6 +44,11 @@ import net.minecraft.server.rcon.RconConsoleSource;
 import net.minecraft.server.rcon.thread.QueryThreadGs4;
 import net.minecraft.server.rcon.thread.RconThread;
 import net.minecraft.util.Mth;
+import net.minecraft.util.debugchart.DebugSampleSubscriptionTracker;
+import net.minecraft.util.debugchart.RemoteDebugSampleType;
+import net.minecraft.util.debugchart.RemoteSampleLogger;
+import net.minecraft.util.debugchart.SampleLogger;
+import net.minecraft.util.debugchart.TpsDebugDimensions;
 import net.minecraft.util.monitoring.jmx.MinecraftServerStatistics;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameRules;
@@ -68,6 +73,10 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    private MinecraftServerGui gui;
    @Nullable
    private final TextFilterClient textFilterClient;
+   @Nullable
+   private RemoteSampleLogger tickTimeLogger;
+   @Nullable
+   private DebugSampleSubscriptionTracker debugSampleSubscriptionTracker;
 
    public DedicatedServer(
       Thread var1,
@@ -165,6 +174,8 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
          return false;
       } else {
          this.setPlayerList(new DedicatedPlayerList(this, this.registries(), this.playerDataStorage));
+         this.debugSampleSubscriptionTracker = new DebugSampleSubscriptionTracker(this.getPlayerList());
+         this.tickTimeLogger = new RemoteSampleLogger(TpsDebugDimensions.values().length, this.debugSampleSubscriptionTracker, RemoteDebugSampleType.TICK_TIME);
          long var4 = Util.getNanos();
          SkullBlockEntity.setup(this.services, this);
          GameProfileCache.setUsesAuthentication(this.usesAuthentication());
@@ -570,5 +581,31 @@ public class DedicatedServer extends MinecraftServer implements ServerInterface 
    @Override
    public Optional<MinecraftServer.ServerResourcePackInfo> getServerResourcePack() {
       return this.settings.getProperties().serverResourcePackInfo;
+   }
+
+   @Override
+   public void endMetricsRecordingTick() {
+      super.endMetricsRecordingTick();
+      this.debugSampleSubscriptionTracker.tick(this.getTickCount());
+   }
+
+   @Override
+   public SampleLogger getTickTimeLogger() {
+      return this.tickTimeLogger;
+   }
+
+   @Override
+   public boolean isTickTimeLoggingEnabled() {
+      return this.debugSampleSubscriptionTracker.shouldLogSamples(RemoteDebugSampleType.TICK_TIME);
+   }
+
+   @Override
+   public void subscribeToDebugSample(ServerPlayer var1, RemoteDebugSampleType var2) {
+      this.debugSampleSubscriptionTracker.subscribe(var1, var2);
+   }
+
+   @Override
+   public boolean acceptsTransfers() {
+      return this.settings.getProperties().acceptsTransfers;
    }
 }

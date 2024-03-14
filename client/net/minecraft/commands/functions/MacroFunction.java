@@ -49,34 +49,35 @@ public class MacroFunction<T extends ExecutionCommandSource<T>> implements Comma
       return this.id;
    }
 
-   public InstantiatedFunction<T> instantiate(@Nullable CompoundTag var1, CommandDispatcher<T> var2, T var3) throws FunctionInstantiationException {
+   @Override
+   public InstantiatedFunction<T> instantiate(@Nullable CompoundTag var1, CommandDispatcher<T> var2) throws FunctionInstantiationException {
       if (var1 == null) {
          throw new FunctionInstantiationException(Component.translatable("commands.function.error.missing_arguments", Component.translationArg(this.id())));
       } else {
-         ArrayList var4 = new ArrayList(this.parameters.size());
+         ArrayList var3 = new ArrayList(this.parameters.size());
 
-         for(String var6 : this.parameters) {
-            Tag var7 = var1.get(var6);
-            if (var7 == null) {
+         for(String var5 : this.parameters) {
+            Tag var6 = var1.get(var5);
+            if (var6 == null) {
                throw new FunctionInstantiationException(
-                  Component.translatable("commands.function.error.missing_argument", Component.translationArg(this.id()), var6)
+                  Component.translatable("commands.function.error.missing_argument", Component.translationArg(this.id()), var5)
                );
             }
 
-            var4.add(stringify(var7));
+            var3.add(stringify(var6));
          }
 
-         InstantiatedFunction var8 = (InstantiatedFunction)this.cache.getAndMoveToLast(var4);
-         if (var8 != null) {
-            return var8;
+         InstantiatedFunction var7 = (InstantiatedFunction)this.cache.getAndMoveToLast(var3);
+         if (var7 != null) {
+            return var7;
          } else {
             if (this.cache.size() >= 8) {
                this.cache.removeFirst();
             }
 
-            InstantiatedFunction var9 = this.substituteAndParse(this.parameters, var4, var2, (T)var3);
-            this.cache.put(var4, var9);
-            return var9;
+            InstantiatedFunction var8 = this.substituteAndParse(this.parameters, var3, var2);
+            this.cache.put(var3, var8);
+            return var8;
          }
       }
    }
@@ -102,32 +103,34 @@ public class MacroFunction<T extends ExecutionCommandSource<T>> implements Comma
       var1.forEach(var2x -> var2.add((String)var0.get(var2x)));
    }
 
-   private InstantiatedFunction<T> substituteAndParse(List<String> var1, List<String> var2, CommandDispatcher<T> var3, T var4) throws FunctionInstantiationException {
-      ArrayList var5 = new ArrayList(this.entries.size());
-      ArrayList var6 = new ArrayList(var2.size());
+   private InstantiatedFunction<T> substituteAndParse(List<String> var1, List<String> var2, CommandDispatcher<T> var3) throws FunctionInstantiationException {
+      ArrayList var4 = new ArrayList(this.entries.size());
+      ArrayList var5 = new ArrayList(var2.size());
 
-      for(MacroFunction.Entry var8 : this.entries) {
-         lookupValues(var2, var8.parameters(), var6);
-         var5.add(var8.instantiate(var6, var3, var4, this.id));
+      for(MacroFunction.Entry var7 : this.entries) {
+         lookupValues(var2, var7.parameters(), var5);
+         var4.add(var7.instantiate(var5, var3, this.id));
       }
 
-      return new PlainTextFunction<>(this.id().withPath(var1x -> var1x + "/" + var1.hashCode()), var5);
+      return new PlainTextFunction<>(this.id().withPath(var1x -> var1x + "/" + var1.hashCode()), var4);
    }
 
    interface Entry<T> {
       IntList parameters();
 
-      UnboundEntryAction<T> instantiate(List<String> var1, CommandDispatcher<T> var2, T var3, ResourceLocation var4) throws FunctionInstantiationException;
+      UnboundEntryAction<T> instantiate(List<String> var1, CommandDispatcher<T> var2, ResourceLocation var3) throws FunctionInstantiationException;
    }
 
    static class MacroEntry<T extends ExecutionCommandSource<T>> implements MacroFunction.Entry<T> {
       private final StringTemplate template;
       private final IntList parameters;
+      private final T compilationContext;
 
-      public MacroEntry(StringTemplate var1, IntList var2) {
+      public MacroEntry(StringTemplate var1, IntList var2, T var3) {
          super();
          this.template = var1;
          this.parameters = var2;
+         this.compilationContext = var3;
       }
 
       @Override
@@ -135,14 +138,15 @@ public class MacroFunction<T extends ExecutionCommandSource<T>> implements Comma
          return this.parameters;
       }
 
-      public UnboundEntryAction<T> instantiate(List<String> var1, CommandDispatcher<T> var2, T var3, ResourceLocation var4) throws FunctionInstantiationException {
-         String var5 = this.template.substitute(var1);
+      @Override
+      public UnboundEntryAction<T> instantiate(List<String> var1, CommandDispatcher<T> var2, ResourceLocation var3) throws FunctionInstantiationException {
+         String var4 = this.template.substitute(var1);
 
          try {
-            return CommandFunction.parseCommand(var2, (T)var3, new StringReader(var5));
-         } catch (CommandSyntaxException var7) {
+            return CommandFunction.parseCommand(var2, this.compilationContext, new StringReader(var4));
+         } catch (CommandSyntaxException var6) {
             throw new FunctionInstantiationException(
-               Component.translatable("commands.function.error.parse", Component.translationArg(var4), var5, var7.getMessage())
+               Component.translatable("commands.function.error.parse", Component.translationArg(var3), var4, var6.getMessage())
             );
          }
       }
@@ -162,7 +166,7 @@ public class MacroFunction<T extends ExecutionCommandSource<T>> implements Comma
       }
 
       @Override
-      public UnboundEntryAction<T> instantiate(List<String> var1, CommandDispatcher<T> var2, T var3, ResourceLocation var4) {
+      public UnboundEntryAction<T> instantiate(List<String> var1, CommandDispatcher<T> var2, ResourceLocation var3) {
          return this.compiledAction;
       }
    }

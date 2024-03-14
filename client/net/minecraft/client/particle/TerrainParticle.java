@@ -73,9 +73,7 @@ public class TerrainParticle extends TextureSheetParticle {
          super();
       }
 
-      public Particle createParticle(
-         BlockParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13
-      ) {
+      public Particle createParticle(BlockParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          BlockState var15 = var1.getState();
          return !var15.isAir() && !var15.is(Blocks.MOVING_PISTON) && var15.shouldSpawnTerrainParticles()
             ? new TerrainParticle(var2, var3, var5, var7, var9, var11, var13, var15)

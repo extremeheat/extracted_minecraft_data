@@ -3,16 +3,28 @@ package net.minecraft.world.entity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
-public class EntityDimensions {
-   public final float width;
-   public final float height;
-   public final boolean fixed;
+public record EntityDimensions(float a, float b, float c, EntityAttachments d, boolean e) {
+   private final float width;
+   private final float height;
+   private final float eyeHeight;
+   private final EntityAttachments attachments;
+   private final boolean fixed;
 
-   public EntityDimensions(float var1, float var2, boolean var3) {
+   private EntityDimensions(float var1, float var2, boolean var3) {
+      this(var1, var2, defaultEyeHeight(var2), EntityAttachments.createDefault(var1, var2), var3);
+   }
+
+   public EntityDimensions(float var1, float var2, float var3, EntityAttachments var4, boolean var5) {
       super();
       this.width = var1;
       this.height = var2;
-      this.fixed = var3;
+      this.eyeHeight = var3;
+      this.attachments = var4;
+      this.fixed = var5;
+   }
+
+   private static float defaultEyeHeight(float var0) {
+      return var0 * 0.85F;
    }
 
    public AABB makeBoundingBox(Vec3 var1) {
@@ -30,7 +42,9 @@ public class EntityDimensions {
    }
 
    public EntityDimensions scale(float var1, float var2) {
-      return !this.fixed && (var1 != 1.0F || var2 != 1.0F) ? scalable(this.width * var1, this.height * var2) : this;
+      return !this.fixed && (var1 != 1.0F || var2 != 1.0F)
+         ? new EntityDimensions(this.width * var1, this.height * var2, this.eyeHeight * var2, this.attachments.scale(var1, var2, var1), false)
+         : this;
    }
 
    public static EntityDimensions scalable(float var0, float var1) {
@@ -41,8 +55,11 @@ public class EntityDimensions {
       return new EntityDimensions(var0, var1, true);
    }
 
-   @Override
-   public String toString() {
-      return "EntityDimensions w=" + this.width + ", h=" + this.height + ", fixed=" + this.fixed;
+   public EntityDimensions withEyeHeight(float var1) {
+      return new EntityDimensions(this.width, this.height, var1, this.attachments, this.fixed);
+   }
+
+   public EntityDimensions withAttachments(EntityAttachments.Builder var1) {
+      return new EntityDimensions(this.width, this.height, this.eyeHeight, var1.build(this.width, this.height), this.fixed);
    }
 }

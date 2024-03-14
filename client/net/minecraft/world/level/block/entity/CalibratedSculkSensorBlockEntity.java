@@ -3,6 +3,7 @@ package net.minecraft.world.level.block.entity;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.CalibratedSculkSensorBlock;
@@ -31,7 +32,7 @@ public class CalibratedSculkSensorBlockEntity extends SculkSensorBlockEntity {
       }
 
       @Override
-      public boolean canReceiveVibration(ServerLevel var1, BlockPos var2, GameEvent var3, @Nullable GameEvent.Context var4) {
+      public boolean canReceiveVibration(ServerLevel var1, BlockPos var2, Holder<GameEvent> var3, @Nullable GameEvent.Context var4) {
          int var5 = this.getBackSignal(var1, this.blockPos, CalibratedSculkSensorBlockEntity.this.getBlockState());
          return var5 != 0 && VibrationSystem.getGameEventFrequency(var3) != var5 ? false : super.canReceiveVibration(var1, var2, var3, var4);
       }

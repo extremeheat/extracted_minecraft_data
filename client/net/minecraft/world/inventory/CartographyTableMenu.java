@@ -1,6 +1,7 @@
 package net.minecraft.world.inventory;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
@@ -10,6 +11,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.MapItem;
+import net.minecraft.world.item.component.MapPostProcessing;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
@@ -117,11 +119,11 @@ public class CartographyTableMenu extends AbstractContainerMenu {
             ItemStack var7;
             if (var2.is(Items.PAPER) && !var6.locked && var6.scale < 4) {
                var7 = var1.copyWithCount(1);
-               var7.getOrCreateTag().putInt("map_scale_direction", 1);
+               var7.set(DataComponents.MAP_POST_PROCESSING, MapPostProcessing.SCALE);
                this.broadcastChanges();
             } else if (var2.is(Items.GLASS_PANE) && !var6.locked) {
                var7 = var1.copyWithCount(1);
-               var7.getOrCreateTag().putBoolean("map_to_lock", true);
+               var7.set(DataComponents.MAP_POST_PROCESSING, MapPostProcessing.LOCK);
                this.broadcastChanges();
             } else {
                if (!var2.is(Items.MAP)) {

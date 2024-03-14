@@ -70,7 +70,7 @@ public class SkinReport extends Report {
          } else {
             String var3 = Objects.requireNonNull(this.report.reason).backendName();
             ReportedEntity var4 = new ReportedEntity(this.report.reportedProfileId);
-            PlayerSkin var5 = this.report.skinGetter.get();
+            PlayerSkin var5 = (PlayerSkin)this.report.skinGetter.get();
             String var6 = var5.textureUrl();
             AbuseReport var7 = AbuseReport.skin(this.report.comments, var3, var6, var4, this.report.createdAt);
             return Either.left(new Report.Result(this.report.reportId, ReportType.SKIN, var7));

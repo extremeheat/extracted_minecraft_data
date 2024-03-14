@@ -11,7 +11,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.Containers;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
@@ -61,18 +60,18 @@ public class CrafterBlock extends BaseEntityBlock {
    }
 
    @Override
-   public boolean hasAnalogOutputSignal(BlockState var1) {
+   protected boolean hasAnalogOutputSignal(BlockState var1) {
       return true;
    }
 
    @Override
-   public int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
+   protected int getAnalogOutputSignal(BlockState var1, Level var2, BlockPos var3) {
       BlockEntity var4 = var2.getBlockEntity(var3);
       return var4 instanceof CrafterBlockEntity var5 ? var5.getRedstoneSignal() : 0;
    }
 
    @Override
-   public void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
+   protected void neighborChanged(BlockState var1, Level var2, BlockPos var3, Block var4, BlockPos var5, boolean var6) {
       boolean var7 = var2.hasNeighborSignal(var3);
       boolean var8 = var1.getValue(TRIGGERED);
       BlockEntity var9 = var2.getBlockEntity(var3);
@@ -87,7 +86,7 @@ public class CrafterBlock extends BaseEntityBlock {
    }
 
    @Override
-   public void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
       this.dispenseFrom(var1, var2, var3);
    }
 
@@ -126,36 +125,27 @@ public class CrafterBlock extends BaseEntityBlock {
          .setValue(TRIGGERED, Boolean.valueOf(var1.getLevel().hasNeighborSignal(var1.getClickedPos())));
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public void setPlacedBy(Level var1, BlockPos var2, BlockState var3, LivingEntity var4, ItemStack var5) {
-      if (var5.hasCustomHoverName()) {
-         BlockEntity var7 = var1.getBlockEntity(var2);
-         if (var7 instanceof CrafterBlockEntity var6) {
-            var6.setCustomName(var5.getHoverName());
-         }
-      }
-
       if (var3.getValue(TRIGGERED)) {
          var1.scheduleTick(var2, this, 4);
       }
    }
 
    @Override
-   public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       Containers.dropContentsOnDestroy(var1, var4, var2, var3);
       super.onRemove(var1, var2, var3, var4, var5);
    }
 
    @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       if (var2.isClientSide) {
          return InteractionResult.SUCCESS;
       } else {
-         BlockEntity var7 = var2.getBlockEntity(var3);
-         if (var7 instanceof CrafterBlockEntity) {
-            var4.openMenu((CrafterBlockEntity)var7);
+         BlockEntity var6 = var2.getBlockEntity(var3);
+         if (var6 instanceof CrafterBlockEntity) {
+            var4.openMenu((CrafterBlockEntity)var6);
          }
 
          return InteractionResult.CONSUME;
@@ -165,23 +155,33 @@ public class CrafterBlock extends BaseEntityBlock {
    protected void dispenseFrom(BlockState var1, ServerLevel var2, BlockPos var3) {
       BlockEntity var5 = var2.getBlockEntity(var3);
       if (var5 instanceof CrafterBlockEntity var4) {
-         Optional var8 = getPotentialResults(var2, (CraftingContainer)var4);
-         if (var8.isEmpty()) {
+         Optional var10 = getPotentialResults(var2, (CraftingContainer)var4);
+         if (var10.isEmpty()) {
             var2.levelEvent(1050, var3, 0);
          } else {
-            ((CrafterBlockEntity)var4).setCraftingTicksRemaining(6);
-            var2.setBlock(var3, var1.setValue(CRAFTING, Boolean.valueOf(true)), 2);
-            CraftingRecipe var6 = (CraftingRecipe)var8.get();
+            CraftingRecipe var6 = (CraftingRecipe)var10.get();
             ItemStack var7 = var6.assemble((CraftingContainer)var4, var2.registryAccess());
-            var7.onCraftedBySystem(var2);
-            this.dispenseItem(var2, var3, (CrafterBlockEntity)var4, var7, var1);
-            var6.getRemainingItems((CraftingContainer)var4).forEach(var5x -> this.dispenseItem(var2, var3, var4, var5x, var1));
-            ((CrafterBlockEntity)var4).getItems().forEach(var0 -> {
-               if (!var0.isEmpty()) {
-                  var0.shrink(1);
+            if (var7.isEmpty()) {
+               var2.levelEvent(1050, var3, 0);
+            } else {
+               ((CrafterBlockEntity)var4).setCraftingTicksRemaining(6);
+               var2.setBlock(var3, var1.setValue(CRAFTING, Boolean.valueOf(true)), 2);
+               var7.onCraftedBySystem(var2);
+               this.dispenseItem(var2, var3, (CrafterBlockEntity)var4, var7, var1);
+
+               for(ItemStack var9 : var6.getRemainingItems((CraftingContainer)var4)) {
+                  if (!var9.isEmpty()) {
+                     this.dispenseItem(var2, var3, (CrafterBlockEntity)var4, var9, var1);
+                  }
                }
-            });
-            ((CrafterBlockEntity)var4).setChanged();
+
+               ((CrafterBlockEntity)var4).getItems().forEach(var0 -> {
+                  if (!var0.isEmpty()) {
+                     var0.shrink(1);
+                  }
+               });
+               ((CrafterBlockEntity)var4).setChanged();
+            }
          }
       }
    }
@@ -223,17 +223,17 @@ public class CrafterBlock extends BaseEntityBlock {
    }
 
    @Override
-   public RenderShape getRenderShape(BlockState var1) {
+   protected RenderShape getRenderShape(BlockState var1) {
       return RenderShape.MODEL;
    }
 
    @Override
-   public BlockState rotate(BlockState var1, Rotation var2) {
+   protected BlockState rotate(BlockState var1, Rotation var2) {
       return var1.setValue(ORIENTATION, var2.rotation().rotate(var1.getValue(ORIENTATION)));
    }
 
    @Override
-   public BlockState mirror(BlockState var1, Mirror var2) {
+   protected BlockState mirror(BlockState var1, Mirror var2) {
       return var1.setValue(ORIENTATION, var2.rotation().rotate(var1.getValue(ORIENTATION)));
    }
 

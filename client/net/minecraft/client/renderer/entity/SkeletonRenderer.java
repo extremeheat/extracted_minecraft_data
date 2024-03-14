@@ -7,7 +7,7 @@ import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.monster.AbstractSkeleton;
 
-public class SkeletonRenderer extends HumanoidMobRenderer<AbstractSkeleton, SkeletonModel<AbstractSkeleton>> {
+public class SkeletonRenderer<T extends AbstractSkeleton> extends HumanoidMobRenderer<T, SkeletonModel<T>> {
    private static final ResourceLocation SKELETON_LOCATION = new ResourceLocation("textures/entity/skeleton/skeleton.png");
 
    public SkeletonRenderer(EntityRendererProvider.Context var1) {
@@ -15,15 +15,19 @@ public class SkeletonRenderer extends HumanoidMobRenderer<AbstractSkeleton, Skel
    }
 
    public SkeletonRenderer(EntityRendererProvider.Context var1, ModelLayerLocation var2, ModelLayerLocation var3, ModelLayerLocation var4) {
-      super(var1, new SkeletonModel<>(var1.bakeLayer(var2)), 0.5F);
-      this.addLayer(new HumanoidArmorLayer<>(this, new SkeletonModel(var1.bakeLayer(var3)), new SkeletonModel(var1.bakeLayer(var4)), var1.getModelManager()));
+      this(var1, var3, var4, new SkeletonModel<>(var1.bakeLayer(var2)));
    }
 
-   public ResourceLocation getTextureLocation(AbstractSkeleton var1) {
+   public SkeletonRenderer(EntityRendererProvider.Context var1, ModelLayerLocation var2, ModelLayerLocation var3, SkeletonModel<T> var4) {
+      super(var1, var4, 0.5F);
+      this.addLayer(new HumanoidArmorLayer<>(this, new SkeletonModel(var1.bakeLayer(var2)), new SkeletonModel(var1.bakeLayer(var3)), var1.getModelManager()));
+   }
+
+   public ResourceLocation getTextureLocation(T var1) {
       return SKELETON_LOCATION;
    }
 
-   protected boolean isShaking(AbstractSkeleton var1) {
+   protected boolean isShaking(T var1) {
       return var1.isShaking();
    }
 }

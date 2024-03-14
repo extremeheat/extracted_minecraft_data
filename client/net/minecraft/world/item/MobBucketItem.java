@@ -1,10 +1,12 @@
 package net.minecraft.world.item;
 
+import com.mojang.serialization.MapCodec;
 import java.util.List;
+import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
@@ -16,12 +18,14 @@ import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.animal.Bucketable;
 import net.minecraft.world.entity.animal.TropicalFish;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.material.Fluid;
 
 public class MobBucketItem extends BucketItem {
+   private static final MapCodec<TropicalFish.Variant> VARIANT_FIELD_CODEC = TropicalFish.Variant.CODEC.fieldOf("BucketVariantTag");
    private final EntityType<?> type;
    private final SoundEvent emptySound;
 
@@ -49,7 +53,8 @@ public class MobBucketItem extends BucketItem {
    private void spawn(ServerLevel var1, ItemStack var2, BlockPos var3) {
       Entity var4 = this.type.spawn(var1, var2, null, var3, MobSpawnType.BUCKET, true, false);
       if (var4 instanceof Bucketable var5) {
-         var5.loadFromBucketTag(var2.getOrCreateTag());
+         CustomData var6 = var2.getOrDefault(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY);
+         var5.loadFromBucketTag(var6.copyTag());
          var5.setFromBucket(true);
       }
    }
@@ -57,28 +62,31 @@ public class MobBucketItem extends BucketItem {
    @Override
    public void appendHoverText(ItemStack var1, @Nullable Level var2, List<Component> var3, TooltipFlag var4) {
       if (this.type == EntityType.TROPICAL_FISH) {
-         CompoundTag var5 = var1.getTag();
-         if (var5 != null && var5.contains("BucketVariantTag", 3)) {
-            int var6 = var5.getInt("BucketVariantTag");
-            ChatFormatting[] var7 = new ChatFormatting[]{ChatFormatting.ITALIC, ChatFormatting.GRAY};
-            String var8 = "color.minecraft." + TropicalFish.getBaseColor(var6);
-            String var9 = "color.minecraft." + TropicalFish.getPatternColor(var6);
+         CustomData var5 = var1.getOrDefault(DataComponents.BUCKET_ENTITY_DATA, CustomData.EMPTY);
+         if (var5.isEmpty()) {
+            return;
+         }
 
-            for(int var10 = 0; var10 < TropicalFish.COMMON_VARIANTS.size(); ++var10) {
-               if (var6 == TropicalFish.COMMON_VARIANTS.get(var10).getPackedId()) {
-                  var3.add(Component.translatable(TropicalFish.getPredefinedName(var10)).withStyle(var7));
-                  return;
-               }
+         Optional var6 = var5.read(VARIANT_FIELD_CODEC).result();
+         if (var6.isPresent()) {
+            TropicalFish.Variant var7 = (TropicalFish.Variant)var6.get();
+            ChatFormatting[] var8 = new ChatFormatting[]{ChatFormatting.ITALIC, ChatFormatting.GRAY};
+            String var9 = "color.minecraft." + var7.baseColor();
+            String var10 = "color.minecraft." + var7.patternColor();
+            int var11 = TropicalFish.COMMON_VARIANTS.indexOf(var7);
+            if (var11 != -1) {
+               var3.add(Component.translatable(TropicalFish.getPredefinedName(var11)).withStyle(var8));
+               return;
             }
 
-            var3.add(TropicalFish.getPattern(var6).displayName().plainCopy().withStyle(var7));
-            MutableComponent var11 = Component.translatable(var8);
-            if (!var8.equals(var9)) {
-               var11.append(", ").append(Component.translatable(var9));
+            var3.add(var7.pattern().displayName().plainCopy().withStyle(var8));
+            MutableComponent var12 = Component.translatable(var9);
+            if (!var9.equals(var10)) {
+               var12.append(", ").append(Component.translatable(var10));
             }
 
-            var11.withStyle(var7);
-            var3.add(var11);
+            var12.withStyle(var8);
+            var3.add(var12);
          }
       }
    }

@@ -140,9 +140,7 @@ public class Main {
       File var51 = parseArgument(var32, var9);
       File var52 = var32.has(var10) ? parseArgument(var32, var10) : new File(var51, "assets/");
       File var53 = var32.has(var11) ? parseArgument(var32, var11) : new File(var51, "resourcepacks/");
-      UUID var54 = var32.has(var17)
-         ? UndashedUuid.fromStringLenient((String)var17.value(var32))
-         : UUIDUtil.createOfflinePlayerUUID((String)var16.value(var32));
+      UUID var54 = var32.has(var17) ? UndashedUuid.fromStringLenient((String)var17.value(var32)) : UUIDUtil.createOfflinePlayerUUID((String)var16.value(var32));
       String var55 = var32.has(var28) ? (String)var28.value(var32) : null;
       String var56 = (String)var32.valueOf(var18);
       String var57 = (String)var32.valueOf(var19);

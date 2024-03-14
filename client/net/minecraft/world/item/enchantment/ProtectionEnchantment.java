@@ -1,6 +1,7 @@
 package net.minecraft.world.item.enchantment;
 
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -10,7 +11,7 @@ public class ProtectionEnchantment extends Enchantment {
    public final ProtectionEnchantment.Type type;
 
    public ProtectionEnchantment(Enchantment.Rarity var1, ProtectionEnchantment.Type var2, EquipmentSlot... var3) {
-      super(var1, var2 == ProtectionEnchantment.Type.FALL ? EnchantmentCategory.ARMOR_FEET : EnchantmentCategory.ARMOR, var3);
+      super(var1, var2 == ProtectionEnchantment.Type.FALL ? ItemTags.FOOT_ARMOR_ENCHANTABLE : ItemTags.ARMOR_ENCHANTABLE, var3);
       this.type = var2;
    }
 

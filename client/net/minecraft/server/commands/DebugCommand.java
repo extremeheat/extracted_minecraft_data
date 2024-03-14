@@ -128,7 +128,7 @@ public class DebugCommand {
                for(final CommandFunction var15 : var6) {
                   try {
                      CommandSourceStack var16 = var1.withSource(var13).withMaximumPermission(2);
-                     InstantiatedFunction var17 = var15.instantiate(null, var9, var16);
+                     InstantiatedFunction var17 = var15.instantiate(null, var9);
                      var4.queueNext((new CallFunction<CommandSourceStack>(var17, CommandResultCallback.EMPTY, false) {
                         public void execute(CommandSourceStack var1, ExecutionContext<CommandSourceStack> var2, Frame var3) {
                            var12.println(var15.id());

@@ -14,11 +14,9 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.Shearable;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -43,7 +41,6 @@ import net.minecraft.world.phys.Vec3;
 public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackMob {
    private static final EntityDataAccessor<Byte> DATA_PUMPKIN_ID = SynchedEntityData.defineId(SnowGolem.class, EntityDataSerializers.BYTE);
    private static final byte PUMPKIN_FLAG = 16;
-   private static final float EYE_HEIGHT = 1.7F;
 
    public SnowGolem(EntityType<? extends SnowGolem> var1, Level var2) {
       super(var1, var2);
@@ -63,9 +60,9 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
    }
 
    @Override
-   protected void defineSynchedData() {
-      super.defineSynchedData();
-      this.entityData.define(DATA_PUMPKIN_ID, (byte)16);
+   protected void defineSynchedData(SynchedEntityData.Builder var1) {
+      super.defineSynchedData(var1);
+      var1.define(DATA_PUMPKIN_ID, (byte)16);
    }
 
    @Override
@@ -128,18 +125,13 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
    }
 
    @Override
-   protected float getStandingEyeHeight(Pose var1, EntityDimensions var2) {
-      return 1.7F;
-   }
-
-   @Override
    protected InteractionResult mobInteract(Player var1, InteractionHand var2) {
       ItemStack var3 = var1.getItemInHand(var2);
       if (var3.is(Items.SHEARS) && this.readyForShearing()) {
          this.shear(SoundSource.PLAYERS);
          this.gameEvent(GameEvent.SHEAR, var1);
          if (!this.level().isClientSide) {
-            var3.hurtAndBreak(1, var1, var1x -> var1x.broadcastBreakEvent(var2));
+            var3.hurtAndBreak(1, var1, getSlotForHand(var2));
          }
 
          return InteractionResult.sidedSuccess(this.level().isClientSide);
@@ -153,7 +145,7 @@ public class SnowGolem extends AbstractGolem implements Shearable, RangedAttackM
       this.level().playSound(null, this, SoundEvents.SNOW_GOLEM_SHEAR, var1, 1.0F, 1.0F);
       if (!this.level().isClientSide()) {
          this.setPumpkin(false);
-         this.spawnAtLocation(new ItemStack(Items.CARVED_PUMPKIN), 1.7F);
+         this.spawnAtLocation(new ItemStack(Items.CARVED_PUMPKIN), this.getEyeHeight());
       }
    }
 

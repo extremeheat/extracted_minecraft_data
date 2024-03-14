@@ -3,6 +3,7 @@ package net.minecraft.client.particle;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -57,22 +58,6 @@ public class SpellParticle extends TextureSheetParticle {
          && var2.isScoping();
    }
 
-   public static class AmbientMobProvider implements ParticleProvider<SimpleParticleType> {
-      private final SpriteSet sprite;
-
-      public AmbientMobProvider(SpriteSet var1) {
-         super();
-         this.sprite = var1;
-      }
-
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         SpellParticle var15 = new SpellParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite);
-         var15.setAlpha(0.15F);
-         var15.setColor((float)var9, (float)var11, (float)var13);
-         return var15;
-      }
-   }
-
    public static class InstantProvider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprite;
 
@@ -86,17 +71,18 @@ public class SpellParticle extends TextureSheetParticle {
       }
    }
 
-   public static class MobProvider implements ParticleProvider<SimpleParticleType> {
+   public static class MobEffectProvider implements ParticleProvider<ColorParticleOption> {
       private final SpriteSet sprite;
 
-      public MobProvider(SpriteSet var1) {
+      public MobEffectProvider(SpriteSet var1) {
          super();
          this.sprite = var1;
       }
 
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
+      public Particle createParticle(ColorParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          SpellParticle var15 = new SpellParticle(var2, var3, var5, var7, var9, var11, var13, this.sprite);
-         var15.setColor((float)var9, (float)var11, (float)var13);
+         var15.setColor(var1.getRed(), var1.getGreen(), var1.getBlue());
+         var15.setAlpha(var1.getAlpha());
          return var15;
       }
    }

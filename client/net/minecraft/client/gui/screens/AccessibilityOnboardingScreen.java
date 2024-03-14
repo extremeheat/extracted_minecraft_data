@@ -10,18 +10,17 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.CommonButtons;
 import net.minecraft.client.gui.components.FocusableTextWidget;
 import net.minecraft.client.gui.components.LogoRenderer;
-import net.minecraft.client.gui.layouts.FrameLayout;
+import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.client.gui.layouts.LinearLayout;
-import net.minecraft.client.renderer.PanoramaRenderer;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 
 public class AccessibilityOnboardingScreen extends Screen {
+   private static final Component TITLE = Component.translatable("accessibility.onboarding.screen.title");
    private static final Component ONBOARDING_NARRATOR_MESSAGE = Component.translatable("accessibility.onboarding.screen.narrator");
    private static final int PADDING = 4;
    private static final int TITLE_PADDING = 16;
-   private final PanoramaRenderer panorama = new PanoramaRenderer(TitleScreen.CUBE_MAP);
    private final LogoRenderer logoRenderer;
    private final Options options;
    private final boolean narratorAvailable;
@@ -30,9 +29,12 @@ public class AccessibilityOnboardingScreen extends Screen {
    private final Runnable onClose;
    @Nullable
    private FocusableTextWidget textWidget;
+   @Nullable
+   private AbstractWidget narrationButton;
+   private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this, this.initTitleYPos(), 33);
 
    public AccessibilityOnboardingScreen(Options var1, Runnable var2) {
-      super(Component.translatable("accessibility.onboarding.screen.title"));
+      super(TITLE);
       this.options = var1;
       this.onClose = var2;
       this.logoRenderer = new LogoRenderer(true);
@@ -41,32 +43,39 @@ public class AccessibilityOnboardingScreen extends Screen {
 
    @Override
    public void init() {
-      int var1 = this.initTitleYPos();
-      FrameLayout var2 = new FrameLayout(this.width, this.height - var1);
-      var2.defaultChildLayoutSetting().alignVerticallyTop().padding(4);
-      LinearLayout var3 = var2.addChild(LinearLayout.vertical());
-      var3.defaultCellSetting().alignHorizontallyCenter().padding(2);
-      this.textWidget = new FocusableTextWidget(this.width - 16, this.title, this.font);
-      var3.addChild(this.textWidget, var0 -> var0.paddingBottom(16));
-      AbstractWidget var4 = this.options.narrator().createButton(this.options, 0, 0, 150);
-      var4.active = this.narratorAvailable;
-      var3.addChild(var4);
-      if (this.narratorAvailable) {
-         this.setInitialFocus(var4);
-      }
-
-      var3.addChild(CommonButtons.accessibility(150, var1x -> this.closeAndSetScreen(new AccessibilityOptionsScreen(this, this.minecraft.options)), false));
-      var3.addChild(
+      LinearLayout var1 = this.layout.addToContents(LinearLayout.vertical());
+      var1.defaultCellSetting().alignHorizontallyCenter().padding(4);
+      this.textWidget = var1.addChild(new FocusableTextWidget(this.width, this.title, this.font), var0 -> var0.padding(8));
+      this.narrationButton = this.options.narrator().createButton(this.options);
+      this.narrationButton.active = this.narratorAvailable;
+      var1.addChild(this.narrationButton);
+      var1.addChild(CommonButtons.accessibility(150, var1x -> this.closeAndSetScreen(new AccessibilityOptionsScreen(this, this.minecraft.options)), false));
+      var1.addChild(
          CommonButtons.language(
             150, var1x -> this.closeAndSetScreen(new LanguageSelectScreen(this, this.minecraft.options, this.minecraft.getLanguageManager())), false
          )
       );
-      var2.addChild(
-         Button.builder(CommonComponents.GUI_CONTINUE, var1x -> this.onClose()).build(), var2.newChildLayoutSettings().alignVerticallyBottom().padding(8)
-      );
-      var2.arrangeElements();
-      FrameLayout.alignInRectangle(var2, 0, var1, this.width, this.height, 0.5F, 0.0F);
-      var2.visitWidgets(this::addRenderableWidget);
+      this.layout.addToFooter(Button.builder(CommonComponents.GUI_CONTINUE, var1x -> this.onClose()).build());
+      this.layout.visitWidgets(this::addRenderableWidget);
+      this.repositionElements();
+   }
+
+   @Override
+   protected void repositionElements() {
+      if (this.textWidget != null) {
+         this.textWidget.containWithin(this.width);
+      }
+
+      this.layout.arrangeElements();
+   }
+
+   @Override
+   protected void setInitialFocus() {
+      if (this.narratorAvailable && this.narrationButton != null) {
+         this.setInitialFocus(this.narrationButton);
+      } else {
+         super.setInitialFocus();
+      }
    }
 
    private int initTitleYPos() {
@@ -94,15 +103,11 @@ public class AccessibilityOnboardingScreen extends Screen {
       super.render(var1, var2, var3, var4);
       this.handleInitialNarrationDelay();
       this.logoRenderer.renderLogo(var1, this.width, 1.0F);
-      if (this.textWidget != null) {
-         this.textWidget.render(var1, var2, var3, var4);
-      }
    }
 
    @Override
-   public void renderBackground(GuiGraphics var1, int var2, int var3, float var4) {
-      this.panorama.render(0.0F, 1.0F);
-      var1.fill(0, 0, this.width, this.height, -1877995504);
+   protected void renderPanorama(GuiGraphics var1, float var2) {
+      PANORAMA.render(var1, this.width, this.height, 1.0F, 0.0F);
    }
 
    private void handleInitialNarrationDelay() {

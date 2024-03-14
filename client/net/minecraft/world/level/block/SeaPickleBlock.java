@@ -67,13 +67,13 @@ public class SeaPickleBlock extends BushBlock implements BonemealableBlock, Simp
    }
 
    @Override
-   public boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
+   protected boolean canSurvive(BlockState var1, LevelReader var2, BlockPos var3) {
       BlockPos var4 = var3.below();
       return this.mayPlaceOn(var2.getBlockState(var4), var2, var4);
    }
 
    @Override
-   public BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
+   protected BlockState updateShape(BlockState var1, Direction var2, BlockState var3, LevelAccessor var4, BlockPos var5, BlockPos var6) {
       if (!var1.canSurvive(var4, var5)) {
          return Blocks.AIR.defaultBlockState();
       } else {
@@ -86,12 +86,12 @@ public class SeaPickleBlock extends BushBlock implements BonemealableBlock, Simp
    }
 
    @Override
-   public boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
+   protected boolean canBeReplaced(BlockState var1, BlockPlaceContext var2) {
       return !var2.isSecondaryUseActive() && var2.getItemInHand().is(this.asItem()) && var1.getValue(PICKLES) < 4 ? true : super.canBeReplaced(var1, var2);
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       switch(var1.getValue(PICKLES)) {
          case 1:
          default:
@@ -106,7 +106,7 @@ public class SeaPickleBlock extends BushBlock implements BonemealableBlock, Simp
    }
 
    @Override
-   public FluidState getFluidState(BlockState var1) {
+   protected FluidState getFluidState(BlockState var1) {
       return var1.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
    }
 
@@ -166,7 +166,7 @@ public class SeaPickleBlock extends BushBlock implements BonemealableBlock, Simp
    }
 
    @Override
-   public boolean isPathfindable(BlockState var1, BlockGetter var2, BlockPos var3, PathComputationType var4) {
+   protected boolean isPathfindable(BlockState var1, PathComputationType var2) {
       return false;
    }
 }

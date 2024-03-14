@@ -7,39 +7,42 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Locale;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.level.gameevent.BlockPositionSource;
 import net.minecraft.world.level.gameevent.PositionSource;
-import net.minecraft.world.level.gameevent.PositionSourceType;
 import net.minecraft.world.phys.Vec3;
 
 public class VibrationParticleOption implements ParticleOptions {
    public static final Codec<VibrationParticleOption> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               PositionSource.CODEC.fieldOf("destination").forGetter(var0x -> var0x.destination),
-               Codec.INT.fieldOf("arrival_in_ticks").forGetter(var0x -> var0x.arrivalInTicks)
+               PositionSource.CODEC.fieldOf("destination").forGetter(VibrationParticleOption::getDestination),
+               Codec.INT.fieldOf("arrival_in_ticks").forGetter(VibrationParticleOption::getArrivalInTicks)
             )
             .apply(var0, VibrationParticleOption::new)
    );
+   public static final StreamCodec<RegistryFriendlyByteBuf, VibrationParticleOption> STREAM_CODEC = StreamCodec.composite(
+      PositionSource.STREAM_CODEC,
+      VibrationParticleOption::getDestination,
+      ByteBufCodecs.VAR_INT,
+      VibrationParticleOption::getArrivalInTicks,
+      VibrationParticleOption::new
+   );
    public static final ParticleOptions.Deserializer<VibrationParticleOption> DESERIALIZER = new ParticleOptions.Deserializer<VibrationParticleOption>() {
-      public VibrationParticleOption fromCommand(ParticleType<VibrationParticleOption> var1, StringReader var2) throws CommandSyntaxException {
-         var2.expect(' ');
-         float var3 = (float)var2.readDouble();
+      public VibrationParticleOption fromCommand(ParticleType<VibrationParticleOption> var1, StringReader var2, HolderLookup.Provider var3) throws CommandSyntaxException {
          var2.expect(' ');
          float var4 = (float)var2.readDouble();
          var2.expect(' ');
          float var5 = (float)var2.readDouble();
          var2.expect(' ');
-         int var6 = var2.readInt();
-         BlockPos var7 = BlockPos.containing((double)var3, (double)var4, (double)var5);
-         return new VibrationParticleOption(new BlockPositionSource(var7), var6);
-      }
-
-      public VibrationParticleOption fromNetwork(ParticleType<VibrationParticleOption> var1, FriendlyByteBuf var2) {
-         PositionSource var3 = PositionSourceType.fromNetwork(var2);
-         int var4 = var2.readVarInt();
-         return new VibrationParticleOption(var3, var4);
+         float var6 = (float)var2.readDouble();
+         var2.expect(' ');
+         int var7 = var2.readInt();
+         BlockPos var8 = BlockPos.containing((double)var4, (double)var5, (double)var6);
+         return new VibrationParticleOption(new BlockPositionSource(var8), var7);
       }
    };
    private final PositionSource destination;
@@ -52,18 +55,12 @@ public class VibrationParticleOption implements ParticleOptions {
    }
 
    @Override
-   public void writeToNetwork(FriendlyByteBuf var1) {
-      PositionSourceType.toNetwork(this.destination, var1);
-      var1.writeVarInt(this.arrivalInTicks);
-   }
-
-   @Override
-   public String writeToString() {
-      Vec3 var1 = this.destination.getPosition(null).get();
-      double var2 = var1.x();
-      double var4 = var1.y();
-      double var6 = var1.z();
-      return String.format(Locale.ROOT, "%s %.2f %.2f %.2f %d", BuiltInRegistries.PARTICLE_TYPE.getKey(this.getType()), var2, var4, var6, this.arrivalInTicks);
+   public String writeToString(HolderLookup.Provider var1) {
+      Vec3 var2 = this.destination.getPosition(null).get();
+      double var3 = var2.x();
+      double var5 = var2.y();
+      double var7 = var2.z();
+      return String.format(Locale.ROOT, "%s %.2f %.2f %.2f %d", BuiltInRegistries.PARTICLE_TYPE.getKey(this.getType()), var3, var5, var7, this.arrivalInTicks);
    }
 
    @Override

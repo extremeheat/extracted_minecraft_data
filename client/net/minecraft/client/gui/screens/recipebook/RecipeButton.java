@@ -121,7 +121,7 @@ public class RecipeButton extends AbstractWidget {
    }
 
    public List<Component> getTooltipText() {
-      ItemStack var1 = this.getOrderedRecipes().get(this.currentIndex).value().getResultItem(this.collection.registryAccess());
+      ItemStack var1 = ((RecipeHolder)this.getOrderedRecipes().get(this.currentIndex)).value().getResultItem(this.collection.registryAccess());
       ArrayList var2 = Lists.newArrayList(Screen.getTooltipFromItem(Minecraft.getInstance(), var1));
       if (this.collection.getRecipes(this.book.isFiltering(this.menu)).size() > 1) {
          var2.add(MORE_RECIPES_TOOLTIP);
@@ -132,7 +132,7 @@ public class RecipeButton extends AbstractWidget {
 
    @Override
    public void updateWidgetNarration(NarrationElementOutput var1) {
-      ItemStack var2 = this.getOrderedRecipes().get(this.currentIndex).value().getResultItem(this.collection.registryAccess());
+      ItemStack var2 = ((RecipeHolder)this.getOrderedRecipes().get(this.currentIndex)).value().getResultItem(this.collection.registryAccess());
       var1.add(NarratedElementType.TITLE, Component.translatable("narration.recipe", var2.getHoverName()));
       if (this.collection.getRecipes(this.book.isFiltering(this.menu)).size() > 1) {
          var1.add(NarratedElementType.USAGE, Component.translatable("narration.button.usage.hovered"), Component.translatable("narration.recipe.usage.more"));

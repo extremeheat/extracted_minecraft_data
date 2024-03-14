@@ -238,4 +238,33 @@ public abstract class Particle {
    public Optional<ParticleGroup> getParticleGroup() {
       return Optional.empty();
    }
+
+   public static record LifetimeAlpha(float b, float c, float d, float e) {
+      private final float startAlpha;
+      private final float endAlpha;
+      private final float startAtNormalizedAge;
+      private final float endAtNormalizedAge;
+      public static final Particle.LifetimeAlpha ALWAYS_OPAQUE = new Particle.LifetimeAlpha(1.0F, 1.0F, 0.0F, 1.0F);
+
+      public LifetimeAlpha(float var1, float var2, float var3, float var4) {
+         super();
+         this.startAlpha = var1;
+         this.endAlpha = var2;
+         this.startAtNormalizedAge = var3;
+         this.endAtNormalizedAge = var4;
+      }
+
+      public boolean isOpaque() {
+         return this.startAlpha >= 1.0F && this.endAlpha >= 1.0F;
+      }
+
+      public float currentAlphaForAge(int var1, int var2, float var3) {
+         if (Mth.equal(this.startAlpha, this.endAlpha)) {
+            return this.startAlpha;
+         } else {
+            float var4 = Mth.inverseLerp(((float)var1 + var3) / (float)var2, this.startAtNormalizedAge, this.endAtNormalizedAge);
+            return Mth.clampedLerp(this.startAlpha, this.endAlpha, var4);
+         }
+      }
+   }
 }

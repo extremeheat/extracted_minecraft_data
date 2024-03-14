@@ -35,10 +35,7 @@ public class SnowballItem extends Item {
       }
 
       var2.awardStat(Stats.ITEM_USED.get(this));
-      if (!var2.getAbilities().instabuild) {
-         var4.shrink(1);
-      }
-
+      var4.consume(1, var2);
       return InteractionResultHolder.sidedSuccess(var4, var1.isClientSide());
    }
 }

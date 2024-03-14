@@ -3,6 +3,7 @@ package net.minecraft.world.level;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.CommonComponents;
@@ -10,8 +11,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 
 public interface Spawner {
    void setEntityId(EntityType<?> var1, RandomSource var2);
@@ -29,18 +30,14 @@ public interface Spawner {
 
    @Nullable
    static Component getSpawnEntityDisplayName(ItemStack var0, String var1) {
-      CompoundTag var2 = BlockItem.getBlockEntityData(var0);
-      if (var2 != null) {
-         ResourceLocation var3 = getEntityKey(var2, var1);
-         if (var3 != null) {
-            return BuiltInRegistries.ENTITY_TYPE
-               .getOptional(var3)
-               .map(var0x -> Component.translatable(var0x.getDescriptionId()).withStyle(ChatFormatting.GRAY))
-               .orElse(null);
-         }
-      }
-
-      return null;
+      CompoundTag var2 = var0.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY).getUnsafe();
+      ResourceLocation var3 = getEntityKey(var2, var1);
+      return var3 != null
+         ? BuiltInRegistries.ENTITY_TYPE
+            .getOptional(var3)
+            .map(var0x -> Component.translatable(var0x.getDescriptionId()).withStyle(ChatFormatting.GRAY))
+            .orElse(null)
+         : null;
    }
 
    @Nullable

@@ -82,4 +82,9 @@ public class GrassBlock extends SpreadingSnowyDirtBlock implements BonemealableB
          }
       }
    }
+
+   @Override
+   public BonemealableBlock.Type getType() {
+      return BonemealableBlock.Type.NEIGHBOR_SPREADER;
+   }
 }

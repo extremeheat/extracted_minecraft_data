@@ -6,22 +6,24 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Locale;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 
 public class ShriekParticleOption implements ParticleOptions {
    public static final Codec<ShriekParticleOption> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(Codec.INT.fieldOf("delay").forGetter(var0x -> var0x.delay)).apply(var0, ShriekParticleOption::new)
    );
+   public static final StreamCodec<RegistryFriendlyByteBuf, ShriekParticleOption> STREAM_CODEC = StreamCodec.composite(
+      ByteBufCodecs.VAR_INT, var0 -> var0.delay, ShriekParticleOption::new
+   );
    public static final ParticleOptions.Deserializer<ShriekParticleOption> DESERIALIZER = new ParticleOptions.Deserializer<ShriekParticleOption>() {
-      public ShriekParticleOption fromCommand(ParticleType<ShriekParticleOption> var1, StringReader var2) throws CommandSyntaxException {
+      public ShriekParticleOption fromCommand(ParticleType<ShriekParticleOption> var1, StringReader var2, HolderLookup.Provider var3) throws CommandSyntaxException {
          var2.expect(' ');
-         int var3 = var2.readInt();
-         return new ShriekParticleOption(var3);
-      }
-
-      public ShriekParticleOption fromNetwork(ParticleType<ShriekParticleOption> var1, FriendlyByteBuf var2) {
-         return new ShriekParticleOption(var2.readVarInt());
+         int var4 = var2.readInt();
+         return new ShriekParticleOption(var4);
       }
    };
    private final int delay;
@@ -32,12 +34,7 @@ public class ShriekParticleOption implements ParticleOptions {
    }
 
    @Override
-   public void writeToNetwork(FriendlyByteBuf var1) {
-      var1.writeVarInt(this.delay);
-   }
-
-   @Override
-   public String writeToString() {
+   public String writeToString(HolderLookup.Provider var1) {
       return String.format(Locale.ROOT, "%s %d", BuiltInRegistries.PARTICLE_TYPE.getKey(this.getType()), this.delay);
    }
 

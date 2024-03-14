@@ -2,10 +2,8 @@ package net.minecraft.client.gui.components;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
-import com.google.common.collect.UnmodifiableIterator;
 import com.mojang.blaze3d.platform.GlUtil;
 import com.mojang.datafixers.DataFixUtils;
-import com.mojang.datafixers.util.Either;
 import it.unimi.dsi.fastutil.longs.LongSets;
 import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import java.lang.management.GarbageCollectorMXBean;
@@ -45,12 +43,14 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.Connection;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.ServerTickRateManager;
-import net.minecraft.server.level.ChunkHolder;
+import net.minecraft.server.level.ChunkResult;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
-import net.minecraft.util.SampleLogger;
+import net.minecraft.util.debugchart.LocalSampleLogger;
+import net.minecraft.util.debugchart.RemoteDebugSampleType;
+import net.minecraft.util.debugchart.TpsDebugDimensions;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.TickRateManager;
 import net.minecraft.world.entity.Entity;
@@ -64,10 +64,9 @@ import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.biome.Climate;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Property;
-import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ChunkGenerator;
-import net.minecraft.world.level.chunk.ChunkStatus;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.RandomState;
 import net.minecraft.world.level.material.FluidState;
@@ -102,10 +101,11 @@ public class DebugScreenOverlay {
    private boolean renderProfilerChart;
    private boolean renderFpsCharts;
    private boolean renderNetworkCharts;
-   private final SampleLogger frameTimeLogger = new SampleLogger();
-   private final SampleLogger tickTimeLogger = new SampleLogger();
-   private final SampleLogger pingLogger = new SampleLogger();
-   private final SampleLogger bandwidthLogger = new SampleLogger();
+   private final LocalSampleLogger frameTimeLogger = new LocalSampleLogger(1);
+   private final LocalSampleLogger tickTimeLogger = new LocalSampleLogger(TpsDebugDimensions.values().length);
+   private final LocalSampleLogger pingLogger = new LocalSampleLogger(1);
+   private final LocalSampleLogger bandwidthLogger = new LocalSampleLogger(1);
+   private final Map<RemoteDebugSampleType, LocalSampleLogger> remoteSupportingLoggers = Map.of(RemoteDebugSampleType.TICK_TIME, this.tickTimeLogger);
    private final FpsDebugChart fpsChart;
    private final TpsDebugChart tpsChart;
    private final PingDebugChart pingChart;
@@ -139,7 +139,7 @@ public class DebugScreenOverlay {
             int var2xx = var1.guiWidth();
             int var3 = var2xx / 2;
             this.fpsChart.drawChart(var1, 0, this.fpsChart.getWidth(var3));
-            if (this.minecraft.getSingleplayerServer() != null) {
+            if (this.tickTimeLogger.size() > 0) {
                int var4 = this.tpsChart.getWidth(var3);
                this.tpsChart.drawChart(var1, var2xx - var4, var4);
             }
@@ -461,7 +461,7 @@ public class DebugScreenOverlay {
 
          this.serverChunk = var1.getChunkSource()
             .getChunkFuture(this.lastPos.x, this.lastPos.z, ChunkStatus.FULL, false)
-            .thenApply(var0 -> (LevelChunk)var0.map(var0x -> (LevelChunk)var0x, var0x -> null));
+            .thenApply(var0 -> (LevelChunk)var0.orElse(null));
       }
 
       return this.serverChunk.getNow(null);
@@ -483,9 +483,9 @@ public class DebugScreenOverlay {
       ArrayList var9 = Lists.newArrayList(
          new String[]{
             String.format(Locale.ROOT, "Java: %s %dbit", System.getProperty("java.version"), this.minecraft.is64Bit() ? 64 : 32),
-            String.format(Locale.ROOT, "Mem: % 2d%% %03d/%03dMB", var7 * 100L / var1, bytesToMegabytes(var7), bytesToMegabytes(var1)),
-            String.format(Locale.ROOT, "Allocation rate: %03dMB /s", bytesToMegabytes(this.allocationRateCalculator.bytesAllocatedPerSecond(var7))),
-            String.format(Locale.ROOT, "Allocated: % 2d%% %03dMB", var3 * 100L / var1, bytesToMegabytes(var3)),
+            String.format(Locale.ROOT, "Mem: %2d%% %03d/%03dMB", var7 * 100L / var1, bytesToMegabytes(var7), bytesToMegabytes(var1)),
+            String.format(Locale.ROOT, "Allocation rate: %03dMB/s", bytesToMegabytes(this.allocationRateCalculator.bytesAllocatedPerSecond(var7))),
+            String.format(Locale.ROOT, "Allocated: %2d%% %03dMB", var3 * 100L / var1, bytesToMegabytes(var3)),
             "",
             String.format(Locale.ROOT, "CPU: %s", GlUtil.getCpuInfo()),
             "",
@@ -509,10 +509,8 @@ public class DebugScreenOverlay {
             var9.add("");
             var9.add(ChatFormatting.UNDERLINE + "Targeted Block: " + var10.getX() + ", " + var10.getY() + ", " + var10.getZ());
             var9.add(String.valueOf(BuiltInRegistries.BLOCK.getKey(var11.getBlock())));
-            UnmodifiableIterator var12 = var11.getValues().entrySet().iterator();
 
-            while(var12.hasNext()) {
-               Entry var13 = (Entry)var12.next();
+            for(Entry var13 : var11.getValues().entrySet()) {
                var9.add(this.getPropertyValueString(var13));
             }
 
@@ -525,10 +523,8 @@ public class DebugScreenOverlay {
             var9.add("");
             var9.add(ChatFormatting.UNDERLINE + "Targeted Fluid: " + var14.getX() + ", " + var14.getY() + ", " + var14.getZ());
             var9.add(String.valueOf(BuiltInRegistries.FLUID.getKey(var16.getType())));
-            UnmodifiableIterator var17 = var16.getValues().entrySet().iterator();
 
-            while(var17.hasNext()) {
-               Entry var18 = (Entry)var17.next();
+            for(Entry var18 : var16.getValues().entrySet()) {
                var9.add(this.getPropertyValueString(var18));
             }
 
@@ -575,6 +571,10 @@ public class DebugScreenOverlay {
       return this.showDebugScreen() && this.renderNetworkCharts;
    }
 
+   public boolean showFpsCharts() {
+      return this.showDebugScreen() && this.renderFpsCharts;
+   }
+
    public void toggleOverlay() {
       this.renderDebug = !this.renderDebug;
    }
@@ -606,16 +606,23 @@ public class DebugScreenOverlay {
       this.frameTimeLogger.logSample(var1);
    }
 
-   public void logTickDuration(long var1) {
-      this.tickTimeLogger.logSample(var1);
+   public LocalSampleLogger getTickTimeLogger() {
+      return this.tickTimeLogger;
    }
 
-   public SampleLogger getPingLogger() {
+   public LocalSampleLogger getPingLogger() {
       return this.pingLogger;
    }
 
-   public SampleLogger getBandwidthLogger() {
+   public LocalSampleLogger getBandwidthLogger() {
       return this.bandwidthLogger;
+   }
+
+   public void logRemoteSample(long[] var1, RemoteDebugSampleType var2) {
+      LocalSampleLogger var3 = this.remoteSupportingLoggers.get(var2);
+      if (var3 != null) {
+         var3.logFullSample(var1);
+      }
    }
 
    public void reset() {

@@ -118,7 +118,7 @@ public class PopupScreen extends Screen {
       private int width = 250;
       @Nullable
       private ResourceLocation image;
-      private final List<PopupScreen.ButtonOption> buttons = new ArrayList<>();
+      private final List<PopupScreen.ButtonOption> buttons = new ArrayList();
       @Nullable
       private Runnable onClose = null;
 

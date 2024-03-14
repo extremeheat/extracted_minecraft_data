@@ -1,17 +1,22 @@
 package net.minecraft.world.item;
 
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.ImmutableMultimap.Builder;
+import com.mojang.serialization.Codec;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Supplier;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.dispenser.BlockSource;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.EntitySelector;
@@ -32,6 +37,7 @@ public class ArmorItem extends Item implements Equipable {
       var0.put(ArmorItem.Type.LEGGINGS, UUID.fromString("D8499B04-0E66-4726-AB29-64469D734E0D"));
       var0.put(ArmorItem.Type.CHESTPLATE, UUID.fromString("9F3D476D-C118-4544-8365-64846904B48E"));
       var0.put(ArmorItem.Type.HELMET, UUID.fromString("2AD3F246-FEE1-4E67-B886-69FD380BB150"));
+      var0.put(ArmorItem.Type.BODY, UUID.fromString("C1C72771-8B8E-BA4A-ACE0-81A93C8928B2"));
    });
    public static final DispenseItemBehavior DISPENSE_ITEM_BEHAVIOR = new DefaultDispenseItemBehavior() {
       @Override
@@ -40,11 +46,8 @@ public class ArmorItem extends Item implements Equipable {
       }
    };
    protected final ArmorItem.Type type;
-   private final int defense;
-   private final float toughness;
-   protected final float knockbackResistance;
-   protected final ArmorMaterial material;
-   private final Multimap<Attribute, AttributeModifier> defaultModifiers;
+   protected final Holder<ArmorMaterial> material;
+   private final Supplier<Multimap<Holder<Attribute>, AttributeModifier>> defaultModifiers;
 
    public static boolean dispenseArmor(BlockSource var0, ItemStack var1) {
       BlockPos var2 = var0.pos().relative(var0.state().getValue(DispenserBlock.FACING));
@@ -66,26 +69,30 @@ public class ArmorItem extends Item implements Equipable {
       }
    }
 
-   public ArmorItem(ArmorMaterial var1, ArmorItem.Type var2, Item.Properties var3) {
-      super(var3.defaultDurability(var1.getDurabilityForType(var2)));
+   public ArmorItem(Holder<ArmorMaterial> var1, ArmorItem.Type var2, Item.Properties var3) {
+      super(var3);
       this.material = var1;
       this.type = var2;
-      this.defense = var1.getDefenseForType(var2);
-      this.toughness = var1.getToughness();
-      this.knockbackResistance = var1.getKnockbackResistance();
       DispenserBlock.registerBehavior(this, DISPENSE_ITEM_BEHAVIOR);
-      Builder var4 = ImmutableMultimap.builder();
-      UUID var5 = ARMOR_MODIFIER_UUID_PER_TYPE.get(var2);
-      var4.put(Attributes.ARMOR, new AttributeModifier(var5, "Armor modifier", (double)this.defense, AttributeModifier.Operation.ADDITION));
-      var4.put(Attributes.ARMOR_TOUGHNESS, new AttributeModifier(var5, "Armor toughness", (double)this.toughness, AttributeModifier.Operation.ADDITION));
-      if (var1 == ArmorMaterials.NETHERITE) {
-         var4.put(
-            Attributes.KNOCKBACK_RESISTANCE,
-            new AttributeModifier(var5, "Armor knockback resistance", (double)this.knockbackResistance, AttributeModifier.Operation.ADDITION)
-         );
-      }
-
-      this.defaultModifiers = var4.build();
+      this.defaultModifiers = Suppliers.memoize(
+         () -> {
+            int var2xx = ((ArmorMaterial)var1.value()).getDefense(var2);
+            float var3xx = ((ArmorMaterial)var1.value()).toughness();
+            Builder var4 = ImmutableMultimap.builder();
+            UUID var5 = ARMOR_MODIFIER_UUID_PER_TYPE.get(var2);
+            var4.put(Attributes.ARMOR, new AttributeModifier(var5, "Armor modifier", (double)var2xx, AttributeModifier.Operation.ADD_VALUE));
+            var4.put(Attributes.ARMOR_TOUGHNESS, new AttributeModifier(var5, "Armor toughness", (double)var3xx, AttributeModifier.Operation.ADD_VALUE));
+            float var6 = ((ArmorMaterial)var1.value()).knockbackResistance();
+            if (var6 > 0.0F) {
+               var4.put(
+                  Attributes.KNOCKBACK_RESISTANCE,
+                  new AttributeModifier(var5, "Armor knockback resistance", (double)var6, AttributeModifier.Operation.ADD_VALUE)
+               );
+            }
+   
+            return var4.build();
+         }
+      );
    }
 
    public ArmorItem.Type getType() {
@@ -94,16 +101,16 @@ public class ArmorItem extends Item implements Equipable {
 
    @Override
    public int getEnchantmentValue() {
-      return this.material.getEnchantmentValue();
+      return ((ArmorMaterial)this.material.value()).enchantmentValue();
    }
 
-   public ArmorMaterial getMaterial() {
+   public Holder<ArmorMaterial> getMaterial() {
       return this.material;
    }
 
    @Override
    public boolean isValidRepairItem(ItemStack var1, ItemStack var2) {
-      return this.material.getRepairIngredient().test(var2) || super.isValidRepairItem(var1, var2);
+      return ((ArmorMaterial)this.material.value()).repairIngredient().get().test(var2) || super.isValidRepairItem(var1, var2);
    }
 
    @Override
@@ -112,16 +119,16 @@ public class ArmorItem extends Item implements Equipable {
    }
 
    @Override
-   public Multimap<Attribute, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot var1) {
-      return var1 == this.type.getSlot() ? this.defaultModifiers : super.getDefaultAttributeModifiers(var1);
+   public Multimap<Holder<Attribute>, AttributeModifier> getDefaultAttributeModifiers(EquipmentSlot var1) {
+      return var1 == this.type.getSlot() ? (Multimap)this.defaultModifiers.get() : super.getDefaultAttributeModifiers(var1);
    }
 
    public int getDefense() {
-      return this.defense;
+      return ((ArmorMaterial)this.material.value()).getDefense(this.type);
    }
 
    public float getToughness() {
-      return this.toughness;
+      return ((ArmorMaterial)this.material.value()).toughness();
    }
 
    @Override
@@ -130,22 +137,30 @@ public class ArmorItem extends Item implements Equipable {
    }
 
    @Override
-   public SoundEvent getEquipSound() {
-      return this.getMaterial().getEquipSound();
+   public Holder<SoundEvent> getEquipSound() {
+      return ((ArmorMaterial)this.getMaterial().value()).equipSound();
    }
 
-   public static enum Type {
-      HELMET(EquipmentSlot.HEAD, "helmet"),
-      CHESTPLATE(EquipmentSlot.CHEST, "chestplate"),
-      LEGGINGS(EquipmentSlot.LEGS, "leggings"),
-      BOOTS(EquipmentSlot.FEET, "boots");
+   public static enum Type implements StringRepresentable {
+      HELMET(EquipmentSlot.HEAD, 11, "helmet"),
+      CHESTPLATE(EquipmentSlot.CHEST, 16, "chestplate"),
+      LEGGINGS(EquipmentSlot.LEGS, 15, "leggings"),
+      BOOTS(EquipmentSlot.FEET, 13, "boots"),
+      BODY(EquipmentSlot.BODY, 16, "body");
 
+      public static final Codec<ArmorItem.Type> CODEC = StringRepresentable.fromValues(ArmorItem.Type::values);
       private final EquipmentSlot slot;
       private final String name;
+      private final int durability;
 
-      private Type(EquipmentSlot var3, String var4) {
+      private Type(EquipmentSlot var3, int var4, String var5) {
          this.slot = var3;
-         this.name = var4;
+         this.name = var5;
+         this.durability = var4;
+      }
+
+      public int getDurability(int var1) {
+         return this.durability * var1;
       }
 
       public EquipmentSlot getSlot() {
@@ -153,6 +168,15 @@ public class ArmorItem extends Item implements Equipable {
       }
 
       public String getName() {
+         return this.name;
+      }
+
+      public boolean hasTrims() {
+         return this == HELMET || this == CHESTPLATE || this == LEGGINGS || this == BOOTS;
+      }
+
+      @Override
+      public String getSerializedName() {
          return this.name;
       }
    }

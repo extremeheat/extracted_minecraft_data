@@ -38,7 +38,7 @@ import net.minecraft.client.gui.screens.AlertScreen;
 import net.minecraft.client.gui.screens.ConfirmScreen;
 import net.minecraft.client.gui.screens.ErrorScreen;
 import net.minecraft.client.gui.screens.FaviconTexture;
-import net.minecraft.client.gui.screens.GenericDirtMessageScreen;
+import net.minecraft.client.gui.screens.GenericMessageScreen;
 import net.minecraft.client.gui.screens.LoadingDotsText;
 import net.minecraft.client.gui.screens.NoticeWithLinkScreen;
 import net.minecraft.client.gui.screens.ProgressScreen;
@@ -72,7 +72,6 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
    static final ResourceLocation JOIN_HIGHLIGHTED_SPRITE = new ResourceLocation("world_list/join_highlighted");
    static final ResourceLocation JOIN_SPRITE = new ResourceLocation("world_list/join");
    static final Logger LOGGER = LogUtils.getLogger();
-   private static final ResourceLocation ICON_MISSING = new ResourceLocation("textures/misc/unknown_server.png");
    static final Component FROM_NEWER_TOOLTIP_1 = Component.translatable("selectWorld.tooltip.fromNewerVersion1").withStyle(ChatFormatting.RED);
    static final Component FROM_NEWER_TOOLTIP_2 = Component.translatable("selectWorld.tooltip.fromNewerVersion2").withStyle(ChatFormatting.RED);
    static final Component SNAPSHOT_TOOLTIP_1 = Component.translatable("selectWorld.tooltip.snapshot1").withStyle(ChatFormatting.GOLD);
@@ -220,13 +219,8 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
    }
 
    @Override
-   protected int getScrollbarPosition() {
-      return super.getScrollbarPosition() + 20;
-   }
-
-   @Override
    public int getRowWidth() {
-      return super.getRowWidth() + 50;
+      return 270;
    }
 
    public void setSelected(@Nullable WorldSelectionList.Entry var1) {
@@ -339,10 +333,7 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
       @Override
       public Component getNarration() {
          MutableComponent var1 = Component.translatable(
-            "narrator.select.world_info",
-            this.summary.getLevelName(),
-            Component.translationArg(new Date(this.summary.getLastPlayed())),
-            this.summary.getInfo()
+            "narrator.select.world_info", this.summary.getLevelName(), Component.translationArg(new Date(this.summary.getLastPlayed())), this.summary.getInfo()
          );
          if (this.summary.isLocked()) {
             var1 = CommonComponents.joinForNarration(var1, WorldSelectionList.WORLD_LOCKED_TOOLTIP);
@@ -441,7 +432,7 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
             WorldSelectionList.this.setSelected((WorldSelectionList.Entry)this);
             if (!(var1 - (double)WorldSelectionList.this.getRowLeft() <= 32.0) && Util.getMillis() - this.lastClickTime >= 250L) {
                this.lastClickTime = Util.getMillis();
-               return true;
+               return super.mouseClicked(var1, var3, var5);
             } else {
                if (this.canJoin()) {
                   this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
@@ -462,7 +453,7 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
             if (this.summary instanceof LevelSummary.SymlinkLevelSummary) {
                this.minecraft.setScreen(NoticeWithLinkScreen.createWorldSymlinkWarningScreen(() -> this.minecraft.setScreen(this.screen)));
             } else {
-               this.minecraft.createWorldOpenFlows().checkForBackupAndLoad(this.summary.getLevelId(), () -> {
+               this.minecraft.createWorldOpenFlows().openWorld(this.summary.getLevelId(), () -> {
                   WorldSelectionList.this.reloadWorldList();
                   this.minecraft.setScreen(this.screen);
                });
@@ -583,7 +574,7 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
       }
 
       private void queueLoadScreen() {
-         this.minecraft.forceSetScreen(new GenericDirtMessageScreen(Component.translatable("selectWorld.data_read")));
+         this.minecraft.forceSetScreen(new GenericMessageScreen(Component.translatable("selectWorld.data_read")));
       }
 
       private void loadIcon() {

@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import net.minecraft.Util;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -51,7 +52,7 @@ public class LootPool {
       super();
       this.entries = var1;
       this.conditions = var2;
-      this.compositeCondition = LootItemConditions.andConditions(var2);
+      this.compositeCondition = Util.allOf(var2);
       this.functions = var3;
       this.compositeFunction = LootItemFunctions.compose(var3);
       this.rolls = var4;

@@ -2,11 +2,16 @@ package net.minecraft.network.protocol.game;
 
 import java.util.List;
 import net.minecraft.core.NonNullList;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.item.ItemStack;
 
 public class ClientboundContainerSetContentPacket implements Packet<ClientGamePacketListener> {
+   public static final StreamCodec<RegistryFriendlyByteBuf, ClientboundContainerSetContentPacket> STREAM_CODEC = Packet.codec(
+      ClientboundContainerSetContentPacket::write, ClientboundContainerSetContentPacket::new
+   );
    private final int containerId;
    private final int stateId;
    private final List<ItemStack> items;
@@ -25,20 +30,24 @@ public class ClientboundContainerSetContentPacket implements Packet<ClientGamePa
       this.carriedItem = var4.copy();
    }
 
-   public ClientboundContainerSetContentPacket(FriendlyByteBuf var1) {
+   private ClientboundContainerSetContentPacket(RegistryFriendlyByteBuf var1) {
       super();
       this.containerId = var1.readUnsignedByte();
       this.stateId = var1.readVarInt();
-      this.items = var1.readCollection(NonNullList::createWithCapacity, FriendlyByteBuf::readItem);
-      this.carriedItem = var1.readItem();
+      this.items = ItemStack.OPTIONAL_LIST_STREAM_CODEC.decode(var1);
+      this.carriedItem = ItemStack.OPTIONAL_STREAM_CODEC.decode(var1);
+   }
+
+   private void write(RegistryFriendlyByteBuf var1) {
+      var1.writeByte(this.containerId);
+      var1.writeVarInt(this.stateId);
+      ItemStack.OPTIONAL_LIST_STREAM_CODEC.encode(var1, this.items);
+      ItemStack.OPTIONAL_STREAM_CODEC.encode(var1, this.carriedItem);
    }
 
    @Override
-   public void write(FriendlyByteBuf var1) {
-      var1.writeByte(this.containerId);
-      var1.writeVarInt(this.stateId);
-      var1.writeCollection(this.items, FriendlyByteBuf::writeItem);
-      var1.writeItem(this.carriedItem);
+   public PacketType<ClientboundContainerSetContentPacket> type() {
+      return GamePacketTypes.CLIENTBOUND_CONTAINER_SET_CONTENT;
    }
 
    public void handle(ClientGamePacketListener var1) {

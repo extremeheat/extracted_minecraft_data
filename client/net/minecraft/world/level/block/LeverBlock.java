@@ -8,7 +8,6 @@ import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -55,7 +54,7 @@ public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
    }
 
    @Override
-   public VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
+   protected VoxelShape getShape(BlockState var1, BlockGetter var2, BlockPos var3, CollisionContext var4) {
       switch((AttachFace)var1.getValue(FACE)) {
          case FLOOR:
             switch(var1.getValue(FACING).getAxis()) {
@@ -90,25 +89,25 @@ public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
    }
 
    @Override
-   public InteractionResult use(BlockState var1, Level var2, BlockPos var3, Player var4, InteractionHand var5, BlockHitResult var6) {
+   protected InteractionResult useWithoutItem(BlockState var1, Level var2, BlockPos var3, Player var4, BlockHitResult var5) {
       if (var2.isClientSide) {
-         BlockState var9 = var1.cycle(POWERED);
-         if (var9.getValue(POWERED)) {
-            makeParticle(var9, var2, var3, 1.0F);
+         BlockState var8 = var1.cycle(POWERED);
+         if (var8.getValue(POWERED)) {
+            makeParticle(var8, var2, var3, 1.0F);
          }
 
          return InteractionResult.SUCCESS;
       } else {
-         BlockState var7 = this.pull(var1, var2, var3);
-         float var8 = var7.getValue(POWERED) ? 0.6F : 0.5F;
-         var2.playSound(null, var3, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.3F, var8);
-         var2.gameEvent(var4, var7.getValue(POWERED) ? GameEvent.BLOCK_ACTIVATE : GameEvent.BLOCK_DEACTIVATE, var3);
+         BlockState var6 = this.pull(var1, var2, var3);
+         float var7 = var6.getValue(POWERED) ? 0.6F : 0.5F;
+         var2.playSound(null, var3, SoundEvents.LEVER_CLICK, SoundSource.BLOCKS, 0.3F, var7);
+         var2.gameEvent(var4, var6.getValue(POWERED) ? GameEvent.BLOCK_ACTIVATE : GameEvent.BLOCK_DEACTIVATE, var3);
          return InteractionResult.CONSUME;
       }
    }
 
    @Override
-   public void onExplosionHit(BlockState var1, Level var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
+   protected void onExplosionHit(BlockState var1, Level var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
       if (var4.getBlockInteraction() == Explosion.BlockInteraction.TRIGGER_BLOCK && !var2.isClientSide()) {
          this.pull(var1, var2, var3);
       }
@@ -140,7 +139,7 @@ public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
    }
 
    @Override
-   public void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+   protected void onRemove(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
       if (!var5 && !var1.is(var4.getBlock())) {
          if (var1.getValue(POWERED)) {
             this.updateNeighbours(var1, var2, var3);
@@ -151,17 +150,17 @@ public class LeverBlock extends FaceAttachedHorizontalDirectionalBlock {
    }
 
    @Override
-   public int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
+   protected int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       return var1.getValue(POWERED) ? 15 : 0;
    }
 
    @Override
-   public int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
+   protected int getDirectSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
       return var1.getValue(POWERED) && getConnectedDirection(var1) == var4 ? 15 : 0;
    }
 
    @Override
-   public boolean isSignalSource(BlockState var1) {
+   protected boolean isSignalSource(BlockState var1) {
       return true;
    }
 

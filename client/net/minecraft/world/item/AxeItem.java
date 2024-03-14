@@ -12,6 +12,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
@@ -47,8 +48,8 @@ public class AxeItem extends DiggerItem {
       .put(Blocks.BAMBOO_BLOCK, Blocks.STRIPPED_BAMBOO_BLOCK)
       .build();
 
-   protected AxeItem(Tier var1, float var2, float var3, Item.Properties var4) {
-      super(var2, var3, var1, BlockTags.MINEABLE_WITH_AXE, var4);
+   public AxeItem(Tier var1, Item.Properties var2) {
+      super(var1, BlockTags.MINEABLE_WITH_AXE, var2);
    }
 
    @Override
@@ -68,7 +69,7 @@ public class AxeItem extends DiggerItem {
          var2.setBlock(var3, (BlockState)var5.get(), 11);
          var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var4, (BlockState)var5.get()));
          if (var4 != null) {
-            var6.hurtAndBreak(1, var4, var1x -> var1x.broadcastBreakEvent(var1.getHand()));
+            var6.hurtAndBreak(1, var4, LivingEntity.getSlotForHand(var1.getHand()));
          }
 
          return InteractionResult.sidedSuccess(var2.isClientSide);

@@ -55,6 +55,7 @@ import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.biome.FeatureSorter;
 import net.minecraft.world.level.biome.MobSpawnSettings;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.LegacyRandomSource;
@@ -77,9 +78,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import org.apache.commons.lang3.mutable.MutableBoolean;
 
 public abstract class ChunkGenerator {
-   public static final Codec<ChunkGenerator> CODEC = BuiltInRegistries.CHUNK_GENERATOR
-      .byNameCodec()
-      .dispatchStable(ChunkGenerator::codec, Function.identity());
+   public static final Codec<ChunkGenerator> CODEC = BuiltInRegistries.CHUNK_GENERATOR.byNameCodec().dispatchStable(ChunkGenerator::codec, Function.identity());
    protected final BiomeSource biomeSource;
    private final Supplier<List<FeatureSorter.StepFeatureData>> featuresPerStep;
    private final Function<Holder<Biome>, BiomeGenerationSettings> generationSettingsGetter;
@@ -256,7 +255,7 @@ public abstract class ChunkGenerator {
       Set<Holder<Structure>> var0, LevelReader var1, StructureManager var2, boolean var3, StructurePlacement var4, ChunkPos var5
    ) {
       for(Holder var7 : var0) {
-         StructureCheckResult var8 = var2.checkStructurePresence(var5, (Structure)var7.value(), var3);
+         StructureCheckResult var8 = var2.checkStructurePresence(var5, (Structure)var7.value(), var4, var3);
          if (var8 != StructureCheckResult.START_NOT_PRESENT) {
             if (!var3 && var8 == StructureCheckResult.START_PRESENT) {
                return Pair.of(var4.getLocatePos(var5), var7);
@@ -346,7 +345,7 @@ public abstract class ChunkGenerator {
 
                   for(int var40 = 0; var40 < var35; ++var40) {
                      int var42 = var37[var40];
-                     PlacedFeature var25 = var39.features().get(var42);
+                     PlacedFeature var25 = (PlacedFeature)var39.features().get(var42);
                      Supplier var26 = () -> var15.getResourceKey(var25).map(Object::toString).orElseGet(var25::toString);
                      var10.setFeatureSeed(var11, var42, var17);
 
@@ -365,7 +364,7 @@ public abstract class ChunkGenerator {
             var1.setCurrentlyGenerating(null);
          } catch (Exception var31) {
             CrashReport var16 = CrashReport.forThrowable(var31, "Biome decoration");
-            var16.addCategory("Generation").setDetail("CenterX", var4.x).setDetail("CenterZ", var4.z).setDetail("Seed", var11);
+            var16.addCategory("Generation").setDetail("CenterX", var4.x).setDetail("CenterZ", var4.z).setDetail("Decoration Seed", var11);
             throw new ReportedException(var16);
          }
       }
@@ -400,7 +399,7 @@ public abstract class ChunkGenerator {
 
       for(Entry var7 : var5.entrySet()) {
          Structure var8 = (Structure)var7.getKey();
-         StructureSpawnOverride var9 = var8.spawnOverrides().get(var3);
+         StructureSpawnOverride var9 = (StructureSpawnOverride)var8.spawnOverrides().get(var3);
          if (var9 != null) {
             MutableBoolean var10 = new MutableBoolean(false);
             Predicate var11 = var9.boundingBox() == StructureSpawnOverride.BoundingBoxType.PIECE
@@ -425,8 +424,8 @@ public abstract class ChunkGenerator {
       SectionPos var7 = SectionPos.bottomOf(var4);
       RandomState var8 = var2.randomState();
       var2.possibleStructureSets().forEach(var9 -> {
-         StructurePlacement var10 = var9.value().placement();
-         List var11 = var9.value().structures();
+         StructurePlacement var10 = ((StructureSet)var9.value()).placement();
+         List var11 = ((StructureSet)var9.value()).structures();
 
          for(StructureSet.StructureSelectionEntry var13 : var11) {
             StructureStart var14 = var3.getStartForStructure(var7, var13.structure().value(), var4);

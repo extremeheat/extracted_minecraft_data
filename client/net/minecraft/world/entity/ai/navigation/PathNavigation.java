@@ -17,11 +17,11 @@ import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.PathNavigationRegion;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.level.pathfinder.Node;
 import net.minecraft.world.level.pathfinder.NodeEvaluator;
 import net.minecraft.world.level.pathfinder.Path;
 import net.minecraft.world.level.pathfinder.PathFinder;
+import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -157,6 +157,10 @@ public abstract class PathNavigation {
 
    public boolean moveTo(double var1, double var3, double var5, double var7) {
       return this.moveTo(this.createPath(var1, var3, var5, 1), var7);
+   }
+
+   public boolean moveTo(double var1, double var3, double var5, int var7, double var8) {
+      return this.moveTo(this.createPath(var1, var3, var5, var7), var8);
    }
 
    public boolean moveTo(Entity var1, double var2) {
@@ -350,8 +354,8 @@ public abstract class PathNavigation {
       return false;
    }
 
-   public boolean canCutCorner(BlockPathTypes var1) {
-      return var1 != BlockPathTypes.DANGER_FIRE && var1 != BlockPathTypes.DANGER_OTHER && var1 != BlockPathTypes.WALKABLE_DOOR;
+   public boolean canCutCorner(PathType var1) {
+      return var1 != PathType.DANGER_FIRE && var1 != PathType.DANGER_OTHER && var1 != PathType.WALKABLE_DOOR;
    }
 
    protected static boolean isClearForMovementBetween(Mob var0, Vec3 var1, Vec3 var2, boolean var3) {

@@ -47,11 +47,11 @@ public class TimeArgument implements ArgumentType<Integer> {
       String var3 = var1.readUnquotedString();
       int var4 = UNITS.getOrDefault(var3, 0);
       if (var4 == 0) {
-         throw ERROR_INVALID_UNIT.create();
+         throw ERROR_INVALID_UNIT.createWithContext(var1);
       } else {
          int var5 = Math.round(var2 * (float)var4);
          if (var5 < this.minimum) {
-            throw ERROR_TICK_COUNT_TOO_LOW.create(var5, this.minimum);
+            throw ERROR_TICK_COUNT_TOO_LOW.createWithContext(var1, var5, this.minimum);
          } else {
             return var5;
          }

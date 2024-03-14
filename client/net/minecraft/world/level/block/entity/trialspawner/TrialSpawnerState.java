@@ -14,6 +14,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.util.random.WeightedEntry;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.SpawnData;
 import net.minecraft.world.phys.Vec3;
 
 public enum TrialSpawnerState implements StringRepresentable {
@@ -44,26 +45,27 @@ public enum TrialSpawnerState implements StringRepresentable {
       TrialSpawnerData var4 = var2.getData();
       TrialSpawnerConfig var5 = var2.getConfig();
       PlayerDetector var6 = var2.getPlayerDetector();
+      PlayerDetector.EntitySelector var7 = var2.getEntitySelector();
       TrialSpawnerState var10000;
       switch(this) {
          case INACTIVE:
             var10000 = var4.getOrCreateDisplayEntity(var2, var3, WAITING_FOR_PLAYERS) == null ? this : WAITING_FOR_PLAYERS;
             break;
          case WAITING_FOR_PLAYERS:
-            if (!var4.hasMobToSpawn()) {
+            if (!var4.hasMobToSpawn(var2, var3.random)) {
                var10000 = INACTIVE;
             } else {
-               var4.tryDetectPlayers(var3, var1, var6, var5.requiredPlayerRange());
+               var4.tryDetectPlayers(var3, var1, var6, var7, var5.requiredPlayerRange());
                var10000 = var4.detectedPlayers.isEmpty() ? this : ACTIVE;
             }
             break;
          case ACTIVE:
-            if (!var4.hasMobToSpawn()) {
+            if (!var4.hasMobToSpawn(var2, var3.random)) {
                var10000 = INACTIVE;
             } else {
-               int var7 = var4.countAdditionalPlayers(var1);
-               var4.tryDetectPlayers(var3, var1, var6, var5.requiredPlayerRange());
-               if (var4.hasFinishedSpawningAllMobs(var5, var7)) {
+               int var8 = var4.countAdditionalPlayers(var1);
+               var4.tryDetectPlayers(var3, var1, var6, var7, var5.requiredPlayerRange());
+               if (var4.hasFinishedSpawningAllMobs(var5, var8)) {
                   if (var4.haveAllCurrentMobsDied()) {
                      var4.cooldownEndsAt = var3.getGameTime() + (long)var5.targetCooldownLength();
                      var4.totalMobsSpawned = 0;
@@ -71,13 +73,13 @@ public enum TrialSpawnerState implements StringRepresentable {
                      var10000 = WAITING_FOR_REWARD_EJECTION;
                      break;
                   }
-               } else if (var4.isReadyToSpawnNextMob(var3, var5, var7)) {
+               } else if (var4.isReadyToSpawnNextMob(var3, var5, var8)) {
                   var2.spawnMob(var3, var1).ifPresent(var4x -> {
                      var4.currentMobs.add(var4x);
                      ++var4.totalMobsSpawned;
                      var4.nextMobSpawnsAt = var3.getGameTime() + (long)var5.ticksBetweenSpawn();
                      var4.spawnPotentials.getRandom(var3.getRandom()).ifPresent(var2xx -> {
-                        var4.nextSpawnData = Optional.of(var2xx.getData());
+                        var4.nextSpawnData = Optional.of((SpawnData)var2xx.getData());
                         var2.markUpdated();
                      });
                   });

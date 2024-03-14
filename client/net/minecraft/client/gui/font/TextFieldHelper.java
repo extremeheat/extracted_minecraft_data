@@ -4,12 +4,12 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import net.minecraft.ChatFormatting;
-import net.minecraft.SharedConstants;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.util.Mth;
+import net.minecraft.util.StringUtil;
 
 public class TextFieldHelper {
    private final Supplier<String> getMessageFn;
@@ -47,7 +47,7 @@ public class TextFieldHelper {
    }
 
    public boolean charTyped(char var1) {
-      if (SharedConstants.isAllowedChatCharacter(var1)) {
+      if (StringUtil.isAllowedChatCharacter(var1)) {
          this.insertText(this.getMessageFn.get(), Character.toString(var1));
       }
 

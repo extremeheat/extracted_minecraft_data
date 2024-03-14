@@ -31,8 +31,8 @@ public class PathPackResources extends AbstractPackResources {
    private static final Joiner PATH_JOINER = Joiner.on("/");
    private final Path root;
 
-   public PathPackResources(String var1, Path var2, boolean var3) {
-      super(var1, var3);
+   public PathPackResources(PackLocationInfo var1, Path var2) {
+      super(var1);
       this.root = var2;
    }
 
@@ -125,21 +125,19 @@ public class PathPackResources extends AbstractPackResources {
 
    public static class PathResourcesSupplier implements Pack.ResourcesSupplier {
       private final Path content;
-      private final boolean isBuiltin;
 
-      public PathResourcesSupplier(Path var1, boolean var2) {
+      public PathResourcesSupplier(Path var1) {
          super();
          this.content = var1;
-         this.isBuiltin = var2;
       }
 
       @Override
-      public PackResources openPrimary(String var1) {
-         return new PathPackResources(var1, this.content, this.isBuiltin);
+      public PackResources openPrimary(PackLocationInfo var1) {
+         return new PathPackResources(var1, this.content);
       }
 
       @Override
-      public PackResources openFull(String var1, Pack.Info var2) {
+      public PackResources openFull(PackLocationInfo var1, Pack.Metadata var2) {
          PackResources var3 = this.openPrimary(var1);
          List var4 = var2.overlays();
          if (var4.isEmpty()) {
@@ -149,7 +147,7 @@ public class PathPackResources extends AbstractPackResources {
 
             for(String var7 : var4) {
                Path var8 = this.content.resolve(var7);
-               var5.add(new PathPackResources(var1, var8, this.isBuiltin));
+               var5.add(new PathPackResources(var1, var8));
             }
 
             return new CompositePackResources(var3, var5);

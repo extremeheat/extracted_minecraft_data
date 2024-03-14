@@ -25,7 +25,7 @@ public final class RandomState {
    private final Map<ResourceLocation, PositionalRandomFactory> positionalRandoms;
 
    public static RandomState create(HolderGetter.Provider var0, ResourceKey<NoiseGeneratorSettings> var1, long var2) {
-      return create(var0.<NoiseGeneratorSettings>lookupOrThrow(Registries.NOISE_SETTINGS).getOrThrow(var1).value(), var0.lookupOrThrow(Registries.NOISE), var2);
+      return create((NoiseGeneratorSettings)var0.lookupOrThrow(Registries.NOISE_SETTINGS).getOrThrow(var1).value(), var0.lookupOrThrow(Registries.NOISE), var2);
    }
 
    public static RandomState create(NoiseGeneratorSettings var0, HolderGetter<NormalNoise.NoiseParameters> var1, long var2) {
