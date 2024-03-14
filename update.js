@@ -8,7 +8,7 @@ function exec(...a) {
 // function decomp () {
 //   if (!fs.existsSync('DecompilerMC') || !fs.existsSync('DecompilerMC/.git')) {
 //     fs.rmSync('DecompilerMC', { recursive: true, force: true })
-//     exec('git clone http://github.com/extremeheat/DecompilermC')
+//     exec('git clone http://github.com/extremeheat/DecompilermC --depth 1')
 //   }
 //   exec('cd DecompilerMC && git pull')
 // }

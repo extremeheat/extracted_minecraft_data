@@ -5,7 +5,8 @@
   "main": "update.js",
   "scripts": {
     "test": "standard",
-    "fix": "standard --fix"
+    "fix": "standard --fix",
+    "update": "node update.js"
   },
   "author": "",
   "license": "ISC",
