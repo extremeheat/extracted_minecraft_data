@@ -6,7 +6,7 @@ function exec (a, b) {
 }
 
 function decomp (version) {
-  exec('git fetch clientlatest')
+  exec('git pull')
   if (!fs.existsSync('DecompilerMC') || !fs.existsSync('DecompilerMC/.git')) {
     fs.rmSync('DecompilerMC', { recursive: true, force: true })
     exec('git clone http://github.com/extremeheat/DecompilerMC --depth 1')
