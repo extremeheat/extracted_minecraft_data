@@ -1,4 +1,4 @@
-name: Cron Job
+name: Update workflow
 on:
   schedule:
     - cron: '0 */6 * * *'
@@ -9,7 +9,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2      
+      uses: actions/checkout@v2
+      with:
+        ref: updator
     - name: Use Node.js
       uses: actions/setup-node@v2
       with:
@@ -17,4 +19,4 @@ jobs:
     - name: Install dependencies
       run: npm install      
     - name: Run updator script
-      run: node run update
+      run: npm run update
