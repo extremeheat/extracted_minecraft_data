@@ -31,11 +31,6 @@ async function main () {
   const latestRelease = latestManifest.versions.find(v => v.type === 'release')
   const latestSnapshot = latestManifest.versions.find(v => v.type === 'snapshot')
 
-  exec('git config user.name "github-actions[bot]"')
-  exec('git config user.email "41898282+github-actions[bot]@users.noreply.github.com"')
-  decomp('24w11a')
-  return
-
   if (currentManifest.latest.release === latestRelease.id && currentManifest.latest.snapshot === latestSnapshot.id) {
     console.log('No new version available')
     return
@@ -50,6 +45,7 @@ async function main () {
     exec('git add version_manifest.json')
     exec(`git commit -m "Update version manifest for ${latestSnapshot.id}"`)
     exec('git push origin updator')
+    decomp(latestSnapshot.id)
   }
 }
 
