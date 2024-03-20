@@ -19,4 +19,6 @@ jobs:
     - name: Install dependencies
       run: npm install      
     - name: Run updator script
-      run: npm run update
+      run: node update.js
+      env:
+        GITHUB_TOKEN: ${{ secrets.PAT_PASSWORD }}
