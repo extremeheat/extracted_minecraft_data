@@ -10,7 +10,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.DynamicTexture;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureManager;
+import net.minecraft.client.resources.MapDecorationTextureManager;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -21,16 +23,16 @@ import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import org.joml.Matrix4f;
 
 public class MapRenderer implements AutoCloseable {
-   private static final ResourceLocation MAP_ICONS_LOCATION = new ResourceLocation("textures/map/map_icons.png");
-   static final RenderType MAP_ICONS = RenderType.text(MAP_ICONS_LOCATION);
    private static final int WIDTH = 128;
    private static final int HEIGHT = 128;
    final TextureManager textureManager;
+   final MapDecorationTextureManager decorationTextures;
    private final Int2ObjectMap<MapRenderer.MapInstance> maps = new Int2ObjectOpenHashMap();
 
-   public MapRenderer(TextureManager var1) {
+   public MapRenderer(TextureManager var1, MapDecorationTextureManager var2) {
       super();
       this.textureManager = var1;
+      this.decorationTextures = var2;
    }
 
    public void update(MapId var1, MapItemSavedData var2) {
@@ -127,18 +129,18 @@ public class MapRenderer implements AutoCloseable {
                var1.mulPose(Axis.ZP.rotationDegrees((float)(var12.rot() * 360) / 16.0F));
                var1.scale(4.0F, 4.0F, 3.0F);
                var1.translate(-0.125F, 0.125F, 0.0F);
-               byte var13 = var12.getImage();
-               float var14 = (float)(var13 % 16 + 0) / 16.0F;
-               float var15 = (float)(var13 / 16 + 0) / 16.0F;
-               float var16 = (float)(var13 % 16 + 1) / 16.0F;
-               float var17 = (float)(var13 / 16 + 1) / 16.0F;
-               Matrix4f var18 = var1.last().pose();
-               float var19 = -0.001F;
-               VertexConsumer var20 = var2.getBuffer(MapRenderer.MAP_ICONS);
-               var20.vertex(var18, -1.0F, 1.0F, (float)var10 * -0.001F).color(255, 255, 255, 255).uv(var14, var15).uv2(var4).endVertex();
-               var20.vertex(var18, 1.0F, 1.0F, (float)var10 * -0.001F).color(255, 255, 255, 255).uv(var16, var15).uv2(var4).endVertex();
-               var20.vertex(var18, 1.0F, -1.0F, (float)var10 * -0.001F).color(255, 255, 255, 255).uv(var16, var17).uv2(var4).endVertex();
-               var20.vertex(var18, -1.0F, -1.0F, (float)var10 * -0.001F).color(255, 255, 255, 255).uv(var14, var17).uv2(var4).endVertex();
+               Matrix4f var13 = var1.last().pose();
+               float var14 = -0.001F;
+               TextureAtlasSprite var15 = MapRenderer.this.decorationTextures.get(var12);
+               float var16 = var15.getU0();
+               float var17 = var15.getV0();
+               float var18 = var15.getU1();
+               float var19 = var15.getV1();
+               VertexConsumer var20 = var2.getBuffer(RenderType.text(var15.atlasLocation()));
+               var20.vertex(var13, -1.0F, 1.0F, (float)var10 * -0.001F).color(255, 255, 255, 255).uv(var16, var17).uv2(var4).endVertex();
+               var20.vertex(var13, 1.0F, 1.0F, (float)var10 * -0.001F).color(255, 255, 255, 255).uv(var18, var17).uv2(var4).endVertex();
+               var20.vertex(var13, 1.0F, -1.0F, (float)var10 * -0.001F).color(255, 255, 255, 255).uv(var18, var19).uv2(var4).endVertex();
+               var20.vertex(var13, -1.0F, -1.0F, (float)var10 * -0.001F).color(255, 255, 255, 255).uv(var16, var19).uv2(var4).endVertex();
                var1.popPose();
                if (var12.name().isPresent()) {
                   Font var21 = Minecraft.getInstance().font;

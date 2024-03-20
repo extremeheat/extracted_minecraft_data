@@ -56,23 +56,23 @@ public class GiveCommand {
    }
 
    private static int giveItem(CommandSourceStack var0, ItemInput var1, Collection<ServerPlayer> var2, int var3) throws CommandSyntaxException {
-      int var4 = var1.getItem().getMaxStackSize();
-      int var5 = var4 * 100;
-      ItemStack var6 = var1.createItemStack(1, false);
-      if (var3 > var5) {
-         var0.sendFailure(Component.translatable("commands.give.failed.toomanyitems", var5, var6.getDisplayName()));
+      ItemStack var4 = var1.createItemStack(1, false);
+      int var5 = var4.getMaxStackSize();
+      int var6 = var5 * 100;
+      if (var3 > var6) {
+         var0.sendFailure(Component.translatable("commands.give.failed.toomanyitems", var6, var4.getDisplayName()));
          return 0;
       } else {
          for(ServerPlayer var8 : var2) {
             int var9 = var3;
 
             while(var9 > 0) {
-               int var10 = Math.min(var4, var9);
+               int var10 = Math.min(var5, var9);
                var9 -= var10;
                ItemStack var11 = var1.createItemStack(var10, false);
                boolean var12 = var8.getInventory().add(var11);
                if (var12 && var11.isEmpty()) {
-                  ItemEntity var14 = var8.drop(var6, false);
+                  ItemEntity var14 = var8.drop(var4, false);
                   if (var14 != null) {
                      var14.makeFakeItem();
                   }
@@ -102,12 +102,12 @@ public class GiveCommand {
          if (var2.size() == 1) {
             var0.sendSuccess(
                () -> Component.translatable(
-                     "commands.give.success.single", var3, var6.getDisplayName(), ((ServerPlayer)var2.iterator().next()).getDisplayName()
+                     "commands.give.success.single", var3, var4.getDisplayName(), ((ServerPlayer)var2.iterator().next()).getDisplayName()
                   ),
                true
             );
          } else {
-            var0.sendSuccess(() -> Component.translatable("commands.give.success.single", var3, var6.getDisplayName(), var2.size()), true);
+            var0.sendSuccess(() -> Component.translatable("commands.give.success.single", var3, var4.getDisplayName(), var2.size()), true);
          }
 
          return var2.size();

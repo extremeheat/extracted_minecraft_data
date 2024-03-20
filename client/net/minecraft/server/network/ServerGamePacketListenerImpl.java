@@ -962,14 +962,8 @@ public class ServerGamePacketListenerImpl
                            this.player.resetFallDistance();
                         }
 
-                        if (var1.isOnGround()
-                           || this.player.isInLiquid()
-                           || this.player.onClimbable()
-                           || this.player.isSpectator()
-                           || this.player.isCreative()
-                           || var27
-                           || var34) {
-                           this.player.ignoreFallDamageAboveY = null;
+                        if (var1.isOnGround() || this.player.isInLiquid() || this.player.onClimbable() || this.player.isSpectator() || var27 || var34) {
+                           this.player.resetCurrentImpulseContext();
                         }
 
                         this.player.checkMovementStatistics(this.player.getX() - var11, this.player.getY() - var13, this.player.getZ() - var15);
@@ -1017,7 +1011,7 @@ public class ServerGamePacketListenerImpl
       }
 
       this.awaitingTeleportTime = this.tickCount;
-      this.player.ignoreFallDamageAboveY = null;
+      this.player.resetCurrentImpulseContext();
       this.player.absMoveTo(var1, var3, var5, var7, var8);
       this.player
          .connection
@@ -1653,7 +1647,7 @@ public class ServerGamePacketListenerImpl
          }
 
          boolean var7 = var1.getSlotNum() >= 1 && var1.getSlotNum() <= 45;
-         boolean var8 = var3.isEmpty() || var3.getDamageValue() >= 0 && var3.getCount() <= 64 && !var3.isEmpty();
+         boolean var8 = var3.isEmpty() || var3.getDamageValue() >= 0 && var3.getCount() <= var3.getMaxStackSize() && !var3.isEmpty();
          if (var7 && var8) {
             this.player.inventoryMenu.getSlot(var1.getSlotNum()).setByPlayer(var3);
             this.player.inventoryMenu.broadcastChanges();

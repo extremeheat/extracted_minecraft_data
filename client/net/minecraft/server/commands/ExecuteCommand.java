@@ -49,6 +49,7 @@ import net.minecraft.commands.arguments.ObjectiveArgument;
 import net.minecraft.commands.arguments.RangeArgument;
 import net.minecraft.commands.arguments.ResourceArgument;
 import net.minecraft.commands.arguments.ResourceLocationArgument;
+import net.minecraft.commands.arguments.ResourceOrIdArgument;
 import net.minecraft.commands.arguments.ResourceOrTagArgument;
 import net.minecraft.commands.arguments.ScoreHolderArgument;
 import net.minecraft.commands.arguments.SlotsArgument;
@@ -83,6 +84,7 @@ import net.minecraft.nbt.LongTag;
 import net.minecraft.nbt.ShortTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.ReloadableServerRegistries;
 import net.minecraft.server.ServerScoreboard;
 import net.minecraft.server.bossevents.CustomBossEvent;
 import net.minecraft.server.commands.data.DataAccessor;
@@ -109,8 +111,6 @@ import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.LootDataManager;
-import net.minecraft.world.level.storage.loot.LootDataType;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
@@ -137,8 +137,8 @@ public class ExecuteCommand {
       (var0, var1) -> Component.translatableEscape("commands.execute.function.instantiationFailure", var0, var1)
    );
    private static final SuggestionProvider<CommandSourceStack> SUGGEST_PREDICATE = (var0, var1) -> {
-      LootDataManager var2 = ((CommandSourceStack)var0.getSource()).getServer().getLootData();
-      return SharedSuggestionProvider.suggestResource(var2.getKeys(LootDataType.PREDICATE), var1);
+      ReloadableServerRegistries.Holder var2 = ((CommandSourceStack)var0.getSource()).getServer().reloadableRegistries();
+      return SharedSuggestionProvider.suggestResource(var2.getKeys(Registries.PREDICATE), var1);
    };
 
    public ExecuteCommand() {
@@ -698,9 +698,9 @@ public class ExecuteCommand {
                      .then(
                         addConditional(
                            var0,
-                           Commands.argument("predicate", ResourceLocationArgument.id()).suggests(SUGGEST_PREDICATE),
+                           Commands.argument("predicate", ResourceOrIdArgument.lootPredicate(var3)).suggests(SUGGEST_PREDICATE),
                            var2,
-                           var0x -> checkCustomPredicate((CommandSourceStack)var0x.getSource(), ResourceLocationArgument.getPredicate(var0x, "predicate"))
+                           var0x -> checkCustomPredicate((CommandSourceStack)var0x.getSource(), ResourceOrIdArgument.getLootPredicate(var0x, "predicate"))
                         )
                      )
                ))
@@ -887,15 +887,15 @@ public class ExecuteCommand {
       return var5 == null ? false : var1.matches(var5.value());
    }
 
-   private static boolean checkCustomPredicate(CommandSourceStack var0, LootItemCondition var1) {
+   private static boolean checkCustomPredicate(CommandSourceStack var0, Holder<LootItemCondition> var1) {
       ServerLevel var2 = var0.getLevel();
       LootParams var3 = new LootParams.Builder(var2)
          .withParameter(LootContextParams.ORIGIN, var0.getPosition())
          .withOptionalParameter(LootContextParams.THIS_ENTITY, var0.getEntity())
          .create(LootContextParamSets.COMMAND);
       LootContext var4 = new LootContext.Builder(var3).create(Optional.empty());
-      var4.pushVisitedElement(LootContext.createVisitedEntry(var1));
-      return var1.test(var4);
+      var4.pushVisitedElement(LootContext.createVisitedEntry((LootItemCondition)var1.value()));
+      return ((LootItemCondition)var1.value()).test(var4);
    }
 
    private static Collection<CommandSourceStack> expect(CommandContext<CommandSourceStack> var0, boolean var1, boolean var2) {

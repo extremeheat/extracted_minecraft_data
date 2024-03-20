@@ -20,7 +20,7 @@ public class SetFireworksFunction extends LootItemConditionalFunction {
                var0.group(
                   ExtraCodecs.strictOptionalField(ExtraCodecs.sizeLimitedList(FireworkExplosion.CODEC.listOf(), 256), "explosions", List.of())
                      .forGetter(var0x -> var0x.explosions),
-                  ListOperation.Type.OPERATION_MAP_CODEC.forGetter(var0x -> var0x.explosionsOperation),
+                  ListOperation.codec(256).forGetter(var0x -> var0x.explosionsOperation),
                   ExtraCodecs.strictOptionalField(ExtraCodecs.UNSIGNED_BYTE, "flight_duration").forGetter(var0x -> var0x.flightDuration)
                )
             )

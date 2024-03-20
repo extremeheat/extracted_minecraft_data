@@ -22,7 +22,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.Item;
@@ -86,7 +86,7 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
    private static final LootItemCondition.Builder HAS_NO_SHEARS_OR_SILK_TOUCH = HAS_SHEARS_OR_SILK_TOUCH.invert();
    protected final Set<Item> explosionResistant;
    protected final FeatureFlagSet enabledFeatures;
-   protected final Map<ResourceLocation, LootTable.Builder> map;
+   protected final Map<ResourceKey<LootTable>, LootTable.Builder> map;
    protected static final float[] NORMAL_LEAVES_SAPLING_CHANCES = new float[]{0.05F, 0.0625F, 0.083333336F, 0.1F};
    private static final float[] NORMAL_LEAVES_STICK_CHANCES = new float[]{0.02F, 0.022222223F, 0.025F, 0.033333335F, 0.1F};
 
@@ -94,7 +94,7 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
       this(var1, var2, new HashMap<>());
    }
 
-   protected BlockLootSubProvider(Set<Item> var1, FeatureFlagSet var2, Map<ResourceLocation, LootTable.Builder> var3) {
+   protected BlockLootSubProvider(Set<Item> var1, FeatureFlagSet var2, Map<ResourceKey<LootTable>, LootTable.Builder> var3) {
       super();
       this.explosionResistant = var1;
       this.enabledFeatures = var2;
@@ -585,17 +585,19 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
    protected abstract void generate();
 
    @Override
-   public void generate(HolderLookup.Provider var1, BiConsumer<ResourceLocation, LootTable.Builder> var2) {
+   public void generate(HolderLookup.Provider var1, BiConsumer<ResourceKey<LootTable>, LootTable.Builder> var2) {
       this.generate();
       HashSet var3 = new HashSet();
 
       for(Block var5 : BuiltInRegistries.BLOCK) {
          if (var5.isEnabled(this.enabledFeatures)) {
-            ResourceLocation var6 = var5.getLootTable();
+            ResourceKey var6 = var5.getLootTable();
             if (var6 != BuiltInLootTables.EMPTY && var3.add(var6)) {
                LootTable.Builder var7 = this.map.remove(var6);
                if (var7 == null) {
-                  throw new IllegalStateException(String.format(Locale.ROOT, "Missing loottable '%s' for '%s'", var6, BuiltInRegistries.BLOCK.getKey(var5)));
+                  throw new IllegalStateException(
+                     String.format(Locale.ROOT, "Missing loottable '%s' for '%s'", var6.location(), BuiltInRegistries.BLOCK.getKey(var5))
+                  );
                }
 
                var2.accept(var6, var7);

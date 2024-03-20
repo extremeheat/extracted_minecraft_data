@@ -38,7 +38,7 @@ public class RealmsPlayerScreen extends RealmsScreen {
    private final RealmsConfigureWorldScreen lastScreen;
    final RealmsServer serverData;
    @Nullable
-   RealmsPlayerScreen.InvitedObjectSelectionList invitedList;
+   private RealmsPlayerScreen.InvitedObjectSelectionList invitedList;
    boolean stateChanged;
 
    public RealmsPlayerScreen(RealmsConfigureWorldScreen var1, RealmsServer var2) {
@@ -51,21 +51,17 @@ public class RealmsPlayerScreen extends RealmsScreen {
    public void init() {
       this.layout.addTitleHeader(TITLE, this.font);
       this.invitedList = this.layout.addToContents(new RealmsPlayerScreen.InvitedObjectSelectionList());
-
-      for(PlayerInfo var2 : this.serverData.players) {
-         this.invitedList.children().add(new RealmsPlayerScreen.Entry(var2));
-      }
-
-      LinearLayout var3 = this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
-      var3.addChild(
+      this.repopulateInvitedList();
+      LinearLayout var1 = this.layout.addToFooter(LinearLayout.horizontal().spacing(8));
+      var1.addChild(
          Button.builder(
                Component.translatable("mco.configure.world.buttons.invite"),
-               var1 -> this.minecraft.setScreen(new RealmsInviteScreen(this.lastScreen, this, this.serverData))
+               var1x -> this.minecraft.setScreen(new RealmsInviteScreen(this.lastScreen, this, this.serverData))
             )
             .build()
       );
-      var3.addChild(Button.builder(CommonComponents.GUI_BACK, var1 -> this.onClose()).build());
-      this.layout.visitWidgets(var1 -> {
+      var1.addChild(Button.builder(CommonComponents.GUI_BACK, var1x -> this.onClose()).build());
+      this.layout.visitWidgets(var1x -> {
       });
       this.repositionElements();
    }
@@ -75,6 +71,16 @@ public class RealmsPlayerScreen extends RealmsScreen {
       this.layout.arrangeElements();
       if (this.invitedList != null) {
          this.invitedList.updateSize(this.width, this.layout);
+      }
+   }
+
+   void repopulateInvitedList() {
+      if (this.invitedList != null) {
+         this.invitedList.children().clear();
+
+         for(PlayerInfo var2 : this.serverData.players) {
+            this.invitedList.children().add(new RealmsPlayerScreen.Entry(var2));
+         }
       }
    }
 
@@ -179,13 +185,11 @@ public class RealmsPlayerScreen extends RealmsScreen {
                   }
 
                   RealmsPlayerScreen.this.serverData.players.remove(var1);
+                  RealmsPlayerScreen.this.repopulateInvitedList();
                }
 
                RealmsPlayerScreen.this.stateChanged = true;
                RealmsPlayerScreen.this.minecraft.setScreen(RealmsPlayerScreen.this);
-               if (RealmsPlayerScreen.this.invitedList != null) {
-                  RealmsPlayerScreen.this.invitedList.children().remove(this);
-               }
             }, RealmsPlayerScreen.QUESTION_TITLE, Component.translatable("mco.configure.world.uninvite.player", var2.getName()));
             RealmsPlayerScreen.this.minecraft.setScreen(var3);
          }

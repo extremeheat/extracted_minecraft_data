@@ -5,19 +5,23 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.entity.trialspawner.PlayerDetector;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
+import net.minecraft.world.level.storage.loot.LootTable;
 
-public record VaultConfig(ResourceLocation d, double e, double f, ItemStack g, Optional<ResourceLocation> h, PlayerDetector i, PlayerDetector.EntitySelector j) {
-   private final ResourceLocation lootTable;
+public record VaultConfig(
+   ResourceKey<LootTable> d, double e, double f, ItemStack g, Optional<ResourceKey<LootTable>> h, PlayerDetector i, PlayerDetector.EntitySelector j
+) {
+   private final ResourceKey<LootTable> lootTable;
    private final double activationRange;
    private final double deactivationRange;
    private final ItemStack keyItem;
-   private final Optional<ResourceLocation> overrideLootTableToDisplay;
+   private final Optional<ResourceKey<LootTable>> overrideLootTableToDisplay;
    private final PlayerDetector playerDetector;
    private final PlayerDetector.EntitySelector entitySelector;
    static final String TAG_NAME = "config";
@@ -25,11 +29,11 @@ public record VaultConfig(ResourceLocation d, double e, double f, ItemStack g, O
    static Codec<VaultConfig> CODEC = ExtraCodecs.validate(
       RecordCodecBuilder.create(
          var0 -> var0.group(
-                  ResourceLocation.CODEC.optionalFieldOf("loot_table", DEFAULT.lootTable()).forGetter(VaultConfig::lootTable),
+                  ResourceKey.codec(Registries.LOOT_TABLE).optionalFieldOf("loot_table", DEFAULT.lootTable()).forGetter(VaultConfig::lootTable),
                   Codec.DOUBLE.optionalFieldOf("activation_range", DEFAULT.activationRange()).forGetter(VaultConfig::activationRange),
                   Codec.DOUBLE.optionalFieldOf("deactivation_range", DEFAULT.deactivationRange()).forGetter(VaultConfig::deactivationRange),
                   ItemStack.optionalFieldOf("key_item").forGetter(VaultConfig::keyItem),
-                  ResourceLocation.CODEC.optionalFieldOf("override_loot_table_to_display").forGetter(VaultConfig::overrideLootTableToDisplay)
+                  ResourceKey.codec(Registries.LOOT_TABLE).optionalFieldOf("override_loot_table_to_display").forGetter(VaultConfig::overrideLootTableToDisplay)
                )
                .apply(var0, VaultConfig::new)
       ),
@@ -48,12 +52,18 @@ public record VaultConfig(ResourceLocation d, double e, double f, ItemStack g, O
       );
    }
 
-   public VaultConfig(ResourceLocation var1, double var2, double var4, ItemStack var6, Optional<ResourceLocation> var7) {
+   public VaultConfig(ResourceKey<LootTable> var1, double var2, double var4, ItemStack var6, Optional<ResourceKey<LootTable>> var7) {
       this(var1, var2, var4, var6, var7, DEFAULT.playerDetector(), DEFAULT.entitySelector());
    }
 
    public VaultConfig(
-      ResourceLocation var1, double var2, double var4, ItemStack var6, Optional<ResourceLocation> var7, PlayerDetector var8, PlayerDetector.EntitySelector var9
+      ResourceKey<LootTable> var1,
+      double var2,
+      double var4,
+      ItemStack var6,
+      Optional<ResourceKey<LootTable>> var7,
+      PlayerDetector var8,
+      PlayerDetector.EntitySelector var9
    ) {
       super();
       this.lootTable = var1;

@@ -4,21 +4,21 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.LootDataId;
-import net.minecraft.world.level.storage.loot.LootDataType;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 import org.slf4j.Logger;
 
-public record ConditionReference(ResourceLocation b) implements LootItemCondition {
-   private final ResourceLocation name;
+public record ConditionReference(ResourceKey<LootItemCondition> b) implements LootItemCondition {
+   private final ResourceKey<LootItemCondition> name;
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final Codec<ConditionReference> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(ResourceLocation.CODEC.fieldOf("name").forGetter(ConditionReference::name)).apply(var0, ConditionReference::new)
+      var0 -> var0.group(ResourceKey.codec(Registries.PREDICATE).fieldOf("name").forGetter(ConditionReference::name)).apply(var0, ConditionReference::new)
    );
 
-   public ConditionReference(ResourceLocation var1) {
+   public ConditionReference(ResourceKey<LootItemCondition> var1) {
       super();
       this.name = var1;
    }
@@ -30,23 +30,23 @@ public record ConditionReference(ResourceLocation b) implements LootItemConditio
 
    @Override
    public void validate(ValidationContext var1) {
-      LootDataId var2 = new LootDataId<>(LootDataType.PREDICATE, this.name);
-      if (var1.hasVisitedElement(var2)) {
-         var1.reportProblem("Condition " + this.name + " is recursively called");
+      if (var1.hasVisitedElement(this.name)) {
+         var1.reportProblem("Condition " + this.name.location() + " is recursively called");
       } else {
          LootItemCondition.super.validate(var1);
          var1.resolver()
-            .<LootItemCondition>getElementOptional(var2)
+            .get(Registries.PREDICATE, this.name)
             .ifPresentOrElse(
-               var3 -> var3.validate(var1.enterElement(".{" + this.name + "}", var2)), () -> var1.reportProblem("Unknown condition table called " + this.name)
+               var2 -> ((LootItemCondition)var2.value()).validate(var1.enterElement(".{" + this.name.location() + "}", this.name)),
+               () -> var1.reportProblem("Unknown condition table called " + this.name.location())
             );
       }
    }
 
    public boolean test(LootContext var1) {
-      LootItemCondition var2 = var1.getResolver().getElement(LootDataType.PREDICATE, this.name);
+      LootItemCondition var2 = var1.getResolver().get(Registries.PREDICATE, this.name).map(Holder.Reference::value).orElse(null);
       if (var2 == null) {
-         LOGGER.warn("Tried using unknown condition table called {}", this.name);
+         LOGGER.warn("Tried using unknown condition table called {}", this.name.location());
          return false;
       } else {
          LootContext.VisitedEntry var3 = LootContext.createVisitedEntry(var2);
@@ -66,7 +66,7 @@ public record ConditionReference(ResourceLocation b) implements LootItemConditio
       }
    }
 
-   public static LootItemCondition.Builder conditionReference(ResourceLocation var0) {
+   public static LootItemCondition.Builder conditionReference(ResourceKey<LootItemCondition> var0) {
       return () -> new ConditionReference(var0);
    }
 }

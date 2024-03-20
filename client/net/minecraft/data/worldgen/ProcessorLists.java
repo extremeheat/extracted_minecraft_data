@@ -28,6 +28,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProc
 import net.minecraft.world.level.levelgen.structure.templatesystem.TagMatchTest;
 import net.minecraft.world.level.levelgen.structure.templatesystem.rule.blockentity.AppendLoot;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
+import net.minecraft.world.level.storage.loot.LootTable;
 
 public class ProcessorLists {
    private static final ResourceKey<StructureProcessorList> EMPTY = createKey("empty");
@@ -792,7 +793,7 @@ public class ProcessorLists {
       register(var0, TRAIL_RUINS_TOWER_TOP_ARCHAEOLOGY, List.of(trailsArchyLootProcessor(BuiltInLootTables.TRAIL_RUINS_ARCHAEOLOGY_COMMON, 2)));
    }
 
-   private static CappedProcessor trailsArchyLootProcessor(ResourceLocation var0, int var1) {
+   private static CappedProcessor trailsArchyLootProcessor(ResourceKey<LootTable> var0, int var1) {
       return new CappedProcessor(
          new RuleProcessor(
             List.of(

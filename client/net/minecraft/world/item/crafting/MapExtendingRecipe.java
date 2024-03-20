@@ -1,7 +1,7 @@
 package net.minecraft.world.item.crafting;
 
 import java.util.Map;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
@@ -43,7 +43,7 @@ public class MapExtendingRecipe extends ShapedRecipe {
    }
 
    @Override
-   public ItemStack assemble(CraftingContainer var1, RegistryAccess var2) {
+   public ItemStack assemble(CraftingContainer var1, HolderLookup.Provider var2) {
       ItemStack var3 = findFilledMap(var1).copyWithCount(1);
       var3.set(DataComponents.MAP_POST_PROCESSING, MapPostProcessing.SCALE);
       return var3;

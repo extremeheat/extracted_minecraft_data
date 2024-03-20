@@ -58,6 +58,10 @@ public class ServerPlayerGameMode {
             .getPlayerList()
             .broadcastAll(new ClientboundPlayerInfoUpdatePacket(ClientboundPlayerInfoUpdatePacket.Action.UPDATE_GAME_MODE, this.player));
          this.level.updateSleepingPlayerList();
+         if (var1 == GameType.CREATIVE) {
+            this.player.resetCurrentImpulseContext();
+         }
+
          return true;
       }
    }

@@ -1,7 +1,7 @@
 package net.minecraft.world.item.crafting;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.DyeItem;
@@ -44,7 +44,7 @@ public class FireworkStarFadeRecipe extends CustomRecipe {
       return var4 && var3;
    }
 
-   public ItemStack assemble(CraftingContainer var1, RegistryAccess var2) {
+   public ItemStack assemble(CraftingContainer var1, HolderLookup.Provider var2) {
       IntArrayList var3 = new IntArrayList();
       ItemStack var4 = null;
 

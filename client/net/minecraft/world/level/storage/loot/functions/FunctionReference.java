@@ -5,11 +5,11 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.LootDataId;
-import net.minecraft.world.level.storage.loot.LootDataType;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import org.slf4j.Logger;
@@ -17,11 +17,13 @@ import org.slf4j.Logger;
 public class FunctionReference extends LootItemConditionalFunction {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final Codec<FunctionReference> CODEC = RecordCodecBuilder.create(
-      var0 -> commonFields(var0).and(ResourceLocation.CODEC.fieldOf("name").forGetter(var0x -> var0x.name)).apply(var0, FunctionReference::new)
+      var0 -> commonFields(var0)
+            .and(ResourceKey.codec(Registries.ITEM_MODIFIER).fieldOf("name").forGetter(var0x -> var0x.name))
+            .apply(var0, FunctionReference::new)
    );
-   private final ResourceLocation name;
+   private final ResourceKey<LootItemFunction> name;
 
-   private FunctionReference(List<LootItemCondition> var1, ResourceLocation var2) {
+   private FunctionReference(List<LootItemCondition> var1, ResourceKey<LootItemFunction> var2) {
       super(var1);
       this.name = var2;
    }
@@ -33,24 +35,24 @@ public class FunctionReference extends LootItemConditionalFunction {
 
    @Override
    public void validate(ValidationContext var1) {
-      LootDataId var2 = new LootDataId<>(LootDataType.MODIFIER, this.name);
-      if (var1.hasVisitedElement(var2)) {
-         var1.reportProblem("Function " + this.name + " is recursively called");
+      if (var1.hasVisitedElement(this.name)) {
+         var1.reportProblem("Function " + this.name.location() + " is recursively called");
       } else {
          super.validate(var1);
          var1.resolver()
-            .<LootItemFunction>getElementOptional(var2)
+            .get(Registries.ITEM_MODIFIER, this.name)
             .ifPresentOrElse(
-               var3 -> var3.validate(var1.enterElement(".{" + this.name + "}", var2)), () -> var1.reportProblem("Unknown function table called " + this.name)
+               var2 -> ((LootItemFunction)var2.value()).validate(var1.enterElement(".{" + this.name.location() + "}", this.name)),
+               () -> var1.reportProblem("Unknown function table called " + this.name.location())
             );
       }
    }
 
    @Override
    protected ItemStack run(ItemStack var1, LootContext var2) {
-      LootItemFunction var3 = var2.getResolver().getElement(LootDataType.MODIFIER, this.name);
+      LootItemFunction var3 = var2.getResolver().get(Registries.ITEM_MODIFIER, this.name).map(Holder::value).orElse(null);
       if (var3 == null) {
-         LOGGER.warn("Unknown function: {}", this.name);
+         LOGGER.warn("Unknown function: {}", this.name.location());
          return var1;
       } else {
          LootContext.VisitedEntry var4 = LootContext.createVisitedEntry(var3);
@@ -70,7 +72,7 @@ public class FunctionReference extends LootItemConditionalFunction {
       }
    }
 
-   public static LootItemConditionalFunction.Builder<?> functionReference(ResourceLocation var0) {
+   public static LootItemConditionalFunction.Builder<?> functionReference(ResourceKey<LootItemFunction> var0) {
       return simpleBuilder(var1 -> new FunctionReference(var1, var0));
    }
 }

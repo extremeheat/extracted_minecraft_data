@@ -18,6 +18,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -51,8 +52,6 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
@@ -96,7 +95,7 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
       this.goalSelector.addGoal(1, new ClimbOnTopOfPowderSnowGoal(this, this.level()));
       this.goalSelector.addGoal(1, new Rabbit.RabbitPanicGoal(this, 2.2));
       this.goalSelector.addGoal(2, new BreedGoal(this, 0.8));
-      this.goalSelector.addGoal(3, new TemptGoal(this, 1.0, Ingredient.of(Items.CARROT, Items.GOLDEN_CARROT, Blocks.DANDELION), false));
+      this.goalSelector.addGoal(3, new TemptGoal(this, 1.0, var0 -> var0.is(ItemTags.RABBIT_FOOD), false));
       this.goalSelector.addGoal(4, new Rabbit.RabbitAvoidEntityGoal<>(this, Player.class, 8.0F, 2.2, 2.2));
       this.goalSelector.addGoal(4, new Rabbit.RabbitAvoidEntityGoal<>(this, Wolf.class, 10.0F, 2.2, 2.2));
       this.goalSelector.addGoal(4, new Rabbit.RabbitAvoidEntityGoal<>(this, Monster.class, 4.0F, 2.2, 2.2));
@@ -315,10 +314,6 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
       return this.getVariant() == Rabbit.Variant.EVIL ? SoundSource.HOSTILE : SoundSource.NEUTRAL;
    }
 
-   private static boolean isTemptingItem(ItemStack var0) {
-      return var0.is(Items.CARROT) || var0.is(Items.GOLDEN_CARROT) || var0.is(Blocks.DANDELION.asItem());
-   }
-
    // $VF: Could not properly define all variable types!
    // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Nullable
@@ -345,7 +340,7 @@ public class Rabbit extends Animal implements VariantHolder<Rabbit.Variant> {
 
    @Override
    public boolean isFood(ItemStack var1) {
-      return isTemptingItem(var1);
+      return var1.is(ItemTags.RABBIT_FOOD);
    }
 
    public Rabbit.Variant getVariant() {

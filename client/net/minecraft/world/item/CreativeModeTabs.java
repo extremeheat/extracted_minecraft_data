@@ -1641,6 +1641,7 @@ public class CreativeModeTabs {
                      ItemTags.SWORD_ENCHANTABLE,
                      ItemTags.WEAPON_ENCHANTABLE,
                      ItemTags.MINING_ENCHANTABLE,
+                     ItemTags.MINING_LOOT_ENCHANTABLE,
                      ItemTags.FISHING_ENCHANTABLE,
                      ItemTags.TRIDENT_ENCHANTABLE,
                      ItemTags.DURABILITY_ENCHANTABLE,
@@ -1824,7 +1825,7 @@ public class CreativeModeTabs {
    ) {
       var1.listElements()
          .map(Holder::value)
-         .filter(var1x -> var2.contains(var1x.getMatch()))
+         .filter(var1x -> var2.contains(var1x.getSupportedItems()))
          .map(var0x -> EnchantedBookItem.createForEnchantment(new EnchantmentInstance(var0x, var0x.getMaxLevel())))
          .forEach(var2x -> var0.accept(var2x, var3));
    }
@@ -1834,7 +1835,7 @@ public class CreativeModeTabs {
    ) {
       var1.listElements()
          .map(Holder::value)
-         .filter(var1x -> var2.contains(var1x.getMatch()))
+         .filter(var1x -> var2.contains(var1x.getSupportedItems()))
          .flatMap(
             var0x -> IntStream.rangeClosed(var0x.getMinLevel(), var0x.getMaxLevel())
                   .mapToObj(var1x -> EnchantedBookItem.createForEnchantment(new EnchantmentInstance(var0x, var1x)))

@@ -3,7 +3,9 @@ package net.minecraft.world;
 import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -23,11 +25,11 @@ public interface RandomizableContainer extends Container {
    String LOOT_TABLE_SEED_TAG = "LootTableSeed";
 
    @Nullable
-   ResourceLocation getLootTable();
+   ResourceKey<LootTable> getLootTable();
 
-   void setLootTable(@Nullable ResourceLocation var1);
+   void setLootTable(@Nullable ResourceKey<LootTable> var1);
 
-   default void setLootTable(ResourceLocation var1, long var2) {
+   default void setLootTable(ResourceKey<LootTable> var1, long var2) {
       this.setLootTable(var1);
       this.setLootTableSeed(var2);
    }
@@ -43,7 +45,7 @@ public interface RandomizableContainer extends Container {
 
    // $VF: Could not properly define all variable types!
    // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   static void setBlockEntityLootTable(BlockGetter var0, RandomSource var1, BlockPos var2, ResourceLocation var3) {
+   static void setBlockEntityLootTable(BlockGetter var0, RandomSource var1, BlockPos var2, ResourceKey<LootTable> var3) {
       BlockEntity var4 = var0.getBlockEntity(var2);
       if (var4 instanceof RandomizableContainer var5) {
          var5.setLootTable(var3, var1.nextLong());
@@ -52,7 +54,7 @@ public interface RandomizableContainer extends Container {
 
    default boolean tryLoadLootTable(CompoundTag var1) {
       if (var1.contains("LootTable", 8)) {
-         this.setLootTable(new ResourceLocation(var1.getString("LootTable")));
+         this.setLootTable(ResourceKey.create(Registries.LOOT_TABLE, new ResourceLocation(var1.getString("LootTable"))));
          if (var1.contains("LootTableSeed", 4)) {
             this.setLootTableSeed(var1.getLong("LootTableSeed"));
          } else {
@@ -66,11 +68,11 @@ public interface RandomizableContainer extends Container {
    }
 
    default boolean trySaveLootTable(CompoundTag var1) {
-      ResourceLocation var2 = this.getLootTable();
+      ResourceKey var2 = this.getLootTable();
       if (var2 == null) {
          return false;
       } else {
-         var1.putString("LootTable", var2.toString());
+         var1.putString("LootTable", var2.location().toString());
          long var3 = this.getLootTableSeed();
          if (var3 != 0L) {
             var1.putLong("LootTableSeed", var3);
@@ -83,9 +85,9 @@ public interface RandomizableContainer extends Container {
    default void unpackLootTable(@Nullable Player var1) {
       Level var2 = this.getLevel();
       BlockPos var3 = this.getBlockPos();
-      ResourceLocation var4 = this.getLootTable();
+      ResourceKey var4 = this.getLootTable();
       if (var4 != null && var2 != null && var2.getServer() != null) {
-         LootTable var5 = var2.getServer().getLootData().getLootTable(var4);
+         LootTable var5 = var2.getServer().reloadableRegistries().getLootTable(var4);
          if (var1 instanceof ServerPlayer) {
             CriteriaTriggers.GENERATE_LOOT.trigger((ServerPlayer)var1, var4);
          }

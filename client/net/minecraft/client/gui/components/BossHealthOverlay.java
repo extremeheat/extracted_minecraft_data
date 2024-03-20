@@ -86,12 +86,13 @@ public class BossHealthOverlay {
    }
 
    private void drawBar(GuiGraphics var1, int var2, int var3, BossEvent var4, int var5, ResourceLocation[] var6, ResourceLocation[] var7) {
+      RenderSystem.enableBlend();
       var1.blitSprite(var6[var4.getColor().ordinal()], 182, 5, 0, 0, var2, var3, var5, 5);
       if (var4.getOverlay() != BossEvent.BossBarOverlay.PROGRESS) {
-         RenderSystem.enableBlend();
          var1.blitSprite(var7[var4.getOverlay().ordinal() - 1], 182, 5, 0, 0, var2, var3, var5, 5);
-         RenderSystem.disableBlend();
       }
+
+      RenderSystem.disableBlend();
    }
 
    public void update(ClientboundBossEventPacket var1) {

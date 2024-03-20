@@ -6,6 +6,7 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
@@ -20,6 +21,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.TimeUtil;
@@ -67,6 +69,7 @@ import net.minecraft.world.entity.monster.AbstractSkeleton;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.entity.monster.Ghast;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.ArmorMaterials;
 import net.minecraft.world.item.DyeColor;
@@ -137,8 +140,12 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
    }
 
    public ResourceLocation getTexture() {
-      WolfVariant var1 = (WolfVariant)this.getVariant().value();
-      return this.isTame() ? var1.tameTexture() : (this.isAngry() ? var1.angryTexture() : var1.texture());
+      WolfVariant var1 = this.getVariant().value();
+      if (this.isTame()) {
+         return var1.tameTexture();
+      } else {
+         return this.isAngry() ? var1.angryTexture() : var1.wildTexture();
+      }
    }
 
    public Holder<WolfVariant> getVariant() {
@@ -422,7 +429,9 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
          if (this.isTame()) {
             if (this.isFood(var3) && this.getHealth() < this.getMaxHealth()) {
                var3.consume(1, var1);
-               this.heal(2.0F * (float)var4.getFoodProperties().getNutrition());
+               FoodProperties var12 = var3.get(DataComponents.FOOD);
+               float var13 = var12 != null ? (float)var12.nutrition() : 1.0F;
+               this.heal(2.0F * var13);
                return InteractionResult.sidedSuccess(this.level().isClientSide());
             } else {
                if (var4 instanceof DyeItem var8 && this.isOwnedBy(var1)) {
@@ -523,8 +532,7 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
 
    @Override
    public boolean isFood(ItemStack var1) {
-      Item var2 = var1.getItem();
-      return var2.isEdible() && var2.getFoodProperties().isMeat();
+      return var1.is(ItemTags.WOLF_FOOD);
    }
 
    @Override

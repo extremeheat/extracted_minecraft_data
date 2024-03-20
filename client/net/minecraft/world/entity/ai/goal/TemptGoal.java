@@ -1,12 +1,13 @@
 package net.minecraft.world.entity.ai.goal;
 
 import java.util.EnumSet;
+import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.ItemStack;
 
 public class TemptGoal extends Goal {
    private static final TargetingConditions TEMP_TARGETING = TargetingConditions.forNonCombat().range(10.0).ignoreLineOfSight();
@@ -22,10 +23,10 @@ public class TemptGoal extends Goal {
    protected Player player;
    private int calmDown;
    private boolean isRunning;
-   private final Ingredient items;
+   private final Predicate<ItemStack> items;
    private final boolean canScare;
 
-   public TemptGoal(PathfinderMob var1, double var2, Ingredient var4, boolean var5) {
+   public TemptGoal(PathfinderMob var1, double var2, Predicate<ItemStack> var4, boolean var5) {
       super();
       this.mob = var1;
       this.speedModifier = var2;

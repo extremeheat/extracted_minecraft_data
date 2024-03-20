@@ -12,6 +12,7 @@ import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ItemParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -75,7 +76,6 @@ import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameRules;
@@ -230,7 +230,7 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
    }
 
    private boolean canEat(ItemStack var1) {
-      return var1.getItem().isEdible() && this.getTarget() == null && this.onGround() && !this.isSleeping();
+      return var1.has(DataComponents.FOOD) && this.getTarget() == null && this.onGround() && !this.isSleeping();
    }
 
    @Override
@@ -476,9 +476,8 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
 
    @Override
    public boolean canHoldItem(ItemStack var1) {
-      Item var2 = var1.getItem();
-      ItemStack var3 = this.getItemBySlot(EquipmentSlot.MAINHAND);
-      return var3.isEmpty() || this.ticksSinceEaten > 0 && var2.isEdible() && !var3.getItem().isEdible();
+      ItemStack var2 = this.getItemBySlot(EquipmentSlot.MAINHAND);
+      return var2.isEmpty() || this.ticksSinceEaten > 0 && var1.has(DataComponents.FOOD) && !var2.has(DataComponents.FOOD);
    }
 
    private void spitOutItem(ItemStack var1) {

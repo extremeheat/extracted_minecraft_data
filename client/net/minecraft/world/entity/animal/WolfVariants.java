@@ -41,15 +41,15 @@ public class WolfVariants {
    }
 
    static void register(BootstrapContext<WolfVariant> var0, ResourceKey<WolfVariant> var1, String var2, HolderSet<Biome> var3) {
-      ResourceLocation var4 = new ResourceLocation("textures/entity/wolf/" + var2 + ".png");
-      ResourceLocation var5 = new ResourceLocation("textures/entity/wolf/" + var2 + "_tame.png");
-      ResourceLocation var6 = new ResourceLocation("textures/entity/wolf/" + var2 + "_angry.png");
+      ResourceLocation var4 = new ResourceLocation("entity/wolf/" + var2);
+      ResourceLocation var5 = new ResourceLocation("entity/wolf/" + var2 + "_tame");
+      ResourceLocation var6 = new ResourceLocation("entity/wolf/" + var2 + "_angry");
       var0.register(var1, new WolfVariant(var4, var5, var6, var3));
    }
 
    public static Holder<WolfVariant> getSpawnVariant(RegistryAccess var0, Holder<Biome> var1) {
       Registry var2 = var0.registryOrThrow(Registries.WOLF_VARIANT);
-      return var2.holders().filter(var1x -> ((WolfVariant)var1x.value()).biomes().contains(var1)).findFirst().orElse(var2.getHolderOrThrow(PALE));
+      return var2.holders().filter(var1x -> var1x.value().biomes().contains(var1)).findFirst().orElse(var2.getHolderOrThrow(PALE));
    }
 
    public static void bootstrap(BootstrapContext<WolfVariant> var0) {

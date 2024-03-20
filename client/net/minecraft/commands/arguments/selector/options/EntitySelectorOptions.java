@@ -24,12 +24,14 @@ import net.minecraft.advancements.critereon.WrappedMinMaxBounds;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.selector.EntitySelector;
 import net.minecraft.commands.arguments.selector.EntitySelectorParser;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.PlayerAdvancements;
 import net.minecraft.server.ServerAdvancementManager;
@@ -44,7 +46,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.storage.loot.LootContext;
-import net.minecraft.world.level.storage.loot.LootDataType;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
@@ -476,15 +477,15 @@ public class EntitySelectorOptions {
             "predicate",
             var0 -> {
                boolean var1 = var0.shouldInvertValue();
-               ResourceLocation var2 = ResourceLocation.read(var0.getReader());
+               ResourceKey var2 = ResourceKey.create(Registries.PREDICATE, ResourceLocation.read(var0.getReader()));
                var0.addPredicate(
                   var2x -> {
                      if (!(var2x.level() instanceof ServerLevel)) {
                         return false;
                      } else {
                         ServerLevel var3 = (ServerLevel)var2x.level();
-                        LootItemCondition var4 = var3.getServer().getLootData().getElement(LootDataType.PREDICATE, var2);
-                        if (var4 == null) {
+                        Optional var4 = var3.getServer().reloadableRegistries().lookup().get(Registries.PREDICATE, var2).map(Holder::value);
+                        if (var4.isEmpty()) {
                            return false;
                         } else {
                            LootParams var5 = new LootParams.Builder(var3)
@@ -492,8 +493,8 @@ public class EntitySelectorOptions {
                               .withParameter(LootContextParams.ORIGIN, var2x.position())
                               .create(LootContextParamSets.SELECTOR);
                            LootContext var6 = new LootContext.Builder(var5).create(Optional.empty());
-                           var6.pushVisitedElement(LootContext.createVisitedEntry(var4));
-                           return var1 ^ var4.test(var6);
+                           var6.pushVisitedElement(LootContext.createVisitedEntry((LootItemCondition)var4.get()));
+                           return var1 ^ ((LootItemCondition)var4.get()).test(var6);
                         }
                      }
                   }

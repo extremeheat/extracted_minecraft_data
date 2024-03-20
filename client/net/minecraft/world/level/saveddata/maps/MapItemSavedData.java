@@ -15,6 +15,7 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
@@ -130,7 +131,7 @@ public class MapItemSavedData extends SavedData {
          if (var15 != null) {
             var9.frameMarkers.put(var15.getId(), var15);
             var9.addDecoration(
-               MapDecoration.Type.FRAME,
+               MapDecorationTypes.FRAME,
                null,
                "frame-" + var15.getEntityId(),
                (double)var15.getPos().getX(),
@@ -214,7 +215,7 @@ public class MapItemSavedData extends SavedData {
          if (!var5.player.isRemoved() && (var5.player.getInventory().contains(var8) || var2.isFramed())) {
             if (!var2.isFramed() && var5.player.level().dimension() == this.dimension && this.trackingPosition) {
                this.addDecoration(
-                  MapDecoration.Type.PLAYER, var5.player.level(), var6, var5.player.getX(), var5.player.getZ(), (double)var5.player.getYRot(), null
+                  MapDecorationTypes.PLAYER, var5.player.level(), var6, var5.player.getX(), var5.player.getZ(), (double)var5.player.getYRot(), null
                );
             }
          } else {
@@ -234,7 +235,7 @@ public class MapItemSavedData extends SavedData {
 
          MapFrame var7 = new MapFrame(var11, var9.getDirection().get2DDataValue() * 90, var9.getId());
          this.addDecoration(
-            MapDecoration.Type.FRAME,
+            MapDecorationTypes.FRAME,
             var1.level(),
             "frame-" + var9.getId(),
             (double)var11.getX(),
@@ -257,23 +258,23 @@ public class MapItemSavedData extends SavedData {
 
    private void removeDecoration(String var1) {
       MapDecoration var2 = (MapDecoration)this.decorations.remove(var1);
-      if (var2 != null && var2.type().shouldTrackCount()) {
+      if (var2 != null && ((MapDecorationType)var2.type().value()).trackCount()) {
          --this.trackedDecorationCount;
       }
 
       this.setDecorationsDirty();
    }
 
-   public static void addTargetDecoration(ItemStack var0, BlockPos var1, String var2, MapDecoration.Type var3) {
+   public static void addTargetDecoration(ItemStack var0, BlockPos var1, String var2, Holder<MapDecorationType> var3) {
       MapDecorations.Entry var4 = new MapDecorations.Entry(var3, (double)var1.getX(), (double)var1.getZ(), 180.0F);
       var0.update(DataComponents.MAP_DECORATIONS, MapDecorations.EMPTY, var2x -> var2x.withDecoration(var2, var4));
-      if (var3.hasMapColor()) {
-         var0.set(DataComponents.MAP_COLOR, new MapItemColor(var3.getMapColor()));
+      if (((MapDecorationType)var3.value()).hasMapColor()) {
+         var0.set(DataComponents.MAP_COLOR, new MapItemColor(((MapDecorationType)var3.value()).mapColor()));
       }
    }
 
    private void addDecoration(
-      MapDecoration.Type var1, @Nullable LevelAccessor var2, String var3, double var4, double var6, double var8, @Nullable Component var10
+      Holder<MapDecorationType> var1, @Nullable LevelAccessor var2, String var3, double var4, double var6, double var8, @Nullable Component var10
    ) {
       int var11 = 1 << this.scale;
       float var12 = (float)(var4 - (double)this.centerX) / (float)var11;
@@ -290,21 +291,21 @@ public class MapItemSavedData extends SavedData {
             var16 = (byte)(var21 * var21 * 34187121 + var21 * 121 >> 15 & 15);
          }
       } else {
-         if (var1 != MapDecoration.Type.PLAYER) {
+         if (!var1.is(MapDecorationTypes.PLAYER)) {
             this.removeDecoration(var3);
             return;
          }
 
          boolean var18 = true;
          if (Math.abs(var12) < 320.0F && Math.abs(var13) < 320.0F) {
-            var1 = MapDecoration.Type.PLAYER_OFF_MAP;
+            var1 = MapDecorationTypes.PLAYER_OFF_MAP;
          } else {
             if (!this.unlimitedTracking) {
                this.removeDecoration(var3);
                return;
             }
 
-            var1 = MapDecoration.Type.PLAYER_OFF_LIMITS;
+            var1 = MapDecorationTypes.PLAYER_OFF_LIMITS;
          }
 
          var16 = 0;
@@ -328,11 +329,11 @@ public class MapItemSavedData extends SavedData {
       MapDecoration var22 = new MapDecoration(var1, var14, var15, var16, Optional.ofNullable(var10));
       MapDecoration var19 = (MapDecoration)this.decorations.put(var3, var22);
       if (!var22.equals(var19)) {
-         if (var19 != null && var19.type().shouldTrackCount()) {
+         if (var19 != null && ((MapDecorationType)var19.type().value()).trackCount()) {
             --this.trackedDecorationCount;
          }
 
-         if (var1.shouldTrackCount()) {
+         if (((MapDecorationType)var1.value()).trackCount()) {
             ++this.trackedDecorationCount;
          }
 
@@ -439,7 +440,7 @@ public class MapItemSavedData extends SavedData {
 
    public boolean isExplorationMap() {
       for(MapDecoration var2 : this.decorations.values()) {
-         if (var2.type().isExplorationMapElement()) {
+         if (((MapDecorationType)var2.type().value()).explorationMapElement()) {
             return true;
          }
       }
@@ -454,7 +455,7 @@ public class MapItemSavedData extends SavedData {
       for(int var2 = 0; var2 < var1.size(); ++var2) {
          MapDecoration var3 = (MapDecoration)var1.get(var2);
          this.decorations.put("icon-" + var2, var3);
-         if (var3.type().shouldTrackCount()) {
+         if (((MapDecorationType)var3.type().value()).trackCount()) {
             ++this.trackedDecorationCount;
          }
       }

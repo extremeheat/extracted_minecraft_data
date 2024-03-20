@@ -11,7 +11,8 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 public record InvertedLootItemCondition(LootItemCondition b) implements LootItemCondition {
    private final LootItemCondition term;
    public static final Codec<InvertedLootItemCondition> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(LootItemConditions.CODEC.fieldOf("term").forGetter(InvertedLootItemCondition::term)).apply(var0, InvertedLootItemCondition::new)
+      var0 -> var0.group(LootItemConditions.DIRECT_CODEC.fieldOf("term").forGetter(InvertedLootItemCondition::term))
+            .apply(var0, InvertedLootItemCondition::new)
    );
 
    public InvertedLootItemCondition(LootItemCondition var1) {

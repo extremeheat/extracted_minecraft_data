@@ -6,7 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import java.util.stream.Stream;
 import net.minecraft.core.Holder;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -39,7 +39,7 @@ public class SmithingTrimRecipe implements SmithingRecipe {
    }
 
    @Override
-   public ItemStack assemble(Container var1, RegistryAccess var2) {
+   public ItemStack assemble(Container var1, HolderLookup.Provider var2) {
       ItemStack var3 = var1.getItem(1);
       if (this.base.test(var3)) {
          Optional var4 = TrimMaterials.getFromIngredient(var2, var1.getItem(2));
@@ -60,10 +60,10 @@ public class SmithingTrimRecipe implements SmithingRecipe {
    }
 
    @Override
-   public ItemStack getResultItem(RegistryAccess var1) {
+   public ItemStack getResultItem(HolderLookup.Provider var1) {
       ItemStack var2 = new ItemStack(Items.IRON_CHESTPLATE);
-      Optional var3 = var1.registryOrThrow(Registries.TRIM_PATTERN).holders().findFirst();
-      Optional var4 = var1.registryOrThrow(Registries.TRIM_MATERIAL).getHolder(TrimMaterials.REDSTONE);
+      Optional var3 = var1.lookupOrThrow(Registries.TRIM_PATTERN).listElements().findFirst();
+      Optional var4 = var1.lookupOrThrow(Registries.TRIM_MATERIAL).get(TrimMaterials.REDSTONE);
       if (var3.isPresent() && var4.isPresent()) {
          var2.set(DataComponents.TRIM, new ArmorTrim((Holder<TrimMaterial>)var4.get(), (Holder<TrimPattern>)var3.get()));
       }

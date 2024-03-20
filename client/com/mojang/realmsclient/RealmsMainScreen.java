@@ -1085,7 +1085,9 @@ public class RealmsMainScreen extends RealmsScreen {
       public ParentEntry(RealmsServer var2) {
          super();
          this.server = var2;
-         this.tooltip.set(Tooltip.create(Component.translatable("mco.snapshot.parent.tooltip")));
+         if (!var2.expired) {
+            this.tooltip.set(Tooltip.create(Component.translatable("mco.snapshot.parent.tooltip")));
+         }
       }
 
       @Override

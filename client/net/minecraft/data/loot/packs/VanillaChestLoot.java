@@ -4,7 +4,7 @@ import java.util.function.BiConsumer;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.loot.LootTableSubProvider;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.InstrumentTags;
 import net.minecraft.tags.StructureTags;
 import net.minecraft.world.effect.MobEffects;
@@ -12,7 +12,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.saveddata.maps.MapDecoration;
+import net.minecraft.world.level.saveddata.maps.MapDecorationTypes;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -36,7 +36,7 @@ public class VanillaChestLoot implements LootTableSubProvider {
    }
 
    @Override
-   public void generate(HolderLookup.Provider var1, BiConsumer<ResourceLocation, LootTable.Builder> var2) {
+   public void generate(HolderLookup.Provider var1, BiConsumer<ResourceKey<LootTable>, LootTable.Builder> var2) {
       var2.accept(
          BuiltInLootTables.ABANDONED_MINESHAFT,
          LootTable.lootTable()
@@ -294,7 +294,7 @@ public class VanillaChestLoot implements LootTableSubProvider {
                         .apply(
                            ExplorationMapFunction.makeExplorationMap()
                               .setDestination(StructureTags.ON_TREASURE_MAPS)
-                              .setMapDecoration(MapDecoration.Type.RED_X)
+                              .setMapDecoration(MapDecorationTypes.RED_X)
                               .setZoom((byte)1)
                               .setSkipKnownStructures(false)
                         )
@@ -326,7 +326,7 @@ public class VanillaChestLoot implements LootTableSubProvider {
                         .apply(
                            ExplorationMapFunction.makeExplorationMap()
                               .setDestination(StructureTags.ON_TREASURE_MAPS)
-                              .setMapDecoration(MapDecoration.Type.RED_X)
+                              .setMapDecoration(MapDecorationTypes.RED_X)
                               .setZoom((byte)1)
                               .setSkipKnownStructures(false)
                         )
@@ -649,7 +649,7 @@ public class VanillaChestLoot implements LootTableSubProvider {
       spawnerLootTables(var2);
    }
 
-   public static void spawnerLootTables(BiConsumer<ResourceLocation, LootTable.Builder> var0) {
+   public static void spawnerLootTables(BiConsumer<ResourceKey<LootTable>, LootTable.Builder> var0) {
       var0.accept(BuiltInLootTables.SPAWNER_TRIAL_CHAMBER_KEY, LootTable.lootTable());
       var0.accept(BuiltInLootTables.SPAWNER_TRIAL_CHAMBER_CONSUMABLES, LootTable.lootTable());
    }
@@ -711,7 +711,7 @@ public class VanillaChestLoot implements LootTableSubProvider {
                      .apply(
                         ExplorationMapFunction.makeExplorationMap()
                            .setDestination(StructureTags.ON_TREASURE_MAPS)
-                           .setMapDecoration(MapDecoration.Type.RED_X)
+                           .setMapDecoration(MapDecorationTypes.RED_X)
                            .setZoom((byte)1)
                            .setSkipKnownStructures(false)
                      )

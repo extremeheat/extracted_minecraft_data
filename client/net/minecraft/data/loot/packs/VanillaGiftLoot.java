@@ -3,7 +3,7 @@ package net.minecraft.data.loot.packs;
 import java.util.function.BiConsumer;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.loot.LootTableSubProvider;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
@@ -22,7 +22,7 @@ public class VanillaGiftLoot implements LootTableSubProvider {
    }
 
    @Override
-   public void generate(HolderLookup.Provider var1, BiConsumer<ResourceLocation, LootTable.Builder> var2) {
+   public void generate(HolderLookup.Provider var1, BiConsumer<ResourceKey<LootTable>, LootTable.Builder> var2) {
       var2.accept(
          BuiltInLootTables.CAT_MORNING_GIFT,
          LootTable.lootTable()

@@ -139,18 +139,19 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
       public void render(GuiGraphics var1, int var2, int var3, int var4, int var5, int var6, int var7, int var8, boolean var9, float var10) {
          PackCompatibility var11 = this.pack.getCompatibility();
          if (!var11.isCompatible()) {
-            var1.fill(var4 - 1, var3 - 1, var4 + var5 - 3, var3 + var6 + 1, -8978432);
+            int var12 = var4 + var5 - 3 - (this.parent.scrollbarVisible() ? 7 : 0);
+            var1.fill(var4 - 1, var3 - 1, var12, var3 + var6 + 1, -8978432);
          }
 
          var1.blit(this.pack.getIconTexture(), var4, var3, 0.0F, 0.0F, 32, 32, 32, 32);
-         FormattedCharSequence var12 = this.nameDisplayCache;
+         FormattedCharSequence var16 = this.nameDisplayCache;
          MultiLineLabel var13 = this.descriptionDisplayCache;
          if (this.showHoverOverlay() && (this.minecraft.options.touchscreen().get() || var9 || this.parent.getSelected() == this && this.parent.isFocused())) {
             var1.fill(var4, var3, var4 + 32, var3 + 32, -1601138544);
             int var14 = var7 - var4;
             int var15 = var8 - var3;
             if (!this.pack.getCompatibility().isCompatible()) {
-               var12 = this.incompatibleNameDisplayCache;
+               var16 = this.incompatibleNameDisplayCache;
                var13 = this.incompatibleDescriptionDisplayCache;
             }
 
@@ -187,7 +188,7 @@ public class TransferableSelectionList extends ObjectSelectionList<TransferableS
             }
          }
 
-         var1.drawString(this.minecraft.font, var12, var4 + 32 + 2, var3 + 1, 16777215);
+         var1.drawString(this.minecraft.font, var16, var4 + 32 + 2, var3 + 1, 16777215);
          var13.renderLeftAligned(var1, var4 + 32 + 2, var3 + 12, 10, -8355712);
       }
 

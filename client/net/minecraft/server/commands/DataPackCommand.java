@@ -22,6 +22,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackRepository;
+import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
 
@@ -215,7 +216,7 @@ public class DataPackCommand {
          } else {
             FeatureFlagSet var7 = ((CommandSourceStack)var0.getSource()).enabledFeatures();
             FeatureFlagSet var8 = var5.getRequestedFeatures();
-            if (!var2 && var8.isSubsetOf(var7)) {
+            if (!var2 && !var8.isEmpty() && var5.getPackSource() == PackSource.FEATURE) {
                throw ERROR_CANNOT_DISABLE_FEATURE.create(var3);
             } else if (!var8.isSubsetOf(var7)) {
                throw ERROR_PACK_FEATURES_NOT_ENABLED.create(var3, FeatureFlags.printMissingFlags(var7, var8));

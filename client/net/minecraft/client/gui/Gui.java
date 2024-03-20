@@ -581,6 +581,7 @@ public class Gui {
       boolean var5 = true;
       int var6 = (int)(var4 * 183.0F);
       int var7 = var2.guiHeight() - 32 + 3;
+      RenderSystem.enableBlend();
       var2.blitSprite(JUMP_BAR_BACKGROUND_SPRITE, var3, var7, 182, 5);
       if (var1.getJumpCooldown() > 0) {
          var2.blitSprite(JUMP_BAR_COOLDOWN_SPRITE, var3, var7, 182, 5);
@@ -588,6 +589,7 @@ public class Gui {
          var2.blitSprite(JUMP_BAR_PROGRESS_SPRITE, 182, 5, 0, 0, var3, var7, var6, 5);
       }
 
+      RenderSystem.disableBlend();
       this.minecraft.getProfiler().pop();
    }
 
@@ -598,10 +600,13 @@ public class Gui {
          boolean var4 = true;
          int var5 = (int)(this.minecraft.player.experienceProgress * 183.0F);
          int var6 = var1.guiHeight() - 32 + 3;
+         RenderSystem.enableBlend();
          var1.blitSprite(EXPERIENCE_BAR_BACKGROUND_SPRITE, var2, var6, 182, 5);
          if (var5 > 0) {
             var1.blitSprite(EXPERIENCE_BAR_PROGRESS_SPRITE, 182, 5, 0, 0, var2, var6, var5, 5);
          }
+
+         RenderSystem.disableBlend();
       }
 
       this.minecraft.getProfiler().pop();
@@ -630,7 +635,7 @@ public class Gui {
    private void renderSelectedItemName(GuiGraphics var1) {
       this.minecraft.getProfiler().push("selectedItemName");
       if (this.toolHighlightTimer > 0 && !this.lastToolHighlight.isEmpty()) {
-         MutableComponent var2 = Component.empty().append(this.lastToolHighlight.getHoverName()).withStyle(this.lastToolHighlight.getRarity().color);
+         MutableComponent var2 = Component.empty().append(this.lastToolHighlight.getHoverName()).withStyle(this.lastToolHighlight.getRarity().color());
          if (this.lastToolHighlight.has(DataComponents.CUSTOM_NAME)) {
             var2.withStyle(ChatFormatting.ITALIC);
          }
@@ -797,101 +802,78 @@ public class Gui {
          this.lastHealth = var3;
          int var7 = this.displayHealth;
          this.random.setSeed((long)(this.tickCount * 312871));
-         FoodData var8 = var2.getFoodData();
-         int var9 = var8.getFoodLevel();
-         int var10 = var1.guiWidth() / 2 - 91;
-         int var11 = var1.guiWidth() / 2 + 91;
-         int var12 = var1.guiHeight() - 39;
-         float var13 = Math.max((float)var2.getAttributeValue(Attributes.MAX_HEALTH), (float)Math.max(var7, var3));
-         int var14 = Mth.ceil(var2.getAbsorptionAmount());
-         int var15 = Mth.ceil((var13 + (float)var14) / 2.0F / 10.0F);
-         int var16 = Math.max(10 - (var15 - 2), 3);
-         int var17 = var12 - (var15 - 1) * var16 - 10;
-         int var18 = var12 - 10;
-         int var19 = var2.getArmorValue();
-         int var20 = -1;
+         int var8 = var1.guiWidth() / 2 - 91;
+         int var9 = var1.guiWidth() / 2 + 91;
+         int var10 = var1.guiHeight() - 39;
+         float var11 = Math.max((float)var2.getAttributeValue(Attributes.MAX_HEALTH), (float)Math.max(var7, var3));
+         int var12 = Mth.ceil(var2.getAbsorptionAmount());
+         int var13 = Mth.ceil((var11 + (float)var12) / 2.0F / 10.0F);
+         int var14 = Math.max(10 - (var13 - 2), 3);
+         int var15 = var10 - 10;
+         int var16 = -1;
          if (var2.hasEffect(MobEffects.REGENERATION)) {
-            var20 = this.tickCount % Mth.ceil(var13 + 5.0F);
+            var16 = this.tickCount % Mth.ceil(var11 + 5.0F);
          }
 
          this.minecraft.getProfiler().push("armor");
-
-         for(int var21 = 0; var21 < 10; ++var21) {
-            if (var19 > 0) {
-               int var22 = var10 + var21 * 8;
-               if (var21 * 2 + 1 < var19) {
-                  var1.blitSprite(ARMOR_FULL_SPRITE, var22, var17, 9, 9);
-               }
-
-               if (var21 * 2 + 1 == var19) {
-                  var1.blitSprite(ARMOR_HALF_SPRITE, var22, var17, 9, 9);
-               }
-
-               if (var21 * 2 + 1 > var19) {
-                  var1.blitSprite(ARMOR_EMPTY_SPRITE, var22, var17, 9, 9);
-               }
-            }
-         }
-
+         renderArmor(var1, var2, var10, var13, var14, var8);
          this.minecraft.getProfiler().popPush("health");
-         this.renderHearts(var1, var2, var10, var12, var16, var20, var13, var3, var7, var14, var4);
-         LivingEntity var30 = this.getPlayerVehicleWithHealth();
-         int var31 = this.getVehicleMaxHearts(var30);
-         if (var31 == 0) {
+         this.renderHearts(var1, var2, var8, var10, var14, var16, var11, var3, var7, var12, var4);
+         LivingEntity var17 = this.getPlayerVehicleWithHealth();
+         int var18 = this.getVehicleMaxHearts(var17);
+         if (var18 == 0) {
             this.minecraft.getProfiler().popPush("food");
-
-            for(int var23 = 0; var23 < 10; ++var23) {
-               int var24 = var12;
-               ResourceLocation var25;
-               ResourceLocation var26;
-               ResourceLocation var27;
-               if (var2.hasEffect(MobEffects.HUNGER)) {
-                  var25 = FOOD_EMPTY_HUNGER_SPRITE;
-                  var26 = FOOD_HALF_HUNGER_SPRITE;
-                  var27 = FOOD_FULL_HUNGER_SPRITE;
-               } else {
-                  var25 = FOOD_EMPTY_SPRITE;
-                  var26 = FOOD_HALF_SPRITE;
-                  var27 = FOOD_FULL_SPRITE;
-               }
-
-               if (var2.getFoodData().getSaturationLevel() <= 0.0F && this.tickCount % (var9 * 3 + 1) == 0) {
-                  var24 = var12 + (this.random.nextInt(3) - 1);
-               }
-
-               int var28 = var11 - var23 * 8 - 9;
-               var1.blitSprite(var25, var28, var24, 9, 9);
-               if (var23 * 2 + 1 < var9) {
-                  var1.blitSprite(var27, var28, var24, 9, 9);
-               }
-
-               if (var23 * 2 + 1 == var9) {
-                  var1.blitSprite(var26, var28, var24, 9, 9);
-               }
-            }
-
-            var18 -= 10;
+            this.renderFood(var1, var2, var10, var9);
+            var15 -= 10;
          }
 
          this.minecraft.getProfiler().popPush("air");
-         int var32 = var2.getMaxAirSupply();
-         int var33 = Math.min(var2.getAirSupply(), var32);
-         if (var2.isEyeInFluid(FluidTags.WATER) || var33 < var32) {
-            int var34 = this.getVisibleVehicleHeartRows(var31) - 1;
-            var18 -= var34 * 10;
-            int var35 = Mth.ceil((double)(var33 - 2) * 10.0 / (double)var32);
-            int var36 = Mth.ceil((double)var33 * 10.0 / (double)var32) - var35;
+         int var19 = var2.getMaxAirSupply();
+         int var20 = Math.min(var2.getAirSupply(), var19);
+         if (var2.isEyeInFluid(FluidTags.WATER) || var20 < var19) {
+            int var21 = this.getVisibleVehicleHeartRows(var18) - 1;
+            var15 -= var21 * 10;
+            int var22 = Mth.ceil((double)(var20 - 2) * 10.0 / (double)var19);
+            int var23 = Mth.ceil((double)var20 * 10.0 / (double)var19) - var22;
+            RenderSystem.enableBlend();
 
-            for(int var37 = 0; var37 < var35 + var36; ++var37) {
-               if (var37 < var35) {
-                  var1.blitSprite(AIR_SPRITE, var11 - var37 * 8 - 9, var18, 9, 9);
+            for(int var24 = 0; var24 < var22 + var23; ++var24) {
+               if (var24 < var22) {
+                  var1.blitSprite(AIR_SPRITE, var9 - var24 * 8 - 9, var15, 9, 9);
                } else {
-                  var1.blitSprite(AIR_BURSTING_SPRITE, var11 - var37 * 8 - 9, var18, 9, 9);
+                  var1.blitSprite(AIR_BURSTING_SPRITE, var9 - var24 * 8 - 9, var15, 9, 9);
                }
             }
+
+            RenderSystem.disableBlend();
          }
 
          this.minecraft.getProfiler().pop();
+      }
+   }
+
+   private static void renderArmor(GuiGraphics var0, Player var1, int var2, int var3, int var4, int var5) {
+      int var6 = var1.getArmorValue();
+      if (var6 > 0) {
+         RenderSystem.enableBlend();
+         int var7 = var2 - (var3 - 1) * var4 - 10;
+
+         for(int var8 = 0; var8 < 10; ++var8) {
+            int var9 = var5 + var8 * 8;
+            if (var8 * 2 + 1 < var6) {
+               var0.blitSprite(ARMOR_FULL_SPRITE, var9, var7, 9, 9);
+            }
+
+            if (var8 * 2 + 1 == var6) {
+               var0.blitSprite(ARMOR_HALF_SPRITE, var9, var7, 9, 9);
+            }
+
+            if (var8 * 2 + 1 > var6) {
+               var0.blitSprite(ARMOR_EMPTY_SPRITE, var9, var7, 9, 9);
+            }
+         }
+
+         RenderSystem.disableBlend();
       }
    }
 
@@ -939,7 +921,47 @@ public class Gui {
    }
 
    private void renderHeart(GuiGraphics var1, Gui.HeartType var2, int var3, int var4, boolean var5, boolean var6, boolean var7) {
+      RenderSystem.enableBlend();
       var1.blitSprite(var2.getSprite(var5, var7, var6), var3, var4, 9, 9);
+      RenderSystem.disableBlend();
+   }
+
+   private void renderFood(GuiGraphics var1, Player var2, int var3, int var4) {
+      FoodData var5 = var2.getFoodData();
+      int var6 = var5.getFoodLevel();
+      RenderSystem.enableBlend();
+
+      for(int var7 = 0; var7 < 10; ++var7) {
+         int var8 = var3;
+         ResourceLocation var9;
+         ResourceLocation var10;
+         ResourceLocation var11;
+         if (var2.hasEffect(MobEffects.HUNGER)) {
+            var9 = FOOD_EMPTY_HUNGER_SPRITE;
+            var10 = FOOD_HALF_HUNGER_SPRITE;
+            var11 = FOOD_FULL_HUNGER_SPRITE;
+         } else {
+            var9 = FOOD_EMPTY_SPRITE;
+            var10 = FOOD_HALF_SPRITE;
+            var11 = FOOD_FULL_SPRITE;
+         }
+
+         if (var2.getFoodData().getSaturationLevel() <= 0.0F && this.tickCount % (var6 * 3 + 1) == 0) {
+            var8 = var3 + (this.random.nextInt(3) - 1);
+         }
+
+         int var12 = var4 - var7 * 8 - 9;
+         var1.blitSprite(var9, var12, var8, 9, 9);
+         if (var7 * 2 + 1 < var6) {
+            var1.blitSprite(var11, var12, var8, 9, 9);
+         }
+
+         if (var7 * 2 + 1 == var6) {
+            var1.blitSprite(var10, var12, var8, 9, 9);
+         }
+      }
+
+      RenderSystem.disableBlend();
    }
 
    private void renderVehicleHealth(GuiGraphics var1) {
@@ -952,8 +974,10 @@ public class Gui {
             int var5 = var1.guiHeight() - 39;
             int var6 = var1.guiWidth() / 2 + 91;
             int var7 = var5;
+            int var8 = 0;
+            RenderSystem.enableBlend();
 
-            for(int var8 = 0; var3 > 0; var8 += 20) {
+            while(var3 > 0) {
                int var9 = Math.min(var3, 10);
                var3 -= var9;
 
@@ -970,7 +994,10 @@ public class Gui {
                }
 
                var7 -= 10;
+               var8 += 20;
             }
+
+            RenderSystem.disableBlend();
          }
       }
    }

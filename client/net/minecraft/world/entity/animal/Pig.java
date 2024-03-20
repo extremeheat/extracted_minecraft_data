@@ -12,6 +12,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -42,7 +43,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.DismountHelper;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -51,7 +51,6 @@ import net.minecraft.world.phys.Vec3;
 public class Pig extends Animal implements ItemSteerable, Saddleable {
    private static final EntityDataAccessor<Boolean> DATA_SADDLE_ID = SynchedEntityData.defineId(Pig.class, EntityDataSerializers.BOOLEAN);
    private static final EntityDataAccessor<Integer> DATA_BOOST_TIME = SynchedEntityData.defineId(Pig.class, EntityDataSerializers.INT);
-   private static final Ingredient FOOD_ITEMS = Ingredient.of(Items.CARROT, Items.POTATO, Items.BEETROOT);
    private final ItemBasedSteering steering = new ItemBasedSteering(this.entityData, DATA_BOOST_TIME, DATA_SADDLE_ID);
 
    public Pig(EntityType<? extends Pig> var1, Level var2) {
@@ -63,8 +62,8 @@ public class Pig extends Animal implements ItemSteerable, Saddleable {
       this.goalSelector.addGoal(0, new FloatGoal(this));
       this.goalSelector.addGoal(1, new PanicGoal(this, 1.25));
       this.goalSelector.addGoal(3, new BreedGoal(this, 1.0));
-      this.goalSelector.addGoal(4, new TemptGoal(this, 1.2, Ingredient.of(Items.CARROT_ON_A_STICK), false));
-      this.goalSelector.addGoal(4, new TemptGoal(this, 1.2, FOOD_ITEMS, false));
+      this.goalSelector.addGoal(4, new TemptGoal(this, 1.2, var0 -> var0.is(Items.CARROT_ON_A_STICK), false));
+      this.goalSelector.addGoal(4, new TemptGoal(this, 1.2, var0 -> var0.is(ItemTags.PIG_FOOD), false));
       this.goalSelector.addGoal(5, new FollowParentGoal(this, 1.1));
       this.goalSelector.addGoal(6, new WaterAvoidingRandomStrollGoal(this, 1.0));
       this.goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 6.0F));
@@ -269,7 +268,7 @@ public class Pig extends Animal implements ItemSteerable, Saddleable {
 
    @Override
    public boolean isFood(ItemStack var1) {
-      return FOOD_ITEMS.test(var1);
+      return var1.is(ItemTags.PIG_FOOD);
    }
 
    @Override

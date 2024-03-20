@@ -1,20 +1,26 @@
 package net.minecraft.world.entity.animal;
 
+import java.util.Optional;
+import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.CatVariantTags;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.StructureTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
@@ -53,12 +59,11 @@ import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.ai.goal.target.NonTameRandomTargetGoal;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.block.BedBlock;
@@ -70,15 +75,15 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.AABB;
 
-public class Cat extends TamableAnimal implements VariantHolder<CatVariant> {
+public class Cat extends TamableAnimal implements VariantHolder<Holder<CatVariant>> {
    public static final double TEMPT_SPEED_MOD = 0.6;
    public static final double WALK_SPEED_MOD = 0.8;
    public static final double SPRINT_SPEED_MOD = 1.33;
-   private static final Ingredient TEMPT_INGREDIENT = Ingredient.of(Items.COD, Items.SALMON);
-   private static final EntityDataAccessor<CatVariant> DATA_VARIANT_ID = SynchedEntityData.defineId(Cat.class, EntityDataSerializers.CAT_VARIANT);
+   private static final EntityDataAccessor<Holder<CatVariant>> DATA_VARIANT_ID = SynchedEntityData.defineId(Cat.class, EntityDataSerializers.CAT_VARIANT);
    private static final EntityDataAccessor<Boolean> IS_LYING = SynchedEntityData.defineId(Cat.class, EntityDataSerializers.BOOLEAN);
    private static final EntityDataAccessor<Boolean> RELAX_STATE_ONE = SynchedEntityData.defineId(Cat.class, EntityDataSerializers.BOOLEAN);
    private static final EntityDataAccessor<Integer> DATA_COLLAR_COLOR = SynchedEntityData.defineId(Cat.class, EntityDataSerializers.INT);
+   private static final ResourceKey<CatVariant> DEFAULT_VARIANT = CatVariant.BLACK;
    @Nullable
    private Cat.CatAvoidEntityGoal<Player> avoidPlayersGoal;
    @Nullable
@@ -95,13 +100,13 @@ public class Cat extends TamableAnimal implements VariantHolder<CatVariant> {
       this.reassessTameGoals();
    }
 
-   public ResourceLocation getResourceLocation() {
-      return this.getVariant().texture();
+   public ResourceLocation getTextureId() {
+      return ((CatVariant)this.getVariant().value()).texture();
    }
 
    @Override
    protected void registerGoals() {
-      this.temptGoal = new Cat.CatTemptGoal(this, 0.6, TEMPT_INGREDIENT, true);
+      this.temptGoal = new Cat.CatTemptGoal(this, 0.6, var0 -> var0.is(ItemTags.CAT_FOOD), true);
       this.goalSelector.addGoal(1, new FloatGoal(this));
       this.goalSelector.addGoal(1, new PanicGoal(this, 1.5));
       this.goalSelector.addGoal(2, new SitWhenOrderedToGoal(this));
@@ -119,11 +124,11 @@ public class Cat extends TamableAnimal implements VariantHolder<CatVariant> {
       this.targetSelector.addGoal(1, new NonTameRandomTargetGoal<>(this, Turtle.class, false, Turtle.BABY_ON_LAND_SELECTOR));
    }
 
-   public CatVariant getVariant() {
+   public Holder<CatVariant> getVariant() {
       return this.entityData.get(DATA_VARIANT_ID);
    }
 
-   public void setVariant(CatVariant var1) {
+   public void setVariant(Holder<CatVariant> var1) {
       this.entityData.set(DATA_VARIANT_ID, var1);
    }
 
@@ -154,7 +159,7 @@ public class Cat extends TamableAnimal implements VariantHolder<CatVariant> {
    @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
-      var1.define(DATA_VARIANT_ID, (CatVariant)BuiltInRegistries.CAT_VARIANT.getOrThrow(CatVariant.BLACK));
+      var1.define(DATA_VARIANT_ID, BuiltInRegistries.CAT_VARIANT.getHolderOrThrow(DEFAULT_VARIANT));
       var1.define(IS_LYING, false);
       var1.define(RELAX_STATE_ONE, false);
       var1.define(DATA_COLLAR_COLOR, DyeColor.RED.getId());
@@ -163,18 +168,17 @@ public class Cat extends TamableAnimal implements VariantHolder<CatVariant> {
    @Override
    public void addAdditionalSaveData(CompoundTag var1) {
       super.addAdditionalSaveData(var1);
-      var1.putString("variant", BuiltInRegistries.CAT_VARIANT.getKey(this.getVariant()).toString());
+      var1.putString("variant", this.getVariant().unwrapKey().orElse(DEFAULT_VARIANT).location().toString());
       var1.putByte("CollarColor", (byte)this.getCollarColor().getId());
    }
 
    @Override
    public void readAdditionalSaveData(CompoundTag var1) {
       super.readAdditionalSaveData(var1);
-      CatVariant var2 = (CatVariant)BuiltInRegistries.CAT_VARIANT.get(ResourceLocation.tryParse(var1.getString("variant")));
-      if (var2 != null) {
-         this.setVariant(var2);
-      }
-
+      Optional.ofNullable(ResourceLocation.tryParse(var1.getString("variant")))
+         .map(var0 -> ResourceKey.create(Registries.CAT_VARIANT, var0))
+         .flatMap(BuiltInRegistries.CAT_VARIANT::getHolder)
+         .ifPresent(this::setVariant);
       if (var1.contains("CollarColor", 99)) {
          this.setCollarColor(DyeColor.byId(var1.getInt("CollarColor")));
       }
@@ -351,10 +355,10 @@ public class Cat extends TamableAnimal implements VariantHolder<CatVariant> {
       var4 = super.finalizeSpawn(var1, var2, var3, var4);
       boolean var5 = var1.getMoonBrightness() > 0.9F;
       TagKey var6 = var5 ? CatVariantTags.FULL_MOON_SPAWNS : CatVariantTags.DEFAULT_SPAWNS;
-      BuiltInRegistries.CAT_VARIANT.getRandomElementOf(var6, var1.getRandom()).ifPresent(var1x -> this.setVariant((CatVariant)var1x.value()));
+      BuiltInRegistries.CAT_VARIANT.getRandomElementOf(var6, var1.getRandom()).ifPresent(this::setVariant);
       ServerLevel var7 = var1.getLevel();
       if (var7.structureManager().getStructureWithPieceAt(this.blockPosition(), StructureTags.CATS_SPAWN_AS_BLACK).isValid()) {
-         this.setVariant((CatVariant)BuiltInRegistries.CAT_VARIANT.getOrThrow(CatVariant.ALL_BLACK));
+         this.setVariant(BuiltInRegistries.CAT_VARIANT.getHolderOrThrow(CatVariant.ALL_BLACK));
          this.setPersistenceRequired();
       }
 
@@ -380,10 +384,11 @@ public class Cat extends TamableAnimal implements VariantHolder<CatVariant> {
 
                   return InteractionResult.sidedSuccess(this.level().isClientSide());
                }
-            } else if (var4.isEdible() && this.isFood(var3) && this.getHealth() < this.getMaxHealth()) {
+            } else if (this.isFood(var3) && this.getHealth() < this.getMaxHealth()) {
                if (!this.level().isClientSide()) {
                   this.usePlayerItem(var1, var2, var3);
-                  this.heal((float)var4.getFoodProperties().getNutrition());
+                  FoodProperties var9 = var3.get(DataComponents.FOOD);
+                  this.heal(var9 != null ? (float)var9.nutrition() : 1.0F);
                }
 
                return InteractionResult.sidedSuccess(this.level().isClientSide());
@@ -417,7 +422,7 @@ public class Cat extends TamableAnimal implements VariantHolder<CatVariant> {
 
    @Override
    public boolean isFood(ItemStack var1) {
-      return TEMPT_INGREDIENT.test(var1);
+      return var1.is(ItemTags.CAT_FOOD);
    }
 
    @Override
@@ -569,7 +574,7 @@ public class Cat extends TamableAnimal implements VariantHolder<CatVariant> {
                (double)(var2.getX() + var1.nextInt(11) - 5), (double)(var2.getY() + var1.nextInt(5) - 2), (double)(var2.getZ() + var1.nextInt(11) - 5), false
             );
          var2.set(this.cat.blockPosition());
-         LootTable var3 = this.cat.level().getServer().getLootData().getLootTable(BuiltInLootTables.CAT_MORNING_GIFT);
+         LootTable var3 = this.cat.level().getServer().reloadableRegistries().getLootTable(BuiltInLootTables.CAT_MORNING_GIFT);
          LootParams var4 = new LootParams.Builder((ServerLevel)this.cat.level())
             .withParameter(LootContextParams.ORIGIN, this.cat.position())
             .withParameter(LootContextParams.THIS_ENTITY, this.cat)
@@ -616,7 +621,7 @@ public class Cat extends TamableAnimal implements VariantHolder<CatVariant> {
       private Player selectedPlayer;
       private final Cat cat;
 
-      public CatTemptGoal(Cat var1, double var2, Ingredient var4, boolean var5) {
+      public CatTemptGoal(Cat var1, double var2, Predicate<ItemStack> var4, boolean var5) {
          super(var1, var2, var4, var5);
          this.cat = var1;
       }

@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableSet;
 import com.mojang.datafixers.util.Pair;
 import java.util.function.Predicate;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.entity.EntityType;
@@ -32,7 +33,7 @@ import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.ai.sensing.Sensor;
 import net.minecraft.world.entity.ai.sensing.SensorType;
 import net.minecraft.world.entity.schedule.Activity;
-import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.ItemStack;
 
 public class CamelAi {
    private static final float SPEED_MULTIPLIER_WHEN_PANICKING = 4.0F;
@@ -131,8 +132,8 @@ public class CamelAi {
       var0.getBrain().setActiveActivityToFirstValid(ImmutableList.of(Activity.IDLE));
    }
 
-   public static Ingredient getTemptations() {
-      return Camel.TEMPTATION_ITEM;
+   public static Predicate<ItemStack> getTemptations() {
+      return var0 -> var0.is(ItemTags.CAMEL_FOOD);
    }
 
    public static class CamelPanic extends AnimalPanic<Camel> {

@@ -635,12 +635,8 @@ public abstract class AbstractContainerMenu {
             Slot var11 = this.slots.get(var6);
             ItemStack var12 = var11.getItem();
             if (var12.isEmpty() && var11.mayPlace(var1)) {
-               if (var1.getCount() > var11.getMaxStackSize()) {
-                  var11.setByPlayer(var1.split(var11.getMaxStackSize()));
-               } else {
-                  var11.setByPlayer(var1.split(var1.getCount()));
-               }
-
+               int var13 = var11.getMaxStackSize(var1);
+               var11.setByPlayer(var1.split(Math.min(var1.getCount(), var13)));
                var11.setChanged();
                var5 = true;
                break;
@@ -719,7 +715,7 @@ public abstract class AbstractContainerMenu {
          for(int var2 = 0; var2 < var0.getContainerSize(); ++var2) {
             ItemStack var3 = var0.getItem(var2);
             if (!var3.isEmpty()) {
-               var1 += (float)var3.getCount() / (float)Math.min(var0.getMaxStackSize(), var3.getMaxStackSize());
+               var1 += (float)var3.getCount() / (float)var0.getMaxStackSize(var3);
             }
          }
 

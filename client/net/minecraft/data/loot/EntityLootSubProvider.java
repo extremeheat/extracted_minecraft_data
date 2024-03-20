@@ -2,7 +2,6 @@ package net.minecraft.data.loot;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
@@ -17,7 +16,7 @@ import net.minecraft.advancements.critereon.EntitySubPredicates;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.animal.FrogVariant;
@@ -39,7 +38,7 @@ public abstract class EntityLootSubProvider implements LootTableSubProvider {
    );
    private final FeatureFlagSet allowed;
    private final FeatureFlagSet required;
-   private final Map<EntityType<?>, Map<ResourceLocation, LootTable.Builder>> map = Maps.newHashMap();
+   private final Map<EntityType<?>, Map<ResourceKey<LootTable>, LootTable.Builder>> map = Maps.newHashMap();
 
    protected EntityLootSubProvider(FeatureFlagSet var1) {
       this(var1, var1);
@@ -60,9 +59,9 @@ public abstract class EntityLootSubProvider implements LootTableSubProvider {
    public abstract void generate();
 
    @Override
-   public void generate(HolderLookup.Provider var1, BiConsumer<ResourceLocation, LootTable.Builder> var2) {
+   public void generate(HolderLookup.Provider var1, BiConsumer<ResourceKey<LootTable>, LootTable.Builder> var2) {
       this.generate();
-      HashSet var3 = Sets.newHashSet();
+      HashSet var3 = new HashSet();
       BuiltInRegistries.ENTITY_TYPE
          .holders()
          .forEach(
@@ -71,8 +70,8 @@ public abstract class EntityLootSubProvider implements LootTableSubProvider {
                if (var4.isEnabled(this.allowed)) {
                   if (canHaveLootTable(var4)) {
                      Map var5 = this.map.remove(var4);
-                     ResourceLocation var6 = var4.getDefaultLootTable();
-                     if (!var6.equals(BuiltInLootTables.EMPTY) && var4.isEnabled(this.required) && (var5 == null || !var5.containsKey(var6))) {
+                     ResourceKey var6 = var4.getDefaultLootTable();
+                     if (var6 != BuiltInLootTables.EMPTY && var4.isEnabled(this.required) && (var5 == null || !var5.containsKey(var6))) {
                         throw new IllegalStateException(String.format(Locale.ROOT, "Missing loottable '%s' for '%s'", var6, var3x.key().location()));
                      }
       
@@ -92,7 +91,7 @@ public abstract class EntityLootSubProvider implements LootTableSubProvider {
                            String.format(
                               Locale.ROOT,
                               "Weird loottables '%s' for '%s', not a LivingEntity so should not have loot",
-                              var7.keySet().stream().map(ResourceLocation::toString).collect(Collectors.joining(",")),
+                              var7.keySet().stream().map(var0 -> var0.location().toString()).collect(Collectors.joining(",")),
                               var3x.key().location()
                            )
                         );
@@ -114,10 +113,14 @@ public abstract class EntityLootSubProvider implements LootTableSubProvider {
       return DamageSourceCondition.hasDamageSource(DamageSourcePredicate.Builder.damageType().source(EntityPredicate.Builder.entity().of(EntityType.FROG)));
    }
 
-   protected LootItemCondition.Builder killedByFrogVariant(FrogVariant var1) {
+   protected LootItemCondition.Builder killedByFrogVariant(ResourceKey<FrogVariant> var1) {
       return DamageSourceCondition.hasDamageSource(
          DamageSourcePredicate.Builder.damageType()
-            .source(EntityPredicate.Builder.entity().of(EntityType.FROG).subPredicate(EntitySubPredicates.variant(var1)))
+            .source(
+               EntityPredicate.Builder.entity()
+                  .of(EntityType.FROG)
+                  .subPredicate(EntitySubPredicates.frogVariant(BuiltInRegistries.FROG_VARIANT.getHolderOrThrow(var1)))
+            )
       );
    }
 
@@ -125,7 +128,7 @@ public abstract class EntityLootSubProvider implements LootTableSubProvider {
       this.add(var1, var1.getDefaultLootTable(), var2);
    }
 
-   protected void add(EntityType<?> var1, ResourceLocation var2, LootTable.Builder var3) {
+   protected void add(EntityType<?> var1, ResourceKey<LootTable> var2, LootTable.Builder var3) {
       this.map.computeIfAbsent(var1, var0 -> new HashMap()).put(var2, var3);
    }
 }

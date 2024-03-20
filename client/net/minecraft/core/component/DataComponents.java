@@ -14,9 +14,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Unit;
 import net.minecraft.world.LockCode;
+import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.AdventureModePredicate;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Instrument;
+import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.armortrim.ArmorTrim;
 import net.minecraft.world.item.component.BlockItemStateProperties;
@@ -38,6 +40,7 @@ import net.minecraft.world.item.component.MapPostProcessing;
 import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.item.component.SeededContainerLoot;
 import net.minecraft.world.item.component.SuspiciousStewEffects;
+import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.item.component.Unbreakable;
 import net.minecraft.world.item.component.WritableBookContent;
 import net.minecraft.world.item.component.WrittenBookContent;
@@ -49,6 +52,12 @@ import net.minecraft.world.level.saveddata.maps.MapId;
 
 public class DataComponents {
    public static final DataComponentType<CustomData> CUSTOM_DATA = register("custom_data", var0 -> var0.persistent(CustomData.CODEC));
+   public static final DataComponentType<Integer> MAX_STACK_SIZE = register(
+      "max_stack_size", var0 -> var0.persistent(ExtraCodecs.intRange(1, 99)).networkSynchronized(ByteBufCodecs.VAR_INT)
+   );
+   public static final DataComponentType<Integer> MAX_DAMAGE = register(
+      "max_damage", var0 -> var0.persistent(ExtraCodecs.POSITIVE_INT).networkSynchronized(ByteBufCodecs.VAR_INT)
+   );
    public static final DataComponentType<Integer> DAMAGE = register(
       "damage", var0 -> var0.persistent(ExtraCodecs.NON_NEGATIVE_INT).networkSynchronized(ByteBufCodecs.VAR_INT)
    );
@@ -59,6 +68,7 @@ public class DataComponents {
       "custom_name", var0 -> var0.persistent(ComponentSerialization.FLAT_CODEC).networkSynchronized(ComponentSerialization.STREAM_CODEC)
    );
    public static final DataComponentType<ItemLore> LORE = register("lore", var0 -> var0.persistent(ItemLore.CODEC).networkSynchronized(ItemLore.STREAM_CODEC));
+   public static final DataComponentType<Rarity> RARITY = register("rarity", var0 -> var0.persistent(Rarity.CODEC).networkSynchronized(Rarity.STREAM_CODEC));
    public static final DataComponentType<ItemEnchantments> ENCHANTMENTS = register(
       "enchantments", var0 -> var0.persistent(ItemEnchantments.CODEC).networkSynchronized(ItemEnchantments.STREAM_CODEC)
    );
@@ -77,6 +87,9 @@ public class DataComponents {
    public static final DataComponentType<Unit> HIDE_ADDITIONAL_TOOLTIP = register(
       "hide_additional_tooltip", var0 -> var0.persistent(Codec.unit(Unit.INSTANCE)).networkSynchronized(StreamCodec.unit(Unit.INSTANCE))
    );
+   public static final DataComponentType<Unit> HIDE_TOOLTIP = register(
+      "hide_tooltip", var0 -> var0.persistent(Codec.unit(Unit.INSTANCE)).networkSynchronized(StreamCodec.unit(Unit.INSTANCE))
+   );
    public static final DataComponentType<Integer> REPAIR_COST = register(
       "repair_cost", var0 -> var0.persistent(ExtraCodecs.NON_NEGATIVE_INT).networkSynchronized(ByteBufCodecs.VAR_INT)
    );
@@ -87,6 +100,13 @@ public class DataComponents {
       "enchantment_glint_override", var0 -> var0.persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL)
    );
    public static final DataComponentType<Unit> INTANGIBLE_PROJECTILE = register("intangible_projectile", var0 -> var0.persistent(Codec.unit(Unit.INSTANCE)));
+   public static final DataComponentType<FoodProperties> FOOD = register(
+      "food", var0 -> var0.persistent(FoodProperties.DIRECT_CODEC).networkSynchronized(FoodProperties.DIRECT_STREAM_CODEC)
+   );
+   public static final DataComponentType<Unit> FIRE_RESISTANT = register(
+      "fire_resistant", var0 -> var0.persistent(Codec.unit(Unit.INSTANCE)).networkSynchronized(StreamCodec.unit(Unit.INSTANCE))
+   );
+   public static final DataComponentType<Tool> TOOL = register("tool", var0 -> var0.persistent(Tool.CODEC).networkSynchronized(Tool.STREAM_CODEC));
    public static final DataComponentType<ItemEnchantments> STORED_ENCHANTMENTS = register(
       "stored_enchantments", var0 -> var0.persistent(ItemEnchantments.CODEC).networkSynchronized(ItemEnchantments.STREAM_CODEC)
    );
@@ -173,10 +193,12 @@ public class DataComponents {
    public static final DataComponentType<LockCode> LOCK = register("lock", var0 -> var0.persistent(LockCode.CODEC));
    public static final DataComponentType<SeededContainerLoot> CONTAINER_LOOT = register("container_loot", var0 -> var0.persistent(SeededContainerLoot.CODEC));
    public static final DataComponentMap COMMON_ITEM_COMPONENTS = DataComponentMap.builder()
+      .set(MAX_STACK_SIZE, 64)
       .set(LORE, ItemLore.EMPTY)
       .set(ENCHANTMENTS, ItemEnchantments.EMPTY)
       .set(REPAIR_COST, 0)
       .set(ATTRIBUTE_MODIFIERS, ItemAttributeModifiers.EMPTY)
+      .set(RARITY, Rarity.COMMON)
       .build();
 
    public DataComponents() {

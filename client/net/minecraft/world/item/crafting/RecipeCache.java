@@ -19,7 +19,7 @@ public class RecipeCache {
       this.entries = new RecipeCache.Entry[var1];
    }
 
-   public Optional<CraftingRecipe> get(Level var1, CraftingContainer var2) {
+   public Optional<RecipeHolder<CraftingRecipe>> get(Level var1, CraftingContainer var2) {
       if (var2.isEmpty()) {
          return Optional.empty();
       } else {
@@ -45,10 +45,10 @@ public class RecipeCache {
       }
    }
 
-   private Optional<CraftingRecipe> compute(CraftingContainer var1, Level var2) {
+   private Optional<RecipeHolder<CraftingRecipe>> compute(CraftingContainer var1, Level var2) {
       Optional var3 = var2.getRecipeManager().getRecipeFor(RecipeType.CRAFTING, var1, var2);
-      this.insert(var1.getItems(), var3.map(RecipeHolder::value).orElse(null));
-      return var3.map(RecipeHolder::value);
+      this.insert(var1.getItems(), (RecipeHolder<CraftingRecipe>)var3.orElse(null));
+      return var3;
    }
 
    private void moveEntryToFront(int var1) {
@@ -59,7 +59,7 @@ public class RecipeCache {
       }
    }
 
-   private void insert(List<ItemStack> var1, @Nullable CraftingRecipe var2) {
+   private void insert(List<ItemStack> var1, @Nullable RecipeHolder<CraftingRecipe> var2) {
       NonNullList var3 = NonNullList.withSize(var1.size(), ItemStack.EMPTY);
 
       for(int var4 = 0; var4 < var1.size(); ++var4) {
@@ -70,12 +70,12 @@ public class RecipeCache {
       this.entries[0] = new RecipeCache.Entry(var3, var2);
    }
 
-   static record Entry(NonNullList<ItemStack> a, @Nullable CraftingRecipe b) {
+   static record Entry(NonNullList<ItemStack> a, @Nullable RecipeHolder<CraftingRecipe> b) {
       private final NonNullList<ItemStack> key;
       @Nullable
-      private final CraftingRecipe value;
+      private final RecipeHolder<CraftingRecipe> value;
 
-      Entry(NonNullList<ItemStack> var1, @Nullable CraftingRecipe var2) {
+      Entry(NonNullList<ItemStack> var1, @Nullable RecipeHolder<CraftingRecipe> var2) {
          super();
          this.key = var1;
          this.value = var2;

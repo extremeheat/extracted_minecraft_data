@@ -5,8 +5,8 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ExtraCodecs;
@@ -45,7 +45,7 @@ public class ShapelessRecipe implements CraftingRecipe {
    }
 
    @Override
-   public ItemStack getResultItem(RegistryAccess var1) {
+   public ItemStack getResultItem(HolderLookup.Provider var1) {
       return this.result;
    }
 
@@ -69,7 +69,7 @@ public class ShapelessRecipe implements CraftingRecipe {
       return var4 == this.ingredients.size() && var3.canCraft(this, null);
    }
 
-   public ItemStack assemble(CraftingContainer var1, RegistryAccess var2) {
+   public ItemStack assemble(CraftingContainer var1, HolderLookup.Provider var2) {
       return this.result.copy();
    }
 

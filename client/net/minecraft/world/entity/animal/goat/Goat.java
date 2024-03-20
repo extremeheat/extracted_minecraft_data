@@ -18,6 +18,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.InstrumentTags;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -202,6 +203,11 @@ public class Goat extends Animal {
    @Override
    public SoundEvent getEatingSound(ItemStack var1) {
       return this.isScreamingGoat() ? SoundEvents.GOAT_SCREAMING_EAT : SoundEvents.GOAT_EAT;
+   }
+
+   @Override
+   public boolean isFood(ItemStack var1) {
+      return var1.is(ItemTags.GOAT_FOOD);
    }
 
    @Override

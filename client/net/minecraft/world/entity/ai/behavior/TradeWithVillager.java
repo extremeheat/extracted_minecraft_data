@@ -51,7 +51,7 @@ public class TradeWithVillager extends Behavior<Villager> {
          }
 
          if (var5.getVillagerData().getProfession() == VillagerProfession.FARMER
-            && var2.getInventory().countItem(Items.WHEAT) > Items.WHEAT.getMaxStackSize() / 2) {
+            && var2.getInventory().countItem(Items.WHEAT) > Items.WHEAT.getDefaultMaxStackSize() / 2) {
             throwHalfStack(var2, ImmutableSet.of(Items.WHEAT), var5);
          }
 

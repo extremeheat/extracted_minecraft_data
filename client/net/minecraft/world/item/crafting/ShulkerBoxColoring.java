@@ -1,6 +1,6 @@
 package net.minecraft.world.item.crafting;
 
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.Item;
@@ -41,7 +41,7 @@ public class ShulkerBoxColoring extends CustomRecipe {
       return var3 == 1 && var4 == 1;
    }
 
-   public ItemStack assemble(CraftingContainer var1, RegistryAccess var2) {
+   public ItemStack assemble(CraftingContainer var1, HolderLookup.Provider var2) {
       ItemStack var3 = ItemStack.EMPTY;
       DyeItem var4 = (DyeItem)Items.WHITE_DYE;
 

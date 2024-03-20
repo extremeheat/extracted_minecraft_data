@@ -39,21 +39,20 @@ public class WorldLoader {
          WorldDataConfiguration var11 = (WorldDataConfiguration)var5.getFirst();
          WorldLoader.DataLoadOutput var12 = var1.get(new WorldLoader.DataLoadContext(var6, var11, var9, var10));
          LayeredRegistryAccess var13 = var8.replaceFrom(RegistryLayer.DIMENSIONS, var12.finalDimensions);
-         RegistryAccess.Frozen var14 = var13.getAccessForLoading(RegistryLayer.RELOADABLE);
          return ReloadableServerResources.loadResources(
-               var6, var14, var11.enabledFeatures(), var0.commandSelection(), var0.functionCompilationLevel(), var3, var4
+               var6, var13, var11.enabledFeatures(), var0.commandSelection(), var0.functionCompilationLevel(), var3, var4
             )
             .whenComplete((var1x, var2x) -> {
                if (var2x != null) {
                   var6.close();
                }
             })
-            .thenApplyAsync(var5x -> {
-               var5x.updateRegistryTags(var14);
-               return (R)var2.create(var6, var5x, var13, var12.cookie);
+            .thenApplyAsync(var4x -> {
+               var4x.updateRegistryTags();
+               return (R)var2.create(var6, var4x, var13, var12.cookie);
             }, var4);
-      } catch (Exception var15) {
-         return CompletableFuture.failedFuture(var15);
+      } catch (Exception var14) {
+         return CompletableFuture.failedFuture(var14);
       }
    }
 

@@ -19,7 +19,7 @@ public class CatRenderer extends MobRenderer<Cat, CatModel<Cat>> {
    }
 
    public ResourceLocation getTextureLocation(Cat var1) {
-      return var1.getResourceLocation();
+      return var1.getTextureId();
    }
 
    protected void scale(Cat var1, PoseStack var2, float var3) {

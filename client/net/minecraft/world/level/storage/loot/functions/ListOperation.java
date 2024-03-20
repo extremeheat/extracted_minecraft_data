@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
@@ -14,7 +15,20 @@ import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 import org.slf4j.Logger;
 
-interface ListOperation {
+public interface ListOperation {
+   static MapCodec<ListOperation> codec(int var0) {
+      return ExtraCodecs.validate(ListOperation.Type.CODEC.dispatchMap("mode", ListOperation::mode, var0x -> var0x.mapCodec.codec()), var1 -> {
+         if (var1 instanceof ListOperation.ReplaceSection var2 && var2.size().isPresent()) {
+            int var3 = var2.size().get();
+            if (var3 > var0) {
+               return DataResult.error(() -> "Size value too large: " + var3 + ", max size is " + var0);
+            }
+         }
+
+         return DataResult.success(var1);
+      });
+   }
+
    ListOperation.Type mode();
 
    <T> List<T> apply(List<T> var1, List<T> var2, int var3);
@@ -160,9 +174,8 @@ interface ListOperation {
       APPEND("append", ListOperation.Append.MAP_CODEC);
 
       public static final Codec<ListOperation.Type> CODEC = StringRepresentable.fromEnum(ListOperation.Type::values);
-      public static final MapCodec<ListOperation> OPERATION_MAP_CODEC = CODEC.dispatchMap("mode", ListOperation::mode, var0 -> var0.mapCodec.codec());
       private final String id;
-      private final MapCodec<? extends ListOperation> mapCodec;
+      final MapCodec<? extends ListOperation> mapCodec;
 
       private Type(String var3, MapCodec<? extends ListOperation> var4) {
          this.id = var3;

@@ -923,6 +923,10 @@ public class Util {
       return ImmutableList.builderWithExpectedSize(var0.size() + 1).addAll(var0).add(var1).build();
    }
 
+   public static <T> List<T> copyAndAdd(T var0, List<T> var1) {
+      return ImmutableList.builderWithExpectedSize(var1.size() + 1).add(var0).addAll(var1).build();
+   }
+
    public static <K, V> Map<K, V> copyAndPut(Map<K, V> var0, K var1, V var2) {
       return ImmutableMap.builderWithExpectedSize(var0.size() + 1).putAll(var0).put(var1, var2).buildKeepingLast();
    }

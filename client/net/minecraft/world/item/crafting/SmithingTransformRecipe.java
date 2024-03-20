@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.stream.Stream;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.Container;
@@ -31,12 +31,14 @@ public class SmithingTransformRecipe implements SmithingRecipe {
    }
 
    @Override
-   public ItemStack assemble(Container var1, RegistryAccess var2) {
-      return var1.getItem(1).transmuteCopy(this.result.getItem(), this.result.getCount());
+   public ItemStack assemble(Container var1, HolderLookup.Provider var2) {
+      ItemStack var3 = var1.getItem(1).transmuteCopy(this.result.getItem(), this.result.getCount());
+      var3.applyComponents(this.result.getComponentsPatch());
+      return var3;
    }
 
    @Override
-   public ItemStack getResultItem(RegistryAccess var1) {
+   public ItemStack getResultItem(HolderLookup.Provider var1) {
       return this.result;
    }
 

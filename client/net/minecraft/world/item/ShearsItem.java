@@ -1,5 +1,6 @@
 package net.minecraft.world.item;
 
+import java.util.List;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
@@ -10,6 +11,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -23,39 +25,34 @@ public class ShearsItem extends Item {
       super(var1);
    }
 
+   public static Tool createToolProperties() {
+      return new Tool(
+         List.of(
+            Tool.Rule.minesAndDrops(List.of(Blocks.COBWEB), 15.0F),
+            Tool.Rule.overrideSpeed(BlockTags.LEAVES, 15.0F),
+            Tool.Rule.overrideSpeed(BlockTags.WOOL, 5.0F),
+            Tool.Rule.overrideSpeed(List.of(Blocks.VINE, Blocks.GLOW_LICHEN), 2.0F)
+         ),
+         1.0F,
+         1
+      );
+   }
+
    @Override
    public boolean mineBlock(ItemStack var1, Level var2, BlockState var3, BlockPos var4, LivingEntity var5) {
       if (!var2.isClientSide && !var3.is(BlockTags.FIRE)) {
          var1.hurtAndBreak(1, var5, EquipmentSlot.MAINHAND);
       }
 
-      return !var3.is(BlockTags.LEAVES)
-            && !var3.is(Blocks.COBWEB)
-            && !var3.is(Blocks.SHORT_GRASS)
-            && !var3.is(Blocks.FERN)
-            && !var3.is(Blocks.DEAD_BUSH)
-            && !var3.is(Blocks.HANGING_ROOTS)
-            && !var3.is(Blocks.VINE)
-            && !var3.is(Blocks.TRIPWIRE)
-            && !var3.is(BlockTags.WOOL)
-         ? super.mineBlock(var1, var2, var3, var4, var5)
-         : true;
-   }
-
-   @Override
-   public boolean isCorrectToolForDrops(BlockState var1) {
-      return var1.is(Blocks.COBWEB) || var1.is(Blocks.REDSTONE_WIRE) || var1.is(Blocks.TRIPWIRE);
-   }
-
-   @Override
-   public float getDestroySpeed(ItemStack var1, BlockState var2) {
-      if (var2.is(Blocks.COBWEB) || var2.is(BlockTags.LEAVES)) {
-         return 15.0F;
-      } else if (var2.is(BlockTags.WOOL)) {
-         return 5.0F;
-      } else {
-         return !var2.is(Blocks.VINE) && !var2.is(Blocks.GLOW_LICHEN) ? super.getDestroySpeed(var1, var2) : 2.0F;
-      }
+      return var3.is(BlockTags.LEAVES)
+         || var3.is(Blocks.COBWEB)
+         || var3.is(Blocks.SHORT_GRASS)
+         || var3.is(Blocks.FERN)
+         || var3.is(Blocks.DEAD_BUSH)
+         || var3.is(Blocks.HANGING_ROOTS)
+         || var3.is(Blocks.VINE)
+         || var3.is(Blocks.TRIPWIRE)
+         || var3.is(BlockTags.WOOL);
    }
 
    // $VF: Could not properly define all variable types!

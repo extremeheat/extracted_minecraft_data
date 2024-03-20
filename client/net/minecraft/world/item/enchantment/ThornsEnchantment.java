@@ -1,7 +1,6 @@
 package net.minecraft.world.item.enchantment;
 
 import java.util.Map.Entry;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -11,23 +10,8 @@ import net.minecraft.world.item.ItemStack;
 public class ThornsEnchantment extends Enchantment {
    private static final float CHANCE_PER_LEVEL = 0.15F;
 
-   public ThornsEnchantment(Enchantment.Rarity var1, EquipmentSlot... var2) {
-      super(var1, ItemTags.ARMOR_ENCHANTABLE, var2);
-   }
-
-   @Override
-   public int getMinCost(int var1) {
-      return 10 + 20 * (var1 - 1);
-   }
-
-   @Override
-   public int getMaxCost(int var1) {
-      return super.getMinCost(var1) + 50;
-   }
-
-   @Override
-   public int getMaxLevel() {
-      return 3;
+   public ThornsEnchantment(Enchantment.EnchantmentDefinition var1) {
+      super(var1);
    }
 
    @Override

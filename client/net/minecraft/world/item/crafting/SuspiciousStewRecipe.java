@@ -1,6 +1,6 @@
 package net.minecraft.world.item.crafting;
 
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.inventory.CraftingContainer;
@@ -43,7 +43,7 @@ public class SuspiciousStewRecipe extends CustomRecipe {
       return var3 && var5 && var4 && var6;
    }
 
-   public ItemStack assemble(CraftingContainer var1, RegistryAccess var2) {
+   public ItemStack assemble(CraftingContainer var1, HolderLookup.Provider var2) {
       ItemStack var3 = new ItemStack(Items.SUSPICIOUS_STEW, 1);
 
       for(int var4 = 0; var4 < var1.getContainerSize(); ++var4) {

@@ -22,6 +22,7 @@ import net.minecraft.server.packs.repository.PackSource;
 
 public class ExperimentsScreen extends Screen {
    private static final Component TITLE = Component.translatable("selectWorld.experiments");
+   private static final Component INFO = Component.translatable("selectWorld.experiments.info").withStyle(ChatFormatting.RED);
    private static final int MAIN_CONTENT_WIDTH = 310;
    private final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
    private final Screen parent;
@@ -46,10 +47,7 @@ public class ExperimentsScreen extends Screen {
    protected void init() {
       this.layout.addTitleHeader(TITLE, this.font);
       LinearLayout var1 = this.layout.addToContents(LinearLayout.vertical());
-      var1.addChild(
-         new MultiLineTextWidget(Component.translatable("selectWorld.experiments.info").withStyle(ChatFormatting.RED), this.font).setMaxWidth(310),
-         var0 -> var0.paddingBottom(15)
-      );
+      var1.addChild(new MultiLineTextWidget(INFO, this.font).setMaxWidth(310), var0 -> var0.paddingBottom(15));
       SwitchGrid.Builder var2 = SwitchGrid.builder(310).withInfoUnderneath(2, true).withRowSpacing(4);
       this.packs
          .forEach(
@@ -71,6 +69,16 @@ public class ExperimentsScreen extends Screen {
    }
 
    @Override
+   protected void repositionElements() {
+      this.layout.arrangeElements();
+   }
+
+   @Override
+   public Component getNarrationMessage() {
+      return CommonComponents.joinForNarration(super.getNarrationMessage(), INFO);
+   }
+
+   @Override
    public void onClose() {
       this.minecraft.setScreen(this.parent);
    }
@@ -87,10 +95,5 @@ public class ExperimentsScreen extends Screen {
       var1.addAll(Lists.reverse(var2));
       this.packRepository.setSelected(var1.stream().map(Pack::getId).toList());
       this.output.accept(this.packRepository);
-   }
-
-   @Override
-   protected void repositionElements() {
-      this.layout.arrangeElements();
    }
 }

@@ -89,6 +89,7 @@ import net.minecraft.server.network.TextFilter;
 import net.minecraft.server.packs.PackType;
 import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackRepository;
+import net.minecraft.server.packs.repository.PackSource;
 import net.minecraft.server.packs.resources.CloseableResourceManager;
 import net.minecraft.server.packs.resources.MultiPackResourceManager;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -156,7 +157,6 @@ import net.minecraft.world.level.storage.LevelStorageSource;
 import net.minecraft.world.level.storage.PlayerDataStorage;
 import net.minecraft.world.level.storage.ServerLevelData;
 import net.minecraft.world.level.storage.WorldData;
-import net.minecraft.world.level.storage.loot.LootDataManager;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
@@ -1400,16 +1400,15 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
    }
 
    public CompletableFuture<Void> reloadResources(Collection<String> var1) {
-      RegistryAccess.Frozen var2 = this.registries.getAccessForLoading(RegistryLayer.RELOADABLE);
-      CompletableFuture var3 = CompletableFuture.supplyAsync(
+      CompletableFuture var2 = CompletableFuture.supplyAsync(
             () -> var1.stream().map(this.packRepository::getPack).filter(Objects::nonNull).map(Pack::open).collect(ImmutableList.toImmutableList()), this
          )
          .thenCompose(
-            var2x -> {
-               MultiPackResourceManager var3xx = new MultiPackResourceManager(PackType.SERVER_DATA, var2x);
+            var1x -> {
+               MultiPackResourceManager var2xx = new MultiPackResourceManager(PackType.SERVER_DATA, var1x);
                return ReloadableServerResources.loadResources(
-                     var3xx,
-                     var2,
+                     var2xx,
+                     this.registries,
                      this.worldData.enabledFeatures(),
                      this.isDedicatedServer() ? Commands.CommandSelection.DEDICATED : Commands.CommandSelection.INTEGRATED,
                      this.getFunctionCompilationLevel(),
@@ -1418,29 +1417,29 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
                   )
                   .whenComplete((var1xx, var2xx) -> {
                      if (var2xx != null) {
-                        var3x.close();
+                        var2x.close();
                      }
                   })
-                  .thenApply(var1xx -> new MinecraftServer.ReloadableResources(var3x, var1xx));
+                  .thenApply(var1xx -> new MinecraftServer.ReloadableResources(var2x, var1xx));
             }
          )
          .thenAcceptAsync(var2x -> {
             this.resources.close();
             this.resources = var2x;
             this.packRepository.setSelected(var1);
-            WorldDataConfiguration var3xx = new WorldDataConfiguration(getSelectedPacks(this.packRepository), this.worldData.enabledFeatures());
-            this.worldData.setDataConfiguration(var3xx);
-            this.resources.managers.updateRegistryTags(this.registryAccess());
+            WorldDataConfiguration var3 = new WorldDataConfiguration(getSelectedPacks(this.packRepository), this.worldData.enabledFeatures());
+            this.worldData.setDataConfiguration(var3);
+            this.resources.managers.updateRegistryTags();
             this.getPlayerList().saveAll();
             this.getPlayerList().reloadResources();
             this.functionManager.replaceLibrary(this.resources.managers.getFunctionLibrary());
             this.structureTemplateManager.onResourceManagerReload(this.resources.resourceManager);
          }, this);
       if (this.isSameThread()) {
-         this.managedBlock(var3::isDone);
+         this.managedBlock(var2::isDone);
       }
 
-      return var3;
+      return var2;
    }
 
    public static WorldDataConfiguration configurePackRepository(PackRepository var0, DataPackConfig var1, boolean var2, FeatureFlagSet var3) {
@@ -1459,26 +1458,32 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
             }
          }
 
-         for(Pack var12 : var0.getAvailablePacks()) {
-            String var7 = var12.getId();
-            if (!var1.getDisabled().contains(var7)) {
-               FeatureFlagSet var8 = var12.getRequestedFeatures();
-               boolean var9 = var4.contains(var7);
-               if (!var9 && var12.getPackSource().shouldAddAutomatically()) {
-                  if (var8.isSubsetOf(var3)) {
-                     LOGGER.info("Found new data pack {}, loading it automatically", var7);
-                     var4.add(var7);
-                  } else {
-                     LOGGER.info("Found new data pack {}, but can't load it due to missing features {}", var7, FeatureFlags.printMissingFlags(var3, var8));
-                  }
-               }
+         for(Pack var13 : var0.getAvailablePacks()) {
+            String var7 = var13.getId();
+            FeatureFlagSet var8 = var13.getRequestedFeatures();
+            FeatureFlagSet var9 = var0.getRequestedFeatureFlags();
+            if (var13.getPackSource() == PackSource.FEATURE && !var8.isEmpty() && var8.isSubsetOf(var9) && !var4.contains(var7)) {
+               LOGGER.info("Found feature pack for requested feature, forcing to enabled");
+               var4.add(var7);
+            } else if (var1.getDisabled().contains(var7)) {
+               continue;
+            }
 
-               if (var9 && !var8.isSubsetOf(var3)) {
-                  LOGGER.warn(
-                     "Pack {} requires features {} that are not enabled for this world, disabling pack.", var7, FeatureFlags.printMissingFlags(var3, var8)
-                  );
-                  var4.remove(var7);
+            boolean var10 = var4.contains(var7);
+            if (!var10 && var13.getPackSource().shouldAddAutomatically()) {
+               if (var8.isSubsetOf(var3)) {
+                  LOGGER.info("Found new data pack {}, loading it automatically", var7);
+                  var4.add(var7);
+               } else {
+                  LOGGER.info("Found new data pack {}, but can't load it due to missing features {}", var7, FeatureFlags.printMissingFlags(var3, var8));
                }
+            }
+
+            if (var10 && !var8.isSubsetOf(var3)) {
+               LOGGER.warn(
+                  "Pack {} requires features {} that are not enabled for this world, disabling pack.", var7, FeatureFlags.printMissingFlags(var3, var8)
+               );
+               var4.remove(var7);
             }
          }
 
@@ -1488,9 +1493,9 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
          }
 
          var0.setSelected(var4);
-         DataPackConfig var11 = getSelectedPacks(var0);
-         FeatureFlagSet var13 = var0.getRequestedFeatureFlags();
-         return new WorldDataConfiguration(var11, var13);
+         DataPackConfig var12 = getSelectedPacks(var0);
+         FeatureFlagSet var14 = var0.getRequestedFeatureFlags();
+         return new WorldDataConfiguration(var12, var14);
       }
    }
 
@@ -1556,10 +1561,6 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
       } else {
          return this.commandStorage;
       }
-   }
-
-   public LootDataManager getLootData() {
-      return this.resources.managers.getLootData();
    }
 
    public GameRules getGameRules() {
@@ -1786,6 +1787,10 @@ public abstract class MinecraftServer extends ReentrantBlockableEventLoop<TickTa
 
    public LayeredRegistryAccess<RegistryLayer> registries() {
       return this.registries;
+   }
+
+   public ReloadableServerRegistries.Holder reloadableRegistries() {
+      return this.resources.managers.fullRegistries();
    }
 
    public TextFilter createTextFilterForPlayer(ServerPlayer var1) {

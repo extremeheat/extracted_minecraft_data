@@ -10,7 +10,6 @@ import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.Enchantment;
@@ -150,27 +149,27 @@ public class GrindstoneMenu extends AbstractContainerMenu {
       if (!var1.is(var2.getItem())) {
          return ItemStack.EMPTY;
       } else {
-         Item var3 = var1.getItem();
-         int var4 = var3.getMaxDamage() - var1.getDamageValue();
-         int var5 = var3.getMaxDamage() - var2.getDamageValue();
-         int var6 = var4 + var5 + var3.getMaxDamage() * 5 / 100;
-         int var7 = Math.max(var3.getMaxDamage() - var6, 0);
-         byte var8 = 1;
+         int var3 = Math.max(var1.getMaxDamage(), var2.getMaxDamage());
+         int var4 = var1.getMaxDamage() - var1.getDamageValue();
+         int var5 = var2.getMaxDamage() - var2.getDamageValue();
+         int var6 = var4 + var5 + var3 * 5 / 100;
+         byte var7 = 1;
          if (!var1.isDamageableItem()) {
             if (var1.getMaxStackSize() < 2 || !ItemStack.matches(var1, var2)) {
                return ItemStack.EMPTY;
             }
 
-            var8 = 2;
+            var7 = 2;
          }
 
-         ItemStack var9 = var1.copyWithCount(var8);
-         if (var9.isDamageableItem()) {
-            var9.setDamageValue(var7);
+         ItemStack var8 = var1.copyWithCount(var7);
+         if (var8.isDamageableItem()) {
+            var8.set(DataComponents.MAX_DAMAGE, var3);
+            var8.setDamageValue(Math.max(var3 - var6, 0));
          }
 
-         this.mergeEnchantsFrom(var1, var2);
-         return this.removeNonCursesFrom(var9);
+         this.mergeEnchantsFrom(var8, var2);
+         return this.removeNonCursesFrom(var8);
       }
    }
 

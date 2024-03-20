@@ -9,7 +9,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.BiomeTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.EntityType;
@@ -37,6 +37,7 @@ import net.minecraft.world.level.levelgen.structure.StructurePieceAccessor;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
+import net.minecraft.world.level.storage.loot.LootTable;
 import org.slf4j.Logger;
 
 public class MineshaftPieces {
@@ -305,7 +306,7 @@ public class MineshaftPieces {
       }
 
       @Override
-      protected boolean createChest(WorldGenLevel var1, BoundingBox var2, RandomSource var3, int var4, int var5, int var6, ResourceLocation var7) {
+      protected boolean createChest(WorldGenLevel var1, BoundingBox var2, RandomSource var3, int var4, int var5, int var6, ResourceKey<LootTable> var7) {
          BlockPos.MutableBlockPos var8 = this.getWorldPos(var4, var5, var6);
          if (var2.isInside(var8) && var1.getBlockState(var8).isAir() && !var1.getBlockState(var8.below()).isAir()) {
             BlockState var9 = Blocks.RAIL.defaultBlockState().setValue(RailBlock.SHAPE, var3.nextBoolean() ? RailShape.NORTH_SOUTH : RailShape.EAST_WEST);

@@ -7,6 +7,9 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.DataResult.PartialResult;
 import java.util.Optional;
 import java.util.stream.Stream;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.functions.LootItemFunctions;
@@ -14,27 +17,31 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemConditions;
 import org.slf4j.Logger;
 
-public class LootDataType<T> {
-   private static final Logger LOGGER = LogUtils.getLogger();
-   public static final LootDataType<LootItemCondition> PREDICATE = new LootDataType<>(LootItemConditions.CODEC, "predicates", createSimpleValidator());
-   public static final LootDataType<LootItemFunction> MODIFIER = new LootDataType<>(LootItemFunctions.CODEC, "item_modifiers", createSimpleValidator());
-   public static final LootDataType<LootTable> TABLE = new LootDataType<>(LootTable.CODEC, "loot_tables", createLootTableValidator());
+public record LootDataType<T>(ResourceKey<Registry<T>> d, Codec<T> e, String f, LootDataType.Validator<T> g) {
+   private final ResourceKey<Registry<T>> registryKey;
    private final Codec<T> codec;
    private final String directory;
    private final LootDataType.Validator<T> validator;
+   private static final Logger LOGGER = LogUtils.getLogger();
+   public static final LootDataType<LootItemCondition> PREDICATE = new LootDataType<>(
+      Registries.PREDICATE, LootItemConditions.DIRECT_CODEC, "predicates", createSimpleValidator()
+   );
+   public static final LootDataType<LootItemFunction> MODIFIER = new LootDataType<>(
+      Registries.ITEM_MODIFIER, LootItemFunctions.ROOT_CODEC, "item_modifiers", createSimpleValidator()
+   );
+   public static final LootDataType<LootTable> TABLE = new LootDataType<>(
+      Registries.LOOT_TABLE, LootTable.DIRECT_CODEC, "loot_tables", createLootTableValidator()
+   );
 
-   private LootDataType(Codec<T> var1, String var2, LootDataType.Validator<T> var3) {
+   public LootDataType(ResourceKey<Registry<T>> var1, Codec<T> var2, String var3, LootDataType.Validator<T> var4) {
       super();
-      this.codec = var1;
-      this.directory = var2;
-      this.validator = var3;
+      this.registryKey = var1;
+      this.codec = var2;
+      this.directory = var3;
+      this.validator = var4;
    }
 
-   public String directory() {
-      return this.directory;
-   }
-
-   public void runValidation(ValidationContext var1, LootDataId<T> var2, T var3) {
+   public void runValidation(ValidationContext var1, ResourceKey<T> var2, T var3) {
       this.validator.run(var1, var2, (T)var3);
    }
 
@@ -45,21 +52,19 @@ public class LootDataType<T> {
    }
 
    public static Stream<LootDataType<?>> values() {
-      return Stream.of(PREDICATE, MODIFIER, TABLE);
+      return Stream.of((T[])(PREDICATE, MODIFIER, TABLE));
    }
 
    private static <T extends LootContextUser> LootDataType.Validator<T> createSimpleValidator() {
-      return (var0, var1, var2) -> var2.validate(var0.enterElement("{" + var1.type().directory + ":" + var1.location() + "}", var1));
+      return (var0, var1, var2) -> var2.validate(var0.enterElement("{" + var1.registry() + "/" + var1.location() + "}", var1));
    }
 
    private static LootDataType.Validator<LootTable> createLootTableValidator() {
-      return (var0, var1, var2) -> var2.validate(
-            var0.setParams(var2.getParamSet()).enterElement("{" + var1.type().directory + ":" + var1.location() + "}", var1)
-         );
+      return (var0, var1, var2) -> var2.validate(var0.setParams(var2.getParamSet()).enterElement("{" + var1.registry() + "/" + var1.location() + "}", var1));
    }
 
    @FunctionalInterface
    public interface Validator<T> {
-      void run(ValidationContext var1, LootDataId<T> var2, T var3);
+      void run(ValidationContext var1, ResourceKey<T> var2, T var3);
    }
 }

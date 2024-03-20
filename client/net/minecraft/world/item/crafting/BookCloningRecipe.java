@@ -1,7 +1,7 @@
 package net.minecraft.world.item.crafting;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
@@ -41,7 +41,7 @@ public class BookCloningRecipe extends CustomRecipe {
       return !var4.isEmpty() && var3 > 0;
    }
 
-   public ItemStack assemble(CraftingContainer var1, RegistryAccess var2) {
+   public ItemStack assemble(CraftingContainer var1, HolderLookup.Provider var2) {
       int var3 = 0;
       ItemStack var4 = ItemStack.EMPTY;
 

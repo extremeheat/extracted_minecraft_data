@@ -612,6 +612,9 @@ public class ServerPlayer extends Player {
    public void trackStartFallingPosition() {
       if (this.fallDistance > 0.0F && this.startingToFallPosition == null) {
          this.startingToFallPosition = this.position();
+         if (this.currentImpulseImpactPos != null) {
+            CriteriaTriggers.FALL_AFTER_EXPLOSION.trigger(this, this.currentImpulseImpactPos, this.currentExplosionCause);
+         }
       }
    }
 
@@ -1000,12 +1003,12 @@ public class ServerPlayer extends Player {
    public void doCheckFallDamage(double var1, double var3, double var5, boolean var7) {
       if (!this.touchingUnloadedChunk()) {
          this.checkSupportingBlock(var7, new Vec3(var1, var3, var5));
-         BlockPos var8 = this.getOnPos();
+         BlockPos var8 = this.getOnPosLegacy();
          BlockState var9 = this.level().getBlockState(var8);
          if (this.spawnExtraParticlesOnFall && var7 && this.fallDistance > 0.0F) {
             Vec3 var10 = var8.getCenter().add(0.0, 0.5, 0.0);
             int var11 = (int)(50.0F * this.fallDistance);
-            ((ServerLevel)this.level())
+            this.serverLevel()
                .sendParticles(
                   new BlockParticleOption(ParticleTypes.BLOCK, var9),
                   var10.x,
@@ -1027,9 +1030,9 @@ public class ServerPlayer extends Player {
    @Override
    public void onExplosionHit(@Nullable Entity var1) {
       super.onExplosionHit(var1);
-      if (var1 != null && var1.getType() == EntityType.WIND_CHARGE) {
-         this.ignoreFallDamageAboveY = this.getY();
-      }
+      this.currentImpulseImpactPos = this.position();
+      this.currentExplosionCause = var1;
+      this.ignoreFallDamageFromCurrentImpulse = var1 != null && var1.getType() == EntityType.WIND_CHARGE;
    }
 
    @Override

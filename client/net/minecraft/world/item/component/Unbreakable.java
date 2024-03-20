@@ -32,4 +32,8 @@ public record Unbreakable(boolean c) implements TooltipProvider {
          var1.accept(TOOLTIP);
       }
    }
+
+   public Unbreakable withTooltip(boolean var1) {
+      return new Unbreakable(var1);
+   }
 }

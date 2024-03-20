@@ -286,7 +286,6 @@ import net.minecraft.util.datafix.schemas.V3816;
 import net.minecraft.util.datafix.schemas.V3818;
 import net.minecraft.util.datafix.schemas.V3818_3;
 import net.minecraft.util.datafix.schemas.V3818_4;
-import net.minecraft.util.datafix.schemas.V3822;
 import net.minecraft.util.datafix.schemas.V501;
 import net.minecraft.util.datafix.schemas.V700;
 import net.minecraft.util.datafix.schemas.V701;
@@ -1288,8 +1287,6 @@ public class DataFixers {
       Schema var225 = var0.addSchema(3820, SAME_NAMESPACED);
       var0.addFixer(new PlayerHeadBlockProfileFix(var225));
       var0.addFixer(new LodestoneCompassComponentFix(var225));
-      Schema var226 = var0.addSchema(3822, V3822::new);
-      var0.addFixer(new AddNewChoices(var226, "Added Breeze Rod and Mace", References.ENTITY));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(Map<String, String> var0) {

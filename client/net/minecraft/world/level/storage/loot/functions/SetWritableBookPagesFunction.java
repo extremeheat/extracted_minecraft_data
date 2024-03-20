@@ -17,7 +17,7 @@ public class SetWritableBookPagesFunction extends LootItemConditionalFunction {
             .and(
                var0.group(
                   WritableBookContent.PAGES_CODEC.fieldOf("pages").forGetter(var0x -> var0x.pages),
-                  ListOperation.Type.OPERATION_MAP_CODEC.forGetter(var0x -> var0x.pageOperation)
+                  ListOperation.codec(100).forGetter(var0x -> var0x.pageOperation)
                )
             )
             .apply(var0, SetWritableBookPagesFunction::new)

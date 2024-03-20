@@ -436,7 +436,7 @@ public class PiglinAi {
    }
 
    private static List<ItemStack> getBarterResponseItems(Piglin var0) {
-      LootTable var1 = var0.level().getServer().getLootData().getLootTable(BuiltInLootTables.PIGLIN_BARTERING);
+      LootTable var1 = var0.level().getServer().reloadableRegistries().getLootTable(BuiltInLootTables.PIGLIN_BARTERING);
       return var1.getRandomItems(
          new LootParams.Builder((ServerLevel)var0.level()).withParameter(LootContextParams.THIS_ENTITY, var0).create(LootContextParamSets.PIGLIN_BARTER)
       );

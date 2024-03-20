@@ -24,6 +24,7 @@ import net.minecraft.world.item.component.TooltipProvider;
 
 public class ItemEnchantments implements TooltipProvider {
    public static final ItemEnchantments EMPTY = new ItemEnchantments(new Object2IntLinkedOpenHashMap(), true);
+   public static final int MAX_LEVEL = 255;
    private static final Codec<Integer> LEVEL_CODEC = Codec.intRange(0, 255);
    private static final Codec<Object2IntLinkedOpenHashMap<Holder<Enchantment>>> LEVELS_CODEC = Codec.unboundedMap(
          BuiltInRegistries.ENCHANTMENT.holderByNameCodec(), LEVEL_CODEC
@@ -67,6 +68,10 @@ public class ItemEnchantments implements TooltipProvider {
             var1.accept(((Enchantment)((Holder)var4.getKey()).value()).getFullname(var4.getIntValue()));
          }
       }
+   }
+
+   public ItemEnchantments withTooltip(boolean var1) {
+      return new ItemEnchantments(this.enchantments, var1);
    }
 
    public Set<Holder<Enchantment>> keySet() {

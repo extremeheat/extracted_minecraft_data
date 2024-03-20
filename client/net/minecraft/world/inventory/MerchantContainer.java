@@ -71,10 +71,7 @@ public class MerchantContainer implements Container {
    @Override
    public void setItem(int var1, ItemStack var2) {
       this.itemStacks.set(var1, var2);
-      if (!var2.isEmpty() && var2.getCount() > this.getMaxStackSize()) {
-         var2.setCount(this.getMaxStackSize());
-      }
-
+      var2.limitSize(this.getMaxStackSize(var2));
       if (this.isPaymentSlot(var1)) {
          this.updateSellItem();
       }

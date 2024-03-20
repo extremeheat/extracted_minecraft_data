@@ -3,42 +3,19 @@ package net.minecraft.world.item.enchantment;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.tags.EntityTypeTags;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 
 public class DamageEnchantment extends Enchantment {
-   private final int minCost;
-   private final int levelCost;
-   private final int levelCostSpan;
    private final Optional<TagKey<EntityType<?>>> targets;
 
-   public DamageEnchantment(Enchantment.Rarity var1, int var2, int var3, int var4, Optional<TagKey<EntityType<?>>> var5, EquipmentSlot... var6) {
-      super(var1, ItemTags.WEAPON_ENCHANTABLE, var6);
-      this.minCost = var2;
-      this.levelCost = var3;
-      this.levelCostSpan = var4;
-      this.targets = var5;
-   }
-
-   @Override
-   public int getMinCost(int var1) {
-      return this.minCost + (var1 - 1) * this.levelCost;
-   }
-
-   @Override
-   public int getMaxCost(int var1) {
-      return this.getMinCost(var1) + this.levelCostSpan;
-   }
-
-   @Override
-   public int getMaxLevel() {
-      return 5;
+   public DamageEnchantment(Enchantment.EnchantmentDefinition var1, Optional<TagKey<EntityType<?>>> var2) {
+      super(var1);
+      this.targets = var2;
    }
 
    @Override
@@ -61,7 +38,7 @@ public class DamageEnchantment extends Enchantment {
    public void doPostAttack(LivingEntity var1, Entity var2, int var3) {
       if (this.targets.isPresent()
          && var2 instanceof LivingEntity var4
-         && this.targets.get() == EntityTypeTags.ARTHROPOD
+         && this.targets.get() == EntityTypeTags.SENSITIVE_TO_BANE_OF_ARTHROPODS
          && var3 > 0
          && var4.getType().is((TagKey<EntityType<?>>)this.targets.get())) {
          int var5 = 20 + var1.getRandom().nextInt(10 * var3);

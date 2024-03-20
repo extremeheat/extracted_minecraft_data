@@ -21,6 +21,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -97,7 +98,7 @@ public abstract class BlockBehaviour implements FeatureElement {
    protected final FeatureFlagSet requiredFeatures;
    protected final BlockBehaviour.Properties properties;
    @Nullable
-   protected ResourceLocation drops;
+   protected ResourceKey<LootTable> drops;
 
    public BlockBehaviour(BlockBehaviour.Properties var1) {
       super();
@@ -251,13 +252,13 @@ public abstract class BlockBehaviour implements FeatureElement {
    }
 
    protected List<ItemStack> getDrops(BlockState var1, LootParams.Builder var2) {
-      ResourceLocation var3 = this.getLootTable();
+      ResourceKey var3 = this.getLootTable();
       if (var3 == BuiltInLootTables.EMPTY) {
          return Collections.emptyList();
       } else {
          LootParams var4 = var2.withParameter(LootContextParams.BLOCK_STATE, var1).create(LootContextParamSets.BLOCK);
          ServerLevel var5 = var4.getLevel();
-         LootTable var6 = var5.getServer().getLootData().getLootTable(var3);
+         LootTable var6 = var5.getServer().reloadableRegistries().getLootTable(var3);
          return var6.getRandomItems(var4);
       }
    }
@@ -356,10 +357,10 @@ public abstract class BlockBehaviour implements FeatureElement {
       return 0;
    }
 
-   public final ResourceLocation getLootTable() {
+   public final ResourceKey<LootTable> getLootTable() {
       if (this.drops == null) {
          ResourceLocation var1 = BuiltInRegistries.BLOCK.getKey(this.asBlock());
-         this.drops = var1.withPrefix("blocks/");
+         this.drops = ResourceKey.create(Registries.LOOT_TABLE, var1.withPrefix("blocks/"));
       }
 
       return this.drops;
@@ -950,7 +951,7 @@ public abstract class BlockBehaviour implements FeatureElement {
       float friction = 0.6F;
       float speedFactor = 1.0F;
       float jumpFactor = 1.0F;
-      ResourceLocation drops;
+      ResourceKey<LootTable> drops;
       boolean canOcclude = true;
       boolean isAir;
       boolean ignitedByLava;

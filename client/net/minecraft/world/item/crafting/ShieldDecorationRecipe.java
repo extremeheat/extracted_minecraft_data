@@ -1,6 +1,6 @@
 package net.minecraft.world.item.crafting;
 
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.BannerItem;
@@ -49,7 +49,7 @@ public class ShieldDecorationRecipe extends CustomRecipe {
       return !var3.isEmpty() && !var4.isEmpty();
    }
 
-   public ItemStack assemble(CraftingContainer var1, RegistryAccess var2) {
+   public ItemStack assemble(CraftingContainer var1, HolderLookup.Provider var2) {
       ItemStack var3 = ItemStack.EMPTY;
       ItemStack var4 = ItemStack.EMPTY;
 

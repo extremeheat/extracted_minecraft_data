@@ -51,11 +51,7 @@ public class Inventory implements Container, Nameable {
    }
 
    private boolean hasRemainingSpaceForItem(ItemStack var1, ItemStack var2) {
-      return !var1.isEmpty()
-         && ItemStack.isSameItemSameComponents(var1, var2)
-         && var1.isStackable()
-         && var1.getCount() < var1.getMaxStackSize()
-         && var1.getCount() < this.getMaxStackSize();
+      return !var1.isEmpty() && ItemStack.isSameItemSameComponents(var1, var2) && var1.isStackable() && var1.getCount() < this.getMaxStackSize(var1);
    }
 
    public int getFreeSlot() {
@@ -187,20 +183,13 @@ public class Inventory implements Container, Nameable {
          this.setItem(var1, var4);
       }
 
-      int var5 = var3;
-      if (var3 > var4.getMaxStackSize() - var4.getCount()) {
-         var5 = var4.getMaxStackSize() - var4.getCount();
-      }
-
-      if (var5 > this.getMaxStackSize() - var4.getCount()) {
-         var5 = this.getMaxStackSize() - var4.getCount();
-      }
-
-      if (var5 == 0) {
+      int var5 = this.getMaxStackSize(var4) - var4.getCount();
+      int var6 = Math.min(var3, var5);
+      if (var6 == 0) {
          return var3;
       } else {
-         var3 -= var5;
-         var4.grow(var5);
+         var3 -= var6;
+         var4.grow(var6);
          var4.setPopTime(5);
          return var3;
       }

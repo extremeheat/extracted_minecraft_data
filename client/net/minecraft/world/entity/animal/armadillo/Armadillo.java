@@ -17,6 +17,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.EntityTypeTags;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
@@ -214,7 +215,7 @@ public class Armadillo extends Animal {
 
    @Override
    public boolean isFood(ItemStack var1) {
-      return ArmadilloAi.TEMPTATION_ITEM.test(var1);
+      return var1.is(ItemTags.ARMADILLO_FOOD);
    }
 
    public static boolean checkArmadilloSpawnRules(EntityType<Armadillo> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {

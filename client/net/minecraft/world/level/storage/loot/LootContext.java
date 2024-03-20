@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import javax.annotation.Nullable;
+import net.minecraft.core.HolderGetter;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -20,10 +21,10 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 public class LootContext {
    private final LootParams params;
    private final RandomSource random;
-   private final LootDataResolver lootDataResolver;
+   private final HolderGetter.Provider lootDataResolver;
    private final Set<LootContext.VisitedEntry<?>> visitedElements = Sets.newLinkedHashSet();
 
-   LootContext(LootParams var1, RandomSource var2, LootDataResolver var3) {
+   LootContext(LootParams var1, RandomSource var2, HolderGetter.Provider var3) {
       super();
       this.params = var1;
       this.random = var2;
@@ -59,7 +60,7 @@ public class LootContext {
       this.visitedElements.remove(var1);
    }
 
-   public LootDataResolver getResolver() {
+   public HolderGetter.Provider getResolver() {
       return this.lootDataResolver;
    }
 
@@ -113,7 +114,7 @@ public class LootContext {
          ServerLevel var2 = this.getLevel();
          MinecraftServer var3 = var2.getServer();
          RandomSource var4 = Optional.ofNullable(this.random).or(() -> var1.map(var2::getRandomSequence)).orElseGet(var2::getRandom);
-         return new LootContext(this.params, var4, var3.getLootData());
+         return new LootContext(this.params, var4, var3.reloadableRegistries().lookup());
       }
    }
 

@@ -46,18 +46,33 @@ public class ArmorTrim implements TooltipProvider {
    private final Function<Holder<ArmorMaterial>, ResourceLocation> innerTexture;
    private final Function<Holder<ArmorMaterial>, ResourceLocation> outerTexture;
 
+   private ArmorTrim(
+      Holder<TrimMaterial> var1,
+      Holder<TrimPattern> var2,
+      boolean var3,
+      Function<Holder<ArmorMaterial>, ResourceLocation> var4,
+      Function<Holder<ArmorMaterial>, ResourceLocation> var5
+   ) {
+      super();
+      this.material = var1;
+      this.pattern = var2;
+      this.showInTooltip = var3;
+      this.innerTexture = var4;
+      this.outerTexture = var5;
+   }
+
    public ArmorTrim(Holder<TrimMaterial> var1, Holder<TrimPattern> var2, boolean var3) {
       super();
       this.material = var1;
       this.pattern = var2;
       this.innerTexture = Util.memoize(var2x -> {
          ResourceLocation var3xx = ((TrimPattern)var2.value()).assetId();
-         String var4 = this.getColorPaletteSuffix(var2x);
+         String var4 = getColorPaletteSuffix(var1, var2x);
          return var3xx.withPath(var1xx -> "trims/models/armor/" + var1xx + "_leggings_" + var4);
       });
       this.outerTexture = Util.memoize(var2x -> {
          ResourceLocation var3xx = ((TrimPattern)var2.value()).assetId();
-         String var4 = this.getColorPaletteSuffix(var2x);
+         String var4 = getColorPaletteSuffix(var1, var2x);
          return var3xx.withPath(var1xx -> "trims/models/armor/" + var1xx + "_" + var4);
       });
       this.showInTooltip = var3;
@@ -67,10 +82,10 @@ public class ArmorTrim implements TooltipProvider {
       this(var1, var2, true);
    }
 
-   private String getColorPaletteSuffix(Holder<ArmorMaterial> var1) {
-      Map var2 = ((TrimMaterial)this.material.value()).overrideArmorMaterials();
+   private static String getColorPaletteSuffix(Holder<TrimMaterial> var0, Holder<ArmorMaterial> var1) {
+      Map var2 = ((TrimMaterial)var0.value()).overrideArmorMaterials();
       String var3 = (String)var2.get(var1);
-      return var3 != null ? var3 : ((TrimMaterial)this.material.value()).assetName();
+      return var3 != null ? var3 : ((TrimMaterial)var0.value()).assetName();
    }
 
    public boolean hasPatternAndMaterial(Holder<TrimPattern> var1, Holder<TrimMaterial> var2) {
@@ -117,5 +132,9 @@ public class ArmorTrim implements TooltipProvider {
          var1.accept(CommonComponents.space().append(((TrimPattern)this.pattern.value()).copyWithStyle(this.material)));
          var1.accept(CommonComponents.space().append(((TrimMaterial)this.material.value()).description()));
       }
+   }
+
+   public ArmorTrim withTooltip(boolean var1) {
+      return new ArmorTrim(this.material, this.pattern, var1, this.innerTexture, this.outerTexture);
    }
 }

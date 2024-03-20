@@ -4,7 +4,9 @@ import javax.annotation.Nullable;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -36,9 +38,9 @@ public interface ContainerEntity extends Container, MenuProvider {
    AABB getBoundingBox();
 
    @Nullable
-   ResourceLocation getLootTable();
+   ResourceKey<LootTable> getLootTable();
 
-   void setLootTable(@Nullable ResourceLocation var1);
+   void setLootTable(@Nullable ResourceKey<LootTable> var1);
 
    long getLootTableSeed();
 
@@ -59,7 +61,7 @@ public interface ContainerEntity extends Container, MenuProvider {
 
    default void addChestVehicleSaveData(CompoundTag var1, HolderLookup.Provider var2) {
       if (this.getLootTable() != null) {
-         var1.putString("LootTable", this.getLootTable().toString());
+         var1.putString("LootTable", this.getLootTable().location().toString());
          if (this.getLootTableSeed() != 0L) {
             var1.putLong("LootTableSeed", this.getLootTableSeed());
          }
@@ -71,7 +73,7 @@ public interface ContainerEntity extends Container, MenuProvider {
    default void readChestVehicleSaveData(CompoundTag var1, HolderLookup.Provider var2) {
       this.clearItemStacks();
       if (var1.contains("LootTable", 8)) {
-         this.setLootTable(new ResourceLocation(var1.getString("LootTable")));
+         this.setLootTable(ResourceKey.create(Registries.LOOT_TABLE, new ResourceLocation(var1.getString("LootTable"))));
          this.setLootTableSeed(var1.getLong("LootTableSeed"));
       } else {
          ContainerHelper.loadAllItems(var1, this.getItemStacks(), var2);
@@ -98,7 +100,7 @@ public interface ContainerEntity extends Container, MenuProvider {
    default void unpackChestVehicleLootTable(@Nullable Player var1) {
       MinecraftServer var2 = this.level().getServer();
       if (this.getLootTable() != null && var2 != null) {
-         LootTable var3 = var2.getLootData().getLootTable(this.getLootTable());
+         LootTable var3 = var2.reloadableRegistries().getLootTable(this.getLootTable());
          if (var1 != null) {
             CriteriaTriggers.GENERATE_LOOT.trigger((ServerPlayer)var1, this.getLootTable());
          }
@@ -152,9 +154,7 @@ public interface ContainerEntity extends Container, MenuProvider {
    default void setChestVehicleItem(int var1, ItemStack var2) {
       this.unpackChestVehicleLootTable(null);
       this.getItemStacks().set(var1, var2);
-      if (!var2.isEmpty() && var2.getCount() > this.getMaxStackSize()) {
-         var2.setCount(this.getMaxStackSize());
-      }
+      var2.limitSize(this.getMaxStackSize(var2));
    }
 
    default SlotAccess getChestVehicleSlot(final int var1) {

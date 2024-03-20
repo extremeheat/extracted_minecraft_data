@@ -8,8 +8,10 @@ import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -45,7 +47,7 @@ public class BrushableBlockEntity extends BlockEntity {
    @Nullable
    private Direction hitDirection;
    @Nullable
-   private ResourceLocation lootTable;
+   private ResourceKey<LootTable> lootTable;
    private long lootTableSeed;
 
    public BrushableBlockEntity(BlockPos var1, BlockState var2) {
@@ -83,7 +85,7 @@ public class BrushableBlockEntity extends BlockEntity {
 
    public void unpackLootTable(Player var1) {
       if (this.lootTable != null && this.level != null && !this.level.isClientSide() && this.level.getServer() != null) {
-         LootTable var2 = this.level.getServer().getLootData().getLootTable(this.lootTable);
+         LootTable var2 = this.level.getServer().reloadableRegistries().getLootTable(this.lootTable);
          if (var1 instanceof ServerPlayer var3) {
             CriteriaTriggers.GENERATE_LOOT.trigger((ServerPlayer)var3, this.lootTable);
          }
@@ -99,7 +101,7 @@ public class BrushableBlockEntity extends BlockEntity {
             case 0 -> ItemStack.EMPTY;
             case 1 -> (ItemStack)var4.get(0);
             default -> {
-               LOGGER.warn("Expected max 1 loot from loot table " + this.lootTable + " got " + var4.size());
+               LOGGER.warn("Expected max 1 loot from loot table {}, but got {}", this.lootTable.location(), var4.size());
                yield (ItemStack)var4.get(0);
             }
          };
@@ -173,7 +175,7 @@ public class BrushableBlockEntity extends BlockEntity {
 
    private boolean tryLoadLootTable(CompoundTag var1) {
       if (var1.contains("LootTable", 8)) {
-         this.lootTable = new ResourceLocation(var1.getString("LootTable"));
+         this.lootTable = ResourceKey.create(Registries.LOOT_TABLE, new ResourceLocation(var1.getString("LootTable")));
          this.lootTableSeed = var1.getLong("LootTableSeed");
          return true;
       } else {
@@ -185,7 +187,7 @@ public class BrushableBlockEntity extends BlockEntity {
       if (this.lootTable == null) {
          return false;
       } else {
-         var1.putString("LootTable", this.lootTable.toString());
+         var1.putString("LootTable", this.lootTable.location().toString());
          if (this.lootTableSeed != 0L) {
             var1.putLong("LootTableSeed", this.lootTableSeed);
          }
@@ -232,7 +234,7 @@ public class BrushableBlockEntity extends BlockEntity {
       }
    }
 
-   public void setLootTable(ResourceLocation var1, long var2) {
+   public void setLootTable(ResourceKey<LootTable> var1, long var2) {
       this.lootTable = var1;
       this.lootTableSeed = var2;
    }

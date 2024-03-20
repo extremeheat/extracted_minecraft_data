@@ -26,7 +26,7 @@ import org.apache.commons.lang3.StringUtils;
 public class ResourceLocation implements Comparable<ResourceLocation> {
    public static final Codec<ResourceLocation> CODEC = Codec.STRING.comapFlatMap(ResourceLocation::read, ResourceLocation::toString).stable();
    public static final StreamCodec<ByteBuf, ResourceLocation> STREAM_CODEC = ByteBufCodecs.STRING_UTF8.map(ResourceLocation::new, ResourceLocation::toString);
-   private static final SimpleCommandExceptionType ERROR_INVALID = new SimpleCommandExceptionType(Component.translatable("argument.id.invalid"));
+   public static final SimpleCommandExceptionType ERROR_INVALID = new SimpleCommandExceptionType(Component.translatable("argument.id.invalid"));
    public static final char NAMESPACE_SEPARATOR = ':';
    public static final String DEFAULT_NAMESPACE = "minecraft";
    public static final String REALMS_NAMESPACE = "realms";
@@ -169,20 +169,40 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
       return var1 + "." + this.toLanguageKey() + "." + var2;
    }
 
-   public static ResourceLocation read(StringReader var0) throws CommandSyntaxException {
+   private static String readGreedy(StringReader var0) {
       int var1 = var0.getCursor();
 
       while(var0.canRead() && isAllowedInResourceLocation(var0.peek())) {
          var0.skip();
       }
 
-      String var2 = var0.getString().substring(var1, var0.getCursor());
+      return var0.getString().substring(var1, var0.getCursor());
+   }
+
+   public static ResourceLocation read(StringReader var0) throws CommandSyntaxException {
+      int var1 = var0.getCursor();
+      String var2 = readGreedy(var0);
 
       try {
          return new ResourceLocation(var2);
       } catch (ResourceLocationException var4) {
          var0.setCursor(var1);
          throw ERROR_INVALID.createWithContext(var0);
+      }
+   }
+
+   public static ResourceLocation readNonEmpty(StringReader var0) throws CommandSyntaxException {
+      int var1 = var0.getCursor();
+      String var2 = readGreedy(var0);
+      if (var2.isEmpty()) {
+         throw ERROR_INVALID.createWithContext(var0);
+      } else {
+         try {
+            return new ResourceLocation(var2);
+         } catch (ResourceLocationException var4) {
+            var0.setCursor(var1);
+            throw ERROR_INVALID.createWithContext(var0);
+         }
       }
    }
 

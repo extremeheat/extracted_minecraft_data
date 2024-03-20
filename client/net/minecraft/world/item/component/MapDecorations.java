@@ -5,7 +5,8 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Map;
 import net.minecraft.Util;
-import net.minecraft.world.level.saveddata.maps.MapDecoration;
+import net.minecraft.core.Holder;
+import net.minecraft.world.level.saveddata.maps.MapDecorationType;
 
 public record MapDecorations(Map<String, MapDecorations.Entry> c) {
    private final Map<String, MapDecorations.Entry> decorations;
@@ -22,14 +23,14 @@ public record MapDecorations(Map<String, MapDecorations.Entry> c) {
       return new MapDecorations(Util.copyAndPut(this.decorations, var1, var2));
    }
 
-   public static record Entry(MapDecoration.Type b, double c, double d, float e) {
-      private final MapDecoration.Type type;
+   public static record Entry(Holder<MapDecorationType> b, double c, double d, float e) {
+      private final Holder<MapDecorationType> type;
       private final double x;
       private final double z;
       private final float rotation;
       public static final Codec<MapDecorations.Entry> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
-                  MapDecoration.Type.CODEC.fieldOf("type").forGetter(MapDecorations.Entry::type),
+                  MapDecorationType.CODEC.fieldOf("type").forGetter(MapDecorations.Entry::type),
                   Codec.DOUBLE.fieldOf("x").forGetter(MapDecorations.Entry::x),
                   Codec.DOUBLE.fieldOf("z").forGetter(MapDecorations.Entry::z),
                   Codec.FLOAT.fieldOf("rotation").forGetter(MapDecorations.Entry::rotation)
@@ -37,7 +38,7 @@ public record MapDecorations(Map<String, MapDecorations.Entry> c) {
                .apply(var0, MapDecorations.Entry::new)
       );
 
-      public Entry(MapDecoration.Type var1, double var2, double var4, float var6) {
+      public Entry(Holder<MapDecorationType> var1, double var2, double var4, float var6) {
          super();
          this.type = var1;
          this.x = var2;

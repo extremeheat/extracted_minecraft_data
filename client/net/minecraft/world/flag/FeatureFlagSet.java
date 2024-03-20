@@ -60,6 +60,10 @@ public final class FeatureFlagSet {
       }
    }
 
+   public boolean isEmpty() {
+      return this.equals(EMPTY);
+   }
+
    public boolean isSubsetOf(FeatureFlagSet var1) {
       if (this.universe == null) {
          return true;

@@ -7,19 +7,25 @@ import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentSerialization;
 import net.minecraft.server.network.Filterable;
+import net.minecraft.util.ExtraCodecs;
+import net.minecraft.util.JavaOps;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class SetWrittenBookPagesFunction extends LootItemConditionalFunction {
+   public static final Codec<Component> PAGE_CODEC = ExtraCodecs.validate(
+      ComponentSerialization.CODEC, var0 -> WrittenBookContent.CONTENT_CODEC.encodeStart(JavaOps.INSTANCE, var0).map(var1 -> var0)
+   );
    public static final Codec<SetWrittenBookPagesFunction> CODEC = RecordCodecBuilder.create(
       var0 -> commonFields(var0)
             .and(
                var0.group(
-                  WrittenBookContent.PAGES_CODEC.fieldOf("pages").forGetter(var0x -> var0x.pages),
-                  ListOperation.Type.OPERATION_MAP_CODEC.forGetter(var0x -> var0x.pageOperation)
+                  WrittenBookContent.pagesCodec(PAGE_CODEC).fieldOf("pages").forGetter(var0x -> var0x.pages),
+                  ListOperation.codec(100).forGetter(var0x -> var0x.pageOperation)
                )
             )
             .apply(var0, SetWrittenBookPagesFunction::new)

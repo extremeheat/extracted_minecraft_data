@@ -3,7 +3,7 @@ package net.minecraft.world.item.armortrim;
 import java.util.Optional;
 import net.minecraft.Util;
 import net.minecraft.core.Holder;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
@@ -57,8 +57,8 @@ public class TrimPatterns {
       register(var0, Items.HOST_ARMOR_TRIM_SMITHING_TEMPLATE, HOST);
    }
 
-   public static Optional<Holder.Reference<TrimPattern>> getFromTemplate(RegistryAccess var0, ItemStack var1) {
-      return var0.registryOrThrow(Registries.TRIM_PATTERN).holders().filter(var1x -> var1.is(((TrimPattern)var1x.value()).templateItem())).findFirst();
+   public static Optional<Holder.Reference<TrimPattern>> getFromTemplate(HolderLookup.Provider var0, ItemStack var1) {
+      return var0.lookupOrThrow(Registries.TRIM_PATTERN).listElements().filter(var1x -> var1.is(((TrimPattern)var1x.value()).templateItem())).findFirst();
    }
 
    public static void register(BootstrapContext<TrimPattern> var0, Item var1, ResourceKey<TrimPattern> var2) {

@@ -11,9 +11,9 @@ import net.minecraft.world.level.storage.loot.ValidationContext;
 
 public class SequenceFunction implements LootItemFunction {
    public static final Codec<SequenceFunction> CODEC = RecordCodecBuilder.create(
-      var0 -> var0.group(LootItemFunctions.CODEC.listOf().fieldOf("functions").forGetter(var0x -> var0x.functions)).apply(var0, SequenceFunction::new)
+      var0 -> var0.group(LootItemFunctions.TYPED_CODEC.listOf().fieldOf("functions").forGetter(var0x -> var0x.functions)).apply(var0, SequenceFunction::new)
    );
-   public static final Codec<SequenceFunction> INLINE_CODEC = LootItemFunctions.CODEC.listOf().xmap(SequenceFunction::new, var0 -> var0.functions);
+   public static final Codec<SequenceFunction> INLINE_CODEC = LootItemFunctions.TYPED_CODEC.listOf().xmap(SequenceFunction::new, var0 -> var0.functions);
    private final List<LootItemFunction> functions;
    private final BiFunction<ItemStack, LootContext, ItemStack> compositeFunction;
 

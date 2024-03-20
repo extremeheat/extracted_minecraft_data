@@ -2,7 +2,7 @@ package net.minecraft.world.item.crafting;
 
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
-import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.DyeItem;
@@ -42,7 +42,7 @@ public class ArmorDyeRecipe extends CustomRecipe {
       return !var3.isEmpty() && !var4.isEmpty();
    }
 
-   public ItemStack assemble(CraftingContainer var1, RegistryAccess var2) {
+   public ItemStack assemble(CraftingContainer var1, HolderLookup.Provider var2) {
       ArrayList var3 = Lists.newArrayList();
       ItemStack var4 = ItemStack.EMPTY;
 

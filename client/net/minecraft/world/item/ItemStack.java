@@ -51,6 +51,7 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.stats.Stats;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
@@ -58,6 +59,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
@@ -352,7 +354,7 @@ public final class ItemStack implements DataComponentHolder {
    }
 
    public int getMaxStackSize() {
-      return this.getItem().getMaxStackSize();
+      return this.getOrDefault(DataComponents.MAX_STACK_SIZE, Integer.valueOf(1));
    }
 
    public boolean isStackable() {
@@ -360,11 +362,7 @@ public final class ItemStack implements DataComponentHolder {
    }
 
    public boolean isDamageableItem() {
-      if (!this.isEmpty() && this.getItem().canBeDepleted()) {
-         return !this.has(DataComponents.UNBREAKABLE) && this.has(DataComponents.DAMAGE);
-      } else {
-         return false;
-      }
+      return this.has(DataComponents.MAX_DAMAGE) && !this.has(DataComponents.UNBREAKABLE) && this.has(DataComponents.DAMAGE);
    }
 
    public boolean isDamaged() {
@@ -380,7 +378,7 @@ public final class ItemStack implements DataComponentHolder {
    }
 
    public int getMaxDamage() {
-      return this.getItem().getMaxDamage();
+      return this.getOrDefault(DataComponents.MAX_DAMAGE, Integer.valueOf(0));
    }
 
    public void hurtAndBreak(int var1, RandomSource var2, @Nullable ServerPlayer var3, Runnable var4) {
@@ -467,7 +465,7 @@ public final class ItemStack implements DataComponentHolder {
    }
 
    public boolean isCorrectToolForDrops(BlockState var1) {
-      return this.getItem().isCorrectToolForDrops(var1);
+      return this.getItem().isCorrectToolForDrops(this, var1);
    }
 
    public InteractionResult interactLivingEntity(Player var1, LivingEntity var2, InteractionHand var3) {
@@ -649,63 +647,67 @@ public final class ItemStack implements DataComponentHolder {
    }
 
    public List<Component> getTooltipLines(@Nullable Player var1, TooltipFlag var2) {
-      ArrayList var3 = Lists.newArrayList();
-      MutableComponent var4 = Component.empty().append(this.getHoverName()).withStyle(this.getRarity().color);
-      if (this.has(DataComponents.CUSTOM_NAME)) {
-         var4.withStyle(ChatFormatting.ITALIC);
-      }
-
-      var3.add(var4);
-      if (!var2.isAdvanced() && !this.has(DataComponents.CUSTOM_NAME) && this.is(Items.FILLED_MAP)) {
-         MapId var5 = this.get(DataComponents.MAP_ID);
-         if (var5 != null) {
-            var3.add(MapItem.getTooltipForId(var5));
-         }
-      }
-
-      Consumer var9 = var3::add;
-      if (!this.has(DataComponents.HIDE_ADDITIONAL_TOOLTIP)) {
-         this.getItem().appendHoverText(this, var1 == null ? null : var1.level(), var3, var2);
-      }
-
-      this.addToTooltip(DataComponents.TRIM, var9, var2);
-      this.addToTooltip(DataComponents.STORED_ENCHANTMENTS, var9, var2);
-      this.addToTooltip(DataComponents.ENCHANTMENTS, var9, var2);
-      this.addToTooltip(DataComponents.DYED_COLOR, var9, var2);
-      this.addToTooltip(DataComponents.LORE, var9, var2);
-      this.addAttributeTooltips(var9, var1);
-      this.addToTooltip(DataComponents.UNBREAKABLE, var9, var2);
-      AdventureModePredicate var6 = this.get(DataComponents.CAN_BREAK);
-      if (var6 != null && var6.showInTooltip()) {
-         var9.accept(CommonComponents.EMPTY);
-         var9.accept(AdventureModePredicate.CAN_BREAK_HEADER);
-         var6.addToTooltip(var9);
-      }
-
-      AdventureModePredicate var7 = this.get(DataComponents.CAN_PLACE_ON);
-      if (var7 != null && var7.showInTooltip()) {
-         var9.accept(CommonComponents.EMPTY);
-         var9.accept(AdventureModePredicate.CAN_PLACE_HEADER);
-         var7.addToTooltip(var9);
-      }
-
-      if (var2.isAdvanced()) {
-         if (this.isDamaged()) {
-            var3.add(Component.translatable("item.durability", this.getMaxDamage() - this.getDamageValue(), this.getMaxDamage()));
+      if (!var2.isCreative() && this.has(DataComponents.HIDE_TOOLTIP)) {
+         return List.of();
+      } else {
+         ArrayList var3 = Lists.newArrayList();
+         MutableComponent var4 = Component.empty().append(this.getHoverName()).withStyle(this.getRarity().color());
+         if (this.has(DataComponents.CUSTOM_NAME)) {
+            var4.withStyle(ChatFormatting.ITALIC);
          }
 
-         var3.add(Component.literal(BuiltInRegistries.ITEM.getKey(this.getItem()).toString()).withStyle(ChatFormatting.DARK_GRAY));
-         int var8 = this.components.size();
-         if (var8 > 0) {
-            var3.add(Component.translatable("item.components", var8).withStyle(ChatFormatting.DARK_GRAY));
+         var3.add(var4);
+         if (!var2.isAdvanced() && !this.has(DataComponents.CUSTOM_NAME) && this.is(Items.FILLED_MAP)) {
+            MapId var5 = this.get(DataComponents.MAP_ID);
+            if (var5 != null) {
+               var3.add(MapItem.getTooltipForId(var5));
+            }
          }
-      }
 
-      if (var1 != null && !this.getItem().isEnabled(var1.level().enabledFeatures())) {
-         var3.add(DISABLED_ITEM_TOOLTIP);
-      }
+         Consumer var9 = var3::add;
+         if (!this.has(DataComponents.HIDE_ADDITIONAL_TOOLTIP)) {
+            this.getItem().appendHoverText(this, var1 == null ? null : var1.level(), var3, var2);
+         }
 
-      return var3;
+         this.addToTooltip(DataComponents.TRIM, var9, var2);
+         this.addToTooltip(DataComponents.STORED_ENCHANTMENTS, var9, var2);
+         this.addToTooltip(DataComponents.ENCHANTMENTS, var9, var2);
+         this.addToTooltip(DataComponents.DYED_COLOR, var9, var2);
+         this.addToTooltip(DataComponents.LORE, var9, var2);
+         this.addAttributeTooltips(var9, var1);
+         this.addToTooltip(DataComponents.UNBREAKABLE, var9, var2);
+         AdventureModePredicate var6 = this.get(DataComponents.CAN_BREAK);
+         if (var6 != null && var6.showInTooltip()) {
+            var9.accept(CommonComponents.EMPTY);
+            var9.accept(AdventureModePredicate.CAN_BREAK_HEADER);
+            var6.addToTooltip(var9);
+         }
+
+         AdventureModePredicate var7 = this.get(DataComponents.CAN_PLACE_ON);
+         if (var7 != null && var7.showInTooltip()) {
+            var9.accept(CommonComponents.EMPTY);
+            var9.accept(AdventureModePredicate.CAN_PLACE_HEADER);
+            var7.addToTooltip(var9);
+         }
+
+         if (var2.isAdvanced()) {
+            if (this.isDamaged()) {
+               var3.add(Component.translatable("item.durability", this.getMaxDamage() - this.getDamageValue(), this.getMaxDamage()));
+            }
+
+            var3.add(Component.literal(BuiltInRegistries.ITEM.getKey(this.getItem()).toString()).withStyle(ChatFormatting.DARK_GRAY));
+            int var8 = this.components.size();
+            if (var8 > 0) {
+               var3.add(Component.translatable("item.components", var8).withStyle(ChatFormatting.DARK_GRAY));
+            }
+         }
+
+         if (var1 != null && !this.getItem().isEnabled(var1.level().enabledFeatures())) {
+            var3.add(DISABLED_ITEM_TOOLTIP);
+         }
+
+         return var3;
+      }
    }
 
    private void addAttributeTooltips(Consumer<Component> var1, @Nullable Player var2) {
@@ -788,7 +790,16 @@ public final class ItemStack implements DataComponentHolder {
    }
 
    public Rarity getRarity() {
-      return this.getItem().getRarity(this);
+      Rarity var1 = this.getOrDefault(DataComponents.RARITY, Rarity.COMMON);
+      if (!this.isEnchanted()) {
+         return var1;
+      } else {
+         return switch(var1) {
+            case COMMON, UNCOMMON -> Rarity.RARE;
+            case RARE -> Rarity.EPIC;
+            default -> var1;
+         };
+      }
    }
 
    public boolean isEnchantable() {
@@ -845,7 +856,7 @@ public final class ItemStack implements DataComponentHolder {
 
       MutableComponent var2 = ComponentUtils.wrapInSquareBrackets(var1);
       if (!this.isEmpty()) {
-         var2.withStyle(this.getRarity().color)
+         var2.withStyle(this.getRarity().color())
             .withStyle(var1x -> var1x.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, new HoverEvent.ItemStackInfo(this))));
       }
 
@@ -878,6 +889,12 @@ public final class ItemStack implements DataComponentHolder {
       this.count = var1;
    }
 
+   public void limitSize(int var1) {
+      if (!this.isEmpty() && this.getCount() > var1) {
+         this.setCount(var1);
+      }
+   }
+
    public void grow(int var1) {
       this.setCount(this.getCount() + var1);
    }
@@ -900,10 +917,6 @@ public final class ItemStack implements DataComponentHolder {
       this.getItem().onDestroyed(var1);
    }
 
-   public boolean isEdible() {
-      return this.getItem().isEdible();
-   }
-
    public SoundEvent getDrinkingSound() {
       return this.getItem().getDrinkingSound();
    }
@@ -914,5 +927,9 @@ public final class ItemStack implements DataComponentHolder {
 
    public SoundEvent getBreakingSound() {
       return this.getItem().getBreakingSound();
+   }
+
+   public boolean canBeHurtBy(DamageSource var1) {
+      return !this.has(DataComponents.FIRE_RESISTANT) || !var1.is(DamageTypeTags.IS_FIRE);
    }
 }

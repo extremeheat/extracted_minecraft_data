@@ -21,7 +21,6 @@ import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
@@ -124,9 +123,7 @@ public abstract class Animal extends AgeableMob {
       return 1 + this.level().random.nextInt(3);
    }
 
-   public boolean isFood(ItemStack var1) {
-      return var1.is(Items.WHEAT);
-   }
+   public abstract boolean isFood(ItemStack var1);
 
    @Override
    public InteractionResult mobInteract(Player var1, InteractionHand var2) {

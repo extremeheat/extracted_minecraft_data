@@ -12,7 +12,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
@@ -35,6 +35,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceSerializationContext;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePieceType;
 import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.storage.loot.LootTable;
 import org.slf4j.Logger;
 
 public abstract class StructurePiece {
@@ -364,7 +365,7 @@ public abstract class StructurePiece {
       return var1.isAir() || var1.liquid() || var1.is(Blocks.GLOW_LICHEN) || var1.is(Blocks.SEAGRASS) || var1.is(Blocks.TALL_SEAGRASS);
    }
 
-   protected boolean createChest(WorldGenLevel var1, BoundingBox var2, RandomSource var3, int var4, int var5, int var6, ResourceLocation var7) {
+   protected boolean createChest(WorldGenLevel var1, BoundingBox var2, RandomSource var3, int var4, int var5, int var6, ResourceKey<LootTable> var7) {
       return this.createChest(var1, var2, var3, this.getWorldPos(var4, var5, var6), var7, null);
    }
 
@@ -412,7 +413,9 @@ public abstract class StructurePiece {
       }
    }
 
-   protected boolean createChest(ServerLevelAccessor var1, BoundingBox var2, RandomSource var3, BlockPos var4, ResourceLocation var5, @Nullable BlockState var6) {
+   protected boolean createChest(
+      ServerLevelAccessor var1, BoundingBox var2, RandomSource var3, BlockPos var4, ResourceKey<LootTable> var5, @Nullable BlockState var6
+   ) {
       if (var2.isInside(var4) && !var1.getBlockState(var4).is(Blocks.CHEST)) {
          if (var6 == null) {
             var6 = reorient(var1, var4, Blocks.CHEST.defaultBlockState());
@@ -431,7 +434,7 @@ public abstract class StructurePiece {
    }
 
    protected boolean createDispenser(
-      WorldGenLevel var1, BoundingBox var2, RandomSource var3, int var4, int var5, int var6, Direction var7, ResourceLocation var8
+      WorldGenLevel var1, BoundingBox var2, RandomSource var3, int var4, int var5, int var6, Direction var7, ResourceKey<LootTable> var8
    ) {
       BlockPos.MutableBlockPos var9 = this.getWorldPos(var4, var5, var6);
       if (var2.isInside(var9) && !var1.getBlockState(var9).is(Blocks.DISPENSER)) {

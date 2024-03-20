@@ -22,7 +22,7 @@ import net.minecraft.server.network.Filterable;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.player.Player;
 
-public record WrittenBookContent(Filterable<String> k, String l, int m, List<Filterable<Component>> n, boolean o)
+public record WrittenBookContent(Filterable<String> l, String m, int n, List<Filterable<Component>> o, boolean p)
    implements BookContent<Component, WrittenBookContent> {
    private final Filterable<String> title;
    private final String author;
@@ -36,8 +36,8 @@ public record WrittenBookContent(Filterable<String> k, String l, int m, List<Fil
    public static final int TITLE_MAX_LENGTH = 32;
    public static final int MAX_GENERATION = 3;
    public static final int MAX_CRAFTABLE_GENERATION = 2;
-   private static final Codec<Filterable<Component>> PAGE_CODEC = Filterable.codec(ComponentSerialization.flatCodec(32767));
-   public static final Codec<List<Filterable<Component>>> PAGES_CODEC = ExtraCodecs.sizeLimitedList(PAGE_CODEC.listOf(), 100);
+   public static final Codec<Component> CONTENT_CODEC = ComponentSerialization.flatCodec(32767);
+   public static final Codec<List<Filterable<Component>>> PAGES_CODEC = pagesCodec(CONTENT_CODEC);
    public static final Codec<WrittenBookContent> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                Filterable.codec(ExtraCodecs.sizeLimitedString(0, 32)).fieldOf("title").forGetter(WrittenBookContent::title),
@@ -69,6 +69,14 @@ public record WrittenBookContent(Filterable<String> k, String l, int m, List<Fil
       this.generation = var3;
       this.pages = var4;
       this.resolved = var5;
+   }
+
+   private static Codec<Filterable<Component>> pageCodec(Codec<Component> var0) {
+      return Filterable.codec(var0);
+   }
+
+   public static Codec<List<Filterable<Component>>> pagesCodec(Codec<Component> var0) {
+      return ExtraCodecs.sizeLimitedList(pageCodec(var0).listOf(), 100);
    }
 
    @Nullable

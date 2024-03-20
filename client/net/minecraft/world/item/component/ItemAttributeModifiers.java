@@ -53,6 +53,10 @@ public record ItemAttributeModifiers(List<ItemAttributeModifiers.Entry> e, boole
       this.showInTooltip = var2;
    }
 
+   public ItemAttributeModifiers withTooltip(boolean var1) {
+      return new ItemAttributeModifiers(this.modifiers, var1);
+   }
+
    public static ItemAttributeModifiers.Builder builder() {
       return new ItemAttributeModifiers.Builder();
    }

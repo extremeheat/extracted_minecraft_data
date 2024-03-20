@@ -6,6 +6,7 @@ import java.util.List;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
@@ -50,6 +51,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import net.minecraft.world.level.levelgen.structure.templatesystem.rule.blockentity.AppendLoot;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
+import net.minecraft.world.level.storage.loot.LootTable;
 
 public class OceanRuinPieces {
    static final StructureProcessor WARM_SUSPICIOUS_BLOCK_PROCESSOR = archyRuleProcessor(
@@ -127,7 +129,7 @@ public class OceanRuinPieces {
       super();
    }
 
-   private static StructureProcessor archyRuleProcessor(Block var0, Block var1, ResourceLocation var2) {
+   private static StructureProcessor archyRuleProcessor(Block var0, Block var1, ResourceKey<LootTable> var2) {
       return new CappedProcessor(
          new RuleProcessor(
             List.of(

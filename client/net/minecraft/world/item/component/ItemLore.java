@@ -16,11 +16,11 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.TooltipFlag;
 
-public record ItemLore(List<Component> d, List<Component> e) implements TooltipProvider {
+public record ItemLore(List<Component> e, List<Component> f) implements TooltipProvider {
    private final List<Component> lines;
    private final List<Component> styledLines;
    public static final ItemLore EMPTY = new ItemLore(List.of());
-   private static final int MAX_LINES = 256;
+   public static final int MAX_LINES = 256;
    private static final Style LORE_STYLE = Style.EMPTY.withColor(ChatFormatting.DARK_PURPLE).withItalic(true);
    public static final Codec<ItemLore> CODEC = ExtraCodecs.sizeLimitedList(ComponentSerialization.FLAT_CODEC.listOf(), 256)
       .xmap(ItemLore::new, ItemLore::lines);

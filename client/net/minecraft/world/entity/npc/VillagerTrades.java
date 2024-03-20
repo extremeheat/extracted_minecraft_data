@@ -53,7 +53,8 @@ import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.structure.Structure;
-import net.minecraft.world.level.saveddata.maps.MapDecoration;
+import net.minecraft.world.level.saveddata.maps.MapDecorationType;
+import net.minecraft.world.level.saveddata.maps.MapDecorationTypes;
 import net.minecraft.world.level.saveddata.maps.MapItemSavedData;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -350,14 +351,17 @@ public class VillagerTrades {
                   new VillagerTrades.ItemListing[]{
                      new VillagerTrades.EmeraldForItems(Items.GLASS_PANE, 11, 16, 10),
                      new VillagerTrades.TreasureMapForEmeralds(
-                        13, StructureTags.ON_OCEAN_EXPLORER_MAPS, "filled_map.monument", MapDecoration.Type.MONUMENT, 12, 5
+                        13, StructureTags.ON_OCEAN_EXPLORER_MAPS, "filled_map.monument", MapDecorationTypes.OCEAN_MONUMENT, 12, 5
                      )
                   },
                   3,
                   new VillagerTrades.ItemListing[]{
                      new VillagerTrades.EmeraldForItems(Items.COMPASS, 1, 12, 20),
                      new VillagerTrades.TreasureMapForEmeralds(
-                        14, StructureTags.ON_WOODLAND_EXPLORER_MAPS, "filled_map.mansion", MapDecoration.Type.MANSION, 12, 10
+                        14, StructureTags.ON_WOODLAND_EXPLORER_MAPS, "filled_map.mansion", MapDecorationTypes.WOODLAND_MANSION, 12, 10
+                     ),
+                     new VillagerTrades.TreasureMapForEmeralds(
+                        12, StructureTags.ON_TRIAL_CHAMBERS_MAPS, "filled_map.trial_chambers", MapDecorationTypes.TRIAL_CHAMBERS, 12, 10
                      )
                   },
                   4,
@@ -728,25 +732,25 @@ public class VillagerTrades {
       )
    );
    private static final VillagerTrades.TreasureMapForEmeralds DESERT_MAP = new VillagerTrades.TreasureMapForEmeralds(
-      8, StructureTags.ON_DESERT_VILLAGE_MAPS, "filled_map.village_desert", MapDecoration.Type.DESERT_VILLAGE, 12, 5
+      8, StructureTags.ON_DESERT_VILLAGE_MAPS, "filled_map.village_desert", MapDecorationTypes.DESERT_VILLAGE, 12, 5
    );
    private static final VillagerTrades.TreasureMapForEmeralds SAVANNA_MAP = new VillagerTrades.TreasureMapForEmeralds(
-      8, StructureTags.ON_SAVANNA_VILLAGE_MAPS, "filled_map.village_savanna", MapDecoration.Type.SAVANNA_VILLAGE, 12, 5
+      8, StructureTags.ON_SAVANNA_VILLAGE_MAPS, "filled_map.village_savanna", MapDecorationTypes.SAVANNA_VILLAGE, 12, 5
    );
    private static final VillagerTrades.TreasureMapForEmeralds PLAINS_MAP = new VillagerTrades.TreasureMapForEmeralds(
-      8, StructureTags.ON_PLAINS_VILLAGE_MAPS, "filled_map.village_plains", MapDecoration.Type.PLAINS_VILLAGE, 12, 5
+      8, StructureTags.ON_PLAINS_VILLAGE_MAPS, "filled_map.village_plains", MapDecorationTypes.PLAINS_VILLAGE, 12, 5
    );
    private static final VillagerTrades.TreasureMapForEmeralds TAIGA_MAP = new VillagerTrades.TreasureMapForEmeralds(
-      8, StructureTags.ON_TAIGA_VILLAGE_MAPS, "filled_map.village_taiga", MapDecoration.Type.TAIGA_VILLAGE, 12, 5
+      8, StructureTags.ON_TAIGA_VILLAGE_MAPS, "filled_map.village_taiga", MapDecorationTypes.TAIGA_VILLAGE, 12, 5
    );
    private static final VillagerTrades.TreasureMapForEmeralds SNOWY_MAP = new VillagerTrades.TreasureMapForEmeralds(
-      8, StructureTags.ON_SNOWY_VILLAGE_MAPS, "filled_map.village_snowy", MapDecoration.Type.SNOWY_VILLAGE, 12, 5
+      8, StructureTags.ON_SNOWY_VILLAGE_MAPS, "filled_map.village_snowy", MapDecorationTypes.SNOWY_VILLAGE, 12, 5
    );
    private static final VillagerTrades.TreasureMapForEmeralds JUNGLE_MAP = new VillagerTrades.TreasureMapForEmeralds(
-      8, StructureTags.ON_JUNGLE_EXPLORER_MAPS, "filled_map.explorer_jungle", MapDecoration.Type.JUNGLE_TEMPLE, 12, 5
+      8, StructureTags.ON_JUNGLE_EXPLORER_MAPS, "filled_map.explorer_jungle", MapDecorationTypes.JUNGLE_TEMPLE, 12, 5
    );
    private static final VillagerTrades.TreasureMapForEmeralds SWAMP_MAP = new VillagerTrades.TreasureMapForEmeralds(
-      8, StructureTags.ON_SWAMP_EXPLORER_MAPS, "filled_map.explorer_swamp", MapDecoration.Type.SWAMP_HUT, 12, 5
+      8, StructureTags.ON_SWAMP_EXPLORER_MAPS, "filled_map.explorer_swamp", MapDecorationTypes.SWAMP_HUT, 12, 5
    );
    public static final Map<VillagerProfession, Int2ObjectMap<VillagerTrades.ItemListing[]>> EXPERIMENTAL_TRADES = Map.of(
       VillagerProfession.LIBRARIAN,
@@ -1069,7 +1073,12 @@ public class VillagerTrades {
             3,
             new VillagerTrades.ItemListing[]{
                new VillagerTrades.EmeraldForItems(Items.COMPASS, 1, 12, 20),
-               new VillagerTrades.TreasureMapForEmeralds(13, StructureTags.ON_OCEAN_EXPLORER_MAPS, "filled_map.monument", MapDecoration.Type.MONUMENT, 12, 10)
+               new VillagerTrades.TreasureMapForEmeralds(
+                  13, StructureTags.ON_OCEAN_EXPLORER_MAPS, "filled_map.monument", MapDecorationTypes.OCEAN_MONUMENT, 12, 10
+               ),
+               new VillagerTrades.TreasureMapForEmeralds(
+                  12, StructureTags.ON_TRIAL_CHAMBERS_MAPS, "filled_map.trial_chambers", MapDecorationTypes.TRIAL_CHAMBERS, 12, 10
+               )
             },
             4,
             new VillagerTrades.ItemListing[]{
@@ -1094,7 +1103,9 @@ public class VillagerTrades {
             5,
             new VillagerTrades.ItemListing[]{
                new VillagerTrades.ItemsForEmeralds(Items.GLOBE_BANNER_PATTERN, 8, 1, 30),
-               new VillagerTrades.TreasureMapForEmeralds(14, StructureTags.ON_WOODLAND_EXPLORER_MAPS, "filled_map.mansion", MapDecoration.Type.MANSION, 1, 30)
+               new VillagerTrades.TreasureMapForEmeralds(
+                  14, StructureTags.ON_WOODLAND_EXPLORER_MAPS, "filled_map.mansion", MapDecorationTypes.WOODLAND_MANSION, 1, 30
+               )
             }
          )
       )
@@ -1614,11 +1625,11 @@ public class VillagerTrades {
       private final int emeraldCost;
       private final TagKey<Structure> destination;
       private final String displayName;
-      private final MapDecoration.Type destinationType;
+      private final Holder<MapDecorationType> destinationType;
       private final int maxUses;
       private final int villagerXp;
 
-      public TreasureMapForEmeralds(int var1, TagKey<Structure> var2, String var3, MapDecoration.Type var4, int var5, int var6) {
+      public TreasureMapForEmeralds(int var1, TagKey<Structure> var2, String var3, Holder<MapDecorationType> var4, int var5, int var6) {
          super();
          this.emeraldCost = var1;
          this.destination = var2;

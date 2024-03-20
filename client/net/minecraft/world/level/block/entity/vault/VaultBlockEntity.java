@@ -20,7 +20,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.RegistryOps;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -298,8 +298,8 @@ public class VaultBlockEntity extends BlockEntity {
          }
       }
 
-      private static ItemStack getRandomDisplayItemFromLootTable(ServerLevel var0, BlockPos var1, ResourceLocation var2) {
-         LootTable var3 = var0.getServer().getLootData().getLootTable(var2);
+      private static ItemStack getRandomDisplayItemFromLootTable(ServerLevel var0, BlockPos var1, ResourceKey<LootTable> var2) {
+         LootTable var3 = var0.getServer().reloadableRegistries().getLootTable(var2);
          LootParams var4 = new LootParams.Builder(var0).withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(var1)).create(LootContextParamSets.VAULT);
          ObjectArrayList var5 = var3.getRandomItems(var4);
          return var5.isEmpty() ? ItemStack.EMPTY : Util.getRandom(var5, var0.getRandom());
@@ -315,7 +315,7 @@ public class VaultBlockEntity extends BlockEntity {
       }
 
       private static List<ItemStack> resolveItemsToEject(ServerLevel var0, VaultConfig var1, BlockPos var2, Player var3) {
-         LootTable var4 = var0.getServer().getLootData().getLootTable(var1.lootTable());
+         LootTable var4 = var0.getServer().reloadableRegistries().getLootTable(var1.lootTable());
          LootParams var5 = new LootParams.Builder(var0)
             .withParameter(LootContextParams.ORIGIN, Vec3.atCenterOf(var2))
             .withLuck(var3.getLuck())
@@ -325,7 +325,7 @@ public class VaultBlockEntity extends BlockEntity {
       }
 
       private static boolean canEjectReward(VaultConfig var0, VaultState var1) {
-         return !var0.lootTable().equals(BuiltInLootTables.EMPTY) && !var0.keyItem().isEmpty() && var1 != VaultState.INACTIVE;
+         return var0.lootTable() != BuiltInLootTables.EMPTY && !var0.keyItem().isEmpty() && var1 != VaultState.INACTIVE;
       }
 
       private static boolean isValidToInsert(VaultConfig var0, ItemStack var1) {

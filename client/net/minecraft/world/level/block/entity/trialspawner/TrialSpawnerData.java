@@ -17,10 +17,11 @@ import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.random.SimpleWeightedRandomList;
@@ -29,6 +30,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.SpawnData;
+import net.minecraft.world.level.storage.loot.LootTable;
 
 public class TrialSpawnerData {
    public static final String TAG_SPAWN_DATA = "spawn_data";
@@ -41,7 +43,7 @@ public class TrialSpawnerData {
                Codec.LONG.optionalFieldOf("next_mob_spawns_at", 0L).forGetter(var0x -> var0x.nextMobSpawnsAt),
                Codec.intRange(0, 2147483647).optionalFieldOf("total_mobs_spawned", 0).forGetter(var0x -> var0x.totalMobsSpawned),
                SpawnData.CODEC.optionalFieldOf("spawn_data").forGetter(var0x -> var0x.nextSpawnData),
-               ResourceLocation.CODEC.optionalFieldOf("ejecting_loot_table").forGetter(var0x -> var0x.ejectingLootTable)
+               ResourceKey.codec(Registries.LOOT_TABLE).optionalFieldOf("ejecting_loot_table").forGetter(var0x -> var0x.ejectingLootTable)
             )
             .apply(var0, TrialSpawnerData::new)
    );
@@ -51,7 +53,7 @@ public class TrialSpawnerData {
    protected long nextMobSpawnsAt;
    protected int totalMobsSpawned;
    protected Optional<SpawnData> nextSpawnData;
-   protected Optional<ResourceLocation> ejectingLootTable;
+   protected Optional<ResourceKey<LootTable>> ejectingLootTable;
    protected SimpleWeightedRandomList<SpawnData> spawnPotentials;
    @Nullable
    protected Entity displayEntity;
@@ -62,7 +64,7 @@ public class TrialSpawnerData {
       this(Collections.emptySet(), Collections.emptySet(), 0L, 0L, 0, Optional.empty(), Optional.empty());
    }
 
-   public TrialSpawnerData(Set<UUID> var1, Set<UUID> var2, long var3, long var5, int var7, Optional<SpawnData> var8, Optional<ResourceLocation> var9) {
+   public TrialSpawnerData(Set<UUID> var1, Set<UUID> var2, long var3, long var5, int var7, Optional<SpawnData> var8, Optional<ResourceKey<LootTable>> var9) {
       super();
       this.detectedPlayers.addAll(var1);
       this.currentMobs.addAll(var2);

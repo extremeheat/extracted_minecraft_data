@@ -33,8 +33,8 @@ public class LootPool {
    public static final Codec<LootPool> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                LootPoolEntries.CODEC.listOf().fieldOf("entries").forGetter(var0x -> var0x.entries),
-               ExtraCodecs.strictOptionalField(LootItemConditions.CODEC.listOf(), "conditions", List.of()).forGetter(var0x -> var0x.conditions),
-               ExtraCodecs.strictOptionalField(LootItemFunctions.CODEC.listOf(), "functions", List.of()).forGetter(var0x -> var0x.functions),
+               ExtraCodecs.strictOptionalField(LootItemConditions.DIRECT_CODEC.listOf(), "conditions", List.of()).forGetter(var0x -> var0x.conditions),
+               ExtraCodecs.strictOptionalField(LootItemFunctions.ROOT_CODEC.listOf(), "functions", List.of()).forGetter(var0x -> var0x.functions),
                NumberProviders.CODEC.fieldOf("rolls").forGetter(var0x -> var0x.rolls),
                NumberProviders.CODEC.fieldOf("bonus_rolls").orElse(ConstantValue.exactly(0.0F)).forGetter(var0x -> var0x.bonusRolls)
             )

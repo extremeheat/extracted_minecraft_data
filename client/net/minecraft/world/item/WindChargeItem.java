@@ -21,9 +21,9 @@ public class WindChargeItem extends Item {
    @Override
    public InteractionResultHolder<ItemStack> use(Level var1, Player var2, InteractionHand var3) {
       if (!var1.isClientSide()) {
-         Vec3 var4 = new Vec3(var2.position().x(), var2.getEyeY(), var2.position().z()).add(var2.getForward().scale(0.800000011920929));
+         Vec3 var4 = var2.getEyePosition().add(var2.getForward().scale(0.800000011920929));
          if (!var1.getBlockState(BlockPos.containing(var4)).canBeReplaced()) {
-            var4 = new Vec3(var2.position().x(), var2.getEyeY(), var2.position().z()).add(var2.getForward().scale(0.05000000074505806));
+            var4 = var2.getEyePosition().add(var2.getForward().scale(0.05000000074505806));
          }
 
          WindCharge var5 = new WindCharge(var2, var1, var4.x(), var4.y(), var4.z());
@@ -44,10 +44,7 @@ public class WindChargeItem extends Item {
       ItemStack var6 = var2.getItemInHand(var3);
       var2.getCooldowns().addCooldown(this, 10);
       var2.awardStat(Stats.ITEM_USED.get(this));
-      if (!var2.isCreative()) {
-         var6.shrink(1);
-      }
-
+      var6.consume(1, var2);
       return InteractionResultHolder.sidedSuccess(var6, var1.isClientSide());
    }
 }

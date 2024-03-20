@@ -7,8 +7,12 @@ import java.util.Optional;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
+import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.animal.Cat;
@@ -19,6 +23,8 @@ import net.minecraft.world.entity.animal.MushroomCow;
 import net.minecraft.world.entity.animal.Parrot;
 import net.minecraft.world.entity.animal.Rabbit;
 import net.minecraft.world.entity.animal.TropicalFish;
+import net.minecraft.world.entity.animal.Wolf;
+import net.minecraft.world.entity.animal.WolfVariant;
 import net.minecraft.world.entity.animal.axolotl.Axolotl;
 import net.minecraft.world.entity.animal.frog.Frog;
 import net.minecraft.world.entity.animal.horse.Horse;
@@ -36,18 +42,6 @@ public class EntitySubPredicates {
    public static final MapCodec<FishingHookPredicate> FISHING_HOOK = register("fishing_hook", FishingHookPredicate.CODEC);
    public static final MapCodec<PlayerPredicate> PLAYER = register("player", PlayerPredicate.CODEC);
    public static final MapCodec<SlimePredicate> SLIME = register("slime", SlimePredicate.CODEC);
-   public static final EntitySubPredicates.EntityVariantPredicateType<CatVariant> CAT = register(
-      "cat",
-      EntitySubPredicates.EntityVariantPredicateType.create(
-         BuiltInRegistries.CAT_VARIANT, var0 -> var0 instanceof Cat var1 ? Optional.of(var1.getVariant()) : Optional.empty()
-      )
-   );
-   public static final EntitySubPredicates.EntityVariantPredicateType<FrogVariant> FROG = register(
-      "frog",
-      EntitySubPredicates.EntityVariantPredicateType.create(
-         BuiltInRegistries.FROG_VARIANT, var0 -> var0 instanceof Frog var1 ? Optional.of(var1.getVariant()) : Optional.empty()
-      )
-   );
    public static final EntitySubPredicates.EntityVariantPredicateType<Axolotl.Variant> AXOLOTL = register(
       "axolotl",
       EntitySubPredicates.EntityVariantPredicateType.create(
@@ -70,12 +64,6 @@ public class EntitySubPredicates {
       "mooshroom",
       EntitySubPredicates.EntityVariantPredicateType.create(
          MushroomCow.MushroomType.CODEC, var0 -> var0 instanceof MushroomCow var1 ? Optional.of(var1.getVariant()) : Optional.empty()
-      )
-   );
-   public static final EntitySubPredicates.EntityVariantPredicateType<Holder<PaintingVariant>> PAINTING = register(
-      "painting",
-      EntitySubPredicates.EntityVariantPredicateType.create(
-         BuiltInRegistries.PAINTING_VARIANT.holderByNameCodec(), var0 -> var0 instanceof Painting var1 ? Optional.of(var1.getVariant()) : Optional.empty()
       )
    );
    public static final EntitySubPredicates.EntityVariantPredicateType<Rabbit.Variant> RABBIT = register(
@@ -114,6 +102,30 @@ public class EntitySubPredicates {
          TropicalFish.Pattern.CODEC, var0 -> var0 instanceof TropicalFish var1 ? Optional.of(var1.getVariant()) : Optional.empty()
       )
    );
+   public static final EntitySubPredicates.EntityHolderVariantPredicateType<PaintingVariant> PAINTING = register(
+      "painting",
+      EntitySubPredicates.EntityHolderVariantPredicateType.create(
+         Registries.PAINTING_VARIANT, var0 -> var0 instanceof Painting var1 ? Optional.of(var1.getVariant()) : Optional.empty()
+      )
+   );
+   public static final EntitySubPredicates.EntityHolderVariantPredicateType<CatVariant> CAT = register(
+      "cat",
+      EntitySubPredicates.EntityHolderVariantPredicateType.create(
+         Registries.CAT_VARIANT, var0 -> var0 instanceof Cat var1 ? Optional.of(var1.getVariant()) : Optional.empty()
+      )
+   );
+   public static final EntitySubPredicates.EntityHolderVariantPredicateType<FrogVariant> FROG = register(
+      "frog",
+      EntitySubPredicates.EntityHolderVariantPredicateType.create(
+         Registries.FROG_VARIANT, var0 -> var0 instanceof Frog var1 ? Optional.of(var1.getVariant()) : Optional.empty()
+      )
+   );
+   public static final EntitySubPredicates.EntityHolderVariantPredicateType<WolfVariant> WOLF = register(
+      "wolf",
+      EntitySubPredicates.EntityHolderVariantPredicateType.create(
+         Registries.WOLF_VARIANT, var0 -> var0 instanceof Wolf var1 ? Optional.of(var1.getVariant()) : Optional.empty()
+      )
+   );
 
    public EntitySubPredicates() {
       super();
@@ -128,16 +140,66 @@ public class EntitySubPredicates {
       return var1;
    }
 
+   private static <V> EntitySubPredicates.EntityHolderVariantPredicateType<V> register(
+      String var0, EntitySubPredicates.EntityHolderVariantPredicateType<V> var1
+   ) {
+      Registry.register(BuiltInRegistries.ENTITY_SUB_PREDICATE_TYPE, var0, var1.codec);
+      return var1;
+   }
+
    public static MapCodec<? extends EntitySubPredicate> bootstrap(Registry<MapCodec<? extends EntitySubPredicate>> var0) {
       return LIGHTNING;
    }
 
-   public static EntitySubPredicate variant(CatVariant var0) {
-      return CAT.createPredicate(var0);
+   public static EntitySubPredicate catVariant(Holder<CatVariant> var0) {
+      return CAT.createPredicate(HolderSet.direct(var0));
    }
 
-   public static EntitySubPredicate variant(FrogVariant var0) {
-      return FROG.createPredicate(var0);
+   public static EntitySubPredicate frogVariant(Holder<FrogVariant> var0) {
+      return FROG.createPredicate(HolderSet.direct(var0));
+   }
+
+   public static class EntityHolderVariantPredicateType<V> {
+      final MapCodec<EntitySubPredicates.EntityHolderVariantPredicateType<V>.Instance> codec;
+      final Function<Entity, Optional<Holder<V>>> getter;
+
+      public static <V> EntitySubPredicates.EntityHolderVariantPredicateType<V> create(
+         ResourceKey<? extends Registry<V>> var0, Function<Entity, Optional<Holder<V>>> var1
+      ) {
+         return new EntitySubPredicates.EntityHolderVariantPredicateType<>(var0, var1);
+      }
+
+      public EntityHolderVariantPredicateType(ResourceKey<? extends Registry<V>> var1, Function<Entity, Optional<Holder<V>>> var2) {
+         super();
+         this.getter = var2;
+         this.codec = RecordCodecBuilder.mapCodec(
+            var2x -> var2x.group(RegistryCodecs.homogeneousList(var1).fieldOf("variant").forGetter(var0 -> var0.variants))
+                  .apply(var2x, var1xx -> new EntitySubPredicates.EntityHolderVariantPredicateType.Instance(var1xx))
+         );
+      }
+
+      public EntitySubPredicate createPredicate(HolderSet<V> var1) {
+         return new EntitySubPredicates.EntityHolderVariantPredicateType.Instance(var1);
+      }
+
+      class Instance implements EntitySubPredicate {
+         final HolderSet<V> variants;
+
+         Instance(HolderSet<V> var2) {
+            super();
+            this.variants = var2;
+         }
+
+         @Override
+         public MapCodec<EntitySubPredicates.EntityHolderVariantPredicateType<V>.Instance> codec() {
+            return EntityHolderVariantPredicateType.this.codec;
+         }
+
+         @Override
+         public boolean matches(Entity var1, ServerLevel var2, @Nullable Vec3 var3) {
+            return EntityHolderVariantPredicateType.this.getter.apply(var1).filter(this.variants::contains).isPresent();
+         }
+      }
    }
 
    public static class EntityVariantPredicateType<V> {

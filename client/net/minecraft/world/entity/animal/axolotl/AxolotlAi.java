@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.datafixers.util.Pair;
 import java.util.Optional;
+import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.util.valueproviders.UniformInt;
@@ -35,7 +36,7 @@ import net.minecraft.world.entity.ai.behavior.declarative.BehaviorBuilder;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.ai.memory.MemoryStatus;
 import net.minecraft.world.entity.schedule.Activity;
-import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 public class AxolotlAi {
@@ -172,7 +173,7 @@ public class AxolotlAi {
       return BehaviorUtils.isBreeding(var0) ? Optional.empty() : var0.getBrain().getMemory(MemoryModuleType.NEAREST_ATTACKABLE);
    }
 
-   public static Ingredient getTemptations() {
-      return Ingredient.of(ItemTags.AXOLOTL_TEMPT_ITEMS);
+   public static Predicate<ItemStack> getTemptations() {
+      return var0 -> var0.is(ItemTags.AXOLOTL_FOOD);
    }
 }

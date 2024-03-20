@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
@@ -31,7 +31,7 @@ public class GiveGiftToHero extends Behavior<Villager> {
    private static final int MIN_TIME_BETWEEN_GIFTS = 600;
    private static final int MAX_TIME_BETWEEN_GIFTS = 6600;
    private static final int TIME_TO_DELAY_FOR_HEAD_TO_FINISH_TURNING = 20;
-   private static final Map<VillagerProfession, ResourceLocation> GIFTS = Util.make(Maps.newHashMap(), var0 -> {
+   private static final Map<VillagerProfession, ResourceKey<LootTable>> GIFTS = Util.make(Maps.newHashMap(), var0 -> {
       var0.put(VillagerProfession.ARMORER, BuiltInLootTables.ARMORER_GIFT);
       var0.put(VillagerProfession.BUTCHER, BuiltInLootTables.BUTCHER_GIFT);
       var0.put(VillagerProfession.CARTOGRAPHER, BuiltInLootTables.CARTOGRAPHER_GIFT);
@@ -122,7 +122,7 @@ public class GiveGiftToHero extends Behavior<Villager> {
       } else {
          VillagerProfession var2 = var1.getVillagerData().getProfession();
          if (GIFTS.containsKey(var2)) {
-            LootTable var3 = var1.level().getServer().getLootData().getLootTable(GIFTS.get(var2));
+            LootTable var3 = var1.level().getServer().reloadableRegistries().getLootTable(GIFTS.get(var2));
             LootParams var4 = new LootParams.Builder((ServerLevel)var1.level())
                .withParameter(LootContextParams.ORIGIN, var1.position())
                .withParameter(LootContextParams.THIS_ENTITY, var1)

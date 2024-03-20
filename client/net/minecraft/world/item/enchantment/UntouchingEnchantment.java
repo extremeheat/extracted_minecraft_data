@@ -1,21 +1,8 @@
 package net.minecraft.world.item.enchantment;
 
-import net.minecraft.tags.ItemTags;
-import net.minecraft.world.entity.EquipmentSlot;
-
 public class UntouchingEnchantment extends Enchantment {
-   protected UntouchingEnchantment(Enchantment.Rarity var1, EquipmentSlot... var2) {
-      super(var1, ItemTags.MINING_LOOT_ENCHANTABLE, var2);
-   }
-
-   @Override
-   public int getMinCost(int var1) {
-      return 15;
-   }
-
-   @Override
-   public int getMaxCost(int var1) {
-      return super.getMinCost(var1) + 50;
+   protected UntouchingEnchantment(Enchantment.EnchantmentDefinition var1) {
+      super(var1);
    }
 
    @Override
