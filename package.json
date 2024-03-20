@@ -12,5 +12,8 @@
   "license": "ISC",
   "devDependencies": {
     "standard": "^17.1.0"
+  },
+  "dependencies": {
+    "gh-helpers": "extremeheat/gh-helpers"
   }
 }
