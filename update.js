@@ -60,6 +60,8 @@ async function postprocess (version, oldVersion, isMajor, oldMajor) {
         payload: JSON.stringify({
           repo: await github.getRepoDetails(),
           mode: 'release',
+          oldVersion: oldMajor,
+          newVersion: version,
           pr
         })
       }
@@ -78,6 +80,8 @@ async function postprocess (version, oldVersion, isMajor, oldMajor) {
         payload: JSON.stringify({
           repo: await github.getRepoDetails(),
           mode: 'snapshot',
+          oldVersion: oldVersion,
+          newVersion: version,
           commit: sha
         })
       }
