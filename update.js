@@ -116,5 +116,3 @@ async function main () {
 }
 
 main()
-exec('git pull')
-postprocess('client24w12a', 'client24w11a', false, '')
