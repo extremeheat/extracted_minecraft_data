@@ -9,6 +9,7 @@ function exec (a, b) {
 
 function decomp (version) {
   exec('git pull')
+  exec('ls .git/refs/heads/')
   if (fs.existsSync(join(__dirname, '/.git/refs/heads/client' + version))) {
     console.log('Already have decompiled', version, 'no work to do')
     return
