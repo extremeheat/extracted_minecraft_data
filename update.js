@@ -1,3 +1,4 @@
+if (!process.env.CI) globalThis.isMocha = true // gh-helpers
 const fs = require('fs')
 const cp = require('child_process')
 const github = require('gh-helpers')()
@@ -7,10 +8,20 @@ function exec (a, b) {
   return cp.execSync(a, { ...b, stdio: 'inherit' })
 }
 
+function getCommitSHA (version) {
+  const local = join(__dirname, '/.git/refs/heads/client' + version)
+  const remote = join(__dirname, '/.git/refs/remotes/origin/client' + version)
+  if (fs.existsSync(local)) {
+    return fs.readFileSync(local, 'ascii').trim()
+  } else if (fs.existsSync(remote)) {
+    return fs.readFileSync(remote, 'ascii').trim()
+  }
+}
+
 function decomp (version) {
   exec('git pull')
-  exec('ls .git/refs/heads/')
-  if (fs.existsSync(join(__dirname, '/.git/refs/heads/client' + version))) {
+  exec('ls -R .git/refs/')
+  if (getCommitSHA(version)) {
     console.log('Already have decompiled', version, 'no work to do')
     return
   }
@@ -55,7 +66,7 @@ async function postprocess (version, oldVersion, isMajor, oldMajor) {
     })
   } else {
     // A snapshot. Get the latest commit SHA on clientlatest and send it over to workflow dispatch so it will diff and make a comment for the commit to clientlatest
-    const sha = fs.readFileSync(join(__dirname, '/.git/refs/heads/clientlatest', 'ascii'))
+    const sha = getCommitSHA('latest')
     console.log('Snapshot update!', version, 'from', oldVersion, 'Commit SHA:', sha)
     github.sendWorkflowDispatch({
       owner: 'extremeheat',
