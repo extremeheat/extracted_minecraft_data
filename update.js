@@ -56,7 +56,7 @@ async function postprocess (version, oldVersion, isMajor, oldMajor) {
       workflow: 'dispatch.yml',
       branch: 'main',
       inputs: {
-        action: 'mcpc/reviewUpdateChanges',
+        action: 'minecraft/pcReviewUpdateChanges',
         payload: JSON.stringify({
           repo: await github.getRepoDetails(),
           mode: 'release',
@@ -76,7 +76,7 @@ async function postprocess (version, oldVersion, isMajor, oldMajor) {
       workflow: 'dispatch.yml',
       branch: 'main',
       inputs: {
-        action: 'mcpc/reviewUpdateChanges',
+        action: 'minecraft/pcReviewUpdateChanges',
         payload: JSON.stringify({
           repo: await github.getRepoDetails(),
           mode: 'snapshot',
