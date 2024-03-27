@@ -20,6 +20,7 @@ import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.properties.Property;
 import net.minecraft.world.phys.BlockHitResult;
@@ -28,6 +29,7 @@ public class VaultBlock extends BaseEntityBlock {
    public static final MapCodec<VaultBlock> CODEC = simpleCodec(VaultBlock::new);
    public static final Property<VaultState> STATE = BlockStateProperties.VAULT_STATE;
    public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
+   public static final BooleanProperty OMINOUS = BlockStateProperties.OMINOUS;
 
    @Override
    public MapCodec<VaultBlock> codec() {
@@ -36,7 +38,9 @@ public class VaultBlock extends BaseEntityBlock {
 
    public VaultBlock(BlockBehaviour.Properties var1) {
       super(var1);
-      this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(STATE, VaultState.INACTIVE));
+      this.registerDefaultState(
+         this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(STATE, VaultState.INACTIVE).setValue(OMINOUS, Boolean.valueOf(false))
+      );
    }
 
    // $VF: Could not properly define all variable types!
@@ -66,7 +70,7 @@ public class VaultBlock extends BaseEntityBlock {
 
    @Override
    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
-      var1.add(FACING, STATE);
+      var1.add(FACING, STATE, OMINOUS);
    }
 
    @Nullable

@@ -3,10 +3,10 @@ package net.minecraft.client.resources.metadata.gui;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.OptionalInt;
-import java.util.function.Function;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 
@@ -20,17 +20,15 @@ public interface GuiSpriteScaling {
       private final int width;
       private final int height;
       private final GuiSpriteScaling.NineSlice.Border border;
-      public static final Codec<GuiSpriteScaling.NineSlice> CODEC = ExtraCodecs.validate(
-         RecordCodecBuilder.create(
+      public static final MapCodec<GuiSpriteScaling.NineSlice> CODEC = RecordCodecBuilder.mapCodec(
             var0 -> var0.group(
                      ExtraCodecs.POSITIVE_INT.fieldOf("width").forGetter(GuiSpriteScaling.NineSlice::width),
                      ExtraCodecs.POSITIVE_INT.fieldOf("height").forGetter(GuiSpriteScaling.NineSlice::height),
                      GuiSpriteScaling.NineSlice.Border.CODEC.fieldOf("border").forGetter(GuiSpriteScaling.NineSlice::border)
                   )
                   .apply(var0, GuiSpriteScaling.NineSlice::new)
-         ),
-         GuiSpriteScaling.NineSlice::validate
-      );
+         )
+         .validate(GuiSpriteScaling.NineSlice::validate);
 
       public NineSlice(int var1, int var2, GuiSpriteScaling.NineSlice.Border var3) {
          super();
@@ -75,10 +73,7 @@ public interface GuiSpriteScaling {
                   .apply(var0, GuiSpriteScaling.NineSlice.Border::new)
          );
          static final Codec<GuiSpriteScaling.NineSlice.Border> CODEC = Codec.either(VALUE_CODEC, RECORD_CODEC)
-            .xmap(
-               var0 -> (GuiSpriteScaling.NineSlice.Border)var0.map(Function.identity(), Function.identity()),
-               var0 -> var0.unpackValue().isPresent() ? Either.left(var0) : Either.right(var0)
-            );
+            .xmap(Either::unwrap, var0 -> var0.unpackValue().isPresent() ? Either.left(var0) : Either.right(var0));
 
          public Border(int var1, int var2, int var3, int var4) {
             super();
@@ -95,7 +90,7 @@ public interface GuiSpriteScaling {
    }
 
    public static record Stretch() implements GuiSpriteScaling {
-      public static final Codec<GuiSpriteScaling.Stretch> CODEC = Codec.unit(GuiSpriteScaling.Stretch::new);
+      public static final MapCodec<GuiSpriteScaling.Stretch> CODEC = MapCodec.unit(GuiSpriteScaling.Stretch::new);
 
       public Stretch() {
          super();
@@ -110,7 +105,7 @@ public interface GuiSpriteScaling {
    public static record Tile(int d, int e) implements GuiSpriteScaling {
       private final int width;
       private final int height;
-      public static final Codec<GuiSpriteScaling.Tile> CODEC = RecordCodecBuilder.create(
+      public static final MapCodec<GuiSpriteScaling.Tile> CODEC = RecordCodecBuilder.mapCodec(
          var0 -> var0.group(
                   ExtraCodecs.POSITIVE_INT.fieldOf("width").forGetter(GuiSpriteScaling.Tile::width),
                   ExtraCodecs.POSITIVE_INT.fieldOf("height").forGetter(GuiSpriteScaling.Tile::height)
@@ -137,9 +132,9 @@ public interface GuiSpriteScaling {
 
       public static final Codec<GuiSpriteScaling.Type> CODEC = StringRepresentable.fromEnum(GuiSpriteScaling.Type::values);
       private final String key;
-      private final Codec<? extends GuiSpriteScaling> codec;
+      private final MapCodec<? extends GuiSpriteScaling> codec;
 
-      private Type(String var3, Codec<? extends GuiSpriteScaling> var4) {
+      private Type(String var3, MapCodec<? extends GuiSpriteScaling> var4) {
          this.key = var3;
          this.codec = var4;
       }
@@ -149,7 +144,7 @@ public interface GuiSpriteScaling {
          return this.key;
       }
 
-      public Codec<? extends GuiSpriteScaling> codec() {
+      public MapCodec<? extends GuiSpriteScaling> codec() {
          return this.codec;
       }
    }

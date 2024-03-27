@@ -1,6 +1,7 @@
 package net.minecraft.world.level.levelgen.feature.treedecorators;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -16,10 +17,9 @@ import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
 public class BeehiveDecorator extends TreeDecorator {
-   public static final Codec<BeehiveDecorator> CODEC = Codec.floatRange(0.0F, 1.0F)
+   public static final MapCodec<BeehiveDecorator> CODEC = Codec.floatRange(0.0F, 1.0F)
       .fieldOf("probability")
-      .xmap(BeehiveDecorator::new, var0 -> var0.probability)
-      .codec();
+      .xmap(BeehiveDecorator::new, var0 -> var0.probability);
    private static final Direction WORLDGEN_FACING = Direction.SOUTH;
    private static final Direction[] SPAWN_DIRECTIONS = Direction.Plane.HORIZONTAL
       .stream()

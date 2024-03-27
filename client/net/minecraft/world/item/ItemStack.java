@@ -21,7 +21,6 @@ import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
@@ -91,36 +90,29 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.slf4j.Logger;
 
 public final class ItemStack implements DataComponentHolder {
-   private static final Codec<Holder<Item>> ITEM_NON_AIR_CODEC = ExtraCodecs.validate(
-      BuiltInRegistries.ITEM.holderByNameCodec(),
-      var0 -> var0.is(Items.AIR.builtInRegistryHolder()) ? DataResult.error(() -> "Item must not be minecraft:air") : DataResult.success(var0)
-   );
-   public static final Codec<ItemStack> CODEC = ExtraCodecs.lazyInitializedCodec(
-      () -> ExtraCodecs.validate(
-            RecordCodecBuilder.create(
+   private static final Codec<Holder<Item>> ITEM_NON_AIR_CODEC = BuiltInRegistries.ITEM
+      .holderByNameCodec()
+      .validate(var0 -> var0.is(Items.AIR.builtInRegistryHolder()) ? DataResult.error(() -> "Item must not be minecraft:air") : DataResult.success(var0));
+   public static final Codec<ItemStack> CODEC = Codec.lazyInitialized(
+      () -> RecordCodecBuilder.create(
                var0 -> var0.group(
                         ITEM_NON_AIR_CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder),
                         ExtraCodecs.POSITIVE_INT.fieldOf("count").orElse(1).forGetter(ItemStack::getCount),
-                        ExtraCodecs.strictOptionalField(DataComponentPatch.CODEC, "components", DataComponentPatch.EMPTY)
-                           .forGetter(var0x -> var0x.components.asPatch())
+                        DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter(var0x -> var0x.components.asPatch())
                      )
                      .apply(var0, ItemStack::new)
-            ),
-            ItemStack::validate
-         )
+            )
+            .validate(ItemStack::validate)
    );
-   public static final Codec<ItemStack> SINGLE_ITEM_CODEC = ExtraCodecs.lazyInitializedCodec(
-      () -> ExtraCodecs.validate(
-            RecordCodecBuilder.create(
+   public static final Codec<ItemStack> SINGLE_ITEM_CODEC = Codec.lazyInitialized(
+      () -> RecordCodecBuilder.create(
                var0 -> var0.group(
                         ITEM_NON_AIR_CODEC.fieldOf("id").forGetter(ItemStack::getItemHolder),
-                        ExtraCodecs.strictOptionalField(DataComponentPatch.CODEC, "components", DataComponentPatch.EMPTY)
-                           .forGetter(var0x -> var0x.components.asPatch())
+                        DataComponentPatch.CODEC.optionalFieldOf("components", DataComponentPatch.EMPTY).forGetter(var0x -> var0x.components.asPatch())
                      )
                      .apply(var0, (var0x, var1) -> new ItemStack(var0x, 1, var1))
-            ),
-            ItemStack::validate
-         )
+            )
+            .validate(ItemStack::validate)
    );
    public static final Codec<ItemStack> OPTIONAL_CODEC = ExtraCodecs.optionalEmptyMap(CODEC)
       .xmap(var0 -> var0.orElse(ItemStack.EMPTY), var0 -> var0.isEmpty() ? Optional.empty() : Optional.of(var0));
@@ -199,6 +191,10 @@ public final class ItemStack implements DataComponentHolder {
    @Override
    public DataComponentMap getComponents() {
       return (DataComponentMap)(!this.isEmpty() ? this.components : DataComponentMap.EMPTY);
+   }
+
+   public DataComponentMap getPrototype() {
+      return !this.isEmpty() ? this.getItem().components() : DataComponentMap.EMPTY;
    }
 
    public DataComponentPatch getComponentsPatch() {
@@ -337,7 +333,7 @@ public final class ItemStack implements DataComponentHolder {
       if (this.isEmpty()) {
          throw new IllegalStateException("Cannot encode empty ItemStack");
       } else {
-         return Util.getOrThrow(CODEC.encode(this, var1.createSerializationContext(NbtOps.INSTANCE), var2), IllegalStateException::new);
+         return (Tag)CODEC.encode(this, var1.createSerializationContext(NbtOps.INSTANCE), var2).getOrThrow();
       }
    }
 
@@ -345,7 +341,7 @@ public final class ItemStack implements DataComponentHolder {
       if (this.isEmpty()) {
          throw new IllegalStateException("Cannot encode empty ItemStack");
       } else {
-         return Util.getOrThrow(CODEC.encodeStart(var1.createSerializationContext(NbtOps.INSTANCE), this), IllegalStateException::new);
+         return (Tag)CODEC.encodeStart(var1.createSerializationContext(NbtOps.INSTANCE), this).getOrThrow();
       }
    }
 
@@ -535,8 +531,8 @@ public final class ItemStack implements DataComponentHolder {
       }
    }
 
-   public static MapCodec<ItemStack> optionalFieldOf(String var0) {
-      return CODEC.optionalFieldOf(var0).xmap(var0x -> var0x.orElse(EMPTY), var0x -> var0x.isEmpty() ? Optional.empty() : Optional.of(var0x));
+   public static MapCodec<ItemStack> lenientOptionalFieldOf(String var0) {
+      return CODEC.lenientOptionalFieldOf(var0).xmap(var0x -> var0x.orElse(EMPTY), var0x -> var0x.isEmpty() ? Optional.empty() : Optional.of(var0x));
    }
 
    public static int hashItemAndComponents(@Nullable ItemStack var0) {
@@ -636,7 +632,12 @@ public final class ItemStack implements DataComponentHolder {
 
    public Component getHoverName() {
       Component var1 = this.get(DataComponents.CUSTOM_NAME);
-      return var1 != null ? var1 : this.getItem().getName(this);
+      if (var1 != null) {
+         return var1;
+      } else {
+         Component var2 = this.get(DataComponents.ITEM_NAME);
+         return var2 != null ? var2 : this.getItem().getName(this);
+      }
    }
 
    private <T extends TooltipProvider> void addToTooltip(DataComponentType<T> var1, Consumer<Component> var2, TooltipFlag var3) {
@@ -817,6 +818,10 @@ public final class ItemStack implements DataComponentHolder {
 
    public boolean isEnchanted() {
       return !this.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY).isEmpty();
+   }
+
+   public ItemEnchantments getEnchantments() {
+      return this.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
    }
 
    public boolean isFramed() {

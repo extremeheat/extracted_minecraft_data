@@ -13,30 +13,30 @@ import net.minecraft.world.phys.Vec3;
 public enum VaultState implements StringRepresentable {
    INACTIVE("inactive", VaultState.LightLevel.HALF_LIT) {
       @Override
-      protected void onEnter(ServerLevel var1, BlockPos var2, VaultConfig var3, VaultSharedData var4) {
+      protected void onEnter(ServerLevel var1, BlockPos var2, VaultConfig var3, VaultSharedData var4, boolean var5) {
          var4.setDisplayItem(ItemStack.EMPTY);
-         var1.levelEvent(3016, var2, 0);
+         var1.levelEvent(3016, var2, var5 ? 1 : 0);
       }
    },
    ACTIVE("active", VaultState.LightLevel.LIT) {
       @Override
-      protected void onEnter(ServerLevel var1, BlockPos var2, VaultConfig var3, VaultSharedData var4) {
+      protected void onEnter(ServerLevel var1, BlockPos var2, VaultConfig var3, VaultSharedData var4, boolean var5) {
          if (!var4.hasDisplayItem()) {
             VaultBlockEntity.Server.cycleDisplayItemFromLootTable(var1, this, var3, var4, var2);
          }
 
-         var1.levelEvent(3015, var2, 0);
+         var1.levelEvent(3015, var2, var5 ? 1 : 0);
       }
    },
    UNLOCKING("unlocking", VaultState.LightLevel.LIT) {
       @Override
-      protected void onEnter(ServerLevel var1, BlockPos var2, VaultConfig var3, VaultSharedData var4) {
+      protected void onEnter(ServerLevel var1, BlockPos var2, VaultConfig var3, VaultSharedData var4, boolean var5) {
          var1.playSound(null, var2, SoundEvents.VAULT_INSERT_ITEM, SoundSource.BLOCKS);
       }
    },
    EJECTING("ejecting", VaultState.LightLevel.LIT) {
       @Override
-      protected void onEnter(ServerLevel var1, BlockPos var2, VaultConfig var3, VaultSharedData var4) {
+      protected void onEnter(ServerLevel var1, BlockPos var2, VaultConfig var3, VaultSharedData var4, boolean var5) {
          var1.playSound(null, var2, SoundEvents.VAULT_OPEN_SHUTTER, SoundSource.BLOCKS);
       }
 
@@ -109,12 +109,12 @@ public enum VaultState implements StringRepresentable {
       return var4.hasConnectedPlayers() ? ACTIVE : INACTIVE;
    }
 
-   public void onTransition(ServerLevel var1, BlockPos var2, VaultState var3, VaultConfig var4, VaultSharedData var5) {
+   public void onTransition(ServerLevel var1, BlockPos var2, VaultState var3, VaultConfig var4, VaultSharedData var5, boolean var6) {
       this.onExit(var1, var2, var4, var5);
-      var3.onEnter(var1, var2, var4, var5);
+      var3.onEnter(var1, var2, var4, var5, var6);
    }
 
-   protected void onEnter(ServerLevel var1, BlockPos var2, VaultConfig var3, VaultSharedData var4) {
+   protected void onEnter(ServerLevel var1, BlockPos var2, VaultConfig var3, VaultSharedData var4, boolean var5) {
    }
 
    protected void onExit(ServerLevel var1, BlockPos var2, VaultConfig var3, VaultSharedData var4) {

@@ -23,7 +23,7 @@ public class HolderSetCodec<E> implements Codec<HolderSet<E>> {
    private final Codec<Either<TagKey<E>, List<Holder<E>>>> registryAwareCodec;
 
    private static <E> Codec<List<Holder<E>>> homogenousList(Codec<Holder<E>> var0, boolean var1) {
-      Codec var2 = ExtraCodecs.validate(var0.listOf(), ExtraCodecs.ensureHomogenous(Holder::kind));
+      Codec var2 = var0.listOf().validate(ExtraCodecs.ensureHomogenous(Holder::kind));
       return var1
          ? var2
          : Codec.either(var2, var0)

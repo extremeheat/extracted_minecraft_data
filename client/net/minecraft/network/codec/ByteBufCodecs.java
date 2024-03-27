@@ -19,7 +19,6 @@ import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.function.ToIntFunction;
-import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.IdMap;
@@ -274,8 +273,8 @@ public interface ByteBufCodecs {
    static <T> StreamCodec<ByteBuf, T> fromCodec(Codec<T> var0, Supplier<NbtAccounter> var1) {
       return tagCodec(var1)
          .map(
-            var1x -> Util.getOrThrow(var0.parse(NbtOps.INSTANCE, var1x), var1xx -> new DecoderException("Failed to decode: " + var1xx + " " + var1x)),
-            var1x -> Util.getOrThrow(var0.encodeStart(NbtOps.INSTANCE, var1x), var1xx -> new EncoderException("Failed to encode: " + var1xx + " " + var1x))
+            var1x -> (T)var0.parse(NbtOps.INSTANCE, var1x).getOrThrow(var1xx -> new DecoderException("Failed to decode: " + var1xx + " " + var1x)),
+            var1x -> (Tag)var0.encodeStart(NbtOps.INSTANCE, var1x).getOrThrow(var1xx -> new EncoderException("Failed to encode: " + var1xx + " " + var1x))
          );
    }
 
@@ -293,12 +292,12 @@ public interface ByteBufCodecs {
          public T decode(RegistryFriendlyByteBuf var1) {
             Tag var2x = (Tag)var2.decode(var1);
             RegistryOps var3 = var1.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-            return Util.getOrThrow(var0.parse(var3, var2x), var1x -> new DecoderException("Failed to decode: " + var1x + " " + var2x));
+            return (T)var0.parse(var3, var2x).getOrThrow(var1x -> new DecoderException("Failed to decode: " + var1x + " " + var2x));
          }
 
          public void encode(RegistryFriendlyByteBuf var1, T var2x) {
             RegistryOps var3 = var1.registryAccess().createSerializationContext(NbtOps.INSTANCE);
-            Tag var4 = Util.getOrThrow(var0.encodeStart(var3, var2x), var1x -> new EncoderException("Failed to encode: " + var1x + " " + var2x));
+            Tag var4 = (Tag)var0.encodeStart(var3, var2x).getOrThrow(var1x -> new EncoderException("Failed to encode: " + var1x + " " + var2x));
             var2.encode(var1, var4);
          }
       };

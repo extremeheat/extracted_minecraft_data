@@ -10,33 +10,34 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.InclusiveRange;
 import net.minecraft.util.random.SimpleWeightedRandomList;
 
-public record SpawnData(CompoundTag d, Optional<SpawnData.CustomSpawnRules> e) {
+public record SpawnData(CompoundTag d, Optional<SpawnData.CustomSpawnRules> e, Optional<ResourceLocation> f) {
    private final CompoundTag entityToSpawn;
    private final Optional<SpawnData.CustomSpawnRules> customSpawnRules;
+   private final Optional<ResourceLocation> equipmentLootTable;
    public static final String ENTITY_TAG = "entity";
    public static final Codec<SpawnData> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                CompoundTag.CODEC.fieldOf("entity").forGetter(var0x -> var0x.entityToSpawn),
-               SpawnData.CustomSpawnRules.CODEC.optionalFieldOf("custom_spawn_rules").forGetter(var0x -> var0x.customSpawnRules)
+               SpawnData.CustomSpawnRules.CODEC.optionalFieldOf("custom_spawn_rules").forGetter(var0x -> var0x.customSpawnRules),
+               ResourceLocation.CODEC.optionalFieldOf("equipment_loot_table").forGetter(var0x -> var0x.equipmentLootTable)
             )
             .apply(var0, SpawnData::new)
    );
    public static final Codec<SimpleWeightedRandomList<SpawnData>> LIST_CODEC = SimpleWeightedRandomList.wrappedCodecAllowingEmpty(CODEC);
 
    public SpawnData() {
-      this(new CompoundTag(), Optional.empty());
+      this(new CompoundTag(), Optional.empty(), Optional.empty());
    }
 
-   public SpawnData(CompoundTag var1, Optional<SpawnData.CustomSpawnRules> var2) {
+   public SpawnData(CompoundTag var1, Optional<SpawnData.CustomSpawnRules> var2, Optional<ResourceLocation> var3) {
       super();
       if (var1.contains("id")) {
-         ResourceLocation var3 = ResourceLocation.tryParse(var1.getString("id"));
-         if (var3 != null) {
-            var1.putString("id", var3.toString());
+         ResourceLocation var4 = ResourceLocation.tryParse(var1.getString("id"));
+         if (var4 != null) {
+            var1.putString("id", var4.toString());
          } else {
             var1.remove("id");
          }
@@ -44,6 +45,7 @@ public record SpawnData(CompoundTag d, Optional<SpawnData.CustomSpawnRules> e) {
 
       this.entityToSpawn = var1;
       this.customSpawnRules = var2;
+      this.equipmentLootTable = var3;
    }
 
    public CompoundTag getEntityToSpawn() {
@@ -52,6 +54,10 @@ public record SpawnData(CompoundTag d, Optional<SpawnData.CustomSpawnRules> e) {
 
    public Optional<SpawnData.CustomSpawnRules> getCustomSpawnRules() {
       return this.customSpawnRules;
+   }
+
+   public Optional<ResourceLocation> getEquipmentLootTable() {
+      return this.equipmentLootTable;
    }
 
    public static record CustomSpawnRules(InclusiveRange<Integer> b, InclusiveRange<Integer> c) {
@@ -77,7 +83,7 @@ public record SpawnData(CompoundTag d, Optional<SpawnData.CustomSpawnRules> e) {
       }
 
       private static MapCodec<InclusiveRange<Integer>> lightLimit(String var0) {
-         return ExtraCodecs.validate(InclusiveRange.INT.optionalFieldOf(var0, LIGHT_RANGE), SpawnData.CustomSpawnRules::checkLightBoundaries);
+         return InclusiveRange.INT.lenientOptionalFieldOf(var0, LIGHT_RANGE).validate(SpawnData.CustomSpawnRules::checkLightBoundaries);
       }
 
       public boolean isValidPosition(BlockPos var1, ServerLevel var2) {

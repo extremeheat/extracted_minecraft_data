@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.EnumSet;
@@ -31,7 +32,7 @@ import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 
 public class SetAttributesFunction extends LootItemConditionalFunction {
-   public static final Codec<SetAttributesFunction> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<SetAttributesFunction> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> commonFields(var0)
             .and(ExtraCodecs.nonEmptyList(SetAttributesFunction.Modifier.CODEC.listOf()).fieldOf("modifiers").forGetter(var0x -> var0x.modifiers))
             .apply(var0, SetAttributesFunction::new)
@@ -120,7 +121,7 @@ public class SetAttributesFunction extends LootItemConditionalFunction {
                   AttributeModifier.Operation.CODEC.fieldOf("operation").forGetter(SetAttributesFunction.Modifier::operation),
                   NumberProviders.CODEC.fieldOf("amount").forGetter(SetAttributesFunction.Modifier::amount),
                   SLOTS_CODEC.fieldOf("slot").forGetter(SetAttributesFunction.Modifier::slots),
-                  ExtraCodecs.strictOptionalField(UUIDUtil.STRING_CODEC, "id").forGetter(SetAttributesFunction.Modifier::id)
+                  UUIDUtil.STRING_CODEC.optionalFieldOf("id").forGetter(SetAttributesFunction.Modifier::id)
                )
                .apply(var0, SetAttributesFunction.Modifier::new)
       );

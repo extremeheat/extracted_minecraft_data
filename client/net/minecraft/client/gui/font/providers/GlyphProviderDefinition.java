@@ -10,10 +10,9 @@ import java.io.IOException;
 import net.minecraft.client.gui.font.FontOption;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.util.ExtraCodecs;
 
 public interface GlyphProviderDefinition {
-   MapCodec<GlyphProviderDefinition> MAP_CODEC = GlyphProviderType.CODEC.dispatchMap(GlyphProviderDefinition::type, var0 -> var0.mapCodec().codec());
+   MapCodec<GlyphProviderDefinition> MAP_CODEC = GlyphProviderType.CODEC.dispatchMap(GlyphProviderDefinition::type, GlyphProviderType::mapCodec);
 
    GlyphProviderType type();
 
@@ -25,8 +24,7 @@ public interface GlyphProviderDefinition {
       public static final Codec<GlyphProviderDefinition.Conditional> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
                   GlyphProviderDefinition.MAP_CODEC.forGetter(GlyphProviderDefinition.Conditional::definition),
-                  ExtraCodecs.strictOptionalField(FontOption.Filter.CODEC, "filter", FontOption.Filter.ALWAYS_PASS)
-                     .forGetter(GlyphProviderDefinition.Conditional::filter)
+                  FontOption.Filter.CODEC.optionalFieldOf("filter", FontOption.Filter.ALWAYS_PASS).forGetter(GlyphProviderDefinition.Conditional::filter)
                )
                .apply(var0, GlyphProviderDefinition.Conditional::new)
       );

@@ -2,13 +2,13 @@ package net.minecraft.world.level.block.entity;
 
 import com.mojang.logging.LogUtils;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.Nameable;
@@ -40,7 +40,7 @@ public class BannerBlockEntity extends BlockEntity implements Nameable {
 
    public void fromItem(ItemStack var1, DyeColor var2) {
       this.baseColor = var2;
-      this.applyComponents(var1.getComponents());
+      this.applyComponentsFromItemStack(var1);
    }
 
    @Override
@@ -58,10 +58,7 @@ public class BannerBlockEntity extends BlockEntity implements Nameable {
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
       if (!this.patterns.equals(BannerPatternLayers.EMPTY)) {
-         var1.put(
-            "patterns",
-            Util.getOrThrow(BannerPatternLayers.CODEC.encodeStart(var2.createSerializationContext(NbtOps.INSTANCE), this.patterns), IllegalStateException::new)
-         );
+         var1.put("patterns", (Tag)BannerPatternLayers.CODEC.encodeStart(var2.createSerializationContext(NbtOps.INSTANCE), this.patterns).getOrThrow());
       }
 
       if (this.name != null) {
@@ -70,8 +67,8 @@ public class BannerBlockEntity extends BlockEntity implements Nameable {
    }
 
    @Override
-   public void load(CompoundTag var1, HolderLookup.Provider var2) {
-      super.load(var1, var2);
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       if (var1.contains("CustomName", 8)) {
          this.name = Component.Serializer.fromJson(var1.getString("CustomName"), var2);
       }
@@ -90,7 +87,7 @@ public class BannerBlockEntity extends BlockEntity implements Nameable {
 
    @Override
    public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
-      return this.saveWithoutMetadata(var1);
+      return this.saveCustomOnly(var1);
    }
 
    public BannerPatternLayers getPatterns() {
@@ -108,13 +105,15 @@ public class BannerBlockEntity extends BlockEntity implements Nameable {
    }
 
    @Override
-   public void applyComponents(DataComponentMap var1) {
+   protected void applyImplicitComponents(BlockEntity.DataComponentInput var1) {
+      super.applyImplicitComponents(var1);
       this.patterns = var1.getOrDefault(DataComponents.BANNER_PATTERNS, BannerPatternLayers.EMPTY);
       this.name = var1.get(DataComponents.CUSTOM_NAME);
    }
 
    @Override
-   public void collectComponents(DataComponentMap.Builder var1) {
+   protected void collectImplicitComponents(DataComponentMap.Builder var1) {
+      super.collectImplicitComponents(var1);
       var1.set(DataComponents.BANNER_PATTERNS, this.patterns);
       var1.set(DataComponents.CUSTOM_NAME, this.name);
    }

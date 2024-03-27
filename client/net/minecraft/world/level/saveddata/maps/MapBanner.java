@@ -22,8 +22,8 @@ public record MapBanner(BlockPos c, DyeColor d, Optional<Component> e) {
    public static final Codec<MapBanner> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                BlockPos.CODEC.fieldOf("pos").forGetter(MapBanner::pos),
-               DyeColor.CODEC.optionalFieldOf("color", DyeColor.WHITE).forGetter(MapBanner::color),
-               ComponentSerialization.FLAT_CODEC.optionalFieldOf("name").forGetter(MapBanner::name)
+               DyeColor.CODEC.lenientOptionalFieldOf("color", DyeColor.WHITE).forGetter(MapBanner::color),
+               ComponentSerialization.FLAT_CODEC.lenientOptionalFieldOf("name").forGetter(MapBanner::name)
             )
             .apply(var0, MapBanner::new)
    );

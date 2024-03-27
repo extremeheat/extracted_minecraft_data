@@ -16,10 +16,10 @@ public class VaultSharedData {
    static final String TAG_NAME = "shared_data";
    static Codec<VaultSharedData> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               ItemStack.optionalFieldOf("display_item").forGetter(var0x -> var0x.displayItem),
-               UUIDUtil.CODEC_LINKED_SET.optionalFieldOf("connected_players", Set.of()).forGetter(var0x -> var0x.connectedPlayers),
+               ItemStack.lenientOptionalFieldOf("display_item").forGetter(var0x -> var0x.displayItem),
+               UUIDUtil.CODEC_LINKED_SET.lenientOptionalFieldOf("connected_players", Set.of()).forGetter(var0x -> var0x.connectedPlayers),
                Codec.DOUBLE
-                  .optionalFieldOf("connected_particles_range", VaultConfig.DEFAULT.deactivationRange())
+                  .lenientOptionalFieldOf("connected_particles_range", VaultConfig.DEFAULT.deactivationRange())
                   .forGetter(var0x -> var0x.connectedParticlesRange)
             )
             .apply(var0, VaultSharedData::new)
@@ -69,7 +69,7 @@ public class VaultSharedData {
 
    void updateConnectedPlayersWithinRange(ServerLevel var1, BlockPos var2, VaultServerData var3, VaultConfig var4, double var5) {
       Set var7 = var4.playerDetector()
-         .detect(var1, var4.entitySelector(), var2, var5)
+         .detect(var1, var4.entitySelector(), var2, var5, false)
          .stream()
          .filter(var1x -> !var3.getRewardedPlayers().contains(var1x))
          .collect(Collectors.toSet());

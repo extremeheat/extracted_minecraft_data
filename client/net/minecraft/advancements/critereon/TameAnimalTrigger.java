@@ -7,7 +7,6 @@ import java.util.Optional;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.level.storage.loot.LootContext;
 
@@ -31,8 +30,8 @@ public class TameAnimalTrigger extends SimpleCriterionTrigger<TameAnimalTrigger.
       private final Optional<ContextAwarePredicate> entity;
       public static final Codec<TameAnimalTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
-                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player").forGetter(TameAnimalTrigger.TriggerInstance::player),
-                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "entity").forGetter(TameAnimalTrigger.TriggerInstance::entity)
+                  EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(TameAnimalTrigger.TriggerInstance::player),
+                  EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("entity").forGetter(TameAnimalTrigger.TriggerInstance::entity)
                )
                .apply(var0, TameAnimalTrigger.TriggerInstance::new)
       );

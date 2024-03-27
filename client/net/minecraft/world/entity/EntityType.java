@@ -224,6 +224,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       EntityType.Builder.<Bogged>of(Bogged::new, MobCategory.MONSTER)
          .sized(0.6F, 1.99F)
          .eyeHeight(1.74F)
+         .ridingOffset(-0.7F)
          .clientTrackingRange(8)
          .requiredFeatures(FeatureFlags.UPDATE_1_21)
    );
@@ -482,6 +483,13 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       "item_frame",
       EntityType.Builder.<ItemFrame>of(ItemFrame::new, MobCategory.MISC).sized(0.5F, 0.5F).eyeHeight(0.0F).clientTrackingRange(10).updateInterval(2147483647)
    );
+   public static final EntityType<OminousItemSpawner> OMINOUS_ITEM_SPAWNER = register(
+      "ominous_item_spawner",
+      EntityType.Builder.<OminousItemSpawner>of(OminousItemSpawner::new, MobCategory.MISC)
+         .sized(0.25F, 0.25F)
+         .clientTrackingRange(8)
+         .requiredFeatures(FeatureFlags.UPDATE_1_21)
+   );
    public static final EntityType<LargeFireball> FIREBALL = register(
       "fireball", EntityType.Builder.<LargeFireball>of(LargeFireball::new, MobCategory.MISC).sized(1.0F, 1.0F).clientTrackingRange(4).updateInterval(10)
    );
@@ -511,7 +519,12 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    );
    public static final EntityType<MagmaCube> MAGMA_CUBE = register(
       "magma_cube",
-      EntityType.Builder.<MagmaCube>of(MagmaCube::new, MobCategory.MONSTER).fireImmune().sized(0.52F, 0.52F).eyeHeight(0.325F).clientTrackingRange(8)
+      EntityType.Builder.<MagmaCube>of(MagmaCube::new, MobCategory.MONSTER)
+         .fireImmune()
+         .sized(0.52F, 0.52F)
+         .eyeHeight(0.325F)
+         .spawnDimensionsScale(4.0F)
+         .clientTrackingRange(8)
    );
    public static final EntityType<Marker> MARKER = register(
       "marker", EntityType.Builder.<Marker>of(Marker::new, MobCategory.MISC).sized(0.0F, 0.0F).clientTrackingRange(0)
@@ -647,7 +660,8 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
          .clientTrackingRange(10)
    );
    public static final EntityType<Slime> SLIME = register(
-      "slime", EntityType.Builder.<Slime>of(Slime::new, MobCategory.MONSTER).sized(0.52F, 0.52F).eyeHeight(0.325F).clientTrackingRange(10)
+      "slime",
+      EntityType.Builder.<Slime>of(Slime::new, MobCategory.MONSTER).sized(0.52F, 0.52F).eyeHeight(0.325F).spawnDimensionsScale(4.0F).clientTrackingRange(10)
    );
    public static final EntityType<SmallFireball> SMALL_FIREBALL = register(
       "small_fireball",
@@ -894,6 +908,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    @Nullable
    private ResourceKey<LootTable> lootTable;
    private final EntityDimensions dimensions;
+   private final float spawnDimensionsScale;
    private final FeatureFlagSet requiredFeatures;
 
    private static <T extends Entity> EntityType<T> register(String var0, EntityType.Builder<T> var1) {
@@ -917,9 +932,10 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       boolean var6,
       ImmutableSet<Block> var7,
       EntityDimensions var8,
-      int var9,
+      float var9,
       int var10,
-      FeatureFlagSet var11
+      int var11,
+      FeatureFlagSet var12
    ) {
       super();
       this.factory = var1;
@@ -930,9 +946,10 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       this.fireImmune = var5;
       this.immuneTo = var7;
       this.dimensions = var8;
-      this.clientTrackingRange = var9;
-      this.updateInterval = var10;
-      this.requiredFeatures = var11;
+      this.spawnDimensionsScale = var9;
+      this.clientTrackingRange = var10;
+      this.updateInterval = var11;
+      this.requiredFeatures = var12;
    }
 
    @Nullable
@@ -1112,9 +1129,10 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       );
    }
 
-   public AABB getAABB(double var1, double var3, double var5) {
-      float var7 = this.getWidth() / 2.0F;
-      return new AABB(var1 - (double)var7, var3, var5 - (double)var7, var1 + (double)var7, var3 + (double)this.getHeight(), var5 + (double)var7);
+   public AABB getSpawnAABB(double var1, double var3, double var5) {
+      float var7 = this.spawnDimensionsScale * this.getWidth() / 2.0F;
+      float var8 = this.spawnDimensionsScale * this.getHeight();
+      return new AABB(var1 - (double)var7, var3, var5 - (double)var7, var1 + (double)var7, var3 + (double)var8, var5 + (double)var7);
    }
 
    public boolean isBlockDangerous(BlockState var1) {
@@ -1245,6 +1263,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       private int clientTrackingRange = 5;
       private int updateInterval = 3;
       private EntityDimensions dimensions = EntityDimensions.scalable(0.6F, 1.8F);
+      private float spawnDimensionsScale = 1.0F;
       private EntityAttachments.Builder attachments = EntityAttachments.builder();
       private FeatureFlagSet requiredFeatures = FeatureFlags.VANILLA_SET;
 
@@ -1265,6 +1284,11 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
 
       public EntityType.Builder<T> sized(float var1, float var2) {
          this.dimensions = EntityDimensions.scalable(var1, var2);
+         return this;
+      }
+
+      public EntityType.Builder<T> spawnDimensionsScale(float var1) {
+         this.spawnDimensionsScale = var1;
          return this;
       }
 
@@ -1365,6 +1389,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
             this.canSpawnFarFromPlayer,
             this.immuneTo,
             this.dimensions.withAttachments(this.attachments),
+            this.spawnDimensionsScale,
             this.clientTrackingRange,
             this.updateInterval,
             this.requiredFeatures

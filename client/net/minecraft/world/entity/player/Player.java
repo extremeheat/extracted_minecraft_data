@@ -19,7 +19,6 @@ import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
-import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -91,6 +90,7 @@ import net.minecraft.world.item.ProjectileWeaponItem;
 import net.minecraft.world.item.SwordItem;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.BaseCommandBlock;
 import net.minecraft.world.level.GameRules;
@@ -476,19 +476,8 @@ public abstract class Player extends LivingEntity {
          this.reducedDebugInfo = false;
       } else if (var1 == 22) {
          this.reducedDebugInfo = true;
-      } else if (var1 == 43) {
-         this.addParticlesAroundSelf(ParticleTypes.CLOUD);
       } else {
          super.handleEntityEvent(var1);
-      }
-   }
-
-   private void addParticlesAroundSelf(ParticleOptions var1) {
-      for(int var2 = 0; var2 < 5; ++var2) {
-         double var3 = this.random.nextGaussian() * 0.02;
-         double var5 = this.random.nextGaussian() * 0.02;
-         double var7 = this.random.nextGaussian() * 0.02;
-         this.level().addParticle(var1, this.getRandomX(1.0), this.getRandomY() + 1.0, this.getRandomZ(1.0), var3, var5, var7);
       }
    }
 
@@ -837,9 +826,7 @@ public abstract class Player extends LivingEntity {
          .flatMap(var0 -> GlobalPos.CODEC.encodeStart(NbtOps.INSTANCE, var0).resultOrPartial(LOGGER::error))
          .ifPresent(var1x -> var1.put("LastDeathLocation", var1x));
       if (this.currentImpulseImpactPos != null) {
-         var1.put(
-            "current_explosion_impact_pos", Util.getOrThrow(Vec3.CODEC.encodeStart(NbtOps.INSTANCE, this.currentImpulseImpactPos), IllegalStateException::new)
-         );
+         var1.put("current_explosion_impact_pos", (Tag)Vec3.CODEC.encodeStart(NbtOps.INSTANCE, this.currentImpulseImpactPos).getOrThrow());
       }
 
       var1.putBoolean("ignore_fall_damage_from_current_explosion", this.ignoreFallDamageFromCurrentImpulse);
@@ -1176,11 +1163,11 @@ public abstract class Player extends LivingEntity {
                   }
                }
 
-               float var26 = 0.0F;
+               float var27 = 0.0F;
                boolean var13 = false;
                int var14 = EnchantmentHelper.getFireAspect(this);
                if (var1 instanceof LivingEntity) {
-                  var26 = ((LivingEntity)var1).getHealth();
+                  var27 = ((LivingEntity)var1).getHealth();
                   if (var14 > 0 && !var1.isOnFire()) {
                      var13 = true;
                      var1.igniteForSeconds(1);
@@ -1258,30 +1245,32 @@ public abstract class Player extends LivingEntity {
                   }
 
                   EnchantmentHelper.doPostDamageEffects(this, var1);
-                  ItemStack var27 = this.getMainHandItem();
-                  Object var28 = var1;
+                  ItemStack var28 = this.getMainHandItem();
+                  ItemEnchantments var29 = var28.getEnchantments();
+                  Object var30 = var1;
                   if (var1 instanceof EnderDragonPart) {
-                     var28 = ((EnderDragonPart)var1).parentMob;
+                     var30 = ((EnderDragonPart)var1).parentMob;
                   }
 
-                  if (!this.level().isClientSide && !var27.isEmpty() && var28 instanceof LivingEntity) {
-                     var27.hurtEnemy((LivingEntity)var28, this);
-                     if (var27.isEmpty()) {
+                  if (!this.level().isClientSide && !var28.isEmpty() && var30 instanceof LivingEntity) {
+                     var28.hurtEnemy((LivingEntity)var30, this);
+                     if (var28.isEmpty()) {
                         this.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
                      }
                   }
 
+                  EnchantmentHelper.doPostItemStackHurtEffects(this, var1, var29);
                   if (var1 instanceof LivingEntity) {
-                     float var29 = var26 - ((LivingEntity)var1).getHealth();
-                     this.awardStat(Stats.DAMAGE_DEALT, Math.round(var29 * 10.0F));
+                     float var31 = var27 - ((LivingEntity)var1).getHealth();
+                     this.awardStat(Stats.DAMAGE_DEALT, Math.round(var31 * 10.0F));
                      if (var14 > 0) {
                         var1.igniteForSeconds(var14 * 4);
                      }
 
-                     if (this.level() instanceof ServerLevel && var29 > 2.0F) {
-                        int var30 = (int)((double)var29 * 0.5);
+                     if (this.level() instanceof ServerLevel && var31 > 2.0F) {
+                        int var21 = (int)((double)var31 * 0.5);
                         ((ServerLevel)this.level())
-                           .sendParticles(ParticleTypes.DAMAGE_INDICATOR, var1.getX(), var1.getY(0.5), var1.getZ(), var30, 0.1, 0.0, 0.1, 0.2);
+                           .sendParticles(ParticleTypes.DAMAGE_INDICATOR, var1.getX(), var1.getY(0.5), var1.getZ(), var21, 0.1, 0.0, 0.1, 0.2);
                      }
                   }
 

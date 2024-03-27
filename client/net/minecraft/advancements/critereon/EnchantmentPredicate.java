@@ -7,7 +7,6 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import java.util.Optional;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 
@@ -16,8 +15,8 @@ public record EnchantmentPredicate(Optional<Holder<Enchantment>> b, MinMaxBounds
    private final MinMaxBounds.Ints level;
    public static final Codec<EnchantmentPredicate> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               ExtraCodecs.strictOptionalField(BuiltInRegistries.ENCHANTMENT.holderByNameCodec(), "enchantment").forGetter(EnchantmentPredicate::enchantment),
-               ExtraCodecs.strictOptionalField(MinMaxBounds.Ints.CODEC, "levels", MinMaxBounds.Ints.ANY).forGetter(EnchantmentPredicate::level)
+               BuiltInRegistries.ENCHANTMENT.holderByNameCodec().optionalFieldOf("enchantment").forGetter(EnchantmentPredicate::enchantment),
+               MinMaxBounds.Ints.CODEC.optionalFieldOf("levels", MinMaxBounds.Ints.ANY).forGetter(EnchantmentPredicate::level)
             )
             .apply(var0, EnchantmentPredicate::new)
    );

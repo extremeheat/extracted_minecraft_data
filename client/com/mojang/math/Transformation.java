@@ -26,7 +26,7 @@ public final class Transformation {
             )
             .apply(var0, Transformation::new)
    );
-   public static final Codec<Transformation> EXTENDED_CODEC = ExtraCodecs.withAlternative(
+   public static final Codec<Transformation> EXTENDED_CODEC = Codec.withAlternative(
       CODEC, ExtraCodecs.MATRIX4F.xmap(Transformation::new, Transformation::getMatrix)
    );
    private boolean decomposed;

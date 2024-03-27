@@ -79,7 +79,7 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
       this.verticalPlacement = RuinedPortalPiece.VerticalPlacement.byName(var2.getString("VerticalPlacement"));
       this.properties = (RuinedPortalPiece.Properties)RuinedPortalPiece.Properties.CODEC
          .parse(new Dynamic(NbtOps.INSTANCE, var2.get("Properties")))
-         .getOrThrow(true, LOGGER::error);
+         .getPartialOrThrow();
    }
 
    @Override
@@ -102,9 +102,7 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
          Rotation.valueOf(var1.getString("Rotation")),
          RuinedPortalPiece.VerticalPlacement.byName(var1.getString("VerticalPlacement")),
          var4,
-         (RuinedPortalPiece.Properties)RuinedPortalPiece.Properties.CODEC
-            .parse(new Dynamic(NbtOps.INSTANCE, var1.get("Properties")))
-            .getOrThrow(true, LOGGER::error)
+         (RuinedPortalPiece.Properties)RuinedPortalPiece.Properties.CODEC.parse(new Dynamic(NbtOps.INSTANCE, var1.get("Properties"))).getPartialOrThrow()
       );
    }
 

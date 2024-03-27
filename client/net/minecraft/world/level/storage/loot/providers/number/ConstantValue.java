@@ -1,13 +1,14 @@
 package net.minecraft.world.level.storage.loot.providers.number;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.world.level.storage.loot.LootContext;
 
 public record ConstantValue(float c) implements NumberProvider {
    private final float value;
-   public static final Codec<ConstantValue> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<ConstantValue> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(Codec.FLOAT.fieldOf("value").forGetter(ConstantValue::value)).apply(var0, ConstantValue::new)
    );
    public static final Codec<ConstantValue> INLINE_CODEC = Codec.FLOAT.xmap(ConstantValue::new, ConstantValue::value);

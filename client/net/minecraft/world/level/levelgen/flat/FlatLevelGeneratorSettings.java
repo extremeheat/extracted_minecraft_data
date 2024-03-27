@@ -36,11 +36,13 @@ public class FlatLevelGeneratorSettings {
    private static final Logger LOGGER = LogUtils.getLogger();
    public static final Codec<FlatLevelGeneratorSettings> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
-                  RegistryCodecs.homogeneousList(Registries.STRUCTURE_SET).optionalFieldOf("structure_overrides").forGetter(var0x -> var0x.structureOverrides),
+                  RegistryCodecs.homogeneousList(Registries.STRUCTURE_SET)
+                     .lenientOptionalFieldOf("structure_overrides")
+                     .forGetter(var0x -> var0x.structureOverrides),
                   FlatLayerInfo.CODEC.listOf().fieldOf("layers").forGetter(FlatLevelGeneratorSettings::getLayersInfo),
                   Codec.BOOL.fieldOf("lakes").orElse(false).forGetter(var0x -> var0x.addLakes),
                   Codec.BOOL.fieldOf("features").orElse(false).forGetter(var0x -> var0x.decoration),
-                  Biome.CODEC.optionalFieldOf("biome").orElseGet(Optional::empty).forGetter(var0x -> Optional.of(var0x.biome)),
+                  Biome.CODEC.lenientOptionalFieldOf("biome").orElseGet(Optional::empty).forGetter(var0x -> Optional.of(var0x.biome)),
                   RegistryOps.retrieveElement(Biomes.PLAINS),
                   RegistryOps.retrieveElement(MiscOverworldPlacements.LAKE_LAVA_UNDERGROUND),
                   RegistryOps.retrieveElement(MiscOverworldPlacements.LAKE_LAVA_SURFACE)

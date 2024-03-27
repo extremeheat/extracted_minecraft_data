@@ -4,7 +4,6 @@ import com.mojang.datafixers.DSL;
 import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
-import net.minecraft.util.datafix.ExtraDataFixUtils;
 
 public class EntityPaintingFieldsRenameFix extends NamedEntityFix {
    public EntityPaintingFieldsRenameFix(Schema var1) {
@@ -12,7 +11,7 @@ public class EntityPaintingFieldsRenameFix extends NamedEntityFix {
    }
 
    public Dynamic<?> fixTag(Dynamic<?> var1) {
-      return ExtraDataFixUtils.renameField(ExtraDataFixUtils.renameField(var1, "Motive", "variant"), "Facing", "facing");
+      return var1.renameField("Motive", "variant").renameField("Facing", "facing");
    }
 
    @Override

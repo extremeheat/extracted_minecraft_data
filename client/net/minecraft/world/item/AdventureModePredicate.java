@@ -25,11 +25,11 @@ public class AdventureModePredicate {
    private static final Codec<AdventureModePredicate> FULL_CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                ExtraCodecs.nonEmptyList(BlockPredicate.CODEC.listOf()).fieldOf("predicates").forGetter(var0x -> var0x.predicates),
-               ExtraCodecs.strictOptionalField(Codec.BOOL, "show_in_tooltip", true).forGetter(AdventureModePredicate::showInTooltip)
+               Codec.BOOL.optionalFieldOf("show_in_tooltip", true).forGetter(AdventureModePredicate::showInTooltip)
             )
             .apply(var0, AdventureModePredicate::new)
    );
-   public static final Codec<AdventureModePredicate> CODEC = ExtraCodecs.withAlternative(FULL_CODEC, SIMPLE_CODEC);
+   public static final Codec<AdventureModePredicate> CODEC = Codec.withAlternative(FULL_CODEC, SIMPLE_CODEC);
    public static final StreamCodec<RegistryFriendlyByteBuf, AdventureModePredicate> STREAM_CODEC = StreamCodec.composite(
       BlockPredicate.STREAM_CODEC.apply(ByteBufCodecs.list()),
       var0 -> var0.predicates,

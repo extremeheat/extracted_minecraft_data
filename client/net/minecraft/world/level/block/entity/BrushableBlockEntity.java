@@ -215,7 +215,8 @@ public class BrushableBlockEntity extends BlockEntity {
    }
 
    @Override
-   public void load(CompoundTag var1, HolderLookup.Provider var2) {
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       if (!this.tryLoadLootTable(var1) && var1.contains("item")) {
          this.item = ItemStack.parse(var2, var1.getCompound("item")).orElse(ItemStack.EMPTY);
       } else {
@@ -229,6 +230,7 @@ public class BrushableBlockEntity extends BlockEntity {
 
    @Override
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.saveAdditional(var1, var2);
       if (!this.trySaveLootTable(var1) && !this.item.isEmpty()) {
          var1.put("item", this.item.save(var2));
       }

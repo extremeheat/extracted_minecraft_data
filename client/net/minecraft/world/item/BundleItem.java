@@ -139,7 +139,9 @@ public class BundleItem extends Item {
 
    @Override
    public Optional<TooltipComponent> getTooltipImage(ItemStack var1) {
-      return Optional.ofNullable(var1.get(DataComponents.BUNDLE_CONTENTS)).map(BundleTooltip::new);
+      return !var1.has(DataComponents.HIDE_TOOLTIP) && !var1.has(DataComponents.HIDE_ADDITIONAL_TOOLTIP)
+         ? Optional.ofNullable(var1.get(DataComponents.BUNDLE_CONTENTS)).map(BundleTooltip::new)
+         : Optional.empty();
    }
 
    @Override

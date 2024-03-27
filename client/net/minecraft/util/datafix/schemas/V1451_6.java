@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.datafix.ExtraDataFixUtils;
 import net.minecraft.util.datafix.fixes.References;
 
 public class V1451_6 extends NamespacedSchema {
@@ -26,8 +25,7 @@ public class V1451_6 extends NamespacedSchema {
          return (T)((Dynamic)DataFixUtils.orElse(
                var3.get("CriteriaName")
                   .asString()
-                  .get()
-                  .left()
+                  .result()
                   .map(var0 -> {
                      int var1xx = var0.indexOf(58);
                      if (var1xx < 0) {
@@ -65,12 +63,11 @@ public class V1451_6 extends NamespacedSchema {
          Dynamic var3 = new Dynamic(var1, var2);
          Optional var4 = var3.get("CriteriaType")
             .get()
-            .get()
-            .left()
+            .result()
             .flatMap(
                var1x -> {
-                  Optional var2xx = var1x.get("type").asString().get().left();
-                  Optional var3xx = var1x.get("id").asString().get().left();
+                  Optional var2xx = var1x.get("type").asString().result();
+                  Optional var3xx = var1x.get("id").asString().result();
                   if (var2xx.isPresent() && var3xx.isPresent()) {
                      String var4xx = (String)var2xx.get();
                      return var4xx.equals("_special")
@@ -97,16 +94,18 @@ public class V1451_6 extends NamespacedSchema {
          References.STATS,
          () -> DSL.optionalFields(
                "stats",
-               ExtraDataFixUtils.optionalFields(
-                  Pair.of("minecraft:mined", DSL.compoundList(References.BLOCK_NAME.in(var1), DSL.constType(DSL.intType()))),
-                  Pair.of("minecraft:crafted", (TypeTemplate)var4.get()),
-                  Pair.of("minecraft:used", (TypeTemplate)var4.get()),
-                  Pair.of("minecraft:broken", (TypeTemplate)var4.get()),
-                  Pair.of("minecraft:picked_up", (TypeTemplate)var4.get()),
-                  Pair.of("minecraft:dropped", (TypeTemplate)var4.get()),
-                  Pair.of("minecraft:killed", DSL.compoundList(References.ENTITY_NAME.in(var1), DSL.constType(DSL.intType()))),
-                  Pair.of("minecraft:killed_by", DSL.compoundList(References.ENTITY_NAME.in(var1), DSL.constType(DSL.intType()))),
-                  Pair.of("minecraft:custom", DSL.compoundList(DSL.constType(namespacedString()), DSL.constType(DSL.intType())))
+               DSL.optionalFields(
+                  new Pair[]{
+                     Pair.of("minecraft:mined", DSL.compoundList(References.BLOCK_NAME.in(var1), DSL.constType(DSL.intType()))),
+                     Pair.of("minecraft:crafted", (TypeTemplate)var4.get()),
+                     Pair.of("minecraft:used", (TypeTemplate)var4.get()),
+                     Pair.of("minecraft:broken", (TypeTemplate)var4.get()),
+                     Pair.of("minecraft:picked_up", (TypeTemplate)var4.get()),
+                     Pair.of("minecraft:dropped", (TypeTemplate)var4.get()),
+                     Pair.of("minecraft:killed", DSL.compoundList(References.ENTITY_NAME.in(var1), DSL.constType(DSL.intType()))),
+                     Pair.of("minecraft:killed_by", DSL.compoundList(References.ENTITY_NAME.in(var1), DSL.constType(DSL.intType()))),
+                     Pair.of("minecraft:custom", DSL.compoundList(DSL.constType(namespacedString()), DSL.constType(DSL.intType())))
+                  }
                )
             )
       );

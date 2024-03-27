@@ -3,6 +3,7 @@ package net.minecraft.core.particles;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import io.netty.buffer.ByteBuf;
 import java.util.Locale;
 import net.minecraft.core.HolderLookup;
@@ -31,8 +32,8 @@ public class ColorParticleOption implements ParticleOptions {
    private final ParticleType<? extends ColorParticleOption> type;
    private final int color;
 
-   public static Codec<ColorParticleOption> codec(ParticleType<ColorParticleOption> var0) {
-      return Codec.INT.xmap(var1 -> new ColorParticleOption(var0, var1), var0x -> var0x.color);
+   public static MapCodec<ColorParticleOption> codec(ParticleType<ColorParticleOption> var0) {
+      return Codec.INT.xmap(var1 -> new ColorParticleOption(var0, var1), var0x -> var0x.color).fieldOf("value");
    }
 
    public static StreamCodec<? super ByteBuf, ColorParticleOption> streamCodec(ParticleType<ColorParticleOption> var0) {

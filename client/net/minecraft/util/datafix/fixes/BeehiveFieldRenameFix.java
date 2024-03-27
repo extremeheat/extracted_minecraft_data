@@ -22,8 +22,8 @@ public class BeehiveFieldRenameFix extends DataFix {
 
    private Dynamic<?> fixBee(Dynamic<?> var1) {
       var1 = var1.remove("EntityData");
-      var1 = ExtraDataFixUtils.renameField(var1, "TicksInHive", "ticks_in_hive");
-      return ExtraDataFixUtils.renameField(var1, "MinOccupationTicks", "min_ticks_in_hive");
+      var1 = var1.renameField("TicksInHive", "ticks_in_hive");
+      return var1.renameField("MinOccupationTicks", "min_ticks_in_hive");
    }
 
    public TypeRewriteRule makeRule() {

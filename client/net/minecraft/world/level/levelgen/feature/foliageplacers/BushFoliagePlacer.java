@@ -1,6 +1,6 @@
 package net.minecraft.world.level.levelgen.feature.foliageplacers;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.util.RandomSource;
@@ -9,7 +9,7 @@ import net.minecraft.world.level.LevelSimulatedReader;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 
 public class BushFoliagePlacer extends BlobFoliagePlacer {
-   public static final Codec<BushFoliagePlacer> CODEC = RecordCodecBuilder.create(var0 -> blobParts(var0).apply(var0, BushFoliagePlacer::new));
+   public static final MapCodec<BushFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec(var0 -> blobParts(var0).apply(var0, BushFoliagePlacer::new));
 
    public BushFoliagePlacer(IntProvider var1, IntProvider var2, int var3) {
       super(var1, var2, var3);

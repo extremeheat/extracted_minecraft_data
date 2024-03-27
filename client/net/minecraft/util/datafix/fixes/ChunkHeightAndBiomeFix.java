@@ -326,7 +326,7 @@ public class ChunkHeightAndBiomeFix extends DataFix {
    private static <T> Dynamic<T> shiftUpgradeData(Dynamic<T> var0) {
       return var0.update("Indices", var0x -> {
          HashMap var1 = new HashMap();
-         var0x.getMapValues().result().ifPresent(var1x -> var1x.forEach((var1xx, var2) -> {
+         var0x.getMapValues().ifSuccess(var1x -> var1x.forEach((var1xx, var2) -> {
                try {
                   var1xx.asString().result().map(Integer::parseInt).ifPresent(var3 -> {
                      int var4xx = var3 - -4;

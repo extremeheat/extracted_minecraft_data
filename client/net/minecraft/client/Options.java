@@ -21,7 +21,7 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
-import com.mojang.serialization.DataResult.PartialResult;
+import com.mojang.serialization.DataResult.Error;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -66,7 +66,6 @@ import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Mth;
 import net.minecraft.util.datafix.DataFixTypes;
@@ -139,7 +138,7 @@ public class Options {
       OptionInstance.noTooltip(),
       OptionInstance.forOptionEnum(),
       new OptionInstance.Enum<>(
-         Arrays.asList(CloudStatus.values()), ExtraCodecs.withAlternative(CloudStatus.CODEC, Codec.BOOL, var0 -> var0 ? CloudStatus.FANCY : CloudStatus.OFF)
+         Arrays.asList(CloudStatus.values()), Codec.withAlternative(CloudStatus.CODEC, Codec.BOOL, var0 -> var0 ? CloudStatus.FANCY : CloudStatus.OFF)
       ),
       CloudStatus.FANCY,
       var0 -> {
@@ -664,8 +663,7 @@ public class Options {
          return !var0.isRunning() ? 2147483646 : var0.getWindow().calculateScale(0, var0.isEnforceUnicode());
       }, 2147483646),
       0,
-      var0 -> {
-      }
+      var1x -> this.minecraft.resizeDisplay()
    );
    private final OptionInstance<ParticleStatus> particles = new OptionInstance<>(
       "options.particles",
@@ -1262,7 +1260,7 @@ public class Options {
                   JsonElement var5 = JsonParser.parseReader(var4);
                   DataResult var6 = var2.codec().parse(JsonOps.INSTANCE, var5);
                   var6.error().ifPresent(var2x -> Options.LOGGER.error("Error parsing option value " + var3 + " for option " + var2 + ": " + var2x.message()));
-                  var6.result().ifPresent(var2::set);
+                  var6.ifSuccess(var2::set);
                }
             }
 
@@ -1352,57 +1350,60 @@ public class Options {
    public void save() {
       try (final PrintWriter var1 = new PrintWriter(new OutputStreamWriter(new FileOutputStream(this.optionsFile), StandardCharsets.UTF_8))) {
          var1.println("version:" + SharedConstants.getCurrentVersion().getDataVersion().getVersion());
-         this.processOptions(new Options.FieldAccess() {
-            public void writePrefix(String var1x) {
-               var1.print(var1x);
-               var1.print(':');
-            }
-
-            @Override
-            public <T> void process(String var1x, OptionInstance<T> var2) {
-               DataResult var3 = var2.codec().encodeStart(JsonOps.INSTANCE, var2.get());
-               var3.error().ifPresent(var1xxx -> Options.LOGGER.error("Error saving option " + var2 + ": " + var1xxx));
-               var3.result().ifPresent(var3x -> {
+         this.processOptions(
+            new Options.FieldAccess() {
+               public void writePrefix(String var1x) {
+                  var1.print(var1x);
+                  var1.print(':');
+               }
+   
+               @Override
+               public <T> void process(String var1x, OptionInstance<T> var2) {
+                  var2.codec()
+                     .encodeStart(JsonOps.INSTANCE, var2.get())
+                     .ifError(var1xxx -> Options.LOGGER.error("Error saving option " + var2 + ": " + var1xxx))
+                     .ifSuccess(var3 -> {
+                        this.writePrefix(var1x);
+                        var1.println(Options.GSON.toJson(var3));
+                     });
+               }
+   
+               @Override
+               public int process(String var1x, int var2) {
                   this.writePrefix(var1x);
-                  var1.println(Options.GSON.toJson(var3x));
-               });
+                  var1.println(var2);
+                  return var2;
+               }
+   
+               @Override
+               public boolean process(String var1x, boolean var2) {
+                  this.writePrefix(var1x);
+                  var1.println(var2);
+                  return var2;
+               }
+   
+               @Override
+               public String process(String var1x, String var2) {
+                  this.writePrefix(var1x);
+                  var1.println(var2);
+                  return var2;
+               }
+   
+               @Override
+               public float process(String var1x, float var2) {
+                  this.writePrefix(var1x);
+                  var1.println(var2);
+                  return var2;
+               }
+   
+               @Override
+               public <T> T process(String var1x, T var2, Function<String, T> var3, Function<T, String> var4) {
+                  this.writePrefix(var1x);
+                  var1.println((String)var4.apply(var2));
+                  return (T)var2;
+               }
             }
-
-            @Override
-            public int process(String var1x, int var2) {
-               this.writePrefix(var1x);
-               var1.println(var2);
-               return var2;
-            }
-
-            @Override
-            public boolean process(String var1x, boolean var2) {
-               this.writePrefix(var1x);
-               var1.println(var2);
-               return var2;
-            }
-
-            @Override
-            public String process(String var1x, String var2) {
-               this.writePrefix(var1x);
-               var1.println(var2);
-               return var2;
-            }
-
-            @Override
-            public float process(String var1x, float var2) {
-               this.writePrefix(var1x);
-               var1.println(var2);
-               return var2;
-            }
-
-            @Override
-            public <T> T process(String var1x, T var2, Function<String, T> var3, Function<T, String> var4) {
-               this.writePrefix(var1x);
-               var1.println((String)var4.apply(var2));
-               return (T)var2;
-            }
-         });
+         );
          if (this.minecraft.getWindow().getPreferredFullscreenVideoMode().isPresent()) {
             var1.println("fullscreenResolution:" + this.minecraft.getWindow().getPreferredFullscreenVideoMode().get().write());
          }

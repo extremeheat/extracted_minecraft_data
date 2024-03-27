@@ -21,6 +21,7 @@ import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
+import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
@@ -666,8 +667,8 @@ public class GuiGraphics {
    }
 
    public void renderTooltip(Font var1, List<Component> var2, Optional<TooltipComponent> var3, int var4, int var5) {
-      List var6 = var2.stream().map(Component::getVisualOrderText).map(ClientTooltipComponent::create).collect(Collectors.toList());
-      var3.ifPresent(var1x -> var6.add(1, ClientTooltipComponent.create(var1x)));
+      List var6 = var2.stream().map(Component::getVisualOrderText).map(ClientTooltipComponent::create).collect(Util.toMutableList());
+      var3.ifPresent(var1x -> var6.add(var6.isEmpty() ? 0 : 1, ClientTooltipComponent.create(var1x)));
       this.renderTooltipInternal(var1, var6, var4, var5, DefaultTooltipPositioner.INSTANCE);
    }
 

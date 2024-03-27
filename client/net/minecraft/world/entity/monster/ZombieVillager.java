@@ -90,11 +90,7 @@ public class ZombieVillager extends Zombie implements VillagerDataHolder {
          .ifPresent(var1x -> var1.put("VillagerData", var1x));
       if (this.tradeOffers != null) {
          var1.put(
-            "Offers",
-            Util.getOrThrow(
-               MerchantOffers.CODEC.encodeStart(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), this.tradeOffers),
-               IllegalStateException::new
-            )
+            "Offers", (Tag)MerchantOffers.CODEC.encodeStart(this.registryAccess().createSerializationContext(NbtOps.INSTANCE), this.tradeOffers).getOrThrow()
          );
       }
 

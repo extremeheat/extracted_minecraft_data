@@ -1,6 +1,6 @@
 package net.minecraft.world.level.storage.loot.functions;
 
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
@@ -13,7 +13,7 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class SetInstrumentFunction extends LootItemConditionalFunction {
-   public static final Codec<SetInstrumentFunction> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<SetInstrumentFunction> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> commonFields(var0)
             .and(TagKey.hashedCodec(Registries.INSTRUMENT).fieldOf("options").forGetter(var0x -> var0x.options))
             .apply(var0, SetInstrumentFunction::new)

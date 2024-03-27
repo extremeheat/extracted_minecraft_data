@@ -5,7 +5,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 
 public record ItemDamagePredicate(MinMaxBounds.Ints c, MinMaxBounds.Ints d) implements SingleComponentItemPredicate<Integer> {
@@ -13,8 +12,8 @@ public record ItemDamagePredicate(MinMaxBounds.Ints c, MinMaxBounds.Ints d) impl
    private final MinMaxBounds.Ints damage;
    public static final Codec<ItemDamagePredicate> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               ExtraCodecs.strictOptionalField(MinMaxBounds.Ints.CODEC, "durability", MinMaxBounds.Ints.ANY).forGetter(ItemDamagePredicate::durability),
-               ExtraCodecs.strictOptionalField(MinMaxBounds.Ints.CODEC, "damage", MinMaxBounds.Ints.ANY).forGetter(ItemDamagePredicate::damage)
+               MinMaxBounds.Ints.CODEC.optionalFieldOf("durability", MinMaxBounds.Ints.ANY).forGetter(ItemDamagePredicate::durability),
+               MinMaxBounds.Ints.CODEC.optionalFieldOf("damage", MinMaxBounds.Ints.ANY).forGetter(ItemDamagePredicate::damage)
             )
             .apply(var0, ItemDamagePredicate::new)
    );

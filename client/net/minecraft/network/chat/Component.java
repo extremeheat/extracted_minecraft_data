@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.contents.DataSource;
 import net.minecraft.network.chat.contents.KeybindContents;
@@ -227,11 +226,15 @@ public interface Component extends Message, FormattedText {
       }
 
       static MutableComponent deserialize(JsonElement var0, HolderLookup.Provider var1) {
-         return Util.getOrThrow(ComponentSerialization.CODEC.parse(var1.createSerializationContext(JsonOps.INSTANCE), var0), JsonParseException::new);
+         return (MutableComponent)ComponentSerialization.CODEC
+            .parse(var1.createSerializationContext(JsonOps.INSTANCE), var0)
+            .getOrThrow(JsonParseException::new);
       }
 
       static JsonElement serialize(Component var0, HolderLookup.Provider var1) {
-         return Util.getOrThrow(ComponentSerialization.CODEC.encodeStart(var1.createSerializationContext(JsonOps.INSTANCE), var0), JsonParseException::new);
+         return (JsonElement)ComponentSerialization.CODEC
+            .encodeStart(var1.createSerializationContext(JsonOps.INSTANCE), var0)
+            .getOrThrow(JsonParseException::new);
       }
 
       public static String toJson(Component var0, HolderLookup.Provider var1) {

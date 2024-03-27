@@ -2,6 +2,7 @@ package net.minecraft.world.level.levelgen.feature.stateproviders;
 
 import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.level.levelgen.synth.NormalNoise;
 
 public class DualNoiseProvider extends NoiseProvider {
-   public static final Codec<DualNoiseProvider> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<DualNoiseProvider> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(
                InclusiveRange.codec(Codec.INT, 1, 64).fieldOf("variety").forGetter(var0x -> var0x.variety),
                NormalNoise.NoiseParameters.DIRECT_CODEC.fieldOf("slow_noise").forGetter(var0x -> var0x.slowNoiseParameters),

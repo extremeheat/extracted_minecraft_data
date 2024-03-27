@@ -48,8 +48,8 @@ public abstract class Structure {
       return Structure.StructureSettings.CODEC.forGetter(var0x -> var0x.settings);
    }
 
-   public static <S extends Structure> Codec<S> simpleCodec(Function<Structure.StructureSettings, S> var0) {
-      return RecordCodecBuilder.create(var1 -> var1.group(settingsCodec(var1)).apply(var1, var0));
+   public static <S extends Structure> MapCodec<S> simpleCodec(Function<Structure.StructureSettings, S> var0) {
+      return RecordCodecBuilder.mapCodec(var1 -> var1.group(settingsCodec(var1)).apply(var1, var0));
    }
 
    protected Structure(Structure.StructureSettings var1) {

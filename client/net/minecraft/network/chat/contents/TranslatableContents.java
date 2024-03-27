@@ -31,7 +31,7 @@ import net.minecraft.world.entity.Entity;
 
 public class TranslatableContents implements ComponentContents {
    public static final Object[] NO_ARGS = new Object[0];
-   private static final Codec<Object> PRIMITIVE_ARG_CODEC = ExtraCodecs.validate(ExtraCodecs.JAVA, TranslatableContents::filterAllowedArguments);
+   private static final Codec<Object> PRIMITIVE_ARG_CODEC = ExtraCodecs.JAVA.validate(TranslatableContents::filterAllowedArguments);
    private static final Codec<Object> ARG_CODEC = Codec.either(PRIMITIVE_ARG_CODEC, ComponentSerialization.CODEC)
       .xmap(
          var0 -> var0.map(var0x -> var0x, var0x -> Objects.requireNonNullElse(var0x.tryCollapseToString(), var0x)),
@@ -40,8 +40,8 @@ public class TranslatableContents implements ComponentContents {
    public static final MapCodec<TranslatableContents> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(
                Codec.STRING.fieldOf("translate").forGetter(var0x -> var0x.key),
-               Codec.STRING.optionalFieldOf("fallback").forGetter(var0x -> Optional.ofNullable(var0x.fallback)),
-               ExtraCodecs.strictOptionalField(ARG_CODEC.listOf(), "with").forGetter(var0x -> adjustArgs(var0x.args))
+               Codec.STRING.lenientOptionalFieldOf("fallback").forGetter(var0x -> Optional.ofNullable(var0x.fallback)),
+               ARG_CODEC.listOf().optionalFieldOf("with").forGetter(var0x -> adjustArgs(var0x.args))
             )
             .apply(var0, TranslatableContents::create)
    );

@@ -10,14 +10,12 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -545,8 +543,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    }
 
    protected void updateNarratedWidget(NarrationElementOutput var1) {
-      List var2 = this.narratables.stream().filter(NarratableEntry::isActive).collect(Collectors.toList());
-      Collections.sort(var2, Comparator.comparingInt(TabOrderedElement::getTabOrderGroup));
+      List var2 = this.narratables.stream().filter(NarratableEntry::isActive).sorted(Comparator.comparingInt(TabOrderedElement::getTabOrderGroup)).toList();
       Screen.NarratableSearchResult var3 = findNarratableWidget(var2, this.lastNarratable);
       if (var3 != null) {
          if (var3.priority.isTerminal()) {

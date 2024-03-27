@@ -20,6 +20,7 @@ import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
@@ -93,7 +94,7 @@ public class SkullBlockEntity extends BlockEntity {
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
       super.saveAdditional(var1, var2);
       if (this.owner != null) {
-         var1.put("profile", Util.getOrThrow(ResolvableProfile.CODEC.encodeStart(NbtOps.INSTANCE, this.owner), IllegalStateException::new));
+         var1.put("profile", (Tag)ResolvableProfile.CODEC.encodeStart(NbtOps.INSTANCE, this.owner).getOrThrow());
       }
 
       if (this.noteBlockSound != null) {
@@ -106,8 +107,8 @@ public class SkullBlockEntity extends BlockEntity {
    }
 
    @Override
-   public void load(CompoundTag var1, HolderLookup.Provider var2) {
-      super.load(var1, var2);
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       if (var1.contains("profile")) {
          ResolvableProfile.CODEC
             .parse(NbtOps.INSTANCE, var1.get("profile"))
@@ -155,7 +156,7 @@ public class SkullBlockEntity extends BlockEntity {
 
    @Override
    public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
-      return this.saveWithoutMetadata(var1);
+      return this.saveCustomOnly(var1);
    }
 
    public void setOwner(@Nullable ResolvableProfile var1) {
@@ -185,14 +186,16 @@ public class SkullBlockEntity extends BlockEntity {
    }
 
    @Override
-   public void applyComponents(DataComponentMap var1) {
+   protected void applyImplicitComponents(BlockEntity.DataComponentInput var1) {
+      super.applyImplicitComponents(var1);
       this.setOwner(var1.get(DataComponents.PROFILE));
       this.noteBlockSound = var1.get(DataComponents.NOTE_BLOCK_SOUND);
       this.customName = var1.get(DataComponents.CUSTOM_NAME);
    }
 
    @Override
-   public void collectComponents(DataComponentMap.Builder var1) {
+   protected void collectImplicitComponents(DataComponentMap.Builder var1) {
+      super.collectImplicitComponents(var1);
       var1.set(DataComponents.PROFILE, this.owner);
       var1.set(DataComponents.NOTE_BLOCK_SOUND, this.noteBlockSound);
       var1.set(DataComponents.CUSTOM_NAME, this.customName);

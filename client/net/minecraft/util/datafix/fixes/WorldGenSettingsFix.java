@@ -282,8 +282,7 @@ public class WorldGenSettingsFix extends DataFix {
 
       var1.get("structures")
          .flatMap(Dynamic::getMapValues)
-         .result()
-         .ifPresent(
+         .ifSuccess(
             var5x -> var5x.forEach(
                   (var5xx, var6x) -> var6x.getMapValues()
                         .result()

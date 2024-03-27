@@ -6,6 +6,7 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -41,7 +42,7 @@ public class SinglePoolElement extends StructurePoolElement {
    private static final Codec<Either<ResourceLocation, StructureTemplate>> TEMPLATE_CODEC = Codec.of(
       SinglePoolElement::encodeTemplate, ResourceLocation.CODEC.map(Either::left)
    );
-   public static final Codec<SinglePoolElement> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<SinglePoolElement> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(templateCodec(), processorsCodec(), projectionCodec()).apply(var0, SinglePoolElement::new)
    );
    protected final Either<ResourceLocation, StructureTemplate> template;

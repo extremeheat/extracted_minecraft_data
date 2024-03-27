@@ -1,28 +1,28 @@
 package net.minecraft.world.level.storage.loot.functions;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.ints.IntList;
 import java.util.List;
 import java.util.Optional;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.FireworkExplosion;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class SetFireworkExplosionFunction extends LootItemConditionalFunction {
-   public static final Codec<SetFireworkExplosionFunction> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<SetFireworkExplosionFunction> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> commonFields(var0)
             .and(
                var0.group(
-                  ExtraCodecs.strictOptionalField(FireworkExplosion.Shape.CODEC, "shape").forGetter(var0x -> var0x.shape),
-                  ExtraCodecs.strictOptionalField(FireworkExplosion.COLOR_LIST_CODEC, "colors").forGetter(var0x -> var0x.colors),
-                  ExtraCodecs.strictOptionalField(FireworkExplosion.COLOR_LIST_CODEC, "fade_colors").forGetter(var0x -> var0x.fadeColors),
-                  ExtraCodecs.strictOptionalField(Codec.BOOL, "trail").forGetter(var0x -> var0x.trail),
-                  ExtraCodecs.strictOptionalField(Codec.BOOL, "twinkle").forGetter(var0x -> var0x.twinkle)
+                  FireworkExplosion.Shape.CODEC.optionalFieldOf("shape").forGetter(var0x -> var0x.shape),
+                  FireworkExplosion.COLOR_LIST_CODEC.optionalFieldOf("colors").forGetter(var0x -> var0x.colors),
+                  FireworkExplosion.COLOR_LIST_CODEC.optionalFieldOf("fade_colors").forGetter(var0x -> var0x.fadeColors),
+                  Codec.BOOL.optionalFieldOf("trail").forGetter(var0x -> var0x.trail),
+                  Codec.BOOL.optionalFieldOf("twinkle").forGetter(var0x -> var0x.twinkle)
                )
             )
             .apply(var0, SetFireworkExplosionFunction::new)

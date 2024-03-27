@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
-import net.minecraft.Util;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -47,7 +46,7 @@ public record ShapedRecipePattern(int c, int d, NonNullList<Ingredient> e, Optio
 
    public static ShapedRecipePattern of(Map<Character, Ingredient> var0, List<String> var1) {
       ShapedRecipePattern.Data var2 = new ShapedRecipePattern.Data(var0, var1);
-      return Util.getOrThrow(unpack(var2), IllegalArgumentException::new);
+      return (ShapedRecipePattern)unpack(var2).getOrThrow();
    }
 
    private static DataResult<ShapedRecipePattern> unpack(ShapedRecipePattern.Data var0) {

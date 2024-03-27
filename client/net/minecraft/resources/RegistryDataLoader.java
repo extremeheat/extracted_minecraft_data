@@ -193,8 +193,7 @@ public class RegistryDataLoader {
       try (BufferedReader var6 = var4.openAsReader()) {
          JsonElement var7 = JsonParser.parseReader(var6);
          DataResult var8 = var1.parse(var2, var7);
-         Object var9 = var8.getOrThrow(false, var0x -> {
-         });
+         Object var9 = var8.getOrThrow();
          var0.register(var3, var9, var5);
       }
    }
@@ -241,8 +240,7 @@ public class RegistryDataLoader {
             if (var14.isPresent()) {
                try {
                   DataResult var15 = var4.parse(var7, (Tag)var14.get());
-                  Object var16 = var15.getOrThrow(false, var0x -> {
-                  });
+                  Object var16 = var15.getOrThrow();
                   var3.register(var13, var16, NETWORK_REGISTRATION_INFO);
                } catch (Exception var17) {
                   var5.put(var13, new IllegalStateException(String.format(Locale.ROOT, "Failed to parse value %s from server", var14.get()), var17));

@@ -41,7 +41,6 @@ import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import java.util.function.ToIntFunction;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
@@ -90,12 +89,12 @@ public class FriendlyByteBuf extends ByteBuf {
    @Deprecated
    public <T> T readWithCodec(DynamicOps<Tag> var1, Codec<T> var2, NbtAccounter var3) {
       Tag var4 = this.readNbt(var3);
-      return Util.getOrThrow(var2.parse(var1, var4), var1x -> new DecoderException("Failed to decode: " + var1x + " " + var4));
+      return (T)var2.parse(var1, var4).getOrThrow(var1x -> new DecoderException("Failed to decode: " + var1x + " " + var4));
    }
 
    @Deprecated
    public <T> FriendlyByteBuf writeWithCodec(DynamicOps<Tag> var1, Codec<T> var2, T var3) {
-      Tag var4 = Util.getOrThrow(var2.encodeStart(var1, var3), var1x -> new EncoderException("Failed to encode: " + var1x + " " + var3));
+      Tag var4 = (Tag)var2.encodeStart(var1, var3).getOrThrow(var1x -> new EncoderException("Failed to encode: " + var1x + " " + var3));
       this.writeNbt(var4);
       return this;
    }
@@ -103,12 +102,12 @@ public class FriendlyByteBuf extends ByteBuf {
    public <T> T readJsonWithCodec(Codec<T> var1) {
       JsonElement var2 = GsonHelper.fromJson(GSON, this.readUtf(), JsonElement.class);
       DataResult var3 = var1.parse(JsonOps.INSTANCE, var2);
-      return Util.getOrThrow(var3, var0 -> new DecoderException("Failed to decode json: " + var0));
+      return (T)var3.getOrThrow(var0 -> new DecoderException("Failed to decode json: " + var0));
    }
 
    public <T> void writeJsonWithCodec(Codec<T> var1, T var2) {
       DataResult var3 = var1.encodeStart(JsonOps.INSTANCE, var2);
-      this.writeUtf(GSON.toJson(Util.getOrThrow(var3, var1x -> new EncoderException("Failed to encode: " + var1x + " " + var2))));
+      this.writeUtf(GSON.toJson((JsonElement)var3.getOrThrow(var1x -> new EncoderException("Failed to encode: " + var1x + " " + var2))));
    }
 
    public static <T> IntFunction<T> limitValue(IntFunction<T> var0, int var1) {

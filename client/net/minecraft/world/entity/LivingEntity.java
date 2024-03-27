@@ -712,6 +712,12 @@ public abstract class LivingEntity extends Entity implements Attackable {
 
    @Override
    public void remove(Entity.RemovalReason var1) {
+      if (var1 == Entity.RemovalReason.KILLED || var1 == Entity.RemovalReason.DISCARDED) {
+         for(MobEffectInstance var3 : this.getActiveEffects()) {
+            var3.onMobRemoved(this, var1);
+         }
+      }
+
       super.remove(var1);
       this.brain.clearMemories();
    }
@@ -967,6 +973,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
             this.activeEffects.put(var1.getEffect(), var1);
             this.onEffectAdded(var1, var2);
             var4 = true;
+            var1.onEffectAdded(this);
          } else if (var3.update(var1)) {
             this.onEffectUpdated(var3, true, var2);
             var4 = true;
@@ -978,7 +985,11 @@ public abstract class LivingEntity extends Entity implements Attackable {
    }
 
    public boolean canBeAffected(MobEffectInstance var1) {
-      if (!this.getType().is(EntityTypeTags.IGNORES_POISON_AND_REGEN)) {
+      if (this.getType().is(EntityTypeTags.IMMUNE_TO_INFESTED)) {
+         return !var1.is(MobEffects.INFESTED);
+      } else if (this.getType().is(EntityTypeTags.IMMUNE_TO_OOZING)) {
+         return !var1.is(MobEffects.OOZING);
+      } else if (!this.getType().is(EntityTypeTags.IGNORES_POISON_AND_REGEN)) {
          return true;
       } else {
          return !var1.is(MobEffects.REGENERATION) && !var1.is(MobEffects.POISON);
@@ -1201,14 +1212,14 @@ public abstract class LivingEntity extends Entity implements Attackable {
             if (var13 != null && !var1.is(DamageTypeTags.NO_KNOCKBACK)) {
                double var15 = var13.getX() - this.getX();
 
-               double var17;
-               for(var17 = var13.getZ() - this.getZ(); var15 * var15 + var17 * var17 < 1.0E-4; var17 = (Math.random() - Math.random()) * 0.01) {
+               double var18;
+               for(var18 = var13.getZ() - this.getZ(); var15 * var15 + var18 * var18 < 1.0E-4; var18 = (Math.random() - Math.random()) * 0.01) {
                   var15 = (Math.random() - Math.random()) * 0.01;
                }
 
-               this.knockback(0.4000000059604645, var15, var17);
+               this.knockback(0.4000000059604645, var15, var18);
                if (!var4) {
-                  this.indicateDamage(var15, var17);
+                  this.indicateDamage(var15, var18);
                }
             }
          }
@@ -1240,6 +1251,10 @@ public abstract class LivingEntity extends Entity implements Attackable {
 
          if (var13 instanceof ServerPlayer) {
             CriteriaTriggers.PLAYER_HURT_ENTITY.trigger((ServerPlayer)var13, this, var1, var3, var2, var4);
+         }
+
+         for(MobEffectInstance var19 : this.getActiveEffects()) {
+            var19.onMobHurt(this, var1, var2);
          }
 
          return var16;
@@ -1643,7 +1658,7 @@ public abstract class LivingEntity extends Entity implements Attackable {
    protected float getDamageAfterArmorAbsorb(DamageSource var1, float var2) {
       if (!var1.is(DamageTypeTags.BYPASSES_ARMOR)) {
          this.hurtArmor(var1, var2);
-         var2 = CombatRules.getDamageAfterAbsorb(var2, (float)this.getArmorValue(), (float)this.getAttributeValue(Attributes.ARMOR_TOUGHNESS));
+         var2 = CombatRules.getDamageAfterAbsorb(var2, var1, (float)this.getArmorValue(), (float)this.getAttributeValue(Attributes.ARMOR_TOUGHNESS));
       }
 
       return var2;

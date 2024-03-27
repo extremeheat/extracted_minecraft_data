@@ -30,6 +30,7 @@ import net.minecraft.client.DebugQueryHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.MapRenderer;
+import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.gui.components.toasts.RecipeToast;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.screens.DeathScreen;
@@ -223,6 +224,7 @@ import net.minecraft.network.protocol.game.CommonPlayerSpawnInfo;
 import net.minecraft.network.protocol.game.ServerboundAcceptTeleportationPacket;
 import net.minecraft.network.protocol.game.ServerboundChatAckPacket;
 import net.minecraft.network.protocol.game.ServerboundChatCommandPacket;
+import net.minecraft.network.protocol.game.ServerboundChatCommandSignedPacket;
 import net.minecraft.network.protocol.game.ServerboundChatPacket;
 import net.minecraft.network.protocol.game.ServerboundChatSessionUpdatePacket;
 import net.minecraft.network.protocol.game.ServerboundChunkBatchReceivedPacket;
@@ -353,6 +355,9 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       this.pingDebugMonitor = new PingDebugMonitor(this, var1.getDebugOverlay().getPingLogger());
       this.recipeManager = new RecipeManager(this.registryAccess);
       this.debugSampleSubscriber = new DebugSampleSubscriber(this, var1.getDebugOverlay());
+      if (var3.chatState() != null) {
+         var1.gui.getChat().restoreState(var3.chatState());
+      }
    }
 
    public ClientSuggestionProvider getSuggestionsProvider() {
@@ -777,6 +782,9 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    @Override
    public void handleConfigurationStart(ClientboundStartConfigurationPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
+      this.minecraft.getChatListener().clearQueue();
+      this.sendChatAcknowledgement();
+      ChatComponent.State var2 = this.minecraft.gui.getChat().storeState();
       this.minecraft.clearClientLevel(new ServerReconfigScreen(RECONFIGURE_SCREEN_MESSAGE, this.connection));
       this.connection
          .setupInboundProtocol(
@@ -792,7 +800,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
                   this.serverBrand,
                   this.serverData,
                   this.postDisconnectScreen,
-                  this.serverCookies
+                  this.serverCookies,
+                  var2
                )
             )
          );
@@ -1250,7 +1259,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       this.minecraft.level.getBlockEntity(var2, var1.getType()).ifPresent(var2x -> {
          CompoundTag var3 = var1.getTag();
          if (!var3.isEmpty()) {
-            var2x.load(var3, this.registryAccess);
+            var2x.loadWithComponents(var3, this.registryAccess);
          }
 
          if (var2x instanceof CommandBlockEntity && this.minecraft.screen instanceof CommandBlockEditScreen) {
@@ -2291,20 +2300,24 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    }
 
    public void sendCommand(String var1) {
-      Instant var2 = Instant.now();
-      long var3 = Crypt.SaltSupplier.getLong();
-      LastSeenMessagesTracker.Update var5 = this.lastSeenMessages.generateAndApplyUpdate();
-      ArgumentSignatures var6 = ArgumentSignatures.signCommand(SignableCommand.of(this.parseCommand(var1)), var5x -> {
-         SignedMessageBody var6xx = new SignedMessageBody(var5x, var2, var3, var5.lastSeen());
-         return this.signedMessageEncoder.pack(var6xx);
-      });
-      this.send(new ServerboundChatCommandPacket(var1, var2, var3, var6, var5.update()));
+      SignableCommand var2 = SignableCommand.of(this.parseCommand(var1));
+      if (var2.arguments().isEmpty()) {
+         this.send(new ServerboundChatCommandPacket(var1));
+      } else {
+         Instant var3 = Instant.now();
+         long var4 = Crypt.SaltSupplier.getLong();
+         LastSeenMessagesTracker.Update var6 = this.lastSeenMessages.generateAndApplyUpdate();
+         ArgumentSignatures var7 = ArgumentSignatures.signCommand(var2, var5 -> {
+            SignedMessageBody var6xx = new SignedMessageBody(var5, var3, var4, var6.lastSeen());
+            return this.signedMessageEncoder.pack(var6xx);
+         });
+         this.send(new ServerboundChatCommandSignedPacket(var1, var3, var4, var7, var6.update()));
+      }
    }
 
    public boolean sendUnsignedCommand(String var1) {
-      if (SignableCommand.of(this.parseCommand(var1)).arguments().isEmpty()) {
-         LastSeenMessagesTracker.Update var2 = this.lastSeenMessages.generateAndApplyUpdate();
-         this.send(new ServerboundChatCommandPacket(var1, Instant.now(), 0L, ArgumentSignatures.EMPTY, var2.update()));
+      if (!SignableCommand.hasSignableArguments(this.parseCommand(var1))) {
+         this.send(new ServerboundChatCommandPacket(var1));
          return true;
       } else {
          return false;

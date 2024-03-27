@@ -4,6 +4,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
@@ -26,7 +27,7 @@ import net.minecraft.world.level.storage.loot.providers.nbt.NbtProviders;
 import org.apache.commons.lang3.mutable.MutableObject;
 
 public class CopyCustomDataFunction extends LootItemConditionalFunction {
-   public static final Codec<CopyCustomDataFunction> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<CopyCustomDataFunction> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> commonFields(var0)
             .and(
                var0.group(

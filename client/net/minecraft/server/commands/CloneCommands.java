@@ -21,6 +21,7 @@ import net.minecraft.commands.arguments.DimensionArgument;
 import net.minecraft.commands.arguments.blocks.BlockPredicateArgument;
 import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -249,7 +250,9 @@ public class CloneCommands {
                      if (var4.test(var26)) {
                         BlockEntity var28 = var12.getBlockEntity(var24);
                         if (var28 != null) {
-                           CompoundTag var29 = var28.saveWithoutMetadata(var0.registryAccess());
+                           CloneCommands.CloneBlockEntityInfo var29 = new CloneCommands.CloneBlockEntityInfo(
+                              var28.saveCustomOnly(var0.registryAccess()), var28.components()
+                           );
                            var17.add(new CloneCommands.CloneBlockInfo(var25, var27, var29));
                            var19.addLast(var24);
                         } else if (!var27.isSolidRender(var12, var24) && !var27.isCollisionShapeFullBlock(var12, var24)) {
@@ -298,8 +301,9 @@ public class CloneCommands {
 
             for(CloneCommands.CloneBlockInfo var46 : var17) {
                BlockEntity var48 = var13.getBlockEntity(var46.pos);
-               if (var46.tag != null && var48 != null) {
-                  var48.load(var46.tag, var13.registryAccess());
+               if (var46.blockEntityInfo != null && var48 != null) {
+                  var48.loadCustomOnly(var46.blockEntityInfo.tag, var13.registryAccess());
+                  var48.setComponents(var46.blockEntityInfo.components);
                   var48.setChanged();
                }
 
@@ -324,17 +328,28 @@ public class CloneCommands {
       }
    }
 
-   static class CloneBlockInfo {
-      public final BlockPos pos;
-      public final BlockState state;
-      @Nullable
-      public final CompoundTag tag;
+   static record CloneBlockEntityInfo(CompoundTag a, DataComponentMap b) {
+      final CompoundTag tag;
+      final DataComponentMap components;
 
-      public CloneBlockInfo(BlockPos var1, BlockState var2, @Nullable CompoundTag var3) {
+      CloneBlockEntityInfo(CompoundTag var1, DataComponentMap var2) {
+         super();
+         this.tag = var1;
+         this.components = var2;
+      }
+   }
+
+   static record CloneBlockInfo(BlockPos a, BlockState b, @Nullable CloneCommands.CloneBlockEntityInfo c) {
+      final BlockPos pos;
+      final BlockState state;
+      @Nullable
+      final CloneCommands.CloneBlockEntityInfo blockEntityInfo;
+
+      CloneBlockInfo(BlockPos var1, BlockState var2, @Nullable CloneCommands.CloneBlockEntityInfo var3) {
          super();
          this.pos = var1;
          this.state = var2;
-         this.tag = var3;
+         this.blockEntityInfo = var3;
       }
    }
 

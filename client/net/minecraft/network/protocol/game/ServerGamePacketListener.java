@@ -16,6 +16,8 @@ public interface ServerGamePacketListener extends ServerPingPacketListener, Serv
 
    void handleChatCommand(ServerboundChatCommandPacket var1);
 
+   void handleSignedChatCommand(ServerboundChatCommandSignedPacket var1);
+
    void handleChatAck(ServerboundChatAckPacket var1);
 
    void handleClientCommand(ServerboundClientCommandPacket var1);

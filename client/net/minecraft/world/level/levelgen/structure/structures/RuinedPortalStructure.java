@@ -2,6 +2,7 @@ package net.minecraft.world.level.levelgen.structure.structures;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
@@ -51,7 +52,7 @@ public class RuinedPortalStructure extends Structure {
    private static final float PROBABILITY_OF_GIANT_PORTAL = 0.05F;
    private static final int MIN_Y_INDEX = 15;
    private final List<RuinedPortalStructure.Setup> setups;
-   public static final Codec<RuinedPortalStructure> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<RuinedPortalStructure> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(
                settingsCodec(var0), ExtraCodecs.nonEmptyList(RuinedPortalStructure.Setup.CODEC.listOf()).fieldOf("setups").forGetter(var0x -> var0x.setups)
             )

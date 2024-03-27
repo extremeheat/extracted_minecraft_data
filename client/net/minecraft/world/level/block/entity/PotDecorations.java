@@ -5,15 +5,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 
@@ -23,7 +22,9 @@ public record PotDecorations(Optional<Item> d, Optional<Item> e, Optional<Item> 
    private final Optional<Item> right;
    private final Optional<Item> front;
    public static final PotDecorations EMPTY = new PotDecorations(Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
-   public static final Codec<PotDecorations> CODEC = ExtraCodecs.sizeLimitedList(BuiltInRegistries.ITEM.byNameCodec().listOf(), 4)
+   public static final Codec<PotDecorations> CODEC = BuiltInRegistries.ITEM
+      .byNameCodec()
+      .sizeLimitedListOf(4)
       .xmap(PotDecorations::new, PotDecorations::ordered);
    public static final StreamCodec<RegistryFriendlyByteBuf, PotDecorations> STREAM_CODEC = ByteBufCodecs.registry(Registries.ITEM)
       .<List<Item>>apply(ByteBufCodecs.list(4))
@@ -58,7 +59,7 @@ public record PotDecorations(Optional<Item> d, Optional<Item> e, Optional<Item> 
       if (this.equals(EMPTY)) {
          return var1;
       } else {
-         var1.put("sherds", Util.getOrThrow(CODEC.encodeStart(NbtOps.INSTANCE, this), IllegalStateException::new));
+         var1.put("sherds", (Tag)CODEC.encodeStart(NbtOps.INSTANCE, this).getOrThrow());
          return var1;
       }
    }

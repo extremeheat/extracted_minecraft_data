@@ -13,7 +13,6 @@ import net.minecraft.advancements.Criterion;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.component.DataComponentPredicate;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
@@ -59,10 +58,11 @@ public class InventoryChangeTrigger extends SimpleCriterionTrigger<InventoryChan
       private final List<ItemPredicate> items;
       public static final Codec<InventoryChangeTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
-                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player").forGetter(InventoryChangeTrigger.TriggerInstance::player),
-                  ExtraCodecs.strictOptionalField(InventoryChangeTrigger.TriggerInstance.Slots.CODEC, "slots", InventoryChangeTrigger.TriggerInstance.Slots.ANY)
+                  EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(InventoryChangeTrigger.TriggerInstance::player),
+                  InventoryChangeTrigger.TriggerInstance.Slots.CODEC
+                     .optionalFieldOf("slots", InventoryChangeTrigger.TriggerInstance.Slots.ANY)
                      .forGetter(InventoryChangeTrigger.TriggerInstance::slots),
-                  ExtraCodecs.strictOptionalField(ItemPredicate.CODEC.listOf(), "items", List.of()).forGetter(InventoryChangeTrigger.TriggerInstance::items)
+                  ItemPredicate.CODEC.listOf().optionalFieldOf("items", List.of()).forGetter(InventoryChangeTrigger.TriggerInstance::items)
                )
                .apply(var0, InventoryChangeTrigger.TriggerInstance::new)
       );
@@ -127,12 +127,11 @@ public class InventoryChangeTrigger extends SimpleCriterionTrigger<InventoryChan
          private final MinMaxBounds.Ints empty;
          public static final Codec<InventoryChangeTrigger.TriggerInstance.Slots> CODEC = RecordCodecBuilder.create(
             var0 -> var0.group(
-                     ExtraCodecs.strictOptionalField(MinMaxBounds.Ints.CODEC, "occupied", MinMaxBounds.Ints.ANY)
+                     MinMaxBounds.Ints.CODEC
+                        .optionalFieldOf("occupied", MinMaxBounds.Ints.ANY)
                         .forGetter(InventoryChangeTrigger.TriggerInstance.Slots::occupied),
-                     ExtraCodecs.strictOptionalField(MinMaxBounds.Ints.CODEC, "full", MinMaxBounds.Ints.ANY)
-                        .forGetter(InventoryChangeTrigger.TriggerInstance.Slots::full),
-                     ExtraCodecs.strictOptionalField(MinMaxBounds.Ints.CODEC, "empty", MinMaxBounds.Ints.ANY)
-                        .forGetter(InventoryChangeTrigger.TriggerInstance.Slots::empty)
+                     MinMaxBounds.Ints.CODEC.optionalFieldOf("full", MinMaxBounds.Ints.ANY).forGetter(InventoryChangeTrigger.TriggerInstance.Slots::full),
+                     MinMaxBounds.Ints.CODEC.optionalFieldOf("empty", MinMaxBounds.Ints.ANY).forGetter(InventoryChangeTrigger.TriggerInstance.Slots::empty)
                   )
                   .apply(var0, InventoryChangeTrigger.TriggerInstance.Slots::new)
          );

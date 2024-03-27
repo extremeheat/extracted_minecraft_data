@@ -298,7 +298,7 @@ public class VanillaChestLoot implements LootTableSubProvider {
                               .setZoom((byte)1)
                               .setSkipKnownStructures(false)
                         )
-                        .apply(SetNameFunction.setName(Component.translatable("filled_map.buried_treasure")))
+                        .apply(SetNameFunction.setName(Component.translatable("filled_map.buried_treasure"), SetNameFunction.Target.ITEM_NAME))
                   )
             )
       );
@@ -330,7 +330,7 @@ public class VanillaChestLoot implements LootTableSubProvider {
                               .setZoom((byte)1)
                               .setSkipKnownStructures(false)
                         )
-                        .apply(SetNameFunction.setName(Component.translatable("filled_map.buried_treasure")))
+                        .apply(SetNameFunction.setName(Component.translatable("filled_map.buried_treasure"), SetNameFunction.Target.ITEM_NAME))
                   )
             )
       );
@@ -637,6 +637,10 @@ public class VanillaChestLoot implements LootTableSubProvider {
       var2.accept(BuiltInLootTables.TRIAL_CHAMBERS_REWARD_COMMON, LootTable.lootTable());
       var2.accept(BuiltInLootTables.TRIAL_CHAMBERS_REWARD_RARE, LootTable.lootTable());
       var2.accept(BuiltInLootTables.TRIAL_CHAMBERS_REWARD_UNIQUE, LootTable.lootTable());
+      var2.accept(BuiltInLootTables.TRIAL_CHAMBERS_REWARD_OMINOUS, LootTable.lootTable());
+      var2.accept(BuiltInLootTables.TRIAL_CHAMBERS_REWARD_OMINOUS_COMMON, LootTable.lootTable());
+      var2.accept(BuiltInLootTables.TRIAL_CHAMBERS_REWARD_OMINOUS_RARE, LootTable.lootTable());
+      var2.accept(BuiltInLootTables.TRIAL_CHAMBERS_REWARD_OMINOUS_UNIQUE, LootTable.lootTable());
       var2.accept(BuiltInLootTables.TRIAL_CHAMBERS_SUPPLY, LootTable.lootTable());
       var2.accept(BuiltInLootTables.TRIAL_CHAMBERS_CORRIDOR, LootTable.lootTable());
       var2.accept(BuiltInLootTables.TRIAL_CHAMBERS_ENTRANCE, LootTable.lootTable());
@@ -652,6 +656,9 @@ public class VanillaChestLoot implements LootTableSubProvider {
    public static void spawnerLootTables(BiConsumer<ResourceKey<LootTable>, LootTable.Builder> var0) {
       var0.accept(BuiltInLootTables.SPAWNER_TRIAL_CHAMBER_KEY, LootTable.lootTable());
       var0.accept(BuiltInLootTables.SPAWNER_TRIAL_CHAMBER_CONSUMABLES, LootTable.lootTable());
+      var0.accept(BuiltInLootTables.SPAWNER_OMINOUS_TRIAL_CHAMBER_KEY, LootTable.lootTable());
+      var0.accept(BuiltInLootTables.SPAWNER_OMINOUS_TRIAL_CHAMBER_CONSUMABLES, LootTable.lootTable());
+      var0.accept(BuiltInLootTables.SPAWNER_TRIAL_ITEMS_TO_DROP_WHEN_OMINOUS, LootTable.lootTable());
    }
 
    public static LootTable.Builder shipwreckSupplyLootTable() {
@@ -715,7 +722,7 @@ public class VanillaChestLoot implements LootTableSubProvider {
                            .setZoom((byte)1)
                            .setSkipKnownStructures(false)
                      )
-                     .apply(SetNameFunction.setName(Component.translatable("filled_map.buried_treasure")))
+                     .apply(SetNameFunction.setName(Component.translatable("filled_map.buried_treasure"), SetNameFunction.Target.ITEM_NAME))
                )
          )
          .withPool(

@@ -481,7 +481,7 @@ public class LevelChunk extends ChunkAccess {
       var3.accept((var1x, var2x, var3x) -> {
          BlockEntity var4 = this.getBlockEntity(var1x, LevelChunk.EntityCreationType.IMMEDIATE);
          if (var4 != null && var3x != null && var4.getType() == var2x) {
-            var4.load(var3x, this.level.registryAccess());
+            var4.loadWithComponents(var3x, this.level.registryAccess());
          }
       });
    }

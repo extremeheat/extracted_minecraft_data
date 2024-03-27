@@ -186,7 +186,8 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
                   null,
                   this.serverData,
                   this.parent,
-                  this.cookies
+                  this.cookies,
+                  null
                )
             )
          );

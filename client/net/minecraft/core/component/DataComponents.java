@@ -67,6 +67,9 @@ public class DataComponents {
    public static final DataComponentType<Component> CUSTOM_NAME = register(
       "custom_name", var0 -> var0.persistent(ComponentSerialization.FLAT_CODEC).networkSynchronized(ComponentSerialization.STREAM_CODEC)
    );
+   public static final DataComponentType<Component> ITEM_NAME = register(
+      "item_name", var0 -> var0.persistent(ComponentSerialization.FLAT_CODEC).networkSynchronized(ComponentSerialization.STREAM_CODEC)
+   );
    public static final DataComponentType<ItemLore> LORE = register("lore", var0 -> var0.persistent(ItemLore.CODEC).networkSynchronized(ItemLore.STREAM_CODEC));
    public static final DataComponentType<Rarity> RARITY = register("rarity", var0 -> var0.persistent(Rarity.CODEC).networkSynchronized(Rarity.STREAM_CODEC));
    public static final DataComponentType<ItemEnchantments> ENCHANTMENTS = register(
@@ -154,6 +157,9 @@ public class DataComponents {
    );
    public static final DataComponentType<Holder<Instrument>> INSTRUMENT = register(
       "instrument", var0 -> var0.persistent(Instrument.CODEC).networkSynchronized(Instrument.STREAM_CODEC)
+   );
+   public static final DataComponentType<Integer> OMINOUS_BOTTLE_AMPLIFIER = register(
+      "ominous_bottle_amplifier", var0 -> var0.persistent(ExtraCodecs.intRange(0, 4)).networkSynchronized(ByteBufCodecs.VAR_INT)
    );
    public static final DataComponentType<List<ResourceLocation>> RECIPES = register("recipes", var0 -> var0.persistent(ResourceLocation.CODEC.listOf()));
    public static final DataComponentType<LodestoneTracker> LODESTONE_TRACKER = register(

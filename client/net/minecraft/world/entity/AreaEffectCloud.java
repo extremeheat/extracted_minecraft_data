@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.Map.Entry;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.commands.arguments.ParticleArgument;
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
@@ -34,7 +33,6 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int TIME_BETWEEN_APPLICATIONS = 5;
    private static final EntityDataAccessor<Float> DATA_RADIUS = SynchedEntityData.defineId(AreaEffectCloud.class, EntityDataSerializers.FLOAT);
-   private static final EntityDataAccessor<Integer> DATA_COLOR = SynchedEntityData.defineId(AreaEffectCloud.class, EntityDataSerializers.INT);
    private static final EntityDataAccessor<Boolean> DATA_WAITING = SynchedEntityData.defineId(AreaEffectCloud.class, EntityDataSerializers.BOOLEAN);
    private static final EntityDataAccessor<ParticleOptions> DATA_PARTICLE = SynchedEntityData.defineId(AreaEffectCloud.class, EntityDataSerializers.PARTICLE);
    private static final float MAX_RADIUS = 32.0F;
@@ -67,10 +65,9 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
 
    @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
-      var1.define(DATA_COLOR, 0);
       var1.define(DATA_RADIUS, 3.0F);
       var1.define(DATA_WAITING, false);
-      var1.define(DATA_PARTICLE, ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, 0.0F, 0.0F, 0.0F));
+      var1.define(DATA_PARTICLE, ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, -1));
    }
 
    public void setRadius(float var1) {
@@ -98,15 +95,12 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
    }
 
    private void updateColor() {
-      this.entityData.set(DATA_COLOR, this.potionContents.equals(PotionContents.EMPTY) ? 0 : this.potionContents.getColor());
+      int var1 = this.potionContents.equals(PotionContents.EMPTY) ? 0 : this.potionContents.getColor();
+      this.entityData.set(DATA_PARTICLE, ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, var1));
    }
 
    public void addEffect(MobEffectInstance var1) {
       this.setPotionContents(this.potionContents.withEffectAdded(var1));
-   }
-
-   public int getColor() {
-      return this.getEntityData().get(DATA_COLOR);
    }
 
    public ParticleOptions getParticle() {
@@ -160,25 +154,11 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
             double var9 = this.getX() + (double)(Mth.cos(var7) * var8);
             double var11 = this.getY();
             double var13 = this.getZ() + (double)(Mth.sin(var7) * var8);
-            double var15;
-            double var17;
-            double var19;
-            if (var3.getType() == ParticleTypes.ENTITY_EFFECT) {
-               int var21 = var1 && this.random.nextBoolean() ? 16777215 : this.getColor();
-               var15 = (double)((float)(var21 >> 16 & 0xFF) / 255.0F);
-               var17 = (double)((float)(var21 >> 8 & 0xFF) / 255.0F);
-               var19 = (double)((float)(var21 & 0xFF) / 255.0F);
-            } else if (var1) {
-               var15 = 0.0;
-               var17 = 0.0;
-               var19 = 0.0;
+            if (var1 && this.random.nextBoolean()) {
+               this.level().addAlwaysVisibleParticle(ColorParticleOption.create(ParticleTypes.ENTITY_EFFECT, -1), var9, var11, var13, 0.0, 0.0, 0.0);
             } else {
-               var15 = (0.5 - this.random.nextDouble()) * 0.15;
-               var17 = 0.009999999776482582;
-               var19 = (0.5 - this.random.nextDouble()) * 0.15;
+               this.level().addAlwaysVisibleParticle(var3, var9, var11, var13, 0.0, 0.0, 0.0);
             }
-
-            this.level().addAlwaysVisibleParticle(var3, var9, var11, var13, var15, var17, var19);
          }
       } else {
          if (this.tickCount >= this.waitTime + this.duration) {
@@ -186,12 +166,12 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
             return;
          }
 
-         boolean var22 = this.tickCount < this.waitTime;
-         if (var1 != var22) {
-            this.setWaiting(var22);
+         boolean var16 = this.tickCount < this.waitTime;
+         if (var1 != var16) {
+            this.setWaiting(var16);
          }
 
-         if (var22) {
+         if (var16) {
             return;
          }
 
@@ -210,33 +190,33 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
             if (!this.potionContents.hasEffects()) {
                this.victims.clear();
             } else {
-               ArrayList var23 = Lists.newArrayList();
+               ArrayList var17 = Lists.newArrayList();
                if (this.potionContents.potion().isPresent()) {
-                  for(MobEffectInstance var26 : this.potionContents.potion().get().value().getEffects()) {
-                     var23.add(
+                  for(MobEffectInstance var20 : this.potionContents.potion().get().value().getEffects()) {
+                     var17.add(
                         new MobEffectInstance(
-                           var26.getEffect(), var26.mapDuration(var0 -> var0 / 4), var26.getAmplifier(), var26.isAmbient(), var26.isVisible()
+                           var20.getEffect(), var20.mapDuration(var0 -> var0 / 4), var20.getAmplifier(), var20.isAmbient(), var20.isVisible()
                         )
                      );
                   }
                }
 
-               var23.addAll(this.potionContents.customEffects());
-               List var25 = this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox());
-               if (!var25.isEmpty()) {
-                  for(LivingEntity var28 : var25) {
-                     if (!this.victims.containsKey(var28) && var28.isAffectedByPotions()) {
-                        double var29 = var28.getX() - this.getX();
-                        double var10 = var28.getZ() - this.getZ();
-                        double var12 = var29 * var29 + var10 * var10;
+               var17.addAll(this.potionContents.customEffects());
+               List var19 = this.level().getEntitiesOfClass(LivingEntity.class, this.getBoundingBox());
+               if (!var19.isEmpty()) {
+                  for(LivingEntity var22 : var19) {
+                     if (!this.victims.containsKey(var22) && var22.isAffectedByPotions()) {
+                        double var23 = var22.getX() - this.getX();
+                        double var10 = var22.getZ() - this.getZ();
+                        double var12 = var23 * var23 + var10 * var10;
                         if (var12 <= (double)(var2 * var2)) {
-                           this.victims.put(var28, this.tickCount + this.reapplicationDelay);
+                           this.victims.put(var22, this.tickCount + this.reapplicationDelay);
 
-                           for(MobEffectInstance var30 : var23) {
-                              if (var30.getEffect().value().isInstantenous()) {
-                                 var30.getEffect().value().applyInstantenousEffect(this, this.getOwner(), var28, var30.getAmplifier(), 0.5);
+                           for(MobEffectInstance var15 : var17) {
+                              if (var15.getEffect().value().isInstantenous()) {
+                                 var15.getEffect().value().applyInstantenousEffect(this, this.getOwner(), var22, var15.getAmplifier(), 0.5);
                               } else {
-                                 var28.addEffect(new MobEffectInstance(var30), this);
+                                 var22.addEffect(new MobEffectInstance(var15), this);
                               }
                            }
 
@@ -361,7 +341,7 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
       }
 
       if (!this.potionContents.equals(PotionContents.EMPTY)) {
-         Tag var2 = Util.getOrThrow(PotionContents.CODEC.encodeStart(NbtOps.INSTANCE, this.potionContents), IllegalStateException::new);
+         Tag var2 = (Tag)PotionContents.CODEC.encodeStart(NbtOps.INSTANCE, this.potionContents).getOrThrow();
          var1.put("potion_contents", var2);
       }
    }

@@ -36,7 +36,7 @@ import net.minecraft.util.GsonHelper;
 import net.minecraft.util.StringRepresentable;
 
 public class ComponentSerialization {
-   public static final Codec<Component> CODEC = ExtraCodecs.recursive("Component", ComponentSerialization::createCodec);
+   public static final Codec<Component> CODEC = Codec.recursive("Component", ComponentSerialization::createCodec);
    public static final StreamCodec<RegistryFriendlyByteBuf, Component> STREAM_CODEC = ByteBufCodecs.fromCodecWithRegistries(CODEC);
    public static final StreamCodec<RegistryFriendlyByteBuf, Optional<Component>> OPTIONAL_STREAM_CODEC = STREAM_CODEC.apply(ByteBufCodecs::optional);
    public static final StreamCodec<RegistryFriendlyByteBuf, Component> TRUSTED_STREAM_CODEC = ByteBufCodecs.fromCodecWithRegistriesTrusted(CODEC);
@@ -51,7 +51,7 @@ public class ComponentSerialization {
    }
 
    public static Codec<Component> flatCodec(int var0) {
-      final Codec var1 = ExtraCodecs.sizeLimitedString(0, var0);
+      final Codec var1 = Codec.string(0, var0);
       return new Codec<Component>() {
          public <T> DataResult<Pair<Component, T>> decode(DynamicOps<T> var1x, T var2) {
             DynamicOps var3 = asJsonOps(var1x);
@@ -99,7 +99,7 @@ public class ComponentSerialization {
          Stream.of(var0).map(var1).toList(), var2x -> (MapEncoder<? extends Object>)var1.apply((StringRepresentable)var2.apply(var2x))
       );
       Codec var5 = StringRepresentable.fromValues(() -> var0);
-      MapCodec var6 = var5.dispatchMap(var3, var2, var1x -> ((MapCodec)var1.apply(var1x)).codec());
+      MapCodec var6 = var5.dispatchMap(var3, var2, var1);
       ComponentSerialization.StrictEither var7 = new ComponentSerialization.StrictEither(var3, var6, var4);
       return ExtraCodecs.orCompressed(var7, var6);
    }
@@ -112,7 +112,7 @@ public class ComponentSerialization {
       Codec var3 = RecordCodecBuilder.create(
          var2x -> var2x.group(
                   var2.forGetter(Component::getContents),
-                  ExtraCodecs.strictOptionalField(ExtraCodecs.nonEmptyList(var0.listOf()), "extra", List.of()).forGetter(Component::getSiblings),
+                  ExtraCodecs.nonEmptyList(var0.listOf()).optionalFieldOf("extra", List.of()).forGetter(Component::getSiblings),
                   Style.Serializer.MAP_CODEC.forGetter(Component::getStyle)
                )
                .apply(var2x, MutableComponent::new)

@@ -50,7 +50,8 @@ public class ChiseledBookShelfBlockEntity extends BlockEntity implements Contain
    }
 
    @Override
-   public void load(CompoundTag var1, HolderLookup.Provider var2) {
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       this.items.clear();
       ContainerHelper.loadAllItems(var1, this.items, var2);
       this.lastInteractedSlot = var1.getInt("last_interacted_slot");
@@ -58,6 +59,7 @@ public class ChiseledBookShelfBlockEntity extends BlockEntity implements Contain
 
    @Override
    protected void saveAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.saveAdditional(var1, var2);
       ContainerHelper.saveAllItems(var1, this.items, true, var2);
       var1.putInt("last_interacted_slot", this.lastInteractedSlot);
    }
@@ -143,12 +145,14 @@ public class ChiseledBookShelfBlockEntity extends BlockEntity implements Contain
    }
 
    @Override
-   public void applyComponents(DataComponentMap var1) {
-      var1.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY).copyInto(this.items);
+   protected void applyImplicitComponents(BlockEntity.DataComponentInput var1) {
+      super.applyImplicitComponents(var1);
+      var1.<ItemContainerContents>getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY).copyInto(this.items);
    }
 
    @Override
-   public void collectComponents(DataComponentMap.Builder var1) {
+   protected void collectImplicitComponents(DataComponentMap.Builder var1) {
+      super.collectImplicitComponents(var1);
       var1.set(DataComponents.CONTAINER, ItemContainerContents.copyOf(this.items));
    }
 

@@ -24,6 +24,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -112,6 +113,17 @@ public class EnchantmentHelper {
       return var1 > 0 ? getSweepingDamageRatio(var1) : 0.0F;
    }
 
+   public static float calculateArmorBreach(@Nullable Entity var0, float var1) {
+      if (var0 instanceof LivingEntity var2) {
+         int var3 = getEnchantmentLevel(Enchantments.BREACH, (LivingEntity)var2);
+         if (var3 > 0) {
+            return BreachEnchantment.calculateArmorBreach((float)var3, var1);
+         }
+      }
+
+      return var1;
+   }
+
    public static void doPostHurtEffects(LivingEntity var0, Entity var1) {
       EnchantmentHelper.EnchantmentVisitor var2 = (var2x, var3) -> var2x.doPostHurt(var0, var1, var3);
       if (var0 != null) {
@@ -131,6 +143,12 @@ public class EnchantmentHelper {
 
       if (var0 instanceof Player) {
          runIterationOnItem(var2, var0.getMainHandItem());
+      }
+   }
+
+   public static void doPostItemStackHurtEffects(LivingEntity var0, Entity var1, ItemEnchantments var2) {
+      for(Entry var4 : var2.entrySet()) {
+         ((Enchantment)((Holder)var4.getKey()).value()).doPostItemStackHurt(var0, var1, var4.getIntValue());
       }
    }
 
@@ -267,48 +285,48 @@ public class EnchantmentHelper {
       }
    }
 
-   public static ItemStack enchantItem(RandomSource var0, ItemStack var1, int var2, boolean var3) {
-      List var4 = selectEnchantment(var0, var1, var2, var3);
-      if (var1.is(Items.BOOK)) {
-         var1 = new ItemStack(Items.ENCHANTED_BOOK);
+   public static ItemStack enchantItem(FeatureFlagSet var0, RandomSource var1, ItemStack var2, int var3, boolean var4) {
+      List var5 = selectEnchantment(var0, var1, var2, var3, var4);
+      if (var2.is(Items.BOOK)) {
+         var2 = new ItemStack(Items.ENCHANTED_BOOK);
       }
 
-      for(EnchantmentInstance var6 : var4) {
-         var1.enchant(var6.enchantment, var6.level);
+      for(EnchantmentInstance var7 : var5) {
+         var2.enchant(var7.enchantment, var7.level);
       }
 
-      return var1;
+      return var2;
    }
 
-   public static List<EnchantmentInstance> selectEnchantment(RandomSource var0, ItemStack var1, int var2, boolean var3) {
-      ArrayList var4 = Lists.newArrayList();
-      Item var5 = var1.getItem();
-      int var6 = var5.getEnchantmentValue();
-      if (var6 <= 0) {
-         return var4;
+   public static List<EnchantmentInstance> selectEnchantment(FeatureFlagSet var0, RandomSource var1, ItemStack var2, int var3, boolean var4) {
+      ArrayList var5 = Lists.newArrayList();
+      Item var6 = var2.getItem();
+      int var7 = var6.getEnchantmentValue();
+      if (var7 <= 0) {
+         return var5;
       } else {
-         var2 += 1 + var0.nextInt(var6 / 4 + 1) + var0.nextInt(var6 / 4 + 1);
-         float var7 = (var0.nextFloat() + var0.nextFloat() - 1.0F) * 0.15F;
-         var2 = Mth.clamp(Math.round((float)var2 + (float)var2 * var7), 1, 2147483647);
-         List var8 = getAvailableEnchantmentResults(var2, var1, var3);
-         if (!var8.isEmpty()) {
-            WeightedRandom.getRandomItem(var0, var8).ifPresent(var4::add);
+         var3 += 1 + var1.nextInt(var7 / 4 + 1) + var1.nextInt(var7 / 4 + 1);
+         float var8 = (var1.nextFloat() + var1.nextFloat() - 1.0F) * 0.15F;
+         var3 = Mth.clamp(Math.round((float)var3 + (float)var3 * var8), 1, 2147483647);
+         List var9 = getAvailableEnchantmentResults(var0, var3, var2, var4);
+         if (!var9.isEmpty()) {
+            WeightedRandom.getRandomItem(var1, var9).ifPresent(var5::add);
 
-            while(var0.nextInt(50) <= var2) {
-               if (!var4.isEmpty()) {
-                  filterCompatibleEnchantments(var8, Util.lastOf(var4));
+            while(var1.nextInt(50) <= var3) {
+               if (!var5.isEmpty()) {
+                  filterCompatibleEnchantments(var9, Util.lastOf(var5));
                }
 
-               if (var8.isEmpty()) {
+               if (var9.isEmpty()) {
                   break;
                }
 
-               WeightedRandom.getRandomItem(var0, var8).ifPresent(var4::add);
-               var2 /= 2;
+               WeightedRandom.getRandomItem(var1, var9).ifPresent(var5::add);
+               var3 /= 2;
             }
          }
 
-         return var4;
+         return var5;
       }
    }
 
@@ -332,22 +350,22 @@ public class EnchantmentHelper {
       return true;
    }
 
-   public static List<EnchantmentInstance> getAvailableEnchantmentResults(int var0, ItemStack var1, boolean var2) {
-      ArrayList var3 = Lists.newArrayList();
-      boolean var4 = var1.is(Items.BOOK);
+   public static List<EnchantmentInstance> getAvailableEnchantmentResults(FeatureFlagSet var0, int var1, ItemStack var2, boolean var3) {
+      ArrayList var4 = Lists.newArrayList();
+      boolean var5 = var2.is(Items.BOOK);
 
-      for(Enchantment var6 : BuiltInRegistries.ENCHANTMENT) {
-         if ((!var6.isTreasureOnly() || var2) && var6.isDiscoverable() && (var4 || var6.canEnchant(var1) && var6.isPrimaryItem(var1))) {
-            for(int var7 = var6.getMaxLevel(); var7 > var6.getMinLevel() - 1; --var7) {
-               if (var0 >= var6.getMinCost(var7) && var0 <= var6.getMaxCost(var7)) {
-                  var3.add(new EnchantmentInstance(var6, var7));
+      for(Enchantment var7 : BuiltInRegistries.ENCHANTMENT) {
+         if (var7.isEnabled(var0) && (!var7.isTreasureOnly() || var3) && var7.isDiscoverable() && (var5 || var7.canEnchant(var2) && var7.isPrimaryItem(var2))) {
+            for(int var8 = var7.getMaxLevel(); var8 > var7.getMinLevel() - 1; --var8) {
+               if (var1 >= var7.getMinCost(var8) && var1 <= var7.getMaxCost(var8)) {
+                  var4.add(new EnchantmentInstance(var7, var8));
                   break;
                }
             }
          }
       }
 
-      return var3;
+      return var4;
    }
 
    @FunctionalInterface

@@ -3,7 +3,9 @@ package net.minecraft.util;
 import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.level.Level;
@@ -96,6 +98,31 @@ public class ParticleUtils {
          if (var7 || !var0.getBlockState(BlockPos.containing(var19, var21, var23).below()).isAir()) {
             var0.addParticle(var8, var19, var21, var23, var11, var13, var15);
          }
+      }
+   }
+
+   public static void spawnSmashAttackParticles(LevelAccessor var0, BlockPos var1, int var2) {
+      Vec3 var3 = var1.getCenter().add(0.0, 0.5, 0.0);
+      BlockParticleOption var4 = new BlockParticleOption(ParticleTypes.DUST_PILLAR, var0.getBlockState(var1));
+
+      for(int var5 = 0; (float)var5 < (float)var2 / 3.0F; ++var5) {
+         double var6 = var3.x + var0.getRandom().nextGaussian() / 2.0;
+         double var8 = var3.y;
+         double var10 = var3.z + var0.getRandom().nextGaussian() / 2.0;
+         double var12 = var0.getRandom().nextGaussian() * 0.20000000298023224;
+         double var14 = var0.getRandom().nextGaussian() * 0.20000000298023224;
+         double var16 = var0.getRandom().nextGaussian() * 0.20000000298023224;
+         var0.addParticle(var4, var6, var8, var10, var12, var14, var16);
+      }
+
+      for(int var18 = 0; (float)var18 < (float)var2 / 1.5F; ++var18) {
+         double var19 = var3.x + 3.5 * Math.cos((double)var18) + var0.getRandom().nextGaussian() / 2.0;
+         double var20 = var3.y;
+         double var21 = var3.z + 3.5 * Math.sin((double)var18) + var0.getRandom().nextGaussian() / 2.0;
+         double var22 = var0.getRandom().nextGaussian() * 0.05000000074505806;
+         double var23 = var0.getRandom().nextGaussian() * 0.05000000074505806;
+         double var24 = var0.getRandom().nextGaussian() * 0.05000000074505806;
+         var0.addParticle(var4, var19, var20, var21, var22, var23, var24);
       }
    }
 }

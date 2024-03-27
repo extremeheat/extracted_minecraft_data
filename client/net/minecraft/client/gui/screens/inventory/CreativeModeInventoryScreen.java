@@ -509,7 +509,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
                      var7.set(DataComponents.CREATIVE_SLOT_LOCK, Unit.INSTANCE);
                      Component var8 = this.minecraft.options.keyHotbarSlots[var4].getTranslatedKeyMessage();
                      Component var9 = this.minecraft.options.keySaveHotbarActivator.getTranslatedKeyMessage();
-                     var7.set(DataComponents.CUSTOM_NAME, Component.translatable("inventory.hotbarInfo", var9, var8));
+                     var7.set(DataComponents.ITEM_NAME, Component.translatable("inventory.hotbarInfo", var9, var8));
                      this.menu.items.add(var7);
                   } else {
                      this.menu.items.add(ItemStack.EMPTY);

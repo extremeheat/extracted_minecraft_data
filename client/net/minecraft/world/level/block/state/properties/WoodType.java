@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.stream.Stream;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.block.SoundType;
 
 public record WoodType(String m, BlockSetType n, SoundType o, SoundType p, SoundEvent q, SoundEvent r) {
@@ -17,7 +16,7 @@ public record WoodType(String m, BlockSetType n, SoundType o, SoundType p, Sound
    private final SoundEvent fenceGateClose;
    private final SoundEvent fenceGateOpen;
    private static final Map<String, WoodType> TYPES = new Object2ObjectArrayMap();
-   public static final Codec<WoodType> CODEC = ExtraCodecs.stringResolverCodec(WoodType::name, TYPES::get);
+   public static final Codec<WoodType> CODEC = Codec.stringResolver(WoodType::name, TYPES::get);
    public static final WoodType OAK = register(new WoodType("oak", BlockSetType.OAK));
    public static final WoodType SPRUCE = register(new WoodType("spruce", BlockSetType.SPRUCE));
    public static final WoodType BIRCH = register(new WoodType("birch", BlockSetType.BIRCH));

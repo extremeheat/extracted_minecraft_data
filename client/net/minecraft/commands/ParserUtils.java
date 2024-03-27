@@ -51,7 +51,7 @@ public class ParserUtils {
       Object var5;
       try {
          JsonElement var4 = Streams.parse(var3);
-         var5 = Util.getOrThrow(var2.parse(var0.createSerializationContext(JsonOps.INSTANCE), var4), JsonParseException::new);
+         var5 = var2.parse(var0.createSerializationContext(JsonOps.INSTANCE), var4).getOrThrow(JsonParseException::new);
       } catch (StackOverflowError var9) {
          throw new JsonParseException(var9);
       } finally {

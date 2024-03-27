@@ -731,7 +731,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    private UserApiService createUserApiService(YggdrasilAuthenticationService var1, GameConfig var2) {
-      return var1.createUserApiService(var2.user.user.getAccessToken());
+      return var2.user.user.getType() != User.Type.MSA ? UserApiService.OFFLINE : var1.createUserApiService(var2.user.user.getAccessToken());
    }
 
    public static ModCheck checkModStatus() {
@@ -2383,7 +2383,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    private void addCustomNbtData(ItemStack var1, BlockEntity var2, RegistryAccess var3) {
-      CompoundTag var4 = var2.saveWithFullMetadata(var3);
+      CompoundTag var4 = var2.saveCustomOnly(var3);
       var2.removeComponentsFromTag(var4);
       BlockItem.setBlockEntityData(var1, var2.getType(), var4);
       var1.applyComponents(var2.collectComponents());

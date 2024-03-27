@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Map.Entry;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
@@ -114,20 +113,18 @@ public class ChunkSerializer {
          if (var19 >= 0 && var19 < var9.length) {
             PalettedContainer var20;
             if (var17.contains("block_states", 10)) {
-               var20 = Util.getOrThrow(
-                  BLOCK_STATE_CODEC.parse(NbtOps.INSTANCE, var17.getCompound("block_states")).promotePartial(var2x -> logErrors(var2, var18, var2x)),
-                  ChunkSerializer.ChunkReadException::new
-               );
+               var20 = (PalettedContainer)BLOCK_STATE_CODEC.parse(NbtOps.INSTANCE, var17.getCompound("block_states"))
+                  .promotePartial(var2x -> logErrors(var2, var18, var2x))
+                  .getOrThrow(ChunkSerializer.ChunkReadException::new);
             } else {
                var20 = new PalettedContainer<>(Block.BLOCK_STATE_REGISTRY, Blocks.AIR.defaultBlockState(), PalettedContainer.Strategy.SECTION_STATES);
             }
 
             Object var21;
             if (var17.contains("biomes", 10)) {
-               var21 = (PalettedContainerRO)Util.getOrThrow(
-                  var14.parse(NbtOps.INSTANCE, var17.getCompound("biomes")).promotePartial(var2x -> logErrors(var2, var18, var2x)),
-                  ChunkSerializer.ChunkReadException::new
-               );
+               var21 = (PalettedContainerRO)var14.parse(NbtOps.INSTANCE, var17.getCompound("biomes"))
+                  .promotePartial(var2x -> logErrors(var2, var18, var2x))
+                  .getOrThrow(ChunkSerializer.ChunkReadException::new);
             } else {
                var21 = new PalettedContainer<>(var13.asHolderIdMap(), var13.getHolderOrThrow(Biomes.PLAINS), PalettedContainer.Strategy.SECTION_BIOMES);
             }
@@ -310,8 +307,8 @@ public class ChunkSerializer {
             CompoundTag var18 = new CompoundTag();
             if (var15) {
                LevelChunkSection var19 = var7[var14];
-               var18.put("block_states", (Tag)BLOCK_STATE_CODEC.encodeStart(NbtOps.INSTANCE, var19.getStates()).getOrThrow(false, LOGGER::error));
-               var18.put("biomes", (Tag)var11.encodeStart(NbtOps.INSTANCE, var19.getBiomes()).getOrThrow(false, LOGGER::error));
+               var18.put("block_states", (Tag)BLOCK_STATE_CODEC.encodeStart(NbtOps.INSTANCE, var19.getStates()).getOrThrow());
+               var18.put("biomes", (Tag)var11.encodeStart(NbtOps.INSTANCE, var19.getBiomes()).getOrThrow());
             }
 
             if (var16 != null && !var16.isEmpty()) {

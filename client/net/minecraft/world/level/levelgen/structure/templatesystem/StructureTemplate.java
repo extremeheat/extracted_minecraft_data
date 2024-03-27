@@ -248,7 +248,7 @@ public class StructureTemplate {
                               var20.nbt.putLong("LootTableSeed", var5.nextLong());
                            }
 
-                           var39.load(var20.nbt, var1.registryAccess());
+                           var39.loadWithComponents(var20.nbt, var1.registryAccess());
                         }
                      }
 

@@ -223,6 +223,8 @@ public class ServerPlayer extends Player {
    private boolean allowsListing;
    private boolean spawnExtraParticlesOnFall;
    private WardenSpawnTracker wardenSpawnTracker = new WardenSpawnTracker(0, 0, 0);
+   @Nullable
+   private BlockPos raidOmenPosition;
    private final ContainerSynchronizer containerSynchronizer = new ContainerSynchronizer() {
       @Override
       public void sendInitialData(AbstractContainerMenu var1, NonNullList<ItemStack> var2, ItemStack var3, int[] var4) {
@@ -367,6 +369,7 @@ public class ServerPlayer extends Player {
       }
 
       this.spawnExtraParticlesOnFall = var1.getBoolean("spawn_extra_particles_on_fall");
+      BlockPos.CODEC.parse(NbtOps.INSTANCE, var1.get("raid_omen_position")).resultOrPartial(LOGGER::error).ifPresent(var1x -> this.raidOmenPosition = var1x);
    }
 
    @Override
@@ -412,6 +415,12 @@ public class ServerPlayer extends Player {
       }
 
       var1.putBoolean("spawn_extra_particles_on_fall", this.spawnExtraParticlesOnFall);
+      if (this.raidOmenPosition != null) {
+         BlockPos.CODEC
+            .encodeStart(NbtOps.INSTANCE, this.raidOmenPosition)
+            .resultOrPartial(LOGGER::error)
+            .ifPresent(var1x -> var1.put("raid_omen_position", var1x));
+      }
    }
 
    public void setExperiencePoints(int var1) {
@@ -1108,7 +1117,7 @@ public class ServerPlayer extends Player {
 
    @Override
    public void openCommandBlock(CommandBlockEntity var1) {
-      this.connection.send(ClientboundBlockEntityDataPacket.create(var1, BlockEntity::saveWithoutMetadata));
+      this.connection.send(ClientboundBlockEntityDataPacket.create(var1, BlockEntity::saveCustomOnly));
    }
 
    @Override
@@ -1876,5 +1885,18 @@ public class ServerPlayer extends Player {
          this.getLastDeathLocation(),
          this.getPortalCooldown()
       );
+   }
+
+   public void setRaidOmenPosition(BlockPos var1) {
+      this.raidOmenPosition = var1;
+   }
+
+   public void clearRaidOmenPosition() {
+      this.raidOmenPosition = null;
+   }
+
+   @Nullable
+   public BlockPos getRaidOmenPosition() {
+      return this.raidOmenPosition;
    }
 }

@@ -2,6 +2,7 @@ package net.minecraft.world.level.storage.loot.functions;
 
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.ArrayList;
@@ -11,7 +12,6 @@ import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
@@ -27,9 +27,9 @@ public class EnchantRandomlyFunction extends LootItemConditionalFunction {
       .holderByNameCodec()
       .listOf()
       .xmap(HolderSet::direct, var0 -> var0.stream().toList());
-   public static final Codec<EnchantRandomlyFunction> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<EnchantRandomlyFunction> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> commonFields(var0)
-            .and(ExtraCodecs.strictOptionalField(ENCHANTMENT_SET_CODEC, "enchantments").forGetter(var0x -> var0x.enchantments))
+            .and(ENCHANTMENT_SET_CODEC.optionalFieldOf("enchantments").forGetter(var0x -> var0x.enchantments))
             .apply(var0, EnchantRandomlyFunction::new)
    );
    private final Optional<HolderSet<Enchantment>> enchantments;
@@ -51,13 +51,14 @@ public class EnchantRandomlyFunction extends LootItemConditionalFunction {
          .<Holder<Enchantment>>flatMap(var1x -> var1x.getRandomElement(var3))
          .or(
             () -> {
-               boolean var2xx = var1.is(Items.BOOK);
-               List var3xx = BuiltInRegistries.ENCHANTMENT
+               boolean var3xx = var1.is(Items.BOOK);
+               List var4xx = BuiltInRegistries.ENCHANTMENT
                   .holders()
+                  .filter(var1xx -> var1xx.value().isEnabled(var2.getLevel().enabledFeatures()))
                   .filter(var0x -> var0x.value().isDiscoverable())
-                  .filter(var2xx -> var2x || var2xx.value().canEnchant(var1))
+                  .filter(var2xx -> var3x || var2xx.value().canEnchant(var1))
                   .toList();
-               return Util.getRandomSafe(var3xx, var3);
+               return Util.getRandomSafe(var4xx, var3);
             }
          );
       if (var4.isEmpty()) {

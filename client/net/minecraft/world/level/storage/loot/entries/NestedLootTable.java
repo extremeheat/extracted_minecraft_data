@@ -2,6 +2,7 @@ package net.minecraft.world.level.storage.loot.entries;
 
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
@@ -18,7 +19,7 @@ import net.minecraft.world.level.storage.loot.functions.LootItemFunction;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class NestedLootTable extends LootPoolSingletonContainer {
-   public static final Codec<NestedLootTable> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<NestedLootTable> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(Codec.either(ResourceKey.codec(Registries.LOOT_TABLE), LootTable.DIRECT_CODEC).fieldOf("value").forGetter(var0x -> var0x.contents))
             .and(singletonFields(var0))
             .apply(var0, NestedLootTable::new)

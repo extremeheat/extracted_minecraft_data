@@ -24,11 +24,11 @@ public record ServerStatus(Component b, Optional<ServerStatus.Players> c, Option
    private final boolean enforcesSecureChat;
    public static final Codec<ServerStatus> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               ComponentSerialization.CODEC.optionalFieldOf("description", CommonComponents.EMPTY).forGetter(ServerStatus::description),
-               ServerStatus.Players.CODEC.optionalFieldOf("players").forGetter(ServerStatus::players),
-               ServerStatus.Version.CODEC.optionalFieldOf("version").forGetter(ServerStatus::version),
-               ServerStatus.Favicon.CODEC.optionalFieldOf("favicon").forGetter(ServerStatus::favicon),
-               Codec.BOOL.optionalFieldOf("enforcesSecureChat", false).forGetter(ServerStatus::enforcesSecureChat)
+               ComponentSerialization.CODEC.lenientOptionalFieldOf("description", CommonComponents.EMPTY).forGetter(ServerStatus::description),
+               ServerStatus.Players.CODEC.lenientOptionalFieldOf("players").forGetter(ServerStatus::players),
+               ServerStatus.Version.CODEC.lenientOptionalFieldOf("version").forGetter(ServerStatus::version),
+               ServerStatus.Favicon.CODEC.lenientOptionalFieldOf("favicon").forGetter(ServerStatus::favicon),
+               Codec.BOOL.lenientOptionalFieldOf("enforcesSecureChat", false).forGetter(ServerStatus::enforcesSecureChat)
             )
             .apply(var0, ServerStatus::new)
    );
@@ -79,7 +79,7 @@ public record ServerStatus(Component b, Optional<ServerStatus.Players> c, Option
          var0 -> var0.group(
                   Codec.INT.fieldOf("max").forGetter(ServerStatus.Players::max),
                   Codec.INT.fieldOf("online").forGetter(ServerStatus.Players::online),
-                  PROFILE_CODEC.listOf().optionalFieldOf("sample", List.of()).forGetter(ServerStatus.Players::sample)
+                  PROFILE_CODEC.listOf().lenientOptionalFieldOf("sample", List.of()).forGetter(ServerStatus.Players::sample)
                )
                .apply(var0, ServerStatus.Players::new)
       );

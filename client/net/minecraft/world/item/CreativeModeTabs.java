@@ -9,7 +9,6 @@ import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
@@ -1419,7 +1418,11 @@ public class CreativeModeTabs {
                   var1.accept(Items.SPECTRAL_ARROW);
                   var0x.holders()
                      .lookup(Registries.POTION)
-                     .ifPresent(var1x -> generatePotionEffectTypes(var1, var1x, Items.TIPPED_ARROW, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS));
+                     .ifPresent(
+                        var2 -> generatePotionEffectTypes(
+                              var1, var2, Items.TIPPED_ARROW, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS, var0x.enabledFeatures()
+                           )
+                     );
                }
             )
             .build()
@@ -1473,10 +1476,11 @@ public class CreativeModeTabs {
                generateSuspiciousStews(var1, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
                var1.accept(Items.MILK_BUCKET);
                var1.accept(Items.HONEY_BOTTLE);
-               var0x.holders().lookup(Registries.POTION).ifPresent(var1x -> {
-                  generatePotionEffectTypes(var1, var1x, Items.POTION, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
-                  generatePotionEffectTypes(var1, var1x, Items.SPLASH_POTION, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
-                  generatePotionEffectTypes(var1, var1x, Items.LINGERING_POTION, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
+               generateOminousVials(var1, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
+               var0x.holders().lookup(Registries.POTION).ifPresent(var2 -> {
+                  generatePotionEffectTypes(var1, var2, Items.POTION, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS, var0x.enabledFeatures());
+                  generatePotionEffectTypes(var1, var2, Items.SPLASH_POTION, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS, var0x.enabledFeatures());
+                  generatePotionEffectTypes(var1, var2, Items.LINGERING_POTION, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS, var0x.enabledFeatures());
                });
             })
             .build()
@@ -1632,6 +1636,7 @@ public class CreativeModeTabs {
                   var1.accept(Items.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE);
                   var1.accept(Items.EXPERIENCE_BOTTLE);
                   var1.accept(Items.TRIAL_KEY);
+                  var1.accept(Items.OMINOUS_TRIAL_KEY);
                   Set var2 = Set.of(
                      ItemTags.FOOT_ARMOR_ENCHANTABLE,
                      ItemTags.LEG_ARMOR_ENCHANTABLE,
@@ -1639,6 +1644,9 @@ public class CreativeModeTabs {
                      ItemTags.HEAD_ARMOR_ENCHANTABLE,
                      ItemTags.ARMOR_ENCHANTABLE,
                      ItemTags.SWORD_ENCHANTABLE,
+                     ItemTags.SHARP_WEAPON_ENCHANTABLE,
+                     ItemTags.MACE_ENCHANTABLE,
+                     ItemTags.FIRE_ASPECT_ENCHANTABLE,
                      ItemTags.WEAPON_ENCHANTABLE,
                      ItemTags.MINING_ENCHANTABLE,
                      ItemTags.MINING_LOOT_ENCHANTABLE,
@@ -1650,9 +1658,9 @@ public class CreativeModeTabs {
                      ItemTags.CROSSBOW_ENCHANTABLE,
                      ItemTags.VANISHING_ENCHANTABLE
                   );
-                  var0x.holders().lookup(Registries.ENCHANTMENT).ifPresent(var2x -> {
-                     generateEnchantmentBookTypesOnlyMaxLevel(var1, var2x, var2, CreativeModeTab.TabVisibility.PARENT_TAB_ONLY);
-                     generateEnchantmentBookTypesAllLevels(var1, var2x, var2, CreativeModeTab.TabVisibility.SEARCH_TAB_ONLY);
+                  var0x.holders().lookup(Registries.ENCHANTMENT).ifPresent(var3 -> {
+                     generateEnchantmentBookTypesOnlyMaxLevel(var1, var3, var2, CreativeModeTab.TabVisibility.PARENT_TAB_ONLY, var0x.enabledFeatures());
+                     generateEnchantmentBookTypesAllLevels(var1, var3, var2, CreativeModeTab.TabVisibility.SEARCH_TAB_ONLY, var0x.enabledFeatures());
                   });
                }
             )
@@ -1816,25 +1824,32 @@ public class CreativeModeTabs {
       return BuiltInRegistries.CREATIVE_MODE_TAB.getOrThrow(BUILDING_BLOCKS);
    }
 
-   private static void generatePotionEffectTypes(CreativeModeTab.Output var0, HolderLookup<Potion> var1, Item var2, CreativeModeTab.TabVisibility var3) {
-      var1.listElements().map(var1x -> PotionContents.createItemStack(var2, var1x)).forEach(var2x -> var0.accept(var2x, var3));
+   private static void generatePotionEffectTypes(
+      CreativeModeTab.Output var0, HolderLookup<Potion> var1, Item var2, CreativeModeTab.TabVisibility var3, FeatureFlagSet var4
+   ) {
+      var1.listElements()
+         .filter(var1x -> ((Potion)var1x.value()).isEnabled(var4))
+         .map(var1x -> PotionContents.createItemStack(var2, var1x))
+         .forEach(var2x -> var0.accept(var2x, var3));
    }
 
    private static void generateEnchantmentBookTypesOnlyMaxLevel(
-      CreativeModeTab.Output var0, HolderLookup<Enchantment> var1, Set<TagKey<Item>> var2, CreativeModeTab.TabVisibility var3
+      CreativeModeTab.Output var0, HolderLookup<Enchantment> var1, Set<TagKey<Item>> var2, CreativeModeTab.TabVisibility var3, FeatureFlagSet var4
    ) {
       var1.listElements()
          .map(Holder::value)
+         .filter(var1x -> var1x.isEnabled(var4))
          .filter(var1x -> var2.contains(var1x.getSupportedItems()))
          .map(var0x -> EnchantedBookItem.createForEnchantment(new EnchantmentInstance(var0x, var0x.getMaxLevel())))
          .forEach(var2x -> var0.accept(var2x, var3));
    }
 
    private static void generateEnchantmentBookTypesAllLevels(
-      CreativeModeTab.Output var0, HolderLookup<Enchantment> var1, Set<TagKey<Item>> var2, CreativeModeTab.TabVisibility var3
+      CreativeModeTab.Output var0, HolderLookup<Enchantment> var1, Set<TagKey<Item>> var2, CreativeModeTab.TabVisibility var3, FeatureFlagSet var4
    ) {
       var1.listElements()
          .map(Holder::value)
+         .filter(var1x -> var1x.isEnabled(var4))
          .filter(var1x -> var2.contains(var1x.getSupportedItems()))
          .flatMap(
             var0x -> IntStream.rangeClosed(var0x.getMinLevel(), var0x.getMaxLevel())
@@ -1862,6 +1877,14 @@ public class CreativeModeTabs {
       var0.acceptAll(var3, var1);
    }
 
+   private static void generateOminousVials(CreativeModeTab.Output var0, CreativeModeTab.TabVisibility var1) {
+      for(int var2 = 0; var2 <= 4; ++var2) {
+         ItemStack var3 = new ItemStack(Items.OMINOUS_BOTTLE);
+         var3.set(DataComponents.OMINOUS_BOTTLE_AMPLIFIER, var2);
+         var0.accept(var3, var1);
+      }
+   }
+
    private static void generateFireworksAllDurations(CreativeModeTab.Output var0, CreativeModeTab.TabVisibility var1) {
       for(byte var5 : FireworkRocketItem.CRAFTABLE_DURATIONS) {
          ItemStack var6 = new ItemStack(Items.FIREWORK_ROCKET);
@@ -1881,9 +1904,7 @@ public class CreativeModeTabs {
          .sorted(PAINTING_COMPARATOR)
          .forEach(
             var2x -> {
-               CustomData var3xx = Util.<CustomData, IllegalStateException>getOrThrow(
-                     CustomData.EMPTY.update(Painting.VARIANT_MAP_CODEC, var2x), IllegalStateException::new
-                  )
+               CustomData var3xx = ((CustomData)CustomData.EMPTY.update(Painting.VARIANT_MAP_CODEC, var2x).getOrThrow())
                   .update(var0xx -> var0xx.putString("id", "minecraft:painting"));
                ItemStack var4 = new ItemStack(Items.PAINTING);
                var4.set(DataComponents.ENTITY_DATA, var3xx);

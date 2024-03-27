@@ -128,7 +128,7 @@ public class Painting extends HangingEntity implements VariantHolder<Holder<Pain
    }
 
    public static void storeVariant(CompoundTag var0, Holder<PaintingVariant> var1) {
-      VARIANT_CODEC.encodeStart(NbtOps.INSTANCE, var1).result().ifPresent(var1x -> var0.merge((CompoundTag)var1x));
+      VARIANT_CODEC.encodeStart(NbtOps.INSTANCE, var1).ifSuccess(var1x -> var0.merge((CompoundTag)var1x));
    }
 
    @Override

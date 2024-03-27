@@ -47,8 +47,8 @@ public class DecoratedPotBlockEntity extends BlockEntity implements Randomizable
    }
 
    @Override
-   public void load(CompoundTag var1, HolderLookup.Provider var2) {
-      super.load(var1, var2);
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       this.decorations = PotDecorations.load(var1);
       if (!this.tryLoadLootTable(var1)) {
          if (var1.contains("item", 10)) {
@@ -65,7 +65,7 @@ public class DecoratedPotBlockEntity extends BlockEntity implements Randomizable
 
    @Override
    public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
-      return this.saveWithoutMetadata(var1);
+      return this.saveCustomOnly(var1);
    }
 
    public Direction getDirection() {
@@ -77,7 +77,7 @@ public class DecoratedPotBlockEntity extends BlockEntity implements Randomizable
    }
 
    public void setFromItem(ItemStack var1) {
-      this.applyComponents(var1.getComponents());
+      this.applyComponentsFromItemStack(var1);
    }
 
    public ItemStack getPotAsItem() {
@@ -114,15 +114,17 @@ public class DecoratedPotBlockEntity extends BlockEntity implements Randomizable
    }
 
    @Override
-   public void collectComponents(DataComponentMap.Builder var1) {
+   protected void collectImplicitComponents(DataComponentMap.Builder var1) {
+      super.collectImplicitComponents(var1);
       var1.set(DataComponents.POT_DECORATIONS, this.decorations);
       var1.set(DataComponents.CONTAINER, ItemContainerContents.copyOf(List.of(this.item)));
    }
 
    @Override
-   public void applyComponents(DataComponentMap var1) {
+   protected void applyImplicitComponents(BlockEntity.DataComponentInput var1) {
+      super.applyImplicitComponents(var1);
       this.decorations = var1.getOrDefault(DataComponents.POT_DECORATIONS, PotDecorations.EMPTY);
-      this.item = var1.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY).copyOne();
+      this.item = var1.<ItemContainerContents>getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY).copyOne();
    }
 
    @Override

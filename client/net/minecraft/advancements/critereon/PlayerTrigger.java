@@ -7,7 +7,6 @@ import java.util.Optional;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 
@@ -28,7 +27,7 @@ public class PlayerTrigger extends SimpleCriterionTrigger<PlayerTrigger.TriggerI
    public static record TriggerInstance(Optional<ContextAwarePredicate> b) implements SimpleCriterionTrigger.SimpleInstance {
       private final Optional<ContextAwarePredicate> player;
       public static final Codec<PlayerTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player").forGetter(PlayerTrigger.TriggerInstance::player))
+         var0 -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(PlayerTrigger.TriggerInstance::player))
                .apply(var0, PlayerTrigger.TriggerInstance::new)
       );
 

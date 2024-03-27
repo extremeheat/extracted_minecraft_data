@@ -16,7 +16,6 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ByIdMap;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.TooltipFlag;
@@ -32,10 +31,10 @@ public record FireworkExplosion(FireworkExplosion.Shape e, IntList f, IntList g,
    public static final Codec<FireworkExplosion> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                FireworkExplosion.Shape.CODEC.fieldOf("shape").forGetter(FireworkExplosion::shape),
-               ExtraCodecs.strictOptionalField(COLOR_LIST_CODEC, "colors", IntList.of()).forGetter(FireworkExplosion::colors),
-               ExtraCodecs.strictOptionalField(COLOR_LIST_CODEC, "fade_colors", IntList.of()).forGetter(FireworkExplosion::fadeColors),
-               ExtraCodecs.strictOptionalField(Codec.BOOL, "has_trail", false).forGetter(FireworkExplosion::hasTrail),
-               ExtraCodecs.strictOptionalField(Codec.BOOL, "has_twinkle", false).forGetter(FireworkExplosion::hasTwinkle)
+               COLOR_LIST_CODEC.optionalFieldOf("colors", IntList.of()).forGetter(FireworkExplosion::colors),
+               COLOR_LIST_CODEC.optionalFieldOf("fade_colors", IntList.of()).forGetter(FireworkExplosion::fadeColors),
+               Codec.BOOL.optionalFieldOf("has_trail", false).forGetter(FireworkExplosion::hasTrail),
+               Codec.BOOL.optionalFieldOf("has_twinkle", false).forGetter(FireworkExplosion::hasTwinkle)
             )
             .apply(var0, FireworkExplosion::new)
    );

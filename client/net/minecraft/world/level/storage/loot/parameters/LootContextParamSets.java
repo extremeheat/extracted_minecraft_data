@@ -38,6 +38,9 @@ public class LootContextParamSets {
             .optional(LootContextParams.DIRECT_KILLER_ENTITY)
             .optional(LootContextParams.LAST_DAMAGE_PLAYER)
    );
+   public static final LootContextParamSet EQUIPMENT = register(
+      "equipment", var0 -> var0.required(LootContextParams.ORIGIN).required(LootContextParams.THIS_ENTITY)
+   );
    public static final LootContextParamSet ARCHAEOLOGY = register(
       "archaeology", var0 -> var0.required(LootContextParams.ORIGIN).optional(LootContextParams.THIS_ENTITY)
    );

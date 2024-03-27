@@ -4,6 +4,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
 import java.util.List;
 import net.minecraft.client.renderer.texture.atlas.sources.DirectoryLister;
 import net.minecraft.client.renderer.texture.atlas.sources.PalettedPermutations;
@@ -33,7 +34,7 @@ public class SpriteSources {
       super();
    }
 
-   private static SpriteSourceType register(String var0, Codec<? extends SpriteSource> var1) {
+   private static SpriteSourceType register(String var0, MapCodec<? extends SpriteSource> var1) {
       SpriteSourceType var2 = new SpriteSourceType(var1);
       ResourceLocation var3 = new ResourceLocation(var0);
       SpriteSourceType var4 = (SpriteSourceType)TYPES.putIfAbsent(var3, var2);

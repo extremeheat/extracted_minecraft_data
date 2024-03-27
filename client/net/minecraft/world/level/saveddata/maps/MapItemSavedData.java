@@ -13,7 +13,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -159,7 +158,7 @@ public class MapItemSavedData extends SavedData {
       var1.putBoolean("unlimitedTracking", this.unlimitedTracking);
       var1.putBoolean("locked", this.locked);
       RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
-      var1.put("banners", Util.getOrThrow(MapBanner.LIST_CODEC.encodeStart(var3, List.copyOf(this.bannerMarkers.values())), IllegalStateException::new));
+      var1.put("banners", (Tag)MapBanner.LIST_CODEC.encodeStart(var3, List.copyOf(this.bannerMarkers.values())).getOrThrow());
       ListTag var4 = new ListTag();
 
       for(MapFrame var6 : this.frameMarkers.values()) {

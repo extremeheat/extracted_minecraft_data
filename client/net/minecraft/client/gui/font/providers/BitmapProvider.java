@@ -23,7 +23,6 @@ import net.minecraft.client.gui.font.CodepointMap;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
-import net.minecraft.util.ExtraCodecs;
 import org.slf4j.Logger;
 
 public class BitmapProvider implements GlyphProvider {
@@ -58,7 +57,7 @@ public class BitmapProvider implements GlyphProvider {
       private final int height;
       private final int ascent;
       private final int[][] codepointGrid;
-      private static final Codec<int[][]> CODEPOINT_GRID_CODEC = ExtraCodecs.validate(Codec.STRING.listOf().xmap(var0 -> {
+      private static final Codec<int[][]> CODEPOINT_GRID_CODEC = Codec.STRING.listOf().xmap(var0 -> {
          int var1 = var0.size();
          int[][] var2 = new int[var1][];
 
@@ -75,9 +74,8 @@ public class BitmapProvider implements GlyphProvider {
          }
 
          return var1;
-      }), BitmapProvider.Definition::validateDimensions);
-      public static final MapCodec<BitmapProvider.Definition> CODEC = ExtraCodecs.validate(
-         RecordCodecBuilder.mapCodec(
+      }).validate(BitmapProvider.Definition::validateDimensions);
+      public static final MapCodec<BitmapProvider.Definition> CODEC = RecordCodecBuilder.mapCodec(
             var0 -> var0.group(
                      ResourceLocation.CODEC.fieldOf("file").forGetter(BitmapProvider.Definition::file),
                      Codec.INT.optionalFieldOf("height", 8).forGetter(BitmapProvider.Definition::height),
@@ -85,9 +83,8 @@ public class BitmapProvider implements GlyphProvider {
                      CODEPOINT_GRID_CODEC.fieldOf("chars").forGetter(BitmapProvider.Definition::codepointGrid)
                   )
                   .apply(var0, BitmapProvider.Definition::new)
-         ),
-         BitmapProvider.Definition::validate
-      );
+         )
+         .validate(BitmapProvider.Definition::validate);
 
       public Definition(ResourceLocation var1, int var2, int var3, int[][] var4) {
          super();

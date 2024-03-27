@@ -16,6 +16,7 @@ import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -114,7 +115,7 @@ public class EnchantmentMenu extends AbstractContainerMenu {
 
                for(int var9 = 0; var9 < 3; ++var9) {
                   if (this.costs[var9] > 0) {
-                     List var10 = this.getEnchantmentList(var2, var9, this.costs[var9]);
+                     List var10 = this.getEnchantmentList(var2x.enabledFeatures(), var2, var9, this.costs[var9]);
                      if (var10 != null && !var10.isEmpty()) {
                         EnchantmentInstance var7 = (EnchantmentInstance)var10.get(this.random.nextInt(var10.size()));
                         this.enchantClue[var9] = BuiltInRegistries.ENCHANTMENT.getId(var7.enchantment);
@@ -150,7 +151,7 @@ public class EnchantmentMenu extends AbstractContainerMenu {
          } else {
             this.access.execute((var6, var7) -> {
                ItemStack var8 = var3;
-               List var9 = this.getEnchantmentList(var3, var2, this.costs[var2]);
+               List var9 = this.getEnchantmentList(var6.enabledFeatures(), var3, var2, this.costs[var2]);
                if (!var9.isEmpty()) {
                   var1.onEnchantmentPerformed(var3, var5);
                   if (var3.is(Items.BOOK)) {
@@ -188,14 +189,14 @@ public class EnchantmentMenu extends AbstractContainerMenu {
       }
    }
 
-   private List<EnchantmentInstance> getEnchantmentList(ItemStack var1, int var2, int var3) {
-      this.random.setSeed((long)(this.enchantmentSeed.get() + var2));
-      List var4 = EnchantmentHelper.selectEnchantment(this.random, var1, var3, false);
-      if (var1.is(Items.BOOK) && var4.size() > 1) {
-         var4.remove(this.random.nextInt(var4.size()));
+   private List<EnchantmentInstance> getEnchantmentList(FeatureFlagSet var1, ItemStack var2, int var3, int var4) {
+      this.random.setSeed((long)(this.enchantmentSeed.get() + var3));
+      List var5 = EnchantmentHelper.selectEnchantment(var1, this.random, var2, var4, false);
+      if (var2.is(Items.BOOK) && var5.size() > 1) {
+         var5.remove(this.random.nextInt(var5.size()));
       }
 
-      return var4;
+      return var5;
    }
 
    public int getGoldCount() {

@@ -3393,18 +3393,27 @@ public class BlockModelGenerators {
       TextureMapping var2 = TextureMapping.trialSpawner(var1, "_side_inactive", "_top_inactive");
       TextureMapping var3 = TextureMapping.trialSpawner(var1, "_side_active", "_top_active");
       TextureMapping var4 = TextureMapping.trialSpawner(var1, "_side_active", "_top_ejecting_reward");
-      ResourceLocation var5 = ModelTemplates.CUBE_BOTTOM_TOP_INNER_FACES.create(var1, var2, this.modelOutput);
-      ResourceLocation var6 = ModelTemplates.CUBE_BOTTOM_TOP_INNER_FACES.createWithSuffix(var1, "_active", var3, this.modelOutput);
-      ResourceLocation var7 = ModelTemplates.CUBE_BOTTOM_TOP_INNER_FACES.createWithSuffix(var1, "_ejecting_reward", var4, this.modelOutput);
-      this.delegateItemModel(var1, var5);
+      TextureMapping var5 = TextureMapping.trialSpawner(var1, "_side_inactive_ominous", "_top_inactive_ominous");
+      TextureMapping var6 = TextureMapping.trialSpawner(var1, "_side_active_ominous", "_top_active_ominous");
+      TextureMapping var7 = TextureMapping.trialSpawner(var1, "_side_active_ominous", "_top_ejecting_reward_ominous");
+      ResourceLocation var8 = ModelTemplates.CUBE_BOTTOM_TOP_INNER_FACES.create(var1, var2, this.modelOutput);
+      ResourceLocation var9 = ModelTemplates.CUBE_BOTTOM_TOP_INNER_FACES.createWithSuffix(var1, "_active", var3, this.modelOutput);
+      ResourceLocation var10 = ModelTemplates.CUBE_BOTTOM_TOP_INNER_FACES.createWithSuffix(var1, "_ejecting_reward", var4, this.modelOutput);
+      ResourceLocation var11 = ModelTemplates.CUBE_BOTTOM_TOP_INNER_FACES.createWithSuffix(var1, "_inactive_ominous", var5, this.modelOutput);
+      ResourceLocation var12 = ModelTemplates.CUBE_BOTTOM_TOP_INNER_FACES.createWithSuffix(var1, "_active_ominous", var6, this.modelOutput);
+      ResourceLocation var13 = ModelTemplates.CUBE_BOTTOM_TOP_INNER_FACES.createWithSuffix(var1, "_ejecting_reward_ominous", var7, this.modelOutput);
+      this.delegateItemModel(var1, var8);
       this.blockStateOutput
-         .accept(MultiVariantGenerator.multiVariant(var1).with(PropertyDispatch.property(BlockStateProperties.TRIAL_SPAWNER_STATE).generate(var3x -> {
-            return switch(var3x) {
-               case INACTIVE, COOLDOWN -> Variant.variant().with(VariantProperties.MODEL, var5);
-               case WAITING_FOR_PLAYERS, ACTIVE, WAITING_FOR_REWARD_EJECTION -> Variant.variant().with(VariantProperties.MODEL, var6);
-               case EJECTING_REWARD -> Variant.variant().with(VariantProperties.MODEL, var7);
-            };
-         })));
+         .accept(
+            MultiVariantGenerator.multiVariant(var1)
+               .with(PropertyDispatch.properties(BlockStateProperties.TRIAL_SPAWNER_STATE, BlockStateProperties.OMINOUS).generate((var6x, var7x) -> {
+                  return switch(var6x) {
+                     case INACTIVE, COOLDOWN -> Variant.variant().with(VariantProperties.MODEL, var7x ? var11 : var8);
+                     case WAITING_FOR_PLAYERS, ACTIVE, WAITING_FOR_REWARD_EJECTION -> Variant.variant().with(VariantProperties.MODEL, var7x ? var12 : var9);
+                     case EJECTING_REWARD -> Variant.variant().with(VariantProperties.MODEL, var7x ? var13 : var10);
+                  };
+               }))
+         );
    }
 
    private void createVault() {
@@ -3417,17 +3426,25 @@ public class BlockModelGenerators {
       ResourceLocation var7 = ModelTemplates.VAULT.createWithSuffix(var1, "_active", var3, this.modelOutput);
       ResourceLocation var8 = ModelTemplates.VAULT.createWithSuffix(var1, "_unlocking", var4, this.modelOutput);
       ResourceLocation var9 = ModelTemplates.VAULT.createWithSuffix(var1, "_ejecting_reward", var5, this.modelOutput);
+      TextureMapping var10 = TextureMapping.vault(var1, "_front_off_ominous", "_side_off_ominous", "_top_ominous", "_bottom_ominous");
+      TextureMapping var11 = TextureMapping.vault(var1, "_front_on_ominous", "_side_on_ominous", "_top_ominous", "_bottom_ominous");
+      TextureMapping var12 = TextureMapping.vault(var1, "_front_ejecting_ominous", "_side_on_ominous", "_top_ominous", "_bottom_ominous");
+      TextureMapping var13 = TextureMapping.vault(var1, "_front_ejecting_ominous", "_side_on_ominous", "_top_ejecting_ominous", "_bottom_ominous");
+      ResourceLocation var14 = ModelTemplates.VAULT.createWithSuffix(var1, "_ominous", var10, this.modelOutput);
+      ResourceLocation var15 = ModelTemplates.VAULT.createWithSuffix(var1, "_active_ominous", var11, this.modelOutput);
+      ResourceLocation var16 = ModelTemplates.VAULT.createWithSuffix(var1, "_unlocking_ominous", var12, this.modelOutput);
+      ResourceLocation var17 = ModelTemplates.VAULT.createWithSuffix(var1, "_ejecting_reward_ominous", var13, this.modelOutput);
       this.delegateItemModel(var1, var6);
       this.blockStateOutput
          .accept(
             MultiVariantGenerator.multiVariant(var1)
                .with(createHorizontalFacingDispatch())
-               .with(PropertyDispatch.property(VaultBlock.STATE).generate(var4x -> {
-                  return switch(var4x) {
-                     case INACTIVE -> Variant.variant().with(VariantProperties.MODEL, var6);
-                     case ACTIVE -> Variant.variant().with(VariantProperties.MODEL, var7);
-                     case UNLOCKING -> Variant.variant().with(VariantProperties.MODEL, var8);
-                     case EJECTING -> Variant.variant().with(VariantProperties.MODEL, var9);
+               .with(PropertyDispatch.properties(VaultBlock.STATE, VaultBlock.OMINOUS).generate((var8x, var9x) -> {
+                  return switch(var8x) {
+                     case INACTIVE -> Variant.variant().with(VariantProperties.MODEL, var9x ? var14 : var6);
+                     case ACTIVE -> Variant.variant().with(VariantProperties.MODEL, var9x ? var15 : var7);
+                     case UNLOCKING -> Variant.variant().with(VariantProperties.MODEL, var9x ? var16 : var8);
+                     case EJECTING -> Variant.variant().with(VariantProperties.MODEL, var9x ? var17 : var9);
                   };
                }))
          );

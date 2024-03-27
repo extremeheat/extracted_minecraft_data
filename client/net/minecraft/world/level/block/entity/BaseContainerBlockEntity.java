@@ -32,8 +32,8 @@ public abstract class BaseContainerBlockEntity extends BlockEntity implements Co
    }
 
    @Override
-   public void load(CompoundTag var1, HolderLookup.Provider var2) {
-      super.load(var1, var2);
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       this.lockKey = LockCode.fromTag(var1);
       if (var1.contains("CustomName", 8)) {
          this.name = Component.Serializer.fromJson(var1.getString("CustomName"), var2);
@@ -142,14 +142,16 @@ public abstract class BaseContainerBlockEntity extends BlockEntity implements Co
    protected abstract AbstractContainerMenu createMenu(int var1, Inventory var2);
 
    @Override
-   public void applyComponents(DataComponentMap var1) {
+   protected void applyImplicitComponents(BlockEntity.DataComponentInput var1) {
+      super.applyImplicitComponents(var1);
       this.name = var1.get(DataComponents.CUSTOM_NAME);
       this.lockKey = var1.getOrDefault(DataComponents.LOCK, LockCode.NO_LOCK);
-      var1.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY).copyInto(this.getItems());
+      var1.<ItemContainerContents>getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY).copyInto(this.getItems());
    }
 
    @Override
-   public void collectComponents(DataComponentMap.Builder var1) {
+   protected void collectImplicitComponents(DataComponentMap.Builder var1) {
+      super.collectImplicitComponents(var1);
       var1.set(DataComponents.CUSTOM_NAME, this.name);
       if (!this.lockKey.equals(LockCode.NO_LOCK)) {
          var1.set(DataComponents.LOCK, this.lockKey);

@@ -12,9 +12,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.server.packs.PackResources;
 import net.minecraft.world.flag.FeatureFlagSet;
 
@@ -73,7 +73,7 @@ public class PackRepository {
    }
 
    private List<Pack> rebuildSelected(Collection<String> var1) {
-      List var2 = this.getAvailablePacks(var1).collect(Collectors.toList());
+      List var2 = this.getAvailablePacks(var1).collect(Util.toMutableList());
 
       for(Pack var4 : this.available.values()) {
          if (var4.isRequired() && !var2.contains(var4)) {

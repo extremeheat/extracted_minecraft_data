@@ -1,7 +1,7 @@
 package net.minecraft.world.level.levelgen.structure.pools.alias;
 
 import com.mojang.datafixers.util.Pair;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import java.util.List;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
@@ -16,7 +16,7 @@ public class PoolAliasBindings {
       super();
    }
 
-   public static Codec<? extends PoolAliasBinding> bootstrap(Registry<Codec<? extends PoolAliasBinding>> var0) {
+   public static MapCodec<? extends PoolAliasBinding> bootstrap(Registry<MapCodec<? extends PoolAliasBinding>> var0) {
       Registry.register(var0, "random", Random.CODEC);
       Registry.register(var0, "random_group", RandomGroup.CODEC);
       return Registry.register(var0, "direct", Direct.CODEC);

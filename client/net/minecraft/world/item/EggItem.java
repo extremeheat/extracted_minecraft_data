@@ -1,15 +1,18 @@
 package net.minecraft.world.item;
 
+import net.minecraft.core.Direction;
+import net.minecraft.core.Position;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.entity.projectile.ThrownEgg;
 import net.minecraft.world.level.Level;
 
-public class EggItem extends Item {
+public class EggItem extends Item implements ProjectileItem {
    public EggItem(Item.Properties var1) {
       super(var1);
    }
@@ -30,5 +33,12 @@ public class EggItem extends Item {
       var2.awardStat(Stats.ITEM_USED.get(this));
       var4.consume(1, var2);
       return InteractionResultHolder.sidedSuccess(var4, var1.isClientSide());
+   }
+
+   @Override
+   public Projectile asProjectile(Level var1, Position var2, ItemStack var3, Direction var4) {
+      ThrownEgg var5 = new ThrownEgg(var1, var2.x(), var2.y(), var2.z());
+      var5.setItem(var3);
+      return var5;
    }
 }

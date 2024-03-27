@@ -205,7 +205,7 @@ public class ScoreboardSaveData extends SavedData {
          var6.putBoolean("display_auto_update", var5.displayAutoUpdate());
          NumberFormat var7 = var5.numberFormat();
          if (var7 != null) {
-            NumberFormatTypes.CODEC.encodeStart(var1.createSerializationContext(NbtOps.INSTANCE), var7).result().ifPresent(var1x -> var6.put("format", var1x));
+            NumberFormatTypes.CODEC.encodeStart(var1.createSerializationContext(NbtOps.INSTANCE), var7).ifSuccess(var1x -> var6.put("format", var1x));
          }
 
          var2.add(var6);

@@ -51,8 +51,8 @@ public class ConduitBlockEntity extends BlockEntity {
    }
 
    @Override
-   public void load(CompoundTag var1, HolderLookup.Provider var2) {
-      super.load(var1, var2);
+   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
+      super.loadAdditional(var1, var2);
       if (var1.hasUUID("Target")) {
          this.destroyTargetUUID = var1.getUUID("Target");
       } else {
@@ -74,7 +74,7 @@ public class ConduitBlockEntity extends BlockEntity {
 
    @Override
    public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
-      return this.saveWithoutMetadata(var1);
+      return this.saveCustomOnly(var1);
    }
 
    public static void clientTick(Level var0, BlockPos var1, BlockState var2, ConduitBlockEntity var3) {

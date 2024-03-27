@@ -202,7 +202,7 @@ public class MushroomCow extends Cow implements Shearable, VariantHolder<Mushroo
       super.addAdditionalSaveData(var1);
       var1.putString("Type", this.getVariant().getSerializedName());
       if (this.stewEffects != null) {
-         SuspiciousStewEffects.CODEC.encodeStart(NbtOps.INSTANCE, this.stewEffects).result().ifPresent(var1x -> var1.put("stew_effects", var1x));
+         SuspiciousStewEffects.CODEC.encodeStart(NbtOps.INSTANCE, this.stewEffects).ifSuccess(var1x -> var1.put("stew_effects", var1x));
       }
    }
 
@@ -211,7 +211,7 @@ public class MushroomCow extends Cow implements Shearable, VariantHolder<Mushroo
       super.readAdditionalSaveData(var1);
       this.setVariant(MushroomCow.MushroomType.byType(var1.getString("Type")));
       if (var1.contains("stew_effects", 9)) {
-         SuspiciousStewEffects.CODEC.parse(NbtOps.INSTANCE, var1.get("stew_effects")).result().ifPresent(var1x -> this.stewEffects = var1x);
+         SuspiciousStewEffects.CODEC.parse(NbtOps.INSTANCE, var1.get("stew_effects")).ifSuccess(var1x -> this.stewEffects = var1x);
       }
    }
 

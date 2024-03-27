@@ -134,8 +134,8 @@ public abstract class Projectile extends Entity implements TraceableEntity {
       return true;
    }
 
-   public void shoot(double var1, double var3, double var5, float var7, float var8) {
-      Vec3 var9 = new Vec3(var1, var3, var5)
+   public Vec3 getMovementToShoot(double var1, double var3, double var5, float var7, float var8) {
+      return new Vec3(var1, var3, var5)
          .normalize()
          .add(
             this.random.triangle(0.0, 0.0172275 * (double)var8),
@@ -143,6 +143,10 @@ public abstract class Projectile extends Entity implements TraceableEntity {
             this.random.triangle(0.0, 0.0172275 * (double)var8)
          )
          .scale((double)var7);
+   }
+
+   public void shoot(double var1, double var3, double var5, float var7, float var8) {
+      Vec3 var9 = this.getMovementToShoot(var1, var3, var5, var7, var8);
       this.setDeltaMovement(var9);
       double var10 = var9.horizontalDistance();
       this.setYRot((float)(Mth.atan2(var9.x, var9.z) * 57.2957763671875));

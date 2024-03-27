@@ -6,7 +6,6 @@ import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.serialization.Dynamic;
 import java.util.Map;
-import net.minecraft.util.datafix.ExtraDataFixUtils;
 
 public class BannerPatternFormatFix extends NamedEntityFix {
    private static final Map<String, String> PATTERN_ID_MAP = Map.ofEntries(
@@ -63,21 +62,18 @@ public class BannerPatternFormatFix extends NamedEntityFix {
    }
 
    private static Dynamic<?> fixTag(Dynamic<?> var0) {
-      return ExtraDataFixUtils.renameAndFixField(
-         var0, "Patterns", "patterns", var0x -> var0x.createList(var0x.asStream().map(BannerPatternFormatFix::fixLayer))
-      );
+      return var0.renameAndFixField("Patterns", "patterns", var0x -> var0x.createList(var0x.asStream().map(BannerPatternFormatFix::fixLayer)));
    }
 
    private static Dynamic<?> fixLayer(Dynamic<?> var0) {
-      var0 = ExtraDataFixUtils.renameAndFixField(
-         var0,
+      var0 = var0.renameAndFixField(
          "Pattern",
          "pattern",
          var0x -> (Dynamic)DataFixUtils.orElse(
                var0x.asString().map(var0xx -> PATTERN_ID_MAP.getOrDefault(var0xx, var0xx)).map(var0x::createString).result(), var0x
             )
       );
-      return ExtraDataFixUtils.renameAndFixField(var0, "Color", "color", var0x -> var0x.createString(fixColor(var0x.asInt(0))));
+      return var0.renameAndFixField("Color", "color", var0x -> var0x.createString(fixColor(var0x.asInt(0))));
    }
 
    public static String fixColor(int var0) {

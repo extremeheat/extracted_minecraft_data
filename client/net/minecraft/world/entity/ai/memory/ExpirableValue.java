@@ -56,7 +56,7 @@ public class ExpirableValue<T> {
       return RecordCodecBuilder.create(
          var1 -> var1.group(
                   var0.fieldOf("value").forGetter(var0xx -> var0xx.value),
-                  Codec.LONG.optionalFieldOf("ttl").forGetter(var0xx -> var0xx.canExpire() ? Optional.of(var0xx.timeToLive) : Optional.empty())
+                  Codec.LONG.lenientOptionalFieldOf("ttl").forGetter(var0xx -> var0xx.canExpire() ? Optional.of(var0xx.timeToLive) : Optional.empty())
                )
                .apply(var1, (var0xx, var1x) -> new ExpirableValue<>(var0xx, var1x.orElse(9223372036854775807L)))
       );

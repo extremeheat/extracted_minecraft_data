@@ -1,6 +1,7 @@
 package net.minecraft.world.level.storage.loot.entries;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -22,7 +23,7 @@ public class LootPoolEntries {
       super();
    }
 
-   private static LootPoolEntryType register(String var0, Codec<? extends LootPoolEntryContainer> var1) {
+   private static LootPoolEntryType register(String var0, MapCodec<? extends LootPoolEntryContainer> var1) {
       return Registry.register(BuiltInRegistries.LOOT_POOL_ENTRY_TYPE, new ResourceLocation(var0), new LootPoolEntryType(var1));
    }
 }

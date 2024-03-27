@@ -2,24 +2,23 @@ package net.minecraft.util.valueproviders;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
-import java.util.function.Function;
 import net.minecraft.util.RandomSource;
 
 public class BiasedToBottomInt extends IntProvider {
-   public static final Codec<BiasedToBottomInt> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<BiasedToBottomInt> CODEC = RecordCodecBuilder.mapCodec(
          var0 -> var0.group(
                   Codec.INT.fieldOf("min_inclusive").forGetter(var0x -> var0x.minInclusive),
                   Codec.INT.fieldOf("max_inclusive").forGetter(var0x -> var0x.maxInclusive)
                )
                .apply(var0, BiasedToBottomInt::new)
       )
-      .comapFlatMap(
+      .validate(
          var0 -> var0.maxInclusive < var0.minInclusive
                ? DataResult.error(() -> "Max must be at least min, min_inclusive: " + var0.minInclusive + ", max_inclusive: " + var0.maxInclusive)
-               : DataResult.success(var0),
-         Function.identity()
+               : DataResult.success(var0)
       );
    private final int minInclusive;
    private final int maxInclusive;

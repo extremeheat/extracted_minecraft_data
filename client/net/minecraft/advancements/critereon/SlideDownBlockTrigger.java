@@ -10,7 +10,6 @@ import net.minecraft.advancements.Criterion;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -33,18 +32,15 @@ public class SlideDownBlockTrigger extends SimpleCriterionTrigger<SlideDownBlock
       private final Optional<ContextAwarePredicate> player;
       private final Optional<Holder<Block>> block;
       private final Optional<StatePropertiesPredicate> state;
-      public static final Codec<SlideDownBlockTrigger.TriggerInstance> CODEC = ExtraCodecs.validate(
-         RecordCodecBuilder.create(
+      public static final Codec<SlideDownBlockTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
             var0 -> var0.group(
-                     ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player").forGetter(SlideDownBlockTrigger.TriggerInstance::player),
-                     ExtraCodecs.strictOptionalField(BuiltInRegistries.BLOCK.holderByNameCodec(), "block")
-                        .forGetter(SlideDownBlockTrigger.TriggerInstance::block),
-                     ExtraCodecs.strictOptionalField(StatePropertiesPredicate.CODEC, "state").forGetter(SlideDownBlockTrigger.TriggerInstance::state)
+                     EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(SlideDownBlockTrigger.TriggerInstance::player),
+                     BuiltInRegistries.BLOCK.holderByNameCodec().optionalFieldOf("block").forGetter(SlideDownBlockTrigger.TriggerInstance::block),
+                     StatePropertiesPredicate.CODEC.optionalFieldOf("state").forGetter(SlideDownBlockTrigger.TriggerInstance::state)
                   )
                   .apply(var0, SlideDownBlockTrigger.TriggerInstance::new)
-         ),
-         SlideDownBlockTrigger.TriggerInstance::validate
-      );
+         )
+         .validate(SlideDownBlockTrigger.TriggerInstance::validate);
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<Holder<Block>> var2, Optional<StatePropertiesPredicate> var3) {
          super();

@@ -64,7 +64,7 @@ public record DimensionType(
    public static final Codec<DimensionType> DIRECT_CODEC = ExtraCodecs.catchDecoderException(
       RecordCodecBuilder.create(
          var0 -> var0.group(
-                  ExtraCodecs.asOptionalLong(Codec.LONG.optionalFieldOf("fixed_time")).forGetter(DimensionType::fixedTime),
+                  ExtraCodecs.asOptionalLong(Codec.LONG.lenientOptionalFieldOf("fixed_time")).forGetter(DimensionType::fixedTime),
                   Codec.BOOL.fieldOf("has_skylight").forGetter(DimensionType::hasSkyLight),
                   Codec.BOOL.fieldOf("has_ceiling").forGetter(DimensionType::hasCeiling),
                   Codec.BOOL.fieldOf("ultrawarm").forGetter(DimensionType::ultraWarm),

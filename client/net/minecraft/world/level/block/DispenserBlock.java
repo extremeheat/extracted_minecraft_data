@@ -11,6 +11,7 @@ import net.minecraft.core.Position;
 import net.minecraft.core.dispenser.BlockSource;
 import net.minecraft.core.dispenser.DefaultDispenseItemBehavior;
 import net.minecraft.core.dispenser.DispenseItemBehavior;
+import net.minecraft.core.dispenser.ProjectileDispenseBehavior;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.RandomSource;
@@ -35,6 +36,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
 public class DispenserBlock extends BaseEntityBlock {
@@ -42,7 +44,7 @@ public class DispenserBlock extends BaseEntityBlock {
    public static final MapCodec<DispenserBlock> CODEC = simpleCodec(DispenserBlock::new);
    public static final DirectionProperty FACING = DirectionalBlock.FACING;
    public static final BooleanProperty TRIGGERED = BlockStateProperties.TRIGGERED;
-   private static final Map<Item, DispenseItemBehavior> DISPENSER_REGISTRY = Util.make(
+   public static final Map<Item, DispenseItemBehavior> DISPENSER_REGISTRY = Util.make(
       new Object2ObjectOpenHashMap(), var0 -> var0.defaultReturnValue(new DefaultDispenseItemBehavior())
    );
    private static final int TRIGGER_DURATION = 4;
@@ -54,6 +56,10 @@ public class DispenserBlock extends BaseEntityBlock {
 
    public static void registerBehavior(ItemLike var0, DispenseItemBehavior var1) {
       DISPENSER_REGISTRY.put(var0.asItem(), var1);
+   }
+
+   public static void registerProjectileBehavior(ItemLike var0) {
+      DISPENSER_REGISTRY.put(var0.asItem(), new ProjectileDispenseBehavior(var0.asItem()));
    }
 
    protected DispenserBlock(BlockBehaviour.Properties var1) {
@@ -138,8 +144,12 @@ public class DispenserBlock extends BaseEntityBlock {
    }
 
    public static Position getDispensePosition(BlockSource var0) {
-      Direction var1 = var0.state().getValue(FACING);
-      return var0.center().add(0.7 * (double)var1.getStepX(), 0.7 * (double)var1.getStepY(), 0.7 * (double)var1.getStepZ());
+      return getDispensePosition(var0, 0.7, Vec3.ZERO);
+   }
+
+   public static Position getDispensePosition(BlockSource var0, double var1, Vec3 var3) {
+      Direction var4 = var0.state().getValue(FACING);
+      return var0.center().add(var1 * (double)var4.getStepX() + var3.x(), var1 * (double)var4.getStepY() + var3.y(), var1 * (double)var4.getStepZ() + var3.z());
    }
 
    @Override

@@ -3,13 +3,10 @@ package net.minecraft.world.level.levelgen;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import java.util.function.Function;
-import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.dimension.DimensionType;
 
 public interface VerticalAnchor {
-   Codec<VerticalAnchor> CODEC = ExtraCodecs.xor(
-         VerticalAnchor.Absolute.CODEC, ExtraCodecs.xor(VerticalAnchor.AboveBottom.CODEC, VerticalAnchor.BelowTop.CODEC)
-      )
+   Codec<VerticalAnchor> CODEC = Codec.xor(VerticalAnchor.Absolute.CODEC, Codec.xor(VerticalAnchor.AboveBottom.CODEC, VerticalAnchor.BelowTop.CODEC))
       .xmap(VerticalAnchor::merge, VerticalAnchor::split);
    VerticalAnchor BOTTOM = aboveBottom(0);
    VerticalAnchor TOP = belowTop(0);
@@ -35,7 +32,7 @@ public interface VerticalAnchor {
    }
 
    private static VerticalAnchor merge(Either<VerticalAnchor.Absolute, Either<VerticalAnchor.AboveBottom, VerticalAnchor.BelowTop>> var0) {
-      return (VerticalAnchor)var0.map(Function.identity(), var0x -> (Record)var0x.map(Function.identity(), Function.identity()));
+      return (VerticalAnchor)var0.map(Function.identity(), Either::unwrap);
    }
 
    private static Either<VerticalAnchor.Absolute, Either<VerticalAnchor.AboveBottom, VerticalAnchor.BelowTop>> split(VerticalAnchor var0) {

@@ -1,7 +1,7 @@
 package net.minecraft.world.level.levelgen.feature.rootplacers;
 
 import com.google.common.collect.Lists;
-import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.ArrayList;
@@ -20,7 +20,7 @@ import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvi
 public class MangroveRootPlacer extends RootPlacer {
    public static final int ROOT_WIDTH_LIMIT = 8;
    public static final int ROOT_LENGTH_LIMIT = 15;
-   public static final Codec<MangroveRootPlacer> CODEC = RecordCodecBuilder.create(
+   public static final MapCodec<MangroveRootPlacer> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> rootPlacerParts(var0)
             .and(MangroveRootPlacement.CODEC.fieldOf("mangrove_root_placement").forGetter(var0x -> var0x.mangroveRootPlacement))
             .apply(var0, MangroveRootPlacer::new)

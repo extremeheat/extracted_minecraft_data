@@ -11,7 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
+import net.minecraft.Util;
 
 public class ClassInstanceMultiMap<T> extends AbstractCollection<T> {
    private final Map<Class<?>, List<T>> byClass = Maps.newHashMap();
@@ -60,7 +60,7 @@ public class ClassInstanceMultiMap<T> extends AbstractCollection<T> {
       if (!this.baseClass.isAssignableFrom(var1)) {
          throw new IllegalArgumentException("Don't know how to search for " + var1);
       } else {
-         List var2 = this.byClass.computeIfAbsent(var1, var1x -> this.allInstances.stream().filter(var1x::isInstance).collect(Collectors.toList()));
+         List var2 = this.byClass.computeIfAbsent(var1, var1x -> this.allInstances.stream().filter(var1x::isInstance).collect(Util.toMutableList()));
          return Collections.unmodifiableCollection(var2);
       }
    }
