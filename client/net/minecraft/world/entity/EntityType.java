@@ -31,6 +31,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.world.entity.ambient.Bat;
+import net.minecraft.world.entity.ambient.Batato;
 import net.minecraft.world.entity.animal.Bee;
 import net.minecraft.world.entity.animal.Cat;
 import net.minecraft.world.entity.animal.Chicken;
@@ -95,8 +96,10 @@ import net.minecraft.world.entity.monster.Guardian;
 import net.minecraft.world.entity.monster.Husk;
 import net.minecraft.world.entity.monster.Illusioner;
 import net.minecraft.world.entity.monster.MagmaCube;
+import net.minecraft.world.entity.monster.MegaSpud;
 import net.minecraft.world.entity.monster.Phantom;
 import net.minecraft.world.entity.monster.Pillager;
+import net.minecraft.world.entity.monster.PoisonousPotatoZombie;
 import net.minecraft.world.entity.monster.Ravager;
 import net.minecraft.world.entity.monster.Shulker;
 import net.minecraft.world.entity.monster.Silverfish;
@@ -125,9 +128,11 @@ import net.minecraft.world.entity.projectile.Arrow;
 import net.minecraft.world.entity.projectile.DragonFireball;
 import net.minecraft.world.entity.projectile.EvokerFangs;
 import net.minecraft.world.entity.projectile.EyeOfEnder;
+import net.minecraft.world.entity.projectile.EyeOfPotato;
 import net.minecraft.world.entity.projectile.FireworkRocketEntity;
 import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.entity.projectile.LargeFireball;
+import net.minecraft.world.entity.projectile.LashingPotatoHook;
 import net.minecraft.world.entity.projectile.LlamaSpit;
 import net.minecraft.world.entity.projectile.ShulkerBullet;
 import net.minecraft.world.entity.projectile.SmallFireball;
@@ -138,6 +143,7 @@ import net.minecraft.world.entity.projectile.ThrownEnderpearl;
 import net.minecraft.world.entity.projectile.ThrownExperienceBottle;
 import net.minecraft.world.entity.projectile.ThrownPotion;
 import net.minecraft.world.entity.projectile.ThrownTrident;
+import net.minecraft.world.entity.projectile.VineProjectile;
 import net.minecraft.world.entity.projectile.WitherSkull;
 import net.minecraft.world.entity.projectile.windcharge.BreezeWindCharge;
 import net.minecraft.world.entity.projectile.windcharge.WindCharge;
@@ -154,6 +160,7 @@ import net.minecraft.world.flag.FeatureElement;
 import net.minecraft.world.flag.FeatureFlag;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
+import net.minecraft.world.grid.GridCarrier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
@@ -200,11 +207,18 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    public static final EntityType<Arrow> ARROW = register(
       "arrow", EntityType.Builder.<Arrow>of(Arrow::new, MobCategory.MISC).sized(0.5F, 0.5F).eyeHeight(0.13F).clientTrackingRange(4).updateInterval(20)
    );
+   public static final EntityType<VineProjectile> VINE_PROJECTILE = register(
+      "vine_projectile",
+      EntityType.Builder.<VineProjectile>of(VineProjectile::new, MobCategory.MISC).sized(0.1F, 0.1F).eyeHeight(0.13F).clientTrackingRange(4).updateInterval(20)
+   );
    public static final EntityType<Axolotl> AXOLOTL = register(
       "axolotl", EntityType.Builder.<Axolotl>of(Axolotl::new, MobCategory.AXOLOTLS).sized(0.75F, 0.42F).eyeHeight(0.2751F).clientTrackingRange(10)
    );
    public static final EntityType<Bat> BAT = register(
       "bat", EntityType.Builder.<Bat>of(Bat::new, MobCategory.AMBIENT).sized(0.5F, 0.9F).eyeHeight(0.45F).clientTrackingRange(5)
+   );
+   public static final EntityType<Batato> BATATO = register(
+      "batato", EntityType.Builder.<Batato>of(Batato::new, MobCategory.AMBIENT).sized(0.5F, 0.9F).eyeHeight(0.45F).clientTrackingRange(5)
    );
    public static final EntityType<Bee> BEE = register(
       "bee", EntityType.Builder.<Bee>of(Bee::new, MobCategory.CREATURE).sized(0.7F, 0.6F).eyeHeight(0.3F).clientTrackingRange(8)
@@ -315,7 +329,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    );
    public static final EntityType<ElderGuardian> ELDER_GUARDIAN = register(
       "elder_guardian",
-      EntityType.Builder.<ElderGuardian>of(ElderGuardian::new, MobCategory.MONSTER)
+      EntityType.Builder.<ElderGuardian>of(ElderGuardian::createNormalElder, MobCategory.MONSTER)
          .sized(1.9975F, 1.9975F)
          .eyeHeight(0.99875F)
          .passengerAttachments(2.350625F)
@@ -427,7 +441,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    );
    public static final EntityType<Guardian> GUARDIAN = register(
       "guardian",
-      EntityType.Builder.<Guardian>of(Guardian::new, MobCategory.MONSTER)
+      EntityType.Builder.<Guardian>of(Guardian::createNormal, MobCategory.MONSTER)
          .sized(0.85F, 0.85F)
          .eyeHeight(0.425F)
          .passengerAttachments(0.975F)
@@ -483,13 +497,6 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       "item_frame",
       EntityType.Builder.<ItemFrame>of(ItemFrame::new, MobCategory.MISC).sized(0.5F, 0.5F).eyeHeight(0.0F).clientTrackingRange(10).updateInterval(2147483647)
    );
-   public static final EntityType<OminousItemSpawner> OMINOUS_ITEM_SPAWNER = register(
-      "ominous_item_spawner",
-      EntityType.Builder.<OminousItemSpawner>of(OminousItemSpawner::new, MobCategory.MISC)
-         .sized(0.25F, 0.25F)
-         .clientTrackingRange(8)
-         .requiredFeatures(FeatureFlags.UPDATE_1_21)
-   );
    public static final EntityType<LargeFireball> FIREBALL = register(
       "fireball", EntityType.Builder.<LargeFireball>of(LargeFireball::new, MobCategory.MISC).sized(1.0F, 1.0F).clientTrackingRange(4).updateInterval(10)
    );
@@ -519,12 +526,7 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    );
    public static final EntityType<MagmaCube> MAGMA_CUBE = register(
       "magma_cube",
-      EntityType.Builder.<MagmaCube>of(MagmaCube::new, MobCategory.MONSTER)
-         .fireImmune()
-         .sized(0.52F, 0.52F)
-         .eyeHeight(0.325F)
-         .spawnDimensionsScale(4.0F)
-         .clientTrackingRange(8)
+      EntityType.Builder.<MagmaCube>of(MagmaCube::new, MobCategory.MONSTER).fireImmune().sized(0.52F, 0.52F).eyeHeight(0.325F).clientTrackingRange(8)
    );
    public static final EntityType<Marker> MARKER = register(
       "marker", EntityType.Builder.<Marker>of(Marker::new, MobCategory.MISC).sized(0.0F, 0.0F).clientTrackingRange(0)
@@ -600,6 +602,14 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
          .ridingOffset(-0.6F)
          .clientTrackingRange(8)
    );
+   public static final EntityType<ElderGuardian> PLAGUEWHALE = register(
+      "plaguewhale",
+      EntityType.Builder.<ElderGuardian>of(ElderGuardian::createToxicElder, MobCategory.MONSTER)
+         .sized(1.9975F, 0.99875F)
+         .eyeHeight(0.499375F)
+         .passengerAttachments(1.1753125F)
+         .clientTrackingRange(10)
+   );
    public static final EntityType<PolarBear> POLAR_BEAR = register(
       "polar_bear",
       EntityType.Builder.<PolarBear>of(PolarBear::new, MobCategory.CREATURE).immuneTo(Blocks.POWDER_SNOW).sized(1.4F, 1.4F).clientTrackingRange(10)
@@ -660,8 +670,10 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
          .clientTrackingRange(10)
    );
    public static final EntityType<Slime> SLIME = register(
-      "slime",
-      EntityType.Builder.<Slime>of(Slime::new, MobCategory.MONSTER).sized(0.52F, 0.52F).eyeHeight(0.325F).spawnDimensionsScale(4.0F).clientTrackingRange(10)
+      "slime", EntityType.Builder.<Slime>of(Slime::new, MobCategory.MONSTER).sized(0.52F, 0.52F).eyeHeight(0.325F).clientTrackingRange(10)
+   );
+   public static final EntityType<MegaSpud> MEGA_SPUD = register(
+      "mega_spud", EntityType.Builder.<MegaSpud>of(MegaSpud::new, MobCategory.MONSTER).sized(0.52F, 0.52F).eyeHeight(0.325F).clientTrackingRange(10)
    );
    public static final EntityType<SmallFireball> SMALL_FIREBALL = register(
       "small_fireball",
@@ -733,6 +745,14 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    public static final EntityType<MinecartTNT> TNT_MINECART = register(
       "tnt_minecart",
       EntityType.Builder.<MinecartTNT>of(MinecartTNT::new, MobCategory.MISC).sized(0.98F, 0.7F).passengerAttachments(0.1875F).clientTrackingRange(8)
+   );
+   public static final EntityType<Guardian> TOXIFIN = register(
+      "toxifin",
+      EntityType.Builder.<Guardian>of(Guardian::createToxic, MobCategory.MONSTER)
+         .sized(0.85F, 0.425F)
+         .eyeHeight(0.2125F)
+         .passengerAttachments(0.4875F)
+         .clientTrackingRange(8)
    );
    public static final EntityType<TraderLlama> TRADER_LLAMA = register(
       "trader_llama",
@@ -850,6 +870,15 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
          .ridingOffset(-0.7F)
          .clientTrackingRange(8)
    );
+   public static final EntityType<PoisonousPotatoZombie> POISONOUS_POTATO_ZOMBIE = register(
+      "poisonous_potato_zombie",
+      EntityType.Builder.<PoisonousPotatoZombie>of(PoisonousPotatoZombie::new, MobCategory.MONSTER)
+         .sized(0.6F, 1.95F)
+         .eyeHeight(1.74F)
+         .passengerAttachments(2.0125F)
+         .ridingOffset(-0.7F)
+         .clientTrackingRange(8)
+   );
    public static final EntityType<ZombieHorse> ZOMBIE_HORSE = register(
       "zombie_horse",
       EntityType.Builder.<ZombieHorse>of(ZombieHorse::new, MobCategory.CREATURE)
@@ -877,6 +906,9 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
          .ridingOffset(-0.7F)
          .clientTrackingRange(8)
    );
+   public static final EntityType<EyeOfPotato> EYE_OF_POTATO = register(
+      "eye_of_potato", EntityType.Builder.<EyeOfPotato>of(EyeOfPotato::new, MobCategory.MISC).sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(4)
+   );
    public static final EntityType<Player> PLAYER = register(
       "player",
       EntityType.Builder.<Player>createNothing(MobCategory.MISC)
@@ -891,6 +923,19 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    public static final EntityType<FishingHook> FISHING_BOBBER = register(
       "fishing_bobber",
       EntityType.Builder.<FishingHook>of(FishingHook::new, MobCategory.MISC).noSave().noSummon().sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(5)
+   );
+   public static final EntityType<LashingPotatoHook> LASHING_POTATO_HOOK = register(
+      "lashing_potato_hook",
+      EntityType.Builder.<LashingPotatoHook>of(LashingPotatoHook::new, MobCategory.MISC)
+         .noSave()
+         .noSummon()
+         .sized(0.25F, 0.25F)
+         .clientTrackingRange(4)
+         .updateInterval(5)
+   );
+   public static final EntityType<GridCarrier> GRID_CARRIER = register(
+      "grid_carrier",
+      EntityType.Builder.<GridCarrier>of(GridCarrier::new, MobCategory.MISC).noSummon().sized(0.0F, 0.0F).clientTrackingRange(10).updateInterval(2)
    );
    private final EntityType.EntityFactory<T> factory;
    private final MobCategory category;
@@ -908,7 +953,6 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
    @Nullable
    private ResourceKey<LootTable> lootTable;
    private final EntityDimensions dimensions;
-   private final float spawnDimensionsScale;
    private final FeatureFlagSet requiredFeatures;
 
    private static <T extends Entity> EntityType<T> register(String var0, EntityType.Builder<T> var1) {
@@ -932,10 +976,9 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       boolean var6,
       ImmutableSet<Block> var7,
       EntityDimensions var8,
-      float var9,
+      int var9,
       int var10,
-      int var11,
-      FeatureFlagSet var12
+      FeatureFlagSet var11
    ) {
       super();
       this.factory = var1;
@@ -946,10 +989,9 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       this.fireImmune = var5;
       this.immuneTo = var7;
       this.dimensions = var8;
-      this.spawnDimensionsScale = var9;
-      this.clientTrackingRange = var10;
-      this.updateInterval = var11;
-      this.requiredFeatures = var12;
+      this.clientTrackingRange = var9;
+      this.updateInterval = var10;
+      this.requiredFeatures = var11;
    }
 
    @Nullable
@@ -1129,10 +1171,9 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       );
    }
 
-   public AABB getSpawnAABB(double var1, double var3, double var5) {
-      float var7 = this.spawnDimensionsScale * this.getWidth() / 2.0F;
-      float var8 = this.spawnDimensionsScale * this.getHeight();
-      return new AABB(var1 - (double)var7, var3, var5 - (double)var7, var1 + (double)var7, var3 + (double)var8, var5 + (double)var7);
+   public AABB getAABB(double var1, double var3, double var5) {
+      float var7 = this.getWidth() / 2.0F;
+      return new AABB(var1 - (double)var7, var3, var5 - (double)var7, var1 + (double)var7, var3 + (double)this.getHeight(), var5 + (double)var7);
    }
 
    public boolean isBlockDangerous(BlockState var1) {
@@ -1263,7 +1304,6 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
       private int clientTrackingRange = 5;
       private int updateInterval = 3;
       private EntityDimensions dimensions = EntityDimensions.scalable(0.6F, 1.8F);
-      private float spawnDimensionsScale = 1.0F;
       private EntityAttachments.Builder attachments = EntityAttachments.builder();
       private FeatureFlagSet requiredFeatures = FeatureFlags.VANILLA_SET;
 
@@ -1284,11 +1324,6 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
 
       public EntityType.Builder<T> sized(float var1, float var2) {
          this.dimensions = EntityDimensions.scalable(var1, var2);
-         return this;
-      }
-
-      public EntityType.Builder<T> spawnDimensionsScale(float var1) {
-         this.spawnDimensionsScale = var1;
          return this;
       }
 
@@ -1389,7 +1424,6 @@ public class EntityType<T extends Entity> implements FeatureElement, EntityTypeT
             this.canSpawnFarFromPlayer,
             this.immuneTo,
             this.dimensions.withAttachments(this.attachments),
-            this.spawnDimensionsScale,
             this.clientTrackingRange,
             this.updateInterval,
             this.requiredFeatures

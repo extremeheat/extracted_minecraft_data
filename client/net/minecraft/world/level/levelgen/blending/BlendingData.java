@@ -53,14 +53,19 @@ public class BlendingData {
       Blocks.PODZOL,
       Blocks.GRAVEL,
       Blocks.GRASS_BLOCK,
+      Blocks.PEELGRASS_BLOCK,
+      Blocks.CORRUPTED_PEELGRASS_BLOCK,
       Blocks.STONE,
+      Blocks.POTONE,
       Blocks.COARSE_DIRT,
       Blocks.SAND,
+      Blocks.GRAVTATER,
       Blocks.RED_SAND,
       Blocks.MYCELIUM,
       Blocks.SNOW_BLOCK,
       Blocks.TERRACOTTA,
-      Blocks.DIRT
+      Blocks.DIRT,
+      Blocks.TERREDEPOMME
    );
    protected static final double NO_VALUE = 1.7976931348623157E308;
    private boolean hasCalculatedData;
@@ -72,7 +77,7 @@ public class BlendingData {
          var0 -> var0.group(
                   Codec.INT.fieldOf("min_section").forGetter(var0x -> var0x.areaWithOldGeneration.getMinSection()),
                   Codec.INT.fieldOf("max_section").forGetter(var0x -> var0x.areaWithOldGeneration.getMaxSection()),
-                  DOUBLE_ARRAY_CODEC.lenientOptionalFieldOf("heights")
+                  DOUBLE_ARRAY_CODEC.optionalFieldOf("heights")
                      .forGetter(
                         var0x -> DoubleStream.of(var0x.heights).anyMatch(var0xx -> var0xx != 1.7976931348623157E308)
                               ? Optional.of(var0x.heights)

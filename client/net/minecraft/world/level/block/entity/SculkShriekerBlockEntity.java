@@ -77,8 +77,8 @@ public class SculkShriekerBlockEntity extends BlockEntity implements GameEventLi
    }
 
    @Override
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.loadAdditional(var1, var2);
+   public void load(CompoundTag var1, HolderLookup.Provider var2) {
+      super.load(var1, var2);
       if (var1.contains("warning_level", 99)) {
          this.warningLevel = var1.getInt("warning_level");
       }

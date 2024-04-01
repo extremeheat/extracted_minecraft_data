@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.network.Connection;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -18,7 +17,6 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.protocol.configuration.ClientConfigurationPacketListener;
 import net.minecraft.network.protocol.configuration.ClientboundFinishConfigurationPacket;
 import net.minecraft.network.protocol.configuration.ClientboundRegistryDataPacket;
-import net.minecraft.network.protocol.configuration.ClientboundResetChatPacket;
 import net.minecraft.network.protocol.configuration.ClientboundSelectKnownPacks;
 import net.minecraft.network.protocol.configuration.ClientboundUpdateEnabledFeaturesPacket;
 import net.minecraft.network.protocol.configuration.ServerboundFinishConfigurationPacket;
@@ -38,15 +36,12 @@ public class ClientConfigurationPacketListenerImpl extends ClientCommonPacketLis
    private final RegistryDataCollector registryDataCollector = new RegistryDataCollector();
    @Nullable
    private KnownPacksManager knownPacks;
-   @Nullable
-   protected ChatComponent.State chatState;
 
    public ClientConfigurationPacketListenerImpl(Minecraft var1, Connection var2, CommonListenerCookie var3) {
       super(var1, var2, var3);
       this.localGameProfile = var3.localGameProfile();
       this.receivedRegistries = var3.receivedRegistries();
       this.enabledFeatures = var3.enabledFeatures();
-      this.chatState = var3.chatState();
    }
 
    @Override
@@ -91,11 +86,6 @@ public class ClientConfigurationPacketListenerImpl extends ClientCommonPacketLis
       this.send(new ServerboundSelectKnownPacks(var2));
    }
 
-   @Override
-   public void handleResetChat(ClientboundResetChatPacket var1) {
-      this.chatState = null;
-   }
-
    private <T> T runWithResources(Function<ResourceProvider, T> var1) {
       if (this.knownPacks == null) {
          return (T)var1.apply(ResourceProvider.EMPTY);
@@ -129,8 +119,7 @@ public class ClientConfigurationPacketListenerImpl extends ClientCommonPacketLis
                   this.serverBrand,
                   this.serverData,
                   this.postDisconnectScreen,
-                  this.serverCookies,
-                  this.chatState
+                  this.serverCookies
                )
             )
          );

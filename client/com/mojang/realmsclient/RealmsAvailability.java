@@ -10,8 +10,6 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.User;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import org.slf4j.Logger;
@@ -39,30 +37,27 @@ public class RealmsAvailability {
    }
 
    private static CompletableFuture<RealmsAvailability.Result> check() {
-      User var0 = Minecraft.getInstance().getUser();
-      return var0.getType() != User.Type.MSA
-         ? CompletableFuture.completedFuture(new RealmsAvailability.Result(RealmsAvailability.Type.AUTHENTICATION_ERROR))
-         : CompletableFuture.supplyAsync(
-            () -> {
-               RealmsClient var0xx = RealmsClient.create();
-      
-               try {
-                  if (var0xx.clientCompatible() != RealmsClient.CompatibleVersionResponse.COMPATIBLE) {
-                     return new RealmsAvailability.Result(RealmsAvailability.Type.INCOMPATIBLE_CLIENT);
-                  } else {
-                     return !var0xx.hasParentalConsent()
-                        ? new RealmsAvailability.Result(RealmsAvailability.Type.NEEDS_PARENTAL_CONSENT)
-                        : new RealmsAvailability.Result(RealmsAvailability.Type.SUCCESS);
-                  }
-               } catch (RealmsServiceException var2) {
-                  LOGGER.error("Couldn't connect to realms", var2);
-                  return var2.realmsError.errorCode() == 401
-                     ? new RealmsAvailability.Result(RealmsAvailability.Type.AUTHENTICATION_ERROR)
-                     : new RealmsAvailability.Result(var2);
+      return CompletableFuture.supplyAsync(
+         () -> {
+            RealmsClient var0 = RealmsClient.create();
+   
+            try {
+               if (var0.clientCompatible() != RealmsClient.CompatibleVersionResponse.COMPATIBLE) {
+                  return new RealmsAvailability.Result(RealmsAvailability.Type.INCOMPATIBLE_CLIENT);
+               } else {
+                  return !var0.hasParentalConsent()
+                     ? new RealmsAvailability.Result(RealmsAvailability.Type.NEEDS_PARENTAL_CONSENT)
+                     : new RealmsAvailability.Result(RealmsAvailability.Type.SUCCESS);
                }
-            },
-            Util.ioPool()
-         );
+            } catch (RealmsServiceException var2) {
+               LOGGER.error("Couldn't connect to realms", var2);
+               return var2.realmsError.errorCode() == 401
+                  ? new RealmsAvailability.Result(RealmsAvailability.Type.AUTHENTICATION_ERROR)
+                  : new RealmsAvailability.Result(var2);
+            }
+         },
+         Util.ioPool()
+      );
    }
 
    public static record Result(RealmsAvailability.Type a, @Nullable RealmsServiceException b) {

@@ -46,19 +46,4 @@ public class GustParticle extends TextureSheetParticle {
          return new GustParticle(var2, var3, var5, var7, this.sprites);
       }
    }
-
-   public static class SmallProvider implements ParticleProvider<SimpleParticleType> {
-      private final SpriteSet sprites;
-
-      public SmallProvider(SpriteSet var1) {
-         super();
-         this.sprites = var1;
-      }
-
-      public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         GustParticle var15 = new GustParticle(var2, var3, var5, var7, this.sprites);
-         var15.scale(0.15F);
-         return var15;
-      }
-   }
 }

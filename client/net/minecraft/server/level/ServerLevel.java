@@ -10,6 +10,8 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongSets;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.ObjectLinkedOpenHashSet;
@@ -30,6 +32,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -61,6 +64,7 @@ import net.minecraft.network.protocol.game.ClientboundLevelParticlesPacket;
 import net.minecraft.network.protocol.game.ClientboundSetDefaultSpawnPositionPacket;
 import net.minecraft.network.protocol.game.ClientboundSoundEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
+import net.minecraft.network.protocol.game.ClientboundSoundSequencePacket;
 import net.minecraft.network.protocol.game.DebugPackets;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -69,6 +73,7 @@ import net.minecraft.server.ServerScoreboard;
 import net.minecraft.server.level.progress.ChunkProgressListener;
 import net.minecraft.server.players.SleepStatus;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSequenceBuilder;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.AbortableIterationConsumer;
@@ -106,6 +111,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.raid.Raid;
 import net.minecraft.world.entity.raid.Raids;
 import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.grid.GridCarrier;
+import net.minecraft.world.grid.SubGrid;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.BlockEventData;
 import net.minecraft.world.level.ChunkPos;
@@ -203,6 +210,7 @@ public class ServerLevel extends Level implements WorldGenLevel {
    private final StructureCheck structureCheck;
    private final boolean tickTime;
    private final RandomSequences randomSequences;
+   final Object2ObjectMap<UUID, SubGrid> grids = new Object2ObjectOpenHashMap();
 
    public ServerLevel(
       MinecraftServer var1,
@@ -328,12 +336,12 @@ public class ServerLevel extends Level implements WorldGenLevel {
       if (this.sleepStatus.areEnoughSleeping(var5) && this.sleepStatus.areEnoughDeepSleeping(var5, this.players)) {
          if (this.getGameRules().getBoolean(GameRules.RULE_DAYLIGHT)) {
             long var6 = this.levelData.getDayTime() + 24000L;
-            this.setDayTime(var6 - var6 % 24000L);
+            this.getServer().overworld().setDayTime(var6 - var6 % 24000L);
          }
 
          this.wakeUpAllPlayers();
          if (this.getGameRules().getBoolean(GameRules.RULE_WEATHER_CYCLE) && this.isRaining()) {
-            this.resetWeatherCycle();
+            this.getServer().overworld().resetWeatherCycle();
          }
       }
 
@@ -344,11 +352,11 @@ public class ServerLevel extends Level implements WorldGenLevel {
 
       var2.popPush("tickPending");
       if (!this.isDebug() && var4) {
-         long var8 = this.getGameTime();
+         long var9 = this.getGameTime();
          var2.push("blockTicks");
-         this.blockTicks.tick(var8, 65536, this::tickBlock);
+         this.blockTicks.tick(var9, 65536, this::tickBlock);
          var2.popPush("fluidTicks");
-         this.fluidTicks.tick(var8, 65536, this::tickFluid);
+         this.fluidTicks.tick(var9, 65536, this::tickFluid);
          var2.pop();
       }
 
@@ -366,12 +374,12 @@ public class ServerLevel extends Level implements WorldGenLevel {
 
       this.handlingTick = false;
       var2.pop();
-      boolean var9 = !this.players.isEmpty() || !this.getForcedChunks().isEmpty();
-      if (var9) {
+      boolean var10 = !this.players.isEmpty() || !this.getForcedChunks().isEmpty();
+      if (var10) {
          this.resetEmptyTime();
       }
 
-      if (var9 || this.emptyTime++ < 300) {
+      if (var10 || this.emptyTime++ < 300) {
          var2.push("entities");
          if (this.dragonFight != null && var4) {
             var2.push("dragonFight");
@@ -379,31 +387,11 @@ public class ServerLevel extends Level implements WorldGenLevel {
             var2.pop();
          }
 
-         this.entityTickList.forEach(var3x -> {
-            if (!var3x.isRemoved()) {
-               if (this.shouldDiscardEntity(var3x)) {
-                  var3x.discard();
-               } else if (!var3.isEntityFrozen(var3x)) {
-                  var2.push("checkDespawn");
-                  var3x.checkDespawn();
-                  var2.pop();
-                  if (this.chunkSource.chunkMap.getDistanceManager().inEntityTickingRange(var3x.chunkPosition().toLong())) {
-                     Entity var4xx = var3x.getVehicle();
-                     if (var4xx != null) {
-                        if (!var4xx.isRemoved() && var4xx.hasPassenger(var3x)) {
-                           return;
-                        }
+         for(SubGrid var8 : List.copyOf(this.grids.values())) {
+            this.tickEntity(var8.carrier(), var3, var2);
+         }
 
-                        var3x.stopRiding();
-                     }
-
-                     var2.push("tick");
-                     this.guardEntityTick(this::tickNonPassenger, var3x);
-                     var2.pop();
-                  }
-               }
-            }
-         });
+         this.entityTickList.forEach(var3x -> this.tickEntity(var3x, var3, var2));
          var2.pop();
          this.tickBlockEntities();
       }
@@ -411,6 +399,32 @@ public class ServerLevel extends Level implements WorldGenLevel {
       var2.push("entityManagement");
       this.entityManager.tick();
       var2.pop();
+   }
+
+   private void tickEntity(Entity var1, TickRateManager var2, ProfilerFiller var3) {
+      if (!var1.isRemoved()) {
+         if (this.shouldDiscardEntity(var1)) {
+            var1.discard();
+         } else if (!var2.isEntityFrozen(var1)) {
+            var3.push("checkDespawn");
+            var1.checkDespawn();
+            var3.pop();
+            if (this.chunkSource.chunkMap.getDistanceManager().inEntityTickingRange(var1.chunkPosition().toLong())) {
+               Entity var4 = var1.getVehicle();
+               if (var4 != null) {
+                  if (!var4.isRemoved() && var4.hasPassenger(var1)) {
+                     return;
+                  }
+
+                  var1.stopRiding();
+               }
+
+               var3.push("tick");
+               this.guardEntityTick(this::tickNonPassenger, var1);
+               var3.pop();
+            }
+         }
+      }
    }
 
    @Override
@@ -967,6 +981,43 @@ public class ServerLevel extends Level implements WorldGenLevel {
             this.dimension(),
             new ClientboundSoundEntityPacket(var3, var4, var2, var5, var6, var7)
          );
+   }
+
+   @Override
+   public void playDelayedSound(int var1, double var2, double var4, double var6, SoundEvent var8, SoundSource var9, float var10, float var11) {
+      this.playSoundSequence(var2, var4, var6, var5 -> var5.waitThenPlay(var1, var8, var9, var10, var11));
+   }
+
+   @Override
+   public void playSoundSequence(final double var1, final double var3, final double var5, Consumer<SoundSequenceBuilder> var7) {
+      class 1Builder implements SoundSequenceBuilder {
+         private int delay = 0;
+         final List<ClientboundSoundSequencePacket.DelayedSound> delayedSounds = new ArrayList();
+         float range = 0.0F;
+
+         _Builder/* $VF was: 1Builder*/() {
+            super();
+         }
+
+         @Override
+         public void waitThenPlay(int var1x, SoundEvent var2, SoundSource var3x, float var4, float var5x) {
+            this.delay += var1x;
+            long var6 = 0L;
+            this.delayedSounds
+               .add(
+                  new ClientboundSoundSequencePacket.DelayedSound(
+                     this.delay, new ClientboundSoundPacket(Holder.direct(var2), var3x, var1, var3, var5, var4, var5x, 0L)
+                  )
+               );
+            this.range = Math.max(this.range, var2.getRange(var4));
+         }
+      }
+
+      1Builder var8 = new 1Builder();
+      var7.accept(var8);
+      this.server
+         .getPlayerList()
+         .broadcast(null, var1, var3, var5, (double)var8.range, this.dimension(), new ClientboundSoundSequencePacket(var8.delayedSounds));
    }
 
    @Override
@@ -1587,6 +1638,17 @@ public class ServerLevel extends Level implements WorldGenLevel {
       return this.entityManager.getEntityGetter();
    }
 
+   @Override
+   public Iterable<? extends SubGrid> getGrids() {
+      return this.grids.values();
+   }
+
+   @Nullable
+   @Override
+   public SubGrid getGrid(UUID var1) {
+      return (SubGrid)this.grids.get(var1);
+   }
+
    public void addLegacyChunkEntities(Stream<Entity> var1) {
       this.entityManager.addLegacyChunkEntities(var1);
    }
@@ -1671,13 +1733,17 @@ public class ServerLevel extends Level implements WorldGenLevel {
       }
 
       public void onTickingStart(Entity var1) {
-         ServerLevel.this.entityTickList.add(var1);
+         if (!(var1 instanceof GridCarrier)) {
+            ServerLevel.this.entityTickList.add(var1);
+         }
       }
 
       public void onTickingEnd(Entity var1) {
          ServerLevel.this.entityTickList.remove(var1);
       }
 
+      // $VF: Could not properly define all variable types!
+      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       public void onTrackingStart(Entity var1) {
          ServerLevel.this.getChunkSource().addEntity(var1);
          if (var1 instanceof ServerPlayer var2) {
@@ -1702,9 +1768,15 @@ public class ServerLevel extends Level implements WorldGenLevel {
             }
          }
 
+         if (var1 instanceof GridCarrier var9) {
+            ServerLevel.this.grids.put(var9.getUUID(), var9.grid());
+         }
+
          var1.updateDynamicGameEventListener(DynamicGameEventListener::add);
       }
 
+      // $VF: Could not properly define all variable types!
+      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       public void onTrackingEnd(Entity var1) {
          ServerLevel.this.getChunkSource().removeEntity(var1);
          if (var1 instanceof ServerPlayer var2) {
@@ -1727,6 +1799,10 @@ public class ServerLevel extends Level implements WorldGenLevel {
             for(EnderDragonPart var6 : var8.getSubEntities()) {
                ServerLevel.this.dragonParts.remove(var6.getId());
             }
+         }
+
+         if (var1 instanceof GridCarrier var9) {
+            ServerLevel.this.grids.remove(var9.getUUID(), var9.grid());
          }
 
          var1.updateDynamicGameEventListener(DynamicGameEventListener::remove);

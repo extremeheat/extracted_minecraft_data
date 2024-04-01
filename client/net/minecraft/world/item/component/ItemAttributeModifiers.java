@@ -16,6 +16,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.Attribute;
@@ -28,11 +29,11 @@ public record ItemAttributeModifiers(List<ItemAttributeModifiers.Entry> e, boole
    private static final Codec<ItemAttributeModifiers> FULL_CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                ItemAttributeModifiers.Entry.CODEC.listOf().fieldOf("modifiers").forGetter(ItemAttributeModifiers::modifiers),
-               Codec.BOOL.optionalFieldOf("show_in_tooltip", true).forGetter(ItemAttributeModifiers::showInTooltip)
+               ExtraCodecs.strictOptionalField(Codec.BOOL, "show_in_tooltip", true).forGetter(ItemAttributeModifiers::showInTooltip)
             )
             .apply(var0, ItemAttributeModifiers::new)
    );
-   public static final Codec<ItemAttributeModifiers> CODEC = Codec.withAlternative(
+   public static final Codec<ItemAttributeModifiers> CODEC = ExtraCodecs.withAlternative(
       FULL_CODEC, ItemAttributeModifiers.Entry.CODEC.listOf(), var0 -> new ItemAttributeModifiers(var0, true)
    );
    public static final StreamCodec<RegistryFriendlyByteBuf, ItemAttributeModifiers> STREAM_CODEC = StreamCodec.composite(
@@ -115,7 +116,7 @@ public record ItemAttributeModifiers(List<ItemAttributeModifiers.Entry> e, boole
          var0 -> var0.group(
                   BuiltInRegistries.ATTRIBUTE.holderByNameCodec().fieldOf("type").forGetter(ItemAttributeModifiers.Entry::attribute),
                   AttributeModifier.MAP_CODEC.forGetter(ItemAttributeModifiers.Entry::modifier),
-                  EquipmentSlotGroup.CODEC.optionalFieldOf("slot", EquipmentSlotGroup.ANY).forGetter(ItemAttributeModifiers.Entry::slot)
+                  ExtraCodecs.strictOptionalField(EquipmentSlotGroup.CODEC, "slot", EquipmentSlotGroup.ANY).forGetter(ItemAttributeModifiers.Entry::slot)
                )
                .apply(var0, ItemAttributeModifiers.Entry::new)
       );

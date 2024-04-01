@@ -60,7 +60,8 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
       new ResourceLocation("container/creative_inventory/tab_top_unselected_4"),
       new ResourceLocation("container/creative_inventory/tab_top_unselected_5"),
       new ResourceLocation("container/creative_inventory/tab_top_unselected_6"),
-      new ResourceLocation("container/creative_inventory/tab_top_unselected_7")
+      new ResourceLocation("container/creative_inventory/tab_top_unselected_7"),
+      new ResourceLocation("container/creative_inventory/tab_top_unselected_8")
    };
    private static final ResourceLocation[] SELECTED_TOP_TABS = new ResourceLocation[]{
       new ResourceLocation("container/creative_inventory/tab_top_selected_1"),
@@ -69,7 +70,8 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
       new ResourceLocation("container/creative_inventory/tab_top_selected_4"),
       new ResourceLocation("container/creative_inventory/tab_top_selected_5"),
       new ResourceLocation("container/creative_inventory/tab_top_selected_6"),
-      new ResourceLocation("container/creative_inventory/tab_top_selected_7")
+      new ResourceLocation("container/creative_inventory/tab_top_selected_7"),
+      new ResourceLocation("container/creative_inventory/tab_top_selected_8")
    };
    private static final ResourceLocation[] UNSELECTED_BOTTOM_TABS = new ResourceLocation[]{
       new ResourceLocation("container/creative_inventory/tab_bottom_unselected_1"),
@@ -509,7 +511,7 @@ public class CreativeModeInventoryScreen extends EffectRenderingInventoryScreen<
                      var7.set(DataComponents.CREATIVE_SLOT_LOCK, Unit.INSTANCE);
                      Component var8 = this.minecraft.options.keyHotbarSlots[var4].getTranslatedKeyMessage();
                      Component var9 = this.minecraft.options.keySaveHotbarActivator.getTranslatedKeyMessage();
-                     var7.set(DataComponents.ITEM_NAME, Component.translatable("inventory.hotbarInfo", var9, var8));
+                     var7.set(DataComponents.CUSTOM_NAME, Component.translatable("inventory.hotbarInfo", var9, var8));
                      this.menu.items.add(var7);
                   } else {
                      this.menu.items.add(ItemStack.EMPTY);

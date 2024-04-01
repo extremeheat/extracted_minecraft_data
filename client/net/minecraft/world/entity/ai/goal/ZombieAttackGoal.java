@@ -1,12 +1,12 @@
 package net.minecraft.world.entity.ai.goal;
 
-import net.minecraft.world.entity.monster.Zombie;
+import net.minecraft.world.entity.PathfinderMob;
 
-public class ZombieAttackGoal extends MeleeAttackGoal {
-   private final Zombie zombie;
+public class ZombieAttackGoal<T extends PathfinderMob> extends MeleeAttackGoal {
+   private final T zombie;
    private int raiseArmTicks;
 
-   public ZombieAttackGoal(Zombie var1, double var2, boolean var4) {
+   public ZombieAttackGoal(T var1, double var2, boolean var4) {
       super(var1, var2, var4);
       this.zombie = var1;
    }

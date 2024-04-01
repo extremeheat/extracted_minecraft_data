@@ -20,12 +20,14 @@ import net.minecraft.world.Containers;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.item.crafting.CampfireCookingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
@@ -36,10 +38,12 @@ public class CampfireBlockEntity extends BlockEntity implements Clearable {
    private final NonNullList<ItemStack> items = NonNullList.withSize(4, ItemStack.EMPTY);
    private final int[] cookingProgress = new int[4];
    private final int[] cookingTime = new int[4];
+   public final boolean isFryingTable;
    private final RecipeManager.CachedCheck<Container, CampfireCookingRecipe> quickCheck = RecipeManager.createCheck(RecipeType.CAMPFIRE_COOKING);
 
    public CampfireBlockEntity(BlockPos var1, BlockState var2) {
       super(BlockEntityType.CAMPFIRE, var1, var2);
+      this.isFryingTable = var2.is(Blocks.FRYING_TABLE);
    }
 
    public static void cookTick(Level var0, BlockPos var1, BlockState var2, CampfireBlockEntity var3) {
@@ -116,8 +120,8 @@ public class CampfireBlockEntity extends BlockEntity implements Clearable {
    }
 
    @Override
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.loadAdditional(var1, var2);
+   public void load(CompoundTag var1, HolderLookup.Provider var2) {
+      super.load(var1, var2);
       this.items.clear();
       ContainerHelper.loadAllItems(var1, this.items, var2);
       if (var1.contains("CookingTimes", 11)) {
@@ -151,7 +155,19 @@ public class CampfireBlockEntity extends BlockEntity implements Clearable {
    }
 
    public Optional<RecipeHolder<CampfireCookingRecipe>> getCookableRecipe(ItemStack var1) {
-      return this.items.stream().noneMatch(ItemStack::isEmpty) ? Optional.empty() : this.quickCheck.getRecipeFor(new SimpleContainer(var1), this.level);
+      if (this.isFryingTable && !this.isValidFryingTable(var1)) {
+         return Optional.empty();
+      } else {
+         return this.items.stream().noneMatch(ItemStack::isEmpty) ? Optional.empty() : this.quickCheck.getRecipeFor(new SimpleContainer(var1), this.level);
+      }
+   }
+
+   private boolean isValidFryingTable(ItemStack var1) {
+      if (var1.is(Items.POTATO)) {
+         return true;
+      } else {
+         return Items.POTATO_PEELS_INGREDIENT.test(var1);
+      }
    }
 
    public boolean placeFood(@Nullable Entity var1, ItemStack var2, int var3) {
@@ -187,14 +203,12 @@ public class CampfireBlockEntity extends BlockEntity implements Clearable {
    }
 
    @Override
-   protected void applyImplicitComponents(BlockEntity.DataComponentInput var1) {
-      super.applyImplicitComponents(var1);
-      var1.<ItemContainerContents>getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY).copyInto(this.getItems());
+   public void applyComponents(DataComponentMap var1) {
+      var1.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY).copyInto(this.getItems());
    }
 
    @Override
-   protected void collectImplicitComponents(DataComponentMap.Builder var1) {
-      super.collectImplicitComponents(var1);
+   public void collectComponents(DataComponentMap.Builder var1) {
       var1.set(DataComponents.CONTAINER, ItemContainerContents.copyOf(this.getItems()));
    }
 

@@ -9,6 +9,7 @@ import io.netty.buffer.ByteBuf;
 import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import net.minecraft.Util;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.nbt.CompoundTag;
@@ -17,6 +18,7 @@ import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -24,8 +26,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 public final class CustomData {
    public static final CustomData EMPTY = new CustomData(new CompoundTag());
    public static final Codec<CustomData> CODEC = CompoundTag.CODEC.xmap(CustomData::new, var0 -> var0.tag);
-   public static final Codec<CustomData> CODEC_WITH_ID = CODEC.validate(
-      var0 -> var0.getUnsafe().contains("id", 8) ? DataResult.success(var0) : DataResult.error(() -> "Missing id for entity in: " + var0)
+   public static final Codec<CustomData> CODEC_WITH_ID = ExtraCodecs.validate(
+      CODEC, var0 -> var0.getUnsafe().contains("id", 8) ? DataResult.success(var0) : DataResult.error(() -> "Missing id for entity in: " + var0)
    );
    @Deprecated
    public static final StreamCodec<ByteBuf, CustomData> STREAM_CODEC = ByteBufCodecs.COMPOUND_TAG.map(CustomData::new, var0 -> var0.tag);
@@ -83,11 +85,11 @@ public final class CustomData {
    }
 
    public boolean loadInto(BlockEntity var1, HolderLookup.Provider var2) {
-      CompoundTag var3 = var1.saveCustomOnly(var2);
+      CompoundTag var3 = var1.saveWithoutMetadata(var2);
       CompoundTag var4 = var3.copy();
       var3.merge(this.tag);
       if (!var3.equals(var4)) {
-         var1.loadCustomOnly(var3, var2);
+         var1.load(var3, var2);
          var1.setChanged();
          return true;
       } else {
@@ -100,7 +102,7 @@ public final class CustomData {
    }
 
    public <T> DataResult<T> read(MapDecoder<T> var1) {
-      MapLike var2 = (MapLike)NbtOps.INSTANCE.getMap((Tag)this.tag).getOrThrow();
+      MapLike var2 = Util.getOrThrow(NbtOps.INSTANCE.getMap((Tag)this.tag), IllegalStateException::new);
       return var1.decode(NbtOps.INSTANCE, var2);
    }
 

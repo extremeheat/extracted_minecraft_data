@@ -15,7 +15,7 @@ public class DropExperienceBlock extends Block {
       var0 -> var0.group(IntProvider.codec(0, 10).fieldOf("experience").forGetter(var0x -> var0x.xpRange), propertiesCodec())
             .apply(var0, DropExperienceBlock::new)
    );
-   private final IntProvider xpRange;
+   protected final IntProvider xpRange;
 
    @Override
    public MapCodec<? extends DropExperienceBlock> codec() {

@@ -1,7 +1,6 @@
 package net.minecraft.world.level.levelgen.feature;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -66,6 +65,7 @@ public abstract class Feature<FC extends FeatureConfiguration> {
    public static final Feature<BlockPileConfiguration> BLOCK_PILE = register("block_pile", new BlockPileFeature(BlockPileConfiguration.CODEC));
    public static final Feature<SpringConfiguration> SPRING = register("spring_feature", new SpringFeature(SpringConfiguration.CODEC));
    public static final Feature<NoneFeatureConfiguration> CHORUS_PLANT = register("chorus_plant", new ChorusPlantFeature(NoneFeatureConfiguration.CODEC));
+   public static final Feature<NoneFeatureConfiguration> TWISTED_POTATO = register("twisted_potato", new TwistedPotatoFeature(NoneFeatureConfiguration.CODEC));
    public static final Feature<ReplaceBlockConfiguration> REPLACE_SINGLE_BLOCK = register(
       "replace_single_block", new ReplaceBlockFeature(ReplaceBlockConfiguration.CODEC)
    );
@@ -73,6 +73,7 @@ public abstract class Feature<FC extends FeatureConfiguration> {
       "void_start_platform", new VoidStartPlatformFeature(NoneFeatureConfiguration.CODEC)
    );
    public static final Feature<NoneFeatureConfiguration> DESERT_WELL = register("desert_well", new DesertWellFeature(NoneFeatureConfiguration.CODEC));
+   public static final Feature<NoneFeatureConfiguration> HASH_WELL = register("hash_well", new HashWellFeature(NoneFeatureConfiguration.CODEC));
    public static final Feature<FossilFeatureConfiguration> FOSSIL = register("fossil", new FossilFeature(FossilFeatureConfiguration.CODEC));
    public static final Feature<HugeMushroomFeatureConfiguration> HUGE_RED_MUSHROOM = register(
       "huge_red_mushroom", new HugeRedMushroomFeature(HugeMushroomFeatureConfiguration.CODEC)
@@ -104,6 +105,7 @@ public abstract class Feature<FC extends FeatureConfiguration> {
    public static final Feature<NoneFeatureConfiguration> BLUE_ICE = register("blue_ice", new BlueIceFeature(NoneFeatureConfiguration.CODEC));
    public static final Feature<BlockStateConfiguration> ICEBERG = register("iceberg", new IcebergFeature(BlockStateConfiguration.CODEC));
    public static final Feature<BlockStateConfiguration> FOREST_ROCK = register("forest_rock", new BlockBlobFeature(BlockStateConfiguration.CODEC));
+   public static final Feature<BlockStateConfiguration> CLOUD = register("cloud", new CloudFeature(BlockStateConfiguration.CODEC));
    public static final Feature<DiskConfiguration> DISK = register("disk", new DiskFeature(DiskConfiguration.CODEC));
    public static final Feature<LakeFeature.Configuration> LAKE = register("lake", new LakeFeature(LakeFeature.Configuration.CODEC));
    public static final Feature<OreConfiguration> ORE = register("ore", new OreFeature(OreConfiguration.CODEC));
@@ -124,6 +126,12 @@ public abstract class Feature<FC extends FeatureConfiguration> {
    );
    public static final Feature<NoneFeatureConfiguration> WEEPING_VINES = register("weeping_vines", new WeepingVinesFeature(NoneFeatureConfiguration.CODEC));
    public static final Feature<TwistingVinesConfig> TWISTING_VINES = register("twisting_vines", new TwistingVinesFeature(TwistingVinesConfig.CODEC));
+   public static final Feature<TwistingVinesConfig> POTATO_BUDS = register("potato_buds", new PotatoBudsFeature(TwistingVinesConfig.CODEC));
+   public static final Feature<NoneFeatureConfiguration> POTATO_FIELD = register("potato_field", new PotatoFieldFeature(NoneFeatureConfiguration.CODEC));
+   public static final Feature<NoneFeatureConfiguration> PARK_LANE = register("park_lane", new ParkLaneFeature(NoneFeatureConfiguration.CODEC));
+   public static final Feature<NoneFeatureConfiguration> PARK_LANE_SURFACE = register(
+      "park_lane_surface", new ParkLaneSurfaceFeature(NoneFeatureConfiguration.CODEC)
+   );
    public static final Feature<ColumnFeatureConfiguration> BASALT_COLUMNS = register(
       "basalt_columns", new BasaltColumnsFeature(ColumnFeatureConfiguration.CODEC)
    );
@@ -155,7 +163,7 @@ public abstract class Feature<FC extends FeatureConfiguration> {
       "pointed_dripstone", new PointedDripstoneFeature(PointedDripstoneConfiguration.CODEC)
    );
    public static final Feature<SculkPatchConfiguration> SCULK_PATCH = register("sculk_patch", new SculkPatchFeature(SculkPatchConfiguration.CODEC));
-   private final MapCodec<ConfiguredFeature<FC, Feature<FC>>> configuredCodec;
+   private final Codec<ConfiguredFeature<FC, Feature<FC>>> configuredCodec;
 
    private static <C extends FeatureConfiguration, F extends Feature<C>> F register(String var0, F var1) {
       return Registry.register(BuiltInRegistries.FEATURE, var0, (F)var1);
@@ -163,10 +171,10 @@ public abstract class Feature<FC extends FeatureConfiguration> {
 
    public Feature(Codec<FC> var1) {
       super();
-      this.configuredCodec = var1.fieldOf("config").xmap(var1x -> new ConfiguredFeature<>(this, var1x), ConfiguredFeature::config);
+      this.configuredCodec = var1.fieldOf("config").xmap(var1x -> new ConfiguredFeature<>(this, var1x), ConfiguredFeature::config).codec();
    }
 
-   public MapCodec<ConfiguredFeature<FC, Feature<FC>>> configuredCodec() {
+   public Codec<ConfiguredFeature<FC, Feature<FC>>> configuredCodec() {
       return this.configuredCodec;
    }
 

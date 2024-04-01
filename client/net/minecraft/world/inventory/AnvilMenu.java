@@ -71,6 +71,10 @@ public class AnvilMenu extends ItemCombinerMenu {
 
    @Override
    protected void onTake(Player var1, ItemStack var2) {
+      if (var1.isChapterAndProgressPast("anvil_dropped", 0) && var2.is(Items.PAPER)) {
+         var1.setPotatoQuestChapter("wrote_thoughts");
+      }
+
       if (!var1.getAbilities().instabuild) {
          var1.giveExperienceLevels(-this.cost.get());
       }

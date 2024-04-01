@@ -9,7 +9,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 
-public record LevelStem(Holder<DimensionType> e, ChunkGenerator f) {
+public record LevelStem(Holder<DimensionType> f, ChunkGenerator g) {
    private final Holder<DimensionType> type;
    private final ChunkGenerator generator;
    public static final Codec<LevelStem> CODEC = RecordCodecBuilder.create(
@@ -21,6 +21,7 @@ public record LevelStem(Holder<DimensionType> e, ChunkGenerator f) {
    public static final ResourceKey<LevelStem> OVERWORLD = ResourceKey.create(Registries.LEVEL_STEM, new ResourceLocation("overworld"));
    public static final ResourceKey<LevelStem> NETHER = ResourceKey.create(Registries.LEVEL_STEM, new ResourceLocation("the_nether"));
    public static final ResourceKey<LevelStem> END = ResourceKey.create(Registries.LEVEL_STEM, new ResourceLocation("the_end"));
+   public static final ResourceKey<LevelStem> POTATO = ResourceKey.create(Registries.LEVEL_STEM, new ResourceLocation("potato"));
 
    public LevelStem(Holder<DimensionType> var1, ChunkGenerator var2) {
       super();

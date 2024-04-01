@@ -21,7 +21,7 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.JsonOps;
-import com.mojang.serialization.DataResult.Error;
+import com.mojang.serialization.DataResult.PartialResult;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -66,6 +66,7 @@ import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackRepository;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.GsonHelper;
 import net.minecraft.util.Mth;
 import net.minecraft.util.datafix.DataFixTypes;
@@ -91,6 +92,10 @@ public class Options {
    private static final Component ACCESSIBILITY_TOOLTIP_DARK_MOJANG_BACKGROUND = Component.translatable("options.darkMojangStudiosBackgroundColor.tooltip");
    private final OptionInstance<Boolean> darkMojangStudiosBackground = OptionInstance.createBoolean(
       "options.darkMojangStudiosBackgroundColor", OptionInstance.cachedConstantTooltip(ACCESSIBILITY_TOOLTIP_DARK_MOJANG_BACKGROUND), false
+   );
+   private static final Component POTATO_FONT_TOOLTIP = Component.translatable("options.potatoFont.tooltip");
+   private final OptionInstance<Boolean> potatoFont = OptionInstance.createBoolean(
+      "options.potatoFont", OptionInstance.cachedConstantTooltip(POTATO_FONT_TOOLTIP), false, var0 -> updateFontOptions()
    );
    private static final Component ACCESSIBILITY_TOOLTIP_HIDE_LIGHTNING_FLASHES = Component.translatable("options.hideLightningFlashes.tooltip");
    private final OptionInstance<Boolean> hideLightningFlash = OptionInstance.createBoolean(
@@ -138,7 +143,7 @@ public class Options {
       OptionInstance.noTooltip(),
       OptionInstance.forOptionEnum(),
       new OptionInstance.Enum<>(
-         Arrays.asList(CloudStatus.values()), Codec.withAlternative(CloudStatus.CODEC, Codec.BOOL, var0 -> var0 ? CloudStatus.FANCY : CloudStatus.OFF)
+         Arrays.asList(CloudStatus.values()), ExtraCodecs.withAlternative(CloudStatus.CODEC, Codec.BOOL, var0 -> var0 ? CloudStatus.FANCY : CloudStatus.OFF)
       ),
       CloudStatus.FANCY,
       var0 -> {
@@ -491,6 +496,7 @@ public class Options {
    public final KeyMapping keyPlayerList = new KeyMapping("key.playerlist", 258, "key.categories.multiplayer");
    public final KeyMapping keyCommand = new KeyMapping("key.command", 47, "key.categories.multiplayer");
    public final KeyMapping keySocialInteractions = new KeyMapping("key.socialInteractions", 80, "key.categories.multiplayer");
+   public final KeyMapping keyPotato = new KeyMapping("key.potato", 39, "key.categories.multiplayer");
    public final KeyMapping keyScreenshot = new KeyMapping("key.screenshot", 291, "key.categories.misc");
    public final KeyMapping keyTogglePerspective = new KeyMapping("key.togglePerspective", 294, "key.categories.misc");
    public final KeyMapping keySmoothCamera = new KeyMapping("key.smoothCamera", InputConstants.UNKNOWN.getValue(), "key.categories.misc");
@@ -528,6 +534,7 @@ public class Options {
          this.keyPickItem,
          this.keyCommand,
          this.keySocialInteractions,
+         this.keyPotato,
          this.keyScreenshot,
          this.keyTogglePerspective,
          this.keySmoothCamera,
@@ -663,7 +670,8 @@ public class Options {
          return !var0.isRunning() ? 2147483646 : var0.getWindow().calculateScale(0, var0.isEnforceUnicode());
       }, 2147483646),
       0,
-      var1x -> this.minecraft.resizeDisplay()
+      var0 -> {
+      }
    );
    private final OptionInstance<ParticleStatus> particles = new OptionInstance<>(
       "options.particles",
@@ -712,6 +720,10 @@ public class Options {
 
    public OptionInstance<Boolean> darkMojangStudiosBackground() {
       return this.darkMojangStudiosBackground;
+   }
+
+   public OptionInstance<Boolean> potatoFont() {
+      return this.potatoFont;
    }
 
    public OptionInstance<Boolean> hideLightningFlash() {
@@ -1150,6 +1162,7 @@ public class Options {
       var1.process("toggleCrouch", this.toggleCrouch);
       var1.process("toggleSprint", this.toggleSprint);
       var1.process("darkMojangStudiosBackground", this.darkMojangStudiosBackground);
+      var1.process("potatoFont", this.potatoFont);
       var1.process("hideLightningFlashes", this.hideLightningFlash);
       var1.process("hideSplashTexts", this.hideSplashTexts);
       var1.process("mouseSensitivity", this.sensitivity);
@@ -1260,7 +1273,7 @@ public class Options {
                   JsonElement var5 = JsonParser.parseReader(var4);
                   DataResult var6 = var2.codec().parse(JsonOps.INSTANCE, var5);
                   var6.error().ifPresent(var2x -> Options.LOGGER.error("Error parsing option value " + var3 + " for option " + var2 + ": " + var2x.message()));
-                  var6.ifSuccess(var2::set);
+                  var6.result().ifPresent(var2::set);
                }
             }
 
@@ -1350,60 +1363,57 @@ public class Options {
    public void save() {
       try (final PrintWriter var1 = new PrintWriter(new OutputStreamWriter(new FileOutputStream(this.optionsFile), StandardCharsets.UTF_8))) {
          var1.println("version:" + SharedConstants.getCurrentVersion().getDataVersion().getVersion());
-         this.processOptions(
-            new Options.FieldAccess() {
-               public void writePrefix(String var1x) {
-                  var1.print(var1x);
-                  var1.print(':');
-               }
-   
-               @Override
-               public <T> void process(String var1x, OptionInstance<T> var2) {
-                  var2.codec()
-                     .encodeStart(JsonOps.INSTANCE, var2.get())
-                     .ifError(var1xxx -> Options.LOGGER.error("Error saving option " + var2 + ": " + var1xxx))
-                     .ifSuccess(var3 -> {
-                        this.writePrefix(var1x);
-                        var1.println(Options.GSON.toJson(var3));
-                     });
-               }
-   
-               @Override
-               public int process(String var1x, int var2) {
-                  this.writePrefix(var1x);
-                  var1.println(var2);
-                  return var2;
-               }
-   
-               @Override
-               public boolean process(String var1x, boolean var2) {
-                  this.writePrefix(var1x);
-                  var1.println(var2);
-                  return var2;
-               }
-   
-               @Override
-               public String process(String var1x, String var2) {
-                  this.writePrefix(var1x);
-                  var1.println(var2);
-                  return var2;
-               }
-   
-               @Override
-               public float process(String var1x, float var2) {
-                  this.writePrefix(var1x);
-                  var1.println(var2);
-                  return var2;
-               }
-   
-               @Override
-               public <T> T process(String var1x, T var2, Function<String, T> var3, Function<T, String> var4) {
-                  this.writePrefix(var1x);
-                  var1.println((String)var4.apply(var2));
-                  return (T)var2;
-               }
+         this.processOptions(new Options.FieldAccess() {
+            public void writePrefix(String var1x) {
+               var1.print(var1x);
+               var1.print(':');
             }
-         );
+
+            @Override
+            public <T> void process(String var1x, OptionInstance<T> var2) {
+               DataResult var3 = var2.codec().encodeStart(JsonOps.INSTANCE, var2.get());
+               var3.error().ifPresent(var1xxx -> Options.LOGGER.error("Error saving option " + var2 + ": " + var1xxx));
+               var3.result().ifPresent(var3x -> {
+                  this.writePrefix(var1x);
+                  var1.println(Options.GSON.toJson(var3x));
+               });
+            }
+
+            @Override
+            public int process(String var1x, int var2) {
+               this.writePrefix(var1x);
+               var1.println(var2);
+               return var2;
+            }
+
+            @Override
+            public boolean process(String var1x, boolean var2) {
+               this.writePrefix(var1x);
+               var1.println(var2);
+               return var2;
+            }
+
+            @Override
+            public String process(String var1x, String var2) {
+               this.writePrefix(var1x);
+               var1.println(var2);
+               return var2;
+            }
+
+            @Override
+            public float process(String var1x, float var2) {
+               this.writePrefix(var1x);
+               var1.println(var2);
+               return var2;
+            }
+
+            @Override
+            public <T> T process(String var1x, T var2, Function<String, T> var3, Function<T, String> var4) {
+               this.writePrefix(var1x);
+               var1.println((String)var4.apply(var2));
+               return (T)var2;
+            }
+         });
          if (this.minecraft.getWindow().getPreferredFullscreenVideoMode().isPresent()) {
             var1.println("fullscreenResolution:" + this.minecraft.getWindow().getPreferredFullscreenVideoMode().get().write());
          }

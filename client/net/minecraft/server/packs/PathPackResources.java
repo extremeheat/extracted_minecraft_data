@@ -3,7 +3,7 @@ package net.minecraft.server.packs;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.DataResult.Error;
+import com.mojang.serialization.DataResult.PartialResult;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.DirectoryStream;
@@ -55,9 +55,8 @@ public class PathPackResources extends AbstractPackResources {
       return getResource(var2, var3);
    }
 
-   @Nullable
    public static IoSupplier<InputStream> getResource(ResourceLocation var0, Path var1) {
-      return (IoSupplier<InputStream>)FileUtil.decomposePath(var0.getPath()).mapOrElse(var1x -> {
+      return (IoSupplier<InputStream>)FileUtil.decomposePath(var0.getPath()).get().map(var1x -> {
          Path var2 = FileUtil.resolvePath(var1, var1x);
          return returnFileIfExists(var2);
       }, var1x -> {
@@ -73,10 +72,10 @@ public class PathPackResources extends AbstractPackResources {
 
    @Override
    public void listResources(PackType var1, String var2, String var3, PackResources.ResourceOutput var4) {
-      FileUtil.decomposePath(var3).ifSuccess(var4x -> {
+      FileUtil.decomposePath(var3).get().ifLeft(var4x -> {
          Path var5 = this.root.resolve(var1.getDirectory()).resolve(var2);
          listPath(var2, var5, var4x, var4);
-      }).ifError(var1x -> LOGGER.error("Invalid path {}: {}", var3, var1x.message()));
+      }).ifRight(var1x -> LOGGER.error("Invalid path {}: {}", var3, var1x.message()));
    }
 
    public static void listPath(String var0, Path var1, List<String> var2, PackResources.ResourceOutput var3) {

@@ -140,9 +140,17 @@ public abstract class LivingEntityRenderer<T extends LivingEntity, M extends Ent
       super.render((T)var1, var2, var3, var4, var5, var6);
    }
 
+   public static ResourceLocation potatoify(ResourceLocation var0) {
+      return var0.withPath(var0x -> var0x.replaceFirst(".png$", "_potato.png"));
+   }
+
    @Nullable
    protected RenderType getRenderType(T var1, boolean var2, boolean var3, boolean var4) {
       ResourceLocation var5 = this.getTextureLocation((T)var1);
+      if (var1.hasPotatoVariant() && var1.isPotato()) {
+         var5 = potatoify(var5);
+      }
+
       if (var3) {
          return RenderType.itemEntityTranslucentCull(var5);
       } else if (var2) {

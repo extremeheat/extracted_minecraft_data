@@ -141,7 +141,7 @@ public class GameModeSwitcherScreen extends Screen {
    }
 
    static enum GameModeIcon {
-      CREATIVE(Component.translatable("gameMode.creative"), "gamemode creative", new ItemStack(Blocks.GRASS_BLOCK)),
+      CREATIVE(Component.translatable("gameMode.creative"), "gamemode creative", new ItemStack(Blocks.PEELGRASS_BLOCK)),
       SURVIVAL(Component.translatable("gameMode.survival"), "gamemode survival", new ItemStack(Items.IRON_SWORD)),
       ADVENTURE(Component.translatable("gameMode.adventure"), "gamemode adventure", new ItemStack(Items.MAP)),
       SPECTATOR(Component.translatable("gameMode.spectator"), "gamemode spectator", new ItemStack(Items.ENDER_EYE));

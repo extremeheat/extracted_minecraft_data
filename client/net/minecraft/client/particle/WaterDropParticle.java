@@ -68,6 +68,10 @@ public class WaterDropParticle extends TextureSheetParticle {
       public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          WaterDropParticle var15 = new WaterDropParticle(var2, var3, var5, var7);
          var15.pickSprite(this.sprite);
+         if (var2.isPotato()) {
+            var15.setColor(1.0F, 1.0F, 0.0F);
+         }
+
          return var15;
       }
    }

@@ -122,7 +122,7 @@ public class FogRenderer {
          fogRed += (var25 - fogRed) * var20;
          fogGreen += (var28 - fogGreen) * var20;
          fogBlue += (var31 - fogBlue) * var20;
-         float var37 = var2.getRainLevel(var1);
+         float var37 = var2.getRainLevel(var1, var0.getPosition().y);
          if (var37 > 0.0F) {
             float var39 = 1.0F - var37 * 0.5F;
             float var43 = 1.0F - var37 * 0.4F;
@@ -131,7 +131,7 @@ public class FogRenderer {
             fogBlue *= var43;
          }
 
-         float var40 = var2.getThunderLevel(var1);
+         float var40 = var2.getThunderLevel(var1, var0.getPosition().y);
          if (var40 > 0.0F) {
             float var44 = 1.0F - var40 * 0.5F;
             fogRed *= var44;

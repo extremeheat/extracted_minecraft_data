@@ -1,12 +1,12 @@
 package net.minecraft.world.level.levelgen.blockpredicates;
 
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 import java.util.List;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.WorldGenLevel;
 
 class AllOfPredicate extends CombiningPredicate {
-   public static final MapCodec<AllOfPredicate> CODEC = codec(AllOfPredicate::new);
+   public static final Codec<AllOfPredicate> CODEC = codec(AllOfPredicate::new);
 
    public AllOfPredicate(List<BlockPredicate> var1) {
       super(var1);

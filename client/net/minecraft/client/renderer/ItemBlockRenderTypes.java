@@ -22,6 +22,8 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.TRIPWIRE, var1);
       RenderType var2 = RenderType.cutoutMipped();
       var0.put(Blocks.GRASS_BLOCK, var2);
+      var0.put(Blocks.PEELGRASS_BLOCK, var2);
+      var0.put(Blocks.CORRUPTED_PEELGRASS_BLOCK, var2);
       var0.put(Blocks.IRON_BARS, var2);
       var0.put(Blocks.GLASS_PANE, var2);
       var0.put(Blocks.TRIPWIRE_HOOK, var2);
@@ -31,6 +33,7 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.OAK_LEAVES, var2);
       var0.put(Blocks.SPRUCE_LEAVES, var2);
       var0.put(Blocks.ACACIA_LEAVES, var2);
+      var0.put(Blocks.POTATO_LEAVES, var2);
       var0.put(Blocks.CHERRY_LEAVES, var2);
       var0.put(Blocks.BIRCH_LEAVES, var2);
       var0.put(Blocks.DARK_OAK_LEAVES, var2);
@@ -84,6 +87,7 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.CORNFLOWER, var3);
       var0.put(Blocks.WITHER_ROSE, var3);
       var0.put(Blocks.LILY_OF_THE_VALLEY, var3);
+      var0.put(Blocks.POTATO_FLOWER, var3);
       var0.put(Blocks.BROWN_MUSHROOM, var3);
       var0.put(Blocks.RED_MUSHROOM, var3);
       var0.put(Blocks.TORCH, var3);
@@ -158,6 +162,7 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.POTTED_OXEYE_DAISY, var3);
       var0.put(Blocks.POTTED_CORNFLOWER, var3);
       var0.put(Blocks.POTTED_LILY_OF_THE_VALLEY, var3);
+      var0.put(Blocks.POTTED_POTATO_FLOWER, var3);
       var0.put(Blocks.POTTED_WITHER_ROSE, var3);
       var0.put(Blocks.POTTED_RED_MUSHROOM, var3);
       var0.put(Blocks.POTTED_BROWN_MUSHROOM, var3);
@@ -241,10 +246,12 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.POTTED_BAMBOO, var3);
       var0.put(Blocks.SCAFFOLDING, var3);
       var0.put(Blocks.STONECUTTER, var3);
+      var0.put(Blocks.POISONOUS_POTATO_CUTTER, var3);
       var0.put(Blocks.LANTERN, var3);
       var0.put(Blocks.SOUL_LANTERN, var3);
       var0.put(Blocks.CAMPFIRE, var3);
       var0.put(Blocks.SOUL_CAMPFIRE, var3);
+      var0.put(Blocks.FRYING_TABLE, var3);
       var0.put(Blocks.SWEET_BERRY_BUSH, var3);
       var0.put(Blocks.WEEPING_VINES, var3);
       var0.put(Blocks.WEEPING_VINES_PLANT, var3);
@@ -255,13 +262,18 @@ public class ItemBlockRenderTypes {
       var0.put(Blocks.WARPED_FUNGUS, var3);
       var0.put(Blocks.CRIMSON_ROOTS, var3);
       var0.put(Blocks.WARPED_ROOTS, var3);
+      var0.put(Blocks.POTATO_SPROUTS, var3);
       var0.put(Blocks.POTTED_CRIMSON_FUNGUS, var3);
       var0.put(Blocks.POTTED_WARPED_FUNGUS, var3);
       var0.put(Blocks.POTTED_CRIMSON_ROOTS, var3);
       var0.put(Blocks.POTTED_WARPED_ROOTS, var3);
       var0.put(Blocks.CRIMSON_DOOR, var3);
       var0.put(Blocks.WARPED_DOOR, var3);
+      var0.put(Blocks.POTATO_DOOR, var3);
+      var0.put(Blocks.POTATO_TRAPDOOR, var3);
       var0.put(Blocks.POINTED_DRIPSTONE, var3);
+      var0.put(Blocks.POTATO_BUD, var3);
+      var0.put(Blocks.POTATO_PEDICULE, var3);
       var0.put(Blocks.SMALL_AMETHYST_BUD, var3);
       var0.put(Blocks.MEDIUM_AMETHYST_BUD, var3);
       var0.put(Blocks.LARGE_AMETHYST_BUD, var3);
@@ -295,6 +307,8 @@ public class ItemBlockRenderTypes {
       RenderType var4 = RenderType.translucent();
       var0.put(Blocks.ICE, var4);
       var0.put(Blocks.NETHER_PORTAL, var4);
+      var0.put(Blocks.POTATO_PORTAL, var4);
+      var0.put(Blocks.PEDESTAL, var3);
       var0.put(Blocks.WHITE_STAINED_GLASS, var4);
       var0.put(Blocks.ORANGE_STAINED_GLASS, var4);
       var0.put(Blocks.MAGENTA_STAINED_GLASS, var4);

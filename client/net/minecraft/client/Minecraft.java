@@ -207,6 +207,7 @@ import net.minecraft.util.FileZipper;
 import net.minecraft.util.MemoryReserve;
 import net.minecraft.util.ModCheck;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.SignatureValidator;
 import net.minecraft.util.TimeUtil;
 import net.minecraft.util.Unit;
@@ -348,6 +349,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    @Nullable
    private Connection pendingConnection;
    private boolean isLocalServer;
+   private final RandomSource randomSource = RandomSource.create();
    @Nullable
    public Entity cameraEntity;
    @Nullable
@@ -731,7 +733,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    private UserApiService createUserApiService(YggdrasilAuthenticationService var1, GameConfig var2) {
-      return var2.user.user.getType() != User.Type.MSA ? UserApiService.OFFLINE : var1.createUserApiService(var2.user.user.getAccessToken());
+      return var1.createUserApiService(var2.user.user.getAccessToken());
    }
 
    public static ModCheck checkModStatus() {
@@ -2007,7 +2009,14 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.openChatScreen("/");
       }
 
-      boolean var5 = false;
+      while(this.options.keyPotato.consumeClick()) {
+         Minecraft.ChatStatus var5 = this.getChatStatus();
+         if (var5.isChatAllowed(this.isLocalServer())) {
+            this.player.connection.sendChat("\ud83e\udd54".repeat(this.randomSource.nextIntBetweenInclusive(1, 6)));
+         }
+      }
+
+      boolean var6 = false;
       if (this.player.isUsingItem()) {
          if (!this.options.keyUse.isDown()) {
             this.gameMode.releaseUsingItem(this.player);
@@ -2023,7 +2032,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          }
       } else {
          while(this.options.keyAttack.consumeClick()) {
-            var5 |= this.startAttack();
+            var6 |= this.startAttack();
          }
 
          while(this.options.keyUse.consumeClick()) {
@@ -2039,7 +2048,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
          this.startUseItem();
       }
 
-      this.continueAttack(this.screen == null && !var5 && this.options.keyAttack.isDown() && this.mouseHandler.isMouseGrabbed());
+      this.continueAttack(this.screen == null && !var6 && this.options.keyAttack.isDown() && this.mouseHandler.isMouseGrabbed());
    }
 
    public ClientTelemetryManager getTelemetryManager() {
@@ -2383,7 +2392,7 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
    }
 
    private void addCustomNbtData(ItemStack var1, BlockEntity var2, RegistryAccess var3) {
-      CompoundTag var4 = var2.saveCustomOnly(var3);
+      CompoundTag var4 = var2.saveWithFullMetadata(var3);
       var2.removeComponentsFromTag(var4);
       BlockItem.setBlockEntityData(var1, var2.getType(), var4);
       var1.applyComponents(var2.collectComponents());

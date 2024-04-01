@@ -8,6 +8,7 @@ import com.mojang.datafixers.Typed;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
 import com.mojang.serialization.Dynamic;
+import net.minecraft.util.datafix.ExtraDataFixUtils;
 
 public abstract class ItemStackComponentRemainderFix extends DataFix {
    private final String name;
@@ -33,7 +34,9 @@ public abstract class ItemStackComponentRemainderFix extends DataFix {
          var1,
          var2x -> var2x.updateTyped(
                var2,
-               var1xx -> var1xx.update(DSL.remainderFinder(), var1xxx -> var1xxx.renameAndFixField(this.componentId, this.newComponentId, this::fixComponent))
+               var1xx -> var1xx.update(
+                     DSL.remainderFinder(), var1xxx -> ExtraDataFixUtils.renameAndFixField(var1xxx, this.componentId, this.newComponentId, this::fixComponent)
+                  )
             )
       );
    }

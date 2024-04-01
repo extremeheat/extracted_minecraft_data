@@ -16,15 +16,18 @@ import net.minecraft.world.level.levelgen.feature.configurations.ColumnFeatureCo
 public class BasaltColumnsFeature extends Feature<ColumnFeatureConfiguration> {
    private static final ImmutableList<Block> CANNOT_PLACE_ON = ImmutableList.of(
       Blocks.LAVA,
+      Blocks.WATER,
       Blocks.BEDROCK,
       Blocks.MAGMA_BLOCK,
+      Blocks.SLIME_BLOCK,
       Blocks.SOUL_SAND,
       Blocks.NETHER_BRICKS,
       Blocks.NETHER_BRICK_FENCE,
       Blocks.NETHER_BRICK_STAIRS,
       Blocks.NETHER_WART,
       Blocks.CHEST,
-      Blocks.SPAWNER
+      Blocks.SPAWNER,
+      new Block[0]
    );
    private static final int CLUSTERED_REACH = 5;
    private static final int CLUSTERED_SIZE = 50;
@@ -56,7 +59,7 @@ public class BasaltColumnsFeature extends Feature<ColumnFeatureConfiguration> {
          )) {
             int var14 = var7 - var13.distManhattan(var3);
             if (var14 >= 0) {
-               var11 |= this.placeColumn(var4, var2, var13, var14, var6.reach().sample(var5));
+               var11 |= this.placeColumn(var4, var2, var13, var14, var6.reach().sample(var5), var6.state());
             }
          }
 
@@ -64,32 +67,32 @@ public class BasaltColumnsFeature extends Feature<ColumnFeatureConfiguration> {
       }
    }
 
-   private boolean placeColumn(LevelAccessor var1, int var2, BlockPos var3, int var4, int var5) {
-      boolean var6 = false;
+   private boolean placeColumn(LevelAccessor var1, int var2, BlockPos var3, int var4, int var5, BlockState var6) {
+      boolean var7 = false;
 
-      for(BlockPos var8 : BlockPos.betweenClosed(var3.getX() - var5, var3.getY(), var3.getZ() - var5, var3.getX() + var5, var3.getY(), var3.getZ() + var5)) {
-         int var9 = var8.distManhattan(var3);
-         BlockPos var10 = isAirOrLavaOcean(var1, var2, var8) ? findSurface(var1, var2, var8.mutable(), var9) : findAir(var1, var8.mutable(), var9);
-         if (var10 != null) {
-            int var11 = var4 - var9 / 2;
+      for(BlockPos var9 : BlockPos.betweenClosed(var3.getX() - var5, var3.getY(), var3.getZ() - var5, var3.getX() + var5, var3.getY(), var3.getZ() + var5)) {
+         int var10 = var9.distManhattan(var3);
+         BlockPos var11 = isAirOrLavaOcean(var1, var2, var9) ? findSurface(var1, var2, var9.mutable(), var10) : findAir(var1, var9.mutable(), var10);
+         if (var11 != null) {
+            int var12 = var4 - var10 / 2;
 
-            for(BlockPos.MutableBlockPos var12 = var10.mutable(); var11 >= 0; --var11) {
-               if (isAirOrLavaOcean(var1, var2, var12)) {
-                  this.setBlock(var1, var12, Blocks.BASALT.defaultBlockState());
-                  var12.move(Direction.UP);
-                  var6 = true;
+            for(BlockPos.MutableBlockPos var13 = var11.mutable(); var12 >= 0; --var12) {
+               if (isAirOrLavaOcean(var1, var2, var13)) {
+                  this.setBlock(var1, var13, var6);
+                  var13.move(Direction.UP);
+                  var7 = true;
                } else {
-                  if (!var1.getBlockState(var12).is(Blocks.BASALT)) {
+                  if (!var1.getBlockState(var13).is(Blocks.BASALT) && !var1.getBlockState(var13).is(Blocks.ANCIENT_DEBRIS)) {
                      break;
                   }
 
-                  var12.move(Direction.UP);
+                  var13.move(Direction.UP);
                }
             }
          }
       }
 
-      return var6;
+      return var7;
    }
 
    @Nullable

@@ -131,4 +131,9 @@ public class PathNavigationRegion implements BlockGetter, CollisionGetter {
    public ProfilerFiller getProfiler() {
       return this.level.getProfiler();
    }
+
+   @Override
+   public boolean isPotato() {
+      return this.level.isPotato();
+   }
 }

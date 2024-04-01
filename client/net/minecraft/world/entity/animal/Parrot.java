@@ -82,6 +82,8 @@ public class Parrot extends ShoulderRidingEntity implements VariantHolder<Parrot
       var0.put(EntityType.CREEPER, SoundEvents.PARROT_IMITATE_CREEPER);
       var0.put(EntityType.DROWNED, SoundEvents.PARROT_IMITATE_DROWNED);
       var0.put(EntityType.ELDER_GUARDIAN, SoundEvents.PARROT_IMITATE_ELDER_GUARDIAN);
+      var0.put(EntityType.TOXIFIN, SoundEvents.PARROT_IMITATE_GUARDIAN);
+      var0.put(EntityType.PLAGUEWHALE, SoundEvents.PARROT_IMITATE_ELDER_GUARDIAN);
       var0.put(EntityType.ENDER_DRAGON, SoundEvents.PARROT_IMITATE_ENDER_DRAGON);
       var0.put(EntityType.ENDERMITE, SoundEvents.PARROT_IMITATE_ENDERMITE);
       var0.put(EntityType.EVOKER, SoundEvents.PARROT_IMITATE_EVOKER);

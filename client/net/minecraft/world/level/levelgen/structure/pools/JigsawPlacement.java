@@ -181,7 +181,16 @@ public class JigsawPlacement {
       StructureManager var8 = var0.structureManager();
       RandomSource var9 = var0.getRandom();
       Structure.GenerationContext var10 = new Structure.GenerationContext(
-         var0.registryAccess(), var6, var6.getBiomeSource(), var0.getChunkSource().randomState(), var7, var0.getSeed(), new ChunkPos(var4), var0, var0x -> true
+         var0.registryAccess(),
+         var6,
+         var6.getBiomeSource(),
+         var0.getChunkSource().randomState(),
+         var7,
+         var0.getSeed(),
+         new ChunkPos(var4),
+         var0,
+         var0x -> true,
+         List.of()
       );
       Optional var11 = addPieces(var10, var1, Optional.of(var2), var3, var4, false, Optional.empty(), 128, PoolAliasLookup.EMPTY);
       if (var11.isPresent()) {

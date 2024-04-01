@@ -1,6 +1,6 @@
 package net.minecraft.world.level.levelgen.structure.pools;
 
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
@@ -18,7 +18,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 
 public class ListPoolElement extends StructurePoolElement {
-   public static final MapCodec<ListPoolElement> CODEC = RecordCodecBuilder.mapCodec(
+   public static final Codec<ListPoolElement> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(StructurePoolElement.CODEC.listOf().fieldOf("elements").forGetter(var0x -> var0x.elements), projectionCodec())
             .apply(var0, ListPoolElement::new)
    );

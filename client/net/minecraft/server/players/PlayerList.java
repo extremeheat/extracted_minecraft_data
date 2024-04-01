@@ -26,7 +26,10 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.FileUtil;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.LayeredRegistryAccess;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.Connection;
@@ -40,6 +43,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.common.ClientboundUpdateTagsPacket;
 import net.minecraft.network.protocol.game.ClientboundChangeDifficultyPacket;
 import net.minecraft.network.protocol.game.ClientboundEntityEventPacket;
+import net.minecraft.network.protocol.game.ClientboundExplodePacket;
 import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
 import net.minecraft.network.protocol.game.ClientboundInitializeBorderPacket;
 import net.minecraft.network.protocol.game.ClientboundLoginPacket;
@@ -81,10 +85,15 @@ import net.minecraft.stats.Stats;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.TagNetworkSerialization;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -427,6 +436,43 @@ public abstract class PlayerList {
       }
 
       return !var3.isEmpty();
+   }
+
+   public ServerPlayer sproutRespawn(ServerPlayer var1) {
+      ServerPlayer var2 = this.respawn(var1, true);
+      RandomSource var3 = RandomSource.create();
+      double var4 = var3.nextGaussian() * 0.3;
+      double var6 = var3.nextGaussian() * 0.3;
+      double var8 = var2.position().x();
+      double var10 = var2.position().y() + 1.0;
+      double var12 = var2.position().z();
+      SimpleParticleType var14 = ParticleTypes.SMOKE;
+      SimpleParticleType var15 = ParticleTypes.REVERSE_POTATO_LIGHTNING;
+      Holder.Reference var16 = SoundEvents.EMPTY_HOLDER;
+      ItemStack var17 = var2.getInventory().armor.get(EquipmentSlot.FEET.getIndex());
+      if (var17 != ItemStack.EMPTY) {
+         var2.spawnAtLocation(var17, 2.0F);
+      }
+
+      var2.setItemSlot(EquipmentSlot.FEET, Items.POISONOUS_POTA_TOES.getDefaultInstance());
+      Explosion var18 = var2.level().explode(null, null, null, var8, var10, var12, 2.0F, false, Level.ExplosionInteraction.NONE, false, var14, var15, var16);
+      var2.connection
+         .send(
+            new ClientboundExplodePacket(
+               var2.position().x,
+               var2.position().y,
+               var2.position().z,
+               5.0F,
+               var18.getToBlow(),
+               new Vec3(var4, 5.0, var6),
+               Explosion.BlockInteraction.KEEP,
+               var14,
+               var15,
+               var16
+            )
+         );
+      var2.level().playSound(null, var2.blockPosition(), SoundEvents.PLAYER_SPROUT_RESPAWN_2, SoundSource.PLAYERS);
+      return var2;
    }
 
    public ServerPlayer respawn(ServerPlayer var1, boolean var2) {

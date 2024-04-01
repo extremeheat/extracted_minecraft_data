@@ -6,6 +6,7 @@ import com.mojang.datafixers.types.templates.TypeTemplate;
 import com.mojang.datafixers.util.Pair;
 import java.util.Map;
 import java.util.function.Supplier;
+import net.minecraft.util.datafix.ExtraDataFixUtils;
 import net.minecraft.util.datafix.fixes.References;
 
 public class V1022 extends Schema {
@@ -19,17 +20,13 @@ public class V1022 extends Schema {
       var1.registerType(
          false,
          References.PLAYER,
-         () -> DSL.optionalFields(
-               new Pair[]{
-                  Pair.of("RootVehicle", DSL.optionalFields("Entity", References.ENTITY_TREE.in(var1))),
-                  Pair.of("Inventory", DSL.list(References.ITEM_STACK.in(var1))),
-                  Pair.of("EnderItems", DSL.list(References.ITEM_STACK.in(var1))),
-                  Pair.of("ShoulderEntityLeft", References.ENTITY_TREE.in(var1)),
-                  Pair.of("ShoulderEntityRight", References.ENTITY_TREE.in(var1)),
-                  Pair.of(
-                     "recipeBook", DSL.optionalFields("recipes", DSL.list(References.RECIPE.in(var1)), "toBeDisplayed", DSL.list(References.RECIPE.in(var1)))
-                  )
-               }
+         () -> ExtraDataFixUtils.optionalFields(
+               Pair.of("RootVehicle", DSL.optionalFields("Entity", References.ENTITY_TREE.in(var1))),
+               Pair.of("Inventory", DSL.list(References.ITEM_STACK.in(var1))),
+               Pair.of("EnderItems", DSL.list(References.ITEM_STACK.in(var1))),
+               Pair.of("ShoulderEntityLeft", References.ENTITY_TREE.in(var1)),
+               Pair.of("ShoulderEntityRight", References.ENTITY_TREE.in(var1)),
+               Pair.of("recipeBook", DSL.optionalFields("recipes", DSL.list(References.RECIPE.in(var1)), "toBeDisplayed", DSL.list(References.RECIPE.in(var1))))
             )
       );
       var1.registerType(false, References.HOTBAR, () -> DSL.compoundList(DSL.list(References.ITEM_STACK.in(var1))));

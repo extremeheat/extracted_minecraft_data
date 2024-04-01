@@ -1,7 +1,6 @@
 package net.minecraft.world.level.biome;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.stream.Stream;
@@ -9,7 +8,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 
 public class CheckerboardColumnBiomeSource extends BiomeSource {
-   public static final MapCodec<CheckerboardColumnBiomeSource> CODEC = RecordCodecBuilder.mapCodec(
+   public static final Codec<CheckerboardColumnBiomeSource> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                Biome.LIST_CODEC.fieldOf("biomes").forGetter(var0x -> var0x.allowedBiomes),
                Codec.intRange(0, 62).fieldOf("scale").orElse(2).forGetter(var0x -> var0x.size)
@@ -33,7 +32,7 @@ public class CheckerboardColumnBiomeSource extends BiomeSource {
    }
 
    @Override
-   protected MapCodec<? extends BiomeSource> codec() {
+   protected Codec<? extends BiomeSource> codec() {
       return CODEC;
    }
 

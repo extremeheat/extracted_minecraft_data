@@ -37,6 +37,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -287,7 +288,32 @@ public class Block extends BlockBehaviour implements ItemLike {
    public static void dropResources(BlockState var0, Level var1, BlockPos var2, @Nullable BlockEntity var3, @Nullable Entity var4, ItemStack var5) {
       if (var1 instanceof ServerLevel) {
          getDrops(var0, (ServerLevel)var1, var2, var3, var4, var5).forEach(var2x -> popResource(var1, var2, var2x));
+         int var6 = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.POTATOFICATION, var5);
+         if (var6 > 0) {
+            int var7 = var1.random.nextInt(var6 + 1);
+            int var8 = var6 - var7;
+            popPotatoes(var7, var1, var2, Items.POISONOUS_POTATO);
+            popPotatoes(var8, var1, var2, Items.POTATO);
+            if (var1.random.nextFloat() <= 0.05F) {
+               popPotatoes(1, var1, var2, Items.POISONOUS_POTATO_PLANT);
+            }
+         }
+
          var0.spawnAfterBreak((ServerLevel)var1, var2, var5, true);
+      }
+   }
+
+   public static void popPotatoes(int var0, Level var1, BlockPos var2, Item var3) {
+      for(int var4 = 0; var4 < Mth.square(var0); ++var4) {
+         ItemStack var5 = new ItemStack(var3);
+         double var6 = (double)EntityType.ITEM.getHeight() / 2.0;
+         double var8 = (double)var2.getX() + 0.5 + Mth.nextDouble(var1.random, -0.25, 0.25);
+         double var10 = (double)var2.getY() + 0.5 + Mth.nextDouble(var1.random, -0.25, 0.25) - var6;
+         double var12 = (double)var2.getZ() + 0.5 + Mth.nextDouble(var1.random, -0.25, 0.25);
+         double var14 = Mth.nextDouble(var1.random, -0.25, 0.25);
+         double var16 = Mth.nextDouble(var1.random, 0.0, 0.25);
+         double var18 = Mth.nextDouble(var1.random, -0.25, 0.25);
+         popResource(var1, () -> new ItemEntity(var1, var8, var10, var12, var5, var14, var16, var18), var5);
       }
    }
 

@@ -24,6 +24,7 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Unit;
+import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
@@ -92,7 +93,7 @@ public class Item implements FeatureElement, ItemLike {
       if (SharedConstants.IS_RUNNING_IN_IDE) {
          String var2 = this.getClass().getSimpleName();
          if (!var2.endsWith("Item")) {
-            LOGGER.error("Item classes should end with Item and {} doesn't.", var2);
+            LOGGER.error("Item classes should end with Item and {} doesn't.", var2.trim().isEmpty() ? this.getClass().getName() : var2);
          }
       }
    }
@@ -114,6 +115,9 @@ public class Item implements FeatureElement, ItemLike {
    }
 
    public void onDestroyed(ItemEntity var1) {
+   }
+
+   public void onViewedInContainer(ItemStack var1, Level var2, BlockPos var3, Container var4) {
    }
 
    public void verifyComponentsAfterLoad(ItemStack var1) {
@@ -217,6 +221,11 @@ public class Item implements FeatureElement, ItemLike {
       return BuiltInRegistries.ITEM.getKey(this).getPath();
    }
 
+   public Item withDescriptionId(String var1) {
+      this.descriptionId = var1;
+      return this;
+   }
+
    protected String getOrCreateDescriptionId() {
       if (this.descriptionId == null) {
          this.descriptionId = Util.makeDescriptionId("item", BuiltInRegistries.ITEM.getKey(this));
@@ -280,7 +289,8 @@ public class Item implements FeatureElement, ItemLike {
    }
 
    public boolean isFoil(ItemStack var1) {
-      return var1.isEnchanted();
+      Boolean var2 = var1.get(DataComponents.EXPLICIT_FOIL);
+      return var2 != null && var2 ? true : var1.isEnchanted();
    }
 
    public boolean isEnchantable(ItemStack var1) {
@@ -316,10 +326,6 @@ public class Item implements FeatureElement, ItemLike {
 
    public SoundEvent getDrinkingSound() {
       return SoundEvents.GENERIC_DRINK;
-   }
-
-   public SoundEvent getEatingSound() {
-      return SoundEvents.GENERIC_EAT;
    }
 
    public SoundEvent getBreakingSound() {

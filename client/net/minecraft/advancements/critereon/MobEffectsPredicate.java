@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import javax.annotation.Nullable;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
@@ -85,14 +86,12 @@ public record MobEffectsPredicate(Map<Holder<MobEffect>, MobEffectsPredicate.Mob
       private final Optional<Boolean> visible;
       public static final Codec<MobEffectsPredicate.MobEffectInstancePredicate> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
-                  MinMaxBounds.Ints.CODEC
-                     .optionalFieldOf("amplifier", MinMaxBounds.Ints.ANY)
+                  ExtraCodecs.strictOptionalField(MinMaxBounds.Ints.CODEC, "amplifier", MinMaxBounds.Ints.ANY)
                      .forGetter(MobEffectsPredicate.MobEffectInstancePredicate::amplifier),
-                  MinMaxBounds.Ints.CODEC
-                     .optionalFieldOf("duration", MinMaxBounds.Ints.ANY)
+                  ExtraCodecs.strictOptionalField(MinMaxBounds.Ints.CODEC, "duration", MinMaxBounds.Ints.ANY)
                      .forGetter(MobEffectsPredicate.MobEffectInstancePredicate::duration),
-                  Codec.BOOL.optionalFieldOf("ambient").forGetter(MobEffectsPredicate.MobEffectInstancePredicate::ambient),
-                  Codec.BOOL.optionalFieldOf("visible").forGetter(MobEffectsPredicate.MobEffectInstancePredicate::visible)
+                  ExtraCodecs.strictOptionalField(Codec.BOOL, "ambient").forGetter(MobEffectsPredicate.MobEffectInstancePredicate::ambient),
+                  ExtraCodecs.strictOptionalField(Codec.BOOL, "visible").forGetter(MobEffectsPredicate.MobEffectInstancePredicate::visible)
                )
                .apply(var0, MobEffectsPredicate.MobEffectInstancePredicate::new)
       );

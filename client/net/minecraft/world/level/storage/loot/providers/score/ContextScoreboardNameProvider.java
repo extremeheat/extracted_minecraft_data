@@ -2,7 +2,6 @@ package net.minecraft.world.level.storage.loot.providers.score;
 
 import com.google.common.collect.ImmutableSet;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Set;
@@ -13,7 +12,7 @@ import net.minecraft.world.scores.ScoreHolder;
 
 public record ContextScoreboardNameProvider(LootContext.EntityTarget c) implements ScoreboardNameProvider {
    private final LootContext.EntityTarget target;
-   public static final MapCodec<ContextScoreboardNameProvider> CODEC = RecordCodecBuilder.mapCodec(
+   public static final Codec<ContextScoreboardNameProvider> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(LootContext.EntityTarget.CODEC.fieldOf("target").forGetter(ContextScoreboardNameProvider::target))
             .apply(var0, ContextScoreboardNameProvider::new)
    );

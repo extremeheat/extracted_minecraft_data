@@ -1,7 +1,6 @@
 package net.minecraft.world.level.levelgen.structure.structures;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
@@ -14,7 +13,7 @@ import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
 
 public class OceanRuinStructure extends Structure {
-   public static final MapCodec<OceanRuinStructure> CODEC = RecordCodecBuilder.mapCodec(
+   public static final Codec<OceanRuinStructure> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                settingsCodec(var0),
                OceanRuinStructure.Type.CODEC.fieldOf("biome_temp").forGetter(var0x -> var0x.biomeTemp),

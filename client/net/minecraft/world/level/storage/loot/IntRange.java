@@ -12,6 +12,7 @@ import java.util.OptionalInt;
 import java.util.Set;
 import java.util.function.Function;
 import javax.annotation.Nullable;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
@@ -21,8 +22,8 @@ import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 public class IntRange {
    private static final Codec<IntRange> RECORD_CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               NumberProviders.CODEC.optionalFieldOf("min").forGetter(var0x -> Optional.ofNullable(var0x.min)),
-               NumberProviders.CODEC.optionalFieldOf("max").forGetter(var0x -> Optional.ofNullable(var0x.max))
+               ExtraCodecs.strictOptionalField(NumberProviders.CODEC, "min").forGetter(var0x -> Optional.ofNullable(var0x.min)),
+               ExtraCodecs.strictOptionalField(NumberProviders.CODEC, "max").forGetter(var0x -> Optional.ofNullable(var0x.max))
             )
             .apply(var0, IntRange::new)
    );

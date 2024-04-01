@@ -1,12 +1,13 @@
 package net.minecraft.world.level.storage.loot.predicates;
 
 import com.google.common.collect.ImmutableSet;
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
 import java.util.Set;
 import net.minecraft.advancements.critereon.EntityPredicate;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
@@ -16,9 +17,9 @@ import net.minecraft.world.phys.Vec3;
 public record LootItemEntityPropertyCondition(Optional<EntityPredicate> b, LootContext.EntityTarget c) implements LootItemCondition {
    private final Optional<EntityPredicate> predicate;
    private final LootContext.EntityTarget entityTarget;
-   public static final MapCodec<LootItemEntityPropertyCondition> CODEC = RecordCodecBuilder.mapCodec(
+   public static final Codec<LootItemEntityPropertyCondition> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               EntityPredicate.CODEC.optionalFieldOf("predicate").forGetter(LootItemEntityPropertyCondition::predicate),
+               ExtraCodecs.strictOptionalField(EntityPredicate.CODEC, "predicate").forGetter(LootItemEntityPropertyCondition::predicate),
                LootContext.EntityTarget.CODEC.fieldOf("entity").forGetter(LootItemEntityPropertyCondition::entityTarget)
             )
             .apply(var0, LootItemEntityPropertyCondition::new)

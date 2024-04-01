@@ -13,6 +13,7 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -158,8 +159,8 @@ public record StatePropertiesPredicate(List<StatePropertiesPredicate.PropertyMat
       private final Optional<String> maxValue;
       public static final Codec<StatePropertiesPredicate.RangedMatcher> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
-                  Codec.STRING.optionalFieldOf("min").forGetter(StatePropertiesPredicate.RangedMatcher::minValue),
-                  Codec.STRING.optionalFieldOf("max").forGetter(StatePropertiesPredicate.RangedMatcher::maxValue)
+                  ExtraCodecs.strictOptionalField(Codec.STRING, "min").forGetter(StatePropertiesPredicate.RangedMatcher::minValue),
+                  ExtraCodecs.strictOptionalField(Codec.STRING, "max").forGetter(StatePropertiesPredicate.RangedMatcher::maxValue)
                )
                .apply(var0, StatePropertiesPredicate.RangedMatcher::new)
       );
@@ -202,7 +203,7 @@ public record StatePropertiesPredicate(List<StatePropertiesPredicate.PropertyMat
       Codec<StatePropertiesPredicate.ValueMatcher> CODEC = Codec.either(
             StatePropertiesPredicate.ExactMatcher.CODEC, StatePropertiesPredicate.RangedMatcher.CODEC
          )
-         .xmap(Either::unwrap, var0 -> {
+         .xmap(var0 -> (StatePropertiesPredicate.ValueMatcher)var0.map(var0x -> var0x, var0x -> var0x), var0 -> {
             if (var0 instanceof StatePropertiesPredicate.ExactMatcher var1) {
                return Either.left(var1);
             } else if (var0 instanceof StatePropertiesPredicate.RangedMatcher var2) {
@@ -214,7 +215,7 @@ public record StatePropertiesPredicate(List<StatePropertiesPredicate.PropertyMat
       StreamCodec<ByteBuf, StatePropertiesPredicate.ValueMatcher> STREAM_CODEC = ByteBufCodecs.either(
             StatePropertiesPredicate.ExactMatcher.STREAM_CODEC, StatePropertiesPredicate.RangedMatcher.STREAM_CODEC
          )
-         .map(Either::unwrap, var0 -> {
+         .map(var0 -> (StatePropertiesPredicate.ValueMatcher)var0.map(var0x -> var0x, var0x -> var0x), var0 -> {
             if (var0 instanceof StatePropertiesPredicate.ExactMatcher var1) {
                return Either.left(var1);
             } else if (var0 instanceof StatePropertiesPredicate.RangedMatcher var2) {

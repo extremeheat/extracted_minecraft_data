@@ -18,8 +18,7 @@ public enum EquipmentSlotGroup implements StringRepresentable {
    LEGS(5, "legs", EquipmentSlot.LEGS),
    CHEST(6, "chest", EquipmentSlot.CHEST),
    HEAD(7, "head", EquipmentSlot.HEAD),
-   ARMOR(8, "armor", EquipmentSlot::isArmor),
-   BODY(9, "body", EquipmentSlot.BODY);
+   ARMOR(8, "armor", EquipmentSlot::isArmor);
 
    public static final IntFunction<EquipmentSlotGroup> BY_ID = ByIdMap.continuous(var0 -> var0.id, values(), ByIdMap.OutOfBoundsStrategy.ZERO);
    public static final Codec<EquipmentSlotGroup> CODEC = StringRepresentable.fromEnum(EquipmentSlotGroup::values);

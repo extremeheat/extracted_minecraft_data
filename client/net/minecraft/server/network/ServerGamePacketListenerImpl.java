@@ -16,7 +16,6 @@ import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -36,7 +35,6 @@ import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.commands.CommandSigningContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.commands.arguments.ArgumentSignatures;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
@@ -80,7 +78,6 @@ import net.minecraft.network.protocol.game.ServerboundBlockEntityTagQueryPacket;
 import net.minecraft.network.protocol.game.ServerboundChangeDifficultyPacket;
 import net.minecraft.network.protocol.game.ServerboundChatAckPacket;
 import net.minecraft.network.protocol.game.ServerboundChatCommandPacket;
-import net.minecraft.network.protocol.game.ServerboundChatCommandSignedPacket;
 import net.minecraft.network.protocol.game.ServerboundChatPacket;
 import net.minecraft.network.protocol.game.ServerboundChatSessionUpdatePacket;
 import net.minecraft.network.protocol.game.ServerboundChunkBatchReceivedPacket;
@@ -130,6 +127,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.stats.Stats;
 import net.minecraft.util.FutureChain;
 import net.minecraft.util.Mth;
 import net.minecraft.util.SignatureValidator;
@@ -137,7 +135,6 @@ import net.minecraft.util.StringUtil;
 import net.minecraft.world.Container;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.HasCustomInventoryScreen;
@@ -188,6 +185,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.BooleanOp;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 public class ServerGamePacketListenerImpl
@@ -200,7 +198,6 @@ public class ServerGamePacketListenerImpl
    private static final int TRACKED_MESSAGE_DISCONNECT_THRESHOLD = 4096;
    private static final int MAXIMUM_FLYING_TICKS = 80;
    private static final Component CHAT_VALIDATION_FAILED = Component.translatable("multiplayer.disconnect.chat_validation_failed");
-   private static final Component INVALID_COMMAND_SIGNATURE = Component.translatable("chat.disabled.invalid_command_signature").withStyle(ChatFormatting.RED);
    private static final int MAX_COMMAND_SUGGESTIONS = 1000;
    public ServerPlayer player;
    public final PlayerChunkSender chunkSender;
@@ -415,7 +412,7 @@ public class ServerGamePacketListenerImpl
             double var22 = var14 - this.vehicleFirstGoodZ;
             double var24 = var2.getDeltaMovement().lengthSqr();
             double var26 = var18 * var18 + var20 * var20 + var22 * var22;
-            if (var26 - var24 > 100.0 && !this.isSingleplayerOwner()) {
+            if (var26 - var24 > 100.0 && !this.isSingleplayerOwner() && !var2.isAttachedToGrid()) {
                LOGGER.warn(
                   "{} (vehicle of {}) moved too quickly! {},{},{}",
                   new Object[]{var2.getName().getString(), this.player.getName().getString(), var18, var20, var22}
@@ -433,7 +430,13 @@ public class ServerGamePacketListenerImpl
                var30.resetFallDistance();
             }
 
-            var2.move(MoverType.PLAYER, new Vec3(var18, var20, var22));
+            try {
+               var2.ignoreGridCollision = true;
+               var2.move(MoverType.PLAYER, new Vec3(var18, var20, var22));
+            } finally {
+               var2.ignoreGridCollision = false;
+            }
+
             var18 = var10 - var2.getX();
             var20 = var12 - var2.getY();
             if (var20 > -0.5 || var20 < 0.5) {
@@ -460,7 +463,7 @@ public class ServerGamePacketListenerImpl
 
             this.player.serverLevel().getChunkSource().move(this.player);
             this.player.checkMovementStatistics(this.player.getX() - var4, this.player.getY() - var6, this.player.getZ() - var8);
-            this.clientVehicleIsFloating = var20 >= -0.03125 && !var29 && !this.server.isFlightAllowed() && !var2.isNoGravity() && this.noBlocksAround(var2);
+            this.clientVehicleIsFloating = awesomeAntiCheatIsFlying();
             this.vehicleLastGoodX = var2.getX();
             this.vehicleLastGoodY = var2.getY();
             this.vehicleLastGoodZ = var2.getZ();
@@ -903,6 +906,8 @@ public class ServerGamePacketListenerImpl
                         }
 
                         if (!this.player.isChangingDimension()
+                           && !this.player.isAttachedToGrid()
+                           && this.player.grappling == null
                            && (!this.player.level().getGameRules().getBoolean(GameRules.RULE_DISABLE_ELYTRA_MOVEMENT_CHECK) || !var27)) {
                            float var29 = var27 ? 300.0F : 100.0F;
                            if (var25 - var23 > (double)(var29 * (float)var28) && !this.isSingleplayerOwner()) {
@@ -913,17 +918,24 @@ public class ServerGamePacketListenerImpl
                         }
                      }
 
-                     AABB var42 = this.player.getBoundingBox();
+                     AABB var44 = this.player.getBoundingBox();
                      var17 = var3 - this.lastGoodX;
                      var19 = var5 - this.lastGoodY;
                      var21 = var7 - this.lastGoodZ;
-                     boolean var43 = var19 > 0.0;
-                     if (this.player.onGround() && !var1.isOnGround() && var43) {
+                     boolean var45 = var19 > 0.0;
+                     if (this.player.onGround() && !var1.isOnGround() && var45) {
                         this.player.jumpFromGround();
                      }
 
                      boolean var30 = this.player.verticalCollisionBelow;
-                     this.player.move(MoverType.PLAYER, new Vec3(var17, var19, var21));
+
+                     try {
+                        this.player.ignoreGridCollision = true;
+                        this.player.move(MoverType.PLAYER, new Vec3(var17, var19, var21));
+                     } finally {
+                        this.player.ignoreGridCollision = false;
+                     }
+
                      var17 = var3 - this.player.getX();
                      var19 = var5 - this.player.getY();
                      if (var19 > -0.5 || var19 < 0.5) {
@@ -944,25 +956,17 @@ public class ServerGamePacketListenerImpl
 
                      if (this.player.noPhysics
                         || this.player.isSleeping()
-                        || (!var33 || !var2.noCollision(this.player, var42)) && !this.isPlayerCollidingWithAnythingNew(var2, var42, var3, var5, var7)) {
+                        || (!var33 || !var2.noCollision(this.player, var44)) && !this.isPlayerCollidingWithAnythingNew(var2, var44, var3, var5, var7)) {
                         this.player.absMoveTo(var3, var5, var7, var9, var10);
                         boolean var34 = this.player.isAutoSpinAttack();
-                        this.clientIsFloating = var19 >= -0.03125
-                           && !var30
-                           && this.player.gameMode.getGameModeForPlayer() != GameType.SPECTATOR
-                           && !this.server.isFlightAllowed()
-                           && !this.player.getAbilities().mayfly
-                           && !this.player.hasEffect(MobEffects.LEVITATION)
-                           && !var27
-                           && !var34
-                           && this.noBlocksAround(this.player);
+                        this.clientIsFloating = awesomeAntiCheatIsFlying();
                         this.player.serverLevel().getChunkSource().move(this.player);
                         this.player.doCheckFallDamage(this.player.getX() - var11, this.player.getY() - var13, this.player.getZ() - var15, var1.isOnGround());
                         this.player
                            .setOnGroundWithKnownMovement(
                               var1.isOnGround(), new Vec3(this.player.getX() - var11, this.player.getY() - var13, this.player.getZ() - var15)
                            );
-                        if (var43) {
+                        if (var45) {
                            this.player.resetFallDistance();
                         }
 
@@ -983,6 +987,10 @@ public class ServerGamePacketListenerImpl
             }
          }
       }
+   }
+
+   private static boolean awesomeAntiCheatIsFlying() {
+      return false;
    }
 
    private boolean isPlayerCollidingWithAnythingNew(LevelReader var1, AABB var2, double var3, double var5, double var7) {
@@ -1206,57 +1214,53 @@ public class ServerGamePacketListenerImpl
 
    @Override
    public void handleChat(ServerboundChatPacket var1) {
-      Optional var2 = this.unpackAndApplyLastSeen(var1.lastSeenMessages());
-      if (!var2.isEmpty()) {
-         this.tryHandleChat(var1.message(), () -> {
-            PlayerChatMessage var3;
-            try {
-               var3 = this.getSignedMessage(var1, (LastSeenMessages)var2.get());
-            } catch (SignedMessageChain.DecodeException var6) {
-               this.handleMessageDecodeFailure(var6);
-               return;
-            }
+      if (isChatMessageIllegal(var1.message())) {
+         this.disconnect(Component.translatable("multiplayer.disconnect.illegal_characters"));
+      } else {
+         Optional var2 = this.tryHandleChat(var1.lastSeenMessages());
+         if (var2.isPresent()) {
+            this.server.execute(() -> {
+               int var3 = StringUtils.countMatches(var1.message(), "potato");
+               if (var3 > 0) {
+                  this.player.awardStat(Stats.SAID_POTATO, var3);
+                  CriteriaTriggers.SAID_POTATO.trigger(this.player);
+               }
 
-            CompletableFuture var4 = this.filterTextPacket(var3.signedContent());
-            Component var5 = this.server.getChatDecorator().decorate(this.player, var3.decoratedContent());
-            this.chatMessageChain.append(var4, var3x -> {
-               PlayerChatMessage var4xx = var3.withUnsignedContent(var5).filter(var3x.mask());
-               this.broadcastChatMessage(var4xx);
+               PlayerChatMessage var4;
+               try {
+                  var4 = this.getSignedMessage(var1, (LastSeenMessages)var2.get());
+               } catch (SignedMessageChain.DecodeException var7) {
+                  this.handleMessageDecodeFailure(var7);
+                  return;
+               }
+
+               CompletableFuture var5 = this.filterTextPacket(var4.signedContent());
+               Component var6 = this.server.getChatDecorator().decorate(this.player, var4.decoratedContent());
+               this.chatMessageChain.append(var5, var3x -> {
+                  PlayerChatMessage var4xx = var4.withUnsignedContent(var6).filter(var3x.mask());
+                  this.broadcastChatMessage(var4xx);
+               });
             });
-         });
+         }
       }
    }
 
    @Override
    public void handleChatCommand(ServerboundChatCommandPacket var1) {
-      this.tryHandleChat(var1.command(), () -> {
-         this.performUnsignedChatCommand(var1.command());
-         this.detectRateSpam();
-      });
-   }
-
-   private void performUnsignedChatCommand(String var1) {
-      ParseResults var2 = this.parseCommand(var1);
-      if (this.server.enforceSecureProfile() && SignableCommand.hasSignableArguments(var2)) {
-         LOGGER.error("Received unsigned command packet from {}, but the command requires signable arguments: {}", this.player.getGameProfile().getName(), var1);
-         this.player.sendSystemMessage(INVALID_COMMAND_SIGNATURE);
+      if (isChatMessageIllegal(var1.command())) {
+         this.disconnect(Component.translatable("multiplayer.disconnect.illegal_characters"));
       } else {
-         this.server.getCommands().performCommand(var2, var1);
+         Optional var2 = this.tryHandleChat(var1.lastSeenMessages());
+         if (var2.isPresent()) {
+            this.server.execute(() -> {
+               this.performChatCommand(var1, (LastSeenMessages)var2.get());
+               this.detectRateSpam();
+            });
+         }
       }
    }
 
-   @Override
-   public void handleSignedChatCommand(ServerboundChatCommandSignedPacket var1) {
-      Optional var2 = this.unpackAndApplyLastSeen(var1.lastSeenMessages());
-      if (!var2.isEmpty()) {
-         this.tryHandleChat(var1.command(), () -> {
-            this.performSignedChatCommand(var1, (LastSeenMessages)var2.get());
-            this.detectRateSpam();
-         });
-      }
-   }
-
-   private void performSignedChatCommand(ServerboundChatCommandSignedPacket var1, LastSeenMessages var2) {
+   private void performChatCommand(ServerboundChatCommandPacket var1, LastSeenMessages var2) {
       ParseResults var3 = this.parseCommand(var1.command());
 
       Map var4;
@@ -1274,56 +1278,23 @@ public class ServerGamePacketListenerImpl
 
    private void handleMessageDecodeFailure(SignedMessageChain.DecodeException var1) {
       LOGGER.warn("Failed to update secure chat state for {}: '{}'", this.player.getGameProfile().getName(), var1.getComponent().getString());
-      this.player.sendSystemMessage(var1.getComponent().copy().withStyle(ChatFormatting.RED));
-   }
-
-   private <S> Map<String, PlayerChatMessage> collectSignedArguments(ServerboundChatCommandSignedPacket var1, SignableCommand<S> var2, LastSeenMessages var3) throws SignedMessageChain.DecodeException {
-      List var4 = var1.argumentSignatures().entries();
-      List var5 = var2.arguments();
-      if (var4.isEmpty()) {
-         return this.collectUnsignedArguments(var5);
+      if (var1.shouldDisconnect()) {
+         this.disconnect(var1.getComponent());
       } else {
-         Object2ObjectOpenHashMap var6 = new Object2ObjectOpenHashMap();
-
-         for(ArgumentSignatures.Entry var8 : var4) {
-            SignableCommand.Argument var9 = var2.getArgument(var8.name());
-            if (var9 == null) {
-               this.signedMessageDecoder.setChainBroken();
-               throw createSignedArgumentMismatchException(var1.command(), var4, var5);
-            }
-
-            SignedMessageBody var10 = new SignedMessageBody(var9.value(), var1.timeStamp(), var1.salt(), var3);
-            var6.put(var9.name(), this.signedMessageDecoder.unpack(var8.signature(), var10));
-         }
-
-         for(SignableCommand.Argument var12 : var5) {
-            if (!var6.containsKey(var12.name())) {
-               throw createSignedArgumentMismatchException(var1.command(), var4, var5);
-            }
-         }
-
-         return var6;
+         this.player.sendSystemMessage(var1.getComponent().copy().withStyle(ChatFormatting.RED));
       }
    }
 
-   private <S> Map<String, PlayerChatMessage> collectUnsignedArguments(List<SignableCommand.Argument<S>> var1) throws SignedMessageChain.DecodeException {
-      HashMap var2 = new HashMap();
+   private Map<String, PlayerChatMessage> collectSignedArguments(ServerboundChatCommandPacket var1, SignableCommand<?> var2, LastSeenMessages var3) throws SignedMessageChain.DecodeException {
+      Object2ObjectOpenHashMap var4 = new Object2ObjectOpenHashMap();
 
-      for(SignableCommand.Argument var4 : var1) {
-         SignedMessageBody var5 = SignedMessageBody.unsigned(var4.value());
-         var2.put(var4.name(), this.signedMessageDecoder.unpack(null, var5));
+      for(SignableCommand.Argument var6 : var2.arguments()) {
+         MessageSignature var7 = var1.argumentSignatures().get(var6.name());
+         SignedMessageBody var8 = new SignedMessageBody(var6.value(), var1.timeStamp(), var1.salt(), var3);
+         var4.put(var6.name(), this.signedMessageDecoder.unpack(var7, var8));
       }
 
-      return var2;
-   }
-
-   private static <S> SignedMessageChain.DecodeException createSignedArgumentMismatchException(
-      String var0, List<ArgumentSignatures.Entry> var1, List<SignableCommand.Argument<S>> var2
-   ) {
-      String var3 = var1.stream().map(ArgumentSignatures.Entry::name).collect(Collectors.joining(", "));
-      String var4 = var2.stream().map(SignableCommand.Argument::name).collect(Collectors.joining(", "));
-      LOGGER.error("Signed command mismatch between server and client ('{}'): got [{}] from client, but expected [{}]", new Object[]{var0, var3, var4});
-      return new SignedMessageChain.DecodeException(INVALID_COMMAND_SIGNATURE);
+      return var4;
    }
 
    private ParseResults<CommandSourceStack> parseCommand(String var1) {
@@ -1331,14 +1302,14 @@ public class ServerGamePacketListenerImpl
       return var2.parse(var1, this.player.createCommandSourceStack());
    }
 
-   private void tryHandleChat(String var1, Runnable var2) {
-      if (isChatMessageIllegal(var1)) {
-         this.disconnect(Component.translatable("multiplayer.disconnect.illegal_characters"));
-      } else if (this.player.getChatVisibility() == ChatVisiblity.HIDDEN) {
+   private Optional<LastSeenMessages> tryHandleChat(LastSeenMessages.Update var1) {
+      Optional var2 = this.unpackAndApplyLastSeen(var1);
+      if (this.player.getChatVisibility() == ChatVisiblity.HIDDEN) {
          this.send(new ClientboundSystemChatPacket(Component.translatable("chat.disabled.options").withStyle(ChatFormatting.RED), false));
+         return Optional.empty();
       } else {
          this.player.resetLastActionTime();
-         this.server.execute(var2);
+         return var2;
       }
    }
 
@@ -1589,6 +1560,10 @@ public class ServerGamePacketListenerImpl
                   this.player.level().getGameRules().getRule(GameRules.RULE_SPECTATORSGENERATECHUNKS).set(false, this.server);
                }
             }
+            break;
+         case SPROUT_RESPAWN:
+            this.player = this.server.getPlayerList().sproutRespawn(this.player);
+            CriteriaTriggers.CHANGED_DIMENSION.trigger(this.player, Level.POTATO, Level.OVERWORLD);
             break;
          case REQUEST_STATS:
             this.player.getStats().sendStats(this.player);

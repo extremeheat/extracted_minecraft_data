@@ -6,23 +6,24 @@ import java.util.Map;
 import java.util.stream.Stream;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.block.SoundType;
 
 public record BlockSetType(
-   String r,
-   boolean s,
+   String s,
    boolean t,
    boolean u,
-   BlockSetType.PressurePlateSensitivity v,
-   SoundType w,
-   SoundEvent x,
+   boolean v,
+   BlockSetType.PressurePlateSensitivity w,
+   SoundType x,
    SoundEvent y,
    SoundEvent z,
    SoundEvent A,
    SoundEvent B,
    SoundEvent C,
    SoundEvent D,
-   SoundEvent E
+   SoundEvent E,
+   SoundEvent F
 ) {
    private final String name;
    private final boolean canOpenByHand;
@@ -39,7 +40,7 @@ public record BlockSetType(
    private final SoundEvent buttonClickOff;
    private final SoundEvent buttonClickOn;
    private static final Map<String, BlockSetType> TYPES = new Object2ObjectArrayMap();
-   public static final Codec<BlockSetType> CODEC = Codec.stringResolver(BlockSetType::name, TYPES::get);
+   public static final Codec<BlockSetType> CODEC = ExtraCodecs.stringResolverCodec(BlockSetType::name, TYPES::get);
    public static final BlockSetType IRON = register(
       new BlockSetType(
          "iron",
@@ -175,6 +176,24 @@ public record BlockSetType(
    public static final BlockSetType WARPED = register(
       new BlockSetType(
          "warped",
+         true,
+         true,
+         true,
+         BlockSetType.PressurePlateSensitivity.EVERYTHING,
+         SoundType.NETHER_WOOD,
+         SoundEvents.NETHER_WOOD_DOOR_CLOSE,
+         SoundEvents.NETHER_WOOD_DOOR_OPEN,
+         SoundEvents.NETHER_WOOD_TRAPDOOR_CLOSE,
+         SoundEvents.NETHER_WOOD_TRAPDOOR_OPEN,
+         SoundEvents.NETHER_WOOD_PRESSURE_PLATE_CLICK_OFF,
+         SoundEvents.NETHER_WOOD_PRESSURE_PLATE_CLICK_ON,
+         SoundEvents.NETHER_WOOD_BUTTON_CLICK_OFF,
+         SoundEvents.NETHER_WOOD_BUTTON_CLICK_ON
+      )
+   );
+   public static final BlockSetType POTATO = register(
+      new BlockSetType(
+         "potato",
          true,
          true,
          true,

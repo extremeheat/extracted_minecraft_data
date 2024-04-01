@@ -3,7 +3,6 @@ package net.minecraft.world.level.chunk;
 import com.google.common.base.Suppliers;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
@@ -97,13 +96,13 @@ public abstract class ChunkGenerator {
       );
    }
 
-   protected abstract MapCodec<? extends ChunkGenerator> codec();
+   protected abstract Codec<? extends ChunkGenerator> codec();
 
    public ChunkGeneratorStructureState createState(HolderLookup<StructureSet> var1, RandomState var2, long var3) {
       return ChunkGeneratorStructureState.createForNormal(var2, var3, this.biomeSource, var1);
    }
 
-   public Optional<ResourceKey<MapCodec<? extends ChunkGenerator>>> getTypeNameForDataFixer() {
+   public Optional<ResourceKey<Codec<? extends ChunkGenerator>>> getTypeNameForDataFixer() {
       return BuiltInRegistries.CHUNK_GENERATOR.getResourceKey(this.codec());
    }
 
@@ -490,7 +489,7 @@ public abstract class ChunkGenerator {
       int var12 = fetchReferences(var2, var8, var10, var11);
       HolderSet var13 = var11.biomes();
       Predicate var14 = var13::contains;
-      StructureStart var15 = var11.generate(var3, this, this.biomeSource, var4, var5, var6, var9, var12, var8, var14);
+      StructureStart var15 = var11.generate(var3, this, this.biomeSource, var4, var5, var6, var9, var12, var8, var14, var11.densityChecks());
       if (var15.isValid()) {
          var2.setStartForStructure(var10, var11, var15, var8);
          return true;

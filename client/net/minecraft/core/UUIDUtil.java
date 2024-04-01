@@ -3,6 +3,7 @@ package net.minecraft.core;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.mojang.authlib.GameProfile;
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
@@ -32,14 +33,14 @@ public final class UUIDUtil {
          return DataResult.error(() -> "Invalid UUID " + var0 + ": " + var2.getMessage());
       }
    }, UUID::toString);
-   public static Codec<UUID> AUTHLIB_CODEC = Codec.withAlternative(Codec.STRING.comapFlatMap(var0 -> {
+   public static Codec<UUID> AUTHLIB_CODEC = Codec.either(CODEC, Codec.STRING.comapFlatMap(var0 -> {
       try {
          return DataResult.success(UndashedUuid.fromStringLenient(var0), Lifecycle.stable());
       } catch (IllegalArgumentException var2) {
          return DataResult.error(() -> "Invalid UUID " + var0 + ": " + var2.getMessage());
       }
-   }, UndashedUuid::toString), CODEC);
-   public static Codec<UUID> LENIENT_CODEC = Codec.withAlternative(CODEC, STRING_CODEC);
+   }, UndashedUuid::toString)).xmap(var0 -> (UUID)var0.map(var0x -> var0x, var0x -> var0x), Either::right);
+   public static Codec<UUID> LENIENT_CODEC = Codec.either(CODEC, STRING_CODEC).xmap(var0 -> (UUID)var0.map(var0x -> var0x, var0x -> var0x), Either::left);
    public static StreamCodec<ByteBuf, UUID> STREAM_CODEC = new StreamCodec<ByteBuf, UUID>() {
       public UUID decode(ByteBuf var1) {
          return FriendlyByteBuf.readUUID(var1);

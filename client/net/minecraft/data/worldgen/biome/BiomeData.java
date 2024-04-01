@@ -17,6 +17,11 @@ public abstract class BiomeData {
       var0.register(Biomes.THE_VOID, OverworldBiomes.theVoid(var1, var2));
       var0.register(Biomes.PLAINS, OverworldBiomes.plains(var1, var2, false, false, false));
       var0.register(Biomes.SUNFLOWER_PLAINS, OverworldBiomes.plains(var1, var2, true, false, false));
+      var0.register(Biomes.FIELDS, PotatoBiomes.fields(var1, var2));
+      var0.register(Biomes.ARBORETUM, PotatoBiomes.arboretum(var1, var2));
+      var0.register(Biomes.HASH, PotatoBiomes.hash(var1, var2));
+      var0.register(Biomes.WASTELAND, PotatoBiomes.wasteland(var1, var2));
+      var0.register(Biomes.CORRUPTION, PotatoBiomes.corruption(var1, var2));
       var0.register(Biomes.SNOWY_PLAINS, OverworldBiomes.plains(var1, var2, false, true, false));
       var0.register(Biomes.ICE_SPIKES, OverworldBiomes.plains(var1, var2, false, true, true));
       var0.register(Biomes.DESERT, OverworldBiomes.desert(var1, var2));

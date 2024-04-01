@@ -932,7 +932,8 @@ public abstract class BlockBehaviour implements FeatureElement {
    public static enum OffsetType {
       NONE,
       XZ,
-      XYZ;
+      XYZ,
+      POTATO;
 
       private OffsetType() {
       }
@@ -1189,6 +1190,12 @@ public abstract class BlockBehaviour implements FeatureElement {
 
       public BlockBehaviour.Properties offsetType(BlockBehaviour.OffsetType var1) {
          switch(var1) {
+            case POTATO:
+               this.offsetFunction = Optional.of((var0, var1x, var2) -> {
+                  BlockPos var3 = var2.below();
+                  return var1x.getBlockState(var3).isCollisionShapeFullBlock(var1x, var3) ? new Vec3(0.0, 0.0625, 0.0) : Vec3.ZERO;
+               });
+               break;
             case XYZ:
                this.offsetFunction = Optional.of((var0, var1x, var2) -> {
                   Block var3 = var0.getBlock();

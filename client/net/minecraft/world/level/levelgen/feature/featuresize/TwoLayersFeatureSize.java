@@ -1,13 +1,12 @@
 package net.minecraft.world.level.levelgen.feature.featuresize;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.OptionalInt;
 
 public class TwoLayersFeatureSize extends FeatureSize {
-   public static final MapCodec<TwoLayersFeatureSize> CODEC = RecordCodecBuilder.mapCodec(
+   public static final Codec<TwoLayersFeatureSize> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                Codec.intRange(0, 81).fieldOf("limit").orElse(1).forGetter(var0x -> var0x.limit),
                Codec.intRange(0, 16).fieldOf("lower_size").orElse(0).forGetter(var0x -> var0x.lowerSize),

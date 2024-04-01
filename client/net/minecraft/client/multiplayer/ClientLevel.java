@@ -1,16 +1,21 @@
 package net.minecraft.client.multiplayer;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Queues;
 import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
@@ -19,6 +24,7 @@ import net.minecraft.ReportedException;
 import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.color.block.BlockTintCache;
+import net.minecraft.client.grid.ClientSubGrid;
 import net.minecraft.client.multiplayer.prediction.BlockStatePredictionHandler;
 import net.minecraft.client.particle.FireworkParticles;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -41,6 +47,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSequenceBuilder;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.util.CubicSampler;
@@ -52,6 +59,8 @@ import net.minecraft.world.TickRateManager;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.grid.GridCarrier;
+import net.minecraft.world.grid.SubGrid;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -77,6 +86,9 @@ import net.minecraft.world.level.entity.LevelCallback;
 import net.minecraft.world.level.entity.LevelEntityGetter;
 import net.minecraft.world.level.entity.TransientEntitySectionManager;
 import net.minecraft.world.level.gameevent.GameEvent;
+import net.minecraft.world.level.levelgen.LegacyRandomSource;
+import net.minecraft.world.level.levelgen.WorldgenRandom;
+import net.minecraft.world.level.levelgen.synth.PerlinSimplexNoise;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.saveddata.maps.MapId;
@@ -96,6 +108,7 @@ public class ClientLevel extends Level {
    private static final int LIGHT_UPDATE_QUEUE_SIZE_THRESHOLD = 1000;
    final EntityTickList tickingEntities = new EntityTickList();
    private final TransientEntitySectionManager<Entity> entityStorage = new TransientEntitySectionManager<>(Entity.class, new ClientLevel.EntityCallbacks());
+   final Object2ObjectMap<UUID, ClientSubGrid> grids = new Object2ObjectOpenHashMap();
    private final ClientPacketListener connection;
    private final LevelRenderer levelRenderer;
    private final ClientLevel.ClientLevelData clientLevelData;
@@ -104,7 +117,6 @@ public class ClientLevel extends Level {
    private final Minecraft minecraft = Minecraft.getInstance();
    final List<AbstractClientPlayer> players = Lists.newArrayList();
    private final Map<MapId, MapItemSavedData> mapData = Maps.newHashMap();
-   private static final long CLOUD_COLOR = 16777215L;
    private int skyFlashTime;
    private final Object2ObjectArrayMap<ColorResolver, BlockTintCache> tintCaches = Util.make(new Object2ObjectArrayMap(3), var1x -> {
       var1x.put(BiomeColors.GRASS_COLOR_RESOLVER, new BlockTintCache(var1xx -> this.calculateBlockTint(var1xx, BiomeColors.GRASS_COLOR_RESOLVER)));
@@ -116,6 +128,9 @@ public class ClientLevel extends Level {
    private int serverSimulationDistance;
    private final BlockStatePredictionHandler blockStatePredictionHandler = new BlockStatePredictionHandler();
    private static final Set<Item> MARKER_PARTICLE_ITEMS = Set.of(Items.BARRIER, Items.LIGHT);
+   private static final int NOISE_SIZE = 512;
+   private static final float[][] noisedColorFromTexture1 = new float[512][512];
+   private static final float[][] noisedColorFromTexture2 = new float[512][512];
 
    public void handleBlockChangedAck(int var1) {
       this.blockStatePredictionHandler.endPredictionsUpTo(var1, this);
@@ -252,13 +267,20 @@ public class ClientLevel extends Level {
    public void tickEntities() {
       ProfilerFiller var1 = this.getProfiler();
       var1.push("entities");
-      this.tickingEntities.forEach(var1x -> {
-         if (!var1x.isRemoved() && !var1x.isPassenger() && !this.tickRateManager.isEntityFrozen(var1x)) {
-            this.guardEntityTick(this::tickNonPassenger, var1x);
-         }
-      });
+
+      for(ClientSubGrid var3 : List.copyOf(this.grids.values())) {
+         this.tickEntity(var3.carrier());
+      }
+
+      this.tickingEntities.forEach(this::tickEntity);
       var1.pop();
       this.tickBlockEntities();
+   }
+
+   private void tickEntity(Entity var1) {
+      if (!var1.isRemoved() && !var1.isPassenger() && !this.tickRateManager.isEntityFrozen(var1)) {
+         this.guardEntityTick(this::tickNonPassenger, var1);
+      }
    }
 
    @Override
@@ -505,6 +527,17 @@ public class ClientLevel extends Level {
    }
 
    @Override
+   public void playDelayedSound(int var1, double var2, double var4, double var6, SoundEvent var8, SoundSource var9, float var10, float var11) {
+      SimpleSoundInstance var12 = new SimpleSoundInstance(var8, var9, var10, var11, RandomSource.create(0L), var2, var4, var6);
+      this.minecraft.getSoundManager().playDelayed(var12, var1);
+   }
+
+   @Override
+   public void playSoundSequence(double var1, double var3, double var5, Consumer<SoundSequenceBuilder> var7) {
+      var7.accept((var7x, var8, var9, var10, var11) -> this.playDelayedSound(var7x, var1, var3, var5, var8, var9, var10, var11));
+   }
+
+   @Override
    public void createFireworks(double var1, double var3, double var5, double var7, double var9, double var11, List<FireworkExplosion> var13) {
       if (var13.isEmpty()) {
          for(int var14 = 0; var14 < this.random.nextInt(3) + 2; ++var14) {
@@ -659,7 +692,7 @@ public class ClientLevel extends Level {
       float var8 = (float)var6.x * var7;
       float var9 = (float)var6.y * var7;
       float var10 = (float)var6.z * var7;
-      float var11 = this.getRainLevel(var2);
+      float var11 = this.getRainLevel(var2, var1.y());
       if (var11 > 0.0F) {
          float var12 = (var8 * 0.3F + var9 * 0.59F + var10 * 0.11F) * 0.6F;
          float var13 = 1.0F - var11 * 0.75F;
@@ -668,7 +701,7 @@ public class ClientLevel extends Level {
          var10 = var10 * var13 + var12 * (1.0F - var13);
       }
 
-      float var16 = this.getThunderLevel(var2);
+      float var16 = this.getThunderLevel(var2, var1.y());
       if (var16 > 0.0F) {
          float var17 = (var8 * 0.3F + var9 * 0.59F + var10 * 0.11F) * 0.2F;
          float var14 = 1.0F - var16 * 0.75F;
@@ -697,31 +730,32 @@ public class ClientLevel extends Level {
       float var2 = this.getTimeOfDay(var1);
       float var3 = Mth.cos(var2 * 6.2831855F) * 2.0F + 0.5F;
       var3 = Mth.clamp(var3, 0.0F, 1.0F);
-      float var4 = 1.0F;
-      float var5 = 1.0F;
-      float var6 = 1.0F;
-      float var7 = this.getRainLevel(var1);
-      if (var7 > 0.0F) {
-         float var8 = (var4 * 0.3F + var5 * 0.59F + var6 * 0.11F) * 0.6F;
-         float var9 = 1.0F - var7 * 0.95F;
-         var4 = var4 * var9 + var8 * (1.0F - var9);
-         var5 = var5 * var9 + var8 * (1.0F - var9);
-         var6 = var6 * var9 + var8 * (1.0F - var9);
+      int var4 = this.effects().getCloudColor();
+      float var5 = (float)(var4 >> 16 & 0xFF) / 255.0F;
+      float var6 = (float)(var4 >> 8 & 0xFF) / 255.0F;
+      float var7 = (float)(var4 & 0xFF) / 255.0F;
+      float var8 = this.getRainLevel(var1);
+      if (var8 > 0.0F) {
+         float var9 = (var5 * 0.3F + var6 * 0.59F + var7 * 0.11F) * 0.6F;
+         float var10 = 1.0F - var8 * 0.95F;
+         var5 = var5 * var10 + var9 * (1.0F - var10);
+         var6 = var6 * var10 + var9 * (1.0F - var10);
+         var7 = var7 * var10 + var9 * (1.0F - var10);
       }
 
-      var4 *= var3 * 0.9F + 0.1F;
       var5 *= var3 * 0.9F + 0.1F;
-      var6 *= var3 * 0.85F + 0.15F;
-      float var15 = this.getThunderLevel(var1);
-      if (var15 > 0.0F) {
-         float var16 = (var4 * 0.3F + var5 * 0.59F + var6 * 0.11F) * 0.2F;
-         float var10 = 1.0F - var15 * 0.95F;
-         var4 = var4 * var10 + var16 * (1.0F - var10);
-         var5 = var5 * var10 + var16 * (1.0F - var10);
-         var6 = var6 * var10 + var16 * (1.0F - var10);
+      var6 *= var3 * 0.9F + 0.1F;
+      var7 *= var3 * 0.85F + 0.15F;
+      float var16 = this.getThunderLevel(var1);
+      if (var16 > 0.0F) {
+         float var17 = (var5 * 0.3F + var6 * 0.59F + var7 * 0.11F) * 0.2F;
+         float var11 = 1.0F - var16 * 0.95F;
+         var5 = var5 * var11 + var17 * (1.0F - var11);
+         var6 = var6 * var11 + var17 * (1.0F - var11);
+         var7 = var7 * var11 + var17 * (1.0F - var11);
       }
 
-      return new Vec3((double)var4, (double)var5, (double)var6);
+      return new Vec3((double)var5, (double)var6, (double)var7);
    }
 
    public float getStarBrightness(float var1) {
@@ -771,24 +805,42 @@ public class ClientLevel extends Level {
 
    public int calculateBlockTint(BlockPos var1, ColorResolver var2) {
       int var3 = Minecraft.getInstance().options.biomeBlendRadius().get();
+      boolean var4 = this.getBiome(var1).is(Biomes.ARBORETUM) && var2 == BiomeColors.FOLIAGE_COLOR_RESOLVER;
       if (var3 == 0) {
-         return var2.getColor(this.getBiome(var1).value(), (double)var1.getX(), (double)var1.getZ());
+         return var4
+            ? this.getBiome(var1)
+               .value()
+               .getNoisedColorFromTexture(
+                  noisedColorFromTexture1[Math.floorMod(var1.getX(), 512)][Math.floorMod(var1.getZ(), 512)],
+                  noisedColorFromTexture2[Math.floorMod(var1.getX(), 512)][Math.floorMod(var1.getZ(), 512)]
+               )
+            : var2.getColor(this.getBiome(var1).value(), (double)var1.getX(), (double)var1.getZ());
       } else {
-         int var4 = (var3 * 2 + 1) * (var3 * 2 + 1);
-         int var5 = 0;
+         int var5 = (var3 * 2 + 1) * (var3 * 2 + 1);
          int var6 = 0;
          int var7 = 0;
-         Cursor3D var8 = new Cursor3D(var1.getX() - var3, var1.getY(), var1.getZ() - var3, var1.getX() + var3, var1.getY(), var1.getZ() + var3);
+         int var8 = 0;
+         Cursor3D var9 = new Cursor3D(var1.getX() - var3, var1.getY(), var1.getZ() - var3, var1.getX() + var3, var1.getY(), var1.getZ() + var3);
 
-         int var10;
-         for(BlockPos.MutableBlockPos var9 = new BlockPos.MutableBlockPos(); var8.advance(); var7 += var10 & 0xFF) {
-            var9.set(var8.nextX(), var8.nextY(), var8.nextZ());
-            var10 = var2.getColor(this.getBiome(var9).value(), (double)var9.getX(), (double)var9.getZ());
-            var5 += (var10 & 0xFF0000) >> 16;
-            var6 += (var10 & 0xFF00) >> 8;
+         int var11;
+         for(BlockPos.MutableBlockPos var10 = new BlockPos.MutableBlockPos(); var9.advance(); var8 += var11 & 0xFF) {
+            var10.set(var9.nextX(), var9.nextY(), var9.nextZ());
+            if (var4) {
+               var11 = this.getBiome(var10)
+                  .value()
+                  .getNoisedColorFromTexture(
+                     noisedColorFromTexture1[Math.floorMod(var10.getX(), 512)][Math.floorMod(var10.getZ(), 512)],
+                     noisedColorFromTexture2[Math.floorMod(var10.getX(), 512)][Math.floorMod(var10.getZ(), 512)]
+                  );
+            } else {
+               var11 = var2.getColor(this.getBiome(var10).value(), (double)var10.getX(), (double)var10.getZ());
+            }
+
+            var6 += (var11 & 0xFF0000) >> 16;
+            var7 += (var11 & 0xFF00) >> 8;
          }
 
-         return (var5 / var4 & 0xFF) << 16 | (var6 / var4 & 0xFF) << 8 | var7 / var4 & 0xFF;
+         return (var6 / var5 & 0xFF) << 16 | (var7 / var5 & 0xFF) << 8 | var8 / var5 & 0xFF;
       }
    }
 
@@ -823,6 +875,22 @@ public class ClientLevel extends Level {
    }
 
    @Override
+   public Iterable<ClientSubGrid> getGrids() {
+      return this.grids.values();
+   }
+
+   @Nullable
+   @Override
+   public SubGrid getGrid(UUID var1) {
+      return (SubGrid)this.grids.get(var1);
+   }
+
+   @Override
+   public SubGrid createSubGrid(GridCarrier var1) {
+      return new ClientSubGrid(this, var1);
+   }
+
+   @Override
    public String gatherChunkSourceStats() {
       return "Chunks[C] W: " + this.chunkSource.gatherStats() + " E: " + this.entityStorage.gatherStats();
    }
@@ -843,6 +911,18 @@ public class ClientLevel extends Level {
    @Override
    public FeatureFlagSet enabledFeatures() {
       return this.connection.enabledFeatures();
+   }
+
+   static {
+      PerlinSimplexNoise var0 = new PerlinSimplexNoise(new WorldgenRandom(new LegacyRandomSource(-559038242L)), ImmutableList.of(-2, -1, 0));
+      PerlinSimplexNoise var1 = new PerlinSimplexNoise(new WorldgenRandom(new LegacyRandomSource(-17973521L)), ImmutableList.of(-2, -1, 0));
+
+      for(int var2 = 0; var2 < 512; ++var2) {
+         for(int var3 = 0; var3 < 512; ++var3) {
+            noisedColorFromTexture1[var2][var3] = 2.0F * (float)var0.getValue((double)((float)var2 / 8.0F), (double)((float)var3 / 8.0F), false);
+            noisedColorFromTexture2[var2][var3] = 2.0F * (float)var1.getValue((double)((float)var2 / 8.0F), (double)((float)var3 / 8.0F), false);
+         }
+      }
    }
 
    public static class ClientLevelData implements WritableLevelData {
@@ -968,22 +1048,42 @@ public class ClientLevel extends Level {
       }
 
       public void onTickingStart(Entity var1) {
-         ClientLevel.this.tickingEntities.add(var1);
+         if (!(var1 instanceof GridCarrier)) {
+            ClientLevel.this.tickingEntities.add(var1);
+         }
       }
 
       public void onTickingEnd(Entity var1) {
          ClientLevel.this.tickingEntities.remove(var1);
       }
 
+      // $VF: Could not properly define all variable types!
+      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       public void onTrackingStart(Entity var1) {
          if (var1 instanceof AbstractClientPlayer) {
             ClientLevel.this.players.add((AbstractClientPlayer)var1);
          }
+
+         if (var1 instanceof GridCarrier var2) {
+            SubGrid var4 = var2.grid();
+            if (var4 instanceof ClientSubGrid var3) {
+               ClientLevel.this.grids.put(var2.getUUID(), var3);
+            }
+         }
       }
 
+      // $VF: Could not properly define all variable types!
+      // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
       public void onTrackingEnd(Entity var1) {
          var1.unRide();
          ClientLevel.this.players.remove(var1);
+         if (var1 instanceof GridCarrier var2) {
+            SubGrid var4 = var2.grid();
+            if (var4 instanceof ClientSubGrid var3) {
+               ((ClientSubGrid)var3).close();
+               ClientLevel.this.grids.remove(((ClientSubGrid)var3).id(), var3);
+            }
+         }
       }
 
       public void onSectionChange(Entity var1) {

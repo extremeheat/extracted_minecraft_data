@@ -26,7 +26,6 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.pathfinder.PathType;
 
 public abstract class Animal extends AgeableMob {
@@ -80,7 +79,7 @@ public abstract class Animal extends AgeableMob {
 
    @Override
    public float getWalkTargetValue(BlockPos var1, LevelReader var2) {
-      return var2.getBlockState(var1.below()).is(Blocks.GRASS_BLOCK) ? 10.0F : var2.getPathfindingCostFromLightLevels(var1);
+      return var2.getBlockState(var1.below()).is(BlockTags.ANIMALS_SPAWNABLE_ON) ? 10.0F : var2.getPathfindingCostFromLightLevels(var1);
    }
 
    @Override

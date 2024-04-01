@@ -377,7 +377,7 @@ public class CreateWorldScreen extends Screen {
                   DataResult var4xx = WorldGenSettings.encode(var3xx, var2xx.options(), var2xx.selectedDimensions()).setLifecycle(Lifecycle.stable());
                   RegistryOps var5 = var1x.datapackWorldgen().createSerializationContext(JsonOps.INSTANCE);
                   WorldGenSettings var6 = (WorldGenSettings)var4xx.flatMap(var1xx -> WorldGenSettings.CODEC.parse(var5, var1xx))
-                     .getOrThrow(var0 -> new IllegalStateException("Error parsing worldgen settings after loading data packs: " + var0));
+                     .getOrThrow(false, Util.prefix("Error parsing worldgen settings after loading data packs: ", LOGGER::error));
                   return new WorldLoader.DataLoadOutput(new CreateWorldScreen.DataPackReloadCookie(var6, var1x.dataConfiguration()), var1x.datapackDimensions());
                }
             },

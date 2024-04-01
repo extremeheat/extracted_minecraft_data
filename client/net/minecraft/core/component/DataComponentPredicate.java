@@ -11,15 +11,13 @@ import java.util.stream.Collectors;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.ExtraCodecs;
 
 public final class DataComponentPredicate implements Predicate<DataComponentMap> {
-   public static final Codec<DataComponentPredicate> CODEC = DataComponentType.VALUE_MAP_CODEC
+   public static final Codec<DataComponentPredicate> CODEC = ExtraCodecs.unboundedDispatchMap(DataComponentType.CODEC, DataComponentType::codecOrThrow)
       .xmap(
          var0 -> new DataComponentPredicate(var0.entrySet().stream().map(TypedDataComponent::fromEntryUnchecked).collect(Collectors.toList())),
-         var0 -> var0.expectedComponents
-               .stream()
-               .filter(var0x -> !var0x.type().isTransient())
-               .collect(Collectors.toMap(TypedDataComponent::type, TypedDataComponent::value))
+         var0 -> var0.expectedComponents.stream().collect(Collectors.toMap(TypedDataComponent::type, TypedDataComponent::value))
       );
    public static final StreamCodec<RegistryFriendlyByteBuf, DataComponentPredicate> STREAM_CODEC = TypedDataComponent.STREAM_CODEC
       .<List<TypedDataComponent<?>>>apply(ByteBufCodecs.list())

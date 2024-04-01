@@ -61,6 +61,7 @@ public class BlockColors {
       var0.register((var0x, var1, var2, var3) -> FoliageColor.getBirchColor(), Blocks.BIRCH_LEAVES);
       var0.register(
          (var0x, var1, var2, var3) -> var1 != null && var2 != null ? BiomeColors.getAverageFoliageColor(var1, var2) : FoliageColor.getDefaultColor(),
+         Blocks.POTATO_LEAVES,
          Blocks.OAK_LEAVES,
          Blocks.JUNGLE_LEAVES,
          Blocks.ACACIA_LEAVES,

@@ -83,6 +83,7 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
    protected static final LootItemCondition.Builder HAS_NO_SILK_TOUCH = HAS_SILK_TOUCH.invert();
    protected static final LootItemCondition.Builder HAS_SHEARS = MatchTool.toolMatches(ItemPredicate.Builder.item().of(Items.SHEARS));
    private static final LootItemCondition.Builder HAS_SHEARS_OR_SILK_TOUCH = HAS_SHEARS.or(HAS_SILK_TOUCH);
+   protected static final LootItemCondition.Builder HAS_POTATO_PEELER = MatchTool.toolMatches(ItemPredicate.Builder.item().of(Items.POTATO_PEELER));
    private static final LootItemCondition.Builder HAS_NO_SHEARS_OR_SILK_TOUCH = HAS_SHEARS_OR_SILK_TOUCH.invert();
    protected final Set<Item> explosionResistant;
    protected final FeatureFlagSet enabledFeatures;
@@ -214,7 +215,22 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
                   .setRolls(ConstantValue.exactly(1.0F))
                   .add(
                      LootItem.lootTableItem(var1)
-                        .apply(CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY).include(DataComponents.CUSTOM_NAME))
+                        .apply(CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY).copy(DataComponents.CUSTOM_NAME))
+                  )
+            )
+         );
+   }
+
+   protected LootTable.Builder createFletchingTableTableTable(Block var1) {
+      return LootTable.lootTable()
+         .withPool(
+            this.applyExplosionCondition(
+               var1,
+               LootPool.lootPool()
+                  .setRolls(ConstantValue.exactly(1.0F))
+                  .add(
+                     LootItem.lootTableItem(var1)
+                        .apply(CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY).copy(DataComponents.FLETCHING))
                   )
             )
          );
@@ -231,10 +247,10 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
                      LootItem.lootTableItem(var1)
                         .apply(
                            CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY)
-                              .include(DataComponents.CUSTOM_NAME)
-                              .include(DataComponents.CONTAINER)
-                              .include(DataComponents.LOCK)
-                              .include(DataComponents.CONTAINER_LOOT)
+                              .copy(DataComponents.CUSTOM_NAME)
+                              .copy(DataComponents.CONTAINER)
+                              .copy(DataComponents.LOCK)
+                              .copy(DataComponents.CONTAINER_LOOT)
                         )
                   )
             )
@@ -288,10 +304,8 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
                      LootItem.lootTableItem(var1)
                         .apply(
                            CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY)
-                              .include(DataComponents.CUSTOM_NAME)
-                              .include(DataComponents.ITEM_NAME)
-                              .include(DataComponents.HIDE_ADDITIONAL_TOOLTIP)
-                              .include(DataComponents.BANNER_PATTERNS)
+                              .copy(DataComponents.CUSTOM_NAME)
+                              .copy(DataComponents.BANNER_PATTERNS)
                         )
                   )
             )
@@ -306,7 +320,7 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
                .setRolls(ConstantValue.exactly(1.0F))
                .add(
                   LootItem.lootTableItem(var0)
-                     .apply(CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY).include(DataComponents.BEES))
+                     .apply(CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY).copy(DataComponents.BEES))
                      .apply(CopyBlockState.copyState(var0).copy(BeehiveBlock.HONEY_LEVEL))
                )
          );
@@ -319,7 +333,7 @@ public abstract class BlockLootSubProvider implements LootTableSubProvider {
                .setRolls(ConstantValue.exactly(1.0F))
                .add(
                   ((LootPoolSingletonContainer.Builder)LootItem.lootTableItem(var0).when(HAS_SILK_TOUCH))
-                     .apply(CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY).include(DataComponents.BEES))
+                     .apply(CopyComponentsFunction.copyComponents(CopyComponentsFunction.Source.BLOCK_ENTITY).copy(DataComponents.BEES))
                      .apply(CopyBlockState.copyState(var0).copy(BeehiveBlock.HONEY_LEVEL))
                      .otherwise(LootItem.lootTableItem(var0))
                )

@@ -582,6 +582,23 @@ public abstract class RenderType extends RenderStateShard {
          )
          .createCompositeState(false)
    );
+   private static final RenderType POISONOUS_POTATO = create(
+      "poisonous_potato",
+      DefaultVertexFormat.POSITION,
+      VertexFormat.Mode.QUADS,
+      1536,
+      false,
+      false,
+      RenderType.CompositeState.builder()
+         .setShaderState(RENDERTYPE_END_PORTAL_SHADER)
+         .setTextureState(
+            RenderStateShard.MultiTextureStateShard.builder()
+               .add(new ResourceLocation("textures/item/poisonous_potato.png"), false, false)
+               .add(new ResourceLocation("nothingtoseeheremovealong", "gui/menu_background.png"), false, false)
+               .build()
+         )
+         .createCompositeState(false)
+   );
    private static final RenderType END_GATEWAY = create(
       "end_gateway",
       DefaultVertexFormat.POSITION,
@@ -784,7 +801,7 @@ public abstract class RenderType extends RenderStateShard {
       RenderType.CompositeState var3 = RenderType.CompositeState.builder()
          .setShaderState(RENDERTYPE_ARMOR_CUTOUT_NO_CULL_SHADER)
          .setTextureState(new RenderStateShard.TextureStateShard(var1, false, false))
-         .setTransparencyState(NO_TRANSPARENCY)
+         .setTransparencyState(RenderStateShard.TRANSLUCENT_TRANSPARENCY)
          .setCullState(NO_CULL)
          .setLightmapState(LIGHTMAP)
          .setOverlayState(OVERLAY)
@@ -1018,6 +1035,10 @@ public abstract class RenderType extends RenderStateShard {
 
    public static RenderType endPortal() {
       return END_PORTAL;
+   }
+
+   public static RenderType poisonousPotato() {
+      return POISONOUS_POTATO;
    }
 
    public static RenderType endGateway() {

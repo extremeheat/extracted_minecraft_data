@@ -137,7 +137,7 @@ public class LevelStorageSource {
    ) {
       Dynamic var4 = RegistryOps.injectRegistryContext(var0, var3);
       Dynamic var5 = var4.get("WorldGenSettings").orElseEmptyMap();
-      WorldGenSettings var6 = (WorldGenSettings)WorldGenSettings.CODEC.parse(var5).getOrThrow();
+      WorldGenSettings var6 = (WorldGenSettings)WorldGenSettings.CODEC.parse(var5).getOrThrow(false, Util.prefix("WorldGenSettings: ", LOGGER::error));
       LevelSettings var7 = LevelSettings.parse(var4, var1);
       WorldDimensions.Complete var8 = var6.dimensions().bake(var2);
       Lifecycle var9 = var8.lifecycle().add(var3.allRegistriesLifecycle());

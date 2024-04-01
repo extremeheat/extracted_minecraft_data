@@ -40,11 +40,11 @@ public record WrittenBookContent(Filterable<String> l, String m, int n, List<Fil
    public static final Codec<List<Filterable<Component>>> PAGES_CODEC = pagesCodec(CONTENT_CODEC);
    public static final Codec<WrittenBookContent> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               Filterable.codec(Codec.string(0, 32)).fieldOf("title").forGetter(WrittenBookContent::title),
+               Filterable.codec(ExtraCodecs.sizeLimitedString(0, 32)).fieldOf("title").forGetter(WrittenBookContent::title),
                Codec.STRING.fieldOf("author").forGetter(WrittenBookContent::author),
-               ExtraCodecs.intRange(0, 3).optionalFieldOf("generation", 0).forGetter(WrittenBookContent::generation),
-               PAGES_CODEC.optionalFieldOf("pages", List.of()).forGetter(WrittenBookContent::pages),
-               Codec.BOOL.optionalFieldOf("resolved", false).forGetter(WrittenBookContent::resolved)
+               ExtraCodecs.strictOptionalField(ExtraCodecs.intRange(0, 3), "generation", 0).forGetter(WrittenBookContent::generation),
+               ExtraCodecs.strictOptionalField(PAGES_CODEC, "pages", List.of()).forGetter(WrittenBookContent::pages),
+               ExtraCodecs.strictOptionalField(Codec.BOOL, "resolved", false).forGetter(WrittenBookContent::resolved)
             )
             .apply(var0, WrittenBookContent::new)
    );
@@ -76,7 +76,7 @@ public record WrittenBookContent(Filterable<String> l, String m, int n, List<Fil
    }
 
    public static Codec<List<Filterable<Component>>> pagesCodec(Codec<Component> var0) {
-      return pageCodec(var0).sizeLimitedListOf(100);
+      return ExtraCodecs.sizeLimitedList(pageCodec(var0).listOf(), 100);
    }
 
    @Nullable

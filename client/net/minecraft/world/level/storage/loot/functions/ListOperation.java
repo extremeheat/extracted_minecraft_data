@@ -17,7 +17,7 @@ import org.slf4j.Logger;
 
 public interface ListOperation {
    static MapCodec<ListOperation> codec(int var0) {
-      return ListOperation.Type.CODEC.dispatchMap("mode", ListOperation::mode, var0x -> var0x.mapCodec).validate(var1 -> {
+      return ExtraCodecs.validate(ListOperation.Type.CODEC.dispatchMap("mode", ListOperation::mode, var0x -> var0x.mapCodec.codec()), var1 -> {
          if (var1 instanceof ListOperation.ReplaceSection var2 && var2.size().isPresent()) {
             int var3 = var2.size().get();
             if (var3 > var0) {
@@ -62,7 +62,7 @@ public interface ListOperation {
       private final int offset;
       private static final Logger LOGGER = LogUtils.getLogger();
       public static final MapCodec<ListOperation.Insert> MAP_CODEC = RecordCodecBuilder.mapCodec(
-         var0 -> var0.group(ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("offset", 0).forGetter(ListOperation.Insert::offset))
+         var0 -> var0.group(ExtraCodecs.strictOptionalField(ExtraCodecs.NON_NEGATIVE_INT, "offset", 0).forGetter(ListOperation.Insert::offset))
                .apply(var0, ListOperation.Insert::new)
       );
 
@@ -120,8 +120,8 @@ public interface ListOperation {
       private static final Logger LOGGER = LogUtils.getLogger();
       public static final MapCodec<ListOperation.ReplaceSection> MAP_CODEC = RecordCodecBuilder.mapCodec(
          var0 -> var0.group(
-                  ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("offset", 0).forGetter(ListOperation.ReplaceSection::offset),
-                  ExtraCodecs.NON_NEGATIVE_INT.optionalFieldOf("size").forGetter(ListOperation.ReplaceSection::size)
+                  ExtraCodecs.strictOptionalField(ExtraCodecs.NON_NEGATIVE_INT, "offset", 0).forGetter(ListOperation.ReplaceSection::offset),
+                  ExtraCodecs.strictOptionalField(ExtraCodecs.NON_NEGATIVE_INT, "size").forGetter(ListOperation.ReplaceSection::size)
                )
                .apply(var0, ListOperation.ReplaceSection::new)
       );

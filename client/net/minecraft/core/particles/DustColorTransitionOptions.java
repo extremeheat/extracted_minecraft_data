@@ -3,7 +3,6 @@ package net.minecraft.core.particles;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Locale;
@@ -21,7 +20,7 @@ public class DustColorTransitionOptions extends DustParticleOptionsBase {
    public static final DustColorTransitionOptions SCULK_TO_REDSTONE = new DustColorTransitionOptions(
       SCULK_PARTICLE_COLOR, DustParticleOptions.REDSTONE_PARTICLE_COLOR, 1.0F
    );
-   public static final MapCodec<DustColorTransitionOptions> CODEC = RecordCodecBuilder.mapCodec(
+   public static final Codec<DustColorTransitionOptions> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                ExtraCodecs.VECTOR3F.fieldOf("fromColor").forGetter(var0x -> var0x.color),
                ExtraCodecs.VECTOR3F.fieldOf("toColor").forGetter(var0x -> var0x.toColor),

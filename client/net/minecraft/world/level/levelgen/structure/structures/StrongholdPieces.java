@@ -796,6 +796,7 @@ public class StrongholdPieces {
          this.placeBlock(var1, var15.setValue(EndPortalFrameBlock.HAS_EYE, Boolean.valueOf(var17[9])), 7, 3, 9, var5);
          this.placeBlock(var1, var15.setValue(EndPortalFrameBlock.HAS_EYE, Boolean.valueOf(var17[10])), 7, 3, 10, var5);
          this.placeBlock(var1, var15.setValue(EndPortalFrameBlock.HAS_EYE, Boolean.valueOf(var17[11])), 7, 3, 11, var5);
+         this.placeBlock(var1, Blocks.PEDESTAL.defaultBlockState(), 5, 2, 10, var5);
          if (var16) {
             BlockState var24 = Blocks.END_PORTAL.defaultBlockState();
             this.placeBlock(var1, var24, 4, 3, 9, var5);

@@ -1,7 +1,7 @@
 package net.minecraft.world.level.levelgen.feature.trunkplacers;
 
 import com.google.common.collect.Lists;
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.ArrayList;
@@ -16,9 +16,7 @@ import net.minecraft.world.level.levelgen.feature.configurations.TreeConfigurati
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
 
 public class MegaJungleTrunkPlacer extends GiantTrunkPlacer {
-   public static final MapCodec<MegaJungleTrunkPlacer> CODEC = RecordCodecBuilder.mapCodec(
-      var0 -> trunkPlacerParts(var0).apply(var0, MegaJungleTrunkPlacer::new)
-   );
+   public static final Codec<MegaJungleTrunkPlacer> CODEC = RecordCodecBuilder.create(var0 -> trunkPlacerParts(var0).apply(var0, MegaJungleTrunkPlacer::new));
 
    public MegaJungleTrunkPlacer(int var1, int var2, int var3) {
       super(var1, var2, var3);

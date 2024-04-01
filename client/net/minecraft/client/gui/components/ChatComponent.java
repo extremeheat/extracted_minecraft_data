@@ -178,53 +178,50 @@ public class ChatComponent {
    }
 
    public void addMessage(Component var1, @Nullable MessageSignature var2, @Nullable GuiMessageTag var3) {
-      GuiMessage var4 = new GuiMessage(this.minecraft.gui.getGuiTicks(), var1, var2, var3);
-      this.logChatMessage(var4);
-      this.addMessageToDisplayQueue(var4);
-      this.addMessageToQueue(var4);
+      this.logChatMessage(var1, var3);
+      this.addMessage(var1, var2, this.minecraft.gui.getGuiTicks(), var3, false);
    }
 
-   private void logChatMessage(GuiMessage var1) {
-      String var2 = var1.content().getString().replaceAll("\r", "\\\\r").replaceAll("\n", "\\\\n");
-      String var3 = Optionull.map(var1.tag(), GuiMessageTag::logTag);
-      if (var3 != null) {
-         LOGGER.info("[{}] [CHAT] {}", var3, var2);
+   private void logChatMessage(Component var1, @Nullable GuiMessageTag var2) {
+      String var3 = var1.getString().replaceAll("\r", "\\\\r").replaceAll("\n", "\\\\n");
+      String var4 = Optionull.map(var2, GuiMessageTag::logTag);
+      if (var4 != null) {
+         LOGGER.info("[{}] [CHAT] {}", var4, var3);
       } else {
-         LOGGER.info("[CHAT] {}", var2);
+         LOGGER.info("[CHAT] {}", var3);
       }
    }
 
-   private void addMessageToDisplayQueue(GuiMessage var1) {
-      int var2 = Mth.floor((double)this.getWidth() / this.getScale());
-      GuiMessageTag.Icon var3 = var1.icon();
-      if (var3 != null) {
-         var2 -= var3.width + 4 + 2;
+   private void addMessage(Component var1, @Nullable MessageSignature var2, int var3, @Nullable GuiMessageTag var4, boolean var5) {
+      int var6 = Mth.floor((double)this.getWidth() / this.getScale());
+      if (var4 != null && var4.icon() != null) {
+         var6 -= var4.icon().width + 4 + 2;
       }
 
-      List var4 = ComponentRenderUtils.wrapComponents(var1.content(), var2, this.minecraft.font);
-      boolean var5 = this.isChatFocused();
+      List var7 = ComponentRenderUtils.wrapComponents(var1, var6, this.minecraft.font);
+      boolean var8 = this.isChatFocused();
 
-      for(int var6 = 0; var6 < var4.size(); ++var6) {
-         FormattedCharSequence var7 = (FormattedCharSequence)var4.get(var6);
-         if (var5 && this.chatScrollbarPos > 0) {
+      for(int var9 = 0; var9 < var7.size(); ++var9) {
+         FormattedCharSequence var10 = (FormattedCharSequence)var7.get(var9);
+         if (var8 && this.chatScrollbarPos > 0) {
             this.newMessageSinceScroll = true;
             this.scrollChat(1);
          }
 
-         boolean var8 = var6 == var4.size() - 1;
-         this.trimmedMessages.add(0, new GuiMessage.Line(var1.addedTime(), var7, var1.tag(), var8));
+         boolean var11 = var9 == var7.size() - 1;
+         this.trimmedMessages.add(0, new GuiMessage.Line(var3, var10, var4, var11));
       }
 
       while(this.trimmedMessages.size() > 100) {
          this.trimmedMessages.remove(this.trimmedMessages.size() - 1);
       }
-   }
 
-   private void addMessageToQueue(GuiMessage var1) {
-      this.allMessages.add(0, var1);
+      if (!var5) {
+         this.allMessages.add(0, new GuiMessage(var3, var1, var2, var4));
 
-      while(this.allMessages.size() > 100) {
-         this.allMessages.remove(this.allMessages.size() - 1);
+         while(this.allMessages.size() > 100) {
+            this.allMessages.remove(this.allMessages.size() - 1);
+         }
       }
    }
 
@@ -257,7 +254,7 @@ public class ChatComponent {
             int var5 = var4.addedTime() + 60;
             if (var2 >= var5) {
                var3.set(this.createDeletedMarker(var4));
-               this.refreshTrimmedMessages();
+               this.refreshTrimmedMessage();
                return null;
             }
 
@@ -274,14 +271,15 @@ public class ChatComponent {
 
    public void rescaleChat() {
       this.resetChatScroll();
-      this.refreshTrimmedMessages();
+      this.refreshTrimmedMessage();
    }
 
-   private void refreshTrimmedMessages() {
+   private void refreshTrimmedMessage() {
       this.trimmedMessages.clear();
 
-      for(GuiMessage var2 : Lists.reverse(this.allMessages)) {
-         this.addMessageToDisplayQueue(var2);
+      for(int var1 = this.allMessages.size() - 1; var1 >= 0; --var1) {
+         GuiMessage var2 = (GuiMessage)this.allMessages.get(var1);
+         this.addMessage(var2.content(), var2.signature(), var2.addedTime(), var2.tag(), true);
       }
    }
 
@@ -473,20 +471,6 @@ public class ChatComponent {
       return (int)(9.0 * (this.minecraft.options.chatLineSpacing().get() + 1.0));
    }
 
-   public ChatComponent.State storeState() {
-      return new ChatComponent.State(List.copyOf(this.allMessages), List.copyOf(this.recentChat), List.copyOf(this.messageDeletionQueue));
-   }
-
-   public void restoreState(ChatComponent.State var1) {
-      this.recentChat.clear();
-      this.recentChat.addAll(var1.history);
-      this.messageDeletionQueue.clear();
-      this.messageDeletionQueue.addAll(var1.delayedMessageDeletions);
-      this.allMessages.clear();
-      this.allMessages.addAll(var1.messages);
-      this.refreshTrimmedMessages();
-   }
-
    static record DelayedMessageDeletion(MessageSignature a, int b) {
       private final MessageSignature signature;
       private final int deletableAfter;
@@ -495,19 +479,6 @@ public class ChatComponent {
          super();
          this.signature = var1;
          this.deletableAfter = var2;
-      }
-   }
-
-   public static class State {
-      final List<GuiMessage> messages;
-      final List<String> history;
-      final List<ChatComponent.DelayedMessageDeletion> delayedMessageDeletions;
-
-      public State(List<GuiMessage> var1, List<String> var2, List<ChatComponent.DelayedMessageDeletion> var3) {
-         super();
-         this.messages = var1;
-         this.history = var2;
-         this.delayedMessageDeletions = var3;
       }
    }
 }

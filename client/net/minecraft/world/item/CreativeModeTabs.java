@@ -1,5 +1,6 @@
 package net.minecraft.world.item;
 
+import com.google.common.collect.UnmodifiableIterator;
 import com.mojang.datafixers.util.Pair;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -9,6 +10,7 @@ import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.HolderSet;
@@ -33,6 +35,7 @@ import net.minecraft.world.item.alchemy.Potion;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.component.Fireworks;
+import net.minecraft.world.item.component.XpComponent;
 import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentInstance;
 import net.minecraft.world.level.block.Blocks;
@@ -53,6 +56,7 @@ public class CreativeModeTabs {
    private static final ResourceKey<CreativeModeTab> INGREDIENTS = createKey("ingredients");
    private static final ResourceKey<CreativeModeTab> SPAWN_EGGS = createKey("spawn_eggs");
    private static final ResourceKey<CreativeModeTab> OP_BLOCKS = createKey("op_blocks");
+   private static final ResourceKey<CreativeModeTab> POTATOES = createKey("potatoes");
    private static final ResourceKey<CreativeModeTab> INVENTORY = createKey("inventory");
    private static final Comparator<Holder<PaintingVariant>> PAINTING_COMPARATOR = Comparator.comparing(
       Holder::value, Comparator.<PaintingVariant>comparingInt(var0 -> var0.getHeight() * var0.getWidth()).thenComparing(PaintingVariant::getWidth)
@@ -757,6 +761,8 @@ public class CreativeModeTabs {
                var1.accept(Items.DEEPSLATE_LAPIS_ORE);
                var1.accept(Items.DIAMOND_ORE);
                var1.accept(Items.DEEPSLATE_DIAMOND_ORE);
+               var1.accept(Items.POISONOUS_POTATO_ORE);
+               var1.accept(Items.DEEPSLATE_POISONOUS_POTATO_ORE);
                var1.accept(Items.NETHER_GOLD_ORE);
                var1.accept(Items.NETHER_QUARTZ_ORE);
                var1.accept(Items.ANCIENT_DEBRIS);
@@ -827,6 +833,7 @@ public class CreativeModeTabs {
                var1.accept(Items.OXEYE_DAISY);
                var1.accept(Items.CORNFLOWER);
                var1.accept(Items.LILY_OF_THE_VALLEY);
+               var1.accept(Items.POTATO_FLOWER);
                var1.accept(Items.TORCHFLOWER);
                var1.accept(Items.WITHER_ROSE);
                var1.accept(Items.PINK_PETALS);
@@ -1231,6 +1238,146 @@ public class CreativeModeTabs {
       );
       Registry.register(
          var0,
+         POTATOES,
+         CreativeModeTab.builder(CreativeModeTab.Row.TOP, 7)
+            .title(Component.translatable("itemGroup.potatoes"))
+            .icon(() -> new ItemStack(Items.POISONOUS_POTATO))
+            .displayItems(
+               (var0x, var1) -> {
+                  var1.accept(Items.POISONOUS_POTATO);
+                  var1.accept(Items.POISONOUS_POTATO_PLANT);
+                  var1.accept(Items.POISONOUS_POTATO_FRIES);
+                  var1.accept(Items.POISONOUS_POTATO_SLICES);
+                  var1.accept(Items.POISONOUS_POTATO_STICKS);
+                  var1.accept(Items.POISONOUS_POTATO_CHIPS);
+                  var1.accept(Items.HASH_BROWNS);
+                  var1.accept(Items.PEDESTAL);
+                  var1.accept(Items.POTATO_PORTAL);
+                  var1.accept(Items.POTATO_EYE);
+                  var1.accept(Items.POTATO_STAFF);
+                  var1.accept(Items.BIG_BRAIN);
+                  var1.accept(createXpItem(Items.POTATO_OF_KNOWLEDGE, 10));
+                  var1.accept(createXpItem(Items.POTATO_OF_KNOWLEDGE, 50));
+                  var1.accept(createXpItem(Items.POTATO_OF_KNOWLEDGE, 100));
+                  var1.accept(Items.VENOMOUS_POTATO);
+                  var1.accept(Items.HOT_POTATO);
+                  var1.accept(Items.GOLDEN_POISONOUS_POTATO);
+                  var1.accept(Items.ENCHANTED_GOLDEN_POISONOUS_POTATO);
+                  var1.accept(Items.POTATO_HAMMER);
+                  var1.accept(Items.POISONOUS_POTA_TOES);
+                  var1.accept(Items.POISONOUS_POTATO_CHESTPLATE);
+                  var1.accept(Items.POISONOUS_POLYTRA);
+                  var1.accept(Items.POTATO_BATTERY);
+                  var1.accept(Items.POISONOUS_POTATO_CUTTER);
+                  var1.accept(Items.FRYING_TABLE);
+                  var1.accept(Items.POTATO_REFINERY);
+                  var1.accept(Items.POTATO_OIL);
+                  var1.accept(Items.POISONOUS_POTATO_OIL);
+                  var1.accept(Items.TOXIC_BEAM);
+                  var1.accept(Items.LASHING_POTATO);
+                  var1.accept(Items.POTATO_PEELER);
+                  var1.accept(Items.DENT);
+                  var1.accept(Items.FLOATATO);
+                  var1.accept(Items.FLOATATER);
+                  var1.accept(Items.POWERFUL_POTATO);
+                  var1.accept(Items.STRONG_ROOTS);
+                  var1.accept(Items.WEAK_ROOTS);
+                  var1.accept(Items.TOXIC_RESIN);
+                  var1.accept(Items.AMBER_GEM);
+                  var1.accept(Items.AMBER_BLOCK);
+                  var1.accept(Items.POTATO_FLOWER);
+                  var1.accept(Items.POTATO_BUD);
+                  var1.accept(Items.POTATO_STEM);
+                  var1.accept(Items.POTATO_PLANKS);
+                  var1.accept(Items.POTATO_SLAB);
+                  var1.accept(Items.POTATO_STAIRS);
+                  var1.accept(Items.POTATO_FENCE);
+                  var1.accept(Items.POTATO_FENCE_GATE);
+                  var1.accept(Items.POTATO_DOOR);
+                  var1.accept(Items.POTATO_TRAPDOOR);
+                  var1.accept(Items.POTATO_BUTTON);
+                  var1.accept(Items.POTATO_PRESSURE_PLATE);
+                  var1.accept(Items.POTATO_SIGN);
+                  var1.accept(Items.POTATO_HANGING_SIGN);
+                  var1.accept(Items.POTATO_LEAVES);
+                  var1.accept(Items.POTATO_FRUIT);
+                  var1.accept(Items.POTATO_PEDICULE);
+                  var1.accept(Items.POTATO_SPROUTS);
+                  var1.accept(Items.TERREDEPOMME);
+                  var1.accept(Items.PEELGRASS_BLOCK);
+                  var1.accept(Items.CORRUPTED_PEELGRASS_BLOCK);
+                  var1.accept(Items.POISON_FARMLAND);
+                  var1.accept(Items.POISON_PATH);
+                  var1.accept(Items.GRAVTATER);
+                  var1.accept(Items.VICIOUS_POTATO);
+                  var1.accept(Items.POISONOUS_POTATO_ORE);
+                  var1.accept(Items.DEEPSLATE_POISONOUS_POTATO_ORE);
+                  var1.accept(Items.RESIN_ORE);
+                  var1.accept(Items.POTONE_COPPER_ORE);
+                  var1.accept(Items.POTONE_IRON_ORE);
+                  var1.accept(Items.POTONE_GOLD_ORE);
+                  var1.accept(Items.POTONE_REDSTONE_ORE);
+                  var1.accept(Items.POTONE_LAPIS_ORE);
+                  var1.accept(Items.POTONE_DIAMOND_ORE);
+                  var1.accept(Items.POTONE);
+                  var1.accept(Items.POTONE_SLAB);
+                  var1.accept(Items.POTONE_STAIRS);
+                  var1.accept(Items.POTONE_WALL);
+                  var1.accept(Items.TATERSTONE);
+                  var1.accept(Items.TATERSTONE_SLAB);
+                  var1.accept(Items.TATERSTONE_STAIRS);
+                  var1.accept(Items.TATERSTONE_WALL);
+                  var1.accept(Items.BAKED_POTATO_BRICKS);
+                  var1.accept(Items.BAKED_POTATO_BRICK_SLAB);
+                  var1.accept(Items.BAKED_POTATO_BRICK_STAIRS);
+                  var1.accept(Items.BAKED_POTATO_BRICK_WALL);
+                  var1.accept(Items.EXPIRED_BAKED_POTATO_BRICKS);
+                  var1.accept(Items.EXPIRED_BAKED_POTATO_BRICK_SLAB);
+                  var1.accept(Items.EXPIRED_BAKED_POTATO_BRICK_STAIRS);
+                  var1.accept(Items.EXPIRED_BAKED_POTATO_BRICK_WALL);
+                  var1.accept(Items.CHARRED_BAKED_POTATO_BRICKS);
+                  var1.accept(Items.CHARRED_BAKED_POTATO_BRICK_SLAB);
+                  var1.accept(Items.CHARRED_BAKED_POTATO_BRICK_STAIRS);
+                  var1.accept(Items.CHARRED_BAKED_POTATO_BRICK_WALL);
+                  var1.accept(Items.POISONOUS_MASHED_POTATO);
+                  var1.accept(Items.POISONOUS_POTATO_BLOCK);
+                  var1.accept(Items.COMPRESSED_POISONOUS_POTATO_BLOCK);
+                  var1.accept(Items.DOUBLE_COMPRESSED_POISONOUS_POTATO_BLOCK);
+                  var1.accept(Items.TRIPLE_COMPRESSED_POISONOUS_POTATO_BLOCK);
+                  var1.accept(Items.QUADRUPLE_COMPRESSED_POISONOUS_POTATO_BLOCK);
+                  var1.accept(Items.POTATO_ZOMBIE_HEAD_HAT);
+                  var1.accept(Items.POTATO_ZOMBIE_HEAD_BLOCK);
+                  var1.accept(Items.BATATO_SPAWN_EGG);
+                  var1.accept(Items.POISONOUS_POTATO_ZOMBIE_SPAWN_EGG);
+                  var1.accept(Items.TOXIFIN_SPAWN_EGG);
+                  var1.accept(Items.PLAGUEWHALE_SPAWN_EGG);
+                  var1.accept(Items.MEGA_SPUD_SPAWN_EGG);
+                  var1.accept(Items.CORRUPTED_POTATO_PEELS);
+                  UnmodifiableIterator var2 = Items.POTATO_PEELS_MAP.values().iterator();
+         
+                  while(var2.hasNext()) {
+                     Item var3 = (Item)var2.next();
+                     var1.accept(var3);
+                  }
+         
+                  for(Item var5 : Items.POTATO_PEELS_BLOCK_MAP.values()) {
+                     var1.accept(var5);
+                  }
+         
+                  var1.accept(Blocks.CORRUPTED_POTATO_PEELS_BLOCK);
+                  var0x.holders()
+                     .lookup(Registries.PAINTING_VARIANT)
+                     .ifPresent(
+                        var1x -> generatePresetPaintings(
+                              var1, var1x, var0xxx -> var0xxx.is(PaintingVariantTags.POTATO), CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS
+                           )
+                     );
+               }
+            )
+            .build()
+      );
+      Registry.register(
+         var0,
          TOOLS_AND_UTILITIES,
          CreativeModeTab.builder(CreativeModeTab.Row.BOTTOM, 0)
             .title(Component.translatable("itemGroup.tools"))
@@ -1294,6 +1441,7 @@ public class CreativeModeTabs {
                   var1.accept(Items.ENDER_PEARL);
                   var1.accept(Items.ENDER_EYE);
                   var1.accept(Items.ELYTRA);
+                  var1.accept(Items.POISONOUS_POLYTRA);
                   generateFireworksAllDurations(var1, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
                   var1.accept(Items.SADDLE);
                   var1.accept(Items.CARROT_ON_A_STICK);
@@ -1418,11 +1566,7 @@ public class CreativeModeTabs {
                   var1.accept(Items.SPECTRAL_ARROW);
                   var0x.holders()
                      .lookup(Registries.POTION)
-                     .ifPresent(
-                        var2 -> generatePotionEffectTypes(
-                              var1, var2, Items.TIPPED_ARROW, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS, var0x.enabledFeatures()
-                           )
-                     );
+                     .ifPresent(var1x -> generatePotionEffectTypes(var1, var1x, Items.TIPPED_ARROW, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS));
                }
             )
             .build()
@@ -1437,6 +1581,8 @@ public class CreativeModeTabs {
                var1.accept(Items.APPLE);
                var1.accept(Items.GOLDEN_APPLE);
                var1.accept(Items.ENCHANTED_GOLDEN_APPLE);
+               var1.accept(Items.GOLDEN_POISONOUS_POTATO);
+               var1.accept(Items.ENCHANTED_GOLDEN_POISONOUS_POTATO);
                var1.accept(Items.MELON_SLICE);
                var1.accept(Items.SWEET_BERRIES);
                var1.accept(Items.GLOW_BERRIES);
@@ -1445,7 +1591,12 @@ public class CreativeModeTabs {
                var1.accept(Items.GOLDEN_CARROT);
                var1.accept(Items.POTATO);
                var1.accept(Items.BAKED_POTATO);
+               var1.accept(Items.HOT_POTATO);
                var1.accept(Items.POISONOUS_POTATO);
+               var1.accept(Items.POISONOUS_POTATO_STICKS);
+               var1.accept(Items.POISONOUS_POTATO_SLICES);
+               var1.accept(Items.POISONOUS_POTATO_FRIES);
+               var1.accept(Items.POISONOUS_POTATO_CHIPS);
                var1.accept(Items.BEETROOT);
                var1.accept(Items.DRIED_KELP);
                var1.accept(Items.BEEF);
@@ -1476,11 +1627,10 @@ public class CreativeModeTabs {
                generateSuspiciousStews(var1, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
                var1.accept(Items.MILK_BUCKET);
                var1.accept(Items.HONEY_BOTTLE);
-               generateOminousVials(var1, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
-               var0x.holders().lookup(Registries.POTION).ifPresent(var2 -> {
-                  generatePotionEffectTypes(var1, var2, Items.POTION, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS, var0x.enabledFeatures());
-                  generatePotionEffectTypes(var1, var2, Items.SPLASH_POTION, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS, var0x.enabledFeatures());
-                  generatePotionEffectTypes(var1, var2, Items.LINGERING_POTION, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS, var0x.enabledFeatures());
+               var0x.holders().lookup(Registries.POTION).ifPresent(var1x -> {
+                  generatePotionEffectTypes(var1, var1x, Items.POTION, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
+                  generatePotionEffectTypes(var1, var1x, Items.SPLASH_POTION, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
+                  generatePotionEffectTypes(var1, var1x, Items.LINGERING_POTION, CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS);
                });
             })
             .build()
@@ -1636,7 +1786,6 @@ public class CreativeModeTabs {
                   var1.accept(Items.BOLT_ARMOR_TRIM_SMITHING_TEMPLATE);
                   var1.accept(Items.EXPERIENCE_BOTTLE);
                   var1.accept(Items.TRIAL_KEY);
-                  var1.accept(Items.OMINOUS_TRIAL_KEY);
                   Set var2 = Set.of(
                      ItemTags.FOOT_ARMOR_ENCHANTABLE,
                      ItemTags.LEG_ARMOR_ENCHANTABLE,
@@ -1644,9 +1793,6 @@ public class CreativeModeTabs {
                      ItemTags.HEAD_ARMOR_ENCHANTABLE,
                      ItemTags.ARMOR_ENCHANTABLE,
                      ItemTags.SWORD_ENCHANTABLE,
-                     ItemTags.SHARP_WEAPON_ENCHANTABLE,
-                     ItemTags.MACE_ENCHANTABLE,
-                     ItemTags.FIRE_ASPECT_ENCHANTABLE,
                      ItemTags.WEAPON_ENCHANTABLE,
                      ItemTags.MINING_ENCHANTABLE,
                      ItemTags.MINING_LOOT_ENCHANTABLE,
@@ -1658,9 +1804,9 @@ public class CreativeModeTabs {
                      ItemTags.CROSSBOW_ENCHANTABLE,
                      ItemTags.VANISHING_ENCHANTABLE
                   );
-                  var0x.holders().lookup(Registries.ENCHANTMENT).ifPresent(var3 -> {
-                     generateEnchantmentBookTypesOnlyMaxLevel(var1, var3, var2, CreativeModeTab.TabVisibility.PARENT_TAB_ONLY, var0x.enabledFeatures());
-                     generateEnchantmentBookTypesAllLevels(var1, var3, var2, CreativeModeTab.TabVisibility.SEARCH_TAB_ONLY, var0x.enabledFeatures());
+                  var0x.holders().lookup(Registries.ENCHANTMENT).ifPresent(var2x -> {
+                     generateEnchantmentBookTypesOnlyMaxLevel(var1, var2x, var2, CreativeModeTab.TabVisibility.PARENT_TAB_ONLY);
+                     generateEnchantmentBookTypesAllLevels(var1, var2x, var2, CreativeModeTab.TabVisibility.SEARCH_TAB_ONLY);
                   });
                }
             )
@@ -1719,7 +1865,9 @@ public class CreativeModeTabs {
                var1.accept(Items.PIGLIN_SPAWN_EGG);
                var1.accept(Items.PIGLIN_BRUTE_SPAWN_EGG);
                var1.accept(Items.PILLAGER_SPAWN_EGG);
+               var1.accept(Items.PLAGUEWHALE_SPAWN_EGG);
                var1.accept(Items.POLAR_BEAR_SPAWN_EGG);
+               var1.accept(Items.POISONOUS_POTATO_ZOMBIE_SPAWN_EGG);
                var1.accept(Items.PUFFERFISH_SPAWN_EGG);
                var1.accept(Items.RABBIT_SPAWN_EGG);
                var1.accept(Items.RAVAGER_SPAWN_EGG);
@@ -1737,6 +1885,7 @@ public class CreativeModeTabs {
                var1.accept(Items.STRAY_SPAWN_EGG);
                var1.accept(Items.STRIDER_SPAWN_EGG);
                var1.accept(Items.TADPOLE_SPAWN_EGG);
+               var1.accept(Items.TOXIFIN_SPAWN_EGG);
                var1.accept(Items.TRADER_LLAMA_SPAWN_EGG);
                var1.accept(Items.TROPICAL_FISH_SPAWN_EGG);
                var1.accept(Items.TURTLE_SPAWN_EGG);
@@ -1807,6 +1956,12 @@ public class CreativeModeTabs {
       );
    }
 
+   private static ItemStack createXpItem(Item var0, int var1) {
+      ItemStack var2 = new ItemStack(var0);
+      var2.set(DataComponents.XP, new XpComponent(var1));
+      return var2;
+   }
+
    public static void validate() {
       HashMap var0 = new HashMap();
 
@@ -1824,32 +1979,25 @@ public class CreativeModeTabs {
       return BuiltInRegistries.CREATIVE_MODE_TAB.getOrThrow(BUILDING_BLOCKS);
    }
 
-   private static void generatePotionEffectTypes(
-      CreativeModeTab.Output var0, HolderLookup<Potion> var1, Item var2, CreativeModeTab.TabVisibility var3, FeatureFlagSet var4
-   ) {
-      var1.listElements()
-         .filter(var1x -> ((Potion)var1x.value()).isEnabled(var4))
-         .map(var1x -> PotionContents.createItemStack(var2, var1x))
-         .forEach(var2x -> var0.accept(var2x, var3));
+   private static void generatePotionEffectTypes(CreativeModeTab.Output var0, HolderLookup<Potion> var1, Item var2, CreativeModeTab.TabVisibility var3) {
+      var1.listElements().map(var1x -> PotionContents.createItemStack(var2, var1x)).forEach(var2x -> var0.accept(var2x, var3));
    }
 
    private static void generateEnchantmentBookTypesOnlyMaxLevel(
-      CreativeModeTab.Output var0, HolderLookup<Enchantment> var1, Set<TagKey<Item>> var2, CreativeModeTab.TabVisibility var3, FeatureFlagSet var4
+      CreativeModeTab.Output var0, HolderLookup<Enchantment> var1, Set<TagKey<Item>> var2, CreativeModeTab.TabVisibility var3
    ) {
       var1.listElements()
          .map(Holder::value)
-         .filter(var1x -> var1x.isEnabled(var4))
          .filter(var1x -> var2.contains(var1x.getSupportedItems()))
          .map(var0x -> EnchantedBookItem.createForEnchantment(new EnchantmentInstance(var0x, var0x.getMaxLevel())))
          .forEach(var2x -> var0.accept(var2x, var3));
    }
 
    private static void generateEnchantmentBookTypesAllLevels(
-      CreativeModeTab.Output var0, HolderLookup<Enchantment> var1, Set<TagKey<Item>> var2, CreativeModeTab.TabVisibility var3, FeatureFlagSet var4
+      CreativeModeTab.Output var0, HolderLookup<Enchantment> var1, Set<TagKey<Item>> var2, CreativeModeTab.TabVisibility var3
    ) {
       var1.listElements()
          .map(Holder::value)
-         .filter(var1x -> var1x.isEnabled(var4))
          .filter(var1x -> var2.contains(var1x.getSupportedItems()))
          .flatMap(
             var0x -> IntStream.rangeClosed(var0x.getMinLevel(), var0x.getMaxLevel())
@@ -1877,14 +2025,6 @@ public class CreativeModeTabs {
       var0.acceptAll(var3, var1);
    }
 
-   private static void generateOminousVials(CreativeModeTab.Output var0, CreativeModeTab.TabVisibility var1) {
-      for(int var2 = 0; var2 <= 4; ++var2) {
-         ItemStack var3 = new ItemStack(Items.OMINOUS_BOTTLE);
-         var3.set(DataComponents.OMINOUS_BOTTLE_AMPLIFIER, var2);
-         var0.accept(var3, var1);
-      }
-   }
-
    private static void generateFireworksAllDurations(CreativeModeTab.Output var0, CreativeModeTab.TabVisibility var1) {
       for(byte var5 : FireworkRocketItem.CRAFTABLE_DURATIONS) {
          ItemStack var6 = new ItemStack(Items.FIREWORK_ROCKET);
@@ -1904,7 +2044,9 @@ public class CreativeModeTabs {
          .sorted(PAINTING_COMPARATOR)
          .forEach(
             var2x -> {
-               CustomData var3xx = ((CustomData)CustomData.EMPTY.update(Painting.VARIANT_MAP_CODEC, var2x).getOrThrow())
+               CustomData var3xx = Util.<CustomData, IllegalStateException>getOrThrow(
+                     CustomData.EMPTY.update(Painting.VARIANT_MAP_CODEC, var2x), IllegalStateException::new
+                  )
                   .update(var0xx -> var0xx.putString("id", "minecraft:painting"));
                ItemStack var4 = new ItemStack(Items.PAINTING);
                var4.set(DataComponents.ENTITY_DATA, var3xx);

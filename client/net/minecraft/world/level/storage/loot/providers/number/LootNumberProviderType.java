@@ -1,11 +1,11 @@
 package net.minecraft.world.level.storage.loot.providers.number;
 
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 
-public record LootNumberProviderType(MapCodec<? extends NumberProvider> a) {
-   private final MapCodec<? extends NumberProvider> codec;
+public record LootNumberProviderType(Codec<? extends NumberProvider> a) {
+   private final Codec<? extends NumberProvider> codec;
 
-   public LootNumberProviderType(MapCodec<? extends NumberProvider> var1) {
+   public LootNumberProviderType(Codec<? extends NumberProvider> var1) {
       super();
       this.codec = var1;
    }

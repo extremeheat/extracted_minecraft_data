@@ -106,7 +106,8 @@ public class StructureCheck {
                this.seed,
                var1,
                this.heightAccessor,
-               var2.biomes()::contains
+               var2.biomes()::contains,
+               var2.densityChecks()
             )
          )
          .isPresent();

@@ -31,7 +31,5 @@ public class UpdateOneTwentyOneEntityTypeTagsProvider extends IntrinsicHolderTag
             EntityType.SLIME
          );
       this.tag(EntityTypeTags.SKELETONS).add(EntityType.BOGGED);
-      this.tag(EntityTypeTags.IMMUNE_TO_INFESTED).add(EntityType.SILVERFISH);
-      this.tag(EntityTypeTags.IMMUNE_TO_OOZING).add(EntityType.SLIME);
    }
 }

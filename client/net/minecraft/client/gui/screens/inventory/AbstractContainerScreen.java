@@ -14,6 +14,7 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -96,16 +97,21 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
 
       for(int var7 = 0; var7 < this.menu.slots.size(); ++var7) {
          Slot var8 = this.menu.slots.get(var7);
+         ItemStack var9 = var8.getItem();
+         if (var9.has(DataComponents.HOVERED)) {
+            var9.set(DataComponents.HOVERED, this.isHovering(var8, (double)var2, (double)var3) && var8.isHighlightable());
+         }
+
          if (var8.isActive()) {
             this.renderSlot(var1, var8);
          }
 
          if (this.isHovering(var8, (double)var2, (double)var3) && var8.isActive()) {
             this.hoveredSlot = var8;
-            int var9 = var8.x;
-            int var10 = var8.y;
-            if (this.hoveredSlot.isHighlightable()) {
-               renderSlotHighlight(var1, var9, var10, 0);
+            int var10 = var8.x;
+            int var11 = var8.y;
+            if (this.hoveredSlot.isHighlightable() && !var9.has(DataComponents.HOVERED)) {
+               renderSlotHighlight(var1, var10, var11, 0);
             }
          }
       }
@@ -137,9 +143,9 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
 
          int var17 = this.snapbackEnd.x - this.snapbackStartX;
          int var19 = this.snapbackEnd.y - this.snapbackStartY;
-         int var11 = this.snapbackStartX + (int)((float)var17 * var15);
+         int var20 = this.snapbackStartX + (int)((float)var17 * var15);
          int var12 = this.snapbackStartY + (int)((float)var19 * var15);
-         this.renderFloatingItem(var1, this.snapbackItem, var11, var12, null);
+         this.renderFloatingItem(var1, this.snapbackItem, var20, var12, null);
       }
 
       var1.pose().popPose();
@@ -167,7 +173,7 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       return getTooltipFromItem(this.minecraft, var1);
    }
 
-   private void renderFloatingItem(GuiGraphics var1, ItemStack var2, int var3, int var4, String var5) {
+   protected void renderFloatingItem(GuiGraphics var1, ItemStack var2, int var3, int var4, @Nullable String var5) {
       var1.pose().pushPose();
       var1.pose().translate(0.0F, 0.0F, 232.0F);
       var1.renderItem(var2, var3, var4);
@@ -175,8 +181,15 @@ public abstract class AbstractContainerScreen<T extends AbstractContainerMenu> e
       var1.pose().popPose();
    }
 
+   protected void renderFloatingItem(GuiGraphics var1, ItemStack var2, float var3, float var4, float var5) {
+      var1.pose().pushPose();
+      var1.pose().translate(0.0F, 0.0F, 232.0F);
+      var1.renderItem(null, null, var2, var3, var4, var5, 0, 0);
+      var1.pose().popPose();
+   }
+
    protected void renderLabels(GuiGraphics var1, int var2, int var3) {
-      var1.drawString(this.font, this.title, this.titleLabelX, this.titleLabelY, 4210752, false);
+      var1.drawString(this.font, this.getTitle(), this.titleLabelX, this.titleLabelY, 4210752, false);
       var1.drawString(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, 4210752, false);
    }
 

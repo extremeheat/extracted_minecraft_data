@@ -1,6 +1,8 @@
 package net.minecraft.core.component;
 
 import com.mojang.serialization.Codec;
+import it.unimi.dsi.fastutil.ints.Int2IntMap;
+import it.unimi.dsi.fastutil.ints.IntIntPair;
 import java.util.List;
 import java.util.function.UnaryOperator;
 import net.minecraft.core.Holder;
@@ -39,15 +41,21 @@ import net.minecraft.world.item.component.MapItemColor;
 import net.minecraft.world.item.component.MapPostProcessing;
 import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.world.item.component.SeededContainerLoot;
+import net.minecraft.world.item.component.SnekComponent;
 import net.minecraft.world.item.component.SuspiciousStewEffects;
 import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.item.component.Unbreakable;
 import net.minecraft.world.item.component.WritableBookContent;
 import net.minecraft.world.item.component.WrittenBookContent;
+import net.minecraft.world.item.component.XpComponent;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.block.entity.BannerPatternLayers;
 import net.minecraft.world.level.block.entity.BeehiveBlockEntity;
+import net.minecraft.world.level.block.entity.FletchingBlockEntity;
+import net.minecraft.world.level.block.entity.InventoryHeatComponent;
+import net.minecraft.world.level.block.entity.LubricationComponent;
 import net.minecraft.world.level.block.entity.PotDecorations;
+import net.minecraft.world.level.block.entity.PotatoBaneComponent;
 import net.minecraft.world.level.saveddata.maps.MapId;
 
 public class DataComponents {
@@ -66,9 +74,6 @@ public class DataComponents {
    );
    public static final DataComponentType<Component> CUSTOM_NAME = register(
       "custom_name", var0 -> var0.persistent(ComponentSerialization.FLAT_CODEC).networkSynchronized(ComponentSerialization.STREAM_CODEC)
-   );
-   public static final DataComponentType<Component> ITEM_NAME = register(
-      "item_name", var0 -> var0.persistent(ComponentSerialization.FLAT_CODEC).networkSynchronized(ComponentSerialization.STREAM_CODEC)
    );
    public static final DataComponentType<ItemLore> LORE = register("lore", var0 -> var0.persistent(ItemLore.CODEC).networkSynchronized(ItemLore.STREAM_CODEC));
    public static final DataComponentType<Rarity> RARITY = register("rarity", var0 -> var0.persistent(Rarity.CODEC).networkSynchronized(Rarity.STREAM_CODEC));
@@ -149,6 +154,12 @@ public class DataComponents {
    public static final DataComponentType<CustomData> ENTITY_DATA = register(
       "entity_data", var0 -> var0.persistent(CustomData.CODEC_WITH_ID).networkSynchronized(CustomData.STREAM_CODEC)
    );
+   public static final DataComponentType<FletchingBlockEntity.Fletching> FLETCHING = register(
+      "fletching", var0 -> var0.persistent(FletchingBlockEntity.Fletching.CODEC).networkSynchronized(FletchingBlockEntity.Fletching.STREAM_CODEC)
+   );
+   public static final DataComponentType<FletchingBlockEntity.Resin> RESIN = register(
+      "resin", var0 -> var0.persistent(FletchingBlockEntity.Resin.CODEC).networkSynchronized(FletchingBlockEntity.Resin.STREAM_CODEC)
+   );
    public static final DataComponentType<CustomData> BUCKET_ENTITY_DATA = register(
       "bucket_entity_data", var0 -> var0.persistent(CustomData.CODEC).networkSynchronized(CustomData.STREAM_CODEC)
    );
@@ -157,9 +168,6 @@ public class DataComponents {
    );
    public static final DataComponentType<Holder<Instrument>> INSTRUMENT = register(
       "instrument", var0 -> var0.persistent(Instrument.CODEC).networkSynchronized(Instrument.STREAM_CODEC)
-   );
-   public static final DataComponentType<Integer> OMINOUS_BOTTLE_AMPLIFIER = register(
-      "ominous_bottle_amplifier", var0 -> var0.persistent(ExtraCodecs.intRange(0, 4)).networkSynchronized(ByteBufCodecs.VAR_INT)
    );
    public static final DataComponentType<List<ResourceLocation>> RECIPES = register("recipes", var0 -> var0.persistent(ResourceLocation.CODEC.listOf()));
    public static final DataComponentType<LodestoneTracker> LODESTONE_TRACKER = register(
@@ -198,6 +206,36 @@ public class DataComponents {
    );
    public static final DataComponentType<LockCode> LOCK = register("lock", var0 -> var0.persistent(LockCode.CODEC));
    public static final DataComponentType<SeededContainerLoot> CONTAINER_LOOT = register("container_loot", var0 -> var0.persistent(SeededContainerLoot.CODEC));
+   public static final DataComponentType<XpComponent> XP = register(
+      "xp", var0 -> var0.persistent(XpComponent.CODEC).networkSynchronized(XpComponent.STREAM_CODEC)
+   );
+   public static final DataComponentType<SnekComponent> SNEK = register(
+      "snek", var0 -> var0.persistent(SnekComponent.CODEC).networkSynchronized(SnekComponent.STREAM_CODEC)
+   );
+   public static final DataComponentType<Boolean> HOVERED = register("hovered", var0 -> var0.persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL));
+   public static final DataComponentType<Integer> CLICKS = register("clicks", var0 -> var0.persistent(Codec.INT).networkSynchronized(ByteBufCodecs.INT));
+   public static final DataComponentType<Integer> VIEWS = register("views", var0 -> var0.persistent(Codec.INT).networkSynchronized(ByteBufCodecs.INT));
+   public static final DataComponentType<Integer> UNDERCOVER_ID = register(
+      "undercover_id", var0 -> var0.persistent(Codec.INT).networkSynchronized(ByteBufCodecs.INT)
+   );
+   public static final DataComponentType<Int2IntMap> CONTACTS_MESSAGES = register(
+      "contacts_messages", var0 -> var0.persistent(ExtraCodecs.int2IntMap()).networkSynchronized(ByteBufCodecs.fromCodec(ExtraCodecs.int2IntMap()))
+   );
+   public static final DataComponentType<IntIntPair> SECRET_MESSAGE = register(
+      "secret_message", var0 -> var0.persistent(ExtraCodecs.intIntPair()).networkSynchronized(ByteBufCodecs.fromCodec(ExtraCodecs.intIntPair()))
+   );
+   public static final DataComponentType<LubricationComponent> LUBRICATION = register(
+      "lubrication", var0 -> var0.persistent(LubricationComponent.CODEC).networkSynchronized(LubricationComponent.STREAM_CODEC)
+   );
+   public static final DataComponentType<Boolean> EXPLICIT_FOIL = register(
+      "explicit_foil", var0 -> var0.persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL)
+   );
+   public static final DataComponentType<InventoryHeatComponent> INVENTORY_HEAT = register(
+      "heat", var0 -> var0.persistent(InventoryHeatComponent.CODEC).networkSynchronized(InventoryHeatComponent.STREAM_CODEC)
+   );
+   public static final DataComponentType<PotatoBaneComponent> POTATO_BANE = register(
+      "potato_bane", var0 -> var0.persistent(PotatoBaneComponent.CODEC).networkSynchronized(PotatoBaneComponent.STREAM_CODEC)
+   );
    public static final DataComponentMap COMMON_ITEM_COMPONENTS = DataComponentMap.builder()
       .set(MAX_STACK_SIZE, 64)
       .set(LORE, ItemLore.EMPTY)

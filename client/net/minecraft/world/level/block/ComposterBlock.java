@@ -5,10 +5,12 @@ import it.unimi.dsi.fastutil.objects.Object2FloatMap;
 import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
+import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
@@ -76,6 +78,12 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
       add(0.3F, Items.SPRUCE_LEAVES);
       add(0.3F, Items.DARK_OAK_LEAVES);
       add(0.3F, Items.ACACIA_LEAVES);
+      add(0.3F, Items.POTATO_LEAVES);
+      add(0.3F, Items.POTATO_STEM);
+      add(0.3F, Items.POTATO_BUD);
+      add(0.3F, Items.POTATO_SPROUTS);
+      add(0.3F, Items.POTATO_FRUIT);
+      add(0.3F, Items.POTATO_PEDICULE);
       add(0.3F, Items.CHERRY_LEAVES);
       add(0.3F, Items.BIRCH_LEAVES);
       add(0.3F, Items.AZALEA_LEAVES);
@@ -167,11 +175,14 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
       add(0.85F, Items.FLOWERING_AZALEA);
       add(0.85F, Items.BREAD);
       add(0.85F, Items.BAKED_POTATO);
+      add(0.85F, Items.HOT_POTATO);
+      add(0.85F, Items.POTATO_FLOWER);
       add(0.85F, Items.COOKIE);
       add(0.85F, Items.TORCHFLOWER);
       add(0.85F, Items.PITCHER_PLANT);
       add(1.0F, Items.CAKE);
       add(1.0F, Items.PUMPKIN_PIE);
+      add(1.0F, Items.POTATO_STAFF);
    }
 
    private static void add(float var0, ItemLike var1) {
@@ -289,12 +300,19 @@ public class ComposterBlock extends Block implements WorldlyContainerHolder {
    }
 
    static BlockState addItem(@Nullable Entity var0, BlockState var1, LevelAccessor var2, BlockPos var3, ItemStack var4) {
-      int var5 = var1.getValue(LEVEL);
+      if (var4.is(Items.POTATO_STAFF) && var0 instanceof ServerPlayer var5) {
+         CriteriaTriggers.COMPOST_STAFF.trigger((ServerPlayer)var5);
+         if (!((ServerPlayer)var5).chapterIsPast("composted_staff")) {
+            ((ServerPlayer)var5).setPotatoQuestChapter("composted_staff");
+         }
+      }
+
+      int var9 = var1.getValue(LEVEL);
       float var6 = COMPOSTABLES.getFloat(var4.getItem());
-      if ((var5 != 0 || !(var6 > 0.0F)) && !(var2.getRandom().nextDouble() < (double)var6)) {
+      if ((var9 != 0 || !(var6 > 0.0F)) && !(var2.getRandom().nextDouble() < (double)var6)) {
          return var1;
       } else {
-         int var7 = var5 + 1;
+         int var7 = var9 + 1;
          BlockState var8 = var1.setValue(LEVEL, Integer.valueOf(var7));
          var2.setBlock(var3, var8, 3);
          var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var0, var8));

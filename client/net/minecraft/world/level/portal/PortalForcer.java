@@ -18,6 +18,7 @@ import net.minecraft.world.level.block.NetherPortalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.border.WorldBorder;
+import net.minecraft.world.level.chunk.status.ChunkStatus;
 import net.minecraft.world.level.levelgen.Heightmap;
 
 public class PortalForcer {
@@ -44,7 +45,7 @@ public class PortalForcer {
    public Optional<BlockUtil.FoundRectangle> findPortalAround(BlockPos var1, boolean var2, WorldBorder var3) {
       PoiManager var4 = this.level.getPoiManager();
       int var5 = var2 ? 16 : 128;
-      var4.ensureLoadedAndValid(this.level, var1, var5);
+      var4.ensureLoadedAndValid(this.level, var1, var5, ChunkStatus.EMPTY);
       Optional var6 = var4.getInSquare(var0 -> var0.is(PoiTypes.NETHER_PORTAL), var1, var5, PoiManager.Occupancy.ANY)
          .filter(var1x -> var3.isWithinBounds(var1x.getPos()))
          .sorted(Comparator.<PoiRecord>comparingDouble(var1x -> var1x.getPos().distSqr(var1)).thenComparingInt(var0 -> var0.getPos().getY()))

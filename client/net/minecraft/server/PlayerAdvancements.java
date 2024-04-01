@@ -24,6 +24,7 @@ import java.util.Map.Entry;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import net.minecraft.FileUtil;
+import net.minecraft.Util;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementNode;
@@ -118,7 +119,7 @@ public class PlayerAdvancements {
             try {
                var2.setLenient(false);
                JsonElement var3 = Streams.parse(var2);
-               PlayerAdvancements.Data var4 = (PlayerAdvancements.Data)this.codec.parse(JsonOps.INSTANCE, var3).getOrThrow(JsonParseException::new);
+               PlayerAdvancements.Data var4 = Util.getOrThrow(this.codec.parse(JsonOps.INSTANCE, var3), JsonParseException::new);
                this.applyFrom(var1, var4);
             } catch (Throwable var6) {
                try {
@@ -143,7 +144,7 @@ public class PlayerAdvancements {
    }
 
    public void save() {
-      JsonElement var1 = (JsonElement)this.codec.encodeStart(JsonOps.INSTANCE, this.asData()).getOrThrow();
+      JsonElement var1 = Util.getOrThrow(this.codec.encodeStart(JsonOps.INSTANCE, this.asData()), IllegalStateException::new);
 
       try {
          FileUtil.createDirectoriesSafe(this.playerSavePath.getParent());
@@ -219,6 +220,10 @@ public class PlayerAdvancements {
       }
 
       return var3;
+   }
+
+   public AdvancementTree getTree() {
+      return this.tree;
    }
 
    private void markForVisibilityUpdate(AdvancementHolder var1) {

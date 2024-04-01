@@ -737,7 +737,8 @@ public class ChunkPalettedStorageFix extends DataFix {
          this.z = var1.get("zPos").asInt(0) << 4;
          var1.get("TileEntities")
             .asStreamOpt()
-            .ifSuccess(
+            .result()
+            .ifPresent(
                var1x -> var1x.forEach(
                      var1xx -> {
                         int var2xx = var1xx.get("x").asInt(0) - this.x & 15;
@@ -754,7 +755,7 @@ public class ChunkPalettedStorageFix extends DataFix {
                   )
             );
          boolean var2 = var1.get("convertedFromAlphaFormat").asBoolean(false);
-         var1.get("Sections").asStreamOpt().ifSuccess(var1x -> var1x.forEach(var1xx -> {
+         var1.get("Sections").asStreamOpt().result().ifPresent(var1x -> var1x.forEach(var1xx -> {
                ChunkPalettedStorageFix.Section var2xx = new ChunkPalettedStorageFix.Section(var1xx);
                this.sides = var2xx.upgrade(this.sides);
                this.sections[var2xx.y] = var2xx;

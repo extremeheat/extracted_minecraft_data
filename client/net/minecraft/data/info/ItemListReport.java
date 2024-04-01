@@ -7,6 +7,7 @@ import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
+import net.minecraft.Util;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.TypedDataComponent;
@@ -48,8 +49,7 @@ public class ItemListReport implements DataProvider {
 
    private static <T> JsonElement dumpComponent(TypedDataComponent<T> var0, DynamicOps<JsonElement> var1) {
       ResourceLocation var2 = BuiltInRegistries.DATA_COMPONENT_TYPE.getKey(var0.type());
-      JsonElement var3 = (JsonElement)var0.encodeValue(var1)
-         .getOrThrow(var1x -> new IllegalStateException("Failed to serialize component " + var2 + ": " + var1x));
+      JsonElement var3 = Util.getOrThrow(var0.encodeValue(var1), var1x -> new IllegalStateException("Failed to serialize component " + var2 + ": " + var1x));
       JsonObject var4 = new JsonObject();
       var4.addProperty("type", var2.toString());
       var4.add("value", var3);

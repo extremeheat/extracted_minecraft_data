@@ -17,7 +17,7 @@ public record PackMetadataSection(Component c, int d, Optional<InclusiveRange<In
       var0 -> var0.group(
                ComponentSerialization.CODEC.fieldOf("description").forGetter(PackMetadataSection::description),
                Codec.INT.fieldOf("pack_format").forGetter(PackMetadataSection::packFormat),
-               InclusiveRange.codec(Codec.INT).lenientOptionalFieldOf("supported_formats").forGetter(PackMetadataSection::supportedFormats)
+               InclusiveRange.codec(Codec.INT).optionalFieldOf("supported_formats").forGetter(PackMetadataSection::supportedFormats)
             )
             .apply(var0, PackMetadataSection::new)
    );

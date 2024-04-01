@@ -389,7 +389,11 @@ public abstract class FlowingFluid extends Fluid {
          )
        {
          return false;
-      } else if (!var3.is(Blocks.NETHER_PORTAL) && !var3.is(Blocks.END_PORTAL) && !var3.is(Blocks.END_GATEWAY) && !var3.is(Blocks.STRUCTURE_VOID)) {
+      } else if (!var3.is(Blocks.NETHER_PORTAL)
+         && !var3.is(Blocks.END_PORTAL)
+         && !var3.is(Blocks.END_GATEWAY)
+         && !var3.is(Blocks.STRUCTURE_VOID)
+         && !var3.is(Blocks.POTATO_PORTAL)) {
          return !var3.blocksMotion();
       } else {
          return false;

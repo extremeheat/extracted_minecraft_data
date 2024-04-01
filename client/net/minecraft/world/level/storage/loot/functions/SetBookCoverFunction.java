@@ -1,7 +1,6 @@
 package net.minecraft.world.level.storage.loot.functions;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
@@ -15,13 +14,13 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class SetBookCoverFunction extends LootItemConditionalFunction {
-   public static final MapCodec<SetBookCoverFunction> CODEC = RecordCodecBuilder.mapCodec(
+   public static final Codec<SetBookCoverFunction> CODEC = RecordCodecBuilder.create(
       var0 -> commonFields(var0)
             .and(
                var0.group(
-                  Filterable.codec(Codec.string(0, 32)).optionalFieldOf("title").forGetter(var0x -> var0x.title),
-                  Codec.STRING.optionalFieldOf("author").forGetter(var0x -> var0x.author),
-                  ExtraCodecs.intRange(0, 3).optionalFieldOf("generation").forGetter(var0x -> var0x.generation)
+                  ExtraCodecs.strictOptionalField(Filterable.codec(ExtraCodecs.sizeLimitedString(0, 32)), "title").forGetter(var0x -> var0x.title),
+                  ExtraCodecs.strictOptionalField(Codec.STRING, "author").forGetter(var0x -> var0x.author),
+                  ExtraCodecs.strictOptionalField(ExtraCodecs.intRange(0, 3), "generation").forGetter(var0x -> var0x.generation)
                )
             )
             .apply(var0, SetBookCoverFunction::new)

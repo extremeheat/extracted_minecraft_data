@@ -197,6 +197,11 @@ public class Villager extends AbstractVillager implements ReputationEventHandler
    }
 
    @Override
+   public boolean hasPotatoVariant() {
+      return true;
+   }
+
+   @Override
    public Brain<Villager> getBrain() {
       return super.getBrain();
    }

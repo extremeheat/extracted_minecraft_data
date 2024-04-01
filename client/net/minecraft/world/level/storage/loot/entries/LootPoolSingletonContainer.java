@@ -8,6 +8,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder.Mu;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -43,10 +44,11 @@ public abstract class LootPoolSingletonContainer extends LootPoolEntryContainer 
       Instance<T> var0
    ) {
       return var0.group(
-            Codec.INT.optionalFieldOf("weight", 1).forGetter(var0x -> var0x.weight), Codec.INT.optionalFieldOf("quality", 0).forGetter(var0x -> var0x.quality)
+            ExtraCodecs.strictOptionalField(Codec.INT, "weight", 1).forGetter(var0x -> var0x.weight),
+            ExtraCodecs.strictOptionalField(Codec.INT, "quality", 0).forGetter(var0x -> var0x.quality)
          )
          .and(commonFields(var0).t1())
-         .and(LootItemFunctions.ROOT_CODEC.listOf().optionalFieldOf("functions", List.of()).forGetter(var0x -> var0x.functions));
+         .and(ExtraCodecs.strictOptionalField(LootItemFunctions.ROOT_CODEC.listOf(), "functions", List.of()).forGetter(var0x -> var0x.functions));
    }
 
    @Override

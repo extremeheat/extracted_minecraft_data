@@ -11,6 +11,7 @@ import net.minecraft.network.protocol.game.ClientboundBossEventPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.BossEvent;
+import net.minecraft.world.phys.Vec3;
 
 public class BossHealthOverlay {
    private static final int BAR_WIDTH = 182;
@@ -60,16 +61,18 @@ public class BossHealthOverlay {
          int var3 = 12;
 
          for(LerpingBossEvent var5 : this.events.values()) {
-            int var6 = var2 / 2 - 91;
-            this.drawBar(var1, var6, var3, var5);
-            Component var8 = var5.getName();
-            int var9 = this.minecraft.font.width(var8);
-            int var10 = var2 / 2 - var9 / 2;
-            int var11 = var3 - 9;
-            var1.drawString(this.minecraft.font, var8, var10, var11, 16777215);
-            var3 += 10 + 9;
-            if (var3 >= var1.guiHeight() / 3) {
-               break;
+            if (var5.isActiveFor(this.minecraft.cameraEntity.position())) {
+               int var6 = var2 / 2 - 91;
+               this.drawBar(var1, var6, var3, var5);
+               Component var8 = var5.getName();
+               int var9 = this.minecraft.font.width(var8);
+               int var10 = var2 / 2 - var9 / 2;
+               int var11 = var3 - 9;
+               var1.drawString(this.minecraft.font, var8, var10, var11, 16777215);
+               var3 += 10 + 9;
+               if (var3 >= var1.guiHeight() / 3) {
+                  break;
+               }
             }
          }
 
@@ -100,9 +103,18 @@ public class BossHealthOverlay {
          new ClientboundBossEventPacket.Handler() {
             @Override
             public void add(
-               UUID var1, Component var2, float var3, BossEvent.BossBarColor var4, BossEvent.BossBarOverlay var5, boolean var6, boolean var7, boolean var8
+               UUID var1,
+               Component var2,
+               float var3,
+               BossEvent.BossBarColor var4,
+               BossEvent.BossBarOverlay var5,
+               boolean var6,
+               boolean var7,
+               boolean var8,
+               Vec3 var9,
+               int var10
             ) {
-               BossHealthOverlay.this.events.put(var1, new LerpingBossEvent(var1, var2, var3, var4, var5, var6, var7, var8));
+               BossHealthOverlay.this.events.put(var1, new LerpingBossEvent(var1, var2, var3, var4, var5, var6, var7, var8, var9, var10));
             }
    
             @Override
@@ -118,6 +130,12 @@ public class BossHealthOverlay {
             @Override
             public void updateName(UUID var1, Component var2) {
                BossHealthOverlay.this.events.get(var1).setName(var2);
+            }
+   
+            @Override
+            public void updateLocation(UUID var1, Vec3 var2, int var3) {
+               LerpingBossEvent var4 = BossHealthOverlay.this.events.get(var1);
+               var4.setLocation(var2, var3);
             }
    
             @Override

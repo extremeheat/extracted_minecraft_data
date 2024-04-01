@@ -52,7 +52,7 @@ public class TagLoader<T> {
             try (BufferedReader var10 = var9.openAsReader()) {
                JsonElement var11 = JsonParser.parseReader(var10);
                List var12 = var2.computeIfAbsent(var7, var0 -> new ArrayList());
-               TagFile var13 = (TagFile)TagFile.CODEC.parse(new Dynamic(JsonOps.INSTANCE, var11)).getOrThrow();
+               TagFile var13 = (TagFile)TagFile.CODEC.parse(new Dynamic(JsonOps.INSTANCE, var11)).getOrThrow(false, LOGGER::error);
                if (var13.replace()) {
                   var12.clear();
                }

@@ -1,10 +1,11 @@
 package net.minecraft.world.level.storage.loot.entries;
 
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.function.Consumer;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
@@ -38,9 +39,9 @@ public abstract class CompositeEntryBase extends LootPoolEntryContainer {
       return !this.canRun(var1) ? false : this.composedChildren.expand(var1, var2);
    }
 
-   public static <T extends CompositeEntryBase> MapCodec<T> createCodec(CompositeEntryBase.CompositeEntryConstructor<T> var0) {
-      return RecordCodecBuilder.mapCodec(
-         var1 -> var1.group(LootPoolEntries.CODEC.listOf().optionalFieldOf("children", List.of()).forGetter(var0xx -> var0xx.children))
+   public static <T extends CompositeEntryBase> Codec<T> createCodec(CompositeEntryBase.CompositeEntryConstructor<T> var0) {
+      return RecordCodecBuilder.create(
+         var1 -> var1.group(ExtraCodecs.strictOptionalField(LootPoolEntries.CODEC.listOf(), "children", List.of()).forGetter(var0xx -> var0xx.children))
                .and(commonFields(var1).t1())
                .apply(var1, var0::create)
       );

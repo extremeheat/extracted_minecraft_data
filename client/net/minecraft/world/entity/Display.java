@@ -279,8 +279,11 @@ public abstract class Display extends Entity {
 
    @Override
    protected void addAdditionalSaveData(CompoundTag var1) {
-      Transformation.EXTENDED_CODEC.encodeStart(NbtOps.INSTANCE, createTransformation(this.entityData)).ifSuccess(var1x -> var1.put("transformation", var1x));
-      Display.BillboardConstraints.CODEC.encodeStart(NbtOps.INSTANCE, this.getBillboardConstraints()).ifSuccess(var1x -> var1.put("billboard", var1x));
+      Transformation.EXTENDED_CODEC
+         .encodeStart(NbtOps.INSTANCE, createTransformation(this.entityData))
+         .result()
+         .ifPresent(var1x -> var1.put("transformation", var1x));
+      Display.BillboardConstraints.CODEC.encodeStart(NbtOps.INSTANCE, this.getBillboardConstraints()).result().ifPresent(var1x -> var1.put("billboard", var1x));
       var1.putInt("interpolation_duration", this.getTransformationInterpolationDuration());
       var1.putInt("teleport_duration", this.getPosRotInterpolationDuration());
       var1.putFloat("view_range", this.getViewRange());
@@ -291,7 +294,7 @@ public abstract class Display extends Entity {
       var1.putInt("glow_color_override", this.getGlowColorOverride());
       Brightness var2 = this.getBrightnessOverride();
       if (var2 != null) {
-         Brightness.CODEC.encodeStart(NbtOps.INSTANCE, var2).ifSuccess(var1x -> var1.put("brightness", var1x));
+         Brightness.CODEC.encodeStart(NbtOps.INSTANCE, var2).result().ifPresent(var1x -> var1.put("brightness", var1x));
       }
    }
 
@@ -728,7 +731,7 @@ public abstract class Display extends Entity {
             var1.put("item", this.getItemStack().save(this.registryAccess()));
          }
 
-         ItemDisplayContext.CODEC.encodeStart(NbtOps.INSTANCE, this.getItemTransform()).ifSuccess(var1x -> var1.put("item_display", var1x));
+         ItemDisplayContext.CODEC.encodeStart(NbtOps.INSTANCE, this.getItemTransform()).result().ifPresent(var1x -> var1.put("item_display", var1x));
       }
 
       @Override
@@ -1009,7 +1012,7 @@ public abstract class Display extends Entity {
          storeFlag(var2, var1, "shadow", (byte)1);
          storeFlag(var2, var1, "see_through", (byte)2);
          storeFlag(var2, var1, "default_background", (byte)4);
-         Display.TextDisplay.Align.CODEC.encodeStart(NbtOps.INSTANCE, getAlign(var2)).ifSuccess(var1x -> var1.put("alignment", var1x));
+         Display.TextDisplay.Align.CODEC.encodeStart(NbtOps.INSTANCE, getAlign(var2)).result().ifPresent(var1x -> var1.put("alignment", var1x));
       }
 
       @Override

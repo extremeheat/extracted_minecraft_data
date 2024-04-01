@@ -19,6 +19,7 @@ import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.Nameable;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class Inventory implements Container, Nameable {
@@ -110,7 +111,7 @@ public class Inventory implements Container, Nameable {
       for(int var2 = 0; var2 < this.items.size(); ++var2) {
          ItemStack var3 = this.items.get(var2);
          if (!this.items.get(var2).isEmpty()
-            && ItemStack.isSameItemSameComponents(var1, this.items.get(var2))
+            && (ItemStack.isSameItemSameComponents(var1, this.items.get(var2)) || var1.is(Items.HOT_POTATO) && this.items.get(var2).is(Items.HOT_POTATO))
             && !this.items.get(var2).isDamaged()
             && !var3.isEnchanted()
             && !var3.has(DataComponents.CUSTOM_NAME)) {
@@ -212,10 +213,13 @@ public class Inventory implements Container, Nameable {
    }
 
    public void tick() {
-      for(NonNullList var2 : this.compartments) {
-         for(int var3 = 0; var3 < var2.size(); ++var3) {
-            if (!((ItemStack)var2.get(var3)).isEmpty()) {
-               ((ItemStack)var2.get(var3)).inventoryTick(this.player.level(), this.player, var3, this.selected == var3);
+      int var1 = 0;
+
+      for(NonNullList var3 : this.compartments) {
+         for(int var4 = 0; var4 < var3.size(); ++var4) {
+            ++var1;
+            if (!((ItemStack)var3.get(var4)).isEmpty()) {
+               ((ItemStack)var3.get(var4)).inventoryTick(this.player.level(), this.player, var1, this.selected == var4);
             }
          }
       }

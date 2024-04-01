@@ -1,7 +1,7 @@
 package net.minecraft.world.level.chunk.storage;
 
 import com.mojang.datafixers.DataFixer;
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -37,7 +37,7 @@ public class ChunkStorage implements AutoCloseable {
    }
 
    public CompoundTag upgradeChunkTag(
-      ResourceKey<Level> var1, Supplier<DimensionDataStorage> var2, CompoundTag var3, Optional<ResourceKey<MapCodec<? extends ChunkGenerator>>> var4
+      ResourceKey<Level> var1, Supplier<DimensionDataStorage> var2, CompoundTag var3, Optional<ResourceKey<Codec<? extends ChunkGenerator>>> var4
    ) {
       int var5 = getVersion(var3);
       if (var5 < 1493) {
@@ -72,7 +72,7 @@ public class ChunkStorage implements AutoCloseable {
       return var3;
    }
 
-   public static void injectDatafixingContext(CompoundTag var0, ResourceKey<Level> var1, Optional<ResourceKey<MapCodec<? extends ChunkGenerator>>> var2) {
+   public static void injectDatafixingContext(CompoundTag var0, ResourceKey<Level> var1, Optional<ResourceKey<Codec<? extends ChunkGenerator>>> var2) {
       CompoundTag var3 = new CompoundTag();
       var3.putString("dimension", var1.location().toString());
       var2.ifPresent(var1x -> var3.putString("generator", var1x.location().toString()));

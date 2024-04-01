@@ -9,6 +9,7 @@ import net.minecraft.advancements.Criterion;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.storage.loot.LootTable;
 
 public class LootTableTrigger extends SimpleCriterionTrigger<LootTableTrigger.TriggerInstance> {
@@ -30,7 +31,7 @@ public class LootTableTrigger extends SimpleCriterionTrigger<LootTableTrigger.Tr
       private final ResourceKey<LootTable> lootTable;
       public static final Codec<LootTableTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
-                  EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(LootTableTrigger.TriggerInstance::player),
+                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player").forGetter(LootTableTrigger.TriggerInstance::player),
                   ResourceKey.codec(Registries.LOOT_TABLE).fieldOf("loot_table").forGetter(LootTableTrigger.TriggerInstance::lootTable)
                )
                .apply(var0, LootTableTrigger.TriggerInstance::new)

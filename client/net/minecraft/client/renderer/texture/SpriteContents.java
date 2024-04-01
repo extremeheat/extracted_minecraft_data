@@ -260,10 +260,11 @@ public class SpriteContents implements Stitcher.Entry, AutoCloseable {
                   for(int var15 = 0; var15 < var12; ++var15) {
                      int var16 = this.getPixel(var4, var9, var11, var15, var14);
                      int var17 = this.getPixel(var4, var10, var11, var15, var14);
-                     int var18 = this.mix(var7, var16 >> 16 & 0xFF, var17 >> 16 & 0xFF);
-                     int var19 = this.mix(var7, var16 >> 8 & 0xFF, var17 >> 8 & 0xFF);
-                     int var20 = this.mix(var7, var16 & 0xFF, var17 & 0xFF);
-                     this.activeFrame[var11].setPixelRGBA(var15, var14, var16 & 0xFF000000 | var18 << 16 | var19 << 8 | var20);
+                     int var18 = this.mix(var7, var16 >> 24 & 0xFF, var17 >> 24 & 0xFF);
+                     int var19 = this.mix(var7, var16 >> 16 & 0xFF, var17 >> 16 & 0xFF);
+                     int var20 = this.mix(var7, var16 >> 8 & 0xFF, var17 >> 8 & 0xFF);
+                     int var21 = this.mix(var7, var16 & 0xFF, var17 & 0xFF);
+                     this.activeFrame[var11].setPixelRGBA(var15, var14, var18 << 24 | var19 << 16 | var20 << 8 | var21);
                   }
                }
             }

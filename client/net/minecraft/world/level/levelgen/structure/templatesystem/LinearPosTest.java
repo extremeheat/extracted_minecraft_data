@@ -1,7 +1,6 @@
 package net.minecraft.world.level.levelgen.structure.templatesystem;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.BlockPos;
@@ -9,7 +8,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
 public class LinearPosTest extends PosRuleTest {
-   public static final MapCodec<LinearPosTest> CODEC = RecordCodecBuilder.mapCodec(
+   public static final Codec<LinearPosTest> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                Codec.FLOAT.fieldOf("min_chance").orElse(0.0F).forGetter(var0x -> var0x.minChance),
                Codec.FLOAT.fieldOf("max_chance").orElse(0.0F).forGetter(var0x -> var0x.maxChance),

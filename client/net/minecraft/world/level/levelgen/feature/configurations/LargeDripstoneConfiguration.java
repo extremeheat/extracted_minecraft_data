@@ -3,8 +3,11 @@ package net.minecraft.world.level.levelgen.feature.configurations;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.valueproviders.FloatProvider;
 import net.minecraft.util.valueproviders.IntProvider;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.PointedDripstoneBlock;
 
 public class LargeDripstoneConfiguration implements FeatureConfiguration {
    public static final Codec<LargeDripstoneConfiguration> CODEC = RecordCodecBuilder.create(
@@ -17,7 +20,12 @@ public class LargeDripstoneConfiguration implements FeatureConfiguration {
                FloatProvider.codec(0.1F, 10.0F).fieldOf("stalagmite_bluntness").forGetter(var0x -> var0x.stalagmiteBluntness),
                FloatProvider.codec(0.0F, 2.0F).fieldOf("wind_speed").forGetter(var0x -> var0x.windSpeed),
                Codec.intRange(0, 100).fieldOf("min_radius_for_wind").forGetter(var0x -> var0x.minRadiusForWind),
-               Codec.floatRange(0.0F, 5.0F).fieldOf("min_bluntness_for_wind").forGetter(var0x -> var0x.minBluntnessForWind)
+               Codec.floatRange(0.0F, 5.0F).fieldOf("min_bluntness_for_wind").forGetter(var0x -> var0x.minBluntnessForWind),
+               BuiltInRegistries.BLOCK
+                  .byNameCodec()
+                  .xmap(var0x -> (PointedDripstoneBlock)var0x, var0x -> var0x)
+                  .fieldOf("block")
+                  .forGetter(var0x -> var0x.block)
             )
             .apply(var0, LargeDripstoneConfiguration::new)
    );
@@ -30,9 +38,19 @@ public class LargeDripstoneConfiguration implements FeatureConfiguration {
    public final FloatProvider windSpeed;
    public final int minRadiusForWind;
    public final float minBluntnessForWind;
+   public final PointedDripstoneBlock block;
 
    public LargeDripstoneConfiguration(
-      int var1, IntProvider var2, FloatProvider var3, float var4, FloatProvider var5, FloatProvider var6, FloatProvider var7, int var8, float var9
+      int var1,
+      IntProvider var2,
+      FloatProvider var3,
+      float var4,
+      FloatProvider var5,
+      FloatProvider var6,
+      FloatProvider var7,
+      int var8,
+      float var9,
+      PointedDripstoneBlock var10
    ) {
       super();
       this.floorToCeilingSearchRange = var1;
@@ -44,5 +62,6 @@ public class LargeDripstoneConfiguration implements FeatureConfiguration {
       this.windSpeed = var7;
       this.minRadiusForWind = var8;
       this.minBluntnessForWind = var9;
+      this.block = var10;
    }
 }

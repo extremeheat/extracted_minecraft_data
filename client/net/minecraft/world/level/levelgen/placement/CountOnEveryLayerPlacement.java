@@ -1,6 +1,8 @@
 package net.minecraft.world.level.levelgen.placement;
 
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
 import net.minecraft.core.BlockPos;
@@ -13,22 +15,32 @@ import net.minecraft.world.level.levelgen.Heightmap;
 
 @Deprecated
 public class CountOnEveryLayerPlacement extends PlacementModifier {
-   public static final MapCodec<CountOnEveryLayerPlacement> CODEC = IntProvider.codec(0, 256)
-      .fieldOf("count")
-      .xmap(CountOnEveryLayerPlacement::new, var0 -> var0.count);
+   public static final Codec<CountOnEveryLayerPlacement> CODEC = RecordCodecBuilder.create(
+      var0 -> var0.group(
+               IntProvider.codec(0, 256).fieldOf("count").forGetter(var0x -> var0x.count),
+               Codec.INT.fieldOf("start_offset").forGetter(var0x -> var0x.start_offset)
+            )
+            .apply(var0, CountOnEveryLayerPlacement::new)
+   );
    private final IntProvider count;
+   private final int start_offset;
 
-   private CountOnEveryLayerPlacement(IntProvider var1) {
+   private CountOnEveryLayerPlacement(IntProvider var1, int var2) {
       super();
+      this.start_offset = var2;
       this.count = var1;
    }
 
    public static CountOnEveryLayerPlacement of(IntProvider var0) {
-      return new CountOnEveryLayerPlacement(var0);
+      return new CountOnEveryLayerPlacement(var0, 0);
    }
 
    public static CountOnEveryLayerPlacement of(int var0) {
       return of(ConstantInt.of(var0));
+   }
+
+   public static CountOnEveryLayerPlacement of(int var0, int var1) {
+      return new CountOnEveryLayerPlacement(ConstantInt.of(var0), var1);
    }
 
    @Override
@@ -43,7 +55,7 @@ public class CountOnEveryLayerPlacement extends PlacementModifier {
          for(int var7 = 0; var7 < this.count.sample(var2); ++var7) {
             int var8 = var2.nextInt(16) + var3.getX();
             int var9 = var2.nextInt(16) + var3.getZ();
-            int var10 = var1.getHeight(Heightmap.Types.MOTION_BLOCKING, var8, var9);
+            int var10 = var1.getHeight(Heightmap.Types.MOTION_BLOCKING, var8, var9) + this.start_offset;
             int var11 = findOnGroundYPosition(var1, var8, var10, var9, var6);
             if (var11 != 2147483647) {
                var4.add(new BlockPos(var8, var11, var9));

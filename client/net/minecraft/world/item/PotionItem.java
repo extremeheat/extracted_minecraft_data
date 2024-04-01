@@ -39,7 +39,11 @@ public class PotionItem extends Item {
    @Override
    public ItemStack getDefaultInstance() {
       ItemStack var1 = super.getDefaultInstance();
-      var1.set(DataComponents.POTION_CONTENTS, new PotionContents(Potions.WATER));
+      var1.applyComponents(this.components());
+      if (var1.get(DataComponents.POTION_CONTENTS) == null) {
+         var1.set(DataComponents.POTION_CONTENTS, new PotionContents(Potions.WATER));
+      }
+
       return var1;
    }
 

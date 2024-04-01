@@ -1,6 +1,6 @@
 package net.minecraft.world.level.levelgen.feature.foliageplacers;
 
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.BlockPos;
@@ -11,7 +11,7 @@ import net.minecraft.world.level.LevelSimulatedReader;
 import net.minecraft.world.level.levelgen.feature.configurations.TreeConfiguration;
 
 public class MegaPineFoliagePlacer extends FoliagePlacer {
-   public static final MapCodec<MegaPineFoliagePlacer> CODEC = RecordCodecBuilder.mapCodec(
+   public static final Codec<MegaPineFoliagePlacer> CODEC = RecordCodecBuilder.create(
       var0 -> foliagePlacerParts(var0)
             .and(IntProvider.codec(0, 24).fieldOf("crown_height").forGetter(var0x -> var0x.crownHeight))
             .apply(var0, MegaPineFoliagePlacer::new)

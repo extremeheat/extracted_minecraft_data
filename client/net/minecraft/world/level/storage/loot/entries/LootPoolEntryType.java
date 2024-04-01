@@ -1,11 +1,11 @@
 package net.minecraft.world.level.storage.loot.entries;
 
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 
-public record LootPoolEntryType(MapCodec<? extends LootPoolEntryContainer> a) {
-   private final MapCodec<? extends LootPoolEntryContainer> codec;
+public record LootPoolEntryType(Codec<? extends LootPoolEntryContainer> a) {
+   private final Codec<? extends LootPoolEntryContainer> codec;
 
-   public LootPoolEntryType(MapCodec<? extends LootPoolEntryContainer> var1) {
+   public LootPoolEntryType(Codec<? extends LootPoolEntryContainer> var1) {
       super();
       this.codec = var1;
    }

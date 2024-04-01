@@ -1,13 +1,13 @@
 package net.minecraft.world.level.levelgen.placement;
 
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.util.RandomSource;
 
 public class BiomeFilter extends PlacementFilter {
    private static final BiomeFilter INSTANCE = new BiomeFilter();
-   public static MapCodec<BiomeFilter> CODEC = MapCodec.unit(() -> INSTANCE);
+   public static Codec<BiomeFilter> CODEC = Codec.unit(() -> INSTANCE);
 
    private BiomeFilter() {
       super();

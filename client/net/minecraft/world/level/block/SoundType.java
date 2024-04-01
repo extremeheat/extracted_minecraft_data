@@ -646,6 +646,39 @@ public class SoundType {
       SoundEvents.NETHER_WOOD_HIT,
       SoundEvents.NETHER_WOOD_FALL
    );
+   public static final SoundType CORRUPTED_PEELGRASS = new SoundType(
+      1.0F,
+      1.0F,
+      SoundEvents.CORRUPTED_PEELGRASS_BLOCK_BREAK,
+      SoundEvents.CORRUPTED_PEELGRASS_BLOCK_STEP,
+      SoundEvents.CORRUPTED_PEELGRASS_BLOCK_PLACE,
+      SoundEvents.CORRUPTED_PEELGRASS_BLOCK_HIT,
+      SoundEvents.CORRUPTED_PEELGRASS_BLOCK_FALL
+   );
+   public static final SoundType PEELGRASS = new SoundType(
+      1.0F,
+      1.0F,
+      SoundEvents.PEELGRASS_BLOCK_BREAK,
+      SoundEvents.PEELGRASS_BLOCK_STEP,
+      SoundEvents.PEELGRASS_BLOCK_PLACE,
+      SoundEvents.PEELGRASS_BLOCK_HIT,
+      SoundEvents.PEELGRASS_BLOCK_FALL
+   );
+   public static final SoundType GRAVTATER = new SoundType(
+      1.0F, 1.0F, SoundEvents.GRAVTATER_BREAK, SoundEvents.GRAVTATER_STEP, SoundEvents.GRAVTATER_PLACE, SoundEvents.GRAVTATER_HIT, SoundEvents.GRAVTATER_FALL
+   );
+   public static final SoundType POTONE = new SoundType(
+      1.0F, 1.0F, SoundEvents.POTONE_BREAK, SoundEvents.POTONE_STEP, SoundEvents.POTONE_PLACE, SoundEvents.POTONE_HIT, SoundEvents.POTONE_FALL
+   );
+   public static final SoundType TERREDEPOMME = new SoundType(
+      1.0F,
+      1.0F,
+      SoundEvents.TERREDEPOMME_BREAK,
+      SoundEvents.TERREDEPOMME_STEP,
+      SoundEvents.TERREDEPOMME_PLACE,
+      SoundEvents.TERREDEPOMME_HIT,
+      SoundEvents.TERREDEPOMME_FALL
+   );
    public static final SoundType CHERRY_WOOD = new SoundType(
       1.0F,
       1.0F,
@@ -759,9 +792,6 @@ public class SoundType {
       SoundEvents.HEAVY_CORE_PLACE,
       SoundEvents.HEAVY_CORE_HIT,
       SoundEvents.HEAVY_CORE_FALL
-   );
-   public static final SoundType COBWEB = new SoundType(
-      1.0F, 1.0F, SoundEvents.COBWEB_BREAK, SoundEvents.COBWEB_STEP, SoundEvents.COBWEB_PLACE, SoundEvents.COBWEB_HIT, SoundEvents.COBWEB_FALL
    );
    public final float volume;
    public final float pitch;

@@ -44,8 +44,12 @@ public interface CollisionGetter extends BlockGetter {
    }
 
    default boolean noCollision(@Nullable Entity var1, AABB var2) {
-      for(VoxelShape var4 : this.getBlockCollisions(var1, var2)) {
-         if (!var4.isEmpty()) {
+      return this.noCollision(var1, var2, false);
+   }
+
+   default boolean noCollision(@Nullable Entity var1, AABB var2, boolean var3) {
+      for(VoxelShape var5 : this.getBlockCollisions(var1, var2)) {
+         if (!var5.isEmpty()) {
             return false;
          }
       }
@@ -55,8 +59,8 @@ public interface CollisionGetter extends BlockGetter {
       } else if (var1 == null) {
          return true;
       } else {
-         VoxelShape var5 = this.borderCollision(var1, var2);
-         return var5 == null || !Shapes.joinIsNotEmpty(var5, Shapes.create(var2), BooleanOp.AND);
+         VoxelShape var6 = this.borderCollision(var1, var2);
+         return var6 == null || !Shapes.joinIsNotEmpty(var6, Shapes.create(var2), BooleanOp.AND);
       }
    }
 

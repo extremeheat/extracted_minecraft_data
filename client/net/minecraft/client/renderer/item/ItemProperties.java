@@ -21,12 +21,15 @@ import net.minecraft.world.item.FishingRodItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.LashingPotatoItem;
+import net.minecraft.world.item.PoisonousPolytraItem;
 import net.minecraft.world.item.armortrim.ArmorTrim;
 import net.minecraft.world.item.armortrim.TrimMaterial;
 import net.minecraft.world.item.component.BlockItemStateProperties;
 import net.minecraft.world.item.component.ChargedProjectiles;
 import net.minecraft.world.item.component.CustomModelData;
 import net.minecraft.world.item.component.LodestoneTracker;
+import net.minecraft.world.item.component.SnekComponent;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.LightBlock;
 
@@ -187,6 +190,7 @@ public class ItemProperties {
          return var4 != null && var4.contains(Items.FIREWORK_ROCKET) ? 1.0F : 0.0F;
       });
       register(Items.ELYTRA, new ResourceLocation("broken"), (var0x, var1, var2, var3) -> ElytraItem.isFlyEnabled(var0x) ? 0.0F : 1.0F);
+      register(Items.POISONOUS_POLYTRA, new ResourceLocation("broken"), (var0x, var1, var2, var3) -> PoisonousPolytraItem.isFlyEnabled(var0x) ? 0.0F : 1.0F);
       register(Items.FISHING_ROD, new ResourceLocation("cast"), (var0x, var1, var2, var3) -> {
          if (var2 == null) {
             return 0.0F;
@@ -198,6 +202,19 @@ public class ItemProperties {
             }
 
             return (var4 || var5) && var2 instanceof Player && ((Player)var2).fishing != null ? 1.0F : 0.0F;
+         }
+      });
+      register(Items.LASHING_POTATO, new ResourceLocation("lashing_potato_extended"), (var0x, var1, var2, var3) -> {
+         if (var2 == null) {
+            return 0.0F;
+         } else {
+            boolean var4 = var2.getMainHandItem() == var0x;
+            boolean var5 = var2.getOffhandItem() == var0x;
+            if (var2.getMainHandItem().getItem() instanceof LashingPotatoItem) {
+               var5 = false;
+            }
+
+            return (var4 || var5) && var2 instanceof Player && ((Player)var2).grappling != null ? 1.0F : 0.0F;
          }
       });
       register(
@@ -219,6 +236,14 @@ public class ItemProperties {
          Items.GOAT_HORN,
          new ResourceLocation("tooting"),
          (var0x, var1, var2, var3) -> var2 != null && var2.isUsingItem() && var2.getUseItem() == var0x ? 1.0F : 0.0F
+      );
+      register(
+         Items.VENOMOUS_POTATO,
+         new ResourceLocation("hidden"),
+         (var0x, var1, var2, var3) -> ((SnekComponent)var0x.getOrDefault(DataComponents.SNEK, SnekComponent.HIDDEN_SNEK)).revealed() ? 0.0F : 1.0F
+      );
+      registerGeneric(
+         new ResourceLocation("hovered"), (var0x, var1, var2, var3) -> var0x.getOrDefault(DataComponents.HOVERED, Boolean.valueOf(false)) ? 1.0F : 0.0F
       );
    }
 }

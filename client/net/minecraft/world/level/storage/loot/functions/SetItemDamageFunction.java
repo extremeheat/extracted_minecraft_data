@@ -2,7 +2,6 @@ package net.minecraft.world.level.storage.loot.functions;
 
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
@@ -18,7 +17,7 @@ import org.slf4j.Logger;
 
 public class SetItemDamageFunction extends LootItemConditionalFunction {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final MapCodec<SetItemDamageFunction> CODEC = RecordCodecBuilder.mapCodec(
+   public static final Codec<SetItemDamageFunction> CODEC = RecordCodecBuilder.create(
       var0 -> commonFields(var0)
             .and(
                var0.group(

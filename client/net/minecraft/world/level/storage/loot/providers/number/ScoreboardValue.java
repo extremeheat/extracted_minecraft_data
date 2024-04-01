@@ -1,7 +1,6 @@
 package net.minecraft.world.level.storage.loot.providers.number;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Set;
@@ -19,7 +18,7 @@ public record ScoreboardValue(ScoreboardNameProvider b, String c, float d) imple
    private final ScoreboardNameProvider target;
    private final String score;
    private final float scale;
-   public static final MapCodec<ScoreboardValue> CODEC = RecordCodecBuilder.mapCodec(
+   public static final Codec<ScoreboardValue> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                ScoreboardNameProviders.CODEC.fieldOf("target").forGetter(ScoreboardValue::target),
                Codec.STRING.fieldOf("score").forGetter(ScoreboardValue::score),

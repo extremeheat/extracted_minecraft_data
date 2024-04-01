@@ -12,6 +12,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ExtraCodecs;
 
 public class Style {
    public static final Style EMPTY = new Style(null, null, null, null, null, null, null, null, null, null);
@@ -478,16 +479,16 @@ public class Style {
    public static class Serializer {
       public static final MapCodec<Style> MAP_CODEC = RecordCodecBuilder.mapCodec(
          var0 -> var0.group(
-                  TextColor.CODEC.optionalFieldOf("color").forGetter(var0x -> Optional.ofNullable(var0x.color)),
-                  Codec.BOOL.optionalFieldOf("bold").forGetter(var0x -> Optional.ofNullable(var0x.bold)),
-                  Codec.BOOL.optionalFieldOf("italic").forGetter(var0x -> Optional.ofNullable(var0x.italic)),
-                  Codec.BOOL.optionalFieldOf("underlined").forGetter(var0x -> Optional.ofNullable(var0x.underlined)),
-                  Codec.BOOL.optionalFieldOf("strikethrough").forGetter(var0x -> Optional.ofNullable(var0x.strikethrough)),
-                  Codec.BOOL.optionalFieldOf("obfuscated").forGetter(var0x -> Optional.ofNullable(var0x.obfuscated)),
-                  ClickEvent.CODEC.optionalFieldOf("clickEvent").forGetter(var0x -> Optional.ofNullable(var0x.clickEvent)),
-                  HoverEvent.CODEC.optionalFieldOf("hoverEvent").forGetter(var0x -> Optional.ofNullable(var0x.hoverEvent)),
-                  Codec.STRING.optionalFieldOf("insertion").forGetter(var0x -> Optional.ofNullable(var0x.insertion)),
-                  ResourceLocation.CODEC.optionalFieldOf("font").forGetter(var0x -> Optional.ofNullable(var0x.font))
+                  ExtraCodecs.strictOptionalField(TextColor.CODEC, "color").forGetter(var0x -> Optional.ofNullable(var0x.color)),
+                  ExtraCodecs.strictOptionalField(Codec.BOOL, "bold").forGetter(var0x -> Optional.ofNullable(var0x.bold)),
+                  ExtraCodecs.strictOptionalField(Codec.BOOL, "italic").forGetter(var0x -> Optional.ofNullable(var0x.italic)),
+                  ExtraCodecs.strictOptionalField(Codec.BOOL, "underlined").forGetter(var0x -> Optional.ofNullable(var0x.underlined)),
+                  ExtraCodecs.strictOptionalField(Codec.BOOL, "strikethrough").forGetter(var0x -> Optional.ofNullable(var0x.strikethrough)),
+                  ExtraCodecs.strictOptionalField(Codec.BOOL, "obfuscated").forGetter(var0x -> Optional.ofNullable(var0x.obfuscated)),
+                  ExtraCodecs.strictOptionalField(ClickEvent.CODEC, "clickEvent").forGetter(var0x -> Optional.ofNullable(var0x.clickEvent)),
+                  ExtraCodecs.strictOptionalField(HoverEvent.CODEC, "hoverEvent").forGetter(var0x -> Optional.ofNullable(var0x.hoverEvent)),
+                  ExtraCodecs.strictOptionalField(Codec.STRING, "insertion").forGetter(var0x -> Optional.ofNullable(var0x.insertion)),
+                  ExtraCodecs.strictOptionalField(ResourceLocation.CODEC, "font").forGetter(var0x -> Optional.ofNullable(var0x.font))
                )
                .apply(var0, Style::create)
       );

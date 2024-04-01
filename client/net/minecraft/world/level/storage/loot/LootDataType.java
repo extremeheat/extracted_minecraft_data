@@ -4,7 +4,7 @@ import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.DataResult.Error;
+import com.mojang.serialization.DataResult.PartialResult;
 import java.util.Optional;
 import java.util.stream.Stream;
 import net.minecraft.core.Registry;

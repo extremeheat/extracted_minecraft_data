@@ -1,7 +1,6 @@
 package net.minecraft.world.level.levelgen.placement;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.BlockPos;
@@ -9,7 +8,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.biome.Biome;
 
 public class NoiseThresholdCountPlacement extends RepeatingPlacement {
-   public static final MapCodec<NoiseThresholdCountPlacement> CODEC = RecordCodecBuilder.mapCodec(
+   public static final Codec<NoiseThresholdCountPlacement> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                Codec.DOUBLE.fieldOf("noise_level").forGetter(var0x -> var0x.noiseLevel),
                Codec.INT.fieldOf("below_noise").forGetter(var0x -> var0x.belowNoise),

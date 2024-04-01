@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -26,6 +27,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ChestMenu;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -241,6 +243,16 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
             var4.openMenu(var6);
             var4.awardStat(this.getOpenChestStat());
             PiglinAi.angerNearbyPiglins(var4, true);
+         }
+
+         Container var7 = getContainer(this, var1, var2, var3, false);
+         if (var7 != null) {
+            var7.forEach(var3x -> {
+               if (var3x.has(DataComponents.VIEWS)) {
+                  var3x.set(DataComponents.VIEWS, var3x.getOrDefault(DataComponents.VIEWS, Integer.valueOf(0)) + 1);
+                  var3x.getItem().onViewedInContainer(var3x, var2, var3, var7);
+               }
+            });
          }
 
          return InteractionResult.CONSUME;

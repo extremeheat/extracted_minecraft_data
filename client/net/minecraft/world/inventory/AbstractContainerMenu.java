@@ -18,6 +18,7 @@ import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
@@ -401,6 +402,10 @@ public abstract class AbstractContainerMenu {
 
             Slot var27 = this.slots.get(var1);
             ItemStack var33 = var27.getItem();
+            if (var33.has(DataComponents.CLICKS)) {
+               var33.set(DataComponents.CLICKS, var33.getOrDefault(DataComponents.CLICKS, Integer.valueOf(0)) + 1);
+            }
+
             ItemStack var37 = this.getCarried();
             var4.updateTutorialInventoryAction(var37, var27.getItem(), var19);
             if (!this.tryItemClickBehaviourOverride(var4, var19, var27, var33, var37)) {
@@ -603,12 +608,13 @@ public abstract class AbstractContainerMenu {
             ItemStack var8 = var7.getItem();
             if (!var8.isEmpty() && ItemStack.isSameItemSameComponents(var1, var8)) {
                int var9 = var8.getCount() + var1.getCount();
-               if (var9 <= var1.getMaxStackSize()) {
+               int var10 = var7.getMaxStackSize(var1);
+               if (var9 <= var10) {
                   var1.setCount(0);
                   var8.setCount(var9);
                   var7.setChanged();
                   var5 = true;
-               } else if (var8.getCount() < var1.getMaxStackSize()) {
+               } else if (var8.getCount() < var10) {
                   var1.shrink(var1.getMaxStackSize() - var8.getCount());
                   var8.setCount(var1.getMaxStackSize());
                   var7.setChanged();
@@ -632,12 +638,12 @@ public abstract class AbstractContainerMenu {
          }
 
          while(var4 ? var6 >= var2 : var6 < var3) {
-            Slot var11 = this.slots.get(var6);
-            ItemStack var12 = var11.getItem();
-            if (var12.isEmpty() && var11.mayPlace(var1)) {
-               int var13 = var11.getMaxStackSize(var1);
-               var11.setByPlayer(var1.split(Math.min(var1.getCount(), var13)));
-               var11.setChanged();
+            Slot var12 = this.slots.get(var6);
+            ItemStack var13 = var12.getItem();
+            if (var13.isEmpty() && var12.mayPlace(var1)) {
+               int var14 = var12.getMaxStackSize(var1);
+               var12.setByPlayer(var1.split(Math.min(var1.getCount(), var14)));
+               var12.setChanged();
                var5 = true;
                break;
             }

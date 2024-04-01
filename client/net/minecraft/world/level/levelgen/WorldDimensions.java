@@ -41,7 +41,7 @@ public record WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> b) {
             )
             .apply(var0, var0.stable(WorldDimensions::new))
    );
-   private static final Set<ResourceKey<LevelStem>> BUILTIN_ORDER = ImmutableSet.of(LevelStem.OVERWORLD, LevelStem.NETHER, LevelStem.END);
+   private static final Set<ResourceKey<LevelStem>> BUILTIN_ORDER = ImmutableSet.of(LevelStem.OVERWORLD, LevelStem.NETHER, LevelStem.END, LevelStem.POTATO);
    private static final int VANILLA_DIMENSION_COUNT = BUILTIN_ORDER.size();
 
    public WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> var1) {
@@ -126,8 +126,10 @@ public record WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> b) {
          return isStableOverworld(var1);
       } else if (var0 == LevelStem.NETHER) {
          return isStableNether(var1);
+      } else if (var0 == LevelStem.END) {
+         return isStableEnd(var1);
       } else {
-         return var0 == LevelStem.END ? isStableEnd(var1) : false;
+         return var0 == LevelStem.POTATO ? isStablePotato(var1) : false;
       }
    }
 
@@ -166,6 +168,22 @@ public record WorldDimensions(Map<ResourceKey<LevelStem>, LevelStem> b) {
          ChunkGenerator var2 = var0.generator();
          if (var2 instanceof NoiseBasedChunkGenerator var1 && var1.stable(NoiseGeneratorSettings.END) && var1.getBiomeSource() instanceof TheEndBiomeSource) {
             return true;
+         }
+      }
+
+      return false;
+   }
+
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   private static boolean isStablePotato(LevelStem var0) {
+      if (var0.type().is(BuiltinDimensionTypes.POTATO)) {
+         ChunkGenerator var3 = var0.generator();
+         if (var3 instanceof NoiseBasedChunkGenerator var2 && var2.stable(NoiseGeneratorSettings.POTATO)) {
+            BiomeSource var4 = var2.getBiomeSource();
+            if (var4 instanceof MultiNoiseBiomeSource var1 && var1.stable(MultiNoiseBiomeSourceParameterLists.POTATO)) {
+               return true;
+            }
          }
       }
 

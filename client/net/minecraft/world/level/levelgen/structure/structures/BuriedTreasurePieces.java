@@ -47,8 +47,12 @@ public class BuriedTreasurePieces {
                || var11 == Blocks.STONE.defaultBlockState()
                || var11 == Blocks.ANDESITE.defaultBlockState()
                || var11 == Blocks.GRANITE.defaultBlockState()
-               || var11 == Blocks.DIORITE.defaultBlockState()) {
-               BlockState var12 = !var10.isAir() && !this.isLiquid(var10) ? var10 : Blocks.SAND.defaultBlockState();
+               || var11 == Blocks.DIORITE.defaultBlockState()
+               || var11 == Blocks.TATERSTONE.defaultBlockState()
+               || var11 == Blocks.POTONE.defaultBlockState()) {
+               BlockState var12 = !var10.isAir() && !this.isLiquid(var10)
+                  ? var10
+                  : (var1.isPotato() ? Blocks.SAND.defaultBlockState() : Blocks.GRAVTATER.defaultBlockState());
 
                for(Direction var16 : Direction.values()) {
                   BlockPos var17 = var9.relative(var16);

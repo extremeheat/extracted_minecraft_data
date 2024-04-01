@@ -1,7 +1,7 @@
 package net.minecraft.server.packs;
 
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.DataResult.Error;
+import com.mojang.serialization.DataResult.PartialResult;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -55,19 +55,19 @@ public class VanillaPackResources implements PackResources {
    }
 
    public void listRawPaths(PackType var1, ResourceLocation var2, Consumer<Path> var3) {
-      FileUtil.decomposePath(var2.getPath()).ifSuccess(var4 -> {
+      FileUtil.decomposePath(var2.getPath()).get().ifLeft(var4 -> {
          String var5 = var2.getNamespace();
 
          for(Path var7 : this.pathsForType.get(var1)) {
             Path var8 = var7.resolve(var5);
             var3.accept(FileUtil.resolvePath(var8, var4));
          }
-      }).ifError(var1x -> LOGGER.error("Invalid path {}: {}", var2, var1x.message()));
+      }).ifRight(var1x -> LOGGER.error("Invalid path {}: {}", var2, var1x.message()));
    }
 
    @Override
    public void listResources(PackType var1, String var2, String var3, PackResources.ResourceOutput var4) {
-      FileUtil.decomposePath(var3).ifSuccess(var4x -> {
+      FileUtil.decomposePath(var3).get().ifLeft(var4x -> {
          List var5 = this.pathsForType.get(var1);
          int var6 = var5.size();
          if (var6 == 1) {
@@ -87,7 +87,7 @@ public class VanillaPackResources implements PackResources {
                var7.forEach(var4);
             }
          }
-      }).ifError(var1x -> LOGGER.error("Invalid path {}: {}", var3, var1x.message()));
+      }).ifRight(var1x -> LOGGER.error("Invalid path {}: {}", var3, var1x.message()));
    }
 
    private static void getResources(PackResources.ResourceOutput var0, String var1, Path var2, List<String> var3) {
@@ -98,7 +98,7 @@ public class VanillaPackResources implements PackResources {
    @Nullable
    @Override
    public IoSupplier<InputStream> getResource(PackType var1, ResourceLocation var2) {
-      return (IoSupplier<InputStream>)FileUtil.decomposePath(var2.getPath()).mapOrElse(var3 -> {
+      return (IoSupplier<InputStream>)FileUtil.decomposePath(var2.getPath()).get().map(var3 -> {
          String var4 = var2.getNamespace();
 
          for(Path var6 : this.pathsForType.get(var1)) {

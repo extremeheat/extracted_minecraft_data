@@ -71,9 +71,9 @@ public class SpriteSourceList {
       for(Resource var5 : var0.getResourceStack(var2)) {
          try (BufferedReader var6 = var5.openAsReader()) {
             Dynamic var7 = new Dynamic(JsonOps.INSTANCE, JsonParser.parseReader(var6));
-            var3.addAll((Collection)SpriteSources.FILE_CODEC.parse(var7).getOrThrow());
+            var3.addAll((Collection)SpriteSources.FILE_CODEC.parse(var7).getOrThrow(false, LOGGER::error));
          } catch (Exception var11) {
-            LOGGER.error("Failed to parse atlas definition {} in pack {}", new Object[]{var2, var5.sourcePackId(), var11});
+            LOGGER.warn("Failed to parse atlas definition {} in pack {}", new Object[]{var2, var5.sourcePackId(), var11});
          }
       }
 

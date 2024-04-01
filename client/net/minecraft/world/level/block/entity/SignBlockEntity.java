@@ -101,8 +101,8 @@ public class SignBlockEntity extends BlockEntity {
    }
 
    @Override
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.loadAdditional(var1, var2);
+   public void load(CompoundTag var1, HolderLookup.Provider var2) {
+      super.load(var1, var2);
       RegistryOps var3 = var2.createSerializationContext(NbtOps.INSTANCE);
       if (var1.contains("front_text")) {
          SignText.DIRECT_CODEC
@@ -227,7 +227,7 @@ public class SignBlockEntity extends BlockEntity {
 
    @Override
    public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
-      return this.saveCustomOnly(var1);
+      return this.saveWithoutMetadata(var1);
    }
 
    @Override

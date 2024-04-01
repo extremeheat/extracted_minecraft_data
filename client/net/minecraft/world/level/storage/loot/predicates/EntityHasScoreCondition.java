@@ -3,7 +3,6 @@ package net.minecraft.world.level.storage.loot.predicates;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Map;
@@ -22,7 +21,7 @@ import net.minecraft.world.scores.Scoreboard;
 public record EntityHasScoreCondition(Map<String, IntRange> b, LootContext.EntityTarget c) implements LootItemCondition {
    private final Map<String, IntRange> scores;
    private final LootContext.EntityTarget entityTarget;
-   public static final MapCodec<EntityHasScoreCondition> CODEC = RecordCodecBuilder.mapCodec(
+   public static final Codec<EntityHasScoreCondition> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                Codec.unboundedMap(Codec.STRING, IntRange.CODEC).fieldOf("scores").forGetter(EntityHasScoreCondition::scores),
                LootContext.EntityTarget.CODEC.fieldOf("entity").forGetter(EntityHasScoreCondition::entityTarget)

@@ -18,6 +18,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipProvider;
 
@@ -32,11 +33,11 @@ public class ItemEnchantments implements TooltipProvider {
    private static final Codec<ItemEnchantments> FULL_CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                LEVELS_CODEC.fieldOf("levels").forGetter(var0x -> var0x.enchantments),
-               Codec.BOOL.optionalFieldOf("show_in_tooltip", true).forGetter(var0x -> var0x.showInTooltip)
+               ExtraCodecs.strictOptionalField(Codec.BOOL, "show_in_tooltip", true).forGetter(var0x -> var0x.showInTooltip)
             )
             .apply(var0, ItemEnchantments::new)
    );
-   public static final Codec<ItemEnchantments> CODEC = Codec.withAlternative(FULL_CODEC, LEVELS_CODEC, var0 -> new ItemEnchantments(var0, true));
+   public static final Codec<ItemEnchantments> CODEC = ExtraCodecs.withAlternative(FULL_CODEC, LEVELS_CODEC, var0 -> new ItemEnchantments(var0, true));
    public static final StreamCodec<RegistryFriendlyByteBuf, ItemEnchantments> STREAM_CODEC = StreamCodec.composite(
       ByteBufCodecs.map(Object2IntLinkedOpenHashMap::new, ByteBufCodecs.holderRegistry(Registries.ENCHANTMENT), ByteBufCodecs.VAR_INT),
       var0 -> var0.enchantments,

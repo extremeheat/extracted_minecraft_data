@@ -3,6 +3,7 @@ package net.minecraft.server.level;
 import com.google.common.net.InetAddresses;
 import com.mojang.authlib.GameProfile;
 import com.mojang.datafixers.util.Either;
+import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Dynamic;
 import java.net.InetSocketAddress;
@@ -21,6 +22,7 @@ import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
 import net.minecraft.Util;
+import net.minecraft.advancements.AdvancementNode;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.commands.arguments.EntityAnchorArgument;
 import net.minecraft.core.BlockPos;
@@ -28,6 +30,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.GlobalPos;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.SectionPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -81,6 +84,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerAdvancements;
+import net.minecraft.server.network.Filterable;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.server.network.TextFilter;
 import net.minecraft.server.players.PlayerList;
@@ -92,6 +96,8 @@ import net.minecraft.stats.Stat;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.StructureTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.Unit;
@@ -136,6 +142,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ServerItemCooldowns;
 import net.minecraft.world.item.WrittenBookItem;
+import net.minecraft.world.item.component.ItemLore;
+import net.minecraft.world.item.component.WrittenBookContent;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.ChunkPos;
@@ -223,8 +231,6 @@ public class ServerPlayer extends Player {
    private boolean allowsListing;
    private boolean spawnExtraParticlesOnFall;
    private WardenSpawnTracker wardenSpawnTracker = new WardenSpawnTracker(0, 0, 0);
-   @Nullable
-   private BlockPos raidOmenPosition;
    private final ContainerSynchronizer containerSynchronizer = new ContainerSynchronizer() {
       @Override
       public void sendInitialData(AbstractContainerMenu var1, NonNullList<ItemStack> var2, ItemStack var3, int[] var4) {
@@ -275,6 +281,7 @@ public class ServerPlayer extends Player {
    public final Object object;
    private int containerCounter;
    public boolean wonGame;
+   public boolean seenPotatoPoem;
 
    public ServerPlayer(MinecraftServer var1, ServerLevel var2, GameProfile var3, ClientInformation var4) {
       super(var2, var2.getSharedSpawnPos(), var2.getSharedSpawnAngle(), var3);
@@ -369,7 +376,6 @@ public class ServerPlayer extends Player {
       }
 
       this.spawnExtraParticlesOnFall = var1.getBoolean("spawn_extra_particles_on_fall");
-      BlockPos.CODEC.parse(NbtOps.INSTANCE, var1.get("raid_omen_position")).resultOrPartial(LOGGER::error).ifPresent(var1x -> this.raidOmenPosition = var1x);
    }
 
    @Override
@@ -415,12 +421,6 @@ public class ServerPlayer extends Player {
       }
 
       var1.putBoolean("spawn_extra_particles_on_fall", this.spawnExtraParticlesOnFall);
-      if (this.raidOmenPosition != null) {
-         BlockPos.CODEC
-            .encodeStart(NbtOps.INSTANCE, this.raidOmenPosition)
-            .resultOrPartial(LOGGER::error)
-            .ifPresent(var1x -> var1.put("raid_omen_position", var1x));
-      }
    }
 
    public void setExperiencePoints(int var1) {
@@ -480,6 +480,7 @@ public class ServerPlayer extends Player {
 
    @Override
    public void tick() {
+      this.tickPotatoQuest();
       this.gameMode.tick();
       this.wardenSpawnTracker.tick();
       --this.spawnInvulnerableTime;
@@ -515,6 +516,132 @@ public class ServerPlayer extends Player {
       this.trackEnteredOrExitedLavaOnVehicle();
       this.updatePlayerAttributes();
       this.advancements.flushDirty(this);
+   }
+
+   private void tickPotatoQuest() {
+      Level var1 = this.level();
+      if (var1 instanceof ServerLevel var2) {
+         Inventory var3 = this.getInventory();
+         if (this.isPotatoPlant()) {
+            CriteriaTriggers.RUMBLE_PLANT.trigger(this);
+         }
+
+         if ((this.isChapterAndProgressPast("intro", 22) || this.isChapterAndProgressPast("leaving_village", 1)) && var2.isVillage(this.getOnPos())) {
+            this.setPotatoQuestChapter("in_village");
+         }
+
+         if (this.isChapterAndProgressPast("in_village", 0)) {
+            if (!var2.isVillage(this.getOnPos())) {
+               this.setPotatoQuestChapter("leaving_village");
+            }
+
+            if (var3.hasAnyMatching(var0 -> var0.is(ItemTags.BEDS))) {
+               this.setPotatoQuestChapter("took_bed");
+            }
+
+            if (this.isSleeping()) {
+               this.setPotatoQuestChapter("slept_in_bed");
+            }
+         }
+
+         if (this.isChapterAndProgressPast("slept_in_bed", 3) || this.isChapterAndProgressPast("took_bed", 1)) {
+            this.setPotatoQuestChapter("meta_one");
+         }
+
+         if (this.isChapterAndProgressAt("meta_one", 13)) {
+            ItemStack var4 = new ItemStack(Items.PAPER);
+            var4.set(DataComponents.LORE, new ItemLore(List.of(Component.translatable("paper.thoughts"))));
+            var3.add(var4);
+            this.setPotatoQuestChapter("got_paper");
+         }
+
+         if (this.isChapterAndProgressAt("got_paper", 2)) {
+            Direction var9 = Direction.fromYRot((double)this.getYRot());
+            BlockPos var5 = this.getOnPos().above(2).offset(var9.getNormal().multiply(4));
+            boolean var6 = false;
+
+            for(BlockPos var8 : BlockPos.spiralAround(var5, 4, var9, var9.getCounterClockWise())) {
+               if (var1.isEmptyBlock(var8)) {
+                  var1.setBlockAndUpdate(var8, Blocks.ANVIL.defaultBlockState());
+                  var6 = true;
+                  break;
+               }
+            }
+
+            if (!var6) {
+               var1.setBlockAndUpdate(this.getOnPos().above(2), Blocks.ANVIL.defaultBlockState());
+            }
+
+            this.setPotatoQuestChapter("anvil_dropped");
+         }
+
+         if (this.isChapterAndProgressAt("thrown_eye", 13)) {
+            ItemStack var10 = new ItemStack(Items.WRITTEN_BOOK);
+            var10.set(
+               DataComponents.WRITTEN_BOOK_CONTENT,
+               new WrittenBookContent(
+                  Filterable.passThrough(Component.translatable("potato.quest.book.title").getString()),
+                  Component.translatable("potato.quest.book.author").getString(),
+                  0,
+                  List.of(
+                     Filterable.<MutableComponent>passThrough(Component.translatable("potato.quest.book.page.0")),
+                     Filterable.<MutableComponent>passThrough(Component.translatable("potato.quest.book.page.1")),
+                     Filterable.<MutableComponent>passThrough(Component.translatable("potato.quest.book.page.2"))
+                  ),
+                  false
+               )
+            );
+            var3.add(var10);
+            this.setPotatoQuestChapter("got_book");
+         }
+
+         if (this.isChapterAndProgressPast("thrown_eye", 0) || this.isChapterAndProgressPast("got_book", 0)) {
+            Optional var11 = this.entityData.get(DATA_FOUND_POTATO_PORTAL);
+            if (var11.isPresent() && ((BlockPos)var11.get()).distManhattan(this.getOnPos().atY(0)) < 16) {
+               this.setPotatoQuestChapter("found_portal");
+            }
+         }
+
+         if (this.isChapterAndProgressPast("dimension", 10) && var2.isPotato() && var2.isVillage(this.getOnPos())) {
+            this.setPotatoQuestChapter("potato_village");
+         }
+
+         if (this.isChapterAndProgressPast("thrown_eye_part_two", 3)) {
+            Optional var12 = this.entityData.get(DATA_FOUND_COLOSSEUM);
+            if (var12.isPresent() && ((BlockPos)var12.get()).distManhattan(this.getOnPos().atY(0)) < 16) {
+               this.setPotatoQuestChapter("found_colosseum");
+            }
+         }
+
+         if (this.isChapterAndProgressPast("found_colosseum", 2)
+            && var2.structureManager().getStructureWithPieceAt(this.getOnPos(), StructureTags.COLOSSEUM).isValid()) {
+            this.setPotatoQuestChapter("inside_colosseum");
+         }
+
+         if (this.isChapterAndProgressAt("inside_colosseum", 3)) {
+            var3.add(new ItemStack(Items.WOODEN_SWORD));
+            this.setPotatoQuestChapter("got_sword");
+         }
+
+         if (this.isChapterAndProgressAt("got_sword", 13)) {
+            this.setPotatoQuestChapterAndProgress("got_sword", 1);
+         }
+
+         if (var3.hasAnyOf(Set.of(Items.POTATO_STAFF))) {
+            Pair var13 = this.getPotatoQuestChapterAndProgress();
+            if (!((String)var13.getFirst()).equals("composted_staff") && !((String)var13.getFirst()).equals("got_staff")) {
+               this.setPotatoQuestChapter("got_staff");
+            }
+         }
+
+         if (this.isPotatoPlant() && !this.entityData.get(DATA_POTATO_QUEST_COMPLETED)) {
+            this.awardStat(Stats.POTATO_QUEST_TIME);
+         }
+
+         if (this.isChapterAndProgressAt("composted_staff", 5)) {
+            this.entityData.set(DATA_POTATO_QUEST_COMPLETED, true);
+         }
+      }
    }
 
    private void updatePlayerAttributes() {
@@ -641,6 +768,19 @@ public class ServerPlayer extends Player {
       }
    }
 
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
+   public boolean potatoQuestCompleted() {
+      Level var2 = this.level();
+      if (var2 instanceof ServerLevel var1) {
+         PlayerAdvancements var4 = var1.getServer().getPlayerList().getPlayerAdvancements(this);
+         AdvancementNode var3 = var4.getTree().get(new ResourceLocation("good_plant"));
+         return var3 != null;
+      } else {
+         return false;
+      }
+   }
+
    private void updateScoreForCriteria(ObjectiveCriteria var1, int var2) {
       this.getScoreboard().forAllObjectives(var1, this, var1x -> var1x.set(var2));
    }
@@ -705,6 +845,10 @@ public class ServerPlayer extends Player {
       this.setSharedFlagOnFire(false);
       this.getCombatTracker().recheckStatus();
       this.setLastDeathLocation(Optional.of(GlobalPos.of(this.level().dimension(), this.blockPosition())));
+      this.entityData.set(DATA_POTATO_QUEST, "potato.quest.intro.jump.0");
+      if (!this.entityData.get(DATA_POTATO_QUEST_COMPLETED)) {
+         this.resetStat(Stats.CUSTOM.get(Stats.POTATO_QUEST_TIME));
+      }
    }
 
    private void tellNeutralMobsThatIDied() {
@@ -784,23 +928,31 @@ public class ServerPlayer extends Player {
 
    @Nullable
    @Override
-   protected PortalInfo findDimensionEntryPoint(ServerLevel var1) {
-      PortalInfo var2 = super.findDimensionEntryPoint(var1);
-      if (var2 != null && this.level().dimension() == Level.OVERWORLD && var1.dimension() == Level.END) {
-         Vec3 var3 = var2.pos.add(0.0, -1.0, 0.0);
-         return new PortalInfo(var3, Vec3.ZERO, 90.0F, 0.0F);
+   protected PortalInfo findDimensionEntryPoint(ServerLevel var1, boolean var2) {
+      PortalInfo var3 = super.findDimensionEntryPoint(var1, var2);
+      if (var3 != null && this.level().dimension() == Level.OVERWORLD && var1.dimension() == Level.END) {
+         Vec3 var4 = var3.pos.add(0.0, -1.0, 0.0);
+         return new PortalInfo(var4, Vec3.ZERO, 90.0F, 0.0F);
       } else {
-         return var2;
+         return var3;
       }
+   }
+
+   public void removeAndSendPoem() {
+      this.isChangingDimension = true;
+      this.unRide();
+      this.serverLevel().removePlayerImmediately(this, Entity.RemovalReason.CHANGED_DIMENSION);
+      this.connection.send(new ClientboundGameEventPacket(ClientboundGameEventPacket.POTATO_POEM, 0.0F));
    }
 
    @Nullable
    @Override
-   public Entity changeDimension(ServerLevel var1) {
+   public Entity changeDimension(ServerLevel var1, boolean var2) {
       this.isChangingDimension = true;
-      ServerLevel var2 = this.serverLevel();
-      ResourceKey var3 = var2.dimension();
-      if (var3 == Level.END && var1.dimension() == Level.OVERWORLD) {
+      ServerLevel var3 = this.serverLevel();
+      ResourceKey var4 = var3.dimension();
+      boolean var5 = var1.isPotato() || var3.isPotato();
+      if (var4 == Level.END && var1.dimension() == Level.OVERWORLD) {
          this.unRide();
          this.serverLevel().removePlayerImmediately(this, Entity.RemovalReason.CHANGED_DIMENSION);
          if (!this.wonGame) {
@@ -811,39 +963,39 @@ public class ServerPlayer extends Player {
 
          return this;
       } else {
-         LevelData var4 = var1.getLevelData();
+         LevelData var6 = var1.getLevelData();
          this.connection.send(new ClientboundRespawnPacket(this.createCommonSpawnInfo(var1), (byte)3));
-         this.connection.send(new ClientboundChangeDifficultyPacket(var4.getDifficulty(), var4.isDifficultyLocked()));
-         PlayerList var5 = this.server.getPlayerList();
-         var5.sendPlayerPermissionLevel(this);
-         var2.removePlayerImmediately(this, Entity.RemovalReason.CHANGED_DIMENSION);
+         this.connection.send(new ClientboundChangeDifficultyPacket(var6.getDifficulty(), var6.isDifficultyLocked()));
+         PlayerList var7 = this.server.getPlayerList();
+         var7.sendPlayerPermissionLevel(this);
+         var3.removePlayerImmediately(this, Entity.RemovalReason.CHANGED_DIMENSION);
          this.unsetRemoved();
-         PortalInfo var6 = this.findDimensionEntryPoint(var1);
-         if (var6 != null) {
-            var2.getProfiler().push("moving");
-            if (var3 == Level.OVERWORLD && var1.dimension() == Level.NETHER) {
+         PortalInfo var8 = this.findDimensionEntryPoint(var1, var2);
+         if (var8 != null) {
+            var3.getProfiler().push("moving");
+            if (var4 == Level.OVERWORLD && var1.dimension() == Level.NETHER) {
                this.enteredNetherPosition = this.position();
             } else if (var1.dimension() == Level.END) {
-               this.createEndPlatform(var1, BlockPos.containing(var6.pos));
+               this.createEndPlatform(var1, BlockPos.containing(var8.pos));
             }
 
-            var2.getProfiler().pop();
-            var2.getProfiler().push("placing");
+            var3.getProfiler().pop();
+            var3.getProfiler().push("placing");
             this.setServerLevel(var1);
-            this.connection.teleport(var6.pos.x, var6.pos.y, var6.pos.z, var6.yRot, var6.xRot);
+            this.connection.teleport(var8.pos.x, var8.pos.y, var8.pos.z, var8.yRot, var8.xRot);
             this.connection.resetPosition();
             var1.addDuringPortalTeleport(this);
-            var2.getProfiler().pop();
-            this.triggerDimensionChangeTriggers(var2);
+            var3.getProfiler().pop();
+            this.triggerDimensionChangeTriggers(var3);
             this.connection.send(new ClientboundPlayerAbilitiesPacket(this.getAbilities()));
-            var5.sendLevelInfo(this, var1);
-            var5.sendAllPlayerInfo(this);
+            var7.sendLevelInfo(this, var1);
+            var7.sendAllPlayerInfo(this);
 
-            for(MobEffectInstance var8 : this.getActiveEffects()) {
-               this.connection.send(new ClientboundUpdateMobEffectPacket(this.getId(), var8, false));
+            for(MobEffectInstance var10 : this.getActiveEffects()) {
+               this.connection.send(new ClientboundUpdateMobEffectPacket(this.getId(), var10, false));
             }
 
-            this.connection.send(new ClientboundLevelEventPacket(1032, BlockPos.ZERO, 0, false));
+            this.connection.send(new ClientboundLevelEventPacket(1032, BlockPos.ZERO, var5 ? 1 : 0, false));
             this.lastSentExp = -1;
             this.lastSentHealth = -1.0F;
             this.lastSentFood = -1;
@@ -1013,7 +1165,7 @@ public class ServerPlayer extends Player {
       if (!this.touchingUnloadedChunk()) {
          this.checkSupportingBlock(var7, new Vec3(var1, var3, var5));
          BlockPos var8 = this.getOnPosLegacy();
-         BlockState var9 = this.level().getBlockState(var8);
+         BlockState var9 = this.getEffectState();
          if (this.spawnExtraParticlesOnFall && var7 && this.fallDistance > 0.0F) {
             Vec3 var10 = var8.getCenter().add(0.0, 0.5, 0.0);
             int var11 = (int)(50.0F * this.fallDistance);
@@ -1117,7 +1269,7 @@ public class ServerPlayer extends Player {
 
    @Override
    public void openCommandBlock(CommandBlockEntity var1) {
-      this.connection.send(ClientboundBlockEntityDataPacket.create(var1, BlockEntity::saveCustomOnly));
+      this.connection.send(ClientboundBlockEntityDataPacket.create(var1, BlockEntity::saveWithoutMetadata));
    }
 
    @Override
@@ -1732,6 +1884,7 @@ public class ServerPlayer extends Player {
          if (var3) {
             if (!var5.isEmpty()) {
                this.awardStat(Stats.ITEM_DROPPED.get(var5.getItem()), var1.getCount());
+               CriteriaTriggers.THROW_LUBRICATED.trigger(this, var1);
             }
 
             this.awardStat(Stats.DROP);
@@ -1883,20 +2036,16 @@ public class ServerPlayer extends Player {
          var1.isDebug(),
          var1.isFlat(),
          this.getLastDeathLocation(),
-         this.getPortalCooldown()
+         this.getPortalCooldown(),
+         this.attachedGrid != null ? this.attachedGrid.id() : this.reloadAttachedGrid
       );
    }
 
-   public void setRaidOmenPosition(BlockPos var1) {
-      this.raidOmenPosition = var1;
+   public void setRuinedPortatol(BlockPos var1) {
+      this.entityData.set(Player.DATA_FOUND_POTATO_PORTAL, Optional.of(var1));
    }
 
-   public void clearRaidOmenPosition() {
-      this.raidOmenPosition = null;
-   }
-
-   @Nullable
-   public BlockPos getRaidOmenPosition() {
-      return this.raidOmenPosition;
+   public void setColosseum(BlockPos var1) {
+      this.entityData.set(Player.DATA_FOUND_COLOSSEUM, Optional.of(var1));
    }
 }

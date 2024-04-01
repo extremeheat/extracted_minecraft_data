@@ -17,4 +17,6 @@ public interface LevelSimulatedReader {
    <T extends BlockEntity> Optional<T> getBlockEntity(BlockPos var1, BlockEntityType<T> var2);
 
    BlockPos getHeightmapPos(Heightmap.Types var1, BlockPos var2);
+
+   boolean isPotato();
 }

@@ -124,7 +124,7 @@ public interface VibrationSystem {
    public static final class Data {
       public static Codec<VibrationSystem.Data> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
-                  VibrationInfo.CODEC.lenientOptionalFieldOf("event").forGetter(var0x -> Optional.ofNullable(var0x.currentVibration)),
+                  VibrationInfo.CODEC.optionalFieldOf("event").forGetter(var0x -> Optional.ofNullable(var0x.currentVibration)),
                   VibrationSelector.CODEC.fieldOf("selector").forGetter(VibrationSystem.Data::getSelectionStrategy),
                   ExtraCodecs.NON_NEGATIVE_INT.fieldOf("event_delay").orElse(0).forGetter(VibrationSystem.Data::getTravelTimeInTicks)
                )

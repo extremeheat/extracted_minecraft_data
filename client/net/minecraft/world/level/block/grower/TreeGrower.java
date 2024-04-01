@@ -12,6 +12,7 @@ import net.minecraft.data.worldgen.features.TreeFeatures;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelAccessor;
@@ -23,7 +24,7 @@ import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 
 public final class TreeGrower {
    private static final Map<String, TreeGrower> GROWERS = new Object2ObjectArrayMap();
-   public static final Codec<TreeGrower> CODEC = Codec.stringResolver(var0 -> var0.name, GROWERS::get);
+   public static final Codec<TreeGrower> CODEC = ExtraCodecs.stringResolverCodec(var0 -> var0.name, GROWERS::get);
    public static final TreeGrower OAK = new TreeGrower(
       "oak",
       0.1F,
@@ -51,6 +52,16 @@ public final class TreeGrower {
       Optional.empty(),
       Optional.of(TreeFeatures.MANGROVE),
       Optional.of(TreeFeatures.TALL_MANGROVE),
+      Optional.empty(),
+      Optional.empty()
+   );
+   public static final TreeGrower POTATO = new TreeGrower(
+      "potato",
+      0.05F,
+      Optional.of(TreeFeatures.MOTHER_POTATO_TREE),
+      Optional.empty(),
+      Optional.of(TreeFeatures.POTATO_TREE),
+      Optional.of(TreeFeatures.POTATO_TREE_TALL),
       Optional.empty(),
       Optional.empty()
    );

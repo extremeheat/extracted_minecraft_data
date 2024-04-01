@@ -78,6 +78,13 @@ public class ArmorMaterials {
       var0.put(ArmorItem.Type.HELMET, 3);
       var0.put(ArmorItem.Type.BODY, 11);
    }), 10, SoundEvents.ARMOR_EQUIP_WOLF, 0.0F, 0.0F, () -> Ingredient.of(Items.ARMADILLO_SCUTE));
+   public static final Holder<ArmorMaterial> POTATO = register("potato", Util.make(new EnumMap<>(ArmorItem.Type.class), var0 -> {
+      var0.put(ArmorItem.Type.BOOTS, 0);
+      var0.put(ArmorItem.Type.LEGGINGS, 0);
+      var0.put(ArmorItem.Type.CHESTPLATE, 0);
+      var0.put(ArmorItem.Type.HELMET, 0);
+      var0.put(ArmorItem.Type.BODY, 0);
+   }), 9, SoundEvents.ARMOR_EQUIP_TURTLE, 0.0F, 0.0F, () -> Ingredient.of(Items.POISONOUS_POTATO_PLANT));
 
    public ArmorMaterials() {
       super();

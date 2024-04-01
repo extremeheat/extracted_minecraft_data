@@ -131,10 +131,11 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
       var1.pose().pushPose();
       var1.pose().translate(0.0F, 0.0F, 100.0F);
       var1.renderItem(new ItemStack(Items.NETHERITE_INGOT), var5 + 20, var6 + 109);
-      var1.renderItem(new ItemStack(Items.EMERALD), var5 + 41, var6 + 109);
-      var1.renderItem(new ItemStack(Items.DIAMOND), var5 + 41 + 22, var6 + 109);
-      var1.renderItem(new ItemStack(Items.GOLD_INGOT), var5 + 42 + 44, var6 + 109);
-      var1.renderItem(new ItemStack(Items.IRON_INGOT), var5 + 42 + 66, var6 + 109);
+      var1.renderItem(new ItemStack(Items.AMBER_GEM), var5 + 41, var6 + 109);
+      var1.renderItem(new ItemStack(Items.DIAMOND), var5 + 41 + 18, var6 + 109);
+      var1.renderItem(new ItemStack(Items.EMERALD), var5 + 41 + 37, var6 + 109);
+      var1.renderItem(new ItemStack(Items.GOLD_INGOT), var5 + 42 + 55, var6 + 109);
+      var1.renderItem(new ItemStack(Items.IRON_INGOT), var5 + 42 + 74, var6 + 109);
       var1.pose().popPose();
    }
 

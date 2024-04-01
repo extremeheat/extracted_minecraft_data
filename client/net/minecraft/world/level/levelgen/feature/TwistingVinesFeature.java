@@ -87,7 +87,10 @@ public class TwistingVinesFeature extends Feature<TwistingVinesConfig> {
          return true;
       } else {
          BlockState var2 = var0.getBlockState(var1.below());
-         return !var2.is(Blocks.NETHERRACK) && !var2.is(Blocks.WARPED_NYLIUM) && !var2.is(Blocks.WARPED_WART_BLOCK);
+         return !var2.is(Blocks.NETHERRACK)
+            && !var2.is(Blocks.WARPED_NYLIUM)
+            && !var2.is(Blocks.WARPED_WART_BLOCK)
+            && !var2.is(Blocks.CORRUPTED_PEELGRASS_BLOCK);
       }
    }
 }

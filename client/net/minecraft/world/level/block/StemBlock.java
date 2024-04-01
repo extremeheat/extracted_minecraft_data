@@ -75,7 +75,7 @@ public class StemBlock extends BushBlock implements BonemealableBlock {
 
    @Override
    protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return var1.is(Blocks.FARMLAND);
+      return var1.is(Blocks.FARMLAND) || var1.is(Blocks.POISON_FARMLAND);
    }
 
    @Override
@@ -91,7 +91,7 @@ public class StemBlock extends BushBlock implements BonemealableBlock {
                Direction var7 = Direction.Plane.HORIZONTAL.getRandomDirection(var4);
                BlockPos var8 = var3.relative(var7);
                BlockState var9 = var2.getBlockState(var8.below());
-               if (var2.getBlockState(var8).isAir() && (var9.is(Blocks.FARMLAND) || var9.is(BlockTags.DIRT))) {
+               if (var2.getBlockState(var8).isAir() && (var9.is(Blocks.FARMLAND) || var9.is(BlockTags.DIRT) || var9.is(Blocks.POISON_FARMLAND))) {
                   Registry var10 = var2.registryAccess().registryOrThrow(Registries.BLOCK);
                   Optional var11 = var10.getOptional(this.fruit);
                   Optional var12 = var10.getOptional(this.attachedStem);

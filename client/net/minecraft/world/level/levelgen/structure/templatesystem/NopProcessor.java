@@ -1,9 +1,9 @@
 package net.minecraft.world.level.levelgen.structure.templatesystem;
 
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 
 public class NopProcessor extends StructureProcessor {
-   public static final MapCodec<NopProcessor> CODEC = MapCodec.unit(() -> NopProcessor.INSTANCE);
+   public static final Codec<NopProcessor> CODEC = Codec.unit(() -> NopProcessor.INSTANCE);
    public static final NopProcessor INSTANCE = new NopProcessor();
 
    private NopProcessor() {

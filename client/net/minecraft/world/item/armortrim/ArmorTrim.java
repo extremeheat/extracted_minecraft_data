@@ -15,6 +15,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipProvider;
@@ -24,7 +25,7 @@ public class ArmorTrim implements TooltipProvider {
       var0 -> var0.group(
                TrimMaterial.CODEC.fieldOf("material").forGetter(ArmorTrim::material),
                TrimPattern.CODEC.fieldOf("pattern").forGetter(ArmorTrim::pattern),
-               Codec.BOOL.optionalFieldOf("show_in_tooltip", true).forGetter(var0x -> var0x.showInTooltip)
+               ExtraCodecs.strictOptionalField(Codec.BOOL, "show_in_tooltip", true).forGetter(var0x -> var0x.showInTooltip)
             )
             .apply(var0, ArmorTrim::new)
    );

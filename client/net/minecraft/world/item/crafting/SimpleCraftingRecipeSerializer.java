@@ -1,18 +1,20 @@
 package net.minecraft.world.item.crafting;
 
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 
 public class SimpleCraftingRecipeSerializer<T extends CraftingRecipe> implements RecipeSerializer<T> {
-   private final MapCodec<T> codec;
+   private final SimpleCraftingRecipeSerializer.Factory<T> constructor;
+   private final Codec<T> codec;
    private final StreamCodec<RegistryFriendlyByteBuf, T> streamCodec;
 
    public SimpleCraftingRecipeSerializer(SimpleCraftingRecipeSerializer.Factory<T> var1) {
       super();
-      this.codec = RecordCodecBuilder.mapCodec(
+      this.constructor = var1;
+      this.codec = RecordCodecBuilder.create(
          var1x -> var1x.group(CraftingBookCategory.CODEC.fieldOf("category").orElse(CraftingBookCategory.MISC).forGetter(CraftingRecipe::category))
                .apply(var1x, var1::create)
       );
@@ -20,7 +22,7 @@ public class SimpleCraftingRecipeSerializer<T extends CraftingRecipe> implements
    }
 
    @Override
-   public MapCodec<T> codec() {
+   public Codec<T> codec() {
       return this.codec;
    }
 

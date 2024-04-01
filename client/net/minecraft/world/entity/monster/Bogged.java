@@ -47,6 +47,11 @@ public class Bogged extends AbstractSkeleton implements Shearable {
    }
 
    @Override
+   public boolean hasPotatoVariant() {
+      return true;
+   }
+
+   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
       var1.define(DATA_SHEARED, false);

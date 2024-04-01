@@ -57,7 +57,7 @@ public class PalettedContainer<T> implements PaletteResize<T>, PalettedContainer
       return RecordCodecBuilder.create(
             var2x -> var2x.group(
                      var1.mapResult(ExtraCodecs.orElsePartial(var3)).listOf().fieldOf("palette").forGetter(PalettedContainerRO.PackedData::paletteEntries),
-                     Codec.LONG_STREAM.lenientOptionalFieldOf("data").forGetter(PalettedContainerRO.PackedData::storage)
+                     Codec.LONG_STREAM.optionalFieldOf("data").forGetter(PalettedContainerRO.PackedData::storage)
                   )
                   .apply(var2x, PalettedContainerRO.PackedData::new)
          )

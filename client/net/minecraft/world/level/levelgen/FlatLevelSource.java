@@ -1,6 +1,6 @@
 package net.minecraft.world.level.levelgen;
 
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
@@ -28,7 +28,7 @@ import net.minecraft.world.level.levelgen.flat.FlatLevelGeneratorSettings;
 import net.minecraft.world.level.levelgen.structure.StructureSet;
 
 public class FlatLevelSource extends ChunkGenerator {
-   public static final MapCodec<FlatLevelSource> CODEC = RecordCodecBuilder.mapCodec(
+   public static final Codec<FlatLevelSource> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(FlatLevelGeneratorSettings.CODEC.fieldOf("settings").forGetter(FlatLevelSource::settings))
             .apply(var0, var0.stable(FlatLevelSource::new))
    );
@@ -46,7 +46,7 @@ public class FlatLevelSource extends ChunkGenerator {
    }
 
    @Override
-   protected MapCodec<? extends ChunkGenerator> codec() {
+   protected Codec<? extends ChunkGenerator> codec() {
       return CODEC;
    }
 

@@ -33,14 +33,22 @@ public class ReversePortalParticle extends PortalParticle {
 
    public static class ReversePortalProvider implements ParticleProvider<SimpleParticleType> {
       private final SpriteSet sprite;
+      private final float rCol;
+      private final float gCol;
+      private final float bCol;
 
-      public ReversePortalProvider(SpriteSet var1) {
+      public ReversePortalProvider(SpriteSet var1, float var2, float var3, float var4) {
          super();
          this.sprite = var1;
+         this.rCol = var2;
+         this.gCol = var3;
+         this.bCol = var4;
       }
 
       public Particle createParticle(SimpleParticleType var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
          ReversePortalParticle var15 = new ReversePortalParticle(var2, var3, var5, var7, var9, var11, var13);
+         float var16 = var2.random.nextFloat() * 0.6F + 0.4F;
+         var15.setColor(this.rCol * var16, this.gCol * var16, this.bCol * var16);
          var15.pickSprite(this.sprite);
          return var15;
       }

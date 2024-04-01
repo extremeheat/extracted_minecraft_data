@@ -85,7 +85,7 @@ public class AttachedStemBlock extends BushBlock {
 
    @Override
    protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return var1.is(Blocks.FARMLAND);
+      return var1.is(Blocks.FARMLAND) || var1.is(Blocks.POISON_FARMLAND);
    }
 
    @Override

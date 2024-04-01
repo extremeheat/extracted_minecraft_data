@@ -1,14 +1,13 @@
 package net.minecraft.world.level.storage.loot.predicates;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.world.level.storage.loot.LootContext;
 
 public record LootItemRandomChanceCondition(float b) implements LootItemCondition {
    private final float probability;
-   public static final MapCodec<LootItemRandomChanceCondition> CODEC = RecordCodecBuilder.mapCodec(
+   public static final Codec<LootItemRandomChanceCondition> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(Codec.FLOAT.fieldOf("chance").forGetter(LootItemRandomChanceCondition::probability)).apply(var0, LootItemRandomChanceCondition::new)
    );
 

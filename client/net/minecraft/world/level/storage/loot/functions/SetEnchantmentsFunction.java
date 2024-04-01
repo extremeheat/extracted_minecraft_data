@@ -3,7 +3,6 @@ package net.minecraft.world.level.storage.loot.functions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
@@ -13,6 +12,7 @@ import java.util.Set;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -26,12 +26,13 @@ import net.minecraft.world.level.storage.loot.providers.number.NumberProvider;
 import net.minecraft.world.level.storage.loot.providers.number.NumberProviders;
 
 public class SetEnchantmentsFunction extends LootItemConditionalFunction {
-   public static final MapCodec<SetEnchantmentsFunction> CODEC = RecordCodecBuilder.mapCodec(
+   public static final Codec<SetEnchantmentsFunction> CODEC = RecordCodecBuilder.create(
       var0 -> commonFields(var0)
             .and(
                var0.group(
-                  Codec.unboundedMap(BuiltInRegistries.ENCHANTMENT.holderByNameCodec(), NumberProviders.CODEC)
-                     .optionalFieldOf("enchantments", Map.of())
+                  ExtraCodecs.strictOptionalField(
+                        Codec.unboundedMap(BuiltInRegistries.ENCHANTMENT.holderByNameCodec(), NumberProviders.CODEC), "enchantments", Map.of()
+                     )
                      .forGetter(var0x -> var0x.enchantments),
                   Codec.BOOL.fieldOf("add").orElse(false).forGetter(var0x -> var0x.add)
                )

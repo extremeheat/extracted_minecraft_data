@@ -49,6 +49,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.SpawnPlacementType;
 import net.minecraft.world.entity.SpawnPlacements;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -77,7 +78,7 @@ public class Raid {
    public static final int MAX_CELEBRATION_TICKS = 600;
    private static final int OUTSIDE_RAID_BOUNDS_TIMEOUT = 30;
    public static final int TICKS_PER_DAY = 24000;
-   public static final int DEFAULT_MAX_RAID_OMEN_LEVEL = 5;
+   public static final int DEFAULT_MAX_BAD_OMEN_LEVEL = 5;
    private static final int LOW_MOB_THRESHOLD = 2;
    private static final Component RAID_NAME_COMPONENT = Component.translatable("event.minecraft.raid");
    private static final Component RAID_BAR_VICTORY_COMPONENT = Component.translatable("event.minecraft.raid.victory.full");
@@ -94,7 +95,7 @@ public class Raid {
    private boolean started;
    private final int id;
    private float totalHealth;
-   private int raidOmenLevel;
+   private int badOmenLevel;
    private boolean active;
    private int groupsSpawned;
    private final ServerBossEvent raidEvent = new ServerBossEvent(RAID_NAME_COMPONENT, BossEvent.BossBarColor.RED, BossEvent.BossBarOverlay.NOTCHED_10);
@@ -125,7 +126,7 @@ public class Raid {
       this.started = var2.getBoolean("Started");
       this.active = var2.getBoolean("Active");
       this.ticksActive = var2.getLong("TicksActive");
-      this.raidOmenLevel = var2.getInt("BadOmenLevel");
+      this.badOmenLevel = var2.getInt("BadOmenLevel");
       this.groupsSpawned = var2.getInt("GroupsSpawned");
       this.raidCooldownTicks = var2.getInt("PreRaidTicks");
       this.postRaidTicks = var2.getInt("PostRaidTicks");
@@ -215,31 +216,25 @@ public class Raid {
       }
    }
 
-   public int getMaxRaidOmenLevel() {
+   public int getMaxBadOmenLevel() {
       return 5;
    }
 
-   public int getRaidOmenLevel() {
-      return this.raidOmenLevel;
+   public int getBadOmenLevel() {
+      return this.badOmenLevel;
    }
 
-   public void setRaidOmenLevel(int var1) {
-      this.raidOmenLevel = var1;
+   public void setBadOmenLevel(int var1) {
+      this.badOmenLevel = var1;
    }
 
-   public boolean absorbRaidOmen(ServerPlayer var1) {
-      if (!var1.hasEffect(MobEffects.RAID_OMEN)) {
-         return false;
-      } else {
-         this.raidOmenLevel += var1.getEffect(MobEffects.RAID_OMEN).getAmplifier() + 1;
-         this.raidOmenLevel = Mth.clamp(this.raidOmenLevel, 0, this.getMaxRaidOmenLevel());
-         if (!this.hasFirstWaveSpawned()) {
-            var1.awardStat(Stats.RAID_TRIGGER);
-            CriteriaTriggers.RAID_OMEN.trigger(var1);
-         }
-
-         return true;
+   public void absorbBadOmen(Player var1) {
+      if (var1.hasEffect(MobEffects.BAD_OMEN)) {
+         this.badOmenLevel += var1.getEffect(MobEffects.BAD_OMEN).getAmplifier() + 1;
+         this.badOmenLevel = Mth.clamp(this.badOmenLevel, 0, this.getMaxBadOmenLevel());
       }
+
+      var1.removeEffect(MobEffects.BAD_OMEN);
    }
 
    public void stop() {
@@ -367,7 +362,7 @@ public class Raid {
                   for(UUID var6 : this.heroesOfTheVillage) {
                      Entity var7 = this.level.getEntity(var6);
                      if (var7 instanceof LivingEntity var8 && !var7.isSpectator()) {
-                        var8.addEffect(new MobEffectInstance(MobEffects.HERO_OF_THE_VILLAGE, 48000, this.raidOmenLevel - 1, false, false, true));
+                        var8.addEffect(new MobEffectInstance(MobEffects.HERO_OF_THE_VILLAGE, 48000, this.badOmenLevel - 1, false, false, true));
                         if (var8 instanceof ServerPlayer var9) {
                            ((ServerPlayer)var9).awardStat(Stats.RAID_WIN);
                            CriteriaTriggers.RAID_WIN.trigger((ServerPlayer)var9);
@@ -431,7 +426,7 @@ public class Raid {
    }
 
    private boolean hasBonusWave() {
-      return this.raidOmenLevel > 1;
+      return this.badOmenLevel > 1;
    }
 
    private boolean hasSpawnedBonusWave() {
@@ -619,7 +614,7 @@ public class Raid {
          .build();
       var1.set(DataComponents.BANNER_PATTERNS, var2);
       var1.set(DataComponents.HIDE_ADDITIONAL_TOOLTIP, Unit.INSTANCE);
-      var1.set(DataComponents.ITEM_NAME, OMINOUS_BANNER_PATTERN_NAME);
+      var1.set(DataComponents.CUSTOM_NAME, OMINOUS_BANNER_PATTERN_NAME);
       return var1;
    }
 
@@ -755,7 +750,7 @@ public class Raid {
       var1.putBoolean("Started", this.started);
       var1.putBoolean("Active", this.active);
       var1.putLong("TicksActive", this.ticksActive);
-      var1.putInt("BadOmenLevel", this.raidOmenLevel);
+      var1.putInt("BadOmenLevel", this.badOmenLevel);
       var1.putInt("GroupsSpawned", this.groupsSpawned);
       var1.putInt("PreRaidTicks", this.raidCooldownTicks);
       var1.putInt("PostRaidTicks", this.postRaidTicks);
@@ -789,7 +784,7 @@ public class Raid {
    }
 
    public float getEnchantOdds() {
-      int var1 = this.getRaidOmenLevel();
+      int var1 = this.getBadOmenLevel();
       if (var1 == 2) {
          return 0.1F;
       } else if (var1 == 3) {

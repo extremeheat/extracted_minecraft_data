@@ -19,6 +19,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryFileCodec;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
@@ -37,10 +38,10 @@ public class LootTable {
    public static final long RANDOMIZE_SEED = 0L;
    public static final Codec<LootTable> DIRECT_CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               LootContextParamSets.CODEC.lenientOptionalFieldOf("type", DEFAULT_PARAM_SET).forGetter(var0x -> var0x.paramSet),
-               ResourceLocation.CODEC.optionalFieldOf("random_sequence").forGetter(var0x -> var0x.randomSequence),
-               LootPool.CODEC.listOf().optionalFieldOf("pools", List.of()).forGetter(var0x -> var0x.pools),
-               LootItemFunctions.ROOT_CODEC.listOf().optionalFieldOf("functions", List.of()).forGetter(var0x -> var0x.functions)
+               LootContextParamSets.CODEC.optionalFieldOf("type", DEFAULT_PARAM_SET).forGetter(var0x -> var0x.paramSet),
+               ExtraCodecs.strictOptionalField(ResourceLocation.CODEC, "random_sequence").forGetter(var0x -> var0x.randomSequence),
+               ExtraCodecs.strictOptionalField(LootPool.CODEC.listOf(), "pools", List.of()).forGetter(var0x -> var0x.pools),
+               ExtraCodecs.strictOptionalField(LootItemFunctions.ROOT_CODEC.listOf(), "functions", List.of()).forGetter(var0x -> var0x.functions)
             )
             .apply(var0, LootTable::new)
    );

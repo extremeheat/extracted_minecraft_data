@@ -54,7 +54,7 @@ public class CropBlock extends BushBlock implements BonemealableBlock {
 
    @Override
    protected boolean mayPlaceOn(BlockState var1, BlockGetter var2, BlockPos var3) {
-      return var1.is(Blocks.FARMLAND);
+      return var1.is(Blocks.FARMLAND) || var1.is(Blocks.POISON_FARMLAND);
    }
 
    protected IntegerProperty getAgeProperty() {
@@ -69,7 +69,7 @@ public class CropBlock extends BushBlock implements BonemealableBlock {
       return var1.getValue(this.getAgeProperty());
    }
 
-   public BlockState getStateForAge(int var1) {
+   public BlockState getStateForAge(int var1, BlockState var2) {
       return this.defaultBlockState().setValue(this.getAgeProperty(), Integer.valueOf(var1));
    }
 
@@ -88,8 +88,12 @@ public class CropBlock extends BushBlock implements BonemealableBlock {
          int var5 = this.getAge(var1);
          if (var5 < this.getMaxAge()) {
             float var6 = getGrowthSpeed(this, var2, var3);
-            if (var4.nextInt((int)(25.0F / var6) + 1) == 0) {
-               var2.setBlock(var3, this.getStateForAge(var5 + 1), 2);
+            if (var1.is(Blocks.POTATOES)) {
+               if (var4.nextInt((int)(6.25F / var6) + 1) == 0) {
+                  var2.setBlock(var3, this.getStateForAge(var5 + 1, var1), 2);
+               }
+            } else if (var4.nextInt((int)(25.0F / var6) + 1) == 0) {
+               var2.setBlock(var3, this.getStateForAge(var5 + 1, var1), 2);
             }
          }
       }
@@ -102,7 +106,7 @@ public class CropBlock extends BushBlock implements BonemealableBlock {
          var4 = var5;
       }
 
-      var1.setBlock(var2, this.getStateForAge(var4), 2);
+      var1.setBlock(var2, this.getStateForAge(var4, var3), 2);
    }
 
    protected int getBonemealAgeIncrease(Level var1) {
@@ -116,10 +120,15 @@ public class CropBlock extends BushBlock implements BonemealableBlock {
       for(int var5 = -1; var5 <= 1; ++var5) {
          for(int var6 = -1; var6 <= 1; ++var6) {
             float var7 = 0.0F;
-            BlockState var8 = var1.getBlockState(var4.offset(var5, 0, var6));
-            if (var8.is(Blocks.FARMLAND)) {
+            BlockPos var8 = var4.offset(var5, 0, var6);
+            BlockState var9 = var1.getBlockState(var8);
+            if (var0 instanceof BushBlock var10 && var10.mayPlaceOn(var9, var1, var8)) {
                var7 = 1.0F;
-               if (var8.getValue(FarmBlock.MOISTURE) > 0) {
+               if ((var9.is(Blocks.FARMLAND) || var9.is(Blocks.POISON_FARMLAND)) && var9.getValue(FarmBlock.MOISTURE) > 0) {
+                  var7 = 3.0F;
+               }
+
+               if (var9.is(Blocks.CORRUPTED_PEELGRASS_BLOCK)) {
                   var7 = 3.0F;
                }
             }
@@ -136,9 +145,9 @@ public class CropBlock extends BushBlock implements BonemealableBlock {
       BlockPos var13 = var2.south();
       BlockPos var14 = var2.west();
       BlockPos var15 = var2.east();
-      boolean var9 = var1.getBlockState(var14).is(var0) || var1.getBlockState(var15).is(var0);
-      boolean var10 = var1.getBlockState(var12).is(var0) || var1.getBlockState(var13).is(var0);
-      if (var9 && var10) {
+      boolean var16 = var1.getBlockState(var14).is(var0) || var1.getBlockState(var15).is(var0);
+      boolean var17 = var1.getBlockState(var12).is(var0) || var1.getBlockState(var13).is(var0);
+      if (var16 && var17) {
          var3 /= 2.0F;
       } else {
          boolean var11 = var1.getBlockState(var14.north()).is(var0)

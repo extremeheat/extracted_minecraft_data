@@ -11,6 +11,7 @@ import net.minecraft.Util;
 import net.minecraft.client.model.EntityModel;
 import net.minecraft.client.model.VillagerHeadModel;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.resources.metadata.animation.VillagerMetaDataSection;
 import net.minecraft.core.DefaultedRegistry;
@@ -49,22 +50,27 @@ public class VillagerProfessionLayer<T extends LivingEntity & VillagerDataHolder
          VillagerData var11 = ((VillagerDataHolder)var4).getVillagerData();
          VillagerType var12 = var11.getType();
          VillagerProfession var13 = var11.getProfession();
-         VillagerMetaDataSection.Hat var14 = this.getHatData(this.typeHatCache, "type", BuiltInRegistries.VILLAGER_TYPE, var12);
-         VillagerMetaDataSection.Hat var15 = this.getHatData(this.professionHatCache, "profession", BuiltInRegistries.VILLAGER_PROFESSION, var13);
-         EntityModel var16 = this.getParentModel();
-         ((VillagerHeadModel)var16)
-            .hatVisible(var15 == VillagerMetaDataSection.Hat.NONE || var15 == VillagerMetaDataSection.Hat.PARTIAL && var14 != VillagerMetaDataSection.Hat.FULL);
-         ResourceLocation var17 = this.getResourceLocation("type", BuiltInRegistries.VILLAGER_TYPE.getKey(var12));
-         renderColoredCutoutModel(var16, var17, var1, var2, var3, var4, 1.0F, 1.0F, 1.0F);
-         ((VillagerHeadModel)var16).hatVisible(true);
+         boolean var14 = var4.isPotato();
+         VillagerMetaDataSection.Hat var15 = this.getHatData(this.typeHatCache, "type", BuiltInRegistries.VILLAGER_TYPE, var12);
+         VillagerMetaDataSection.Hat var16 = this.getHatData(this.professionHatCache, "profession", BuiltInRegistries.VILLAGER_PROFESSION, var13);
+         EntityModel var17 = this.getParentModel();
+         ((VillagerHeadModel)var17)
+            .hatVisible(var16 == VillagerMetaDataSection.Hat.NONE || var16 == VillagerMetaDataSection.Hat.PARTIAL && var15 != VillagerMetaDataSection.Hat.FULL);
+         ResourceLocation var18 = this.getResourceLocation("type", BuiltInRegistries.VILLAGER_TYPE.getKey(var12));
+         renderColoredCutoutModel(var17, var18, var1, var2, var3, var4, 1.0F, 1.0F, 1.0F);
+         ((VillagerHeadModel)var17).hatVisible(true);
          if (var13 != VillagerProfession.NONE && !var4.isBaby()) {
-            ResourceLocation var18 = this.getResourceLocation("profession", BuiltInRegistries.VILLAGER_PROFESSION.getKey((T)var13));
-            renderColoredCutoutModel(var16, var18, var1, var2, var3, var4, 1.0F, 1.0F, 1.0F);
+            ResourceLocation var19 = this.getResourceLocation("profession", BuiltInRegistries.VILLAGER_PROFESSION.getKey((T)var13));
+            if (var14) {
+               var19 = LivingEntityRenderer.potatoify(var19);
+            }
+
+            renderColoredCutoutModel(var17, var19, var1, var2, var3, var4, 1.0F, 1.0F, 1.0F);
             if (var13 != VillagerProfession.NITWIT) {
-               ResourceLocation var19 = this.getResourceLocation(
+               ResourceLocation var20 = this.getResourceLocation(
                   "profession_level", (ResourceLocation)LEVEL_LOCATIONS.get(Mth.clamp(var11.getLevel(), 1, LEVEL_LOCATIONS.size()))
                );
-               renderColoredCutoutModel(var16, var19, var1, var2, var3, var4, 1.0F, 1.0F, 1.0F);
+               renderColoredCutoutModel(var17, var20, var1, var2, var3, var4, 1.0F, 1.0F, 1.0F);
             }
          }
       }

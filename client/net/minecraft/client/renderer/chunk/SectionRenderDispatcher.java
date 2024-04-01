@@ -585,7 +585,7 @@ public class SectionRenderDispatcher {
                         RenderSection.this.beginLayer(var20);
                      }
 
-                     var14.renderLiquid(var16, var10, var20, var17, var25);
+                     var14.renderLiquid(var16, var10, var20, var17, var25, var16.getX() & 15, var16.getY() & 15, var16.getZ() & 15);
                   }
 
                   if (var17.getRenderShape() != RenderShape.INVISIBLE) {

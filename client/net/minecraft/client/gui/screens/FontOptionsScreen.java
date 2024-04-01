@@ -6,7 +6,7 @@ import net.minecraft.network.chat.Component;
 
 public class FontOptionsScreen extends SimpleOptionsSubScreen {
    private static OptionInstance<?>[] options(Options var0) {
-      return new OptionInstance[]{var0.forceUnicodeFont(), var0.japaneseGlyphVariants()};
+      return new OptionInstance[]{var0.forceUnicodeFont(), var0.japaneseGlyphVariants(), var0.potatoFont()};
    }
 
    public FontOptionsScreen(Screen var1, Options var2) {

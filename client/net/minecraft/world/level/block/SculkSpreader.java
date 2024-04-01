@@ -210,7 +210,7 @@ public class SculkSpreader {
                   Codec.intRange(0, 1000).fieldOf("charge").orElse(0).forGetter(SculkSpreader.ChargeCursor::getCharge),
                   Codec.intRange(0, 1).fieldOf("decay_delay").orElse(1).forGetter(SculkSpreader.ChargeCursor::getDecayDelay),
                   Codec.intRange(0, 2147483647).fieldOf("update_delay").orElse(0).forGetter(var0x -> var0x.updateDelay),
-                  DIRECTION_SET.lenientOptionalFieldOf("facings").forGetter(var0x -> Optional.ofNullable(var0x.getFacingData()))
+                  DIRECTION_SET.optionalFieldOf("facings").forGetter(var0x -> Optional.ofNullable(var0x.getFacingData()))
                )
                .apply(var0, SculkSpreader.ChargeCursor::new)
       );

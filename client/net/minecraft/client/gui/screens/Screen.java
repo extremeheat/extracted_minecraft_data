@@ -10,12 +10,14 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -56,7 +58,7 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final Set<String> ALLOWED_PROTOCOLS = Sets.newHashSet(new String[]{"http", "https"});
    private static final Component USAGE_NARRATION = Component.translatable("narrator.screen.usage");
-   protected static final CubeMap CUBE_MAP = new CubeMap(new ResourceLocation("textures/gui/title/background/panorama"));
+   protected static final CubeMap CUBE_MAP = new CubeMap(new ResourceLocation("nothingtoseeheremovealong", "textures/gui/title/background/panorama"));
    protected static final PanoramaRenderer PANORAMA = new PanoramaRenderer(CUBE_MAP);
    public static final ResourceLocation MENU_BACKGROUND = new ResourceLocation("textures/gui/menu_background.png");
    public static final ResourceLocation HEADER_SEPARATOR = new ResourceLocation("textures/gui/header_separator.png");
@@ -543,7 +545,8 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
    }
 
    protected void updateNarratedWidget(NarrationElementOutput var1) {
-      List var2 = this.narratables.stream().filter(NarratableEntry::isActive).sorted(Comparator.comparingInt(TabOrderedElement::getTabOrderGroup)).toList();
+      List var2 = this.narratables.stream().filter(NarratableEntry::isActive).collect(Collectors.toList());
+      Collections.sort(var2, Comparator.comparingInt(TabOrderedElement::getTabOrderGroup));
       Screen.NarratableSearchResult var3 = findNarratableWidget(var2, this.lastNarratable);
       if (var3 != null) {
          if (var3.priority.isTerminal()) {

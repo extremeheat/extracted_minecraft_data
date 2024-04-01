@@ -43,7 +43,6 @@ public class FurnaceResultSlot extends Slot {
 
    // $VF: Could not properly define all variable types!
    // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    protected void checkTakeAchievements(ItemStack var1) {
       var1.onCraftedBy(this.player.level(), this.player, this.removeCount);
       Player var4 = this.player;

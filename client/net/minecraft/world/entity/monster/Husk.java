@@ -25,6 +25,11 @@ public class Husk extends Zombie {
    }
 
    @Override
+   public boolean hasPotatoVariant() {
+      return true;
+   }
+
+   @Override
    protected boolean isSunSensitive() {
       return false;
    }

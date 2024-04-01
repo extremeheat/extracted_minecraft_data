@@ -7,6 +7,7 @@ import java.util.Optional;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.ExtraCodecs;
 
 public class StartRidingTrigger extends SimpleCriterionTrigger<StartRidingTrigger.TriggerInstance> {
    public StartRidingTrigger() {
@@ -25,7 +26,7 @@ public class StartRidingTrigger extends SimpleCriterionTrigger<StartRidingTrigge
    public static record TriggerInstance(Optional<ContextAwarePredicate> b) implements SimpleCriterionTrigger.SimpleInstance {
       private final Optional<ContextAwarePredicate> player;
       public static final Codec<StartRidingTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
-         var0 -> var0.group(EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(StartRidingTrigger.TriggerInstance::player))
+         var0 -> var0.group(ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player").forGetter(StartRidingTrigger.TriggerInstance::player))
                .apply(var0, StartRidingTrigger.TriggerInstance::new)
       );
 

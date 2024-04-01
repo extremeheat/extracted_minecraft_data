@@ -13,6 +13,7 @@ import net.minecraft.core.component.DataComponentPredicate;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ItemLike;
@@ -24,10 +25,10 @@ public record ItemPredicate(Optional<HolderSet<Item>> b, MinMaxBounds.Ints c, Da
    private final Map<ItemSubPredicate.Type<?>, ItemSubPredicate> subPredicates;
    public static final Codec<ItemPredicate> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               RegistryCodecs.homogeneousList(Registries.ITEM).optionalFieldOf("items").forGetter(ItemPredicate::items),
-               MinMaxBounds.Ints.CODEC.optionalFieldOf("count", MinMaxBounds.Ints.ANY).forGetter(ItemPredicate::count),
-               DataComponentPredicate.CODEC.optionalFieldOf("components", DataComponentPredicate.EMPTY).forGetter(ItemPredicate::components),
-               ItemSubPredicate.CODEC.optionalFieldOf("predicates", Map.of()).forGetter(ItemPredicate::subPredicates)
+               ExtraCodecs.strictOptionalField(RegistryCodecs.homogeneousList(Registries.ITEM), "items").forGetter(ItemPredicate::items),
+               ExtraCodecs.strictOptionalField(MinMaxBounds.Ints.CODEC, "count", MinMaxBounds.Ints.ANY).forGetter(ItemPredicate::count),
+               ExtraCodecs.strictOptionalField(DataComponentPredicate.CODEC, "components", DataComponentPredicate.EMPTY).forGetter(ItemPredicate::components),
+               ExtraCodecs.strictOptionalField(ItemSubPredicate.CODEC, "predicates", Map.of()).forGetter(ItemPredicate::subPredicates)
             )
             .apply(var0, ItemPredicate::new)
    );

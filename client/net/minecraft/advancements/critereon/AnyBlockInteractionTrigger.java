@@ -7,6 +7,7 @@ import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -42,8 +43,8 @@ public class AnyBlockInteractionTrigger extends SimpleCriterionTrigger<AnyBlockI
       private final Optional<ContextAwarePredicate> location;
       public static final Codec<AnyBlockInteractionTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
-                  EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(AnyBlockInteractionTrigger.TriggerInstance::player),
-                  ContextAwarePredicate.CODEC.optionalFieldOf("location").forGetter(AnyBlockInteractionTrigger.TriggerInstance::location)
+                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player").forGetter(AnyBlockInteractionTrigger.TriggerInstance::player),
+                  ExtraCodecs.strictOptionalField(ContextAwarePredicate.CODEC, "location").forGetter(AnyBlockInteractionTrigger.TriggerInstance::location)
                )
                .apply(var0, AnyBlockInteractionTrigger.TriggerInstance::new)
       );

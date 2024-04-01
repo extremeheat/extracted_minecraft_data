@@ -1,28 +1,21 @@
 package net.minecraft.world.item;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.core.Position;
-import net.minecraft.core.dispenser.BlockSource;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.projectile.Projectile;
-import net.minecraft.world.entity.projectile.SmallFireball;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseFireBlock;
 import net.minecraft.world.level.block.CampfireBlock;
 import net.minecraft.world.level.block.CandleBlock;
 import net.minecraft.world.level.block.CandleCakeBlock;
-import net.minecraft.world.level.block.DispenserBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.gameevent.GameEvent;
-import net.minecraft.world.phys.Vec3;
 
-public class FireChargeItem extends Item implements ProjectileItem {
+public class FireChargeItem extends Item {
    public FireChargeItem(Item.Properties var1) {
       super(var1);
    }
@@ -59,30 +52,5 @@ public class FireChargeItem extends Item implements ProjectileItem {
    private void playSound(Level var1, BlockPos var2) {
       RandomSource var3 = var1.getRandom();
       var1.playSound(null, var2, SoundEvents.FIRECHARGE_USE, SoundSource.BLOCKS, 1.0F, (var3.nextFloat() - var3.nextFloat()) * 0.2F + 1.0F);
-   }
-
-   @Override
-   public Projectile asProjectile(Level var1, Position var2, ItemStack var3, Direction var4) {
-      RandomSource var5 = var1.getRandom();
-      double var6 = var5.triangle((double)var4.getStepX(), 0.11485000000000001);
-      double var8 = var5.triangle((double)var4.getStepY(), 0.11485000000000001);
-      double var10 = var5.triangle((double)var4.getStepZ(), 0.11485000000000001);
-      SmallFireball var12 = new SmallFireball(var1, var2.x(), var2.y(), var2.z(), var6, var8, var10);
-      var12.setItem(var3);
-      return var12;
-   }
-
-   @Override
-   public void shoot(Projectile var1, double var2, double var4, double var6, float var8, float var9) {
-   }
-
-   @Override
-   public ProjectileItem.DispenseConfig createDispenseConfig() {
-      return ProjectileItem.DispenseConfig.builder()
-         .positionFunction((var0, var1) -> DispenserBlock.getDispensePosition(var0, 1.0, Vec3.ZERO))
-         .uncertainty(6.6666665F)
-         .power(1.0F)
-         .overrideDispenseEvent(1018)
-         .build();
    }
 }

@@ -1,13 +1,13 @@
 package net.minecraft.world.level.levelgen.placement;
 
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 import java.util.stream.Stream;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.RandomSource;
 
 public class InSquarePlacement extends PlacementModifier {
    private static final InSquarePlacement INSTANCE = new InSquarePlacement();
-   public static final MapCodec<InSquarePlacement> CODEC = MapCodec.unit(() -> INSTANCE);
+   public static final Codec<InSquarePlacement> CODEC = Codec.unit(() -> INSTANCE);
 
    public InSquarePlacement() {
       super();

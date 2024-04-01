@@ -2,7 +2,6 @@ package net.minecraft.world.level.levelgen.carver;
 
 import com.google.common.collect.ImmutableSet;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import java.util.Set;
 import java.util.function.Function;
 import javax.annotation.Nullable;
@@ -11,6 +10,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.ChunkPos;
@@ -36,7 +36,7 @@ public abstract class WorldCarver<C extends CarverConfiguration> {
    protected static final FluidState WATER = Fluids.WATER.defaultFluidState();
    protected static final FluidState LAVA = Fluids.LAVA.defaultFluidState();
    protected Set<Fluid> liquids = ImmutableSet.of(Fluids.WATER);
-   private final MapCodec<ConfiguredWorldCarver<C>> configuredCodec;
+   private final Codec<ConfiguredWorldCarver<C>> configuredCodec;
 
    private static <C extends CarverConfiguration, F extends WorldCarver<C>> F register(String var0, F var1) {
       return Registry.register(BuiltInRegistries.CARVER, var0, (F)var1);
@@ -44,14 +44,14 @@ public abstract class WorldCarver<C extends CarverConfiguration> {
 
    public WorldCarver(Codec<C> var1) {
       super();
-      this.configuredCodec = var1.fieldOf("config").xmap(this::configured, ConfiguredWorldCarver::config);
+      this.configuredCodec = var1.fieldOf("config").xmap(this::configured, ConfiguredWorldCarver::config).codec();
    }
 
    public ConfiguredWorldCarver<C> configured(C var1) {
       return new ConfiguredWorldCarver<>(this, var1);
    }
 
-   public MapCodec<ConfiguredWorldCarver<C>> configuredCodec() {
+   public Codec<ConfiguredWorldCarver<C>> configuredCodec() {
       return this.configuredCodec;
    }
 
@@ -131,14 +131,14 @@ public abstract class WorldCarver<C extends CarverConfiguration> {
       MutableBoolean var9
    ) {
       BlockState var10 = var3.getBlockState(var6);
-      if (var10.is(Blocks.GRASS_BLOCK) || var10.is(Blocks.MYCELIUM)) {
+      if (var10.is(BlockTags.ANIMALS_SPAWNABLE_ON) || var10.is(Blocks.MYCELIUM)) {
          var9.setTrue();
       }
 
       if (!this.canReplaceBlock((C)var2, var10) && !isDebugEnabled(var2)) {
          return false;
       } else {
-         BlockState var11 = this.getCarveState(var1, (C)var2, var6, var8);
+         BlockState var11 = var3.isPotato() ? Blocks.CAVE_AIR.defaultBlockState() : this.getCarveState(var1, (C)var2, var6, var8);
          if (var11 == null) {
             return false;
          } else {
@@ -149,7 +149,8 @@ public abstract class WorldCarver<C extends CarverConfiguration> {
 
             if (var9.isTrue()) {
                var7.setWithOffset(var6, Direction.DOWN);
-               if (var3.getBlockState(var7).is(Blocks.DIRT)) {
+               BlockState var12 = var3.getBlockState(var7);
+               if (var12.is(Blocks.DIRT) || var12.is(Blocks.TERREDEPOMME)) {
                   var1.topMaterial(var4, var3, var7, !var11.getFluidState().isEmpty()).ifPresent(var2x -> {
                      var3.setBlockState(var7, var2x, false);
                      if (!var2x.getFluidState().isEmpty()) {

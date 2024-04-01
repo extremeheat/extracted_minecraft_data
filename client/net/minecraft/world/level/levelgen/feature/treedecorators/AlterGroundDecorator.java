@@ -1,7 +1,7 @@
 package net.minecraft.world.level.levelgen.feature.treedecorators;
 
 import com.google.common.collect.Lists;
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.ArrayList;
 import net.minecraft.core.BlockPos;
@@ -9,9 +9,10 @@ import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 
 public class AlterGroundDecorator extends TreeDecorator {
-   public static final MapCodec<AlterGroundDecorator> CODEC = BlockStateProvider.CODEC
+   public static final Codec<AlterGroundDecorator> CODEC = BlockStateProvider.CODEC
       .fieldOf("provider")
-      .xmap(AlterGroundDecorator::new, var0 -> var0.provider);
+      .xmap(AlterGroundDecorator::new, var0 -> var0.provider)
+      .codec();
    private final BlockStateProvider provider;
 
    public AlterGroundDecorator(BlockStateProvider var1) {

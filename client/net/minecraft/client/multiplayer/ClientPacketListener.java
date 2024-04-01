@@ -30,14 +30,15 @@ import net.minecraft.client.DebugQueryHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.MapRenderer;
-import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.gui.components.toasts.RecipeToast;
 import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.screens.DeathScreen;
 import net.minecraft.client.gui.screens.DemoIntroScreen;
 import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraft.client.gui.screens.PotatoPoemScreen;
 import net.minecraft.client.gui.screens.ReceivingLevelScreen;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.SproutRespawnScreen;
 import net.minecraft.client.gui.screens.WinScreen;
 import net.minecraft.client.gui.screens.achievement.StatsScreen;
 import net.minecraft.client.gui.screens.inventory.BookViewScreen;
@@ -112,6 +113,7 @@ import net.minecraft.network.protocol.configuration.ConfigurationProtocols;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundAddExperienceOrbPacket;
+import net.minecraft.network.protocol.game.ClientboundAddSubGridPacket;
 import net.minecraft.network.protocol.game.ClientboundAnimatePacket;
 import net.minecraft.network.protocol.game.ClientboundAwardStatsPacket;
 import net.minecraft.network.protocol.game.ClientboundBlockChangedAckPacket;
@@ -207,6 +209,7 @@ import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
 import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
 import net.minecraft.network.protocol.game.ClientboundSoundEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
+import net.minecraft.network.protocol.game.ClientboundSoundSequencePacket;
 import net.minecraft.network.protocol.game.ClientboundStartConfigurationPacket;
 import net.minecraft.network.protocol.game.ClientboundStopSoundPacket;
 import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
@@ -224,7 +227,6 @@ import net.minecraft.network.protocol.game.CommonPlayerSpawnInfo;
 import net.minecraft.network.protocol.game.ServerboundAcceptTeleportationPacket;
 import net.minecraft.network.protocol.game.ServerboundChatAckPacket;
 import net.minecraft.network.protocol.game.ServerboundChatCommandPacket;
-import net.minecraft.network.protocol.game.ServerboundChatCommandSignedPacket;
 import net.minecraft.network.protocol.game.ServerboundChatPacket;
 import net.minecraft.network.protocol.game.ServerboundChatSessionUpdatePacket;
 import net.minecraft.network.protocol.game.ServerboundChunkBatchReceivedPacket;
@@ -271,6 +273,7 @@ import net.minecraft.world.entity.player.ProfilePublicKey;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
 import net.minecraft.world.entity.vehicle.Boat;
 import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.grid.GridCarrier;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.HorseInventoryMenu;
 import net.minecraft.world.inventory.InventoryMenu;
@@ -355,9 +358,6 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       this.pingDebugMonitor = new PingDebugMonitor(this, var1.getDebugOverlay().getPingLogger());
       this.recipeManager = new RecipeManager(this.registryAccess);
       this.debugSampleSubscriber = new DebugSampleSubscriber(this, var1.getDebugOverlay());
-      if (var3.chatState() != null) {
-         var1.gui.getChat().restoreState(var3.chatState());
-      }
    }
 
    public ClientSuggestionProvider getSuggestionsProvider() {
@@ -431,6 +431,11 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       this.minecraft.player.setPortalCooldown(var2.portalCooldown());
       this.minecraft.gameMode.setLocalMode(var2.gameType(), var2.previousGameType());
       this.minecraft.options.setServerRenderDistance(var1.chunkRadius());
+      if (var2.waitForGrid() != null) {
+         this.minecraft.player.reloadAttachedGrid = var2.waitForGrid();
+         this.minecraft.player.reloadAttachedGridTimeout = 60;
+      }
+
       this.chatSession = null;
       this.lastSeenMessages = new LastSeenMessagesTracker(20);
       this.messageSignatureCache = MessageSignatureCache.createDefault();
@@ -507,6 +512,22 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       var8.setXRot(0.0F);
       var8.setId(var1.getId());
       this.level.addEntity(var8);
+   }
+
+   @Override
+   public void handleAddSubGrid(ClientboundAddSubGridPacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
+      GridCarrier var2 = new GridCarrier(EntityType.GRID_CARRIER, this.level);
+      double var3 = var1.x();
+      double var5 = var1.y();
+      double var7 = var1.z();
+      var2.syncPacketPositionCodec(var3, var5, var7);
+      var2.moveTo(var3, var5, var7);
+      var2.setId(var1.id());
+      var2.setUUID(var1.uuid());
+      var2.grid().setBlocks(var1.blocks());
+      var2.grid().setBiome(var1.biome());
+      this.level.addEntity(var2);
    }
 
    @Override
@@ -782,9 +803,6 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    @Override
    public void handleConfigurationStart(ClientboundStartConfigurationPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
-      this.minecraft.getChatListener().clearQueue();
-      this.sendChatAcknowledgement();
-      ChatComponent.State var2 = this.minecraft.gui.getChat().storeState();
       this.minecraft.clearClientLevel(new ServerReconfigScreen(RECONFIGURE_SCREEN_MESSAGE, this.connection));
       this.connection
          .setupInboundProtocol(
@@ -800,8 +818,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
                   this.serverBrand,
                   this.serverData,
                   this.postDisconnectScreen,
-                  this.serverCookies,
-                  var2
+                  this.serverCookies
                )
             )
          );
@@ -1144,6 +1161,10 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       }
 
       this.minecraft.gameMode.setLocalMode(var2.gameType(), var2.previousGameType());
+      if (var2.waitForGrid() != null) {
+         var10.reloadAttachedGrid = var2.waitForGrid();
+         var10.reloadAttachedGridTimeout = 60;
+      }
    }
 
    @Override
@@ -1259,7 +1280,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       this.minecraft.level.getBlockEntity(var2, var1.getType()).ifPresent(var2x -> {
          CompoundTag var3 = var1.getTag();
          if (!var3.isEmpty()) {
-            var2x.loadWithComponents(var3, this.registryAccess);
+            var2x.load(var3, this.registryAccess);
          }
 
          if (var2x instanceof CommandBlockEntity && this.minecraft.screen instanceof CommandBlockEditScreen) {
@@ -1372,8 +1393,12 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          this.minecraft.player.setShowDeathScreen(var4 == 0.0F);
       } else if (var3 == ClientboundGameEventPacket.LIMITED_CRAFTING) {
          this.minecraft.player.setDoLimitedCrafting(var4 == 1.0F);
-      } else if (var3 == ClientboundGameEventPacket.LEVEL_CHUNKS_LOAD_START && this.levelLoadStatusManager != null) {
-         this.levelLoadStatusManager.loadingPacketsReceived();
+      } else if (var3 == ClientboundGameEventPacket.LEVEL_CHUNKS_LOAD_START) {
+         if (this.levelLoadStatusManager != null) {
+            this.levelLoadStatusManager.loadingPacketsReceived();
+         }
+      } else if (var3 == ClientboundGameEventPacket.POTATO_POEM) {
+         this.minecraft.setScreen(new PotatoPoemScreen(() -> this.minecraft.setScreen(new SproutRespawnScreen())));
       }
    }
 
@@ -1813,6 +1838,18 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
          .playSeededSound(
             this.minecraft.player, var1.getX(), var1.getY(), var1.getZ(), var1.getSound(), var1.getSource(), var1.getVolume(), var1.getPitch(), var1.getSeed()
          );
+   }
+
+   @Override
+   public void handleSoundSequenceEvent(ClientboundSoundSequencePacket var1) {
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
+
+      for(ClientboundSoundSequencePacket.DelayedSound var3 : var1.getSounds()) {
+         ClientboundSoundPacket var4 = var3.packet();
+         this.minecraft
+            .level
+            .playDelayedSound(var3.ticks(), var4.getX(), var4.getY(), var4.getZ(), var4.getSound().value(), var4.getSource(), var4.getVolume(), var4.getPitch());
+      }
    }
 
    @Override
@@ -2300,24 +2337,20 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    }
 
    public void sendCommand(String var1) {
-      SignableCommand var2 = SignableCommand.of(this.parseCommand(var1));
-      if (var2.arguments().isEmpty()) {
-         this.send(new ServerboundChatCommandPacket(var1));
-      } else {
-         Instant var3 = Instant.now();
-         long var4 = Crypt.SaltSupplier.getLong();
-         LastSeenMessagesTracker.Update var6 = this.lastSeenMessages.generateAndApplyUpdate();
-         ArgumentSignatures var7 = ArgumentSignatures.signCommand(var2, var5 -> {
-            SignedMessageBody var6xx = new SignedMessageBody(var5, var3, var4, var6.lastSeen());
-            return this.signedMessageEncoder.pack(var6xx);
-         });
-         this.send(new ServerboundChatCommandSignedPacket(var1, var3, var4, var7, var6.update()));
-      }
+      Instant var2 = Instant.now();
+      long var3 = Crypt.SaltSupplier.getLong();
+      LastSeenMessagesTracker.Update var5 = this.lastSeenMessages.generateAndApplyUpdate();
+      ArgumentSignatures var6 = ArgumentSignatures.signCommand(SignableCommand.of(this.parseCommand(var1)), var5x -> {
+         SignedMessageBody var6xx = new SignedMessageBody(var5x, var2, var3, var5.lastSeen());
+         return this.signedMessageEncoder.pack(var6xx);
+      });
+      this.send(new ServerboundChatCommandPacket(var1, var2, var3, var6, var5.update()));
    }
 
    public boolean sendUnsignedCommand(String var1) {
-      if (!SignableCommand.hasSignableArguments(this.parseCommand(var1))) {
-         this.send(new ServerboundChatCommandPacket(var1));
+      if (SignableCommand.of(this.parseCommand(var1)).arguments().isEmpty()) {
+         LastSeenMessagesTracker.Update var2 = this.lastSeenMessages.generateAndApplyUpdate();
+         this.send(new ServerboundChatCommandPacket(var1, Instant.now(), 0L, ArgumentSignatures.EMPTY, var2.update()));
          return true;
       } else {
          return false;

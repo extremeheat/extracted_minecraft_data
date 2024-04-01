@@ -180,6 +180,10 @@ public class BoundingBox {
       return new BoundingBox(this.minX() - var1, this.minY() - var1, this.minZ() - var1, this.maxX() + var1, this.maxY() + var1, this.maxZ() + var1);
    }
 
+   public BoundingBox inflatedBy(int var1, int var2, int var3) {
+      return new BoundingBox(this.minX() - var1, this.minY() - var2, this.minZ() - var3, this.maxX() + var1, this.maxY() + var2, this.maxZ() + var3);
+   }
+
    public boolean isInside(Vec3i var1) {
       return this.isInside(var1.getX(), var1.getY(), var1.getZ());
    }

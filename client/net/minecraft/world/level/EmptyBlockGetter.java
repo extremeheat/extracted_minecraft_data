@@ -39,4 +39,9 @@ public enum EmptyBlockGetter implements BlockGetter {
    public int getHeight() {
       return 0;
    }
+
+   @Override
+   public boolean isPotato() {
+      return false;
+   }
 }

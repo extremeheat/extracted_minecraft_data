@@ -39,12 +39,15 @@ public class FoodData {
          if (this.saturationLevel > 0.0F) {
             this.saturationLevel = Math.max(this.saturationLevel - 1.0F, 0.0F);
          } else if (var2 != Difficulty.PEACEFUL) {
-            this.foodLevel = Math.max(this.foodLevel - 1, 0);
+            boolean var3 = var1.tryEatArmor();
+            if (!var3) {
+               this.foodLevel = Math.max(this.foodLevel - 1, 0);
+            }
          }
       }
 
-      boolean var3 = var1.level().getGameRules().getBoolean(GameRules.RULE_NATURAL_REGENERATION);
-      if (var3 && this.saturationLevel > 0.0F && var1.isHurt() && this.foodLevel >= 20) {
+      boolean var5 = var1.level().getGameRules().getBoolean(GameRules.RULE_NATURAL_REGENERATION);
+      if (var5 && this.saturationLevel > 0.0F && var1.isHurt() && this.foodLevel >= 20) {
          ++this.tickTimer;
          if (this.tickTimer >= 10) {
             float var4 = Math.min(this.saturationLevel, 6.0F);
@@ -52,7 +55,7 @@ public class FoodData {
             this.addExhaustion(var4);
             this.tickTimer = 0;
          }
-      } else if (var3 && this.foodLevel >= 18 && var1.isHurt()) {
+      } else if (var5 && this.foodLevel >= 18 && var1.isHurt()) {
          ++this.tickTimer;
          if (this.tickTimer >= 80) {
             var1.heal(1.0F);

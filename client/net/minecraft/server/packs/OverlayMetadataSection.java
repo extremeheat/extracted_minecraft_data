@@ -7,6 +7,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
 import java.util.regex.Pattern;
 import net.minecraft.server.packs.metadata.MetadataSectionType;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.InclusiveRange;
 
 public record OverlayMetadataSection(List<OverlayMetadataSection.OverlayEntry> b) {
@@ -37,8 +38,7 @@ public record OverlayMetadataSection(List<OverlayMetadataSection.OverlayEntry> b
       static final Codec<OverlayMetadataSection.OverlayEntry> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
                   InclusiveRange.codec(Codec.INT).fieldOf("formats").forGetter(OverlayMetadataSection.OverlayEntry::format),
-                  Codec.STRING
-                     .validate(OverlayMetadataSection::validateOverlayDir)
+                  ExtraCodecs.validate(Codec.STRING, OverlayMetadataSection::validateOverlayDir)
                      .fieldOf("directory")
                      .forGetter(OverlayMetadataSection.OverlayEntry::overlay)
                )

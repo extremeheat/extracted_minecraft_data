@@ -10,7 +10,6 @@ import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.monster.Skeleton;
-import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -88,11 +87,9 @@ public class SkeletonTrapGoal extends Goal {
             var3.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.IRON_HELMET));
          }
 
-         FeatureFlagSet var4 = var2.level().enabledFeatures();
          var3.setItemSlot(
             EquipmentSlot.MAINHAND,
             EnchantmentHelper.enchantItem(
-               var4,
                var3.getRandom(),
                this.disenchant(var3.getMainHandItem()),
                (int)(5.0F + var1.getSpecialMultiplier() * (float)var3.getRandom().nextInt(18)),
@@ -102,7 +99,6 @@ public class SkeletonTrapGoal extends Goal {
          var3.setItemSlot(
             EquipmentSlot.HEAD,
             EnchantmentHelper.enchantItem(
-               var4,
                var3.getRandom(),
                this.disenchant(var3.getItemBySlot(EquipmentSlot.HEAD)),
                (int)(5.0F + var1.getSpecialMultiplier() * (float)var3.getRandom().nextInt(18)),

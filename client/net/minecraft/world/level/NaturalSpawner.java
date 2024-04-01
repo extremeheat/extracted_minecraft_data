@@ -220,7 +220,7 @@ public final class NaturalSpawner {
       } else if (!SpawnPlacements.checkSpawnRules(var8, var0, MobSpawnType.NATURAL, var5, var0.random)) {
          return false;
       } else {
-         return var0.noCollision(var8.getSpawnAABB((double)var5.getX() + 0.5, (double)var5.getY(), (double)var5.getZ() + 0.5));
+         return var0.noCollision(var8.getAABB((double)var5.getX() + 0.5, (double)var5.getY(), (double)var5.getZ() + 0.5));
       }
    }
 
@@ -331,7 +331,7 @@ public final class NaturalSpawner {
                         float var20 = var9.type.getWidth();
                         double var21 = Mth.clamp((double)var12, (double)var6 + (double)var20, (double)var6 + 16.0 - (double)var20);
                         double var23 = Mth.clamp((double)var13, (double)var7 + (double)var20, (double)var7 + 16.0 - (double)var20);
-                        if (!var0.noCollision(var9.type.getSpawnAABB(var21, (double)var19.getY(), var23))
+                        if (!var0.noCollision(var9.type.getAABB(var21, (double)var19.getY(), var23))
                            || !SpawnPlacements.checkSpawnRules(
                               var9.type, var0, MobSpawnType.CHUNK_GENERATION, BlockPos.containing(var21, (double)var19.getY(), var23), var0.getRandom()
                            )) {

@@ -101,6 +101,7 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
       EntityType.PIGLIN,
       EntityType.PIGLIN_BRUTE,
       EntityType.PILLAGER,
+      EntityType.PLAGUEWHALE,
       EntityType.RAVAGER,
       EntityType.SHULKER,
       EntityType.SILVERFISH,
@@ -108,6 +109,7 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
       EntityType.SLIME,
       EntityType.SPIDER,
       EntityType.STRAY,
+      EntityType.TOXIFIN,
       EntityType.VEX,
       EntityType.VINDICATOR,
       EntityType.WITCH,
@@ -116,7 +118,8 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
       EntityType.ZOGLIN,
       EntityType.ZOMBIE_VILLAGER,
       EntityType.ZOMBIE,
-      EntityType.ZOMBIFIED_PIGLIN
+      EntityType.ZOMBIFIED_PIGLIN,
+      EntityType.POISONOUS_POTATO_ZOMBIE
    );
 
    public VanillaAdventureAdvancements() {
@@ -817,13 +820,13 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
       return var0;
    }
 
-   protected static Advancement.Builder addBiomes(Advancement.Builder var0, HolderLookup.Provider var1, List<ResourceKey<Biome>> var2) {
+   protected static <T extends Advancement.Builder> T addBiomes(T var0, HolderLookup.Provider var1, List<ResourceKey<Biome>> var2) {
       HolderLookup.RegistryLookup var3 = var1.lookupOrThrow(Registries.BIOME);
 
       for(ResourceKey var5 : var2) {
          var0.addCriterion(var5.location().toString(), PlayerTrigger.TriggerInstance.located(LocationPredicate.Builder.inBiome(var3.getOrThrow(var5))));
       }
 
-      return var0;
+      return (T)var0;
    }
 }

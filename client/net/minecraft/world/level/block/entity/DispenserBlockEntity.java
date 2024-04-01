@@ -61,8 +61,8 @@ public class DispenserBlockEntity extends RandomizableContainerBlockEntity {
    }
 
    @Override
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.loadAdditional(var1, var2);
+   public void load(CompoundTag var1, HolderLookup.Provider var2) {
+      super.load(var1, var2);
       this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
       if (!this.tryLoadLootTable(var1)) {
          ContainerHelper.loadAllItems(var1, this.items, var2);

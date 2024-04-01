@@ -3,7 +3,6 @@ package net.minecraft.client.multiplayer;
 import com.mojang.authlib.GameProfile;
 import java.util.Map;
 import javax.annotation.Nullable;
-import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.telemetry.WorldSessionTelemetryManager;
 import net.minecraft.core.RegistryAccess;
@@ -18,8 +17,7 @@ public record CommonListenerCookie(
    @Nullable String e,
    @Nullable ServerData f,
    @Nullable Screen g,
-   Map<ResourceLocation, byte[]> h,
-   @Nullable ChatComponent.State i
+   Map<ResourceLocation, byte[]> h
 ) {
    private final GameProfile localGameProfile;
    private final WorldSessionTelemetryManager telemetryManager;
@@ -32,8 +30,6 @@ public record CommonListenerCookie(
    @Nullable
    private final Screen postDisconnectScreen;
    private final Map<ResourceLocation, byte[]> serverCookies;
-   @Nullable
-   private final ChatComponent.State chatState;
 
    public CommonListenerCookie(
       GameProfile var1,
@@ -43,8 +39,7 @@ public record CommonListenerCookie(
       @Nullable String var5,
       @Nullable ServerData var6,
       @Nullable Screen var7,
-      Map<ResourceLocation, byte[]> var8,
-      @Nullable ChatComponent.State var9
+      Map<ResourceLocation, byte[]> var8
    ) {
       super();
       this.localGameProfile = var1;
@@ -55,6 +50,5 @@ public record CommonListenerCookie(
       this.serverData = var6;
       this.postDisconnectScreen = var7;
       this.serverCookies = var8;
-      this.chatState = var9;
    }
 }

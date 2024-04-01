@@ -143,31 +143,36 @@ public class VideoSettingsScreen extends OptionsSubScreen {
 
    @Override
    public boolean mouseClicked(double var1, double var3, int var5) {
+      int var6 = this.options.guiScale().get();
       if (super.mouseClicked(var1, var3, var5)) {
+         if (this.options.guiScale().get() != var6) {
+            this.minecraft.resizeDisplay();
+         }
+
          if (this.gpuWarnlistManager.isShowingWarning()) {
-            ArrayList var6 = Lists.newArrayList(new Component[]{WARNING_MESSAGE, CommonComponents.NEW_LINE});
-            String var7 = this.gpuWarnlistManager.getRendererWarnings();
-            if (var7 != null) {
-               var6.add(CommonComponents.NEW_LINE);
-               var6.add(Component.translatable("options.graphics.warning.renderer", var7).withStyle(ChatFormatting.GRAY));
-            }
-
-            String var8 = this.gpuWarnlistManager.getVendorWarnings();
+            ArrayList var7 = Lists.newArrayList(new Component[]{WARNING_MESSAGE, CommonComponents.NEW_LINE});
+            String var8 = this.gpuWarnlistManager.getRendererWarnings();
             if (var8 != null) {
-               var6.add(CommonComponents.NEW_LINE);
-               var6.add(Component.translatable("options.graphics.warning.vendor", var8).withStyle(ChatFormatting.GRAY));
+               var7.add(CommonComponents.NEW_LINE);
+               var7.add(Component.translatable("options.graphics.warning.renderer", var8).withStyle(ChatFormatting.GRAY));
             }
 
-            String var9 = this.gpuWarnlistManager.getVersionWarnings();
+            String var9 = this.gpuWarnlistManager.getVendorWarnings();
             if (var9 != null) {
-               var6.add(CommonComponents.NEW_LINE);
-               var6.add(Component.translatable("options.graphics.warning.version", var9).withStyle(ChatFormatting.GRAY));
+               var7.add(CommonComponents.NEW_LINE);
+               var7.add(Component.translatable("options.graphics.warning.vendor", var9).withStyle(ChatFormatting.GRAY));
+            }
+
+            String var10 = this.gpuWarnlistManager.getVersionWarnings();
+            if (var10 != null) {
+               var7.add(CommonComponents.NEW_LINE);
+               var7.add(Component.translatable("options.graphics.warning.version", var10).withStyle(ChatFormatting.GRAY));
             }
 
             this.minecraft
                .setScreen(
                   new UnsupportedGraphicsWarningScreen(
-                     WARNING_TITLE, var6, ImmutableList.of(new UnsupportedGraphicsWarningScreen.ButtonOption(BUTTON_ACCEPT, var1x -> {
+                     WARNING_TITLE, var7, ImmutableList.of(new UnsupportedGraphicsWarningScreen.ButtonOption(BUTTON_ACCEPT, var1x -> {
                         this.options.graphicsMode().set(GraphicsStatus.FABULOUS);
                         Minecraft.getInstance().levelRenderer.allChanged();
                         this.gpuWarnlistManager.dismissWarning();
@@ -186,22 +191,22 @@ public class VideoSettingsScreen extends OptionsSubScreen {
       }
    }
 
-   // $VF: Could not properly define all variable types!
-   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    @Override
    public boolean mouseScrolled(double var1, double var3, double var5, double var7) {
       if (Screen.hasControlDown()) {
          OptionInstance var9 = this.options.guiScale();
          OptionInstance.ValueSet var11 = var9.values();
          if (var11 instanceof OptionInstance.ClampingLazyMaxIntRange var10) {
-            int var15 = var9.get();
-            int var12 = var15 == 0 ? var10.maxInclusive() + 1 : var15;
-            int var13 = var12 + (int)Math.signum(var7);
-            if (var13 != 0 && var13 <= var10.maxInclusive() && var13 >= var10.minInclusive()) {
-               CycleButton var14 = (CycleButton)this.list.findOption(var9);
-               if (var14 != null) {
+            int var13 = var9.get() + (int)Math.signum(var7);
+            if (var13 != 0 && var13 <= var10.maxInclusive()) {
+               CycleButton var12 = (CycleButton)this.list.findOption(var9);
+               if (var12 != null) {
                   var9.set(var13);
-                  var14.setValue(var13);
+                  var12.setValue(var13);
+               }
+
+               if (var9.get() == var13) {
+                  this.minecraft.resizeDisplay();
                   this.list.setScrollAmount(0.0);
                   return true;
                }

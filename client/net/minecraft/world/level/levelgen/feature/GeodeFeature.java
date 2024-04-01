@@ -146,24 +146,25 @@ public class GeodeFeature extends Feature<GeodeConfiguration> {
       }
 
       List var51 = var16.innerPlacements;
+      if (!var51.isEmpty()) {
+         for(BlockPos var55 : var47) {
+            BlockState var56 = Util.getRandom(var51, var3);
 
-      for(BlockPos var55 : var47) {
-         BlockState var56 = Util.getRandom(var51, var3);
+            for(Direction var39 : DIRECTIONS) {
+               if (var56.hasProperty(BlockStateProperties.FACING)) {
+                  var56 = var56.setValue(BlockStateProperties.FACING, var39);
+               }
 
-         for(Direction var39 : DIRECTIONS) {
-            if (var56.hasProperty(BlockStateProperties.FACING)) {
-               var56 = var56.setValue(BlockStateProperties.FACING, var39);
-            }
+               BlockPos var62 = var55.relative(var39);
+               BlockState var65 = var5.getBlockState(var62);
+               if (var56.hasProperty(BlockStateProperties.WATERLOGGED)) {
+                  var56 = var56.setValue(BlockStateProperties.WATERLOGGED, Boolean.valueOf(var65.getFluidState().isSource()));
+               }
 
-            BlockPos var62 = var55.relative(var39);
-            BlockState var65 = var5.getBlockState(var62);
-            if (var56.hasProperty(BlockStateProperties.WATERLOGGED)) {
-               var56 = var56.setValue(BlockStateProperties.WATERLOGGED, Boolean.valueOf(var65.getFluidState().isSource()));
-            }
-
-            if (BuddingAmethystBlock.canClusterGrowAtState(var65)) {
-               this.safeSetBlock(var5, var62, var56, var49);
-               break;
+               if (BuddingAmethystBlock.canClusterGrowAtState(var65)) {
+                  this.safeSetBlock(var5, var62, var56, var49);
+                  break;
+               }
             }
          }
       }

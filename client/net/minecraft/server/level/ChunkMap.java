@@ -203,14 +203,15 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
    public void debugReloadGenerator() {
       DataResult var1 = ChunkGenerator.CODEC.encodeStart(JsonOps.INSTANCE, this.generator);
       DataResult var2 = var1.flatMap(var0 -> ChunkGenerator.CODEC.parse(JsonOps.INSTANCE, var0));
-      var2.ifSuccess(
-         var1x -> {
-            this.generator = var1x;
-            this.worldGenContext = new WorldGenContext(
-               this.worldGenContext.level(), var1x, this.worldGenContext.structureManager(), this.worldGenContext.lightEngine()
-            );
-         }
-      );
+      var2.result()
+         .ifPresent(
+            var1x -> {
+               this.generator = var1x;
+               this.worldGenContext = new WorldGenContext(
+                  this.worldGenContext.level(), var1x, this.worldGenContext.structureManager(), this.worldGenContext.lightEngine()
+               );
+            }
+         );
    }
 
    private static double euclideanDistanceSquared(ChunkPos var0, Entity var1) {
@@ -585,19 +586,17 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
 
    private ChunkAccess handleChunkLoadFailure(Throwable var1, ChunkPos var2) {
       Throwable var3 = var1 instanceof CompletionException var4 ? var4.getCause() : var1;
-      Throwable var9 = var3 instanceof ReportedException var5 ? var5.getCause() : var3;
-      boolean var10 = var9 instanceof Error;
-      boolean var6 = var9 instanceof IOException || var9 instanceof ChunkSerializer.ChunkReadException;
-      if (!var10 && var6) {
-         LOGGER.error("Couldn't load chunk {}", var2, var9);
+      Throwable var7 = var3 instanceof ReportedException var5 ? var5.getCause() : var3;
+      if (!(var7 instanceof IOException) && !(var7 instanceof ChunkSerializer.ChunkReadException)) {
+         CrashReport var8 = CrashReport.forThrowable(var1, "Exception loading chunk");
+         CrashReportCategory var6 = var8.addCategory("Chunk being loaded");
+         var6.setDetail("pos", var2);
+         this.markPositionReplaceable(var2);
+         throw new ReportedException(var8);
+      } else {
+         LOGGER.error("Couldn't load chunk {}", var2, var7);
          this.level.getServer().reportChunkLoadFailure(var2);
          return this.createEmptyChunk(var2);
-      } else {
-         CrashReport var7 = CrashReport.forThrowable(var1, "Exception loading chunk");
-         CrashReportCategory var8 = var7.addCategory("Chunk being loaded");
-         var8.setDetail("pos", var2);
-         this.markPositionReplaceable(var2);
-         throw new ReportedException(var7);
       }
    }
 

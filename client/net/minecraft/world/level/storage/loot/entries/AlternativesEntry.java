@@ -1,7 +1,7 @@
 package net.minecraft.world.level.storage.loot.entries;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
@@ -11,7 +11,7 @@ import net.minecraft.world.level.storage.loot.ValidationContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class AlternativesEntry extends CompositeEntryBase {
-   public static final MapCodec<AlternativesEntry> CODEC = createCodec(AlternativesEntry::new);
+   public static final Codec<AlternativesEntry> CODEC = createCodec(AlternativesEntry::new);
 
    AlternativesEntry(List<LootPoolEntryContainer> var1, List<LootItemCondition> var2) {
       super(var1, var2);

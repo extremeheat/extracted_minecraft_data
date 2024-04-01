@@ -57,7 +57,7 @@ public class PistonMovingBlockEntity extends BlockEntity {
 
    @Override
    public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
-      return this.saveCustomOnly(var1);
+      return this.saveWithoutMetadata(var1);
    }
 
    public boolean isExtending() {
@@ -314,8 +314,8 @@ public class PistonMovingBlockEntity extends BlockEntity {
    }
 
    @Override
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.loadAdditional(var1, var2);
+   public void load(CompoundTag var1, HolderLookup.Provider var2) {
+      super.load(var1, var2);
       Object var3 = this.level != null ? this.level.holderLookup(Registries.BLOCK) : BuiltInRegistries.BLOCK.asLookup();
       this.movedState = NbtUtils.readBlockState((HolderGetter<Block>)var3, var1.getCompound("blockState"));
       this.direction = Direction.from3DDataValue(var1.getInt("facing"));

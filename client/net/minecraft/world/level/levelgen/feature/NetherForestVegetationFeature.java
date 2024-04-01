@@ -35,7 +35,7 @@ public class NetherForestVegetationFeature extends Feature<NetherForestVegetatio
                );
                BlockState var11 = var5.stateProvider.getState(var6, var10);
                if (var2.isEmptyBlock(var10) && var10.getY() > var2.getMinBuildHeight() && var11.canSurvive(var2, var10)) {
-                  var2.setBlock(var10, var11, 2);
+                  SimpleBlockFeature.place(var11, var2, var10);
                   ++var8;
                }
             }

@@ -91,6 +91,7 @@ public class ItemColors {
          Blocks.SHORT_GRASS,
          Blocks.FERN,
          Blocks.VINE,
+         Blocks.POTATO_LEAVES,
          Blocks.OAK_LEAVES,
          Blocks.SPRUCE_LEAVES,
          Blocks.BIRCH_LEAVES,

@@ -17,7 +17,7 @@ public class SoundEvent {
    public static final Codec<SoundEvent> DIRECT_CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                ResourceLocation.CODEC.fieldOf("sound_id").forGetter(SoundEvent::getLocation),
-               Codec.FLOAT.lenientOptionalFieldOf("range").forGetter(SoundEvent::fixedRange)
+               Codec.FLOAT.optionalFieldOf("range").forGetter(SoundEvent::fixedRange)
             )
             .apply(var0, SoundEvent::create)
    );

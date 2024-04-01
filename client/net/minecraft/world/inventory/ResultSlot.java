@@ -4,6 +4,7 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.RecipeType;
 
 public class ResultSlot extends Slot {
@@ -44,7 +45,6 @@ public class ResultSlot extends Slot {
 
    // $VF: Could not properly define all variable types!
    // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
-   @Override
    protected void checkTakeAchievements(ItemStack var1) {
       if (this.removeCount > 0) {
          var1.onCraftedBy(this.player.level(), this.player, this.removeCount);
@@ -61,6 +61,10 @@ public class ResultSlot extends Slot {
    @Override
    public void onTake(Player var1, ItemStack var2) {
       this.checkTakeAchievements(var2);
+      if (var1.isChapterAndProgressPast("wrote_thoughts", 19) && var2.is(Items.POTATO_EYE)) {
+         var1.setPotatoQuestChapter("crafted_eyes");
+      }
+
       NonNullList var3 = var1.level().getRecipeManager().getRemainingItemsFor(RecipeType.CRAFTING, this.craftSlots, var1.level());
 
       for(int var4 = 0; var4 < var3.size(); ++var4) {

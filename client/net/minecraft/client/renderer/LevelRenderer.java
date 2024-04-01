@@ -49,6 +49,7 @@ import net.minecraft.client.GraphicsStatus;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.ParticleStatus;
 import net.minecraft.client.PrioritizeChunkUpdates;
+import net.minecraft.client.grid.ClientSubGrid;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.player.LocalPlayer;
@@ -117,6 +118,7 @@ import net.minecraft.world.level.block.entity.vault.VaultBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.border.WorldBorder;
+import net.minecraft.world.level.dimension.BuiltinDimensionTypes;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.lighting.LevelLightEngine;
 import net.minecraft.world.level.material.FluidState;
@@ -145,10 +147,12 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
    private static final int TRANSPARENT_SORT_COUNT = 15;
    private static final ResourceLocation MOON_LOCATION = new ResourceLocation("textures/environment/moon_phases.png");
    private static final ResourceLocation SUN_LOCATION = new ResourceLocation("textures/environment/sun.png");
+   private static final ResourceLocation POTATO_SUN_LOCATION = new ResourceLocation("textures/environment/poisonus_sun.png");
    protected static final ResourceLocation CLOUDS_LOCATION = new ResourceLocation("textures/environment/clouds.png");
    private static final ResourceLocation END_SKY_LOCATION = new ResourceLocation("textures/environment/end_sky.png");
    private static final ResourceLocation FORCEFIELD_LOCATION = new ResourceLocation("textures/misc/forcefield.png");
    private static final ResourceLocation RAIN_LOCATION = new ResourceLocation("textures/environment/rain.png");
+   private static final ResourceLocation RAIN_LOCATION_POTATO = new ResourceLocation("textures/environment/rain_potato.png");
    private static final ResourceLocation SNOW_LOCATION = new ResourceLocation("textures/environment/snow.png");
    public static final Direction[] DIRECTIONS = Direction.values();
    private final Minecraft minecraft;
@@ -251,138 +255,169 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       if (!(var9 <= 0.0F)) {
          var1.turnOnLightLayer();
          ClientLevel var10 = this.minecraft.level;
-         int var11 = Mth.floor(var3);
-         int var12 = Mth.floor(var5);
-         int var13 = Mth.floor(var7);
-         Tesselator var14 = Tesselator.getInstance();
-         BufferBuilder var15 = var14.getBuilder();
+         boolean var11 = var10.isPotato();
+         int var12 = Mth.floor(var3);
+         int var13 = Mth.floor(var5);
+         int var14 = Mth.floor(var7);
+         Tesselator var15 = Tesselator.getInstance();
+         BufferBuilder var16 = var15.getBuilder();
          RenderSystem.disableCull();
          RenderSystem.enableBlend();
          RenderSystem.enableDepthTest();
-         byte var16 = 5;
+         byte var17 = 5;
          if (Minecraft.useFancyGraphics()) {
-            var16 = 10;
+            var17 = 10;
          }
 
          RenderSystem.depthMask(Minecraft.useShaderTransparency());
-         byte var17 = -1;
-         float var18 = (float)this.ticks + var2;
+         byte var18 = -1;
+         float var19 = (float)this.ticks + var2;
          RenderSystem.setShader(GameRenderer::getParticleShader);
-         BlockPos.MutableBlockPos var19 = new BlockPos.MutableBlockPos();
+         BlockPos.MutableBlockPos var20 = new BlockPos.MutableBlockPos();
 
-         for(int var20 = var13 - var16; var20 <= var13 + var16; ++var20) {
-            for(int var21 = var11 - var16; var21 <= var11 + var16; ++var21) {
-               int var22 = (var20 - var13 + 16) * 32 + var21 - var11 + 16;
-               double var23 = (double)this.rainSizeX[var22] * 0.5;
-               double var25 = (double)this.rainSizeZ[var22] * 0.5;
-               var19.set((double)var21, var5, (double)var20);
-               Biome var27 = var10.getBiome(var19).value();
-               if (var27.hasPrecipitation()) {
-                  int var28 = var10.getHeight(Heightmap.Types.MOTION_BLOCKING, var21, var20);
-                  int var29 = var12 - var16;
-                  int var30 = var12 + var16;
-                  if (var29 < var28) {
-                     var29 = var28;
+         for(int var21 = var14 - var17; var21 <= var14 + var17; ++var21) {
+            for(int var22 = var12 - var17; var22 <= var12 + var17; ++var22) {
+               int var23 = (var21 - var14 + 16) * 32 + var22 - var12 + 16;
+               double var24 = (double)this.rainSizeX[var23] * 0.5;
+               double var26 = (double)this.rainSizeZ[var23] * 0.5;
+               var20.set((double)var22, var5, (double)var21);
+               Biome var28 = var10.getBiome(var20).value();
+               if (var28.hasPrecipitation()) {
+                  int var29 = var10.getHeight(Heightmap.Types.MOTION_BLOCKING, var22, var21);
+                  int var30 = var13 - var17;
+                  int var31 = var13 + var17;
+                  if (var30 < var29) {
+                     var30 = var29;
                   }
 
-                  if (var30 < var28) {
-                     var30 = var28;
+                  if (var31 < var29) {
+                     var31 = var29;
                   }
 
-                  int var31 = var28;
-                  if (var28 < var12) {
-                     var31 = var12;
+                  if (var11) {
+                     boolean var32 = true;
+                     if (var30 > 112) {
+                        var30 = 112;
+                     }
+
+                     if (var31 > 112) {
+                        var31 = 112;
+                     }
                   }
 
-                  if (var29 != var30) {
-                     RandomSource var32 = RandomSource.create((long)(var21 * var21 * 3121 + var21 * 45238971 ^ var20 * var20 * 418711 + var20 * 13761));
-                     var19.set(var21, var29, var20);
-                     Biome.Precipitation var33 = var27.getPrecipitationAt(var19);
-                     if (var33 == Biome.Precipitation.RAIN) {
-                        if (var17 != 0) {
-                           if (var17 >= 0) {
-                              var14.end();
+                  int var51 = var29;
+                  if (var29 < var13) {
+                     var51 = var13;
+                  }
+
+                  if (var30 != var31) {
+                     RandomSource var33 = RandomSource.create((long)(var22 * var22 * 3121 + var22 * 45238971 ^ var21 * var21 * 418711 + var21 * 13761));
+                     var20.set(var22, var30, var21);
+                     Biome.Precipitation var34 = var28.getPrecipitationAt(var20);
+                     if (var34 == Biome.Precipitation.RAIN) {
+                        if (var18 != 0) {
+                           if (var18 >= 0) {
+                              var15.end();
                            }
 
-                           var17 = 0;
-                           RenderSystem.setShaderTexture(0, RAIN_LOCATION);
-                           var15.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE);
+                           var18 = 0;
+                           if (var11) {
+                              RenderSystem.setShaderTexture(0, RAIN_LOCATION_POTATO);
+                           } else {
+                              RenderSystem.setShaderTexture(0, RAIN_LOCATION);
+                           }
+
+                           var16.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE);
                         }
 
-                        int var34 = this.ticks & 131071;
-                        int var35 = var21 * var21 * 3121 + var21 * 45238971 + var20 * var20 * 418711 + var20 * 13761 & 0xFF;
-                        float var36 = 3.0F + var32.nextFloat();
-                        float var37 = -((float)(var34 + var35) + var2) / 32.0F * var36;
-                        float var38 = var37 % 32.0F;
-                        double var39 = (double)var21 + 0.5 - var3;
-                        double var41 = (double)var20 + 0.5 - var7;
-                        float var43 = (float)Math.sqrt(var39 * var39 + var41 * var41) / (float)var16;
-                        float var44 = ((1.0F - var43 * var43) * 0.5F + 0.5F) * var9;
-                        var19.set(var21, var31, var20);
-                        int var45 = getLightColor(var10, var19);
-                        var15.vertex((double)var21 - var3 - var23 + 0.5, (double)var30 - var5, (double)var20 - var7 - var25 + 0.5)
-                           .uv(0.0F, (float)var29 * 0.25F + var38)
-                           .color(1.0F, 1.0F, 1.0F, var44)
-                           .uv2(var45)
+                        int var35 = this.ticks & 131071;
+                        int var36 = var22 * var22 * 3121 + var22 * 45238971 + var21 * var21 * 418711 + var21 * 13761 & 0xFF;
+                        float var37 = 3.0F + var33.nextFloat();
+                        float var38 = -((float)(var35 + var36) + var2) / 32.0F * var37;
+                        float var39 = var38 % 32.0F;
+                        double var40 = (double)var22 + 0.5 - var3;
+                        double var42 = (double)var21 + 0.5 - var7;
+                        float var44 = (float)Math.sqrt(var40 * var40 + var42 * var42) / (float)var17;
+                        float var45 = ((1.0F - var44 * var44) * 0.5F + 0.5F) * var9;
+                        var20.set(var22, var51, var21);
+                        int var46 = getLightColor(var10, var20);
+                        float var47;
+                        float var48;
+                        float var49;
+                        if (var11) {
+                           int var50 = BiomeColors.getAverageWaterColor(var10, var20);
+                           var47 = (float)FastColor.ARGB32.red(var50) / 255.0F;
+                           var48 = (float)FastColor.ARGB32.green(var50) / 255.0F;
+                           var49 = (float)FastColor.ARGB32.blue(var50) / 255.0F;
+                        } else {
+                           var47 = 1.0F;
+                           var48 = 1.0F;
+                           var49 = 1.0F;
+                        }
+
+                        var16.vertex((double)var22 - var3 - var24 + 0.5, (double)var31 - var5, (double)var21 - var7 - var26 + 0.5)
+                           .uv(0.0F, (float)var30 * 0.25F + var39)
+                           .color(var47, var48, var49, var45)
+                           .uv2(var46)
                            .endVertex();
-                        var15.vertex((double)var21 - var3 + var23 + 0.5, (double)var30 - var5, (double)var20 - var7 + var25 + 0.5)
-                           .uv(1.0F, (float)var29 * 0.25F + var38)
-                           .color(1.0F, 1.0F, 1.0F, var44)
-                           .uv2(var45)
+                        var16.vertex((double)var22 - var3 + var24 + 0.5, (double)var31 - var5, (double)var21 - var7 + var26 + 0.5)
+                           .uv(1.0F, (float)var30 * 0.25F + var39)
+                           .color(var47, var48, var49, var45)
+                           .uv2(var46)
                            .endVertex();
-                        var15.vertex((double)var21 - var3 + var23 + 0.5, (double)var29 - var5, (double)var20 - var7 + var25 + 0.5)
-                           .uv(1.0F, (float)var30 * 0.25F + var38)
-                           .color(1.0F, 1.0F, 1.0F, var44)
-                           .uv2(var45)
+                        var16.vertex((double)var22 - var3 + var24 + 0.5, (double)var30 - var5, (double)var21 - var7 + var26 + 0.5)
+                           .uv(1.0F, (float)var31 * 0.25F + var39)
+                           .color(var47, var48, var49, var45)
+                           .uv2(var46)
                            .endVertex();
-                        var15.vertex((double)var21 - var3 - var23 + 0.5, (double)var29 - var5, (double)var20 - var7 - var25 + 0.5)
-                           .uv(0.0F, (float)var30 * 0.25F + var38)
-                           .color(1.0F, 1.0F, 1.0F, var44)
-                           .uv2(var45)
+                        var16.vertex((double)var22 - var3 - var24 + 0.5, (double)var30 - var5, (double)var21 - var7 - var26 + 0.5)
+                           .uv(0.0F, (float)var31 * 0.25F + var39)
+                           .color(var47, var48, var49, var45)
+                           .uv2(var46)
                            .endVertex();
-                     } else if (var33 == Biome.Precipitation.SNOW) {
-                        if (var17 != 1) {
-                           if (var17 >= 0) {
-                              var14.end();
+                     } else if (var34 == Biome.Precipitation.SNOW) {
+                        if (var18 != 1) {
+                           if (var18 >= 0) {
+                              var15.end();
                            }
 
-                           var17 = 1;
+                           var18 = 1;
                            RenderSystem.setShaderTexture(0, SNOW_LOCATION);
-                           var15.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE);
+                           var16.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.PARTICLE);
                         }
 
-                        float var48 = -((float)(this.ticks & 511) + var2) / 512.0F;
-                        float var49 = (float)(var32.nextDouble() + (double)var18 * 0.01 * (double)((float)var32.nextGaussian()));
-                        float var50 = (float)(var32.nextDouble() + (double)(var18 * (float)var32.nextGaussian()) * 0.001);
-                        double var51 = (double)var21 + 0.5 - var3;
-                        double var52 = (double)var20 + 0.5 - var7;
-                        float var53 = (float)Math.sqrt(var51 * var51 + var52 * var52) / (float)var16;
-                        float var42 = ((1.0F - var53 * var53) * 0.3F + 0.5F) * var9;
-                        var19.set(var21, var31, var20);
-                        int var54 = getLightColor(var10, var19);
-                        int var55 = var54 >> 16 & 65535;
-                        int var56 = var54 & 65535;
-                        int var46 = (var55 * 3 + 240) / 4;
-                        int var47 = (var56 * 3 + 240) / 4;
-                        var15.vertex((double)var21 - var3 - var23 + 0.5, (double)var30 - var5, (double)var20 - var7 - var25 + 0.5)
-                           .uv(0.0F + var49, (float)var29 * 0.25F + var48 + var50)
-                           .color(1.0F, 1.0F, 1.0F, var42)
-                           .uv2(var47, var46)
+                        float var52 = -((float)(this.ticks & 511) + var2) / 512.0F;
+                        float var53 = (float)(var33.nextDouble() + (double)var19 * 0.01 * (double)((float)var33.nextGaussian()));
+                        float var54 = (float)(var33.nextDouble() + (double)(var19 * (float)var33.nextGaussian()) * 0.001);
+                        double var55 = (double)var22 + 0.5 - var3;
+                        double var56 = (double)var21 + 0.5 - var7;
+                        float var57 = (float)Math.sqrt(var55 * var55 + var56 * var56) / (float)var17;
+                        float var43 = ((1.0F - var57 * var57) * 0.3F + 0.5F) * var9;
+                        var20.set(var22, var51, var21);
+                        int var58 = getLightColor(var10, var20);
+                        int var59 = var58 >> 16 & 65535;
+                        int var60 = var58 & 65535;
+                        int var61 = (var59 * 3 + 240) / 4;
+                        int var62 = (var60 * 3 + 240) / 4;
+                        var16.vertex((double)var22 - var3 - var24 + 0.5, (double)var31 - var5, (double)var21 - var7 - var26 + 0.5)
+                           .uv(0.0F + var53, (float)var30 * 0.25F + var52 + var54)
+                           .color(1.0F, 1.0F, 1.0F, var43)
+                           .uv2(var62, var61)
                            .endVertex();
-                        var15.vertex((double)var21 - var3 + var23 + 0.5, (double)var30 - var5, (double)var20 - var7 + var25 + 0.5)
-                           .uv(1.0F + var49, (float)var29 * 0.25F + var48 + var50)
-                           .color(1.0F, 1.0F, 1.0F, var42)
-                           .uv2(var47, var46)
+                        var16.vertex((double)var22 - var3 + var24 + 0.5, (double)var31 - var5, (double)var21 - var7 + var26 + 0.5)
+                           .uv(1.0F + var53, (float)var30 * 0.25F + var52 + var54)
+                           .color(1.0F, 1.0F, 1.0F, var43)
+                           .uv2(var62, var61)
                            .endVertex();
-                        var15.vertex((double)var21 - var3 + var23 + 0.5, (double)var29 - var5, (double)var20 - var7 + var25 + 0.5)
-                           .uv(1.0F + var49, (float)var30 * 0.25F + var48 + var50)
-                           .color(1.0F, 1.0F, 1.0F, var42)
-                           .uv2(var47, var46)
+                        var16.vertex((double)var22 - var3 + var24 + 0.5, (double)var30 - var5, (double)var21 - var7 + var26 + 0.5)
+                           .uv(1.0F + var53, (float)var31 * 0.25F + var52 + var54)
+                           .color(1.0F, 1.0F, 1.0F, var43)
+                           .uv2(var62, var61)
                            .endVertex();
-                        var15.vertex((double)var21 - var3 - var23 + 0.5, (double)var29 - var5, (double)var20 - var7 - var25 + 0.5)
-                           .uv(0.0F + var49, (float)var30 * 0.25F + var48 + var50)
-                           .color(1.0F, 1.0F, 1.0F, var42)
-                           .uv2(var47, var46)
+                        var16.vertex((double)var22 - var3 - var24 + 0.5, (double)var30 - var5, (double)var21 - var7 - var26 + 0.5)
+                           .uv(0.0F + var53, (float)var31 * 0.25F + var52 + var54)
+                           .color(1.0F, 1.0F, 1.0F, var43)
+                           .uv2(var62, var61)
                            .endVertex();
                      }
                   }
@@ -390,8 +425,8 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
             }
          }
 
-         if (var17 >= 0) {
-            var14.end();
+         if (var18 >= 0) {
+            var15.end();
          }
 
          RenderSystem.enableCull();
@@ -948,6 +983,8 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       this.renderSectionLayer(RenderType.solid(), var14, var16, var18, var8, var9);
       this.renderSectionLayer(RenderType.cutoutMipped(), var14, var16, var18, var8, var9);
       this.renderSectionLayer(RenderType.cutout(), var14, var16, var18, var8, var9);
+      var12.popPush("grids");
+      this.drawGrids(var8, var9, var11, var14, var16, var18, var21, false);
       if (this.level.effects().constantAmbientLight()) {
          Lighting.setupNetherLevel();
       } else {
@@ -1136,6 +1173,8 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          this.renderSectionLayer(RenderType.translucent(), var14, var16, var18, var8, var9);
          var12.popPush("string");
          this.renderSectionLayer(RenderType.tripwire(), var14, var16, var18, var8, var9);
+         var12.popPush("grids_transluicent");
+         this.drawGrids(var8, var9, var11, var14, var16, var18, var21, true);
          this.particlesTarget.clear(Minecraft.ON_OSX);
          this.particlesTarget.copyDepthFrom(this.minecraft.getMainRenderTarget());
          RenderStateShard.PARTICLES_TARGET.setupRenderState();
@@ -1153,6 +1192,8 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          var27.endBatch();
          var12.popPush("string");
          this.renderSectionLayer(RenderType.tripwire(), var14, var16, var18, var8, var9);
+         var12.popPush("grids_transluicent");
+         this.drawGrids(var8, var9, var11, var14, var16, var18, var21, true);
          var12.popPush("particles");
          this.minecraft.particleEngine.render(var7, var5, var11);
       }
@@ -1189,6 +1230,12 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       RenderSystem.depthMask(true);
       RenderSystem.disableBlend();
       FogRenderer.setupNoFog();
+   }
+
+   private void drawGrids(Matrix4f var1, Matrix4f var2, float var3, double var4, double var6, double var8, Frustum var10, boolean var11) {
+      for(ClientSubGrid var13 : this.level.getGrids()) {
+         var13.getRenderer().draw(var3, var4, var6, var8, var10, var1, var2, var11);
+      }
    }
 
    private void checkPoseStack(PoseStack var1) {
@@ -1243,66 +1290,20 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
       boolean var23 = var1 != RenderType.translucent();
       ObjectListIterator var11 = this.visibleSections.listIterator(var23 ? 0 : this.visibleSections.size());
       ShaderInstance var24 = RenderSystem.getShader();
-
-      for(int var13 = 0; var13 < 12; ++var13) {
-         int var26 = RenderSystem.getShaderTexture(var13);
-         var24.setSampler("Sampler" + var13, var26);
-      }
-
-      if (var24.MODEL_VIEW_MATRIX != null) {
-         var24.MODEL_VIEW_MATRIX.set(var8);
-      }
-
-      if (var24.PROJECTION_MATRIX != null) {
-         var24.PROJECTION_MATRIX.set(var9);
-      }
-
-      if (var24.COLOR_MODULATOR != null) {
-         var24.COLOR_MODULATOR.set(RenderSystem.getShaderColor());
-      }
-
-      if (var24.GLINT_ALPHA != null) {
-         var24.GLINT_ALPHA.set(RenderSystem.getShaderGlintAlpha());
-      }
-
-      if (var24.FOG_START != null) {
-         var24.FOG_START.set(RenderSystem.getShaderFogStart());
-      }
-
-      if (var24.FOG_END != null) {
-         var24.FOG_END.set(RenderSystem.getShaderFogEnd());
-      }
-
-      if (var24.FOG_COLOR != null) {
-         var24.FOG_COLOR.set(RenderSystem.getShaderFogColor());
-      }
-
-      if (var24.FOG_SHAPE != null) {
-         var24.FOG_SHAPE.set(RenderSystem.getShaderFogShape().getIndex());
-      }
-
-      if (var24.TEXTURE_MATRIX != null) {
-         var24.TEXTURE_MATRIX.set(RenderSystem.getTextureMatrix());
-      }
-
-      if (var24.GAME_TIME != null) {
-         var24.GAME_TIME.set(RenderSystem.getShaderGameTime());
-      }
-
-      RenderSystem.setupShaderLights(var24);
+      var24.setDefaultUniforms(VertexFormat.Mode.QUADS, var8, var9, this.minecraft.getWindow());
       var24.apply();
-      Uniform var25 = var24.CHUNK_OFFSET;
+      Uniform var13 = var24.CHUNK_OFFSET;
 
       while(var23 ? var11.hasNext() : var11.hasPrevious()) {
-         SectionRenderDispatcher.RenderSection var27 = var23
+         SectionRenderDispatcher.RenderSection var25 = var23
             ? (SectionRenderDispatcher.RenderSection)var11.next()
             : (SectionRenderDispatcher.RenderSection)var11.previous();
-         if (!var27.getCompiled().isEmpty(var1)) {
-            VertexBuffer var15 = var27.getBuffer(var1);
-            BlockPos var28 = var27.getOrigin();
-            if (var25 != null) {
-               var25.set((float)((double)var28.getX() - var2), (float)((double)var28.getY() - var4), (float)((double)var28.getZ() - var6));
-               var25.upload();
+         if (!var25.getCompiled().isEmpty(var1)) {
+            VertexBuffer var15 = var25.getBuffer(var1);
+            BlockPos var26 = var25.getOrigin();
+            if (var13 != null) {
+               var13.set((float)((double)var26.getX() - var2), (float)((double)var26.getY() - var4), (float)((double)var26.getZ() - var6));
+               var13.upload();
             }
 
             var15.bind();
@@ -1310,8 +1311,8 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          }
       }
 
-      if (var25 != null) {
-         var25.set(0.0F, 0.0F, 0.0F);
+      if (var13 != null) {
+         var13.set(0.0F, 0.0F, 0.0F);
       }
 
       var24.clear();
@@ -1616,14 +1617,19 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
                   GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO
                );
                var8.pushPose();
-               float var27 = 1.0F - this.level.getRainLevel(var3);
+               float var27 = 1.0F - this.level.getRainLevel(var3, var4.getPosition().y());
                RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, var27);
                var8.mulPose(Axis.YP.rotationDegrees(-90.0F));
                var8.mulPose(Axis.XP.rotationDegrees(this.level.getTimeOfDay(var3) * 360.0F));
                Matrix4f var29 = var8.last().pose();
                float var30 = 30.0F;
                RenderSystem.setShader(GameRenderer::getPositionTexShader);
-               RenderSystem.setShaderTexture(0, SUN_LOCATION);
+               if (this.level.dimensionTypeRegistration().is(BuiltinDimensionTypes.POTATO)) {
+                  RenderSystem.setShaderTexture(0, POTATO_SUN_LOCATION);
+               } else {
+                  RenderSystem.setShaderTexture(0, SUN_LOCATION);
+               }
+
                var13.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX);
                var13.vertex(var29, -var30, 100.0F, -var30).uv(0.0F, 0.0F).endVertex();
                var13.vertex(var29, var30, 100.0F, -var30).uv(1.0F, 0.0F).endVertex();
@@ -2542,9 +2548,9 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
             }
             break;
          case 1010:
-            Item var65 = Item.byId(var3);
-            if (var65 instanceof RecordItem var57) {
-               this.playStreamingMusic(var57.getSound(), var2);
+            Item var51 = Item.byId(var3);
+            if (var51 instanceof RecordItem var44) {
+               this.playStreamingMusic(var44.getSound(), var2);
             }
             break;
          case 1011:
@@ -2608,7 +2614,13 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
             this.level.playLocalSound(var2, SoundEvents.ANVIL_LAND, SoundSource.BLOCKS, 0.3F, this.level.random.nextFloat() * 0.1F + 0.9F, false);
             break;
          case 1032:
-            this.minecraft.getSoundManager().play(SimpleSoundInstance.forLocalAmbience(SoundEvents.PORTAL_TRAVEL, var4.nextFloat() * 0.4F + 0.8F, 0.25F));
+            this.minecraft
+               .getSoundManager()
+               .play(
+                  SimpleSoundInstance.forLocalAmbience(
+                     var3 > 0 ? SoundEvents.PLAGUEWHALE_AMBIENT : SoundEvents.PORTAL_TRAVEL, var4.nextFloat() * 0.4F + 0.8F, 0.25F
+                  )
+               );
             break;
          case 1033:
             this.level.playLocalSound(var2, SoundEvents.CHORUS_FLOWER_GROW, SoundSource.BLOCKS, 1.0F, 1.0F, false);
@@ -2670,13 +2682,23 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          case 1050:
             this.level.playLocalSound(var2, SoundEvents.CRAFTER_FAIL, SoundSource.BLOCKS, 1.0F, 1.0F, false);
             break;
+         case 1051:
+            this.level
+               .playLocalSound(var2, SoundEvents.POTATO_ZOMBIE_INFECT, SoundSource.HOSTILE, 2.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, false);
+            break;
+         case 1052:
+            this.level
+               .playLocalSound(
+                  var2, SoundEvents.POTATO_ZOMBIE_ATTACK_IRON_DOOR, SoundSource.HOSTILE, 2.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, false
+               );
+            break;
          case 1500:
             ComposterBlock.handleFill(this.level, var2, var3 > 0);
             break;
          case 1501:
             this.level.playLocalSound(var2, SoundEvents.LAVA_EXTINGUISH, SoundSource.BLOCKS, 0.5F, 2.6F + (var4.nextFloat() - var4.nextFloat()) * 0.8F, false);
 
-            for(int var56 = 0; var56 < 8; ++var56) {
+            for(int var43 = 0; var43 < 8; ++var43) {
                this.level
                   .addParticle(
                      ParticleTypes.LARGE_SMOKE,
@@ -2693,21 +2715,21 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
             this.level
                .playLocalSound(var2, SoundEvents.REDSTONE_TORCH_BURNOUT, SoundSource.BLOCKS, 0.5F, 2.6F + (var4.nextFloat() - var4.nextFloat()) * 0.8F, false);
 
-            for(int var55 = 0; var55 < 5; ++var55) {
-               double var64 = (double)var2.getX() + var4.nextDouble() * 0.6 + 0.2;
-               double var76 = (double)var2.getY() + var4.nextDouble() * 0.6 + 0.2;
-               double var84 = (double)var2.getZ() + var4.nextDouble() * 0.6 + 0.2;
-               this.level.addParticle(ParticleTypes.SMOKE, var64, var76, var84, 0.0, 0.0, 0.0);
+            for(int var42 = 0; var42 < 5; ++var42) {
+               double var50 = (double)var2.getX() + var4.nextDouble() * 0.6 + 0.2;
+               double var60 = (double)var2.getY() + var4.nextDouble() * 0.6 + 0.2;
+               double var67 = (double)var2.getZ() + var4.nextDouble() * 0.6 + 0.2;
+               this.level.addParticle(ParticleTypes.SMOKE, var50, var60, var67, 0.0, 0.0, 0.0);
             }
             break;
          case 1503:
             this.level.playLocalSound(var2, SoundEvents.END_PORTAL_FRAME_FILL, SoundSource.BLOCKS, 1.0F, 1.0F, false);
 
-            for(int var54 = 0; var54 < 16; ++var54) {
-               double var63 = (double)var2.getX() + (5.0 + var4.nextDouble() * 6.0) / 16.0;
-               double var75 = (double)var2.getY() + 0.8125;
-               double var83 = (double)var2.getZ() + (5.0 + var4.nextDouble() * 6.0) / 16.0;
-               this.level.addParticle(ParticleTypes.SMOKE, var63, var75, var83, 0.0, 0.0, 0.0);
+            for(int var41 = 0; var41 < 16; ++var41) {
+               double var49 = (double)var2.getX() + (5.0 + var4.nextDouble() * 6.0) / 16.0;
+               double var59 = (double)var2.getY() + 0.8125;
+               double var66 = (double)var2.getZ() + (5.0 + var4.nextDouble() * 6.0) / 16.0;
+               this.level.addParticle(ParticleTypes.SMOKE, var49, var59, var66, 0.0, 0.0, 0.0);
             }
             break;
          case 1504:
@@ -2721,119 +2743,84 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
             this.shootParticles(var3, var2, var4, ParticleTypes.SMOKE);
             break;
          case 2001:
-            BlockState var24 = Block.stateById(var3);
-            if (!var24.isAir()) {
-               SoundType var27 = var24.getSoundType();
-               this.level.playLocalSound(var2, var27.getBreakSound(), SoundSource.BLOCKS, (var27.getVolume() + 1.0F) / 2.0F, var27.getPitch() * 0.8F, false);
+            BlockState var20 = Block.stateById(var3);
+            if (!var20.isAir()) {
+               SoundType var21 = var20.getSoundType();
+               this.level.playLocalSound(var2, var21.getBreakSound(), SoundSource.BLOCKS, (var21.getVolume() + 1.0F) / 2.0F, var21.getPitch() * 0.8F, false);
             }
 
-            this.level.addDestroyBlockEffect(var2, var24);
+            this.level.addDestroyBlockEffect(var2, var20);
             break;
          case 2002:
          case 2007:
-            Vec3 var23 = Vec3.atBottomCenterOf(var2);
-
-            for(int var25 = 0; var25 < 8; ++var25) {
-               this.addParticle(
-                  new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(Items.SPLASH_POTION)),
-                  var23.x,
-                  var23.y,
-                  var23.z,
-                  var4.nextGaussian() * 0.15,
-                  var4.nextDouble() * 0.2,
-                  var4.nextGaussian() * 0.15
-               );
-            }
-
-            float var26 = (float)(var3 >> 16 & 0xFF) / 255.0F;
-            float var33 = (float)(var3 >> 8 & 0xFF) / 255.0F;
-            float var42 = (float)(var3 >> 0 & 0xFF) / 255.0F;
-            SimpleParticleType var47 = var1 == 2007 ? ParticleTypes.INSTANT_EFFECT : ParticleTypes.EFFECT;
-
-            for(int var53 = 0; var53 < 100; ++var53) {
-               double var62 = var4.nextDouble() * 4.0;
-               double var74 = var4.nextDouble() * 3.141592653589793 * 2.0;
-               double var82 = Math.cos(var74) * var62;
-               double var86 = 0.01 + var4.nextDouble() * 0.5;
-               double var87 = Math.sin(var74) * var62;
-               Particle var21 = this.addParticleInternal(
-                  var47, var47.getType().getOverrideLimiter(), var23.x + var82 * 0.1, var23.y + 0.3, var23.z + var87 * 0.1, var82, var86, var87
-               );
-               if (var21 != null) {
-                  float var22 = 0.75F + var4.nextFloat() * 0.25F;
-                  var21.setColor(var26 * var22, var33 * var22, var42 * var22);
-                  var21.setPower((float)var62);
-               }
-            }
-
-            this.level.playLocalSound(var2, SoundEvents.SPLASH_POTION_BREAK, SoundSource.NEUTRAL, 1.0F, var4.nextFloat() * 0.1F + 0.9F, false);
+            this.potionEvent(var1, var2, var3, var4);
             break;
          case 2003:
             double var5 = (double)var2.getX() + 0.5;
-            double var32 = (double)var2.getY();
-            double var46 = (double)var2.getZ() + 0.5;
+            double var25 = (double)var2.getY();
+            double var36 = (double)var2.getZ() + 0.5;
 
-            for(int var60 = 0; var60 < 8; ++var60) {
+            for(int var47 = 0; var47 < 8; ++var47) {
                this.addParticle(
                   new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(Items.ENDER_EYE)),
                   var5,
-                  var32,
-                  var46,
+                  var25,
+                  var36,
                   var4.nextGaussian() * 0.15,
                   var4.nextDouble() * 0.2,
                   var4.nextGaussian() * 0.15
                );
             }
 
-            for(double var61 = 0.0; var61 < 6.283185307179586; var61 += 0.15707963267948966) {
+            for(double var48 = 0.0; var48 < 6.283185307179586; var48 += 0.15707963267948966) {
                this.addParticle(
                   ParticleTypes.PORTAL,
-                  var5 + Math.cos(var61) * 5.0,
-                  var32 - 0.4,
-                  var46 + Math.sin(var61) * 5.0,
-                  Math.cos(var61) * -5.0,
+                  var5 + Math.cos(var48) * 5.0,
+                  var25 - 0.4,
+                  var36 + Math.sin(var48) * 5.0,
+                  Math.cos(var48) * -5.0,
                   0.0,
-                  Math.sin(var61) * -5.0
+                  Math.sin(var48) * -5.0
                );
                this.addParticle(
                   ParticleTypes.PORTAL,
-                  var5 + Math.cos(var61) * 5.0,
-                  var32 - 0.4,
-                  var46 + Math.sin(var61) * 5.0,
-                  Math.cos(var61) * -7.0,
+                  var5 + Math.cos(var48) * 5.0,
+                  var25 - 0.4,
+                  var36 + Math.sin(var48) * 5.0,
+                  Math.cos(var48) * -7.0,
                   0.0,
-                  Math.sin(var61) * -7.0
+                  Math.sin(var48) * -7.0
                );
             }
             break;
          case 2004:
-            for(int var31 = 0; var31 < 20; ++var31) {
-               double var41 = (double)var2.getX() + 0.5 + (var4.nextDouble() - 0.5) * 2.0;
-               double var52 = (double)var2.getY() + 0.5 + (var4.nextDouble() - 0.5) * 2.0;
-               double var70 = (double)var2.getZ() + 0.5 + (var4.nextDouble() - 0.5) * 2.0;
-               this.level.addParticle(ParticleTypes.SMOKE, var41, var52, var70, 0.0, 0.0, 0.0);
-               this.level.addParticle(ParticleTypes.FLAME, var41, var52, var70, 0.0, 0.0, 0.0);
+            for(int var24 = 0; var24 < 20; ++var24) {
+               double var32 = (double)var2.getX() + 0.5 + (var4.nextDouble() - 0.5) * 2.0;
+               double var40 = (double)var2.getY() + 0.5 + (var4.nextDouble() - 0.5) * 2.0;
+               double var55 = (double)var2.getZ() + 0.5 + (var4.nextDouble() - 0.5) * 2.0;
+               this.level.addParticle(ParticleTypes.SMOKE, var32, var40, var55, 0.0, 0.0, 0.0);
+               this.level.addParticle(ParticleTypes.FLAME, var32, var40, var55, 0.0, 0.0, 0.0);
             }
             break;
          case 2006:
-            for(int var51 = 0; var51 < 200; ++var51) {
-               float var59 = var4.nextFloat() * 4.0F;
-               float var69 = var4.nextFloat() * 6.2831855F;
-               double var73 = (double)(Mth.cos(var69) * var59);
-               double var81 = 0.01 + var4.nextDouble() * 0.5;
-               double var85 = (double)(Mth.sin(var69) * var59);
+            for(int var39 = 0; var39 < 200; ++var39) {
+               float var46 = var4.nextFloat() * 4.0F;
+               float var54 = var4.nextFloat() * 6.2831855F;
+               double var58 = (double)(Mth.cos(var54) * var46);
+               double var65 = 0.01 + var4.nextDouble() * 0.5;
+               double var68 = (double)(Mth.sin(var54) * var46);
                Particle var19 = this.addParticleInternal(
                   ParticleTypes.DRAGON_BREATH,
                   false,
-                  (double)var2.getX() + var73 * 0.1,
+                  (double)var2.getX() + var58 * 0.1,
                   (double)var2.getY() + 0.3,
-                  (double)var2.getZ() + var85 * 0.1,
-                  var73,
-                  var81,
-                  var85
+                  (double)var2.getZ() + var68 * 0.1,
+                  var58,
+                  var65,
+                  var68
                );
                if (var19 != null) {
-                  var19.setPower(var59);
+                  var19.setPower(var46);
                }
             }
 
@@ -2845,7 +2832,7 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
             this.level.addParticle(ParticleTypes.EXPLOSION, (double)var2.getX() + 0.5, (double)var2.getY() + 0.5, (double)var2.getZ() + 0.5, 0.0, 0.0, 0.0);
             break;
          case 2009:
-            for(int var50 = 0; var50 < 8; ++var50) {
+            for(int var38 = 0; var38 < 8; ++var38) {
                this.level
                   .addParticle(
                      ParticleTypes.CLOUD,
@@ -2866,9 +2853,6 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
             break;
          case 2012:
             ParticleUtils.spawnParticleInBlock(this.level, var2, var3, ParticleTypes.HAPPY_VILLAGER);
-            break;
-         case 2013:
-            ParticleUtils.spawnSmashAttackParticles(this.level, var2, var3);
             break;
          case 3000:
             this.level
@@ -2906,64 +2890,64 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
             ParticleUtils.spawnParticlesOnBlockFaces(this.level, var2, ParticleTypes.SCRAPE, UniformInt.of(3, 5));
             break;
          case 3006:
-            int var30 = var3 >> 6;
-            if (var30 > 0) {
-               if (var4.nextFloat() < 0.3F + (float)var30 * 0.1F) {
-                  float var38 = 0.15F + 0.02F * (float)var30 * (float)var30 * var4.nextFloat();
-                  float var43 = 0.4F + 0.3F * (float)var30 * var4.nextFloat();
-                  this.level.playLocalSound(var2, SoundEvents.SCULK_BLOCK_CHARGE, SoundSource.BLOCKS, var38, var43, false);
+            int var23 = var3 >> 6;
+            if (var23 > 0) {
+               if (var4.nextFloat() < 0.3F + (float)var23 * 0.1F) {
+                  float var29 = 0.15F + 0.02F * (float)var23 * (float)var23 * var4.nextFloat();
+                  float var33 = 0.4F + 0.3F * (float)var23 * var4.nextFloat();
+                  this.level.playLocalSound(var2, SoundEvents.SCULK_BLOCK_CHARGE, SoundSource.BLOCKS, var29, var33, false);
                }
 
-               byte var39 = (byte)(var3 & 63);
-               UniformInt var44 = UniformInt.of(0, var30);
-               float var48 = 0.005F;
+               byte var30 = (byte)(var3 & 63);
+               UniformInt var34 = UniformInt.of(0, var23);
+               float var10 = 0.005F;
                Supplier var11 = () -> new Vec3(
                      Mth.nextDouble(var4, -0.004999999888241291, 0.004999999888241291),
                      Mth.nextDouble(var4, -0.004999999888241291, 0.004999999888241291),
                      Mth.nextDouble(var4, -0.004999999888241291, 0.004999999888241291)
                   );
-               if (var39 == 0) {
+               if (var30 == 0) {
                   for(Direction var15 : Direction.values()) {
                      float var16 = var15 == Direction.DOWN ? 3.1415927F : 0.0F;
                      double var17 = var15.getAxis() == Direction.Axis.Y ? 0.65 : 0.57;
-                     ParticleUtils.spawnParticlesOnBlockFace(this.level, var2, new SculkChargeParticleOptions(var16), var44, var15, var11, var17);
+                     ParticleUtils.spawnParticlesOnBlockFace(this.level, var2, new SculkChargeParticleOptions(var16), var34, var15, var11, var17);
                   }
                } else {
-                  for(Direction var71 : MultifaceBlock.unpack(var39)) {
-                     float var77 = var71 == Direction.UP ? 3.1415927F : 0.0F;
-                     double var79 = 0.35;
-                     ParticleUtils.spawnParticlesOnBlockFace(this.level, var2, new SculkChargeParticleOptions(var77), var44, var71, var11, 0.35);
+                  for(Direction var56 : MultifaceBlock.unpack(var30)) {
+                     float var61 = var56 == Direction.UP ? 3.1415927F : 0.0F;
+                     double var63 = 0.35;
+                     ParticleUtils.spawnParticlesOnBlockFace(this.level, var2, new SculkChargeParticleOptions(var61), var34, var56, var11, 0.35);
                   }
                }
             } else {
                this.level.playLocalSound(var2, SoundEvents.SCULK_BLOCK_CHARGE, SoundSource.BLOCKS, 1.0F, 1.0F, false);
-               boolean var40 = this.level.getBlockState(var2).isCollisionShapeFullBlock(this.level, var2);
-               int var45 = var40 ? 40 : 20;
-               float var49 = var40 ? 0.45F : 0.25F;
-               float var58 = 0.07F;
+               boolean var31 = this.level.getBlockState(var2).isCollisionShapeFullBlock(this.level, var2);
+               int var35 = var31 ? 40 : 20;
+               float var37 = var31 ? 0.45F : 0.25F;
+               float var45 = 0.07F;
 
-               for(int var68 = 0; var68 < var45; ++var68) {
-                  float var72 = 2.0F * var4.nextFloat() - 1.0F;
-                  float var78 = 2.0F * var4.nextFloat() - 1.0F;
-                  float var80 = 2.0F * var4.nextFloat() - 1.0F;
+               for(int var53 = 0; var53 < var35; ++var53) {
+                  float var57 = 2.0F * var4.nextFloat() - 1.0F;
+                  float var62 = 2.0F * var4.nextFloat() - 1.0F;
+                  float var64 = 2.0F * var4.nextFloat() - 1.0F;
                   this.level
                      .addParticle(
                         ParticleTypes.SCULK_CHARGE_POP,
-                        (double)var2.getX() + 0.5 + (double)(var72 * var49),
-                        (double)var2.getY() + 0.5 + (double)(var78 * var49),
-                        (double)var2.getZ() + 0.5 + (double)(var80 * var49),
-                        (double)(var72 * 0.07F),
-                        (double)(var78 * 0.07F),
-                        (double)(var80 * 0.07F)
+                        (double)var2.getX() + 0.5 + (double)(var57 * var37),
+                        (double)var2.getY() + 0.5 + (double)(var62 * var37),
+                        (double)var2.getZ() + 0.5 + (double)(var64 * var37),
+                        (double)(var57 * 0.07F),
+                        (double)(var62 * 0.07F),
+                        (double)(var64 * 0.07F)
                      );
                }
             }
             break;
          case 3007:
-            for(int var36 = 0; var36 < 10; ++var36) {
+            for(int var27 = 0; var27 < 10; ++var27) {
                this.level
                   .addParticle(
-                     new ShriekParticleOption(var36 * 5),
+                     new ShriekParticleOption(var27 * 5),
                      false,
                      (double)var2.getX() + 0.5,
                      (double)var2.getY() + SculkShriekerBlock.TOP_Y,
@@ -2974,8 +2958,8 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
                   );
             }
 
-            BlockState var37 = this.level.getBlockState(var2);
-            boolean var9 = var37.hasProperty(BlockStateProperties.WATERLOGGED) && var37.getValue(BlockStateProperties.WATERLOGGED);
+            BlockState var28 = this.level.getBlockState(var2);
+            boolean var9 = var28.hasProperty(BlockStateProperties.WATERLOGGED) && var28.getValue(BlockStateProperties.WATERLOGGED);
             if (!var9) {
                this.level
                   .playLocalSound(
@@ -2992,9 +2976,9 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
             break;
          case 3008:
             BlockState var6 = Block.stateById(var3);
-            Block var35 = var6.getBlock();
-            if (var35 instanceof BrushableBlock var29) {
-               this.level.playLocalSound(var2, var29.getBrushCompletedSound(), SoundSource.PLAYERS, 1.0F, 1.0F, false);
+            Block var26 = var6.getBlock();
+            if (var26 instanceof BrushableBlock var22) {
+               this.level.playLocalSound(var2, var22.getBrushCompletedSound(), SoundSource.PLAYERS, 1.0F, 1.0F, false);
             }
 
             this.level.addDestroyBlockEffect(var2, var6);
@@ -3003,19 +2987,19 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
             ParticleUtils.spawnParticlesOnBlockFaces(this.level, var2, ParticleTypes.EGG_CRACK, UniformInt.of(3, 6));
             break;
          case 3011:
-            TrialSpawner.addSpawnParticles(this.level, var2, var4, TrialSpawner.FlameParticle.decode(var3).particleType);
+            TrialSpawner.addSpawnParticles(this.level, var2, var4);
             break;
          case 3012:
             this.level
                .playLocalSound(var2, SoundEvents.TRIAL_SPAWNER_SPAWN_MOB, SoundSource.BLOCKS, 1.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, true);
-            TrialSpawner.addSpawnParticles(this.level, var2, var4, TrialSpawner.FlameParticle.decode(var3).particleType);
+            TrialSpawner.addSpawnParticles(this.level, var2, var4);
             break;
          case 3013:
             this.level
                .playLocalSound(
                   var2, SoundEvents.TRIAL_SPAWNER_DETECT_PLAYER, SoundSource.BLOCKS, 1.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, true
                );
-            TrialSpawner.addDetectPlayerParticles(this.level, var2, var4, var3, ParticleTypes.TRIAL_SPAWNER_DETECTED_PLAYER);
+            TrialSpawner.addDetectPlayerParticles(this.level, var2, var4, var3);
             break;
          case 3014:
             this.level
@@ -3023,69 +3007,58 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
             TrialSpawner.addEjectItemParticles(this.level, var2, var4);
             break;
          case 3015:
-            BlockEntity var34 = this.level.getBlockEntity(var2);
-            if (var34 instanceof VaultBlockEntity var28) {
-               VaultBlockEntity.Client.emitActivationParticles(
-                  this.level,
-                  var28.getBlockPos(),
-                  var28.getBlockState(),
-                  var28.getSharedData(),
-                  var3 == 0 ? ParticleTypes.SMALL_FLAME : ParticleTypes.SOUL_FIRE_FLAME
-               );
+            BlockEntity var8 = this.level.getBlockEntity(var2);
+            if (var8 instanceof VaultBlockEntity var7) {
+               VaultBlockEntity.Client.emitActivationParticles(this.level, var7.getBlockPos(), var7.getBlockState(), var7.getSharedData());
                this.level.playLocalSound(var2, SoundEvents.VAULT_ACTIVATE, SoundSource.BLOCKS, 1.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, true);
             }
             break;
          case 3016:
-            VaultBlockEntity.Client.emitDeactivationParticles(this.level, var2, var3 == 0 ? ParticleTypes.SMALL_FLAME : ParticleTypes.SOUL_FIRE_FLAME);
+            VaultBlockEntity.Client.emitDeactivationParticles(this.level, var2);
             this.level.playLocalSound(var2, SoundEvents.VAULT_DEACTIVATE, SoundSource.BLOCKS, 1.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, true);
             break;
          case 3017:
             TrialSpawner.addEjectItemParticles(this.level, var2, var4);
-            break;
-         case 3018:
-            for(int var7 = 0; var7 < 10; ++var7) {
-               double var8 = var4.nextGaussian() * 0.02;
-               double var10 = var4.nextGaussian() * 0.02;
-               double var12 = var4.nextGaussian() * 0.02;
-               this.level
-                  .addParticle(
-                     ParticleTypes.POOF,
-                     (double)var2.getX() + var4.nextDouble(),
-                     (double)var2.getY() + var4.nextDouble(),
-                     (double)var2.getZ() + var4.nextDouble(),
-                     var8,
-                     var10,
-                     var12
-                  );
-            }
-
-            this.level.playLocalSound(var2, SoundEvents.COBWEB_PLACE, SoundSource.BLOCKS, 1.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, true);
-            break;
-         case 3019:
-            this.level
-               .playLocalSound(
-                  var2, SoundEvents.TRIAL_SPAWNER_DETECT_PLAYER, SoundSource.BLOCKS, 1.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, true
-               );
-            TrialSpawner.addDetectPlayerParticles(this.level, var2, var4, var3, ParticleTypes.TRIAL_SPAWNER_DETECTED_PLAYER_OMINOUS);
-            break;
-         case 3020:
-            this.level
-               .playLocalSound(
-                  var2,
-                  SoundEvents.TRIAL_SPAWNER_OMINOUS_ACTIVATE,
-                  SoundSource.BLOCKS,
-                  var3 == 0 ? 0.3F : 1.0F,
-                  (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F,
-                  true
-               );
-            TrialSpawner.addDetectPlayerParticles(this.level, var2, var4, 0, ParticleTypes.TRIAL_SPAWNER_DETECTED_PLAYER_OMINOUS);
-            TrialSpawner.addBecomeOminousParticles(this.level, var2, var4);
-            break;
-         case 3021:
-            this.level
-               .playLocalSound(var2, SoundEvents.TRIAL_SPAWNER_SPAWN_ITEM, SoundSource.BLOCKS, 1.0F, (var4.nextFloat() - var4.nextFloat()) * 0.2F + 1.0F, true);
-            TrialSpawner.addSpawnParticles(this.level, var2, var4, TrialSpawner.FlameParticle.decode(var3).particleType);
       }
+   }
+
+   private void potionEvent(int var1, BlockPos var2, int var3, RandomSource var4) {
+      Vec3 var5 = Vec3.atBottomCenterOf(var2);
+
+      for(int var6 = 0; var6 < 8; ++var6) {
+         this.addParticle(
+            new ItemParticleOption(ParticleTypes.ITEM, new ItemStack(Items.SPLASH_POTION)),
+            var5.x,
+            var5.y,
+            var5.z,
+            var4.nextGaussian() * 0.15,
+            var4.nextDouble() * 0.2,
+            var4.nextGaussian() * 0.15
+         );
+      }
+
+      float var23 = (float)(var3 >> 16 & 0xFF) / 255.0F;
+      float var7 = (float)(var3 >> 8 & 0xFF) / 255.0F;
+      float var8 = (float)(var3 >> 0 & 0xFF) / 255.0F;
+      SimpleParticleType var9 = var1 == 2007 ? ParticleTypes.INSTANT_EFFECT : ParticleTypes.EFFECT;
+
+      for(int var10 = 0; var10 < 100; ++var10) {
+         double var11 = var4.nextDouble() * 4.0;
+         double var13 = var4.nextDouble() * 3.141592653589793 * 2.0;
+         double var15 = Math.cos(var13) * var11;
+         double var17 = 0.01 + var4.nextDouble() * 0.5;
+         double var19 = Math.sin(var13) * var11;
+         Particle var21 = this.addParticleInternal(
+            var9, var9.getType().getOverrideLimiter(), var5.x + var15 * 0.1, var5.y + 0.3, var5.z + var19 * 0.1, var15, var17, var19
+         );
+         if (var21 != null) {
+            float var22 = 0.75F + var4.nextFloat() * 0.25F;
+            var21.setColor(var23 * var22, var7 * var22, var8 * var22);
+            var21.setPower((float)var11);
+         }
+      }
+
+      this.level.playLocalSound(var2, SoundEvents.SPLASH_POTION_BREAK, SoundSource.NEUTRAL, 1.0F, var4.nextFloat() * 0.1F + 0.9F, false);
    }
 
    public void destroyBlockProgress(int var1, BlockPos var2, int var3) {

@@ -18,13 +18,10 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.flag.FeatureElement;
-import net.minecraft.world.flag.FeatureFlagSet;
-import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
-public class Enchantment implements FeatureElement {
+public class Enchantment {
    private final Enchantment.EnchantmentDefinition definition;
    @Nullable
    protected String descriptionId;
@@ -41,19 +38,13 @@ public class Enchantment implements FeatureElement {
    public static Enchantment.EnchantmentDefinition definition(
       TagKey<Item> var0, TagKey<Item> var1, int var2, int var3, Enchantment.Cost var4, Enchantment.Cost var5, int var6, EquipmentSlot... var7
    ) {
-      return new Enchantment.EnchantmentDefinition(var0, Optional.of(var1), var2, var3, var4, var5, var6, FeatureFlags.DEFAULT_FLAGS, var7);
+      return new Enchantment.EnchantmentDefinition(var0, Optional.of(var1), var2, var3, var4, var5, var6, var7);
    }
 
    public static Enchantment.EnchantmentDefinition definition(
       TagKey<Item> var0, int var1, int var2, Enchantment.Cost var3, Enchantment.Cost var4, int var5, EquipmentSlot... var6
    ) {
-      return new Enchantment.EnchantmentDefinition(var0, Optional.empty(), var1, var2, var3, var4, var5, FeatureFlags.DEFAULT_FLAGS, var6);
-   }
-
-   public static Enchantment.EnchantmentDefinition definition(
-      TagKey<Item> var0, int var1, int var2, Enchantment.Cost var3, Enchantment.Cost var4, int var5, FeatureFlagSet var6, EquipmentSlot... var7
-   ) {
-      return new Enchantment.EnchantmentDefinition(var0, Optional.empty(), var1, var2, var3, var4, var5, var6, var7);
+      return new Enchantment.EnchantmentDefinition(var0, Optional.empty(), var1, var2, var3, var4, var5, var6);
    }
 
    @Nullable
@@ -164,9 +155,6 @@ public class Enchantment implements FeatureElement {
    public void doPostHurt(LivingEntity var1, Entity var2, int var3) {
    }
 
-   public void doPostItemStackHurt(LivingEntity var1, Entity var2, int var3) {
-   }
-
    public boolean isTreasureOnly() {
       return false;
    }
@@ -188,11 +176,6 @@ public class Enchantment implements FeatureElement {
       return this.builtInRegistryHolder;
    }
 
-   @Override
-   public FeatureFlagSet requiredFeatures() {
-      return this.definition.requiredFeatures();
-   }
-
    public static record Cost(int a, int b) {
       private final int base;
       private final int perLevel;
@@ -209,7 +192,7 @@ public class Enchantment implements FeatureElement {
    }
 
    public static record EnchantmentDefinition(
-      TagKey<Item> a, Optional<TagKey<Item>> b, int c, int d, Enchantment.Cost e, Enchantment.Cost f, int g, FeatureFlagSet h, EquipmentSlot[] i
+      TagKey<Item> a, Optional<TagKey<Item>> b, int c, int d, Enchantment.Cost e, Enchantment.Cost f, int g, EquipmentSlot[] h
    ) {
       private final TagKey<Item> supportedItems;
       final Optional<TagKey<Item>> primaryItems;
@@ -218,19 +201,10 @@ public class Enchantment implements FeatureElement {
       private final Enchantment.Cost minCost;
       private final Enchantment.Cost maxCost;
       private final int anvilCost;
-      private final FeatureFlagSet requiredFeatures;
       private final EquipmentSlot[] slots;
 
       public EnchantmentDefinition(
-         TagKey<Item> var1,
-         Optional<TagKey<Item>> var2,
-         int var3,
-         int var4,
-         Enchantment.Cost var5,
-         Enchantment.Cost var6,
-         int var7,
-         FeatureFlagSet var8,
-         EquipmentSlot[] var9
+         TagKey<Item> var1, Optional<TagKey<Item>> var2, int var3, int var4, Enchantment.Cost var5, Enchantment.Cost var6, int var7, EquipmentSlot[] var8
       ) {
          super();
          this.supportedItems = var1;
@@ -240,8 +214,7 @@ public class Enchantment implements FeatureElement {
          this.minCost = var5;
          this.maxCost = var6;
          this.anvilCost = var7;
-         this.requiredFeatures = var8;
-         this.slots = var9;
+         this.slots = var8;
       }
    }
 }

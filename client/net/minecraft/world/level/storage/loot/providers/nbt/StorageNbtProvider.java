@@ -1,7 +1,7 @@
 package net.minecraft.world.level.storage.loot.providers.nbt;
 
 import com.google.common.collect.ImmutableSet;
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Set;
@@ -13,7 +13,7 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 
 public record StorageNbtProvider(ResourceLocation b) implements NbtProvider {
    private final ResourceLocation id;
-   public static final MapCodec<StorageNbtProvider> CODEC = RecordCodecBuilder.mapCodec(
+   public static final Codec<StorageNbtProvider> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(ResourceLocation.CODEC.fieldOf("source").forGetter(StorageNbtProvider::id)).apply(var0, StorageNbtProvider::new)
    );
 

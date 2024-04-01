@@ -108,8 +108,8 @@ public class JigsawBlockEntity extends BlockEntity {
    }
 
    @Override
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.loadAdditional(var1, var2);
+   public void load(CompoundTag var1, HolderLookup.Provider var2) {
+      super.load(var1, var2);
       this.name = new ResourceLocation(var1.getString("name"));
       this.target = new ResourceLocation(var1.getString("target"));
       this.pool = ResourceKey.create(Registries.TEMPLATE_POOL, new ResourceLocation(var1.getString("pool")));
@@ -130,7 +130,7 @@ public class JigsawBlockEntity extends BlockEntity {
 
    @Override
    public CompoundTag getUpdateTag(HolderLookup.Provider var1) {
-      return this.saveCustomOnly(var1);
+      return this.saveWithoutMetadata(var1);
    }
 
    public void generate(ServerLevel var1, int var2, boolean var3) {

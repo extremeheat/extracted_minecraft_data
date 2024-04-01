@@ -145,6 +145,11 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
    }
 
    @Override
+   public boolean hasPotatoVariant() {
+      return true;
+   }
+
+   @Override
    protected void defineSynchedData(SynchedEntityData.Builder var1) {
       super.defineSynchedData(var1);
       var1.define(DATA_FLAGS_ID, (byte)0);
@@ -242,15 +247,27 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
       super.tick();
       if (this.hasNectar() && this.getCropsGrownSincePollination() < 10 && this.random.nextFloat() < 0.05F) {
          for(int var1 = 0; var1 < this.random.nextInt(2) + 1; ++var1) {
-            this.spawnFluidParticle(
-               this.level(),
-               this.getX() - 0.30000001192092896,
-               this.getX() + 0.30000001192092896,
-               this.getZ() - 0.30000001192092896,
-               this.getZ() + 0.30000001192092896,
-               this.getY(0.5),
-               ParticleTypes.FALLING_NECTAR
-            );
+            if (this.isPotato()) {
+               this.spawnFluidParticle(
+                  this.level(),
+                  this.getX() - 0.30000001192092896,
+                  this.getX() + 0.30000001192092896,
+                  this.getZ() - 0.30000001192092896,
+                  this.getZ() + 0.30000001192092896,
+                  this.getY(0.5),
+                  ParticleTypes.FALLING_POISON
+               );
+            } else {
+               this.spawnFluidParticle(
+                  this.level(),
+                  this.getX() - 0.30000001192092896,
+                  this.getX() + 0.30000001192092896,
+                  this.getZ() - 0.30000001192092896,
+                  this.getZ() + 0.30000001192092896,
+                  this.getY(0.5),
+                  ParticleTypes.FALLING_NECTAR
+               );
+            }
          }
       }
 
@@ -962,7 +979,7 @@ public class Bee extends Animal implements NeutralMob, FlyingAnimal {
                if (var3.is(BlockTags.BEE_GROWABLES)) {
                   if (var4 instanceof CropBlock var6) {
                      if (!var6.isMaxAge(var3)) {
-                        var5 = var6.getStateForAge(var6.getAge(var3) + 1);
+                        var5 = var6.getStateForAge(var6.getAge(var3) + 1, var3);
                      }
                   } else if (var4 instanceof StemBlock) {
                      int var8 = var3.getValue(StemBlock.AGE);

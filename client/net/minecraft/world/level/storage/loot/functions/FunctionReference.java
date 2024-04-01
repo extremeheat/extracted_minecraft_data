@@ -1,7 +1,7 @@
 package net.minecraft.world.level.storage.loot.functions;
 
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
@@ -16,7 +16,7 @@ import org.slf4j.Logger;
 
 public class FunctionReference extends LootItemConditionalFunction {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final MapCodec<FunctionReference> CODEC = RecordCodecBuilder.mapCodec(
+   public static final Codec<FunctionReference> CODEC = RecordCodecBuilder.create(
       var0 -> commonFields(var0)
             .and(ResourceKey.codec(Registries.ITEM_MODIFIER).fieldOf("name").forGetter(var0x -> var0x.name))
             .apply(var0, FunctionReference::new)

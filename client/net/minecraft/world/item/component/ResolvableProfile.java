@@ -23,13 +23,13 @@ public record ResolvableProfile(Optional<String> c, Optional<UUID> d, PropertyMa
    private final GameProfile gameProfile;
    private static final Codec<ResolvableProfile> FULL_CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               ExtraCodecs.PLAYER_NAME.optionalFieldOf("name").forGetter(ResolvableProfile::name),
-               UUIDUtil.CODEC.optionalFieldOf("id").forGetter(ResolvableProfile::id),
-               ExtraCodecs.PROPERTY_MAP.optionalFieldOf("properties", new PropertyMap()).forGetter(ResolvableProfile::properties)
+               ExtraCodecs.strictOptionalField(ExtraCodecs.PLAYER_NAME, "name").forGetter(ResolvableProfile::name),
+               ExtraCodecs.strictOptionalField(UUIDUtil.CODEC, "id").forGetter(ResolvableProfile::id),
+               ExtraCodecs.strictOptionalField(ExtraCodecs.PROPERTY_MAP, "properties", new PropertyMap()).forGetter(ResolvableProfile::properties)
             )
             .apply(var0, ResolvableProfile::new)
    );
-   public static final Codec<ResolvableProfile> CODEC = Codec.withAlternative(
+   public static final Codec<ResolvableProfile> CODEC = ExtraCodecs.withAlternative(
       FULL_CODEC, ExtraCodecs.PLAYER_NAME, var0 -> new ResolvableProfile(Optional.of(var0), Optional.empty(), new PropertyMap())
    );
    public static final StreamCodec<ByteBuf, ResolvableProfile> STREAM_CODEC = StreamCodec.composite(

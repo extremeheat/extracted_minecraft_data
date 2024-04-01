@@ -477,8 +477,8 @@ public class UnihexProvider implements GlyphProvider {
                )
                .apply(var0, UnihexProvider.OverrideRange::new)
       );
-      public static final Codec<UnihexProvider.OverrideRange> CODEC = RAW_CODEC.validate(
-         var0 -> var0.from >= var0.to ? DataResult.error(() -> "Invalid range: [" + var0.from + ";" + var0.to + "]") : DataResult.success(var0)
+      public static final Codec<UnihexProvider.OverrideRange> CODEC = ExtraCodecs.validate(
+         RAW_CODEC, var0 -> var0.from >= var0.to ? DataResult.error(() -> "Invalid range: [" + var0.from + ";" + var0.to + "]") : DataResult.success(var0)
       );
 
       private OverrideRange(int var1, int var2, UnihexProvider.Dimensions var3) {

@@ -15,6 +15,7 @@ import java.util.List;
 import net.minecraft.Util;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.util.ExtraCodecs;
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
@@ -28,7 +29,7 @@ public record TrueTypeGlyphProviderDefinition(ResourceLocation c, float d, float
    private final float oversample;
    private final TrueTypeGlyphProviderDefinition.Shift shift;
    private final String skip;
-   private static final Codec<String> SKIP_LIST_CODEC = Codec.withAlternative(Codec.STRING, Codec.STRING.listOf(), var0 -> String.join("", var0));
+   private static final Codec<String> SKIP_LIST_CODEC = ExtraCodecs.withAlternative(Codec.STRING, Codec.STRING.listOf(), var0 -> String.join("", var0));
    public static final MapCodec<TrueTypeGlyphProviderDefinition> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(
                ResourceLocation.CODEC.fieldOf("file").forGetter(TrueTypeGlyphProviderDefinition::location),

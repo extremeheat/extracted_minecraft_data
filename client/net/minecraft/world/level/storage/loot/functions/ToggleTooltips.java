@@ -2,7 +2,6 @@ package net.minecraft.world.level.storage.loot.functions;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
@@ -45,7 +44,7 @@ public class ToggleTooltips extends LootItemConditionalFunction {
          },
          ToggleTooltips.ComponentToggle::type
       );
-   public static final MapCodec<ToggleTooltips> CODEC = RecordCodecBuilder.mapCodec(
+   public static final Codec<ToggleTooltips> CODEC = RecordCodecBuilder.create(
       var0 -> commonFields(var0)
             .and(Codec.unboundedMap(TOGGLE_CODEC, Codec.BOOL).fieldOf("toggles").forGetter(var0x -> var0x.values))
             .apply(var0, ToggleTooltips::new)

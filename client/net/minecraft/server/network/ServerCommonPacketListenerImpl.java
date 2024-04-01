@@ -92,7 +92,7 @@ public abstract class ServerCommonPacketListenerImpl implements ServerCommonPack
    protected void keepConnectionAlive() {
       this.server.getProfiler().push("keepAlive");
       long var1 = Util.getMillis();
-      if (!this.isSingleplayerOwner() && var1 - this.keepAliveTime >= 15000L) {
+      if (var1 - this.keepAliveTime >= 15000L) {
          if (this.keepAlivePending) {
             this.disconnect(TIMEOUT_DISCONNECTION_MESSAGE);
          } else {

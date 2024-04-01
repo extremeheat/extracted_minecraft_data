@@ -1,6 +1,6 @@
 package net.minecraft.world.level.levelgen.feature.foliageplacers;
 
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 
@@ -18,18 +18,18 @@ public class FoliagePlacerType<P extends FoliagePlacer> {
       "random_spread_foliage_placer", RandomSpreadFoliagePlacer.CODEC
    );
    public static final FoliagePlacerType<CherryFoliagePlacer> CHERRY_FOLIAGE_PLACER = register("cherry_foliage_placer", CherryFoliagePlacer.CODEC);
-   private final MapCodec<P> codec;
+   private final Codec<P> codec;
 
-   private static <P extends FoliagePlacer> FoliagePlacerType<P> register(String var0, MapCodec<P> var1) {
+   private static <P extends FoliagePlacer> FoliagePlacerType<P> register(String var0, Codec<P> var1) {
       return Registry.register(BuiltInRegistries.FOLIAGE_PLACER_TYPE, var0, new FoliagePlacerType<>(var1));
    }
 
-   private FoliagePlacerType(MapCodec<P> var1) {
+   private FoliagePlacerType(Codec<P> var1) {
       super();
       this.codec = var1;
    }
 
-   public MapCodec<P> codec() {
+   public Codec<P> codec() {
       return this.codec;
    }
 }

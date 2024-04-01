@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.ExtraCodecs;
 
 public record Filterable<T>(T a, Optional<T> b) {
    private final T raw;
@@ -21,11 +22,13 @@ public record Filterable<T>(T a, Optional<T> b) {
 
    public static <T> Codec<Filterable<T>> codec(Codec<T> var0) {
       Codec var1 = RecordCodecBuilder.create(
-         var1x -> var1x.group(var0.fieldOf("text").forGetter(Filterable::raw), var0.optionalFieldOf("filtered").forGetter(Filterable::filtered))
+         var1x -> var1x.group(
+                  var0.fieldOf("text").forGetter(Filterable::raw), ExtraCodecs.strictOptionalField(var0, "filtered").forGetter(Filterable::filtered)
+               )
                .apply(var1x, Filterable::new)
       );
       Codec var2 = var0.xmap(Filterable::passThrough, Filterable::raw);
-      return Codec.withAlternative(var1, var2);
+      return ExtraCodecs.withAlternative(var1, var2);
    }
 
    public static <B extends ByteBuf, T> StreamCodec<B, Filterable<T>> streamCodec(StreamCodec<B, T> var0) {

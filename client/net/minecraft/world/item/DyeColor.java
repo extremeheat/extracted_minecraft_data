@@ -3,17 +3,20 @@ package net.minecraft.world.item;
 import io.netty.buffer.ByteBuf;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import java.util.Arrays;
+import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ByIdMap;
 import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.item.component.TooltipProvider;
 import net.minecraft.world.level.material.MapColor;
 import org.jetbrains.annotations.Contract;
 
-public enum DyeColor implements StringRepresentable {
+public enum DyeColor implements StringRepresentable, TooltipProvider {
    WHITE(0, "white", 16383998, MapColor.SNOW, 15790320, 16777215),
    ORANGE(1, "orange", 16351261, MapColor.COLOR_ORANGE, 15435844, 16738335),
    MAGENTA(2, "magenta", 13061821, MapColor.COLOR_MAGENTA, 12801229, 16711935),
@@ -104,5 +107,12 @@ public enum DyeColor implements StringRepresentable {
    @Override
    public String getSerializedName() {
       return this.name;
+   }
+
+   @Override
+   public void addToTooltip(Consumer<Component> var1, TooltipFlag var2) {
+      String var3 = this.name.substring(0, 1).toUpperCase();
+      String var4 = var3 + this.name.substring(1);
+      var1.accept(Component.translatable("baseColor.tooltip", var4).withColor(this.textColor));
    }
 }

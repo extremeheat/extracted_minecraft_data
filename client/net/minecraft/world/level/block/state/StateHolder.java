@@ -173,8 +173,8 @@ public abstract class StateHolder<O, S> {
          var1x -> {
             StateHolder var2 = (StateHolder)var1.apply(var1x);
             return var2.getValues().isEmpty()
-               ? MapCodec.unit(var2)
-               : var2.propertiesCodec.codec().lenientOptionalFieldOf("Properties").xmap(var1xx -> var1xx.orElse(var2), Optional::of);
+               ? Codec.unit(var2)
+               : var2.propertiesCodec.codec().optionalFieldOf("Properties").xmap(var1xx -> var1xx.orElse(var2), Optional::of).codec();
          }
       );
    }

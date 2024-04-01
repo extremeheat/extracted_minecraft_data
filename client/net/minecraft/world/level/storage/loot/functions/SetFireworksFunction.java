@@ -1,6 +1,6 @@
 package net.minecraft.world.level.storage.loot.functions;
 
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.List;
@@ -14,13 +14,14 @@ import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.predicates.LootItemCondition;
 
 public class SetFireworksFunction extends LootItemConditionalFunction {
-   public static final MapCodec<SetFireworksFunction> CODEC = RecordCodecBuilder.mapCodec(
+   public static final Codec<SetFireworksFunction> CODEC = RecordCodecBuilder.create(
       var0 -> commonFields(var0)
             .and(
                var0.group(
-                  FireworkExplosion.CODEC.sizeLimitedListOf(256).optionalFieldOf("explosions", List.of()).forGetter(var0x -> var0x.explosions),
+                  ExtraCodecs.strictOptionalField(ExtraCodecs.sizeLimitedList(FireworkExplosion.CODEC.listOf(), 256), "explosions", List.of())
+                     .forGetter(var0x -> var0x.explosions),
                   ListOperation.codec(256).forGetter(var0x -> var0x.explosionsOperation),
-                  ExtraCodecs.UNSIGNED_BYTE.optionalFieldOf("flight_duration").forGetter(var0x -> var0x.flightDuration)
+                  ExtraCodecs.strictOptionalField(ExtraCodecs.UNSIGNED_BYTE, "flight_duration").forGetter(var0x -> var0x.flightDuration)
                )
             )
             .apply(var0, SetFireworksFunction::new)

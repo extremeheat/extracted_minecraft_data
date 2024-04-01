@@ -14,6 +14,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryFileCodec;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.block.Rotation;
@@ -22,13 +23,14 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.GravityProces
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureProcessor;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplateManager;
 import org.apache.commons.lang3.mutable.MutableObject;
+import org.apache.commons.lang3.tuple.Triple;
 
 public class StructureTemplatePool {
    private static final int SIZE_UNSET = -2147483648;
    private static final MutableObject<Codec<Holder<StructureTemplatePool>>> CODEC_REFERENCE = new MutableObject();
    public static final Codec<StructureTemplatePool> DIRECT_CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               Codec.lazyInitialized(CODEC_REFERENCE::getValue).fieldOf("fallback").forGetter(StructureTemplatePool::getFallback),
+               ExtraCodecs.lazyInitializedCodec(CODEC_REFERENCE::getValue).fieldOf("fallback").forGetter(StructureTemplatePool::getFallback),
                Codec.mapPair(StructurePoolElement.CODEC.fieldOf("element"), Codec.intRange(1, 150).fieldOf("weight"))
                   .codec()
                   .listOf()
@@ -80,6 +82,26 @@ public class StructureTemplatePool {
       }
 
       this.fallback = var1;
+   }
+
+   public StructureTemplatePool(
+      List<Triple<Function<StructureTemplatePool.Projection, ? extends StructurePoolElement>, Integer, StructureTemplatePool.Projection>> var1,
+      Holder<StructureTemplatePool> var2
+   ) {
+      super();
+      this.rawTemplates = Lists.newArrayList();
+      this.templates = new ObjectArrayList();
+
+      for(Triple var4 : var1) {
+         StructurePoolElement var5 = (StructurePoolElement)((Function)var4.getLeft()).apply((StructureTemplatePool.Projection)var4.getRight());
+         this.rawTemplates.add(Pair.of(var5, (Integer)var4.getMiddle()));
+
+         for(int var6 = 0; var6 < var4.getMiddle(); ++var6) {
+            this.templates.add(var5);
+         }
+      }
+
+      this.fallback = var2;
    }
 
    public int getMaxSize(StructureTemplateManager var1) {

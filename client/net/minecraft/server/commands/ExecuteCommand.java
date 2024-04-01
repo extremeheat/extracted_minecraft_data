@@ -985,12 +985,8 @@ public class ExecuteCommand {
                            return OptionalInt.empty();
                         }
 
-                        if (!var17.components().equals(var18.components())) {
-                           return OptionalInt.empty();
-                        }
-
-                        CompoundTag var19 = var17.saveCustomOnly(var9);
-                        CompoundTag var20 = var18.saveCustomOnly(var9);
+                        CompoundTag var19 = var17.saveWithoutMetadata(var9);
+                        CompoundTag var20 = var18.saveWithoutMetadata(var9);
                         if (!var19.equals(var20)) {
                            return OptionalInt.empty();
                         }

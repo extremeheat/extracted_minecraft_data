@@ -1,11 +1,11 @@
 package net.minecraft.client.renderer.texture.atlas;
 
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 
-public record SpriteSourceType(MapCodec<? extends SpriteSource> a) {
-   private final MapCodec<? extends SpriteSource> codec;
+public record SpriteSourceType(Codec<? extends SpriteSource> a) {
+   private final Codec<? extends SpriteSource> codec;
 
-   public SpriteSourceType(MapCodec<? extends SpriteSource> var1) {
+   public SpriteSourceType(Codec<? extends SpriteSource> var1) {
       super();
       this.codec = var1;
    }

@@ -122,6 +122,11 @@ public class WorldGenRegion implements WorldGenLevel {
       return this.getChunk(var1, var2, ChunkStatus.EMPTY);
    }
 
+   @Override
+   public boolean isPotato() {
+      return this.level.isPotato();
+   }
+
    @Nullable
    @Override
    public ChunkAccess getChunk(int var1, int var2, ChunkStatus var3, boolean var4) {

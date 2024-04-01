@@ -2,14 +2,14 @@ package net.minecraft.util.valueproviders;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
+import java.util.function.Function;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 
 public class ClampedNormalFloat extends FloatProvider {
-   public static final MapCodec<ClampedNormalFloat> CODEC = RecordCodecBuilder.mapCodec(
+   public static final Codec<ClampedNormalFloat> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
                   Codec.FLOAT.fieldOf("mean").forGetter(var0x -> var0x.mean),
                   Codec.FLOAT.fieldOf("deviation").forGetter(var0x -> var0x.deviation),
@@ -18,8 +18,9 @@ public class ClampedNormalFloat extends FloatProvider {
                )
                .apply(var0, ClampedNormalFloat::new)
       )
-      .validate(
-         var0 -> var0.max < var0.min ? DataResult.error(() -> "Max must be larger than min: [" + var0.min + ", " + var0.max + "]") : DataResult.success(var0)
+      .comapFlatMap(
+         var0 -> var0.max < var0.min ? DataResult.error(() -> "Max must be larger than min: [" + var0.min + ", " + var0.max + "]") : DataResult.success(var0),
+         Function.identity()
       );
    private final float mean;
    private final float deviation;

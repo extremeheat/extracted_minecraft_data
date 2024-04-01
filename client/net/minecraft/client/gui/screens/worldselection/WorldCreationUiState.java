@@ -54,7 +54,7 @@ public class WorldCreationUiState {
       this.updatePresetLists();
       this.seed = var4.isPresent() ? Long.toString(var4.getAsLong()) : "";
       this.generateStructures = var2.options().generateStructures();
-      this.bonusChest = var2.options().generateBonusChest();
+      this.bonusChest = true;
       this.targetFolder = this.findResultFolder(this.name);
    }
 

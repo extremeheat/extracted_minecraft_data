@@ -18,6 +18,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
@@ -223,8 +224,8 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
    }
 
    @Override
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.loadAdditional(var1, var2);
+   public void load(CompoundTag var1, HolderLookup.Provider var2) {
+      super.load(var1, var2);
       this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
       ContainerHelper.loadAllItems(var1, this.items, var2);
       this.litTime = var1.getShort("BurnTime");
@@ -290,7 +291,7 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
             if (var3.cookingProgress == var3.cookingTotalTime) {
                var3.cookingProgress = 0;
                var3.cookingTotalTime = getTotalCookTime(var0, var3);
-               if (burn(var0.registryAccess(), var9, var3.items, var10)) {
+               if (burn(var0, var9, var3.items, var10)) {
                   var3.setRecipeUsed(var9);
                }
 
@@ -323,6 +324,8 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
             ItemStack var5 = (ItemStack)var2.get(2);
             if (var5.isEmpty()) {
                return true;
+            } else if (var5.is(Items.TOXIC_RESIN)) {
+               return false;
             } else if (!ItemStack.isSameItemSameComponents(var5, var4)) {
                return false;
             } else if (var5.getCount() < var3 && var5.getCount() < var5.getMaxStackSize()) {
@@ -336,22 +339,27 @@ public abstract class AbstractFurnaceBlockEntity extends BaseContainerBlockEntit
       }
    }
 
-   private static boolean burn(RegistryAccess var0, @Nullable RecipeHolder<?> var1, NonNullList<ItemStack> var2, int var3) {
-      if (var1 != null && canBurn(var0, var1, var2, var3)) {
-         ItemStack var4 = (ItemStack)var2.get(0);
-         ItemStack var5 = var1.value().getResultItem(var0);
-         ItemStack var6 = (ItemStack)var2.get(2);
-         if (var6.isEmpty()) {
-            var2.set(2, var5.copy());
-         } else if (ItemStack.isSameItemSameComponents(var6, var5)) {
-            var6.grow(1);
+   private static boolean burn(Level var0, @Nullable RecipeHolder<?> var1, NonNullList<ItemStack> var2, int var3) {
+      RegistryAccess var4 = var0.registryAccess();
+      if (var1 != null && canBurn(var4, var1, var2, var3)) {
+         ItemStack var5 = (ItemStack)var2.get(0);
+         ItemStack var6 = var1.value().getResultItem(var4);
+         if (var6.is(Items.TOXIC_RESIN)) {
+            var6.set(DataComponents.RESIN, new FletchingBlockEntity.Resin('a', FletchingBlockEntity.Resin.getRandomImpurities(var0.getRandom())));
          }
 
-         if (var4.is(Blocks.WET_SPONGE.asItem()) && !((ItemStack)var2.get(1)).isEmpty() && ((ItemStack)var2.get(1)).is(Items.BUCKET)) {
+         ItemStack var7 = (ItemStack)var2.get(2);
+         if (var7.isEmpty()) {
+            var2.set(2, var6.copy());
+         } else if (ItemStack.isSameItemSameComponents(var7, var6)) {
+            var7.grow(1);
+         }
+
+         if (var5.is(Blocks.WET_SPONGE.asItem()) && !((ItemStack)var2.get(1)).isEmpty() && ((ItemStack)var2.get(1)).is(Items.BUCKET)) {
             var2.set(1, new ItemStack(Items.WATER_BUCKET));
          }
 
-         var4.shrink(1);
+         var5.shrink(1);
          return true;
       } else {
          return false;

@@ -19,6 +19,7 @@ import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.Entity;
 import org.slf4j.Logger;
 
@@ -27,7 +28,7 @@ public class SelectorContents implements ComponentContents {
    public static final MapCodec<SelectorContents> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(
                Codec.STRING.fieldOf("selector").forGetter(SelectorContents::getPattern),
-               ComponentSerialization.CODEC.optionalFieldOf("separator").forGetter(SelectorContents::getSeparator)
+               ExtraCodecs.strictOptionalField(ComponentSerialization.CODEC, "separator").forGetter(SelectorContents::getSeparator)
             )
             .apply(var0, SelectorContents::new)
    );

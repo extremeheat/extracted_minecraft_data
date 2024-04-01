@@ -117,6 +117,9 @@ public class GameRules {
    public static final GameRules.Key<GameRules.IntegerValue> RULE_COMMAND_MODIFICATION_BLOCK_LIMIT = register(
       "commandModificationBlockLimit", GameRules.Category.MISC, GameRules.IntegerValue.create(32768)
    );
+   public static final GameRules.Key<GameRules.IntegerValue> RULE_FLOATATER_SIZE_LIMIT = register(
+      "floataterSizeLimit", GameRules.Category.MISC, GameRules.IntegerValue.create(32)
+   );
    public static final GameRules.Key<GameRules.BooleanValue> RULE_ANNOUNCE_ADVANCEMENTS = register(
       "announceAdvancements", GameRules.Category.CHAT, GameRules.BooleanValue.create(true)
    );
@@ -202,6 +205,9 @@ public class GameRules {
          var2.setDefaultSpawnPos(var2.getSharedSpawnPos(), var2.getSharedSpawnAngle());
       })
    );
+   public static final GameRules.Key<GameRules.BooleanValue> RULE_NEVER_EAT_ARMOR = register(
+      "neverEatArmor", GameRules.Category.PLAYER, GameRules.BooleanValue.create(false)
+   );
    private final Map<GameRules.Key<?>, GameRules.Value<?>> rules;
 
    private static <T extends GameRules.Value<T>> GameRules.Key<T> register(String var0, GameRules.Category var1, GameRules.Type<T> var2) {
@@ -242,7 +248,7 @@ public class GameRules {
    }
 
    private void loadFromTag(DynamicLike<?> var1) {
-      this.rules.forEach((var1x, var2) -> var1.get(var1x.id).asString().ifSuccess(var2::deserialize));
+      this.rules.forEach((var1x, var2) -> var1.get(var1x.id).asString().result().ifPresent(var2::deserialize));
    }
 
    public GameRules copy() {

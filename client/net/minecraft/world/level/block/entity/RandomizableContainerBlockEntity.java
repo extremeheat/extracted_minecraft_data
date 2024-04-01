@@ -92,8 +92,8 @@ public abstract class RandomizableContainerBlockEntity extends BaseContainerBloc
    }
 
    @Override
-   protected void applyImplicitComponents(BlockEntity.DataComponentInput var1) {
-      super.applyImplicitComponents(var1);
+   public void applyComponents(DataComponentMap var1) {
+      super.applyComponents(var1);
       SeededContainerLoot var2 = var1.get(DataComponents.CONTAINER_LOOT);
       if (var2 != null) {
          this.lootTable = var2.lootTable();
@@ -102,8 +102,8 @@ public abstract class RandomizableContainerBlockEntity extends BaseContainerBloc
    }
 
    @Override
-   protected void collectImplicitComponents(DataComponentMap.Builder var1) {
-      super.collectImplicitComponents(var1);
+   public void collectComponents(DataComponentMap.Builder var1) {
+      super.collectComponents(var1);
       if (this.lootTable != null) {
          var1.set(DataComponents.CONTAINER_LOOT, new SeededContainerLoot(this.lootTable, this.lootTableSeed));
       }

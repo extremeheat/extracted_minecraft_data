@@ -33,6 +33,7 @@ public class OptimizeWorldScreen extends Screen {
       var0.put(Level.OVERWORLD, -13408734);
       var0.put(Level.NETHER, -10075085);
       var0.put(Level.END, -8943531);
+      var0.put(Level.POTATO, -559038737);
       var0.defaultReturnValue(-2236963);
    });
    private final BooleanConsumer callback;

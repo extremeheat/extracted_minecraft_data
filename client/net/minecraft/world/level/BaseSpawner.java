@@ -103,7 +103,7 @@ public abstract class BaseSpawner {
                double var11 = var10 >= 1 ? var9.getDouble(0) : (double)var2.getX() + (var4.nextDouble() - var4.nextDouble()) * (double)this.spawnRange + 0.5;
                double var13 = var10 >= 2 ? var9.getDouble(1) : (double)(var2.getY() + var4.nextInt(3) - 1);
                double var15 = var10 >= 3 ? var9.getDouble(2) : (double)var2.getZ() + (var4.nextDouble() - var4.nextDouble()) * (double)this.spawnRange + 0.5;
-               if (var1.noCollision(((EntityType)var8.get()).getSpawnAABB(var11, var13, var15))) {
+               if (var1.noCollision(((EntityType)var8.get()).getAABB(var11, var13, var15))) {
                   BlockPos var17 = BlockPos.containing(var11, var13, var15);
                   if (var5.getCustomSpawnRules().isPresent()) {
                      if (!((EntityType)var8.get()).getCategory().isFriendly() && var1.getDifficulty() == Difficulty.PEACEFUL) {
@@ -148,8 +148,7 @@ public abstract class BaseSpawner {
 
                   var22.moveTo(var22.getX(), var22.getY(), var22.getZ(), var4.nextFloat() * 360.0F, 0.0F);
                   if (var22 instanceof Mob var20) {
-                     if (var5.getCustomSpawnRules().isEmpty() && !((Mob)var20).checkSpawnRules(var1, MobSpawnType.SPAWNER)
-                        || !((Mob)var20).checkSpawnObstruction(var1)) {
+                     if (var5.getCustomSpawnRules().isEmpty() && !var20.checkSpawnRules(var1, MobSpawnType.SPAWNER) || !var20.checkSpawnObstruction(var1)) {
                         continue;
                      }
 
@@ -157,8 +156,6 @@ public abstract class BaseSpawner {
                      if (var21) {
                         ((Mob)var22).finalizeSpawn(var1, var1.getCurrentDifficultyAt(var22.blockPosition()), MobSpawnType.SPAWNER, null);
                      }
-
-                     var5.getEquipmentLootTable().ifPresent(var20::equip);
                   }
 
                   if (!var1.tryAddFreshEntityWithPassengers(var22)) {
@@ -191,7 +188,7 @@ public abstract class BaseSpawner {
          this.spawnDelay = this.minSpawnDelay + var3.nextInt(this.maxSpawnDelay - this.minSpawnDelay);
       }
 
-      this.spawnPotentials.getRandom(var3).ifPresent(var3x -> this.setNextSpawnData(var1, var2, (SpawnData)var3x.data()));
+      this.spawnPotentials.getRandom(var3).ifPresent(var3x -> this.setNextSpawnData(var1, var2, (SpawnData)var3x.getData()));
       this.broadcastEvent(var1, var2, 1);
    }
 
@@ -246,11 +243,11 @@ public abstract class BaseSpawner {
       if (this.nextSpawnData != null) {
          var1.put(
             "SpawnData",
-            (Tag)SpawnData.CODEC.encodeStart(NbtOps.INSTANCE, this.nextSpawnData).getOrThrow(var0 -> new IllegalStateException("Invalid SpawnData: " + var0))
+            (Tag)SpawnData.CODEC.encodeStart(NbtOps.INSTANCE, this.nextSpawnData).result().orElseThrow(() -> new IllegalStateException("Invalid SpawnData"))
          );
       }
 
-      var1.put("SpawnPotentials", (Tag)SpawnData.LIST_CODEC.encodeStart(NbtOps.INSTANCE, this.spawnPotentials).getOrThrow());
+      var1.put("SpawnPotentials", (Tag)SpawnData.LIST_CODEC.encodeStart(NbtOps.INSTANCE, this.spawnPotentials).result().orElseThrow());
       return var1;
    }
 
@@ -290,7 +287,7 @@ public abstract class BaseSpawner {
       if (this.nextSpawnData != null) {
          return this.nextSpawnData;
       } else {
-         this.setNextSpawnData(var1, var3, (SpawnData)this.spawnPotentials.getRandom(var2).map(WeightedEntry.Wrapper::data).orElseGet(SpawnData::new));
+         this.setNextSpawnData(var1, var3, (SpawnData)this.spawnPotentials.getRandom(var2).map(WeightedEntry.Wrapper::getData).orElseGet(SpawnData::new));
          return this.nextSpawnData;
       }
    }

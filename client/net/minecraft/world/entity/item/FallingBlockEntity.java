@@ -48,7 +48,7 @@ import org.slf4j.Logger;
 
 public class FallingBlockEntity extends Entity {
    private static final Logger LOGGER = LogUtils.getLogger();
-   private BlockState blockState = Blocks.SAND.defaultBlockState();
+   private BlockState blockState = Blocks.GRAVTATER.defaultBlockState();
    public int time;
    public boolean dropItem = true;
    private boolean cancelDrop;
@@ -177,7 +177,7 @@ public class FallingBlockEntity extends Entity {
                                  }
 
                                  try {
-                                    var11.loadWithComponents(var12, this.level().registryAccess());
+                                    var11.load(var12, this.level().registryAccess());
                                  } catch (Exception var15) {
                                     LOGGER.error("Failed to load block entity from falling block", var15);
                                  }
@@ -288,7 +288,7 @@ public class FallingBlockEntity extends Entity {
 
       this.cancelDrop = var1.getBoolean("CancelDrop");
       if (this.blockState.isAir()) {
-         this.blockState = Blocks.SAND.defaultBlockState();
+         this.blockState = Blocks.GRAVTATER.defaultBlockState();
       }
    }
 

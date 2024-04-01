@@ -3,7 +3,6 @@ package net.minecraft.world.level.block;
 import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -47,12 +46,6 @@ public class HeavyCoreBlock extends Block implements SimpleWaterloggedBlock {
    @Override
    protected FluidState getFluidState(BlockState var1) {
       return var1.getValue(BlockStateProperties.WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(var1);
-   }
-
-   @Override
-   public BlockState getStateForPlacement(BlockPlaceContext var1) {
-      FluidState var2 = var1.getLevel().getFluidState(var1.getClickedPos());
-      return this.defaultBlockState().setValue(BlockStateProperties.WATERLOGGED, Boolean.valueOf(var2.is(Fluids.WATER)));
    }
 
    @Override

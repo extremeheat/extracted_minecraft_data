@@ -99,12 +99,12 @@ public class ThrownEnderpearl extends ThrowableItemProjectile {
 
    @Nullable
    @Override
-   public Entity changeDimension(ServerLevel var1) {
-      Entity var2 = this.getOwner();
-      if (var2 != null && var2.level().dimension() != var1.dimension()) {
+   public Entity changeDimension(ServerLevel var1, boolean var2) {
+      Entity var3 = this.getOwner();
+      if (var3 != null && var3.level().dimension() != var1.dimension()) {
          this.setOwner(null);
       }
 
-      return super.changeDimension(var1);
+      return super.changeDimension(var1, var2);
    }
 }

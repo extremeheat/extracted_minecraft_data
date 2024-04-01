@@ -3,7 +3,7 @@ package net.minecraft.world.level.levelgen;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.Sets;
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.text.DecimalFormat;
@@ -49,7 +49,7 @@ import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
 import org.apache.commons.lang3.mutable.MutableObject;
 
 public final class NoiseBasedChunkGenerator extends ChunkGenerator {
-   public static final MapCodec<NoiseBasedChunkGenerator> CODEC = RecordCodecBuilder.mapCodec(
+   public static final Codec<NoiseBasedChunkGenerator> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                BiomeSource.CODEC.fieldOf("biome_source").forGetter(var0x -> var0x.biomeSource),
                NoiseGeneratorSettings.CODEC.fieldOf("settings").forGetter(var0x -> var0x.settings)
@@ -95,7 +95,7 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
    }
 
    @Override
-   protected MapCodec<? extends ChunkGenerator> codec() {
+   protected Codec<? extends ChunkGenerator> codec() {
       return CODEC;
    }
 
@@ -109,7 +109,8 @@ public final class NoiseBasedChunkGenerator extends ChunkGenerator {
 
    @Override
    public int getBaseHeight(int var1, int var2, Heightmap.Types var3, LevelHeightAccessor var4, RandomState var5) {
-      return this.iterateNoiseColumn(var4, var5, var1, var2, null, var3.isOpaque()).orElse(var4.getMinBuildHeight());
+      return this.iterateNoiseColumn(var4, var5, var1, var2, null, var3.isOpaque())
+         .orElse(var4.getMinBuildHeight() + ((NoiseGeneratorSettings)this.settings.value()).bottomGenerationPadding());
    }
 
    @Override

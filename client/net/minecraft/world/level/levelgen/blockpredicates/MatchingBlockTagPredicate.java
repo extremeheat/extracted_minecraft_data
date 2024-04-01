@@ -1,6 +1,6 @@
 package net.minecraft.world.level.levelgen.blockpredicates;
 
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.Vec3i;
@@ -11,7 +11,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class MatchingBlockTagPredicate extends StateTestingPredicate {
    final TagKey<Block> tag;
-   public static final MapCodec<MatchingBlockTagPredicate> CODEC = RecordCodecBuilder.mapCodec(
+   public static final Codec<MatchingBlockTagPredicate> CODEC = RecordCodecBuilder.create(
       var0 -> stateTestingCodec(var0)
             .and(TagKey.codec(Registries.BLOCK).fieldOf("tag").forGetter(var0x -> var0x.tag))
             .apply(var0, MatchingBlockTagPredicate::new)

@@ -1,7 +1,6 @@
 package net.minecraft.world.level.levelgen.feature.treedecorators;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.HashSet;
@@ -14,12 +13,13 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.feature.stateproviders.BlockStateProvider;
 
 public class AttachedToLeavesDecorator extends TreeDecorator {
-   public static final MapCodec<AttachedToLeavesDecorator> CODEC = RecordCodecBuilder.mapCodec(
+   public static final Codec<AttachedToLeavesDecorator> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                Codec.floatRange(0.0F, 1.0F).fieldOf("probability").forGetter(var0x -> var0x.probability),
+               Codec.BOOL.optionalFieldOf("use_logs", false).forGetter(var0x -> var0x.useLogs),
                Codec.intRange(0, 16).fieldOf("exclusion_radius_xz").forGetter(var0x -> var0x.exclusionRadiusXZ),
                Codec.intRange(0, 16).fieldOf("exclusion_radius_y").forGetter(var0x -> var0x.exclusionRadiusY),
-               BlockStateProvider.CODEC.fieldOf("block_provider").forGetter(var0x -> var0x.blockProvider),
+               Codec.list(BlockStateProvider.CODEC).fieldOf("block_provider").forGetter(var0x -> var0x.blockProvider),
                Codec.intRange(1, 16).fieldOf("required_empty_blocks").forGetter(var0x -> var0x.requiredEmptyBlocks),
                ExtraCodecs.nonEmptyList(Direction.CODEC.listOf()).fieldOf("directions").forGetter(var0x -> var0x.directions)
             )
@@ -28,18 +28,20 @@ public class AttachedToLeavesDecorator extends TreeDecorator {
    protected final float probability;
    protected final int exclusionRadiusXZ;
    protected final int exclusionRadiusY;
-   protected final BlockStateProvider blockProvider;
+   protected final List<BlockStateProvider> blockProvider;
    protected final int requiredEmptyBlocks;
    protected final List<Direction> directions;
+   protected boolean useLogs;
 
-   public AttachedToLeavesDecorator(float var1, int var2, int var3, BlockStateProvider var4, int var5, List<Direction> var6) {
+   public AttachedToLeavesDecorator(float var1, boolean var2, int var3, int var4, List<BlockStateProvider> var5, int var6, List<Direction> var7) {
       super();
       this.probability = var1;
-      this.exclusionRadiusXZ = var2;
-      this.exclusionRadiusY = var3;
-      this.blockProvider = var4;
-      this.requiredEmptyBlocks = var5;
-      this.directions = var6;
+      this.useLogs = var2;
+      this.exclusionRadiusXZ = var3;
+      this.exclusionRadiusY = var4;
+      this.blockProvider = var5;
+      this.requiredEmptyBlocks = var6;
+      this.directions = var7;
    }
 
    @Override
@@ -47,7 +49,7 @@ public class AttachedToLeavesDecorator extends TreeDecorator {
       HashSet var2 = new HashSet();
       RandomSource var3 = var1.random();
 
-      for(BlockPos var5 : Util.shuffledCopy(var1.leaves(), var3)) {
+      for(BlockPos var5 : this.useLogs ? Util.shuffledCopy(var1.logs(), var3) : Util.shuffledCopy(var1.leaves(), var3)) {
          Direction var6 = Util.getRandom(this.directions, var3);
          BlockPos var7 = var5.relative(var6);
          if (!var2.contains(var7) && var3.nextFloat() < this.probability && this.hasRequiredEmptyBlocks(var1, var5, var6)) {
@@ -58,7 +60,10 @@ public class AttachedToLeavesDecorator extends TreeDecorator {
                var2.add(var11.immutable());
             }
 
-            var1.setBlock(var7, this.blockProvider.getState(var3, var7));
+            for(BlockStateProvider var13 : this.blockProvider) {
+               var1.setBlock(var7, var13.getState(var3, var7));
+               var7 = var7.relative(var6);
+            }
          }
       }
    }

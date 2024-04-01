@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -35,7 +34,7 @@ public abstract class BiomeSource implements BiomeResolver {
       super();
    }
 
-   protected abstract MapCodec<? extends BiomeSource> codec();
+   protected abstract Codec<? extends BiomeSource> codec();
 
    protected abstract Stream<Holder<Biome>> collectPossibleBiomes();
 

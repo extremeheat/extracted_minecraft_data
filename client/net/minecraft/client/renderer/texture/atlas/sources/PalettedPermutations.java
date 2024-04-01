@@ -5,7 +5,6 @@ import com.google.common.base.Suppliers;
 import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
@@ -33,7 +32,7 @@ import org.slf4j.Logger;
 
 public class PalettedPermutations implements SpriteSource {
    static final Logger LOGGER = LogUtils.getLogger();
-   public static final MapCodec<PalettedPermutations> CODEC = RecordCodecBuilder.mapCodec(
+   public static final Codec<PalettedPermutations> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                Codec.list(ResourceLocation.CODEC).fieldOf("textures").forGetter(var0x -> var0x.textures),
                ResourceLocation.CODEC.fieldOf("palette_key").forGetter(var0x -> var0x.paletteKey),

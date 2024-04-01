@@ -14,6 +14,7 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.logging.LogUtils;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
+import com.mojang.serialization.DataResult.PartialResult;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -114,10 +115,6 @@ public class Util {
 
    public static <K, V> Collector<Entry<? extends K, ? extends V>, ?, Map<K, V>> toMap() {
       return Collectors.toMap(Entry::getKey, Entry::getValue);
-   }
-
-   public static <T> Collector<T, ?, List<T>> toMutableList() {
-      return Collectors.toCollection(Lists::newArrayList);
    }
 
    public static <T extends Comparable<T>> String getPropertyName(Property<T> var0, Object var1) {
@@ -875,8 +872,32 @@ public class Util {
       }
    }
 
+   public static <T, E extends Throwable> T getOrThrow(DataResult<T> var0, Function<String, E> var1) throws E {
+      Optional var2 = var0.error();
+      if (var2.isPresent()) {
+         throw (Throwable)var1.apply(((PartialResult)var2.get()).message());
+      } else {
+         return (T)var0.result().orElseThrow();
+      }
+   }
+
+   public static <T, E extends Throwable> T getPartialOrThrow(DataResult<T> var0, Function<String, E> var1) throws E {
+      Optional var2 = var0.error();
+      if (var2.isPresent()) {
+         Optional var3 = var0.resultOrPartial(var0x -> {
+         });
+         if (var3.isPresent()) {
+            return (T)var3.get();
+         } else {
+            throw (Throwable)var1.apply(((PartialResult)var2.get()).message());
+         }
+      } else {
+         return (T)var0.result().orElseThrow();
+      }
+   }
+
    public static <A, B> Typed<B> writeAndReadTypedOrThrow(Typed<A> var0, Type<B> var1, UnaryOperator<Dynamic<?>> var2) {
-      Dynamic var3 = (Dynamic)var0.write().getOrThrow();
+      Dynamic var3 = getOrThrow(var0.write(), IllegalStateException::new);
       return readTypedOrThrow(var1, (Dynamic<?>)var2.apply(var3), true);
    }
 
@@ -888,7 +909,7 @@ public class Util {
       DataResult var3 = var0.readTyped(var1).map(Pair::getFirst);
 
       try {
-         return var2 ? (Typed)var3.getPartialOrThrow(IllegalStateException::new) : (Typed)var3.getOrThrow(IllegalStateException::new);
+         return var2 ? getPartialOrThrow(var3, IllegalStateException::new) : getOrThrow(var3, IllegalStateException::new);
       } catch (IllegalStateException var7) {
          CrashReport var5 = CrashReport.forThrowable(var7, "Reading type");
          CrashReportCategory var6 = var5.addCategory("Info");

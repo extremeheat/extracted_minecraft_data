@@ -10,6 +10,7 @@ import net.minecraft.advancements.Criterion;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -32,15 +33,17 @@ public class EnterBlockTrigger extends SimpleCriterionTrigger<EnterBlockTrigger.
       private final Optional<ContextAwarePredicate> player;
       private final Optional<Holder<Block>> block;
       private final Optional<StatePropertiesPredicate> state;
-      public static final Codec<EnterBlockTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
+      public static final Codec<EnterBlockTrigger.TriggerInstance> CODEC = ExtraCodecs.validate(
+         RecordCodecBuilder.create(
             var0 -> var0.group(
-                     EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(EnterBlockTrigger.TriggerInstance::player),
-                     BuiltInRegistries.BLOCK.holderByNameCodec().optionalFieldOf("block").forGetter(EnterBlockTrigger.TriggerInstance::block),
-                     StatePropertiesPredicate.CODEC.optionalFieldOf("state").forGetter(EnterBlockTrigger.TriggerInstance::state)
+                     ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player").forGetter(EnterBlockTrigger.TriggerInstance::player),
+                     ExtraCodecs.strictOptionalField(BuiltInRegistries.BLOCK.holderByNameCodec(), "block").forGetter(EnterBlockTrigger.TriggerInstance::block),
+                     ExtraCodecs.strictOptionalField(StatePropertiesPredicate.CODEC, "state").forGetter(EnterBlockTrigger.TriggerInstance::state)
                   )
                   .apply(var0, EnterBlockTrigger.TriggerInstance::new)
-         )
-         .validate(EnterBlockTrigger.TriggerInstance::validate);
+         ),
+         EnterBlockTrigger.TriggerInstance::validate
+      );
 
       public TriggerInstance(Optional<ContextAwarePredicate> var1, Optional<Holder<Block>> var2, Optional<StatePropertiesPredicate> var3) {
          super();

@@ -1,7 +1,7 @@
 package net.minecraft.world.level.levelgen.structure.structures;
 
 import com.google.common.collect.Lists;
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -12,7 +12,7 @@ import net.minecraft.world.level.levelgen.structure.StructureType;
 import net.minecraft.world.level.levelgen.structure.pieces.StructurePiecesBuilder;
 
 public class EndCityStructure extends Structure {
-   public static final MapCodec<EndCityStructure> CODEC = simpleCodec(EndCityStructure::new);
+   public static final Codec<EndCityStructure> CODEC = simpleCodec(EndCityStructure::new);
 
    public EndCityStructure(Structure.StructureSettings var1) {
       super(var1);

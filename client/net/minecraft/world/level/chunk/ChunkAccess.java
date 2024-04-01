@@ -35,6 +35,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelHeightAccessor;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeGenerationSettings;
@@ -83,7 +84,10 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
    protected final Map<BlockPos, BlockEntity> blockEntities = new Object2ObjectOpenHashMap();
    protected final LevelHeightAccessor levelHeightAccessor;
    protected final LevelChunkSection[] sections;
+   private final boolean certainPotato;
 
+   // $VF: Could not properly define all variable types!
+   // Please report this to the Vineflower issue tracker, at https://github.com/Vineflower/vineflower/issues with a copy of the class file (if you have the rights to distribute it!)
    public ChunkAccess(
       ChunkPos var1,
       UpgradeData var2,
@@ -97,6 +101,12 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
       this.chunkPos = var1;
       this.upgradeData = var2;
       this.levelHeightAccessor = var3;
+      if (var3 instanceof Level var9) {
+         this.certainPotato = var9.isPotato();
+      } else {
+         this.certainPotato = false;
+      }
+
       this.sections = new LevelChunkSection[var3.getSectionsCount()];
       this.inhabitedTime = var5;
       this.postProcessing = new ShortList[var3.getSectionsCount()];
@@ -111,6 +121,11 @@ public abstract class ChunkAccess implements BlockGetter, BiomeManager.NoiseBiom
       }
 
       replaceMissingSections(var4, this.sections);
+   }
+
+   @Override
+   public boolean isPotato() {
+      return this.certainPotato;
    }
 
    private static void replaceMissingSections(Registry<Biome> var0, LevelChunkSection[] var1) {

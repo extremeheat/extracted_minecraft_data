@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import java.util.EnumSet;
 import javax.annotation.Nullable;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -40,6 +41,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.biome.Biomes;
 import net.minecraft.world.level.levelgen.WorldgenRandom;
 import net.minecraft.world.phys.Vec3;
 
@@ -47,7 +49,6 @@ public class Slime extends Mob implements Enemy {
    private static final EntityDataAccessor<Integer> ID_SIZE = SynchedEntityData.defineId(Slime.class, EntityDataSerializers.INT);
    public static final int MIN_SIZE = 1;
    public static final int MAX_SIZE = 127;
-   public static final int MAX_NATURAL_SIZE = 4;
    public float targetSquish;
    public float squish;
    public float oSquish;
@@ -287,7 +288,12 @@ public class Slime extends Mob implements Enemy {
                return checkMobSpawnRules(var0, var1, var2, var3, var4);
             }
 
-            if (var1.getBiome(var3).is(BiomeTags.ALLOWS_SURFACE_SLIME_SPAWNS)
+            Holder var5 = var1.getBiome(var3);
+            if (var5.is(Biomes.WASTELAND)) {
+               return checkMobSpawnRules(var0, var1, var2, var3, var4);
+            }
+
+            if (var5.is(BiomeTags.ALLOWS_SURFACE_SLIME_SPAWNS)
                && var3.getY() > 50
                && var3.getY() < 70
                && var4.nextFloat() < 0.5F
@@ -300,9 +306,9 @@ public class Slime extends Mob implements Enemy {
                return false;
             }
 
-            ChunkPos var5 = new ChunkPos(var3);
-            boolean var6 = WorldgenRandom.seedSlimeChunk(var5.x, var5.z, ((WorldGenLevel)var1).getSeed(), 987234911L).nextInt(10) == 0;
-            if (var4.nextInt(10) == 0 && var6 && var3.getY() < 40) {
+            ChunkPos var6 = new ChunkPos(var3);
+            boolean var7 = WorldgenRandom.seedSlimeChunk(var6.x, var6.z, ((WorldGenLevel)var1).getSeed(), 987234911L).nextInt(10) == 0;
+            if (var4.nextInt(10) == 0 && var7 && var3.getY() < 40) {
                return checkMobSpawnRules(var0, var1, var2, var3, var4);
             }
          }

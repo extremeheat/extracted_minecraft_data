@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.ExtraCodecs;
 
 public interface MinMaxBounds<T extends Number> {
    SimpleCommandExceptionType ERROR_EMPTY = new SimpleCommandExceptionType(Component.translatable("argument.range.empty"));
@@ -33,7 +34,10 @@ public interface MinMaxBounds<T extends Number> {
 
    static <T extends Number, R extends MinMaxBounds<T>> Codec<R> createCodec(Codec<T> var0, MinMaxBounds.BoundsFactory<T, R> var1) {
       Codec var2 = RecordCodecBuilder.create(
-         var2x -> var2x.group(var0.optionalFieldOf("min").forGetter(MinMaxBounds::min), var0.optionalFieldOf("max").forGetter(MinMaxBounds::max))
+         var2x -> var2x.group(
+                  ExtraCodecs.strictOptionalField(var0, "min").forGetter(MinMaxBounds::min),
+                  ExtraCodecs.strictOptionalField(var0, "max").forGetter(MinMaxBounds::max)
+               )
                .apply(var2x, var1::create)
       );
       return Codec.either(var2, var0)

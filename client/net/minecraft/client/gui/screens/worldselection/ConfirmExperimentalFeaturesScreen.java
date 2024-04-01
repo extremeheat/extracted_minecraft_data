@@ -2,7 +2,6 @@ package net.minecraft.client.gui.screens.worldselection;
 
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import java.util.Collection;
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -77,8 +76,6 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
    class DetailsScreen extends Screen {
       private static final Component TITLE = Component.translatable("selectWorld.experimental.details.title");
       final HeaderAndFooterLayout layout = new HeaderAndFooterLayout(this);
-      @Nullable
-      private ConfirmExperimentalFeaturesScreen.DetailsScreen.PackList list;
 
       DetailsScreen() {
          super(TITLE);
@@ -87,7 +84,7 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
       @Override
       protected void init() {
          this.layout.addTitleHeader(TITLE, this.font);
-         this.list = this.layout
+         this.layout
             .addToContents(new ConfirmExperimentalFeaturesScreen.DetailsScreen.PackList(this.minecraft, ConfirmExperimentalFeaturesScreen.this.enabledPacks));
          this.layout.addToFooter(Button.builder(CommonComponents.GUI_BACK, var1 -> this.onClose()).build());
          this.layout.visitWidgets(var1 -> {
@@ -97,10 +94,6 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
 
       @Override
       protected void repositionElements() {
-         if (this.list != null) {
-            this.list.updateSize(this.width, this.layout);
-         }
-
          this.layout.arrangeElements();
       }
 

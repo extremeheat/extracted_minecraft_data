@@ -1,7 +1,7 @@
 package net.minecraft.world.level.storage.loot.providers.number;
 
 import com.google.common.collect.Sets;
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Set;
@@ -12,7 +12,7 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParam;
 public record UniformGenerator(NumberProvider b, NumberProvider c) implements NumberProvider {
    private final NumberProvider min;
    private final NumberProvider max;
-   public static final MapCodec<UniformGenerator> CODEC = RecordCodecBuilder.mapCodec(
+   public static final Codec<UniformGenerator> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                NumberProviders.CODEC.fieldOf("min").forGetter(UniformGenerator::min), NumberProviders.CODEC.fieldOf("max").forGetter(UniformGenerator::max)
             )

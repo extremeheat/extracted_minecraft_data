@@ -1,7 +1,7 @@
 package net.minecraft.world.level.levelgen.feature.trunkplacers;
 
 import com.google.common.collect.Lists;
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.ArrayList;
@@ -19,7 +19,7 @@ import net.minecraft.world.level.levelgen.feature.configurations.TreeConfigurati
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
 
 public class FancyTrunkPlacer extends TrunkPlacer {
-   public static final MapCodec<FancyTrunkPlacer> CODEC = RecordCodecBuilder.mapCodec(var0 -> trunkPlacerParts(var0).apply(var0, FancyTrunkPlacer::new));
+   public static final Codec<FancyTrunkPlacer> CODEC = RecordCodecBuilder.create(var0 -> trunkPlacerParts(var0).apply(var0, FancyTrunkPlacer::new));
    private static final double TRUNK_HEIGHT_SCALE = 0.618;
    private static final double CLUSTER_DENSITY_MAGIC = 1.382;
    private static final double BRANCH_SLOPE = 0.381;

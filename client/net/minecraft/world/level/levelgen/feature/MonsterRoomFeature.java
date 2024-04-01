@@ -82,9 +82,9 @@ public class MonsterRoomFeature extends Feature<NoneFeatureConfiguration> {
                         var5.setBlock(var33, AIR, 2);
                      } else if (var35.isSolid() && !var35.is(Blocks.CHEST)) {
                         if (var28 == -1 && var4.nextInt(4) != 0) {
-                           this.safeSetBlock(var5, var33, Blocks.MOSSY_COBBLESTONE.defaultBlockState(), var2);
+                           this.safeSetBlock(var5, var33, (var5.isPotato() ? Blocks.GRAVTATER : Blocks.MOSSY_COBBLESTONE).defaultBlockState(), var2);
                         } else {
-                           this.safeSetBlock(var5, var33, Blocks.COBBLESTONE.defaultBlockState(), var2);
+                           this.safeSetBlock(var5, var33, (var5.isPotato() ? Blocks.TATERSTONE : Blocks.COBBLESTONE).defaultBlockState(), var2);
                         }
                      }
                   } else if (!var35.is(Blocks.CHEST) && !var35.is(Blocks.SPAWNER)) {
@@ -111,7 +111,9 @@ public class MonsterRoomFeature extends Feature<NoneFeatureConfiguration> {
 
                   if (var22 == 1) {
                      this.safeSetBlock(var5, var21, StructurePiece.reorient(var5, var21, Blocks.CHEST.defaultBlockState()), var2);
-                     RandomizableContainer.setBlockEntityLootTable(var5, var4, var21, BuiltInLootTables.SIMPLE_DUNGEON);
+                     RandomizableContainer.setBlockEntityLootTable(
+                        var5, var4, var21, var5.isPotato() ? BuiltInLootTables.SIMPLE_DUNGEON_POTATO : BuiltInLootTables.SIMPLE_DUNGEON
+                     );
                      break;
                   }
                }

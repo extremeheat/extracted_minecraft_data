@@ -42,8 +42,8 @@ public class EnchantmentTableBlockEntity extends BlockEntity implements Nameable
    }
 
    @Override
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.loadAdditional(var1, var2);
+   public void load(CompoundTag var1, HolderLookup.Provider var2) {
+      super.load(var1, var2);
       if (var1.contains("CustomName", 8)) {
          this.name = Component.Serializer.fromJson(var1.getString("CustomName"), var2);
       }
@@ -123,14 +123,12 @@ public class EnchantmentTableBlockEntity extends BlockEntity implements Nameable
    }
 
    @Override
-   protected void applyImplicitComponents(BlockEntity.DataComponentInput var1) {
-      super.applyImplicitComponents(var1);
+   public void applyComponents(DataComponentMap var1) {
       this.name = var1.get(DataComponents.CUSTOM_NAME);
    }
 
    @Override
-   protected void collectImplicitComponents(DataComponentMap.Builder var1) {
-      super.collectImplicitComponents(var1);
+   public void collectComponents(DataComponentMap.Builder var1) {
       var1.set(DataComponents.CUSTOM_NAME, this.name);
    }
 

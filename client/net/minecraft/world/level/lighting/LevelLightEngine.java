@@ -93,9 +93,9 @@ public class LevelLightEngine implements LightEventListener {
 
    public LayerLightEventListener getLayerListener(LightLayer var1) {
       if (var1 == LightLayer.BLOCK) {
-         return (LayerLightEventListener)(this.blockEngine == null ? LayerLightEventListener.DummyLightLayerEventListener.INSTANCE : this.blockEngine);
+         return (LayerLightEventListener)(this.blockEngine == null ? LayerLightEventListener.ConstantLayer.ZERO : this.blockEngine);
       } else {
-         return (LayerLightEventListener)(this.skyEngine == null ? LayerLightEventListener.DummyLightLayerEventListener.INSTANCE : this.skyEngine);
+         return (LayerLightEventListener)(this.skyEngine == null ? LayerLightEventListener.ConstantLayer.ZERO : this.skyEngine);
       }
    }
 

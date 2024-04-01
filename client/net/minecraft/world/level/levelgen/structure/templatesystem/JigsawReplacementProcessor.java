@@ -2,7 +2,7 @@ package net.minecraft.world.level.levelgen.structure.templatesystem;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 import javax.annotation.Nullable;
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
 import net.minecraft.core.BlockPos;
@@ -14,7 +14,7 @@ import org.slf4j.Logger;
 
 public class JigsawReplacementProcessor extends StructureProcessor {
    private static final Logger LOGGER = LogUtils.getLogger();
-   public static final MapCodec<JigsawReplacementProcessor> CODEC = MapCodec.unit(() -> JigsawReplacementProcessor.INSTANCE);
+   public static final Codec<JigsawReplacementProcessor> CODEC = Codec.unit(() -> JigsawReplacementProcessor.INSTANCE);
    public static final JigsawReplacementProcessor INSTANCE = new JigsawReplacementProcessor();
 
    private JigsawReplacementProcessor() {

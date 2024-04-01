@@ -1,13 +1,15 @@
 package net.minecraft.world.level.levelgen.heightproviders;
 
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.levelgen.VerticalAnchor;
 import net.minecraft.world.level.levelgen.WorldGenerationContext;
 
 public class ConstantHeight extends HeightProvider {
    public static final ConstantHeight ZERO = new ConstantHeight(VerticalAnchor.absolute(0));
-   public static final MapCodec<ConstantHeight> CODEC = VerticalAnchor.CODEC.fieldOf("value").xmap(ConstantHeight::new, ConstantHeight::getValue);
+   public static final Codec<ConstantHeight> CODEC = ExtraCodecs.withAlternative(VerticalAnchor.CODEC, VerticalAnchor.CODEC.fieldOf("value").codec())
+      .xmap(ConstantHeight::new, ConstantHeight::getValue);
    private final VerticalAnchor value;
 
    public static ConstantHeight of(VerticalAnchor var0) {

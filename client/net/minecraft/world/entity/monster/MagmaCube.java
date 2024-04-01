@@ -16,6 +16,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.phys.Vec3;
 
@@ -30,6 +31,11 @@ public class MagmaCube extends Slime {
 
    public static boolean checkMagmaCubeSpawnRules(EntityType<MagmaCube> var0, LevelAccessor var1, MobSpawnType var2, BlockPos var3, RandomSource var4) {
       return var1.getDifficulty() != Difficulty.PEACEFUL;
+   }
+
+   @Override
+   public boolean checkSpawnObstruction(LevelReader var1) {
+      return var1.isUnobstructed(this) && !var1.containsAnyLiquid(this.getBoundingBox());
    }
 
    @Override

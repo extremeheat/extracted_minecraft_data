@@ -21,11 +21,6 @@ public record GuiMessage(int a, Component b, @Nullable MessageSignature c, @Null
       this.tag = var4;
    }
 
-   @Nullable
-   public GuiMessageTag.Icon icon() {
-      return this.tag != null ? this.tag.icon() : null;
-   }
-
    public static record Line(int a, FormattedCharSequence b, @Nullable GuiMessageTag c, boolean d) {
       private final int addedTime;
       private final FormattedCharSequence content;

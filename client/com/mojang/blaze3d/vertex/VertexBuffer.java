@@ -1,7 +1,6 @@
 package com.mojang.blaze3d.vertex;
 
 import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.nio.ByteBuffer;
 import javax.annotation.Nullable;
@@ -115,61 +114,7 @@ public class VertexBuffer implements AutoCloseable {
    }
 
    private void _drawWithShader(Matrix4f var1, Matrix4f var2, ShaderInstance var3) {
-      for(int var4 = 0; var4 < 12; ++var4) {
-         int var5 = RenderSystem.getShaderTexture(var4);
-         var3.setSampler("Sampler" + var4, var5);
-      }
-
-      if (var3.MODEL_VIEW_MATRIX != null) {
-         var3.MODEL_VIEW_MATRIX.set(var1);
-      }
-
-      if (var3.PROJECTION_MATRIX != null) {
-         var3.PROJECTION_MATRIX.set(var2);
-      }
-
-      if (var3.COLOR_MODULATOR != null) {
-         var3.COLOR_MODULATOR.set(RenderSystem.getShaderColor());
-      }
-
-      if (var3.GLINT_ALPHA != null) {
-         var3.GLINT_ALPHA.set(RenderSystem.getShaderGlintAlpha());
-      }
-
-      if (var3.FOG_START != null) {
-         var3.FOG_START.set(RenderSystem.getShaderFogStart());
-      }
-
-      if (var3.FOG_END != null) {
-         var3.FOG_END.set(RenderSystem.getShaderFogEnd());
-      }
-
-      if (var3.FOG_COLOR != null) {
-         var3.FOG_COLOR.set(RenderSystem.getShaderFogColor());
-      }
-
-      if (var3.FOG_SHAPE != null) {
-         var3.FOG_SHAPE.set(RenderSystem.getShaderFogShape().getIndex());
-      }
-
-      if (var3.TEXTURE_MATRIX != null) {
-         var3.TEXTURE_MATRIX.set(RenderSystem.getTextureMatrix());
-      }
-
-      if (var3.GAME_TIME != null) {
-         var3.GAME_TIME.set(RenderSystem.getShaderGameTime());
-      }
-
-      if (var3.SCREEN_SIZE != null) {
-         Window var6 = Minecraft.getInstance().getWindow();
-         var3.SCREEN_SIZE.set((float)var6.getWidth(), (float)var6.getHeight());
-      }
-
-      if (var3.LINE_WIDTH != null && (this.mode == VertexFormat.Mode.LINES || this.mode == VertexFormat.Mode.LINE_STRIP)) {
-         var3.LINE_WIDTH.set(RenderSystem.getShaderLineWidth());
-      }
-
-      RenderSystem.setupShaderLights(var3);
+      var3.setDefaultUniforms(this.mode, var1, var2, Minecraft.getInstance().getWindow());
       var3.apply();
       this.draw();
       var3.clear();

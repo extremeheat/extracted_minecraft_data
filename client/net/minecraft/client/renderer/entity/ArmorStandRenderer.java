@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.entity.layers.CustomHeadLayer;
 import net.minecraft.client.renderer.entity.layers.ElytraLayer;
 import net.minecraft.client.renderer.entity.layers.HumanoidArmorLayer;
 import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
+import net.minecraft.client.renderer.entity.layers.PoisonousPolytraLayer;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.decoration.ArmorStand;
@@ -30,6 +31,7 @@ public class ArmorStandRenderer extends LivingEntityRenderer<ArmorStand, ArmorSt
       );
       this.addLayer(new ItemInHandLayer<>(this, var1.getItemInHandRenderer()));
       this.addLayer(new ElytraLayer<>(this, var1.getModelSet()));
+      this.addLayer(new PoisonousPolytraLayer<>(this, var1.getModelSet()));
       this.addLayer(new CustomHeadLayer<>(this, var1.getModelSet(), var1.getItemInHandRenderer()));
    }
 

@@ -1,6 +1,6 @@
 package net.minecraft.util.valueproviders;
 
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 
@@ -10,9 +10,9 @@ public interface FloatProviderType<P extends FloatProvider> {
    FloatProviderType<ClampedNormalFloat> CLAMPED_NORMAL = register("clamped_normal", ClampedNormalFloat.CODEC);
    FloatProviderType<TrapezoidFloat> TRAPEZOID = register("trapezoid", TrapezoidFloat.CODEC);
 
-   MapCodec<P> codec();
+   Codec<P> codec();
 
-   static <P extends FloatProvider> FloatProviderType<P> register(String var0, MapCodec<P> var1) {
+   static <P extends FloatProvider> FloatProviderType<P> register(String var0, Codec<P> var1) {
       return Registry.register(BuiltInRegistries.FLOAT_PROVIDER_TYPE, var0, () -> var1);
    }
 }

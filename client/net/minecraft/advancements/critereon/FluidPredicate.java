@@ -9,6 +9,7 @@ import net.minecraft.core.HolderSet;
 import net.minecraft.core.RegistryCodecs;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 
@@ -17,8 +18,8 @@ public record FluidPredicate(Optional<HolderSet<Fluid>> b, Optional<StatePropert
    private final Optional<StatePropertiesPredicate> properties;
    public static final Codec<FluidPredicate> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               RegistryCodecs.homogeneousList(Registries.FLUID).optionalFieldOf("fluids").forGetter(FluidPredicate::fluids),
-               StatePropertiesPredicate.CODEC.optionalFieldOf("state").forGetter(FluidPredicate::properties)
+               ExtraCodecs.strictOptionalField(RegistryCodecs.homogeneousList(Registries.FLUID), "fluids").forGetter(FluidPredicate::fluids),
+               ExtraCodecs.strictOptionalField(StatePropertiesPredicate.CODEC, "state").forGetter(FluidPredicate::properties)
             )
             .apply(var0, FluidPredicate::new)
    );

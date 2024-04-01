@@ -9,6 +9,7 @@ import com.mojang.datafixers.util.Pair;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
+import net.minecraft.util.datafix.ExtraDataFixUtils;
 import net.minecraft.util.datafix.fixes.References;
 
 public class V1460 extends NamespacedSchema {
@@ -200,17 +201,13 @@ public class V1460 extends NamespacedSchema {
       var1.registerType(
          false,
          References.PLAYER,
-         () -> DSL.optionalFields(
-               new Pair[]{
-                  Pair.of("RootVehicle", DSL.optionalFields("Entity", References.ENTITY_TREE.in(var1))),
-                  Pair.of("Inventory", DSL.list(References.ITEM_STACK.in(var1))),
-                  Pair.of("EnderItems", DSL.list(References.ITEM_STACK.in(var1))),
-                  Pair.of("ShoulderEntityLeft", References.ENTITY_TREE.in(var1)),
-                  Pair.of("ShoulderEntityRight", References.ENTITY_TREE.in(var1)),
-                  Pair.of(
-                     "recipeBook", DSL.optionalFields("recipes", DSL.list(References.RECIPE.in(var1)), "toBeDisplayed", DSL.list(References.RECIPE.in(var1)))
-                  )
-               }
+         () -> ExtraDataFixUtils.optionalFields(
+               Pair.of("RootVehicle", DSL.optionalFields("Entity", References.ENTITY_TREE.in(var1))),
+               Pair.of("Inventory", DSL.list(References.ITEM_STACK.in(var1))),
+               Pair.of("EnderItems", DSL.list(References.ITEM_STACK.in(var1))),
+               Pair.of("ShoulderEntityLeft", References.ENTITY_TREE.in(var1)),
+               Pair.of("ShoulderEntityRight", References.ENTITY_TREE.in(var1)),
+               Pair.of("recipeBook", DSL.optionalFields("recipes", DSL.list(References.RECIPE.in(var1)), "toBeDisplayed", DSL.list(References.RECIPE.in(var1))))
             )
       );
       var1.registerType(
@@ -230,11 +227,7 @@ public class V1460 extends NamespacedSchema {
                )
             )
       );
-      var1.registerType(
-         true,
-         References.BLOCK_ENTITY,
-         () -> DSL.optionalFields("components", References.DATA_COMPONENTS.in(var1), DSL.taggedChoiceLazy("id", namespacedString(), var3))
-      );
+      var1.registerType(true, References.BLOCK_ENTITY, () -> DSL.taggedChoiceLazy("id", namespacedString(), var3));
       var1.registerType(
          true, References.ENTITY_TREE, () -> DSL.optionalFields("Passengers", DSL.list(References.ENTITY_TREE.in(var1)), References.ENTITY.in(var1))
       );
@@ -247,15 +240,13 @@ public class V1460 extends NamespacedSchema {
                   "id",
                   References.ITEM_NAME.in(var1),
                   "tag",
-                  DSL.optionalFields(
-                     new Pair[]{
-                        Pair.of("EntityTag", References.ENTITY_TREE.in(var1)),
-                        Pair.of("BlockEntityTag", References.BLOCK_ENTITY.in(var1)),
-                        Pair.of("CanDestroy", DSL.list(References.BLOCK_NAME.in(var1))),
-                        Pair.of("CanPlaceOn", DSL.list(References.BLOCK_NAME.in(var1))),
-                        Pair.of("Items", DSL.list(References.ITEM_STACK.in(var1))),
-                        Pair.of("ChargedProjectiles", DSL.list(References.ITEM_STACK.in(var1)))
-                     }
+                  ExtraDataFixUtils.optionalFields(
+                     Pair.of("EntityTag", References.ENTITY_TREE.in(var1)),
+                     Pair.of("BlockEntityTag", References.BLOCK_ENTITY.in(var1)),
+                     Pair.of("CanDestroy", DSL.list(References.BLOCK_NAME.in(var1))),
+                     Pair.of("CanPlaceOn", DSL.list(References.BLOCK_NAME.in(var1))),
+                     Pair.of("Items", DSL.list(References.ITEM_STACK.in(var1))),
+                     Pair.of("ChargedProjectiles", DSL.list(References.ITEM_STACK.in(var1)))
                   )
                ),
                V705.ADD_NAMES,
@@ -286,18 +277,16 @@ public class V1460 extends NamespacedSchema {
          References.STATS,
          () -> DSL.optionalFields(
                "stats",
-               DSL.optionalFields(
-                  new Pair[]{
-                     Pair.of("minecraft:mined", DSL.compoundList(References.BLOCK_NAME.in(var1), DSL.constType(DSL.intType()))),
-                     Pair.of("minecraft:crafted", (TypeTemplate)var4.get()),
-                     Pair.of("minecraft:used", (TypeTemplate)var4.get()),
-                     Pair.of("minecraft:broken", (TypeTemplate)var4.get()),
-                     Pair.of("minecraft:picked_up", (TypeTemplate)var4.get()),
-                     Pair.of("minecraft:dropped", (TypeTemplate)var4.get()),
-                     Pair.of("minecraft:killed", DSL.compoundList(References.ENTITY_NAME.in(var1), DSL.constType(DSL.intType()))),
-                     Pair.of("minecraft:killed_by", DSL.compoundList(References.ENTITY_NAME.in(var1), DSL.constType(DSL.intType()))),
-                     Pair.of("minecraft:custom", DSL.compoundList(DSL.constType(namespacedString()), DSL.constType(DSL.intType())))
-                  }
+               ExtraDataFixUtils.optionalFields(
+                  Pair.of("minecraft:mined", DSL.compoundList(References.BLOCK_NAME.in(var1), DSL.constType(DSL.intType()))),
+                  Pair.of("minecraft:crafted", (TypeTemplate)var4.get()),
+                  Pair.of("minecraft:used", (TypeTemplate)var4.get()),
+                  Pair.of("minecraft:broken", (TypeTemplate)var4.get()),
+                  Pair.of("minecraft:picked_up", (TypeTemplate)var4.get()),
+                  Pair.of("minecraft:dropped", (TypeTemplate)var4.get()),
+                  Pair.of("minecraft:killed", DSL.compoundList(References.ENTITY_NAME.in(var1), DSL.constType(DSL.intType()))),
+                  Pair.of("minecraft:killed_by", DSL.compoundList(References.ENTITY_NAME.in(var1), DSL.constType(DSL.intType()))),
+                  Pair.of("minecraft:custom", DSL.compoundList(DSL.constType(namespacedString()), DSL.constType(DSL.intType())))
                )
             )
       );

@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import net.minecraft.Util;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.ValidationContext;
@@ -26,7 +27,7 @@ public abstract class LootItemConditionalFunction implements LootItemFunction {
    }
 
    protected static <T extends LootItemConditionalFunction> P1<Mu<T>, List<LootItemCondition>> commonFields(Instance<T> var0) {
-      return var0.group(LootItemConditions.DIRECT_CODEC.listOf().optionalFieldOf("conditions", List.of()).forGetter(var0x -> var0x.predicates));
+      return var0.group(ExtraCodecs.strictOptionalField(LootItemConditions.DIRECT_CODEC.listOf(), "conditions", List.of()).forGetter(var0x -> var0x.predicates));
    }
 
    public final ItemStack apply(ItemStack var1, LootContext var2) {

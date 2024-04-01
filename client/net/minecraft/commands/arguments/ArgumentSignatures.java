@@ -23,6 +23,17 @@ public record ArgumentSignatures(List<ArgumentSignatures.Entry> b) {
       this.entries = var1;
    }
 
+   @Nullable
+   public MessageSignature get(String var1) {
+      for(ArgumentSignatures.Entry var3 : this.entries) {
+         if (var3.name.equals(var1)) {
+            return var3.signature;
+         }
+      }
+
+      return null;
+   }
+
    public void write(FriendlyByteBuf var1) {
       var1.writeCollection(this.entries, (var0, var1x) -> var1x.write(var0));
    }
@@ -36,8 +47,8 @@ public record ArgumentSignatures(List<ArgumentSignatures.Entry> b) {
    }
 
    public static record Entry(String a, MessageSignature b) {
-      private final String name;
-      private final MessageSignature signature;
+      final String name;
+      final MessageSignature signature;
 
       public Entry(FriendlyByteBuf var1) {
          this(var1.readUtf(16), MessageSignature.read(var1));

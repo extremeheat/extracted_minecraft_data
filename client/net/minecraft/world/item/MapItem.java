@@ -117,7 +117,11 @@ public class MapItem extends ComplexItem {
                                  int var29 = var23.getHeight(Heightmap.Types.WORLD_SURFACE, var11.getX(), var11.getZ()) + 1;
                                  BlockState var30;
                                  if (var29 <= var1.getMinBuildHeight() + 1) {
-                                    var30 = Blocks.BEDROCK.defaultBlockState();
+                                    if (var1.isPotato()) {
+                                       var30 = Blocks.WARPED_WART_BLOCK.defaultBlockState();
+                                    } else {
+                                       var30 = Blocks.BEDROCK.defaultBlockState();
+                                    }
                                  } else {
                                     do {
                                        var11.setY(--var29);

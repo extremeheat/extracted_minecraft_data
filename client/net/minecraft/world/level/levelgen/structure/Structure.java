@@ -5,6 +5,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -16,6 +17,7 @@ import net.minecraft.core.HolderSet;
 import net.minecraft.core.QuartPos;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.RegistryCodecs;
+import net.minecraft.core.Vec3i;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.RegistryFileCodec;
@@ -30,6 +32,7 @@ import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.DensityFunction;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.levelgen.LegacyRandomSource;
@@ -48,8 +51,8 @@ public abstract class Structure {
       return Structure.StructureSettings.CODEC.forGetter(var0x -> var0x.settings);
    }
 
-   public static <S extends Structure> MapCodec<S> simpleCodec(Function<Structure.StructureSettings, S> var0) {
-      return RecordCodecBuilder.mapCodec(var1 -> var1.group(settingsCodec(var1)).apply(var1, var0));
+   public static <S extends Structure> Codec<S> simpleCodec(Function<Structure.StructureSettings, S> var0) {
+      return RecordCodecBuilder.create(var1 -> var1.group(settingsCodec(var1)).apply(var1, var0));
    }
 
    protected Structure(Structure.StructureSettings var1) {
@@ -59,6 +62,10 @@ public abstract class Structure {
 
    public HolderSet<Biome> biomes() {
       return this.settings.biomes;
+   }
+
+   public List<Structure.DensityCheck> densityChecks() {
+      return this.settings.densityChecks;
    }
 
    public Map<MobCategory, StructureSpawnOverride> spawnOverrides() {
@@ -87,15 +94,16 @@ public abstract class Structure {
       ChunkPos var8,
       int var9,
       LevelHeightAccessor var10,
-      Predicate<Holder<Biome>> var11
+      Predicate<Holder<Biome>> var11,
+      List<Structure.DensityCheck> var12
    ) {
-      Structure.GenerationContext var12 = new Structure.GenerationContext(var1, var2, var3, var4, var5, var6, var8, var10, var11);
-      Optional var13 = this.findValidGenerationPoint(var12);
-      if (var13.isPresent()) {
-         StructurePiecesBuilder var14 = ((Structure.GenerationStub)var13.get()).getPiecesBuilder();
-         StructureStart var15 = new StructureStart(this, var8, var9, var14.build());
-         if (var15.isValid()) {
-            return var15;
+      Structure.GenerationContext var13 = new Structure.GenerationContext(var1, var2, var3, var4, var5, var6, var8, var10, var11, var12);
+      Optional var14 = this.findValidGenerationPoint(var13);
+      if (var14.isPresent()) {
+         StructurePiecesBuilder var15 = ((Structure.GenerationStub)var14.get()).getPiecesBuilder();
+         StructureStart var16 = new StructureStart(this, var8, var9, var15.build());
+         if (var16.isValid()) {
+            return var16;
          }
       }
 
@@ -120,6 +128,21 @@ public abstract class Structure {
                .getBiomeSource()
                .getNoiseBiome(QuartPos.fromBlock(var2.getX()), QuartPos.fromBlock(var2.getY()), QuartPos.fromBlock(var2.getZ()), var1.randomState.sampler())
          );
+   }
+
+   private static boolean passesDensityTest(Structure.GenerationStub var0, Structure.GenerationContext var1) {
+      BlockPos var2 = var0.position();
+
+      for(Structure.DensityCheck var5 : var1.densityChecks()) {
+         Vec3i var6 = var5.offset();
+         BlockPos var7 = var2.offset(var6.getX(), var6.getY(), var6.getZ());
+         double var8 = var1.randomState.router().finalDensity().compute(new DensityFunction.SinglePointContext(var7.getX(), var7.getY(), var7.getZ()));
+         if (var5.dense() != var8 > 0.0) {
+            return false;
+         }
+      }
+
+      return true;
    }
 
    public void afterPlace(
@@ -173,10 +196,31 @@ public abstract class Structure {
    protected abstract Optional<Structure.GenerationStub> findGenerationPoint(Structure.GenerationContext var1);
 
    public Optional<Structure.GenerationStub> findValidGenerationPoint(Structure.GenerationContext var1) {
-      return this.findGenerationPoint(var1).filter(var1x -> isValidBiome(var1x, var1));
+      return this.findGenerationPoint(var1).filter(var1x -> isValidBiome(var1x, var1) && passesDensityTest(var1x, var1));
    }
 
    public abstract StructureType<?> type();
+
+   public static record DensityCheck(Vec3i b, boolean c) {
+      private final Vec3i offset;
+      private final boolean dense;
+      public static final Codec<Structure.DensityCheck> CODEC = RecordCodecBuilder.create(
+         var0 -> var0.group(
+                  Vec3i.CODEC.fieldOf("offset").forGetter(Structure.DensityCheck::offset), Codec.BOOL.fieldOf("dense").forGetter(Structure.DensityCheck::dense)
+               )
+               .apply(var0, Structure.DensityCheck::new)
+      );
+
+      public DensityCheck(Vec3i var1, boolean var2) {
+         super();
+         this.offset = var1;
+         this.dense = var2;
+      }
+
+      public static Structure.DensityCheck of(int var0, int var1, int var2, boolean var3) {
+         return new Structure.DensityCheck(new Vec3i(var0, var1, var2), var3);
+      }
+   }
 
    public static record GenerationContext(
       RegistryAccess a,
@@ -188,7 +232,8 @@ public abstract class Structure {
       long g,
       ChunkPos h,
       LevelHeightAccessor i,
-      Predicate<Holder<Biome>> j
+      Predicate<Holder<Biome>> j,
+      List<Structure.DensityCheck> k
    ) {
       private final RegistryAccess registryAccess;
       final ChunkGenerator chunkGenerator;
@@ -200,6 +245,7 @@ public abstract class Structure {
       private final ChunkPos chunkPos;
       private final LevelHeightAccessor heightAccessor;
       final Predicate<Holder<Biome>> validBiome;
+      private final List<Structure.DensityCheck> densityChecks;
 
       public GenerationContext(
          RegistryAccess var1,
@@ -210,9 +256,10 @@ public abstract class Structure {
          long var6,
          ChunkPos var8,
          LevelHeightAccessor var9,
-         Predicate<Holder<Biome>> var10
+         Predicate<Holder<Biome>> var10,
+         List<Structure.DensityCheck> var11
       ) {
-         this(var1, var2, var3, var4, var5, makeRandom(var6, var8), var6, var8, var9, var10);
+         this(var1, var2, var3, var4, var5, makeRandom(var6, var8), var6, var8, var9, var10, var11);
       }
 
       public GenerationContext(
@@ -225,7 +272,8 @@ public abstract class Structure {
          long var7,
          ChunkPos var9,
          LevelHeightAccessor var10,
-         Predicate<Holder<Biome>> var11
+         Predicate<Holder<Biome>> var11,
+         List<Structure.DensityCheck> var12
       ) {
          super();
          this.registryAccess = var1;
@@ -238,6 +286,7 @@ public abstract class Structure {
          this.chunkPos = var9;
          this.heightAccessor = var10;
          this.validBiome = var11;
+         this.densityChecks = var12;
       }
 
       private static WorldgenRandom makeRandom(long var0, ChunkPos var2) {
@@ -270,14 +319,18 @@ public abstract class Structure {
       }
    }
 
-   public static record StructureSettings(HolderSet<Biome> b, Map<MobCategory, StructureSpawnOverride> c, GenerationStep.Decoration d, TerrainAdjustment e) {
+   public static record StructureSettings(
+      HolderSet<Biome> b, List<Structure.DensityCheck> c, Map<MobCategory, StructureSpawnOverride> d, GenerationStep.Decoration e, TerrainAdjustment f
+   ) {
       final HolderSet<Biome> biomes;
+      final List<Structure.DensityCheck> densityChecks;
       final Map<MobCategory, StructureSpawnOverride> spawnOverrides;
       final GenerationStep.Decoration step;
       final TerrainAdjustment terrainAdaptation;
       public static final MapCodec<Structure.StructureSettings> CODEC = RecordCodecBuilder.mapCodec(
          var0 -> var0.group(
                   RegistryCodecs.homogeneousList(Registries.BIOME).fieldOf("biomes").forGetter(Structure.StructureSettings::biomes),
+                  Codec.list(Structure.DensityCheck.CODEC).fieldOf("density_checks").forGetter(Structure.StructureSettings::densityChecks),
                   Codec.simpleMap(MobCategory.CODEC, StructureSpawnOverride.CODEC, StringRepresentable.keys(MobCategory.values()))
                      .fieldOf("spawn_overrides")
                      .forGetter(Structure.StructureSettings::spawnOverrides),
@@ -289,12 +342,19 @@ public abstract class Structure {
                .apply(var0, Structure.StructureSettings::new)
       );
 
-      public StructureSettings(HolderSet<Biome> var1, Map<MobCategory, StructureSpawnOverride> var2, GenerationStep.Decoration var3, TerrainAdjustment var4) {
+      public StructureSettings(
+         HolderSet<Biome> var1,
+         List<Structure.DensityCheck> var2,
+         Map<MobCategory, StructureSpawnOverride> var3,
+         GenerationStep.Decoration var4,
+         TerrainAdjustment var5
+      ) {
          super();
          this.biomes = var1;
-         this.spawnOverrides = var2;
-         this.step = var3;
-         this.terrainAdaptation = var4;
+         this.densityChecks = var2;
+         this.spawnOverrides = var3;
+         this.step = var4;
+         this.terrainAdaptation = var5;
       }
    }
 }

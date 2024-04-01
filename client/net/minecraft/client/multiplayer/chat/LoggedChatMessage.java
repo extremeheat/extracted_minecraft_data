@@ -1,7 +1,7 @@
 package net.minecraft.client.multiplayer.chat;
 
 import com.mojang.authlib.GameProfile;
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.time.Instant;
@@ -37,7 +37,7 @@ public interface LoggedChatMessage extends LoggedChatEvent {
       private final GameProfile profile;
       private final PlayerChatMessage message;
       private final ChatTrustLevel trustLevel;
-      public static final MapCodec<LoggedChatMessage.Player> CODEC = RecordCodecBuilder.mapCodec(
+      public static final Codec<LoggedChatMessage.Player> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
                   ExtraCodecs.GAME_PROFILE.fieldOf("profile").forGetter(LoggedChatMessage.Player::profile),
                   PlayerChatMessage.MAP_CODEC.forGetter(LoggedChatMessage.Player::message),
@@ -99,7 +99,7 @@ public interface LoggedChatMessage extends LoggedChatEvent {
    public static record System(Component c, Instant d) implements LoggedChatMessage {
       private final Component message;
       private final Instant timeStamp;
-      public static final MapCodec<LoggedChatMessage.System> CODEC = RecordCodecBuilder.mapCodec(
+      public static final Codec<LoggedChatMessage.System> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
                   ComponentSerialization.CODEC.fieldOf("message").forGetter(LoggedChatMessage.System::message),
                   ExtraCodecs.INSTANT_ISO8601.fieldOf("time_stamp").forGetter(LoggedChatMessage.System::timeStamp)

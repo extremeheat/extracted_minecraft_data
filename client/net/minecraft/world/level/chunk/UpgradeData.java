@@ -283,6 +283,7 @@ public class UpgradeData {
          Blocks.DRAGON_EGG,
          Blocks.GRAVEL,
          Blocks.SAND,
+         Blocks.GRAVTATER,
          Blocks.RED_SAND,
          Blocks.OAK_SIGN,
          Blocks.SPRUCE_SIGN,
@@ -349,6 +350,7 @@ public class UpgradeData {
       },
       LEAVES(
          true,
+         Blocks.POTATO_LEAVES,
          Blocks.ACACIA_LEAVES,
          Blocks.CHERRY_LEAVES,
          Blocks.BIRCH_LEAVES,

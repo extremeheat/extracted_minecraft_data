@@ -1,6 +1,6 @@
 package net.minecraft.world.level.levelgen.feature.stateproviders;
 
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 
@@ -16,18 +16,18 @@ public class BlockStateProviderType<P extends BlockStateProvider> {
    public static final BlockStateProviderType<RandomizedIntStateProvider> RANDOMIZED_INT_STATE_PROVIDER = register(
       "randomized_int_state_provider", RandomizedIntStateProvider.CODEC
    );
-   private final MapCodec<P> codec;
+   private final Codec<P> codec;
 
-   private static <P extends BlockStateProvider> BlockStateProviderType<P> register(String var0, MapCodec<P> var1) {
+   private static <P extends BlockStateProvider> BlockStateProviderType<P> register(String var0, Codec<P> var1) {
       return Registry.register(BuiltInRegistries.BLOCKSTATE_PROVIDER_TYPE, var0, new BlockStateProviderType<>(var1));
    }
 
-   private BlockStateProviderType(MapCodec<P> var1) {
+   private BlockStateProviderType(Codec<P> var1) {
       super();
       this.codec = var1;
    }
 
-   public MapCodec<P> codec() {
+   public Codec<P> codec() {
       return this.codec;
    }
 }

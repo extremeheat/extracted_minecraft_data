@@ -941,14 +941,19 @@ public class GameRenderer implements AutoCloseable {
    }
 
    private void bobView(PoseStack var1, float var2) {
-      if (this.minecraft.getCameraEntity() instanceof Player) {
-         Player var3 = (Player)this.minecraft.getCameraEntity();
-         float var4 = var3.walkDist - var3.walkDistO;
-         float var5 = -(var3.walkDist + var4 * var2);
-         float var6 = Mth.lerp(var2, var3.oBob, var3.bob);
-         var1.translate(Mth.sin(var5 * 3.1415927F) * var6 * 0.5F, -Math.abs(Mth.cos(var5 * 3.1415927F) * var6), 0.0F);
-         var1.mulPose(Axis.ZP.rotationDegrees(Mth.sin(var5 * 3.1415927F) * var6 * 3.0F));
-         var1.mulPose(Axis.XP.rotationDegrees(Math.abs(Mth.cos(var5 * 3.1415927F - 0.2F) * var6) * 5.0F));
+      Entity var3 = this.minecraft.getCameraEntity();
+      if (var3 != null) {
+         Vec3 var4 = var3.lastScreenShakeOffset.lerp(var3.screenShakeOffset, (double)var2);
+         var1.translate(var4.x, var4.y, var4.z);
+         if (var3 instanceof Player) {
+            Player var5 = (Player)var3;
+            float var6 = var5.walkDist - var5.walkDistO;
+            float var7 = -(var5.walkDist + var6 * var2);
+            float var8 = Mth.lerp(var2, var5.oBob, var5.bob);
+            var1.translate(Mth.sin(var7 * 3.1415927F) * var8 * 0.5F, -Math.abs(Mth.cos(var7 * 3.1415927F) * var8), 0.0F);
+            var1.mulPose(Axis.ZP.rotationDegrees(Mth.sin(var7 * 3.1415927F) * var8 * 3.0F));
+            var1.mulPose(Axis.XP.rotationDegrees(Math.abs(Mth.cos(var7 * 3.1415927F - 0.2F) * var8) * 5.0F));
+         }
       }
    }
 

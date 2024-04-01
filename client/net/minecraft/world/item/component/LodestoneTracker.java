@@ -10,6 +10,7 @@ import net.minecraft.core.GlobalPos;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.ai.village.poi.PoiTypes;
 
 public record LodestoneTracker(Optional<GlobalPos> c, boolean d) {
@@ -17,8 +18,8 @@ public record LodestoneTracker(Optional<GlobalPos> c, boolean d) {
    private final boolean tracked;
    public static final Codec<LodestoneTracker> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               GlobalPos.CODEC.optionalFieldOf("target").forGetter(LodestoneTracker::target),
-               Codec.BOOL.optionalFieldOf("tracked", true).forGetter(LodestoneTracker::tracked)
+               ExtraCodecs.strictOptionalField(GlobalPos.CODEC, "target").forGetter(LodestoneTracker::target),
+               ExtraCodecs.strictOptionalField(Codec.BOOL, "tracked", true).forGetter(LodestoneTracker::tracked)
             )
             .apply(var0, LodestoneTracker::new)
    );

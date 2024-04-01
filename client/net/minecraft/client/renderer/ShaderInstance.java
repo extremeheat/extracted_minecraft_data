@@ -9,6 +9,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.platform.Window;
 import com.mojang.blaze3d.preprocessor.GlslPreprocessor;
 import com.mojang.blaze3d.shaders.AbstractUniform;
 import com.mojang.blaze3d.shaders.BlendMode;
@@ -36,6 +37,7 @@ import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.util.GsonHelper;
 import org.apache.commons.io.IOUtils;
+import org.joml.Matrix4f;
 import org.slf4j.Logger;
 
 public class ShaderInstance implements Shader, AutoCloseable {
@@ -478,5 +480,62 @@ public class ShaderInstance implements Shader, AutoCloseable {
    @Override
    public int getId() {
       return this.programId;
+   }
+
+   public void setDefaultUniforms(VertexFormat.Mode var1, Matrix4f var2, Matrix4f var3, Window var4) {
+      for(int var5 = 0; var5 < 12; ++var5) {
+         int var6 = RenderSystem.getShaderTexture(var5);
+         this.setSampler("Sampler" + var5, var6);
+      }
+
+      if (this.MODEL_VIEW_MATRIX != null) {
+         this.MODEL_VIEW_MATRIX.set(var2);
+      }
+
+      if (this.PROJECTION_MATRIX != null) {
+         this.PROJECTION_MATRIX.set(var3);
+      }
+
+      if (this.COLOR_MODULATOR != null) {
+         this.COLOR_MODULATOR.set(RenderSystem.getShaderColor());
+      }
+
+      if (this.GLINT_ALPHA != null) {
+         this.GLINT_ALPHA.set(RenderSystem.getShaderGlintAlpha());
+      }
+
+      if (this.FOG_START != null) {
+         this.FOG_START.set(RenderSystem.getShaderFogStart());
+      }
+
+      if (this.FOG_END != null) {
+         this.FOG_END.set(RenderSystem.getShaderFogEnd());
+      }
+
+      if (this.FOG_COLOR != null) {
+         this.FOG_COLOR.set(RenderSystem.getShaderFogColor());
+      }
+
+      if (this.FOG_SHAPE != null) {
+         this.FOG_SHAPE.set(RenderSystem.getShaderFogShape().getIndex());
+      }
+
+      if (this.TEXTURE_MATRIX != null) {
+         this.TEXTURE_MATRIX.set(RenderSystem.getTextureMatrix());
+      }
+
+      if (this.GAME_TIME != null) {
+         this.GAME_TIME.set(RenderSystem.getShaderGameTime());
+      }
+
+      if (this.SCREEN_SIZE != null) {
+         this.SCREEN_SIZE.set((float)var4.getWidth(), (float)var4.getHeight());
+      }
+
+      if (this.LINE_WIDTH != null && (var1 == VertexFormat.Mode.LINES || var1 == VertexFormat.Mode.LINE_STRIP)) {
+         this.LINE_WIDTH.set(RenderSystem.getShaderLineWidth());
+      }
+
+      RenderSystem.setupShaderLights(this);
    }
 }

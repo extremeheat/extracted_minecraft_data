@@ -40,8 +40,7 @@ public class SculkCatalystBlockEntity extends BlockEntity implements GameEventLi
    }
 
    @Override
-   protected void loadAdditional(CompoundTag var1, HolderLookup.Provider var2) {
-      super.loadAdditional(var1, var2);
+   public void load(CompoundTag var1, HolderLookup.Provider var2) {
       this.catalystListener.sculkSpreader.load(var1);
    }
 

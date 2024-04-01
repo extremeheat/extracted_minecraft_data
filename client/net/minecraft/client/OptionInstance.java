@@ -24,6 +24,7 @@ import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Mth;
 import net.minecraft.util.OptionEnum;
 import org.slf4j.Logger;
@@ -212,15 +213,15 @@ public final class OptionInstance<T> {
 
       @Override
       public Codec<Integer> codec() {
-         return Codec.INT
-            .validate(
-               var1 -> {
-                  int var2 = this.encodableMaxInclusive + 1;
-                  return var1.compareTo(this.minInclusive) >= 0 && var1.compareTo(var2) <= 0
-                     ? DataResult.success(var1)
-                     : DataResult.error(() -> "Value " + var1 + " outside of range [" + this.minInclusive + ":" + var2 + "]", var1);
-               }
-            );
+         return ExtraCodecs.validate(
+            Codec.INT,
+            var1 -> {
+               int var2 = this.encodableMaxInclusive + 1;
+               return var1.compareTo(this.minInclusive) >= 0 && var1.compareTo(var2) <= 0
+                  ? DataResult.success(var1)
+                  : DataResult.error(() -> "Value " + var1 + " outside of range [" + this.minInclusive + ":" + var2 + "]", var1);
+            }
+         );
       }
 
       @Override
@@ -478,7 +479,7 @@ public final class OptionInstance<T> {
 
       @Override
       public Codec<Double> codec() {
-         return Codec.withAlternative(Codec.doubleRange(0.0, 1.0), Codec.BOOL, var0 -> var0 ? 1.0 : 0.0);
+         return ExtraCodecs.withAlternative(Codec.doubleRange(0.0, 1.0), Codec.BOOL, var0 -> var0 ? 1.0 : 0.0);
       }
    }
 

@@ -1,7 +1,7 @@
 package net.minecraft.core.particles;
 
 import com.mojang.brigadier.StringReader;
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -13,7 +13,7 @@ public class SimpleParticleType extends ParticleType<SimpleParticleType> impleme
          return (SimpleParticleType)var1;
       }
    };
-   private final MapCodec<SimpleParticleType> codec = MapCodec.unit(this::getType);
+   private final Codec<SimpleParticleType> codec = Codec.unit(this::getType);
    private final StreamCodec<RegistryFriendlyByteBuf, SimpleParticleType> streamCodec = StreamCodec.unit(this);
 
    protected SimpleParticleType(boolean var1) {
@@ -25,7 +25,7 @@ public class SimpleParticleType extends ParticleType<SimpleParticleType> impleme
    }
 
    @Override
-   public MapCodec<SimpleParticleType> codec() {
+   public Codec<SimpleParticleType> codec() {
       return this.codec;
    }
 

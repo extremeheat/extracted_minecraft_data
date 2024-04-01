@@ -9,7 +9,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.OptionalInt;
 import java.util.function.Consumer;
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
@@ -23,6 +22,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.FastColor;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -33,23 +33,24 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.ItemAttributeModifiers;
 
-public record PotionContents(Optional<Holder<Potion>> d, Optional<Integer> e, List<MobEffectInstance> f) {
+public record PotionContents(Optional<Holder<Potion>> e, Optional<Integer> f, List<MobEffectInstance> g) {
    private final Optional<Holder<Potion>> potion;
    private final Optional<Integer> customColor;
    private final List<MobEffectInstance> customEffects;
    public static final PotionContents EMPTY = new PotionContents(Optional.empty(), Optional.empty(), List.of());
    private static final Component NO_EFFECT = Component.translatable("effect.none").withStyle(ChatFormatting.GRAY);
-   private static final int EMPTY_COLOR = -524040;
-   private static final int BASE_POTION_COLOR = -13083194;
+   private static final int EMPTY_COLOR = 16253176;
+   private static final int BASE_POTION_COLOR = 3694022;
+   public static final int NO_POTION_COLOR = -1;
    private static final Codec<PotionContents> FULL_CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
-               BuiltInRegistries.POTION.holderByNameCodec().optionalFieldOf("potion").forGetter(PotionContents::potion),
-               Codec.INT.optionalFieldOf("custom_color").forGetter(PotionContents::customColor),
-               MobEffectInstance.CODEC.listOf().optionalFieldOf("custom_effects", List.of()).forGetter(PotionContents::customEffects)
+               ExtraCodecs.strictOptionalField(BuiltInRegistries.POTION.holderByNameCodec(), "potion").forGetter(PotionContents::potion),
+               ExtraCodecs.strictOptionalField(Codec.INT, "custom_color").forGetter(PotionContents::customColor),
+               ExtraCodecs.strictOptionalField(MobEffectInstance.CODEC.listOf(), "custom_effects", List.of()).forGetter(PotionContents::customEffects)
             )
             .apply(var0, PotionContents::new)
    );
-   public static final Codec<PotionContents> CODEC = Codec.withAlternative(FULL_CODEC, BuiltInRegistries.POTION.holderByNameCodec(), PotionContents::new);
+   public static final Codec<PotionContents> CODEC = ExtraCodecs.withAlternative(FULL_CODEC, BuiltInRegistries.POTION.holderByNameCodec(), PotionContents::new);
    public static final StreamCodec<RegistryFriendlyByteBuf, PotionContents> STREAM_CODEC = StreamCodec.composite(
       ByteBufCodecs.holderRegistry(Registries.POTION).apply(ByteBufCodecs::optional),
       PotionContents::potion,
@@ -115,7 +116,7 @@ public record PotionContents(Optional<Holder<Potion>> d, Optional<Integer> e, Li
       if (this.customColor.isPresent()) {
          return this.customColor.get();
       } else {
-         return this.potion.isEmpty() ? -524040 : getColor(this.getAllEffects());
+         return this.potion.isEmpty() ? 16253176 : getColor(this.getAllEffects());
       }
    }
 
@@ -128,10 +129,11 @@ public record PotionContents(Optional<Holder<Potion>> d, Optional<Integer> e, Li
    }
 
    public static int getColor(Iterable<MobEffectInstance> var0) {
-      return getColorOptional(var0).orElse(-13083194);
+      int var1 = getColorOptional(var0);
+      return var1 == -1 ? 3694022 : var1;
    }
 
-   public static OptionalInt getColorOptional(Iterable<MobEffectInstance> var0) {
+   public static int getColorOptional(Iterable<MobEffectInstance> var0) {
       int var1 = 0;
       int var2 = 0;
       int var3 = 0;
@@ -148,7 +150,7 @@ public record PotionContents(Optional<Holder<Potion>> d, Optional<Integer> e, Li
          }
       }
 
-      return var4 == 0 ? OptionalInt.empty() : OptionalInt.of(FastColor.ARGB32.color(var1 / var4, var2 / var4, var3 / var4));
+      return var4 == 0 ? -1 : FastColor.ARGB32.color(0, var1 / var4, var2 / var4, var3 / var4);
    }
 
    public boolean hasEffects() {

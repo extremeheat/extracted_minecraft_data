@@ -11,6 +11,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.math.Axis;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.List;
@@ -21,7 +22,6 @@ import javax.annotation.Nullable;
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
 import net.minecraft.ReportedException;
-import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.navigation.ScreenRectangle;
 import net.minecraft.client.gui.screens.Screen;
@@ -258,6 +258,20 @@ public class GuiGraphics {
       var8.vertex(var7, (float)var4, (float)var5, (float)var6).endVertex();
       var8.vertex(var7, (float)var4, (float)var3, (float)var6).endVertex();
       this.flushIfUnmanaged();
+   }
+
+   public GuiGraphics.DrawString beginString(double var1, double var3, Font var5, String var6, int var7, int var8) {
+      List var9 = var5.getSplitter().splitLines(var6, var8, Style.EMPTY);
+      String var10 = var9.stream().map(FormattedText::getString).collect(Collectors.joining("\n"));
+      return new GuiGraphics.DrawString(var1, var3, var10, (var3x, var4, var5x) -> {
+         String[] var6xx = var3x.split("\\r?\\n");
+         int var7xx = var5x;
+
+         for(String var11 : var6xx) {
+            this.drawString(var5, var11, var4, var7xx, var7);
+            var7xx += 9 + 4;
+         }
+      });
    }
 
    public void drawCenteredString(Font var1, String var2, int var3, int var4, int var5) {
@@ -628,6 +642,41 @@ public class GuiGraphics {
       }
    }
 
+   public void renderItem(@Nullable LivingEntity var1, @Nullable Level var2, ItemStack var3, float var4, float var5, float var6, int var7, int var8) {
+      if (!var3.isEmpty()) {
+         BakedModel var9 = this.minecraft.getItemRenderer().getModel(var3, var2, var1, var7);
+         this.pose.pushPose();
+         this.pose.translate(var4 + 8.0F, var5 + 8.0F, (float)(150 + (var9.isGui3d() ? var8 : 0)));
+         this.pose.rotateAround(Axis.XP.rotation(var6), 0.0F, 0.0F, 0.0F);
+         this.pose.rotateAround(Axis.YP.rotation(2.0F * var6), 0.0F, 0.0F, 0.0F);
+
+         try {
+            this.pose.scale(16.0F, -16.0F, 16.0F);
+            boolean var10 = !var9.usesBlockLight();
+            if (var10) {
+               Lighting.setupForFlatItems();
+            }
+
+            this.minecraft
+               .getItemRenderer()
+               .render(var3, ItemDisplayContext.GUI, false, this.pose, this.bufferSource(), 15728880, OverlayTexture.NO_OVERLAY, var9);
+            this.flush();
+            if (var10) {
+               Lighting.setupFor3DItems();
+            }
+         } catch (Throwable var13) {
+            CrashReport var11 = CrashReport.forThrowable(var13, "Rendering item");
+            CrashReportCategory var12 = var11.addCategory("Item being rendered");
+            var12.setDetail("Item Type", () -> String.valueOf(var3.getItem()));
+            var12.setDetail("Item Components", () -> String.valueOf(var3.getComponents()));
+            var12.setDetail("Item Foil", () -> String.valueOf(var3.hasFoil()));
+            throw new ReportedException(var11);
+         }
+
+         this.pose.popPose();
+      }
+   }
+
    public void renderItemDecorations(Font var1, ItemStack var2, int var3, int var4) {
       this.renderItemDecorations(var1, var2, var3, var4, null);
    }
@@ -667,8 +716,8 @@ public class GuiGraphics {
    }
 
    public void renderTooltip(Font var1, List<Component> var2, Optional<TooltipComponent> var3, int var4, int var5) {
-      List var6 = var2.stream().map(Component::getVisualOrderText).map(ClientTooltipComponent::create).collect(Util.toMutableList());
-      var3.ifPresent(var1x -> var6.add(var6.isEmpty() ? 0 : 1, ClientTooltipComponent.create(var1x)));
+      List var6 = var2.stream().map(Component::getVisualOrderText).map(ClientTooltipComponent::create).collect(Collectors.toList());
+      var3.ifPresent(var1x -> var6.add(1, ClientTooltipComponent.create(var1x)));
       this.renderTooltipInternal(var1, var6, var4, var5, DefaultTooltipPositioner.INSTANCE);
    }
 
@@ -752,6 +801,54 @@ public class GuiGraphics {
                }
             }
          }
+      }
+   }
+
+   public static class DrawString {
+      private final double charsPerTick;
+      private final String targetString;
+      private final GuiGraphics.DrawString.DrawFunction drawFunction;
+      private double lastTick;
+      private String subString = "";
+
+      DrawString(double var1, double var3, String var5, GuiGraphics.DrawString.DrawFunction var6) {
+         super();
+         this.lastTick = var1;
+         this.charsPerTick = var3;
+         this.targetString = var5;
+         this.drawFunction = var6;
+      }
+
+      public boolean draw(double var1, int var3, int var4) {
+         if (this.targetString.equals(this.subString)) {
+            this.drawFunction.apply(this.targetString, var3, var4);
+            return false;
+         } else {
+            int var5 = Mth.floor((var1 - this.lastTick) * this.charsPerTick);
+            if (var5 == 0) {
+               this.drawFunction.apply(this.subString, var3, var4);
+               return false;
+            } else {
+               int var6 = Math.min(this.subString.length() + var5, this.targetString.length());
+
+               while(var6 < this.targetString.length() && Character.isWhitespace(this.targetString.charAt(var6 - 1))) {
+                  ++var6;
+               }
+
+               this.subString = this.targetString.substring(0, var6);
+               this.drawFunction.apply(this.subString, var3, var4);
+               this.lastTick = var1;
+               return true;
+            }
+         }
+      }
+
+      public double getLastTick() {
+         return this.lastTick;
+      }
+
+      public interface DrawFunction {
+         void apply(String var1, int var2, int var3);
       }
    }
 

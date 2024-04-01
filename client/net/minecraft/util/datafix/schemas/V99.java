@@ -13,6 +13,7 @@ import com.mojang.serialization.DynamicOps;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
+import net.minecraft.util.datafix.ExtraDataFixUtils;
 import net.minecraft.util.datafix.fixes.References;
 import org.slf4j.Logger;
 
@@ -241,11 +242,7 @@ public class V99 extends Schema {
                )
             )
       );
-      var1.registerType(
-         true,
-         References.BLOCK_ENTITY,
-         () -> DSL.optionalFields("components", References.DATA_COMPONENTS.in(var1), DSL.taggedChoiceLazy("id", DSL.string(), var3))
-      );
+      var1.registerType(true, References.BLOCK_ENTITY, () -> DSL.taggedChoiceLazy("id", DSL.string(), var3));
       var1.registerType(true, References.ENTITY_TREE, () -> DSL.optionalFields("Riding", References.ENTITY_TREE.in(var1), References.ENTITY.in(var1)));
       var1.registerType(false, References.ENTITY_NAME, () -> DSL.constType(NamespacedSchema.namespacedString()));
       var1.registerType(true, References.ENTITY, () -> DSL.taggedChoiceLazy("id", DSL.string(), var2));
@@ -257,15 +254,13 @@ public class V99 extends Schema {
                   "id",
                   DSL.or(DSL.constType(DSL.intType()), References.ITEM_NAME.in(var1)),
                   "tag",
-                  DSL.optionalFields(
-                     new Pair[]{
-                        Pair.of("EntityTag", References.ENTITY_TREE.in(var1)),
-                        Pair.of("BlockEntityTag", References.BLOCK_ENTITY.in(var1)),
-                        Pair.of("CanDestroy", DSL.list(References.BLOCK_NAME.in(var1))),
-                        Pair.of("CanPlaceOn", DSL.list(References.BLOCK_NAME.in(var1))),
-                        Pair.of("Items", DSL.list(References.ITEM_STACK.in(var1))),
-                        Pair.of("ChargedProjectiles", DSL.list(References.ITEM_STACK.in(var1)))
-                     }
+                  ExtraDataFixUtils.optionalFields(
+                     Pair.of("EntityTag", References.ENTITY_TREE.in(var1)),
+                     Pair.of("BlockEntityTag", References.BLOCK_ENTITY.in(var1)),
+                     Pair.of("CanDestroy", DSL.list(References.BLOCK_NAME.in(var1))),
+                     Pair.of("CanPlaceOn", DSL.list(References.BLOCK_NAME.in(var1))),
+                     Pair.of("Items", DSL.list(References.ITEM_STACK.in(var1))),
+                     Pair.of("ChargedProjectiles", DSL.list(References.ITEM_STACK.in(var1)))
                   )
                ),
                ADD_NAMES,

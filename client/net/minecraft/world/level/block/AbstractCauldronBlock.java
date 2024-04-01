@@ -83,9 +83,9 @@ public abstract class AbstractCauldronBlock extends Block {
 
    @Override
    protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
-      BlockPos var5 = PointedDripstoneBlock.findStalactiteTipAboveCauldron(var2, var3);
+      BlockPos var5 = PointedDripstoneBlock.findStalactiteTipAboveCauldron(Blocks.POINTED_DRIPSTONE, var2, var3);
       if (var5 != null) {
-         Fluid var6 = PointedDripstoneBlock.getCauldronFillFluidType(var2, var5);
+         Fluid var6 = ((PointedDripstoneBlock)var2.getBlockState(var5).getBlock()).getCauldronFillFluidType(var2, var5);
          if (var6 != Fluids.EMPTY && this.canReceiveStalactiteDrip(var6)) {
             this.receiveStalactiteDrip(var1, var2, var3, var6);
          }

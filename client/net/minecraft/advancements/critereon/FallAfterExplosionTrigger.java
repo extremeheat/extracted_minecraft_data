@@ -9,6 +9,7 @@ import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.advancements.Criterion;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.phys.Vec3;
@@ -38,10 +39,11 @@ public class FallAfterExplosionTrigger extends SimpleCriterionTrigger<FallAfterE
       private final Optional<ContextAwarePredicate> cause;
       public static final Codec<FallAfterExplosionTrigger.TriggerInstance> CODEC = RecordCodecBuilder.create(
          var0 -> var0.group(
-                  EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("player").forGetter(FallAfterExplosionTrigger.TriggerInstance::player),
-                  LocationPredicate.CODEC.optionalFieldOf("start_position").forGetter(FallAfterExplosionTrigger.TriggerInstance::startPosition),
-                  DistancePredicate.CODEC.optionalFieldOf("distance").forGetter(FallAfterExplosionTrigger.TriggerInstance::distance),
-                  EntityPredicate.ADVANCEMENT_CODEC.optionalFieldOf("cause").forGetter(FallAfterExplosionTrigger.TriggerInstance::cause)
+                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "player").forGetter(FallAfterExplosionTrigger.TriggerInstance::player),
+                  ExtraCodecs.strictOptionalField(LocationPredicate.CODEC, "start_position")
+                     .forGetter(FallAfterExplosionTrigger.TriggerInstance::startPosition),
+                  ExtraCodecs.strictOptionalField(DistancePredicate.CODEC, "distance").forGetter(FallAfterExplosionTrigger.TriggerInstance::distance),
+                  ExtraCodecs.strictOptionalField(EntityPredicate.ADVANCEMENT_CODEC, "cause").forGetter(FallAfterExplosionTrigger.TriggerInstance::cause)
                )
                .apply(var0, FallAfterExplosionTrigger.TriggerInstance::new)
       );

@@ -1,6 +1,6 @@
 package net.minecraft.world.item.crafting;
 
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -43,11 +43,15 @@ public interface RecipeSerializer<T extends Recipe<?>> {
       "campfire_cooking", new SimpleCookingSerializer<>(CampfireCookingRecipe::new, 100)
    );
    RecipeSerializer<StonecutterRecipe> STONECUTTER = register("stonecutting", new SingleItemRecipe.Serializer<>(StonecutterRecipe::new));
+   RecipeSerializer<PoisonousPotatoCutterRecipe> POISONOUS_POTATO_CUTTER_RECIPE = register(
+      "poisonous_potato_cutting", new SingleItemRecipe.Serializer<>(PoisonousPotatoCutterRecipe::new)
+   );
    RecipeSerializer<SmithingTransformRecipe> SMITHING_TRANSFORM = register("smithing_transform", new SmithingTransformRecipe.Serializer());
    RecipeSerializer<SmithingTrimRecipe> SMITHING_TRIM = register("smithing_trim", new SmithingTrimRecipe.Serializer());
    RecipeSerializer<DecoratedPotRecipe> DECORATED_POT_RECIPE = register("crafting_decorated_pot", new SimpleCraftingRecipeSerializer<>(DecoratedPotRecipe::new));
+   RecipeSerializer<PotatoRefinementRecipe> POTATO_REFINEMENT_RECIPE = register("potato_refinement", new PotatoRefinementRecipe.Serializer());
 
-   MapCodec<T> codec();
+   Codec<T> codec();
 
    StreamCodec<RegistryFriendlyByteBuf, T> streamCodec();
 

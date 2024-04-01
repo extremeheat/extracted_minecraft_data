@@ -1,6 +1,5 @@
 package net.minecraft.client.particle;
 
-import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LevelRenderer;
@@ -69,41 +68,16 @@ public class TerrainParticle extends TextureSheetParticle {
       return var2 == 0 && this.level.hasChunkAt(this.pos) ? LevelRenderer.getLightColor(this.level, this.pos) : var2;
    }
 
-   @Nullable
-   static TerrainParticle createTerrainParticle(
-      BlockParticleOption var0, ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12
-   ) {
-      BlockState var14 = var0.getState();
-      return !var14.isAir() && !var14.is(Blocks.MOVING_PISTON) && var14.shouldSpawnTerrainParticles()
-         ? new TerrainParticle(var1, var2, var4, var6, var8, var10, var12, var14)
-         : null;
-   }
-
-   public static class DustPillarProvider implements ParticleProvider<BlockParticleOption> {
-      public DustPillarProvider() {
-         super();
-      }
-
-      @Nullable
-      public Particle createParticle(BlockParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         TerrainParticle var15 = TerrainParticle.createTerrainParticle(var1, var2, var3, var5, var7, var9, var11, var13);
-         if (var15 != null) {
-            var15.setParticleSpeed(var2.random.nextGaussian() / 30.0, var11 + var2.random.nextGaussian() / 2.0, var2.random.nextGaussian() / 30.0);
-            var15.setLifetime(var2.random.nextInt(20) + 20);
-         }
-
-         return var15;
-      }
-   }
-
    public static class Provider implements ParticleProvider<BlockParticleOption> {
       public Provider() {
          super();
       }
 
-      @Nullable
       public Particle createParticle(BlockParticleOption var1, ClientLevel var2, double var3, double var5, double var7, double var9, double var11, double var13) {
-         return TerrainParticle.createTerrainParticle(var1, var2, var3, var5, var7, var9, var11, var13);
+         BlockState var15 = var1.getState();
+         return !var15.isAir() && !var15.is(Blocks.MOVING_PISTON) && var15.shouldSpawnTerrainParticles()
+            ? new TerrainParticle(var2, var3, var5, var7, var9, var11, var13, var15)
+            : null;
       }
    }
 }

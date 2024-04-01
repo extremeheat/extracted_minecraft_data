@@ -1,6 +1,5 @@
 package net.minecraft.core.component;
 
-import com.google.common.collect.Sets;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
@@ -11,17 +10,19 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Map.Entry;
-import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.Unit;
 
 public final class DataComponentPatch {
    public static final DataComponentPatch EMPTY = new DataComponentPatch(Reference2ObjectMaps.emptyMap());
-   public static final Codec<DataComponentPatch> CODEC = Codec.dispatchedMap(DataComponentPatch.PatchKey.CODEC, DataComponentPatch.PatchKey::valueCodec)
+   public static final Codec<DataComponentPatch> CODEC = ExtraCodecs.unboundedDispatchMap(
+         DataComponentPatch.PatchKey.CODEC, DataComponentPatch.PatchKey::valueCodec
+      )
       .xmap(var0 -> {
          if (var0.isEmpty()) {
             return EMPTY;
@@ -155,35 +156,8 @@ public final class DataComponentPatch {
       return this.map.size();
    }
 
-   public DataComponentPatch forget(Predicate<DataComponentType<?>> var1) {
-      if (this.isEmpty()) {
-         return EMPTY;
-      } else {
-         Reference2ObjectArrayMap var2 = new Reference2ObjectArrayMap(this.map);
-         var2.keySet().removeIf(var1);
-         return var2.isEmpty() ? EMPTY : new DataComponentPatch(var2);
-      }
-   }
-
    public boolean isEmpty() {
       return this.map.isEmpty();
-   }
-
-   public DataComponentPatch.SplitResult split() {
-      if (this.isEmpty()) {
-         return DataComponentPatch.SplitResult.EMPTY;
-      } else {
-         DataComponentMap.Builder var1 = DataComponentMap.builder();
-         Set var2 = Sets.newIdentityHashSet();
-         this.map.forEach((var2x, var3) -> {
-            if (var3.isPresent()) {
-               var1.setUnchecked(var2x, var3.get());
-            } else {
-               var2.add(var2x);
-            }
-         });
-         return new DataComponentPatch.SplitResult(var1.build(), var2);
-      }
    }
 
    @Override
@@ -260,7 +234,7 @@ public final class DataComponentPatch {
       }
 
       public DataComponentPatch build() {
-         return this.map.isEmpty() ? DataComponentPatch.EMPTY : new DataComponentPatch(this.map);
+         return new DataComponentPatch(this.map);
       }
    }
 
@@ -302,18 +276,6 @@ public final class DataComponentPatch {
 
       public Codec<?> valueCodec() {
          return this.removed ? Codec.unit(Unit.INSTANCE) : this.type.codecOrThrow();
-      }
-   }
-
-   public static record SplitResult(DataComponentMap b, Set<DataComponentType<?>> c) {
-      private final DataComponentMap added;
-      private final Set<DataComponentType<?>> removed;
-      public static final DataComponentPatch.SplitResult EMPTY = new DataComponentPatch.SplitResult(DataComponentMap.EMPTY, Set.of());
-
-      public SplitResult(DataComponentMap var1, Set<DataComponentType<?>> var2) {
-         super();
-         this.added = var1;
-         this.removed = var2;
       }
    }
 }

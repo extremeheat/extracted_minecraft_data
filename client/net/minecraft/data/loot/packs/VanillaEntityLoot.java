@@ -5,6 +5,7 @@ import net.minecraft.advancements.critereon.EntityPredicate;
 import net.minecraft.advancements.critereon.MinMaxBounds;
 import net.minecraft.advancements.critereon.SlimePredicate;
 import net.minecraft.advancements.critereon.TagPredicate;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.data.loot.EntityLootSubProvider;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.tags.EntityTypeTags;
@@ -12,25 +13,31 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.FrogVariant;
 import net.minecraft.world.flag.FeatureFlags;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.Potions;
+import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.FletchingBlockEntity;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.LootContext;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
 import net.minecraft.world.level.storage.loot.entries.EmptyLootItem;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
+import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
 import net.minecraft.world.level.storage.loot.entries.LootPoolSingletonContainer;
 import net.minecraft.world.level.storage.loot.entries.NestedLootTable;
 import net.minecraft.world.level.storage.loot.entries.TagEntry;
 import net.minecraft.world.level.storage.loot.functions.LootingEnchantFunction;
+import net.minecraft.world.level.storage.loot.functions.SetComponentsFunction;
 import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
 import net.minecraft.world.level.storage.loot.functions.SetPotionFunction;
 import net.minecraft.world.level.storage.loot.functions.SmeltItemFunction;
 import net.minecraft.world.level.storage.loot.predicates.DamageSourceCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemEntityPropertyCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemKilledByPlayerCondition;
+import net.minecraft.world.level.storage.loot.predicates.LootItemKillerMainHandToolCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
 import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceWithLootingCondition;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
@@ -48,7 +55,44 @@ public class VanillaEntityLoot extends EntityLootSubProvider {
       this.add(EntityType.ARMOR_STAND, LootTable.lootTable());
       this.add(EntityType.AXOLOTL, LootTable.lootTable());
       this.add(EntityType.BAT, LootTable.lootTable());
-      this.add(EntityType.BEE, LootTable.lootTable());
+      this.add(
+         EntityType.BATATO,
+         LootTable.lootTable()
+            .withPool(
+               LootPool.lootPool()
+                  .add(LootItem.lootTableItem(Items.POISONOUS_POTATO))
+                  .add(LootItem.lootTableItem(Items.VENOMOUS_POTATO).when(LootItemRandomChanceCondition.randomChance(0.1F)))
+            )
+            .withPool(
+               LootPool.lootPool()
+                  .setRolls(ConstantValue.exactly(1.0F))
+                  .add(LootItem.lootTableItem(Items.POISONOUS_POTATO_PLANT).apply(SetItemCountFunction.setCount(UniformGenerator.between(-1.0F, 1.0F))))
+                  .when(LootItemKilledByPlayerCondition.killedByPlayer())
+            )
+      );
+      this.add(
+         EntityType.MEGA_SPUD,
+         LootTable.lootTable()
+            .withPool(
+               LootPool.lootPool()
+                  .setRolls(ConstantValue.exactly(1.0F))
+                  .add(LootItem.lootTableItem(Items.POTATO_STAFF))
+                  .when(LootItemKilledByPlayerCondition.killedByPlayer())
+            )
+      );
+      this.add(
+         EntityType.BEE,
+         LootTable.lootTable()
+            .withPool(
+               LootPool.lootPool()
+                  .setRolls(ConstantValue.exactly(1.0F))
+                  .add(
+                     this.potatoPeelIfPotato(DyeColor.YELLOW)
+                        .when(LootItemRandomChanceCondition.randomChance(0.5F))
+                        .otherwise(this.potatoPeelIfPotato(DyeColor.BLACK))
+                  )
+            )
+      );
       this.add(
          EntityType.BLAZE,
          LootTable.lootTable()
@@ -63,7 +107,10 @@ public class VanillaEntityLoot extends EntityLootSubProvider {
                   .when(LootItemKilledByPlayerCondition.killedByPlayer())
             )
       );
-      this.add(EntityType.BOGGED, LootTable.lootTable());
+      this.add(
+         EntityType.BOGGED,
+         LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(this.potatoPeelIfPotato(DyeColor.CYAN)))
+      );
       this.add(
          EntityType.CAT,
          LootTable.lootTable()
@@ -118,6 +165,7 @@ public class VanillaEntityLoot extends EntityLootSubProvider {
                         .apply(LootingEnchantFunction.lootingMultiplier(UniformGenerator.between(0.0F, 1.0F)))
                   )
             )
+            .withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(this.potatoPeelIfPotato(DyeColor.WHITE)))
       );
       this.add(
          EntityType.COD,
@@ -159,6 +207,7 @@ public class VanillaEntityLoot extends EntityLootSubProvider {
                         .apply(LootingEnchantFunction.lootingMultiplier(UniformGenerator.between(0.0F, 1.0F)))
                   )
             )
+            .withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(this.potatoPeelIfPotato(DyeColor.BROWN)))
       );
       this.add(
          EntityType.CREEPER,
@@ -181,6 +230,7 @@ public class VanillaEntityLoot extends EntityLootSubProvider {
                      )
                   )
             )
+            .withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(this.potatoPeelIfPotato(DyeColor.GREEN)))
       );
       this.add(
          EntityType.DOLPHIN,
@@ -243,6 +293,7 @@ public class VanillaEntityLoot extends EntityLootSubProvider {
                         .apply(LootingEnchantFunction.lootingMultiplier(UniformGenerator.between(0.0F, 1.0F)))
                   )
             )
+            .withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(this.potatoPeelIfPotato(DyeColor.BLACK)))
       );
       this.add(EntityType.ENDERMITE, LootTable.lootTable());
       this.add(
@@ -337,6 +388,47 @@ public class VanillaEntityLoot extends EntityLootSubProvider {
                   )
                   .when(LootItemKilledByPlayerCondition.killedByPlayer())
                   .when(LootItemRandomChanceWithLootingCondition.randomChanceAndLootingBoost(0.025F, 0.01F))
+            )
+      );
+      this.add(
+         EntityType.TOXIFIN,
+         LootTable.lootTable()
+            .withPool(
+               LootPool.lootPool()
+                  .setRolls(ConstantValue.exactly(1.0F))
+                  .add(
+                     LootItem.lootTableItem(Items.TOXIC_RESIN)
+                        .apply(SetComponentsFunction.setComponent(DataComponents.RESIN, new FletchingBlockEntity.Resin('c', 'f')))
+                        .apply(SetItemCountFunction.setCount(UniformGenerator.between(0.0F, 1.0F)))
+                        .apply(LootingEnchantFunction.lootingMultiplier(UniformGenerator.between(0.0F, 1.0F)))
+                  )
+            )
+            .withPool(
+               LootPool.lootPool()
+                  .setRolls(ConstantValue.exactly(1.0F))
+                  .add(
+                     LootItem.lootTableItem(Items.TOXIC_RESIN)
+                        .apply(SetComponentsFunction.setComponent(DataComponents.RESIN, new FletchingBlockEntity.Resin('j', 'f')))
+                        .apply(SetItemCountFunction.setCount(UniformGenerator.between(0.0F, 1.0F)))
+                        .apply(LootingEnchantFunction.lootingMultiplier(UniformGenerator.between(0.0F, 1.0F)))
+                  )
+                  .when(LootItemRandomChanceWithLootingCondition.randomChanceAndLootingBoost(0.1F, 0.02F))
+            )
+            .withPool(
+               LootPool.lootPool()
+                  .setRolls(ConstantValue.exactly(1.0F))
+                  .when(LootItemKilledByPlayerCondition.killedByPlayer())
+                  .when(LootItemRandomChanceWithLootingCondition.randomChanceAndLootingBoost(0.5F, 0.1F))
+                  .add(LootItem.lootTableItem(Items.TOXIC_BEAM).apply(SetItemCountFunction.setCount(UniformGenerator.between(0.0F, 1.0F))))
+            )
+      );
+      this.add(
+         EntityType.PLAGUEWHALE,
+         LootTable.lootTable()
+            .withPool(
+               LootPool.lootPool()
+                  .setRolls(ConstantValue.exactly(1.0F))
+                  .add(LootItem.lootTableItem(Items.DENT).apply(SetItemCountFunction.setCount(UniformGenerator.between(0.0F, 1.0F))))
             )
       );
       this.add(
@@ -534,6 +626,7 @@ public class VanillaEntityLoot extends EntityLootSubProvider {
                         .apply(LootingEnchantFunction.lootingMultiplier(UniformGenerator.between(0.0F, 1.0F)))
                   )
             )
+            .withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(this.potatoPeelIfPotato(DyeColor.PINK)))
       );
       this.add(EntityType.PILLAGER, LootTable.lootTable());
       this.add(EntityType.PLAYER, LootTable.lootTable());
@@ -651,6 +744,22 @@ public class VanillaEntityLoot extends EntityLootSubProvider {
       this.add(EntityType.SHEEP, BuiltInLootTables.SHEEP_RED, createSheepTable(Blocks.RED_WOOL));
       this.add(EntityType.SHEEP, BuiltInLootTables.SHEEP_WHITE, createSheepTable(Blocks.WHITE_WOOL));
       this.add(EntityType.SHEEP, BuiltInLootTables.SHEEP_YELLOW, createSheepTable(Blocks.YELLOW_WOOL));
+      this.add(EntityType.SHEEP, BuiltInLootTables.SHEEP_BLACK_POTATO, createSheepTable((ItemLike)Items.POTATO_PEELS_MAP.get(DyeColor.BLACK)));
+      this.add(EntityType.SHEEP, BuiltInLootTables.SHEEP_BLUE_POTATO, createSheepTable((ItemLike)Items.POTATO_PEELS_MAP.get(DyeColor.BLUE)));
+      this.add(EntityType.SHEEP, BuiltInLootTables.SHEEP_BROWN_POTATO, createSheepTable((ItemLike)Items.POTATO_PEELS_MAP.get(DyeColor.BROWN)));
+      this.add(EntityType.SHEEP, BuiltInLootTables.SHEEP_CYAN_POTATO, createSheepTable((ItemLike)Items.POTATO_PEELS_MAP.get(DyeColor.CYAN)));
+      this.add(EntityType.SHEEP, BuiltInLootTables.SHEEP_GRAY_POTATO, createSheepTable((ItemLike)Items.POTATO_PEELS_MAP.get(DyeColor.GRAY)));
+      this.add(EntityType.SHEEP, BuiltInLootTables.SHEEP_GREEN_POTATO, createSheepTable((ItemLike)Items.POTATO_PEELS_MAP.get(DyeColor.GREEN)));
+      this.add(EntityType.SHEEP, BuiltInLootTables.SHEEP_LIGHT_BLUE_POTATO, createSheepTable((ItemLike)Items.POTATO_PEELS_MAP.get(DyeColor.LIGHT_BLUE)));
+      this.add(EntityType.SHEEP, BuiltInLootTables.SHEEP_LIGHT_GRAY_POTATO, createSheepTable((ItemLike)Items.POTATO_PEELS_MAP.get(DyeColor.LIGHT_GRAY)));
+      this.add(EntityType.SHEEP, BuiltInLootTables.SHEEP_LIME_POTATO, createSheepTable((ItemLike)Items.POTATO_PEELS_MAP.get(DyeColor.LIME)));
+      this.add(EntityType.SHEEP, BuiltInLootTables.SHEEP_MAGENTA_POTATO, createSheepTable((ItemLike)Items.POTATO_PEELS_MAP.get(DyeColor.MAGENTA)));
+      this.add(EntityType.SHEEP, BuiltInLootTables.SHEEP_ORANGE_POTATO, createSheepTable((ItemLike)Items.POTATO_PEELS_MAP.get(DyeColor.ORANGE)));
+      this.add(EntityType.SHEEP, BuiltInLootTables.SHEEP_PINK_POTATO, createSheepTable((ItemLike)Items.POTATO_PEELS_MAP.get(DyeColor.PINK)));
+      this.add(EntityType.SHEEP, BuiltInLootTables.SHEEP_PURPLE_POTATO, createSheepTable((ItemLike)Items.POTATO_PEELS_MAP.get(DyeColor.PURPLE)));
+      this.add(EntityType.SHEEP, BuiltInLootTables.SHEEP_RED_POTATO, createSheepTable((ItemLike)Items.POTATO_PEELS_MAP.get(DyeColor.RED)));
+      this.add(EntityType.SHEEP, BuiltInLootTables.SHEEP_WHITE_POTATO, createSheepTable((ItemLike)Items.POTATO_PEELS_MAP.get(DyeColor.WHITE)));
+      this.add(EntityType.SHEEP, BuiltInLootTables.SHEEP_YELLOW_POTATO, createSheepTable((ItemLike)Items.POTATO_PEELS_MAP.get(DyeColor.YELLOW)));
       this.add(
          EntityType.SHULKER,
          LootTable.lootTable()
@@ -683,6 +792,7 @@ public class VanillaEntityLoot extends EntityLootSubProvider {
                         .apply(LootingEnchantFunction.lootingMultiplier(UniformGenerator.between(0.0F, 1.0F)))
                   )
             )
+            .withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(this.potatoPeelIfPotato(DyeColor.LIGHT_GRAY)))
       );
       this.add(
          EntityType.SKELETON_HORSE,
@@ -749,6 +859,7 @@ public class VanillaEntityLoot extends EntityLootSubProvider {
                   )
                   .when(LootItemKilledByPlayerCondition.killedByPlayer())
             )
+            .withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(this.potatoPeelIfPotato(DyeColor.GRAY)))
       );
       this.add(
          EntityType.SQUID,
@@ -795,6 +906,7 @@ public class VanillaEntityLoot extends EntityLootSubProvider {
                   )
                   .when(LootItemKilledByPlayerCondition.killedByPlayer())
             )
+            .withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(this.potatoPeelIfPotato(DyeColor.LIGHT_BLUE)))
       );
       this.add(
          EntityType.STRIDER,
@@ -993,6 +1105,24 @@ public class VanillaEntityLoot extends EntityLootSubProvider {
             )
       );
       this.add(
+         EntityType.POISONOUS_POTATO_ZOMBIE,
+         LootTable.lootTable()
+            .withPool(LootPool.lootPool().add(LootItem.lootTableItem(Items.POISONOUS_POTATO)))
+            .withPool(
+               LootPool.lootPool()
+                  .setRolls(ConstantValue.exactly(1.0F))
+                  .add(LootItem.lootTableItem(Items.POISONOUS_POTATO_PLANT).apply(SetItemCountFunction.setCount(UniformGenerator.between(-1.0F, 1.0F))))
+                  .when(LootItemKilledByPlayerCondition.killedByPlayer())
+            )
+            .withPool(
+               LootPool.lootPool()
+                  .setRolls(ConstantValue.exactly(1.0F))
+                  .add(LootItem.lootTableItem(Blocks.POTATO_ZOMBIE_HEAD_HAT).apply(SetItemCountFunction.setCount(UniformGenerator.between(-1.0F, 1.0F))))
+                  .when(LootItemKilledByPlayerCondition.killedByPlayer())
+                  .when(LootItemRandomChanceWithLootingCondition.randomChanceAndLootingBoost(0.025F, 0.01F))
+            )
+      );
+      this.add(
          EntityType.ZOMBIE_HORSE,
          LootTable.lootTable()
             .withPool(
@@ -1084,6 +1214,14 @@ public class VanillaEntityLoot extends EntityLootSubProvider {
                   .when(LootItemRandomChanceWithLootingCondition.randomChanceAndLootingBoost(0.025F, 0.01F))
             )
       );
+   }
+
+   private LootPoolEntryContainer.Builder<?> potatoPeelIfPotato(DyeColor var1) {
+      return LootItem.lootTableItem((ItemLike)Items.POTATO_PEELS_MAP.get(var1))
+         .when(
+            LootItemEntityPropertyCondition.hasProperties(LootContext.EntityTarget.THIS, ENTITY_IS_POTATO)
+               .and(LootItemKillerMainHandToolCondition.killedWithItemInHand(Items.POTATO_PEELER))
+         );
    }
 
    public static LootTable.Builder elderGuardianLootTable() {

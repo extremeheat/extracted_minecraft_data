@@ -1,6 +1,6 @@
 package net.minecraft.world.level.levelgen.structure.templatesystem;
 
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -14,7 +14,7 @@ import net.minecraft.util.valueproviders.IntProvider;
 import net.minecraft.world.level.ServerLevelAccessor;
 
 public class CappedProcessor extends StructureProcessor {
-   public static final MapCodec<CappedProcessor> CODEC = RecordCodecBuilder.mapCodec(
+   public static final Codec<CappedProcessor> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                StructureProcessorType.SINGLE_CODEC.fieldOf("delegate").forGetter(var0x -> var0x.delegate),
                IntProvider.POSITIVE_CODEC.fieldOf("limit").forGetter(var0x -> var0x.limit)

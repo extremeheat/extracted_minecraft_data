@@ -2,7 +2,6 @@ package net.minecraft.world.level.levelgen.feature.trunkplacers;
 
 import com.google.common.collect.Lists;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.ArrayList;
@@ -22,14 +21,15 @@ import net.minecraft.world.level.levelgen.feature.configurations.TreeConfigurati
 import net.minecraft.world.level.levelgen.feature.foliageplacers.FoliagePlacer;
 
 public class UpwardsBranchingTrunkPlacer extends TrunkPlacer {
-   public static final MapCodec<UpwardsBranchingTrunkPlacer> CODEC = RecordCodecBuilder.mapCodec(
+   public static final Codec<UpwardsBranchingTrunkPlacer> CODEC = RecordCodecBuilder.create(
       var0 -> trunkPlacerParts(var0)
             .and(
                var0.group(
                   IntProvider.POSITIVE_CODEC.fieldOf("extra_branch_steps").forGetter(var0x -> var0x.extraBranchSteps),
                   Codec.floatRange(0.0F, 1.0F).fieldOf("place_branch_per_log_probability").forGetter(var0x -> var0x.placeBranchPerLogProbability),
                   IntProvider.NON_NEGATIVE_CODEC.fieldOf("extra_branch_length").forGetter(var0x -> var0x.extraBranchLength),
-                  RegistryCodecs.homogeneousList(Registries.BLOCK).fieldOf("can_grow_through").forGetter(var0x -> var0x.canGrowThrough)
+                  RegistryCodecs.homogeneousList(Registries.BLOCK).fieldOf("can_grow_through").forGetter(var0x -> var0x.canGrowThrough),
+                  Codec.BOOL.fieldOf("megabush").forGetter(var0x -> var0x.megabush)
                )
             )
             .apply(var0, UpwardsBranchingTrunkPlacer::new)
@@ -38,13 +38,15 @@ public class UpwardsBranchingTrunkPlacer extends TrunkPlacer {
    private final float placeBranchPerLogProbability;
    private final IntProvider extraBranchLength;
    private final HolderSet<Block> canGrowThrough;
+   private final boolean megabush;
 
-   public UpwardsBranchingTrunkPlacer(int var1, int var2, int var3, IntProvider var4, float var5, IntProvider var6, HolderSet<Block> var7) {
+   public UpwardsBranchingTrunkPlacer(int var1, int var2, int var3, IntProvider var4, float var5, IntProvider var6, HolderSet<Block> var7, boolean var8) {
       super(var1, var2, var3);
       this.extraBranchSteps = var4;
       this.placeBranchPerLogProbability = var5;
       this.extraBranchLength = var6;
       this.canGrowThrough = var7;
+      this.megabush = var8;
    }
 
    @Override
@@ -106,7 +108,9 @@ public class UpwardsBranchingTrunkPlacer extends TrunkPlacer {
                var12 = var16 + 1;
             }
 
-            var6.add(new FoliagePlacer.FoliageAttachment(var7.immutable(), 0, false));
+            if (this.megabush) {
+               var6.add(new FoliagePlacer.FoliageAttachment(var7.immutable(), 0, false));
+            }
          }
 
          ++var15;
@@ -115,7 +119,9 @@ public class UpwardsBranchingTrunkPlacer extends TrunkPlacer {
       if (var12 - var8 > 1) {
          BlockPos var17 = new BlockPos(var13, var12, var14);
          var6.add(new FoliagePlacer.FoliageAttachment(var17, 0, false));
-         var6.add(new FoliagePlacer.FoliageAttachment(var17.below(2), 0, false));
+         if (this.megabush) {
+            var6.add(new FoliagePlacer.FoliageAttachment(var17.below(2), 0, false));
+         }
       }
    }
 

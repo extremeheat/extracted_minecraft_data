@@ -1,6 +1,6 @@
 package net.minecraft.world.level.levelgen.structure.pools.alias;
 
-import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.function.BiConsumer;
@@ -13,7 +13,7 @@ import net.minecraft.world.level.levelgen.structure.pools.StructureTemplatePool;
 record Direct(ResourceKey<StructureTemplatePool> c, ResourceKey<StructureTemplatePool> d) implements PoolAliasBinding {
    private final ResourceKey<StructureTemplatePool> alias;
    private final ResourceKey<StructureTemplatePool> target;
-   static MapCodec<Direct> CODEC = RecordCodecBuilder.mapCodec(
+   static Codec<Direct> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                ResourceKey.codec(Registries.TEMPLATE_POOL).fieldOf("alias").forGetter(Direct::alias),
                ResourceKey.codec(Registries.TEMPLATE_POOL).fieldOf("target").forGetter(Direct::target)
@@ -38,7 +38,7 @@ record Direct(ResourceKey<StructureTemplatePool> c, ResourceKey<StructureTemplat
    }
 
    @Override
-   public MapCodec<Direct> codec() {
+   public Codec<Direct> codec() {
       return CODEC;
    }
 }

@@ -8,6 +8,7 @@ import net.minecraft.world.entity.animal.Pig;
 
 public class PigRenderer extends MobRenderer<Pig, PigModel<Pig>> {
    private static final ResourceLocation PIG_LOCATION = new ResourceLocation("textures/entity/pig/pig.png");
+   private static final ResourceLocation PIG_LOCATION_HWAT = new ResourceLocation("textures/entity/pig/pig_hwat.png");
 
    public PigRenderer(EntityRendererProvider.Context var1) {
       super(var1, new PigModel<>(var1.bakeLayer(ModelLayers.PIG)), 0.7F);
@@ -15,6 +16,6 @@ public class PigRenderer extends MobRenderer<Pig, PigModel<Pig>> {
    }
 
    public ResourceLocation getTextureLocation(Pig var1) {
-      return PIG_LOCATION;
+      return var1.isPotato() && var1.isCurious() ? PIG_LOCATION_HWAT : PIG_LOCATION;
    }
 }

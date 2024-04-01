@@ -835,7 +835,7 @@ public class OverworldBiomes {
       BiomeGenerationSettings.Builder var3 = new BiomeGenerationSettings.Builder(var0, var1);
       globalOverworldGeneration(var3);
       BiomeDefaultFeatures.addPlainGrass(var3);
-      BiomeDefaultFeatures.addDefaultOres(var3, true);
+      BiomeDefaultFeatures.addDefaultOres(var3, true, false);
       BiomeDefaultFeatures.addDefaultSoftDisks(var3);
       BiomeDefaultFeatures.addPlainVegetation(var3);
       BiomeDefaultFeatures.addDefaultMushrooms(var3);

@@ -1,7 +1,7 @@
 package net.minecraft.world.level.storage.loot.predicates;
 
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import java.util.Optional;
@@ -9,6 +9,7 @@ import java.util.Set;
 import net.minecraft.advancements.critereon.StatePropertiesPredicate;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootContext;
@@ -18,14 +19,16 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 public record LootItemBlockStatePropertyCondition(Holder<Block> b, Optional<StatePropertiesPredicate> c) implements LootItemCondition {
    private final Holder<Block> block;
    private final Optional<StatePropertiesPredicate> properties;
-   public static final MapCodec<LootItemBlockStatePropertyCondition> CODEC = RecordCodecBuilder.mapCodec(
+   public static final Codec<LootItemBlockStatePropertyCondition> CODEC = ExtraCodecs.validate(
+      RecordCodecBuilder.create(
          var0 -> var0.group(
                   BuiltInRegistries.BLOCK.holderByNameCodec().fieldOf("block").forGetter(LootItemBlockStatePropertyCondition::block),
-                  StatePropertiesPredicate.CODEC.optionalFieldOf("properties").forGetter(LootItemBlockStatePropertyCondition::properties)
+                  ExtraCodecs.strictOptionalField(StatePropertiesPredicate.CODEC, "properties").forGetter(LootItemBlockStatePropertyCondition::properties)
                )
                .apply(var0, LootItemBlockStatePropertyCondition::new)
-      )
-      .validate(LootItemBlockStatePropertyCondition::validate);
+      ),
+      LootItemBlockStatePropertyCondition::validate
+   );
 
    public LootItemBlockStatePropertyCondition(Holder<Block> var1, Optional<StatePropertiesPredicate> var2) {
       super();

@@ -23,8 +23,6 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 
 public abstract class AbstractWindCharge extends AbstractHurtingProjectile implements ItemSupplier {
-   public static final AbstractWindCharge.WindChargeDamageCalculator EXPLOSION_DAMAGE_CALCULATOR = new AbstractWindCharge.WindChargeDamageCalculator();
-
    public AbstractWindCharge(EntityType<? extends AbstractWindCharge> var1, Level var2) {
       super(var1, var2);
    }
@@ -62,11 +60,7 @@ public abstract class AbstractWindCharge extends AbstractHurtingProjectile imple
 
    @Override
    protected boolean canHitEntity(Entity var1) {
-      if (var1 instanceof AbstractWindCharge) {
-         return false;
-      } else {
-         return var1.getType() == EntityType.END_CRYSTAL ? false : super.canHitEntity(var1);
-      }
+      return var1 instanceof AbstractWindCharge ? false : super.canHitEntity(var1);
    }
 
    @Override

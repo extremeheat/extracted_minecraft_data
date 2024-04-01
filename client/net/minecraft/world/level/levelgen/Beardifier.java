@@ -90,6 +90,7 @@ public class Beardifier implements DensityFunctions.BeardifierOrMarker {
          int var14 = switch(var7.terrainAdjustment()) {
             case NONE -> 0;
             case BURY, BEARD_THIN -> var13;
+            case BURY_PROPER -> Math.max(0, Math.max(var8.minY() - var3, var3 - var8.maxY()));
             case BEARD_BOX -> Math.max(0, Math.max(var12 - var3, var3 - var8.maxY()));
          };
          switch(var7.terrainAdjustment()) {
@@ -102,6 +103,9 @@ public class Beardifier implements DensityFunctions.BeardifierOrMarker {
             case BEARD_THIN:
             case BEARD_BOX:
                var10001 = getBeardContribution(var10, var14, var11, var13) * 0.8;
+               break;
+            case BURY_PROPER:
+               var10001 = getBuryXContribution(var10, var14, var11);
                break;
             default:
                throw new IncompatibleClassChangeError();
@@ -134,6 +138,11 @@ public class Beardifier implements DensityFunctions.BeardifierOrMarker {
 
    private static double getBuryContribution(int var0, int var1, int var2) {
       double var3 = Mth.length((double)var0, (double)var1 / 2.0, (double)var2);
+      return Mth.clampedMap(var3, 0.0, 6.0, 1.0, 0.0);
+   }
+
+   private static double getBuryXContribution(int var0, int var1, int var2) {
+      double var3 = Mth.length((double)var0, (double)var1, (double)var2);
       return Mth.clampedMap(var3, 0.0, 6.0, 1.0, 0.0);
    }
 

@@ -9,6 +9,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import java.util.List;
 import java.util.function.Function;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
 import net.minecraft.client.StringSplitter;
 import net.minecraft.client.gui.font.FontSet;
 import net.minecraft.client.gui.font.glyphs.BakedGlyph;
@@ -348,21 +349,28 @@ public class Font {
             var10 = this.b;
          }
 
+         float var17;
+         if (var3 == 129364) {
+            var17 = 1.5F * Mth.sin(this.x + (float)Util.getNanos() / 1.0E8F);
+         } else {
+            var17 = 0.0F;
+         }
+
          if (!(var6 instanceof EmptyGlyph)) {
-            float var16 = var7 ? var5.getBoldOffset() : 0.0F;
-            float var14 = this.dropShadow ? var5.getShadowOffset() : 0.0F;
-            VertexConsumer var15 = this.bufferSource.getBuffer(var6.renderType(this.mode));
+            float var14 = var7 ? var5.getBoldOffset() : 0.0F;
+            float var15 = this.dropShadow ? var5.getShadowOffset() : 0.0F;
+            VertexConsumer var16 = this.bufferSource.getBuffer(var6.renderType(this.mode));
             Font.this.renderChar(
-               var6, var7, var2.isItalic(), var16, this.x + var14, this.y + var14, this.pose, var15, var8, var9, var10, var11, this.packedLightCoords
+               var6, var7, var2.isItalic(), var14, this.x + var15, this.y + var15 + var17, this.pose, var16, var8, var9, var10, var11, this.packedLightCoords
             );
          }
 
-         float var17 = var5.getAdvance(var7);
-         float var18 = this.dropShadow ? 1.0F : 0.0F;
+         float var18 = var5.getAdvance(var7);
+         float var19 = this.dropShadow ? 1.0F : 0.0F;
          if (var2.isStrikethrough()) {
             this.addEffect(
                new BakedGlyph.Effect(
-                  this.x + var18 - 1.0F, this.y + var18 + 4.5F, this.x + var18 + var17, this.y + var18 + 4.5F - 1.0F, 0.01F, var8, var9, var10, var11
+                  this.x + var19 - 1.0F, this.y + var19 + 4.5F, this.x + var19 + var18, this.y + var19 + 4.5F - 1.0F, 0.01F, var8, var9, var10, var11
                )
             );
          }
@@ -370,12 +378,12 @@ public class Font {
          if (var2.isUnderlined()) {
             this.addEffect(
                new BakedGlyph.Effect(
-                  this.x + var18 - 1.0F, this.y + var18 + 9.0F, this.x + var18 + var17, this.y + var18 + 9.0F - 1.0F, 0.01F, var8, var9, var10, var11
+                  this.x + var19 - 1.0F, this.y + var19 + 9.0F, this.x + var19 + var18, this.y + var19 + 9.0F - 1.0F, 0.01F, var8, var9, var10, var11
                )
             );
          }
 
-         this.x += var17;
+         this.x += var18;
          return true;
       }
 

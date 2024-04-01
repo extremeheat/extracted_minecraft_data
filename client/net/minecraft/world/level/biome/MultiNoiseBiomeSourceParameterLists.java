@@ -9,6 +9,7 @@ import net.minecraft.resources.ResourceLocation;
 public class MultiNoiseBiomeSourceParameterLists {
    public static final ResourceKey<MultiNoiseBiomeSourceParameterList> NETHER = register("nether");
    public static final ResourceKey<MultiNoiseBiomeSourceParameterList> OVERWORLD = register("overworld");
+   public static final ResourceKey<MultiNoiseBiomeSourceParameterList> POTATO = register("potato");
 
    public MultiNoiseBiomeSourceParameterLists() {
       super();
@@ -18,6 +19,7 @@ public class MultiNoiseBiomeSourceParameterLists {
       HolderGetter var1 = var0.lookup(Registries.BIOME);
       var0.register(NETHER, new MultiNoiseBiomeSourceParameterList(MultiNoiseBiomeSourceParameterList.Preset.NETHER, var1));
       var0.register(OVERWORLD, new MultiNoiseBiomeSourceParameterList(MultiNoiseBiomeSourceParameterList.Preset.OVERWORLD, var1));
+      var0.register(POTATO, new MultiNoiseBiomeSourceParameterList(MultiNoiseBiomeSourceParameterList.Preset.POTATO, var1));
    }
 
    private static ResourceKey<MultiNoiseBiomeSourceParameterList> register(String var0) {

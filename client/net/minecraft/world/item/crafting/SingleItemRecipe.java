@@ -1,7 +1,6 @@
 package net.minecraft.world.item.crafting;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.mojang.serialization.codecs.RecordCodecBuilder.Instance;
 import net.minecraft.core.HolderLookup;
@@ -9,6 +8,7 @@ import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.Container;
 import net.minecraft.world.item.ItemStack;
 
@@ -71,15 +71,15 @@ public abstract class SingleItemRecipe implements Recipe<Container> {
 
    public static class Serializer<T extends SingleItemRecipe> implements RecipeSerializer<T> {
       final SingleItemRecipe.Factory<T> factory;
-      private final MapCodec<T> codec;
+      private final Codec<T> codec;
       private final StreamCodec<RegistryFriendlyByteBuf, T> streamCodec;
 
       protected Serializer(SingleItemRecipe.Factory<T> var1) {
          super();
          this.factory = var1;
-         this.codec = RecordCodecBuilder.mapCodec(
+         this.codec = RecordCodecBuilder.create(
             var1x -> var1x.group(
-                     Codec.STRING.optionalFieldOf("group", "").forGetter(var0x -> var0x.group),
+                     ExtraCodecs.strictOptionalField(Codec.STRING, "group", "").forGetter(var0x -> var0x.group),
                      Ingredient.CODEC_NONEMPTY.fieldOf("ingredient").forGetter(var0x -> var0x.ingredient),
                      ItemStack.CODEC.fieldOf("result").forGetter(var0x -> var0x.result)
                   )
@@ -97,7 +97,7 @@ public abstract class SingleItemRecipe implements Recipe<Container> {
       }
 
       @Override
-      public MapCodec<T> codec() {
+      public Codec<T> codec() {
          return this.codec;
       }
 
