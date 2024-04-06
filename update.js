@@ -3,8 +3,10 @@ const fs = require('fs')
 const cp = require('child_process')
 const github = require('gh-helpers')()
 const { join } = require('path')
+const mcDecompiler = require('minecraft-java-decomp')
 function exec (a, b) {
   console.log('$', [a, b])
+  if (globalThis.isMocha && a.startsWith('git ')) return
   return cp.execSync(a, { ...b, stdio: 'inherit' })
 }
 
@@ -18,23 +20,18 @@ function getCommitSHA (version) {
   }
 }
 
-function decomp (version) {
+async function decomp (version) {
   exec('git pull')
   exec('ls -R .git/refs/')
   if (getCommitSHA(version)) {
     console.log('Already have decompiled', version, 'no work to do')
     return
   }
-  if (!fs.existsSync('DecompilerMC') || !fs.existsSync('DecompilerMC/.git')) {
-    fs.rmSync('DecompilerMC', { recursive: true, force: true })
-    exec('git clone http://github.com/extremeheat/DecompilerMC --depth 1')
-  }
-  exec('cd DecompilerMC && git pull')
-  exec(`cd DecompilerMC && python main.py -mcv ${version} -d fernflower`)
-  console.log('Done decompiling!', fs.readdirSync('DecompilerMC/src'))
+  await mcDecompiler.decompile(version, { path: join(__dirname, '/client_new'), force: true })
+  console.log('Done decompiling!')
   exec('git checkout clientlatest')
   exec('mv client client_old')
-  exec(`mv DecompilerMC/src/${version}/client ./client`)
+  exec('mv client_new client')
   exec('git add client/*.java client/version.json')
   exec('git status')
   exec(`git commit -m "Add '${version}' sources"`)
@@ -110,7 +107,7 @@ async function main () {
     exec('git add version_manifest.json')
     exec(`git commit -m "Update version manifest for ${latestSnapshot.id}"`)
     exec('git push origin updator')
-    decomp(latestSnapshot.id)
+    await decomp(latestSnapshot.id)
     await postprocess(latestSnapshot.id, oldSnap, isRelease, oldRel)
   }
 }
