@@ -1,0 +1,170 @@
+package net.minecraft.util;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
+import com.mojang.logging.LogUtils;
+import com.sun.jna.Memory;
+import com.sun.jna.Native;
+import com.sun.jna.Platform;
+import com.sun.jna.Pointer;
+import com.sun.jna.platform.win32.Kernel32;
+import com.sun.jna.platform.win32.Kernel32Util;
+import com.sun.jna.platform.win32.Version;
+import com.sun.jna.platform.win32.Win32Exception;
+import com.sun.jna.platform.win32.Tlhelp32.MODULEENTRY32W;
+import com.sun.jna.ptr.IntByReference;
+import com.sun.jna.ptr.PointerByReference;
+import java.nio.charset.StandardCharsets;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.stream.Collectors;
+import net.minecraft.CrashReportCategory;
+import org.slf4j.Logger;
+
+public class NativeModuleLister {
+   private static final Logger LOGGER = LogUtils.getLogger();
+   private static final int LANG_MASK = 65535;
+   private static final int DEFAULT_LANG = 1033;
+   private static final int CODEPAGE_MASK = -65536;
+   private static final int DEFAULT_CODEPAGE = 78643200;
+
+   public NativeModuleLister() {
+      super();
+   }
+
+   public static List<NativeModuleLister.NativeModuleInfo> listModules() {
+      if (!Platform.isWindows()) {
+         return ImmutableList.of();
+      } else {
+         int var0 = Kernel32.INSTANCE.GetCurrentProcessId();
+         Builder var1 = ImmutableList.builder();
+
+         for (MODULEENTRY32W var4 : Kernel32Util.getModules(var0)) {
+            String var5 = var4.szModule();
+            Optional var6 = tryGetVersion(var4.szExePath());
+            var1.add(new NativeModuleLister.NativeModuleInfo(var5, var6));
+         }
+
+         return var1.build();
+      }
+   }
+
+   private static Optional<NativeModuleLister.NativeModuleVersion> tryGetVersion(String var0) {
+      try {
+         IntByReference var1 = new IntByReference();
+         int var2 = Version.INSTANCE.GetFileVersionInfoSize(var0, var1);
+         if (var2 == 0) {
+            int var15 = Native.getLastError();
+            if (var15 != 1813 && var15 != 1812) {
+               throw new Win32Exception(var15);
+            } else {
+               return Optional.empty();
+            }
+         } else {
+            Memory var3 = new Memory((long)var2);
+            if (!Version.INSTANCE.GetFileVersionInfo(var0, 0, var2, var3)) {
+               throw new Win32Exception(Native.getLastError());
+            } else {
+               IntByReference var4 = new IntByReference();
+               Pointer var5 = queryVersionValue(var3, "\\VarFileInfo\\Translation", var4);
+               int[] var6 = var5.getIntArray(0L, var4.getValue() / 4);
+               OptionalInt var7 = findLangAndCodepage(var6);
+               if (var7.isEmpty()) {
+                  return Optional.empty();
+               } else {
+                  int var8 = var7.getAsInt();
+                  int var9 = var8 & 65535;
+                  int var10 = (var8 & -65536) >> 16;
+                  String var11 = queryVersionString(var3, langTableKey("FileDescription", var9, var10), var4);
+                  String var12 = queryVersionString(var3, langTableKey("CompanyName", var9, var10), var4);
+                  String var13 = queryVersionString(var3, langTableKey("FileVersion", var9, var10), var4);
+                  return Optional.of(new NativeModuleLister.NativeModuleVersion(var11, var13, var12));
+               }
+            }
+         }
+      } catch (Exception var14) {
+         LOGGER.info("Failed to find module info for {}", var0, var14);
+         return Optional.empty();
+      }
+   }
+
+   private static String langTableKey(String var0, int var1, int var2) {
+      return String.format(Locale.ROOT, "\\StringFileInfo\\%04x%04x\\%s", var1, var2, var0);
+   }
+
+   private static OptionalInt findLangAndCodepage(int[] var0) {
+      OptionalInt var1 = OptionalInt.empty();
+
+      for (int var5 : var0) {
+         if ((var5 & -65536) == 78643200 && (var5 & 65535) == 1033) {
+            return OptionalInt.of(var5);
+         }
+
+         var1 = OptionalInt.of(var5);
+      }
+
+      return var1;
+   }
+
+   private static Pointer queryVersionValue(Pointer var0, String var1, IntByReference var2) {
+      PointerByReference var3 = new PointerByReference();
+      if (!Version.INSTANCE.VerQueryValue(var0, var1, var3, var2)) {
+         throw new UnsupportedOperationException("Can't get version value " + var1);
+      } else {
+         return var3.getValue();
+      }
+   }
+
+   private static String queryVersionString(Pointer var0, String var1, IntByReference var2) {
+      try {
+         Pointer var3 = queryVersionValue(var0, var1, var2);
+         byte[] var4 = var3.getByteArray(0L, (var2.getValue() - 1) * 2);
+         return new String(var4, StandardCharsets.UTF_16LE);
+      } catch (Exception var5) {
+         return "";
+      }
+   }
+
+   public static void addCrashSection(CrashReportCategory var0) {
+      var0.setDetail(
+         "Modules", () -> listModules().stream().sorted(Comparator.comparing(var0x -> var0x.name)).map(var0x -> "\n\t\t" + var0x).collect(Collectors.joining())
+      );
+   }
+
+   public static class NativeModuleInfo {
+      public final String name;
+      public final Optional<NativeModuleLister.NativeModuleVersion> version;
+
+      public NativeModuleInfo(String var1, Optional<NativeModuleLister.NativeModuleVersion> var2) {
+         super();
+         this.name = var1;
+         this.version = var2;
+      }
+
+      @Override
+      public String toString() {
+         return this.version.<String>map(var1 -> this.name + ":" + var1).orElse(this.name);
+      }
+   }
+
+   public static class NativeModuleVersion {
+      public final String description;
+      public final String version;
+      public final String company;
+
+      public NativeModuleVersion(String var1, String var2, String var3) {
+         super();
+         this.description = var1;
+         this.version = var2;
+         this.company = var3;
+      }
+
+      @Override
+      public String toString() {
+         return this.description + ":" + this.version + ":" + this.company;
+      }
+   }
+}

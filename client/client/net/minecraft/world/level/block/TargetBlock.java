@@ -1,0 +1,114 @@
+package net.minecraft.world.level.block;
+
+import com.mojang.serialization.MapCodec;
+import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.stats.Stats;
+import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
+
+public class TargetBlock extends Block {
+   public static final MapCodec<TargetBlock> CODEC = simpleCodec(TargetBlock::new);
+   private static final IntegerProperty OUTPUT_POWER = BlockStateProperties.POWER;
+   private static final int ACTIVATION_TICKS_ARROWS = 20;
+   private static final int ACTIVATION_TICKS_OTHER = 8;
+
+   @Override
+   public MapCodec<TargetBlock> codec() {
+      return CODEC;
+   }
+
+   public TargetBlock(BlockBehaviour.Properties var1) {
+      super(var1);
+      this.registerDefaultState(this.stateDefinition.any().setValue(OUTPUT_POWER, Integer.valueOf(0)));
+   }
+
+   @Override
+   protected void onProjectileHit(Level var1, BlockState var2, BlockHitResult var3, Projectile var4) {
+      int var5 = updateRedstoneOutput(var1, var2, var3, var4);
+      if (var4.getOwner() instanceof ServerPlayer var7) {
+         var7.awardStat(Stats.TARGET_HIT);
+         CriteriaTriggers.TARGET_BLOCK_HIT.trigger(var7, var4, var3.getLocation(), var5);
+      }
+   }
+
+   private static int updateRedstoneOutput(LevelAccessor var0, BlockState var1, BlockHitResult var2, Entity var3) {
+      int var4 = getRedstoneStrength(var2, var2.getLocation());
+      int var5 = var3 instanceof AbstractArrow ? 20 : 8;
+      if (!var0.getBlockTicks().hasScheduledTick(var2.getBlockPos(), var1.getBlock())) {
+         setOutputPower(var0, var1, var4, var2.getBlockPos(), var5);
+      }
+
+      return var4;
+   }
+
+   private static int getRedstoneStrength(BlockHitResult var0, Vec3 var1) {
+      Direction var2 = var0.getDirection();
+      double var3 = Math.abs(Mth.frac(var1.x) - 0.5);
+      double var5 = Math.abs(Mth.frac(var1.y) - 0.5);
+      double var7 = Math.abs(Mth.frac(var1.z) - 0.5);
+      Direction.Axis var11 = var2.getAxis();
+      double var9;
+      if (var11 == Direction.Axis.Y) {
+         var9 = Math.max(var3, var7);
+      } else if (var11 == Direction.Axis.Z) {
+         var9 = Math.max(var3, var5);
+      } else {
+         var9 = Math.max(var5, var7);
+      }
+
+      return Math.max(1, Mth.ceil(15.0 * Mth.clamp((0.5 - var9) / 0.5, 0.0, 1.0)));
+   }
+
+   private static void setOutputPower(LevelAccessor var0, BlockState var1, int var2, BlockPos var3, int var4) {
+      var0.setBlock(var3, var1.setValue(OUTPUT_POWER, Integer.valueOf(var2)), 3);
+      var0.scheduleTick(var3, var1.getBlock(), var4);
+   }
+
+   @Override
+   protected void tick(BlockState var1, ServerLevel var2, BlockPos var3, RandomSource var4) {
+      if (var1.getValue(OUTPUT_POWER) != 0) {
+         var2.setBlock(var3, var1.setValue(OUTPUT_POWER, Integer.valueOf(0)), 3);
+      }
+   }
+
+   @Override
+   protected int getSignal(BlockState var1, BlockGetter var2, BlockPos var3, Direction var4) {
+      return var1.getValue(OUTPUT_POWER);
+   }
+
+   @Override
+   protected boolean isSignalSource(BlockState var1) {
+      return true;
+   }
+
+   @Override
+   protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> var1) {
+      var1.add(OUTPUT_POWER);
+   }
+
+   @Override
+   protected void onPlace(BlockState var1, Level var2, BlockPos var3, BlockState var4, boolean var5) {
+      if (!var2.isClientSide() && !var1.is(var4.getBlock())) {
+         if (var1.getValue(OUTPUT_POWER) > 0 && !var2.getBlockTicks().hasScheduledTick(var3, this)) {
+            var2.setBlock(var3, var1.setValue(OUTPUT_POWER, Integer.valueOf(0)), 18);
+         }
+      }
+   }
+}

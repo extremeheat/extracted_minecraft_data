@@ -1,0 +1,88 @@
+package net.minecraft.world.item;
+
+import com.google.common.collect.Maps;
+import java.util.List;
+import java.util.Map;
+import javax.annotation.Nullable;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.stats.Stats;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.JukeboxBlock;
+import net.minecraft.world.level.block.entity.JukeboxBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.gameevent.GameEvent;
+
+public class RecordItem extends Item {
+   private static final Map<SoundEvent, RecordItem> BY_NAME = Maps.newHashMap();
+   private final int analogOutput;
+   private final SoundEvent sound;
+   private final int lengthInTicks;
+
+   protected RecordItem(int var1, SoundEvent var2, Item.Properties var3, int var4) {
+      super(var3);
+      this.analogOutput = var1;
+      this.sound = var2;
+      this.lengthInTicks = var4 * 20;
+      BY_NAME.put(this.sound, this);
+   }
+
+   @Override
+   public InteractionResult useOn(UseOnContext var1) {
+      Level var2 = var1.getLevel();
+      BlockPos var3 = var1.getClickedPos();
+      BlockState var4 = var2.getBlockState(var3);
+      if (var4.is(Blocks.JUKEBOX) && !var4.getValue(JukeboxBlock.HAS_RECORD)) {
+         ItemStack var5 = var1.getItemInHand();
+         if (!var2.isClientSide) {
+            Player var6 = var1.getPlayer();
+            if (var2.getBlockEntity(var3) instanceof JukeboxBlockEntity var7) {
+               var7.setTheItem(var5.copy());
+               var2.gameEvent(GameEvent.BLOCK_CHANGE, var3, GameEvent.Context.of(var6, var4));
+            }
+
+            var5.shrink(1);
+            if (var6 != null) {
+               var6.awardStat(Stats.PLAY_RECORD);
+            }
+         }
+
+         return InteractionResult.sidedSuccess(var2.isClientSide);
+      } else {
+         return InteractionResult.PASS;
+      }
+   }
+
+   public int getAnalogOutput() {
+      return this.analogOutput;
+   }
+
+   @Override
+   public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
+      var3.add(this.getDisplayName().withStyle(ChatFormatting.GRAY));
+   }
+
+   public MutableComponent getDisplayName() {
+      return Component.translatable(this.getDescriptionId() + ".desc");
+   }
+
+   @Nullable
+   public static RecordItem getBySound(SoundEvent var0) {
+      return BY_NAME.get(var0);
+   }
+
+   public SoundEvent getSound() {
+      return this.sound;
+   }
+
+   public int getLengthInTicks() {
+      return this.lengthInTicks;
+   }
+}
