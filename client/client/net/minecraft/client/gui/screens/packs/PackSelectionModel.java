@@ -108,9 +108,9 @@ public class PackSelectionModel {
    abstract class EntryBase implements PackSelectionModel.Entry {
       private final Pack pack;
 
-      public EntryBase(Pack var2) {
+      public EntryBase(final Pack param2) {
          super();
-         this.pack = var2;
+         this.pack = nullx;
       }
 
       protected abstract List<Pack> getSelfList();
@@ -206,8 +206,8 @@ public class PackSelectionModel {
    }
 
    class SelectedPackEntry extends PackSelectionModel.EntryBase {
-      public SelectedPackEntry(Pack var2) {
-         super(var2);
+      public SelectedPackEntry(final Pack param2) {
+         super(nullx);
       }
 
       @Override
@@ -236,8 +236,8 @@ public class PackSelectionModel {
    }
 
    class UnselectedPackEntry extends PackSelectionModel.EntryBase {
-      public UnselectedPackEntry(Pack var2) {
-         super(var2);
+      public UnselectedPackEntry(final Pack param2) {
+         super(nullx);
       }
 
       @Override

@@ -86,11 +86,11 @@ public class TransientEntitySectionManager<T extends EntityAccess> {
       private long currentSectionKey;
       private EntitySection<T> currentSection;
 
-      Callback(T var2, long var3, EntitySection<T> var5) {
+      Callback(final T param2, final long param3, final EntitySection<T> param5) {
          super();
-         this.entity = (T)var2;
-         this.currentSectionKey = var3;
-         this.currentSection = var5;
+         this.entity = (T)nullx;
+         this.currentSectionKey = nullxx;
+         this.currentSection = nullxxx;
       }
 
       @Override

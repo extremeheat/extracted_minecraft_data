@@ -8,8 +8,8 @@ public enum ComparatorMode implements StringRepresentable {
 
    private final String name;
 
-   private ComparatorMode(String var3) {
-      this.name = var3;
+   private ComparatorMode(final String param3) {
+      this.name = nullxx;
    }
 
    @Override

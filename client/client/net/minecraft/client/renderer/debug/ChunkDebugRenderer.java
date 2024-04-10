@@ -83,12 +83,12 @@ public class ChunkDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
       final Map<ChunkPos, String> clientData;
       final CompletableFuture<Map<ChunkPos, String>> serverData;
 
-      ChunkData(IntegratedServer var2, double var3, double var5) {
+      ChunkData(final IntegratedServer param2, final double param3, final double param5) {
          super();
          ClientLevel var7 = ChunkDebugRenderer.this.minecraft.level;
          ResourceKey var8 = var7.dimension();
-         int var9 = SectionPos.posToSectionCoord(var3);
-         int var10 = SectionPos.posToSectionCoord(var5);
+         int var9 = SectionPos.posToSectionCoord(nullxx);
+         int var10 = SectionPos.posToSectionCoord(nullxxx);
          Builder var11 = ImmutableMap.builder();
          ClientChunkCache var12 = var7.getChunkSource();
 
@@ -110,13 +110,13 @@ public class ChunkDebugRenderer implements DebugRenderer.SimpleDebugRenderer {
          }
 
          this.clientData = var11.build();
-         this.serverData = var2.submit(() -> {
-            ServerLevel var5x = var2.getLevel(var8);
-            if (var5x == null) {
+         this.serverData = nullx.submit(() -> {
+            ServerLevel var5 = nullx.getLevel(var8);
+            if (var5 == null) {
                return ImmutableMap.of();
             } else {
                Builder var6 = ImmutableMap.builder();
-               ServerChunkCache var7x = var5x.getChunkSource();
+               ServerChunkCache var7x = var5.getChunkSource();
 
                for (int var8x = var9 - 12; var8x <= var9 + 12; var8x++) {
                   for (int var9x = var10 - 12; var9x <= var10 + 12; var9x++) {

@@ -98,12 +98,12 @@ public class EditGameRulesScreen extends Screen {
    public class BooleanRuleEntry extends EditGameRulesScreen.GameRuleEntry {
       private final CycleButton<Boolean> checkbox;
 
-      public BooleanRuleEntry(Component var2, List<FormattedCharSequence> var3, String var4, GameRules.BooleanValue var5) {
-         super(var3, var2);
-         this.checkbox = CycleButton.onOffBuilder(var5.get())
+      public BooleanRuleEntry(final Component param2, final List<FormattedCharSequence> param3, final String param4, final GameRules.BooleanValue param5) {
+         super(nullxx, nullx);
+         this.checkbox = CycleButton.onOffBuilder(nullxxxx.get())
             .displayOnlyValue()
-            .withCustomNarration(var1x -> var1x.createDefaultNarrationMessage().append("\n").append(var4))
-            .create(10, 5, 44, 20, var2, (var1x, var2x) -> var5.set(var2x, null));
+            .withCustomNarration(var1 -> var1.createDefaultNarrationMessage().append("\n").append(nullxxx))
+            .create(10, 5, 44, 20, nullx, (var1, var2) -> nullxxxx.set(var2, null));
          this.children.add(this.checkbox);
       }
 
@@ -119,9 +119,9 @@ public class EditGameRulesScreen extends Screen {
    public class CategoryRuleEntry extends EditGameRulesScreen.RuleEntry {
       final Component label;
 
-      public CategoryRuleEntry(Component var2) {
+      public CategoryRuleEntry(final Component param2) {
          super(null);
-         this.label = var2;
+         this.label = nullx;
       }
 
       @Override
@@ -159,9 +159,9 @@ public class EditGameRulesScreen extends Screen {
       private final List<FormattedCharSequence> label;
       protected final List<AbstractWidget> children = Lists.newArrayList();
 
-      public GameRuleEntry(@Nullable List<FormattedCharSequence> var2, Component var3) {
-         super(var2);
-         this.label = EditGameRulesScreen.this.minecraft.font.split(var3, 175);
+      public GameRuleEntry(@Nullable final List<FormattedCharSequence> param2, final Component param3) {
+         super(nullx);
+         this.label = EditGameRulesScreen.this.minecraft.font.split(nullxx, 175);
       }
 
       @Override
@@ -187,12 +187,12 @@ public class EditGameRulesScreen extends Screen {
    public class IntegerRuleEntry extends EditGameRulesScreen.GameRuleEntry {
       private final EditBox input;
 
-      public IntegerRuleEntry(Component var2, List<FormattedCharSequence> var3, String var4, GameRules.IntegerValue var5) {
-         super(var3, var2);
-         this.input = new EditBox(EditGameRulesScreen.this.minecraft.font, 10, 5, 44, 20, var2.copy().append("\n").append(var4).append("\n"));
-         this.input.setValue(Integer.toString(var5.get()));
-         this.input.setResponder(var2x -> {
-            if (var5.tryDeserialize(var2x)) {
+      public IntegerRuleEntry(final Component param2, final List<FormattedCharSequence> param3, final String param4, final GameRules.IntegerValue param5) {
+         super(nullxx, nullx);
+         this.input = new EditBox(EditGameRulesScreen.this.minecraft.font, 10, 5, 44, 20, nullx.copy().append("\n").append(nullxxx).append("\n"));
+         this.input.setValue(Integer.toString(nullxxxx.get()));
+         this.input.setResponder(var2 -> {
+            if (nullxxxx.tryDeserialize(var2)) {
                this.input.setTextColor(14737632);
                EditGameRulesScreen.this.clearInvalid(this);
             } else {
@@ -225,7 +225,7 @@ public class EditGameRulesScreen extends Screen {
    public class RuleList extends ContainerObjectSelectionList<EditGameRulesScreen.RuleEntry> {
       private static final int ITEM_HEIGHT = 24;
 
-      public RuleList(final GameRules var2) {
+      public RuleList(final GameRules param2) {
          super(
             Minecraft.getInstance(),
             EditGameRulesScreen.this.width,
@@ -236,19 +236,19 @@ public class EditGameRulesScreen extends Screen {
          final HashMap var3 = Maps.newHashMap();
          GameRules.visitGameRuleTypes(new GameRules.GameRuleTypeVisitor() {
             @Override
-            public void visitBoolean(GameRules.Key<GameRules.BooleanValue> var1, GameRules.Type<GameRules.BooleanValue> var2x) {
-               this.addEntry(var1, (var1x, var2xxx, var3xx, var4) -> EditGameRulesScreen.this.new BooleanRuleEntry(var1x, var2xxx, var3xx, var4));
+            public void visitBoolean(GameRules.Key<GameRules.BooleanValue> var1, GameRules.Type<GameRules.BooleanValue> var2) {
+               this.addEntry(var1, (var1x, var2x, var3xx, var4) -> EditGameRulesScreen.this.new BooleanRuleEntry(var1x, var2x, var3xx, var4));
             }
 
             @Override
-            public void visitInteger(GameRules.Key<GameRules.IntegerValue> var1, GameRules.Type<GameRules.IntegerValue> var2x) {
-               this.addEntry(var1, (var1x, var2xxx, var3xx, var4) -> EditGameRulesScreen.this.new IntegerRuleEntry(var1x, var2xxx, var3xx, var4));
+            public void visitInteger(GameRules.Key<GameRules.IntegerValue> var1, GameRules.Type<GameRules.IntegerValue> var2) {
+               this.addEntry(var1, (var1x, var2x, var3xx, var4) -> EditGameRulesScreen.this.new IntegerRuleEntry(var1x, var2x, var3xx, var4));
             }
 
-            private <T extends GameRules.Value<T>> void addEntry(GameRules.Key<T> var1, EditGameRulesScreen.EntryFactory<T> var2x) {
+            private <T extends GameRules.Value<T>> void addEntry(GameRules.Key<T> var1, EditGameRulesScreen.EntryFactory<T> var2) {
                MutableComponent var3x = Component.translatable(var1.getDescriptionId());
                MutableComponent var4 = Component.literal(var1.getId()).withStyle(ChatFormatting.YELLOW);
-               GameRules.Value var5 = var2.getRule(var1);
+               GameRules.Value var5 = nullx.getRule(var1);
                String var6 = var5.serialize();
                MutableComponent var7 = Component.translatable("editGamerule.default", Component.literal(var6)).withStyle(ChatFormatting.GRAY);
                String var8 = var1.getDescriptionId() + ".description";
@@ -265,24 +265,24 @@ public class EditGameRulesScreen extends Screen {
                   var10 = var7.getString();
                }
 
-               var3.computeIfAbsent(var1.getCategory(), var0 -> Maps.newHashMap()).put(var1, var2x.create(var3x, var9, var10, (T)var5));
+               var3.computeIfAbsent(var1.getCategory(), var0 -> Maps.newHashMap()).put(var1, var2.create(var3x, var9, var10, (T)var5));
             }
          });
          var3.entrySet()
             .stream()
             .sorted(Map.Entry.comparingByKey())
             .forEach(
-               var1x -> {
+               var1 -> {
                   this.addEntry(
                      EditGameRulesScreen.this.new CategoryRuleEntry(
-                        Component.translatable(((GameRules.Category)var1x.getKey()).getDescriptionId()).withStyle(ChatFormatting.BOLD, ChatFormatting.YELLOW)
+                        Component.translatable(((GameRules.Category)var1.getKey()).getDescriptionId()).withStyle(ChatFormatting.BOLD, ChatFormatting.YELLOW)
                      )
                   );
-                  ((Map)var1x.getValue())
+                  ((Map)var1.getValue())
                      .entrySet()
                      .stream()
                      .sorted(Map.Entry.comparingByKey(Comparator.comparing(GameRules.Key::getId)))
-                     .forEach(var1xx -> this.addEntry((EditGameRulesScreen.RuleEntry)var1xx.getValue()));
+                     .forEach(var1x -> this.addEntry((EditGameRulesScreen.RuleEntry)var1x.getValue()));
                }
             );
       }

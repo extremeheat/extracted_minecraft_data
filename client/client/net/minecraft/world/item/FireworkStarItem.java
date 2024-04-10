@@ -14,7 +14,7 @@ public class FireworkStarItem extends Item {
    public void appendHoverText(ItemStack var1, Item.TooltipContext var2, List<Component> var3, TooltipFlag var4) {
       FireworkExplosion var5 = var1.get(DataComponents.FIREWORK_EXPLOSION);
       if (var5 != null) {
-         var5.addToTooltip(var3::add, var4);
+         var5.addToTooltip(var2, var3::add, var4);
       }
    }
 }

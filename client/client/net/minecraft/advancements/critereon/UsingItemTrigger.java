@@ -43,7 +43,7 @@ public class UsingItemTrigger extends SimpleCriterionTrigger<UsingItemTrigger.Tr
       }
 
       public boolean matches(ItemStack var1) {
-         return !this.item.isPresent() || this.item.get().matches(var1);
+         return !this.item.isPresent() || this.item.get().test(var1);
       }
    }
 }

@@ -118,7 +118,7 @@ public class MobEffects {
    );
    public static final Holder<MobEffect> WEAVING = register(
       "weaving",
-      new WeavingMobEffect(MobEffectCategory.HARMFUL, 7891290, var0 -> Mth.randomBetweenInclusive(var0, 1, 3))
+      new WeavingMobEffect(MobEffectCategory.HARMFUL, 7891290, var0 -> Mth.randomBetweenInclusive(var0, 2, 3))
          .requiredFeatures(new FeatureFlag[]{FeatureFlags.UPDATE_1_21})
    );
    public static final Holder<MobEffect> OOZING = register(
@@ -126,7 +126,7 @@ public class MobEffects {
    );
    public static final Holder<MobEffect> INFESTED = register(
       "infested",
-      new InfestedMobEffect(MobEffectCategory.HARMFUL, 9214860, 0.05F, var0 -> Mth.randomBetweenInclusive(var0, 1, 3))
+      new InfestedMobEffect(MobEffectCategory.HARMFUL, 9214860, 0.1F, var0 -> Mth.randomBetweenInclusive(var0, 1, 2))
          .requiredFeatures(new FeatureFlag[]{FeatureFlags.UPDATE_1_21})
    );
 

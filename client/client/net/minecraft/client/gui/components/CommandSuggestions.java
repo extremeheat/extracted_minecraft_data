@@ -389,16 +389,16 @@ public class CommandSuggestions {
       boolean tabCycles;
       private int lastNarratedEntry;
 
-      SuggestionsList(int var2, int var3, int var4, List<Suggestion> var5, boolean var6) {
+      SuggestionsList(final int param2, final int param3, final int param4, final List<Suggestion> param5, final boolean param6) {
          super();
-         int var7 = var2 - (CommandSuggestions.this.input.isBordered() ? 0 : 1);
+         int var7 = nullx - (CommandSuggestions.this.input.isBordered() ? 0 : 1);
          int var8 = CommandSuggestions.this.anchorToBottom
-            ? var3 - 3 - Math.min(var5.size(), CommandSuggestions.this.suggestionLineLimit) * 12
-            : var3 - (CommandSuggestions.this.input.isBordered() ? 1 : 0);
-         this.rect = new Rect2i(var7, var8, var4 + 1, Math.min(var5.size(), CommandSuggestions.this.suggestionLineLimit) * 12);
+            ? nullxx - 3 - Math.min(nullxxxx.size(), CommandSuggestions.this.suggestionLineLimit) * 12
+            : nullxx - (CommandSuggestions.this.input.isBordered() ? 1 : 0);
+         this.rect = new Rect2i(var7, var8, nullxxx + 1, Math.min(nullxxxx.size(), CommandSuggestions.this.suggestionLineLimit) * 12);
          this.originalContents = CommandSuggestions.this.input.getValue();
-         this.lastNarratedEntry = var6 ? -1 : 0;
-         this.suggestionList = var5;
+         this.lastNarratedEntry = nullxxxxx ? -1 : 0;
+         this.suggestionList = nullxxxx;
          this.select(0);
       }
 

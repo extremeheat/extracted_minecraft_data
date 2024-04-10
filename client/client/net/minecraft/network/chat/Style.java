@@ -398,7 +398,7 @@ public class Style {
       class 1Collector {
          private boolean isNotFirst;
 
-         _Collector/* $VF was: 1Collector*/(Style var1x) {
+         _Collector/* $VF was: 1Collector*/() {
             super();
          }
 
@@ -431,7 +431,7 @@ public class Style {
          }
       }
 
-      1Collector var2 = new 1Collector(this);
+      1Collector var2 = new 1Collector();
       var2.addValueString("color", this.color);
       var2.addFlagString("bold", this.bold);
       var2.addFlagString("italic", this.italic);

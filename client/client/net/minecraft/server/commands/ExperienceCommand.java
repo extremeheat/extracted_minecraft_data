@@ -207,11 +207,16 @@ public class ExperienceCommand {
       public final String name;
       final ToIntFunction<ServerPlayer> query;
 
-      private Type(String var3, BiConsumer<ServerPlayer, Integer> var4, BiPredicate<ServerPlayer, Integer> var5, ToIntFunction<ServerPlayer> var6) {
-         this.add = var4;
-         this.name = var3;
-         this.set = var5;
-         this.query = var6;
+      private Type(
+         final String param3,
+         final BiConsumer<ServerPlayer, Integer> param4,
+         final BiPredicate<ServerPlayer, Integer> param5,
+         final ToIntFunction<ServerPlayer> param6
+      ) {
+         this.add = nullxxx;
+         this.name = nullxx;
+         this.set = nullxxxx;
+         this.query = nullxxxxx;
       }
    }
 }

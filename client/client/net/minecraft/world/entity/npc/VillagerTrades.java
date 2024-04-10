@@ -36,7 +36,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.MapItem;
 import net.minecraft.world.item.alchemy.Potion;
-import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.alchemy.Potions;
 import net.minecraft.world.item.component.DyedItemColor;
@@ -1608,7 +1607,7 @@ public class VillagerTrades {
          ItemCost var3 = new ItemCost(Items.EMERALD, this.emeraldCost);
          List var4 = BuiltInRegistries.POTION
             .holders()
-            .filter(var0 -> !var0.value().getEffects().isEmpty() && PotionBrewing.isBrewablePotion(var0))
+            .filter(var1x -> !var1x.value().getEffects().isEmpty() && var1.level().potionBrewing().isBrewablePotion(var1x))
             .collect(Collectors.toList());
          Holder var5 = Util.getRandom(var4, var2);
          ItemStack var6 = new ItemStack(this.toItem.getItem(), this.toCount);

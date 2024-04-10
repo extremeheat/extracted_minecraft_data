@@ -276,6 +276,7 @@ import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.MerchantMenu;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.alchemy.PotionBrewing;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.ChunkPos;
@@ -328,6 +329,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    private Set<ResourceKey<Level>> levels;
    private final RegistryAccess.Frozen registryAccess;
    private final FeatureFlagSet enabledFeatures;
+   private final PotionBrewing potionBrewing;
    @Nullable
    private LocalChatSession chatSession;
    private SignedMessageChain.Encoder signedMessageEncoder = SignedMessageChain.Encoder.UNSIGNED;
@@ -356,6 +358,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       if (var3.chatState() != null) {
          var1.gui.getChat().restoreState(var3.chatState());
       }
+
+      this.potionBrewing = PotionBrewing.bootstrap(this.enabledFeatures);
    }
 
    public ClientSuggestionProvider getSuggestionsProvider() {
@@ -2364,5 +2368,9 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public Scoreboard scoreboard() {
       return this.scoreboard;
+   }
+
+   public PotionBrewing potionBrewing() {
+      return this.potionBrewing;
    }
 }

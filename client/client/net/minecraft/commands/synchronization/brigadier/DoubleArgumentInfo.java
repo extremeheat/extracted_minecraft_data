@@ -50,10 +50,10 @@ public class DoubleArgumentInfo implements ArgumentTypeInfo<DoubleArgumentType, 
       final double min;
       final double max;
 
-      Template(double var2, double var4) {
+      Template(final double param2, final double param4) {
          super();
-         this.min = var2;
-         this.max = var4;
+         this.min = nullx;
+         this.max = nullxx;
       }
 
       public DoubleArgumentType instantiate(CommandBuildContext var1) {

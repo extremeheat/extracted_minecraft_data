@@ -55,8 +55,8 @@ public class LockIconButton extends Button {
 
       final ResourceLocation sprite;
 
-      private Icon(ResourceLocation var3) {
-         this.sprite = var3;
+      private Icon(final ResourceLocation param3) {
+         this.sprite = nullxx;
       }
    }
 }

@@ -151,8 +151,8 @@ public class StatsScreen extends Screen {
    }
 
    class GeneralStatisticsList extends ObjectSelectionList<StatsScreen.GeneralStatisticsList.Entry> {
-      public GeneralStatisticsList(Minecraft var2) {
-         super(var2, StatsScreen.this.width, StatsScreen.this.height - 33 - 58, 33, 14);
+      public GeneralStatisticsList(final Minecraft param2) {
+         super(nullx, StatsScreen.this.width, StatsScreen.this.height - 33 - 58, 33, 14);
          ObjectArrayList var3 = new ObjectArrayList(Stats.CUSTOM.iterator());
          var3.sort(Comparator.comparing(var0 -> I18n.get(StatsScreen.getTranslationKey((Stat<ResourceLocation>)var0))));
          ObjectListIterator var4 = var3.iterator();
@@ -172,10 +172,10 @@ public class StatsScreen extends Screen {
          private final Stat<ResourceLocation> stat;
          private final Component statDisplay;
 
-         Entry(Stat<ResourceLocation> var2) {
+         Entry(final Stat<ResourceLocation> param2) {
             super();
-            this.stat = var2;
-            this.statDisplay = Component.translatable(StatsScreen.getTranslationKey(var2));
+            this.stat = nullx;
+            this.statDisplay = Component.translatable(StatsScreen.getTranslationKey(nullx));
          }
 
          private String getValueText() {
@@ -223,8 +223,8 @@ public class StatsScreen extends Screen {
       protected int headerPressed = -1;
       protected int sortOrder;
 
-      public ItemStatisticsList(Minecraft var2) {
-         super(var2, StatsScreen.this.width, StatsScreen.this.height - 33 - 58, 33, 22);
+      public ItemStatisticsList(final Minecraft param2) {
+         super(nullx, StatsScreen.this.width, StatsScreen.this.height - 33 - 58, 33, 22);
          this.blockColumns = Lists.newArrayList();
          this.blockColumns.add(Stats.BLOCK_MINED);
          this.itemColumns = Lists.newArrayList(new StatType[]{Stats.ITEM_BROKEN, Stats.ITEM_CRAFTED, Stats.ITEM_USED, Stats.ITEM_PICKED_UP, Stats.ITEM_DROPPED});
@@ -381,9 +381,9 @@ public class StatsScreen extends Screen {
       class ItemRow extends ObjectSelectionList.Entry<StatsScreen.ItemStatisticsList.ItemRow> {
          private final Item item;
 
-         ItemRow(Item var2) {
+         ItemRow(final Item param2) {
             super();
-            this.item = var2;
+            this.item = nullx;
          }
 
          public Item getItem() {
@@ -460,8 +460,8 @@ public class StatsScreen extends Screen {
    }
 
    class MobsStatisticsList extends ObjectSelectionList<StatsScreen.MobsStatisticsList.MobRow> {
-      public MobsStatisticsList(Minecraft var2) {
-         super(var2, StatsScreen.this.width, StatsScreen.this.height - 33 - 58, 33, 9 * 4);
+      public MobsStatisticsList(final Minecraft param2) {
+         super(nullx, StatsScreen.this.width, StatsScreen.this.height - 33 - 58, 33, 9 * 4);
 
          for (EntityType var4 : BuiltInRegistries.ENTITY_TYPE) {
             if (StatsScreen.this.stats.getValue(Stats.ENTITY_KILLED.get(var4)) > 0 || StatsScreen.this.stats.getValue(Stats.ENTITY_KILLED_BY.get(var4)) > 0) {
@@ -482,10 +482,10 @@ public class StatsScreen extends Screen {
          private final boolean hasKills;
          private final boolean wasKilledBy;
 
-         public MobRow(EntityType<?> var2) {
+         public MobRow(final EntityType<?> param2) {
             super();
-            this.mobName = var2.getDescription();
-            int var3 = StatsScreen.this.stats.getValue(Stats.ENTITY_KILLED.get(var2));
+            this.mobName = nullx.getDescription();
+            int var3 = StatsScreen.this.stats.getValue(Stats.ENTITY_KILLED.get(nullx));
             if (var3 == 0) {
                this.kills = Component.translatable("stat_type.minecraft.killed.none", this.mobName);
                this.hasKills = false;
@@ -494,7 +494,7 @@ public class StatsScreen extends Screen {
                this.hasKills = true;
             }
 
-            int var4 = StatsScreen.this.stats.getValue(Stats.ENTITY_KILLED_BY.get(var2));
+            int var4 = StatsScreen.this.stats.getValue(Stats.ENTITY_KILLED_BY.get(nullx));
             if (var4 == 0) {
                this.killedBy = Component.translatable("stat_type.minecraft.killed_by.none", this.mobName);
                this.wasKilledBy = false;

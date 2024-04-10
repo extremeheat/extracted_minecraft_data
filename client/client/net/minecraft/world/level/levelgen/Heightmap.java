@@ -151,10 +151,10 @@ public class Heightmap {
       private final Heightmap.Usage usage;
       private final Predicate<BlockState> isOpaque;
 
-      private Types(String var3, Heightmap.Usage var4, Predicate<BlockState> var5) {
-         this.serializationKey = var3;
-         this.usage = var4;
-         this.isOpaque = var5;
+      private Types(final String param3, final Heightmap.Usage param4, final Predicate<BlockState> param5) {
+         this.serializationKey = nullxx;
+         this.usage = nullxxx;
+         this.isOpaque = nullxxxx;
       }
 
       public String getSerializationKey() {

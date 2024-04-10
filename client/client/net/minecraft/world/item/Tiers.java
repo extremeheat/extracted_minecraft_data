@@ -23,13 +23,13 @@ public enum Tiers implements Tier {
    private final int enchantmentValue;
    private final Supplier<Ingredient> repairIngredient;
 
-   private Tiers(TagKey<Block> var3, int var4, float var5, float var6, int var7, Supplier<Ingredient> var8) {
-      this.incorrectBlocksForDrops = var3;
-      this.uses = var4;
-      this.speed = var5;
-      this.damage = var6;
-      this.enchantmentValue = var7;
-      this.repairIngredient = Suppliers.memoize(var8::get);
+   private Tiers(final TagKey<Block> param3, final int param4, final float param5, final float param6, final int param7, final Supplier<Ingredient> param8) {
+      this.incorrectBlocksForDrops = nullxx;
+      this.uses = nullxxx;
+      this.speed = nullxxxx;
+      this.damage = nullxxxxx;
+      this.enchantmentValue = nullxxxxxx;
+      this.repairIngredient = Suppliers.memoize(nullxxxxxxx::get);
    }
 
    @Override

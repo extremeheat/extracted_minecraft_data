@@ -124,9 +124,9 @@ public class VertexFormat {
       public final int asGLType;
       public final int bytes;
 
-      private IndexType(int var3, int var4) {
-         this.asGLType = var3;
-         this.bytes = var4;
+      private IndexType(final int param3, final int param4) {
+         this.asGLType = nullxx;
+         this.bytes = nullxxx;
       }
 
       public static VertexFormat.IndexType least(int var0) {
@@ -149,11 +149,11 @@ public class VertexFormat {
       public final int primitiveStride;
       public final boolean connectedPrimitives;
 
-      private Mode(int var3, int var4, int var5, boolean var6) {
-         this.asGLMode = var3;
-         this.primitiveLength = var4;
-         this.primitiveStride = var5;
-         this.connectedPrimitives = var6;
+      private Mode(final int param3, final int param4, final int param5, final boolean param6) {
+         this.asGLMode = nullxx;
+         this.primitiveLength = nullxxx;
+         this.primitiveStride = nullxxxx;
+         this.connectedPrimitives = nullxxxxx;
       }
 
       public int indexCount(int var1) {

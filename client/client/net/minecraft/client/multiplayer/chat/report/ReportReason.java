@@ -19,9 +19,9 @@ public enum ReportReason {
    private final Component title;
    private final Component description;
 
-   private ReportReason(String var3) {
-      this.backendName = var3.toUpperCase(Locale.ROOT);
-      String var4 = "gui.abuseReport.reason." + var3;
+   private ReportReason(final String param3) {
+      this.backendName = nullxx.toUpperCase(Locale.ROOT);
+      String var4 = "gui.abuseReport.reason." + nullxx;
       this.title = Component.translatable(var4);
       this.description = Component.translatable(var4 + ".description");
    }

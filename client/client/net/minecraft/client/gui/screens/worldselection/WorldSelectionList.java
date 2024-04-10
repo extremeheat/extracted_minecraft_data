@@ -293,13 +293,13 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
       private Path iconFile;
       private long lastClickTime;
 
-      public WorldListEntry(WorldSelectionList var2, LevelSummary var3) {
+      public WorldListEntry(final WorldSelectionList param2, final LevelSummary param3) {
          super();
-         this.minecraft = var2.minecraft;
-         this.screen = var2.getScreen();
-         this.summary = var3;
-         this.icon = FaviconTexture.forWorld(this.minecraft.getTextureManager(), var3.getLevelId());
-         this.iconFile = var3.getIcon();
+         this.minecraft = nullx.minecraft;
+         this.screen = nullx.getScreen();
+         this.summary = nullxx;
+         this.icon = FaviconTexture.forWorld(this.minecraft.getTextureManager(), nullxx.getLevelId());
+         this.iconFile = nullxx.getIcon();
          this.validateIconFile();
          this.loadIcon();
       }

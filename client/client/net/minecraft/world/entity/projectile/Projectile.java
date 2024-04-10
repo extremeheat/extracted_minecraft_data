@@ -11,6 +11,7 @@ import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.util.Mth;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.TraceableEntity;
@@ -258,5 +259,39 @@ public abstract class Projectile extends Entity implements TraceableEntity {
    }
 
    public void onDeflection() {
+   }
+
+   protected void onPunch(Entity var1) {
+      Vec3 var2 = var1.getLookAngle();
+      this.setDeltaMovement(var2.scale(this.getDeltaMovement().length()));
+   }
+
+   @Override
+   public boolean isPickable() {
+      return this.getType().is(EntityTypeTags.PUNCHABLE_PROJECTILES);
+   }
+
+   @Override
+   public float getPickRadius() {
+      return this.isPickable() ? 1.0F : 0.0F;
+   }
+
+   public boolean punch(DamageSource var1) {
+      if (this.isInvulnerableTo(var1)) {
+         return false;
+      } else {
+         this.markHurt();
+         Entity var2 = var1.getEntity();
+         if (var2 != null) {
+            if (!this.level().isClientSide) {
+               this.onPunch(var2);
+               this.setOwner(var2);
+            }
+
+            return true;
+         } else {
+            return false;
+         }
+      }
    }
 }

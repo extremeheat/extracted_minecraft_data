@@ -522,9 +522,9 @@ public abstract class Display extends Entity {
       private final byte id;
       private final String name;
 
-      private BillboardConstraints(byte var3, String var4) {
-         this.name = var4;
-         this.id = var3;
+      private BillboardConstraints(final byte param3, final String param4) {
+         this.name = nullxxx;
+         this.id = nullxx;
       }
 
       @Override
@@ -648,18 +648,7 @@ public abstract class Display extends Entity {
          Display.ItemDisplay.class, EntityDataSerializers.ITEM_STACK
       );
       private static final EntityDataAccessor<Byte> DATA_ITEM_DISPLAY_ID = SynchedEntityData.defineId(Display.ItemDisplay.class, EntityDataSerializers.BYTE);
-      private final SlotAccess slot = new SlotAccess() {
-         @Override
-         public ItemStack get() {
-            return ItemDisplay.this.getItemStack();
-         }
-
-         @Override
-         public boolean set(ItemStack var1) {
-            ItemDisplay.this.setItemStack(var1);
-            return true;
-         }
-      };
+      private final SlotAccess slot = SlotAccess.of(this::getItemStack, this::setItemStack);
       @Nullable
       private Display.ItemDisplay.ItemRenderState itemRenderState;
 
@@ -682,11 +671,11 @@ public abstract class Display extends Entity {
          }
       }
 
-      ItemStack getItemStack() {
+      private ItemStack getItemStack() {
          return this.entityData.get(DATA_ITEM_STACK_ID);
       }
 
-      void setItemStack(ItemStack var1) {
+      private void setItemStack(ItemStack var1) {
          this.entityData.set(DATA_ITEM_STACK_ID, var1);
       }
 
@@ -1062,8 +1051,8 @@ public abstract class Display extends Entity {
          public static final Codec<Display.TextDisplay.Align> CODEC = StringRepresentable.fromEnum(Display.TextDisplay.Align::values);
          private final String name;
 
-         private Align(String var3) {
-            this.name = var3;
+         private Align(final String param3) {
+            this.name = nullxx;
          }
 
          @Override

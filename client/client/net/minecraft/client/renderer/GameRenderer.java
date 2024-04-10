@@ -258,6 +258,10 @@ public class GameRenderer implements AutoCloseable {
       this.overlayTexture.close();
       this.shutdownEffect();
       this.shutdownShaders();
+      if (this.blurEffect != null) {
+         this.blurEffect.close();
+      }
+
       if (this.blitShader != null) {
          this.blitShader.close();
       }

@@ -466,7 +466,7 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
                      this.jumping = false;
                      this.navigation.stop();
                      this.setTarget(null);
-                     return InteractionResult.SUCCESS;
+                     return InteractionResult.SUCCESS_NO_ITEM_USED;
                   } else {
                      return var6;
                   }
@@ -657,9 +657,9 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
    class WolfAvoidEntityGoal<T extends LivingEntity> extends AvoidEntityGoal<T> {
       private final Wolf wolf;
 
-      public WolfAvoidEntityGoal(Wolf var2, Class<T> var3, float var4, double var5, double var7) {
-         super(var2, var3, var4, var5, var7);
-         this.wolf = var2;
+      public WolfAvoidEntityGoal(final Wolf param2, final Class<T> param3, final float param4, final double param5, final double param7) {
+         super(nullx, nullxx, nullxxx, nullxxxx, nullxxxxx);
+         this.wolf = nullx;
       }
 
       @Override
@@ -694,8 +694,8 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
    }
 
    class WolfPanicGoal extends PanicGoal {
-      public WolfPanicGoal(double var2) {
-         super(Wolf.this, var2);
+      public WolfPanicGoal(final double param2) {
+         super(Wolf.this, nullx);
       }
 
       @Override

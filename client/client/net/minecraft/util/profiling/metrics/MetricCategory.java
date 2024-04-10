@@ -13,8 +13,8 @@ public enum MetricCategory {
 
    private final String description;
 
-   private MetricCategory(String var3) {
-      this.description = var3;
+   private MetricCategory(final String param3) {
+      this.description = nullxx;
    }
 
    public String getDescription() {

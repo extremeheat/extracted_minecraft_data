@@ -367,8 +367,8 @@ public final class Biome {
       public static final Codec<Biome.Precipitation> CODEC = StringRepresentable.fromEnum(Biome.Precipitation::values);
       private final String name;
 
-      private Precipitation(String var3) {
-         this.name = var3;
+      private Precipitation(final String param3) {
+         this.name = nullxx;
       }
 
       @Override
@@ -406,8 +406,8 @@ public final class Biome {
 
       public abstract float modifyTemperature(BlockPos var1, float var2);
 
-      TemperatureModifier(String var3) {
-         this.name = var3;
+      TemperatureModifier(final String param3) {
+         this.name = nullxx;
       }
 
       public String getName() {

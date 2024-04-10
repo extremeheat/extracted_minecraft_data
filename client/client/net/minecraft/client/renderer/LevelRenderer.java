@@ -71,6 +71,7 @@ import net.minecraft.core.particles.SculkChargeParticleOptions;
 import net.minecraft.core.particles.ShriekParticleOption;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.BlockDestructionProgress;
@@ -2426,7 +2427,9 @@ public class LevelRenderer implements ResourceManagerReloadListener, AutoCloseab
          CrashReport var17 = CrashReport.forThrowable(var19, "Exception while adding particle");
          CrashReportCategory var18 = var17.addCategory("Particle being added");
          var18.setDetail("ID", BuiltInRegistries.PARTICLE_TYPE.getKey(var1.getType()));
-         var18.setDetail("Parameters", () -> var1.writeToString(this.level.registryAccess()));
+         var18.setDetail(
+            "Parameters", () -> ParticleTypes.CODEC.encodeStart(this.level.registryAccess().createSerializationContext(NbtOps.INSTANCE), var1).toString()
+         );
          var18.setDetail("Position", () -> CrashReportCategory.formatLocation(this.level, var4, var6, var8));
          throw new ReportedException(var17);
       }

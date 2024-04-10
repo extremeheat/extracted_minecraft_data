@@ -146,8 +146,8 @@ public class JigsawBlockEntity extends BlockEntity {
 
       private final String name;
 
-      private JointType(String var3) {
-         this.name = var3;
+      private JointType(final String param3) {
+         this.name = nullxx;
       }
 
       @Override

@@ -49,8 +49,8 @@ public class PackOutput {
 
       final String directory;
 
-      private Target(String var3) {
-         this.directory = var3;
+      private Target(final String param3) {
+         this.directory = nullxx;
       }
    }
 }

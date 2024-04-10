@@ -285,16 +285,16 @@ public class SectionRenderDispatcher {
       private boolean dirty = true;
       final BlockPos.MutableBlockPos origin = new BlockPos.MutableBlockPos(-1, -1, -1);
       private final BlockPos.MutableBlockPos[] relativeOrigins = Util.make(new BlockPos.MutableBlockPos[6], var0 -> {
-         for (int var1x = 0; var1x < var0.length; var1x++) {
-            var0[var1x] = new BlockPos.MutableBlockPos();
+         for (int var1 = 0; var1 < var0.length; var1++) {
+            var0[var1] = new BlockPos.MutableBlockPos();
          }
       });
       private boolean playerChanged;
 
-      public RenderSection(int var2, int var3, int var4, int var5) {
+      public RenderSection(final int param2, final int param3, final int param4, final int param5) {
          super();
-         this.index = var2;
-         this.setOrigin(var3, var4, var5);
+         this.index = nullx;
+         this.setOrigin(nullxx, nullxxx, nullxxxx);
       }
 
       private boolean doesChunkExistAt(BlockPos var1) {
@@ -468,10 +468,10 @@ public class SectionRenderDispatcher {
          protected final AtomicBoolean isCancelled = new AtomicBoolean(false);
          protected final boolean isHighPriority;
 
-         public CompileTask(SectionRenderDispatcher.RenderSection var1, double var2, boolean var4) {
+         public CompileTask(final SectionRenderDispatcher.RenderSection param1, final double param2, final boolean param4) {
             super();
-            this.distAtCreation = var2;
-            this.isHighPriority = var4;
+            this.distAtCreation = nullx;
+            this.isHighPriority = nullxx;
          }
 
          public abstract CompletableFuture<SectionRenderDispatcher.SectionTaskResult> doTask(SectionBufferBuilderPack var1);
@@ -489,9 +489,9 @@ public class SectionRenderDispatcher {
          @Nullable
          protected RenderChunkRegion region;
 
-         public RebuildTask(double var2, @Nullable RenderChunkRegion var4, boolean var5) {
-            super(RenderSection.this, var2, var5);
-            this.region = var4;
+         public RebuildTask(final double param2, @Nullable final RenderChunkRegion param4, final boolean param5) {
+            super(RenderSection.this, nullx, nullxxx);
+            this.region = nullxx;
          }
 
          @Override
@@ -658,9 +658,9 @@ public class SectionRenderDispatcher {
       class ResortTransparencyTask extends SectionRenderDispatcher.RenderSection.CompileTask {
          private final SectionRenderDispatcher.CompiledSection compiledSection;
 
-         public ResortTransparencyTask(double var2, SectionRenderDispatcher.CompiledSection var4) {
-            super(RenderSection.this, var2, true);
-            this.compiledSection = var4;
+         public ResortTransparencyTask(final double param2, final SectionRenderDispatcher.CompiledSection param4) {
+            super(RenderSection.this, nullx, true);
+            this.compiledSection = nullxx;
          }
 
          @Override

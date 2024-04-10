@@ -236,16 +236,16 @@ public class PresetFlatWorldScreen extends Screen {
    }
 
    class PresetsList extends ObjectSelectionList<PresetFlatWorldScreen.PresetsList.Entry> {
-      public PresetsList(RegistryAccess var2, FeatureFlagSet var3) {
+      public PresetsList(final RegistryAccess param2, final FeatureFlagSet param3) {
          super(PresetFlatWorldScreen.this.minecraft, PresetFlatWorldScreen.this.width, PresetFlatWorldScreen.this.height - 117, 80, 24);
 
-         for (Holder var5 : var2.registryOrThrow(Registries.FLAT_LEVEL_GENERATOR_PRESET).getTagOrEmpty(FlatLevelGeneratorPresetTags.VISIBLE)) {
+         for (Holder var5 : nullx.registryOrThrow(Registries.FLAT_LEVEL_GENERATOR_PRESET).getTagOrEmpty(FlatLevelGeneratorPresetTags.VISIBLE)) {
             Set var6 = ((FlatLevelGeneratorPreset)var5.value())
                .settings()
                .getLayersInfo()
                .stream()
                .map(var0 -> var0.getBlockState().getBlock())
-               .filter(var1x -> !var1x.isEnabled(var3))
+               .filter(var1 -> !var1.isEnabled(nullxx))
                .collect(Collectors.toSet());
             if (!var6.isEmpty()) {
                PresetFlatWorldScreen.LOGGER
@@ -283,10 +283,10 @@ public class PresetFlatWorldScreen extends Screen {
          private final FlatLevelGeneratorPreset preset;
          private final Component name;
 
-         public Entry(Holder<FlatLevelGeneratorPreset> var2) {
+         public Entry(final Holder<FlatLevelGeneratorPreset> param2) {
             super();
-            this.preset = (FlatLevelGeneratorPreset)var2.value();
-            this.name = var2.unwrapKey()
+            this.preset = (FlatLevelGeneratorPreset)nullx.value();
+            this.name = nullx.unwrapKey()
                .map(var0 -> Component.translatable(var0.location().toLanguageKey("flat_world_preset")))
                .orElse(PresetFlatWorldScreen.UNKNOWN_PRESET);
          }

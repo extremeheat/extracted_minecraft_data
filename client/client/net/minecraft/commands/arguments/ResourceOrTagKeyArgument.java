@@ -98,9 +98,9 @@ public class ResourceOrTagKeyArgument<T> implements ArgumentType<ResourceOrTagKe
       public final class Template implements ArgumentTypeInfo.Template<ResourceOrTagKeyArgument<T>> {
          final ResourceKey<? extends Registry<T>> registryKey;
 
-         Template(ResourceKey<? extends Registry<T>> var2) {
+         Template(final ResourceKey<? extends Registry<T>> param2) {
             super();
-            this.registryKey = var2;
+            this.registryKey = nullx;
          }
 
          public ResourceOrTagKeyArgument<T> instantiate(CommandBuildContext var1) {

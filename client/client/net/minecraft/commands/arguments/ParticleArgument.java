@@ -18,14 +18,20 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 
 public class ParticleArgument implements ArgumentType<ParticleOptions> {
-   private static final Collection<String> EXAMPLES = Arrays.asList("foo", "foo:bar", "particle with options");
+   private static final Collection<String> EXAMPLES = Arrays.asList("foo", "foo:bar", "particle{foo:bar}");
    public static final DynamicCommandExceptionType ERROR_UNKNOWN_PARTICLE = new DynamicCommandExceptionType(
       var0 -> Component.translatableEscape("particle.notFound", var0)
+   );
+   public static final DynamicCommandExceptionType ERROR_INVALID_OPTIONS = new DynamicCommandExceptionType(
+      var0 -> Component.translatableEscape("particle.invalidOptions", var0)
    );
    private final HolderLookup.Provider registries;
 
@@ -62,7 +68,14 @@ public class ParticleArgument implements ArgumentType<ParticleOptions> {
    }
 
    private static <T extends ParticleOptions> T readParticle(StringReader var0, ParticleType<T> var1, HolderLookup.Provider var2) throws CommandSyntaxException {
-      return (T)var1.getDeserializer().fromCommand(var1, var0, var2);
+      CompoundTag var3;
+      if (var0.canRead() && var0.peek() == '{') {
+         var3 = new TagParser(var0).readStruct();
+      } else {
+         var3 = new CompoundTag();
+      }
+
+      return (T)var1.codec().codec().parse(var2.createSerializationContext(NbtOps.INSTANCE), var3).getOrThrow(ERROR_INVALID_OPTIONS::create);
    }
 
    public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> var1, SuggestionsBuilder var2) {

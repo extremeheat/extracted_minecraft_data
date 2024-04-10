@@ -14,9 +14,9 @@ public enum LevelType {
    private final int index;
    private final Component name;
 
-   private LevelType(int var3, ResourceKey<WorldPreset> var4) {
-      this.index = var3;
-      this.name = Component.translatable(var4.location().toLanguageKey("generator"));
+   private LevelType(final int param3, final ResourceKey<WorldPreset> param4) {
+      this.index = nullxx;
+      this.name = Component.translatable(nullxxx.location().toLanguageKey("generator"));
    }
 
    public Component getName() {

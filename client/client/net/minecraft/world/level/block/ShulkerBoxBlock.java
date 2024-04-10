@@ -191,7 +191,7 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
       int var5 = 0;
       int var6 = 0;
 
-      for (ItemStack var8 : var1.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY)) {
+      for (ItemStack var8 : var1.getOrDefault(DataComponents.CONTAINER, ItemContainerContents.EMPTY).nonEmptyItems()) {
          var6++;
          if (var5 <= 4) {
             var5++;

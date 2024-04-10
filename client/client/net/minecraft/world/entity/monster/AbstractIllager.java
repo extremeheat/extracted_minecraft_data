@@ -52,8 +52,8 @@ public abstract class AbstractIllager extends Raider {
    }
 
    protected class RaiderOpenDoorGoal extends OpenDoorGoal {
-      public RaiderOpenDoorGoal(Raider var2) {
-         super(var2, false);
+      public RaiderOpenDoorGoal(final Raider param2) {
+         super(nullx, false);
       }
 
       @Override

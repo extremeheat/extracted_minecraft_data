@@ -310,20 +310,29 @@ public class Font {
          this.effects.add(var1);
       }
 
-      public StringRenderOutput(MultiBufferSource var2, float var3, float var4, int var5, boolean var6, Matrix4f var7, Font.DisplayMode var8, int var9) {
+      public StringRenderOutput(
+         final MultiBufferSource param2,
+         final float param3,
+         final float param4,
+         final int param5,
+         final boolean param6,
+         final Matrix4f param7,
+         final Font.DisplayMode param8,
+         final int param9
+      ) {
          super();
-         this.bufferSource = var2;
-         this.x = var3;
-         this.y = var4;
-         this.dropShadow = var6;
-         this.dimFactor = var6 ? 0.25F : 1.0F;
-         this.r = (float)(var5 >> 16 & 0xFF) / 255.0F * this.dimFactor;
-         this.g = (float)(var5 >> 8 & 0xFF) / 255.0F * this.dimFactor;
-         this.b = (float)(var5 & 0xFF) / 255.0F * this.dimFactor;
-         this.a = (float)(var5 >> 24 & 0xFF) / 255.0F;
-         this.pose = var7;
-         this.mode = var8;
-         this.packedLightCoords = var9;
+         this.bufferSource = nullx;
+         this.x = nullxx;
+         this.y = nullxxx;
+         this.dropShadow = nullxxxxx;
+         this.dimFactor = nullxxxxx ? 0.25F : 1.0F;
+         this.r = (float)(nullxxxx >> 16 & 0xFF) / 255.0F * this.dimFactor;
+         this.g = (float)(nullxxxx >> 8 & 0xFF) / 255.0F * this.dimFactor;
+         this.b = (float)(nullxxxx & 0xFF) / 255.0F * this.dimFactor;
+         this.a = (float)(nullxxxx >> 24 & 0xFF) / 255.0F;
+         this.pose = nullxxxxxx;
+         this.mode = nullxxxxxxx;
+         this.packedLightCoords = nullxxxxxxxx;
       }
 
       @Override

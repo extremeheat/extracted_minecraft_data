@@ -222,8 +222,8 @@ public class FillCommand {
 
       public final SetBlockCommand.Filter filter;
 
-      private Mode(SetBlockCommand.Filter var3) {
-         this.filter = var3;
+      private Mode(final SetBlockCommand.Filter param3) {
+         this.filter = nullxx;
       }
    }
 }

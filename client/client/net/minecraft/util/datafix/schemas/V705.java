@@ -144,7 +144,7 @@ public class V705 extends NamespacedSchema {
 
    public Map<String, Supplier<TypeTemplate>> registerEntities(Schema var1) {
       HashMap var2 = Maps.newHashMap();
-      var1.registerSimple(var2, "minecraft:area_effect_cloud");
+      var1.register(var2, "minecraft:area_effect_cloud", var1x -> DSL.optionalFields("Particle", References.PARTICLE.in(var1)));
       registerMob(var1, var2, "minecraft:armor_stand");
       var1.register(var2, "minecraft:arrow", var1x -> DSL.optionalFields("inTile", References.BLOCK_NAME.in(var1)));
       registerMob(var1, var2, "minecraft:bat");
@@ -240,12 +240,7 @@ public class V705 extends NamespacedSchema {
                "Inventory",
                DSL.list(References.ITEM_STACK.in(var1)),
                "Offers",
-               DSL.optionalFields(
-                  "Recipes",
-                  DSL.list(
-                     DSL.optionalFields("buy", References.ITEM_STACK.in(var1), "buyB", References.ITEM_STACK.in(var1), "sell", References.ITEM_STACK.in(var1))
-                  )
-               ),
+               DSL.optionalFields("Recipes", DSL.list(References.VILLAGER_TRADE.in(var1))),
                V100.equipment(var1)
             )
       );
@@ -260,7 +255,11 @@ public class V705 extends NamespacedSchema {
       registerMob(var1, var2, "minecraft:zombie");
       var1.register(var2, "minecraft:zombie_horse", var1x -> DSL.optionalFields("SaddleItem", References.ITEM_STACK.in(var1), V100.equipment(var1)));
       registerMob(var1, var2, "minecraft:zombie_pigman");
-      registerMob(var1, var2, "minecraft:zombie_villager");
+      var1.register(
+         var2,
+         "minecraft:zombie_villager",
+         var1x -> DSL.optionalFields("Offers", DSL.optionalFields("Recipes", DSL.list(References.VILLAGER_TRADE.in(var1))), V100.equipment(var1))
+      );
       var1.registerSimple(var2, "minecraft:evocation_fangs");
       registerMob(var1, var2, "minecraft:evocation_illager");
       var1.registerSimple(var2, "minecraft:illusion_illager");

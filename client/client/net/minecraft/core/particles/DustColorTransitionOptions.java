@@ -1,13 +1,8 @@
 package net.minecraft.core.particles;
 
-import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import java.util.Locale;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -22,8 +17,8 @@ public class DustColorTransitionOptions extends DustParticleOptionsBase {
    );
    public static final MapCodec<DustColorTransitionOptions> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> var0.group(
-               ExtraCodecs.VECTOR3F.fieldOf("fromColor").forGetter(var0x -> var0x.color),
-               ExtraCodecs.VECTOR3F.fieldOf("toColor").forGetter(var0x -> var0x.toColor),
+               ExtraCodecs.VECTOR3F.fieldOf("from_color").forGetter(var0x -> var0x.color),
+               ExtraCodecs.VECTOR3F.fieldOf("to_color").forGetter(var0x -> var0x.toColor),
                Codec.FLOAT.fieldOf("scale").forGetter(var0x -> var0x.scale)
             )
             .apply(var0, DustColorTransitionOptions::new)
@@ -37,15 +32,6 @@ public class DustColorTransitionOptions extends DustParticleOptionsBase {
       var0 -> var0.scale,
       DustColorTransitionOptions::new
    );
-   public static final ParticleOptions.Deserializer<DustColorTransitionOptions> DESERIALIZER = new ParticleOptions.Deserializer<DustColorTransitionOptions>() {
-      public DustColorTransitionOptions fromCommand(ParticleType<DustColorTransitionOptions> var1, StringReader var2, HolderLookup.Provider var3) throws CommandSyntaxException {
-         Vector3f var4 = DustParticleOptionsBase.readVector3f(var2);
-         var2.expect(' ');
-         float var5 = var2.readFloat();
-         Vector3f var6 = DustParticleOptionsBase.readVector3f(var2);
-         return new DustColorTransitionOptions(var4, var6, var5);
-      }
-   };
    private final Vector3f toColor;
 
    public DustColorTransitionOptions(Vector3f var1, Vector3f var2, float var3) {
@@ -59,22 +45,6 @@ public class DustColorTransitionOptions extends DustParticleOptionsBase {
 
    public Vector3f getToColor() {
       return this.toColor;
-   }
-
-   @Override
-   public String writeToString(HolderLookup.Provider var1) {
-      return String.format(
-         Locale.ROOT,
-         "%s %.2f %.2f %.2f %.2f %.2f %.2f %.2f",
-         BuiltInRegistries.PARTICLE_TYPE.getKey(this.getType()),
-         this.color.x(),
-         this.color.y(),
-         this.color.z(),
-         this.scale,
-         this.toColor.x(),
-         this.toColor.y(),
-         this.toColor.z()
-      );
    }
 
    @Override

@@ -9,7 +9,6 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -153,37 +152,12 @@ public abstract class AbstractHurtingProjectile extends Projectile {
    }
 
    @Override
-   public boolean isPickable() {
-      return true;
-   }
-
-   @Override
-   public float getPickRadius() {
-      return 1.0F;
-   }
-
-   @Override
-   public boolean hurt(DamageSource var1, float var2) {
-      if (this.isInvulnerableTo(var1)) {
-         return false;
-      } else {
-         this.markHurt();
-         Entity var3 = var1.getEntity();
-         if (var3 != null) {
-            if (!this.level().isClientSide) {
-               Vec3 var4 = var3.getLookAngle();
-               this.setDeltaMovement(var4);
-               this.xPower = var4.x * 0.1;
-               this.yPower = var4.y * 0.1;
-               this.zPower = var4.z * 0.1;
-               this.setOwner(var3);
-            }
-
-            return true;
-         } else {
-            return false;
-         }
-      }
+   protected void onPunch(Entity var1) {
+      Vec3 var2 = var1.getLookAngle();
+      this.setDeltaMovement(var2);
+      this.xPower = var2.x * 0.1;
+      this.yPower = var2.y * 0.1;
+      this.zPower = var2.z * 0.1;
    }
 
    @Override

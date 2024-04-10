@@ -58,10 +58,10 @@ public record GuiMessageTag(int indicatorColor, @Nullable GuiMessageTag.Icon ico
       public final int width;
       public final int height;
 
-      private Icon(ResourceLocation var3, int var4, int var5) {
-         this.sprite = var3;
-         this.width = var4;
-         this.height = var5;
+      private Icon(final ResourceLocation param3, final int param4, final int param5) {
+         this.sprite = nullxx;
+         this.width = nullxxx;
+         this.height = nullxxxx;
       }
 
       public void draw(GuiGraphics var1, int var2, int var3) {

@@ -108,14 +108,6 @@ public record PotionContents(Optional<Holder<Potion>> potion, Optional<Integer> 
    }
 
    public int getColor() {
-      if (this.customColor.isPresent()) {
-         return this.customColor.get();
-      } else {
-         return this.potion.isEmpty() ? -524040 : getColor(this.getAllEffects());
-      }
-   }
-
-   public int getColorForArrow() {
       return this.customColor.isPresent() ? this.customColor.get() : getColor(this.getAllEffects());
    }
 

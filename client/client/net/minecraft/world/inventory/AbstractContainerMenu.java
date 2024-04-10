@@ -594,14 +594,15 @@ public abstract class AbstractContainerMenu {
             ItemStack var8 = var7.getItem();
             if (!var8.isEmpty() && ItemStack.isSameItemSameComponents(var1, var8)) {
                int var9 = var8.getCount() + var1.getCount();
-               if (var9 <= var1.getMaxStackSize()) {
+               int var10 = var7.getMaxStackSize(var8);
+               if (var9 <= var10) {
                   var1.setCount(0);
                   var8.setCount(var9);
                   var7.setChanged();
                   var5 = true;
-               } else if (var8.getCount() < var1.getMaxStackSize()) {
-                  var1.shrink(var1.getMaxStackSize() - var8.getCount());
-                  var8.setCount(var1.getMaxStackSize());
+               } else if (var8.getCount() < var10) {
+                  var1.shrink(var10 - var8.getCount());
+                  var8.setCount(var10);
                   var7.setChanged();
                   var5 = true;
                }
@@ -623,12 +624,12 @@ public abstract class AbstractContainerMenu {
          }
 
          while (var4 ? var6 >= var2 : var6 < var3) {
-            Slot var11 = this.slots.get(var6);
-            ItemStack var12 = var11.getItem();
-            if (var12.isEmpty() && var11.mayPlace(var1)) {
-               int var13 = var11.getMaxStackSize(var1);
-               var11.setByPlayer(var1.split(Math.min(var1.getCount(), var13)));
-               var11.setChanged();
+            Slot var12 = this.slots.get(var6);
+            ItemStack var13 = var12.getItem();
+            if (var13.isEmpty() && var12.mayPlace(var1)) {
+               int var14 = var12.getMaxStackSize(var1);
+               var12.setByPlayer(var1.split(Math.min(var1.getCount(), var14)));
+               var12.setChanged();
                var5 = true;
                break;
             }

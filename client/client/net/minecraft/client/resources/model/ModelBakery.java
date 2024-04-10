@@ -460,9 +460,9 @@ public class ModelBakery {
    class ModelBakerImpl implements ModelBaker {
       private final Function<Material, TextureAtlasSprite> modelTextureGetter;
 
-      ModelBakerImpl(BiFunction<ResourceLocation, Material, TextureAtlasSprite> var2, ResourceLocation var3) {
+      ModelBakerImpl(final BiFunction<ResourceLocation, Material, TextureAtlasSprite> param2, final ResourceLocation param3) {
          super();
-         this.modelTextureGetter = var2x -> (TextureAtlasSprite)var2.apply(var3, var2x);
+         this.modelTextureGetter = var2 -> (TextureAtlasSprite)nullx.apply(nullxx, var2);
       }
 
       @Override

@@ -70,6 +70,15 @@ public interface ByteBufCodecs {
          var1.writeShort(var2);
       }
    };
+   StreamCodec<ByteBuf, Integer> UNSIGNED_SHORT = new StreamCodec<ByteBuf, Integer>() {
+      public Integer decode(ByteBuf var1) {
+         return var1.readUnsignedShort();
+      }
+
+      public void encode(ByteBuf var1, Integer var2) {
+         var1.writeShort(var2);
+      }
+   };
    StreamCodec<ByteBuf, Integer> INT = new StreamCodec<ByteBuf, Integer>() {
       public Integer decode(ByteBuf var1) {
          return var1.readInt();

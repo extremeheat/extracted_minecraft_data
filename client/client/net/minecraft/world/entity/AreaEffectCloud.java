@@ -2,15 +2,12 @@ package net.minecraft.world.entity;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.logging.LogUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import javax.annotation.Nullable;
-import net.minecraft.commands.arguments.ParticleArgument;
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -20,7 +17,9 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.FastColor;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.item.alchemy.PotionContents;
@@ -97,7 +96,7 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
       ParticleOptions var1 = this.entityData.get(DATA_PARTICLE);
       if (var1 instanceof ColorParticleOption var2) {
          int var3 = this.potionContents.equals(PotionContents.EMPTY) ? 0 : this.potionContents.getColor();
-         this.entityData.set(DATA_PARTICLE, ColorParticleOption.create(var2.getType(), var3));
+         this.entityData.set(DATA_PARTICLE, ColorParticleOption.create(var2.getType(), FastColor.ARGB32.opaque(var3)));
       }
    }
 
@@ -320,17 +319,17 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
          this.ownerUUID = var1.getUUID("Owner");
       }
 
-      if (var1.contains("Particle", 8)) {
-         try {
-            this.setParticle(ParticleArgument.readParticle(new StringReader(var1.getString("Particle")), this.registryAccess()));
-         } catch (CommandSyntaxException var3) {
-            LOGGER.warn("Couldn't load custom particle {}", var1.getString("Particle"), var3);
-         }
+      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+      if (var1.contains("Particle", 10)) {
+         ParticleTypes.CODEC
+            .parse(var2, var1.get("Particle"))
+            .resultOrPartial(var0 -> LOGGER.warn("Failed to parse area effect cloud particle options: '{}'", var0))
+            .ifPresent(this::setParticle);
       }
 
       if (var1.contains("potion_contents")) {
          PotionContents.CODEC
-            .parse(NbtOps.INSTANCE, var1.get("potion_contents"))
+            .parse(var2, var1.get("potion_contents"))
             .resultOrPartial(var0 -> LOGGER.warn("Failed to parse area effect cloud potions: '{}'", var0))
             .ifPresent(this::setPotionContents);
       }
@@ -346,14 +345,15 @@ public class AreaEffectCloud extends Entity implements TraceableEntity {
       var1.putFloat("RadiusOnUse", this.radiusOnUse);
       var1.putFloat("RadiusPerTick", this.radiusPerTick);
       var1.putFloat("Radius", this.getRadius());
-      var1.putString("Particle", this.getParticle().writeToString(this.registryAccess()));
+      RegistryOps var2 = this.registryAccess().createSerializationContext(NbtOps.INSTANCE);
+      var1.put("Particle", (Tag)ParticleTypes.CODEC.encodeStart(var2, this.getParticle()).getOrThrow());
       if (this.ownerUUID != null) {
          var1.putUUID("Owner", this.ownerUUID);
       }
 
       if (!this.potionContents.equals(PotionContents.EMPTY)) {
-         Tag var2 = (Tag)PotionContents.CODEC.encodeStart(NbtOps.INSTANCE, this.potionContents).getOrThrow();
-         var1.put("potion_contents", var2);
+         Tag var3 = (Tag)PotionContents.CODEC.encodeStart(var2, this.potionContents).getOrThrow();
+         var1.put("potion_contents", var3);
       }
    }
 

@@ -9,8 +9,8 @@ public enum RedstoneSide implements StringRepresentable {
 
    private final String name;
 
-   private RedstoneSide(String var3) {
-      this.name = var3;
+   private RedstoneSide(final String param3) {
+      this.name = nullxx;
    }
 
    @Override

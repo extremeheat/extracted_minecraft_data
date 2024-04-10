@@ -22,8 +22,8 @@ public class CalibratedSculkSensorBlockEntity extends SculkSensorBlockEntity {
    }
 
    protected class VibrationUser extends SculkSensorBlockEntity.VibrationUser {
-      public VibrationUser(BlockPos var2) {
-         super(var2);
+      public VibrationUser(final BlockPos param2) {
+         super(nullx);
       }
 
       @Override

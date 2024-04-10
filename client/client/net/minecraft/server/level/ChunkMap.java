@@ -1241,8 +1241,8 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
    }
 
    class DistanceManager extends net.minecraft.server.level.DistanceManager {
-      protected DistanceManager(Executor var2, Executor var3) {
-         super(var2, var3);
+      protected DistanceManager(final Executor param2, final Executor param3) {
+         super(nullx, nullxx);
       }
 
       @Override
@@ -1270,12 +1270,12 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
       SectionPos lastSectionPos;
       private final Set<ServerPlayerConnection> seenBy = Sets.newIdentityHashSet();
 
-      public TrackedEntity(Entity var2, int var3, int var4, boolean var5) {
+      public TrackedEntity(final Entity param2, final int param3, final int param4, final boolean param5) {
          super();
-         this.serverEntity = new ServerEntity(ChunkMap.this.level, var2, var4, var5, this::broadcast);
-         this.entity = var2;
-         this.range = var3;
-         this.lastSectionPos = SectionPos.of(var2);
+         this.serverEntity = new ServerEntity(ChunkMap.this.level, nullx, nullxxx, nullxxxx, this::broadcast);
+         this.entity = nullx;
+         this.range = nullxx;
+         this.lastSectionPos = SectionPos.of(nullx);
       }
 
       @Override

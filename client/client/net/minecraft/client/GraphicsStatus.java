@@ -13,9 +13,9 @@ public enum GraphicsStatus implements OptionEnum {
    private final int id;
    private final String key;
 
-   private GraphicsStatus(int var3, String var4) {
-      this.id = var3;
-      this.key = var4;
+   private GraphicsStatus(final int param3, final String param4) {
+      this.id = nullxx;
+      this.key = nullxxx;
    }
 
    @Override

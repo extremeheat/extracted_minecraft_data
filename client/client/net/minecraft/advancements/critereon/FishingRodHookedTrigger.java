@@ -60,7 +60,7 @@ public class FishingRodHookedTrigger extends SimpleCriterionTrigger<FishingRodHo
       }
 
       public boolean matches(ItemStack var1, LootContext var2, Collection<ItemStack> var3) {
-         if (this.rod.isPresent() && !this.rod.get().matches(var1)) {
+         if (this.rod.isPresent() && !this.rod.get().test(var1)) {
             return false;
          } else if (this.entity.isPresent() && !this.entity.get().matches(var2)) {
             return false;
@@ -68,12 +68,12 @@ public class FishingRodHookedTrigger extends SimpleCriterionTrigger<FishingRodHo
             if (this.item.isPresent()) {
                boolean var4 = false;
                Entity var5 = var2.getParamOrNull(LootContextParams.THIS_ENTITY);
-               if (var5 instanceof ItemEntity var6 && this.item.get().matches(var6.getItem())) {
+               if (var5 instanceof ItemEntity var6 && this.item.get().test(var6.getItem())) {
                   var4 = true;
                }
 
                for (ItemStack var7 : var3) {
-                  if (this.item.get().matches(var7)) {
+                  if (this.item.get().test(var7)) {
                      var4 = true;
                      break;
                   }

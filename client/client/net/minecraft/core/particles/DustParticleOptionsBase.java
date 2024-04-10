@@ -2,9 +2,6 @@ package net.minecraft.core.particles;
 
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import java.util.Locale;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.Mth;
 import org.joml.Vector3f;
 
@@ -28,19 +25,6 @@ public abstract class DustParticleOptionsBase implements ParticleOptions {
       var0.expect(' ');
       float var3 = var0.readFloat();
       return new Vector3f(var1, var2, var3);
-   }
-
-   @Override
-   public String writeToString(HolderLookup.Provider var1) {
-      return String.format(
-         Locale.ROOT,
-         "%s %.2f %.2f %.2f %.2f",
-         BuiltInRegistries.PARTICLE_TYPE.getKey(this.getType()),
-         this.color.x(),
-         this.color.y(),
-         this.color.z(),
-         this.scale
-      );
    }
 
    public Vector3f getColor() {

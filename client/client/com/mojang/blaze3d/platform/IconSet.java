@@ -14,8 +14,8 @@ public enum IconSet {
 
    private final String[] path;
 
-   private IconSet(String... var3) {
-      this.path = var3;
+   private IconSet(final String... param3) {
+      this.path = nullxx;
    }
 
    public List<IoSupplier<InputStream>> getStandardIcons(PackResources var1) throws IOException {

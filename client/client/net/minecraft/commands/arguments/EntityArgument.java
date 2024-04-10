@@ -179,10 +179,10 @@ public class EntityArgument implements ArgumentType<EntitySelector> {
          final boolean single;
          final boolean playersOnly;
 
-         Template(boolean var2, boolean var3) {
+         Template(final boolean param2, final boolean param3) {
             super();
-            this.single = var2;
-            this.playersOnly = var3;
+            this.single = nullx;
+            this.playersOnly = nullxx;
          }
 
          public EntityArgument instantiate(CommandBuildContext var1) {

@@ -47,8 +47,8 @@ public enum RecipeBookCategories {
    );
    private final List<ItemStack> itemIcons;
 
-   private RecipeBookCategories(ItemStack... var3) {
-      this.itemIcons = ImmutableList.copyOf(var3);
+   private RecipeBookCategories(final ItemStack... param3) {
+      this.itemIcons = ImmutableList.copyOf(nullxx);
    }
 
    public static List<RecipeBookCategories> getCategories(RecipeBookType var0) {

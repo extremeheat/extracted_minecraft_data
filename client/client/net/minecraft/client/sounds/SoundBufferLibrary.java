@@ -1,7 +1,6 @@
 package net.minecraft.client.sounds;
 
 import com.google.common.collect.Maps;
-import com.mojang.blaze3d.audio.OggAudioStream;
 import com.mojang.blaze3d.audio.SoundBuffer;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,7 +29,7 @@ public class SoundBufferLibrary {
                SoundBuffer var5;
                try (
                   InputStream var2 = this.resourceManager.open(var1x);
-                  OggAudioStream var3 = new OggAudioStream(var2);
+                  JOrbisAudioStream var3 = new JOrbisAudioStream(var2);
                ) {
                   ByteBuffer var4 = var3.readAll();
                   var5 = new SoundBuffer(var4, var3.getFormat());
@@ -40,18 +39,18 @@ public class SoundBufferLibrary {
             } catch (IOException var10) {
                throw new CompletionException(var10);
             }
-         }, Util.backgroundExecutor()));
+         }, Util.nonCriticalIoPool()));
    }
 
    public CompletableFuture<AudioStream> getStream(ResourceLocation var1, boolean var2) {
       return CompletableFuture.supplyAsync(() -> {
          try {
             InputStream var3 = this.resourceManager.open(var1);
-            return (AudioStream)(var2 ? new LoopingAudioStream(OggAudioStream::new, var3) : new OggAudioStream(var3));
+            return (AudioStream)(var2 ? new LoopingAudioStream(JOrbisAudioStream::new, var3) : new JOrbisAudioStream(var3));
          } catch (IOException var4) {
             throw new CompletionException(var4);
          }
-      }, Util.backgroundExecutor());
+      }, Util.nonCriticalIoPool());
    }
 
    public void clear() {

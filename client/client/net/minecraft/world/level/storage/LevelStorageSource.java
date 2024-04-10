@@ -423,11 +423,11 @@ public class LevelStorageSource {
       private final String levelId;
       private final Map<LevelResource, Path> resources = Maps.newHashMap();
 
-      LevelStorageAccess(String var2, Path var3) throws IOException {
+      LevelStorageAccess(final String param2, final Path param3) throws IOException {
          super();
-         this.levelId = var2;
-         this.levelDirectory = new LevelStorageSource.LevelDirectory(var3);
-         this.lock = DirectoryLock.create(var3);
+         this.levelId = nullx;
+         this.levelDirectory = new LevelStorageSource.LevelDirectory(nullxx);
+         this.lock = DirectoryLock.create(nullxx);
       }
 
       public long estimateDiskSpace() {

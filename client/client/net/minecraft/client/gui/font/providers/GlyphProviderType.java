@@ -16,9 +16,9 @@ public enum GlyphProviderType implements StringRepresentable {
    private final String name;
    private final MapCodec<? extends GlyphProviderDefinition> codec;
 
-   private GlyphProviderType(String var3, MapCodec<? extends GlyphProviderDefinition> var4) {
-      this.name = var3;
-      this.codec = var4;
+   private GlyphProviderType(final String param3, final MapCodec<? extends GlyphProviderDefinition> param4) {
+      this.name = nullxx;
+      this.codec = nullxxx;
    }
 
    @Override

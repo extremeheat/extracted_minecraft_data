@@ -68,7 +68,7 @@ public class RecipeCraftedTrigger extends SimpleCriterionTrigger<RecipeCraftedTr
                Iterator var7 = var3.iterator();
 
                while (var7.hasNext()) {
-                  if (var5.matches((ItemStack)var7.next())) {
+                  if (var5.test((ItemStack)var7.next())) {
                      var7.remove();
                      var6 = true;
                      break;

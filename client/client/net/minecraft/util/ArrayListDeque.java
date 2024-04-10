@@ -317,9 +317,9 @@ public class ArrayListDeque<T> extends AbstractList<T> implements ListAndDeque<T
    class ReversedView extends AbstractList<T> implements ListAndDeque<T> {
       private final ArrayListDeque<T> source;
 
-      public ReversedView(ArrayListDeque<T> var2) {
+      public ReversedView(final ArrayListDeque<T> param2) {
          super();
-         this.source = var2;
+         this.source = nullx;
       }
 
       @Override

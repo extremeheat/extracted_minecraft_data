@@ -52,9 +52,9 @@ public abstract class Team {
          return BY_NAME.get(var0);
       }
 
-      private CollisionRule(String var3, int var4) {
-         this.name = var3;
-         this.id = var4;
+      private CollisionRule(final String param3, final int param4) {
+         this.name = nullxx;
+         this.id = nullxxx;
       }
 
       public Component getDisplayName() {
@@ -82,9 +82,9 @@ public abstract class Team {
          return BY_NAME.get(var0);
       }
 
-      private Visibility(String var3, int var4) {
-         this.name = var3;
-         this.id = var4;
+      private Visibility(final String param3, final int param4) {
+         this.name = nullxx;
+         this.id = nullxxx;
       }
 
       public Component getDisplayName() {

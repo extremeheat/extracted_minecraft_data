@@ -13,8 +13,8 @@ public enum Markings {
    private static final IntFunction<Markings> BY_ID = ByIdMap.continuous(Markings::getId, values(), ByIdMap.OutOfBoundsStrategy.WRAP);
    private final int id;
 
-   private Markings(int var3) {
-      this.id = var3;
+   private Markings(final int param3) {
+      this.id = nullxx;
    }
 
    public int getId() {

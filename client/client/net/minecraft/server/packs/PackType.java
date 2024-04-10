@@ -6,8 +6,8 @@ public enum PackType {
 
    private final String directory;
 
-   private PackType(String var3) {
-      this.directory = var3;
+   private PackType(final String param3) {
+      this.directory = nullxx;
    }
 
    public String getDirectory() {

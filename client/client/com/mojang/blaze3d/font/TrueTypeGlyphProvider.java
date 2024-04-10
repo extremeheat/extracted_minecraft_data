@@ -144,14 +144,14 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
       private final float advance;
       final int index;
 
-      Glyph(float var2, float var3, int var4, int var5, float var6, int var7) {
+      Glyph(final float param2, final float param3, final int param4, final int param5, final float param6, final int param7) {
          super();
-         this.width = var4;
-         this.height = var5;
-         this.advance = var6 / TrueTypeGlyphProvider.this.oversample;
-         this.bearingX = var2 / TrueTypeGlyphProvider.this.oversample;
-         this.bearingY = var3 / TrueTypeGlyphProvider.this.oversample;
-         this.index = var7;
+         this.width = nullxxx;
+         this.height = nullxxxx;
+         this.advance = nullxxxxx / TrueTypeGlyphProvider.this.oversample;
+         this.bearingX = nullx / TrueTypeGlyphProvider.this.oversample;
+         this.bearingY = nullxx / TrueTypeGlyphProvider.this.oversample;
+         this.index = nullxxxxxx;
       }
 
       @Override

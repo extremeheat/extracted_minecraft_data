@@ -203,8 +203,8 @@ public class ClientboundBossEventPacket implements Packet<ClientGamePacketListen
 
       final StreamDecoder<RegistryFriendlyByteBuf, ClientboundBossEventPacket.Operation> reader;
 
-      private OperationType(StreamDecoder<RegistryFriendlyByteBuf, ClientboundBossEventPacket.Operation> var3) {
-         this.reader = var3;
+      private OperationType(final StreamDecoder<RegistryFriendlyByteBuf, ClientboundBossEventPacket.Operation> param3) {
+         this.reader = nullxx;
       }
    }
 

@@ -149,8 +149,8 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
    }
 
    class BeaconCancelButton extends BeaconScreen.BeaconSpriteScreenButton {
-      public BeaconCancelButton(int var2, int var3) {
-         super(var2, var3, BeaconScreen.CANCEL_SPRITE, CommonComponents.GUI_CANCEL);
+      public BeaconCancelButton(final int param2, final int param3) {
+         super(nullx, nullxx, BeaconScreen.CANCEL_SPRITE, CommonComponents.GUI_CANCEL);
       }
 
       @Override
@@ -164,8 +164,8 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
    }
 
    class BeaconConfirmButton extends BeaconScreen.BeaconSpriteScreenButton {
-      public BeaconConfirmButton(int var2, int var3) {
-         super(var2, var3, BeaconScreen.CONFIRM_SPRITE, CommonComponents.GUI_DONE);
+      public BeaconConfirmButton(final int param2, final int param3) {
+         super(nullx, nullxx, BeaconScreen.CONFIRM_SPRITE, CommonComponents.GUI_DONE);
       }
 
       @Override
@@ -188,11 +188,11 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
       private Holder<MobEffect> effect;
       private TextureAtlasSprite sprite;
 
-      public BeaconPowerButton(int var2, int var3, Holder<MobEffect> var4, boolean var5, int var6) {
-         super(var2, var3);
-         this.isPrimary = var5;
-         this.tier = var6;
-         this.setEffect(var4);
+      public BeaconPowerButton(final int param2, final int param3, final Holder<MobEffect> param4, final boolean param5, final int param6) {
+         super(nullx, nullxx);
+         this.isPrimary = nullxxxx;
+         this.tier = nullxxxxx;
+         this.setEffect(nullxxx);
       }
 
       protected void setEffect(Holder<MobEffect> var1) {
@@ -294,8 +294,8 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
    }
 
    class BeaconUpgradePowerButton extends BeaconScreen.BeaconPowerButton {
-      public BeaconUpgradePowerButton(int var2, int var3, Holder<MobEffect> var4) {
-         super(var2, var3, var4, false, 3);
+      public BeaconUpgradePowerButton(final int param2, final int param3, final Holder<MobEffect> param4) {
+         super(nullx, nullxx, nullxxx, false, 3);
       }
 
       @Override

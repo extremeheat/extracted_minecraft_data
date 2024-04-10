@@ -432,8 +432,8 @@ public class AdvancementCommands {
 
       private final String key;
 
-      Action(String var3) {
-         this.key = "commands.advancement." + var3;
+      Action(final String param3) {
+         this.key = "commands.advancement." + nullxx;
       }
 
       public int perform(ServerPlayer var1, Iterable<AdvancementHolder> var2) {
@@ -467,9 +467,9 @@ public class AdvancementCommands {
       final boolean parents;
       final boolean children;
 
-      private Mode(boolean var3, boolean var4) {
-         this.parents = var3;
-         this.children = var4;
+      private Mode(final boolean param3, final boolean param4) {
+         this.parents = nullxx;
+         this.children = nullxxx;
       }
    }
 }

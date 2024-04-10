@@ -11,8 +11,8 @@ public enum EntityAttachment {
 
    private final EntityAttachment.Fallback fallback;
 
-   private EntityAttachment(EntityAttachment.Fallback var3) {
-      this.fallback = var3;
+   private EntityAttachment(final EntityAttachment.Fallback param3) {
+      this.fallback = nullxx;
    }
 
    public List<Vec3> createFallbackPoints(float var1, float var2) {

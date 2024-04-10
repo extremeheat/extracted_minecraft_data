@@ -68,11 +68,11 @@ public class DataGenerator {
       private final String providerPrefix;
       private final PackOutput output;
 
-      PackGenerator(boolean var2, String var3, PackOutput var4) {
+      PackGenerator(final boolean param2, final String param3, final PackOutput param4) {
          super();
-         this.toRun = var2;
-         this.providerPrefix = var3;
-         this.output = var4;
+         this.toRun = nullx;
+         this.providerPrefix = nullxx;
+         this.output = nullxxx;
       }
 
       public <T extends DataProvider> T addProvider(DataProvider.Factory<T> var1) {

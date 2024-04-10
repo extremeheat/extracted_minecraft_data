@@ -163,13 +163,13 @@ public class WorldUpgrader {
       protected CompletableFuture<Void> previousWriteFuture;
       protected final DataFixTypes dataFixType;
 
-      AbstractUpgrader(DataFixTypes var2, String var3, String var4, MutableComponent var5, MutableComponent var6) {
+      AbstractUpgrader(final DataFixTypes param2, final String param3, final String param4, final MutableComponent param5, final MutableComponent param6) {
          super();
-         this.dataFixType = var2;
-         this.type = var3;
-         this.folderName = var4;
-         this.upgradingStatus = var5;
-         this.finishedStatus = var6;
+         this.dataFixType = nullx;
+         this.type = nullxx;
+         this.folderName = nullxxx;
+         this.upgradingStatus = nullxxxx;
+         this.finishedStatus = nullxxxxx;
       }
 
       public void upgrade() {
@@ -442,8 +442,8 @@ public class WorldUpgrader {
    }
 
    abstract class SimpleRegionStorageUpgrader extends WorldUpgrader.AbstractUpgrader<SimpleRegionStorage> {
-      SimpleRegionStorageUpgrader(DataFixTypes var2, String var3, MutableComponent var4, MutableComponent var5) {
-         super(var2, var3, var3, var4, var5);
+      SimpleRegionStorageUpgrader(final DataFixTypes param2, final String param3, final MutableComponent param4, final MutableComponent param5) {
+         super(nullx, nullxx, nullxx, nullxxx, nullxxxx);
       }
 
       protected SimpleRegionStorage createStorage(RegionStorageInfo var1, Path var2) {

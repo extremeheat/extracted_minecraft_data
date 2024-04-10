@@ -75,9 +75,9 @@ public class RealmsBackupInfoScreen extends RealmsScreen {
    }
 
    class BackupInfoList extends ObjectSelectionList<RealmsBackupInfoScreen.BackupInfoListEntry> {
-      public BackupInfoList(Minecraft var2) {
+      public BackupInfoList(final Minecraft param2) {
          super(
-            var2,
+            nullx,
             RealmsBackupInfoScreen.this.width,
             RealmsBackupInfoScreen.this.layout.getContentHeight(),
             RealmsBackupInfoScreen.this.layout.getHeaderHeight(),
@@ -86,7 +86,7 @@ public class RealmsBackupInfoScreen extends RealmsScreen {
          if (RealmsBackupInfoScreen.this.backup.changeList != null) {
             RealmsBackupInfoScreen.this.backup
                .changeList
-               .forEach((var1x, var2x) -> this.addEntry(RealmsBackupInfoScreen.this.new BackupInfoListEntry(var1x, var2x)));
+               .forEach((var1, var2) -> this.addEntry(RealmsBackupInfoScreen.this.new BackupInfoListEntry(var1, var2)));
          }
       }
    }
@@ -106,10 +106,10 @@ public class RealmsBackupInfoScreen extends RealmsScreen {
       private final String key;
       private final String value;
 
-      public BackupInfoListEntry(String var2, String var3) {
+      public BackupInfoListEntry(final String param2, final String param3) {
          super();
-         this.key = var2;
-         this.value = var3;
+         this.key = nullx;
+         this.value = nullxx;
       }
 
       @Override

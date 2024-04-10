@@ -80,10 +80,10 @@ public class Program {
       private final int glType;
       private final Map<String, Program> programs = Maps.newHashMap();
 
-      private Type(String var3, String var4, int var5) {
-         this.name = var3;
-         this.extension = var4;
-         this.glType = var5;
+      private Type(final String param3, final String param4, final int param5) {
+         this.name = nullxx;
+         this.extension = nullxxx;
+         this.glType = nullxxxx;
       }
 
       public String getName() {

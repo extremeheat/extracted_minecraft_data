@@ -189,9 +189,9 @@ public class ScoreHolderArgument implements ArgumentType<ScoreHolderArgument.Res
       public final class Template implements ArgumentTypeInfo.Template<ScoreHolderArgument> {
          final boolean multiple;
 
-         Template(boolean var2) {
+         Template(final boolean param2) {
             super();
-            this.multiple = var2;
+            this.multiple = nullx;
          }
 
          public ScoreHolderArgument instantiate(CommandBuildContext var1) {

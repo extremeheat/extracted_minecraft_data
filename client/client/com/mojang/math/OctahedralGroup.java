@@ -98,14 +98,14 @@ public enum OctahedralGroup implements StringRepresentable {
       .map(var0 -> Arrays.stream(values()).filter(var1 -> var0.compose(var1) == IDENTITY).findAny().get())
       .toArray(OctahedralGroup[]::new);
 
-   private OctahedralGroup(String var3, SymmetricGroup3 var4, boolean var5, boolean var6, boolean var7) {
-      this.name = var3;
-      this.invertX = var5;
-      this.invertY = var6;
-      this.invertZ = var7;
-      this.permutation = var4;
-      this.transformation = new Matrix3f().scaling(var5 ? -1.0F : 1.0F, var6 ? -1.0F : 1.0F, var7 ? -1.0F : 1.0F);
-      this.transformation.mul(var4.transformation());
+   private OctahedralGroup(final String param3, final SymmetricGroup3 param4, final boolean param5, final boolean param6, final boolean param7) {
+      this.name = nullxx;
+      this.invertX = nullxxxx;
+      this.invertY = nullxxxxx;
+      this.invertZ = nullxxxxxx;
+      this.permutation = nullxxx;
+      this.transformation = new Matrix3f().scaling(nullxxxx ? -1.0F : 1.0F, nullxxxxx ? -1.0F : 1.0F, nullxxxxxx ? -1.0F : 1.0F);
+      this.transformation.mul(nullxxx.transformation());
    }
 
    private BooleanList packInversions() {

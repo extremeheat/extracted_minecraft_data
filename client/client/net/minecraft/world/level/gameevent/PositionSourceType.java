@@ -12,7 +12,7 @@ public interface PositionSourceType<T extends PositionSource> {
 
    MapCodec<T> codec();
 
-   StreamCodec<RegistryFriendlyByteBuf, T> streamCodec();
+   StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec();
 
    static <S extends PositionSourceType<T>, T extends PositionSource> S register(String var0, S var1) {
       return Registry.register(BuiltInRegistries.POSITION_SOURCE_TYPE, var0, (S)var1);

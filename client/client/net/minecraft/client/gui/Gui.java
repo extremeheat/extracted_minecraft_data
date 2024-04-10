@@ -1338,23 +1338,23 @@ public class Gui {
       private final ResourceLocation hardcoreHalfBlinking;
 
       private HeartType(
-         ResourceLocation var3,
-         ResourceLocation var4,
-         ResourceLocation var5,
-         ResourceLocation var6,
-         ResourceLocation var7,
-         ResourceLocation var8,
-         ResourceLocation var9,
-         ResourceLocation var10
+         final ResourceLocation param3,
+         final ResourceLocation param4,
+         final ResourceLocation param5,
+         final ResourceLocation param6,
+         final ResourceLocation param7,
+         final ResourceLocation param8,
+         final ResourceLocation param9,
+         final ResourceLocation param10
       ) {
-         this.full = var3;
-         this.fullBlinking = var4;
-         this.half = var5;
-         this.halfBlinking = var6;
-         this.hardcoreFull = var7;
-         this.hardcoreFullBlinking = var8;
-         this.hardcoreHalf = var9;
-         this.hardcoreHalfBlinking = var10;
+         this.full = nullxx;
+         this.fullBlinking = nullxxx;
+         this.half = nullxxxx;
+         this.halfBlinking = nullxxxxx;
+         this.hardcoreFull = nullxxxxxx;
+         this.hardcoreFullBlinking = nullxxxxxxx;
+         this.hardcoreHalf = nullxxxxxxxx;
+         this.hardcoreHalfBlinking = nullxxxxxxxxx;
       }
 
       public ResourceLocation getSprite(boolean var1, boolean var2, boolean var3) {

@@ -10,12 +10,12 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.effect.MobEffectInstance;
 
-public record FoodProperties(int nutrition, float saturationModifier, boolean canAlwaysEat, float eatSeconds, List<FoodProperties.PossibleEffect> effects) {
+public record FoodProperties(int nutrition, float saturation, boolean canAlwaysEat, float eatSeconds, List<FoodProperties.PossibleEffect> effects) {
    private static final float DEFAULT_EAT_SECONDS = 1.6F;
    public static final Codec<FoodProperties> DIRECT_CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
                ExtraCodecs.NON_NEGATIVE_INT.fieldOf("nutrition").forGetter(FoodProperties::nutrition),
-               Codec.FLOAT.fieldOf("saturation_modifier").forGetter(FoodProperties::saturationModifier),
+               Codec.FLOAT.fieldOf("saturation").forGetter(FoodProperties::saturation),
                Codec.BOOL.optionalFieldOf("can_always_eat", false).forGetter(FoodProperties::canAlwaysEat),
                ExtraCodecs.POSITIVE_FLOAT.optionalFieldOf("eat_seconds", 1.6F).forGetter(FoodProperties::eatSeconds),
                FoodProperties.PossibleEffect.CODEC.listOf().optionalFieldOf("effects", List.of()).forGetter(FoodProperties::effects)
@@ -26,7 +26,7 @@ public record FoodProperties(int nutrition, float saturationModifier, boolean ca
       ByteBufCodecs.VAR_INT,
       FoodProperties::nutrition,
       ByteBufCodecs.FLOAT,
-      FoodProperties::saturationModifier,
+      FoodProperties::saturation,
       ByteBufCodecs.BOOL,
       FoodProperties::canAlwaysEat,
       ByteBufCodecs.FLOAT,
@@ -36,10 +36,10 @@ public record FoodProperties(int nutrition, float saturationModifier, boolean ca
       FoodProperties::new
    );
 
-   public FoodProperties(int nutrition, float saturationModifier, boolean canAlwaysEat, float eatSeconds, List<FoodProperties.PossibleEffect> effects) {
+   public FoodProperties(int nutrition, float saturation, boolean canAlwaysEat, float eatSeconds, List<FoodProperties.PossibleEffect> effects) {
       super();
       this.nutrition = nutrition;
-      this.saturationModifier = saturationModifier;
+      this.saturation = saturation;
       this.canAlwaysEat = canAlwaysEat;
       this.eatSeconds = eatSeconds;
       this.effects = effects;
@@ -86,7 +86,8 @@ public record FoodProperties(int nutrition, float saturationModifier, boolean ca
       }
 
       public FoodProperties build() {
-         return new FoodProperties(this.nutrition, this.saturationModifier, this.canAlwaysEat, this.eatSeconds, this.effects.build());
+         float var1 = FoodConstants.saturationByModifier(this.nutrition, this.saturationModifier);
+         return new FoodProperties(this.nutrition, var1, this.canAlwaysEat, this.eatSeconds, this.effects.build());
       }
    }
 

@@ -515,9 +515,9 @@ public class Llama extends AbstractChestedHorse implements VariantHolder<Llama.V
       final int id;
       private final String name;
 
-      private Variant(int var3, String var4) {
-         this.id = var3;
-         this.name = var4;
+      private Variant(final int param3, final String param4) {
+         this.id = nullxx;
+         this.name = nullxxx;
       }
 
       public int getId() {

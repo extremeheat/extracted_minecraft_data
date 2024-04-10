@@ -30,8 +30,8 @@ public enum Pose {
    public static final StreamCodec<ByteBuf, Pose> STREAM_CODEC = ByteBufCodecs.idMapper(BY_ID, Pose::id);
    private final int id;
 
-   private Pose(int var3) {
-      this.id = var3;
+   private Pose(final int param3) {
+      this.id = nullxx;
    }
 
    public int id() {

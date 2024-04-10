@@ -2967,8 +2967,8 @@ public class Minecraft extends ReentrantBlockableEventLoop<Runnable> implements 
       static final Component INFO_DISABLED_BY_PROFILE = Component.translatable("chat.disabled.profile.moreInfo");
       private final Component message;
 
-      ChatStatus(Component var3) {
-         this.message = var3;
+      ChatStatus(final Component param3) {
+         this.message = nullxx;
       }
 
       public Component getMessage() {

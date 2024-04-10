@@ -25,6 +25,9 @@ public abstract class LootItemConditionalFunction implements LootItemFunction {
       this.compositePredicates = Util.allOf(var1);
    }
 
+   @Override
+   public abstract LootItemFunctionType<? extends LootItemConditionalFunction> getType();
+
    protected static <T extends LootItemConditionalFunction> P1<Mu<T>, List<LootItemCondition>> commonFields(Instance<T> var0) {
       return var0.group(LootItemConditions.DIRECT_CODEC.listOf().optionalFieldOf("conditions", List.of()).forGetter(var0x -> var0x.predicates));
    }

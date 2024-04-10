@@ -114,10 +114,10 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
       }
 
       class PackList extends ObjectSelectionList<ConfirmExperimentalFeaturesScreen.DetailsScreen.PackListEntry> {
-         public PackList(Minecraft var1, Collection<Pack> var2, Collection var3) {
-            super(var2, var1.width, var1.layout.getContentHeight(), var1.layout.getHeaderHeight(), (9 + 2) * 3);
+         public PackList(final Minecraft param1, final Collection<Pack> param2, final Collection param3) {
+            super(nullx, var1.width, var1.layout.getContentHeight(), var1.layout.getHeaderHeight(), (9 + 2) * 3);
 
-            for (Pack var5 : var3) {
+            for (Pack var5 : nullxx) {
                String var6 = FeatureFlags.printMissingFlags(FeatureFlags.VANILLA_SET, var5.getRequestedFeatures());
                if (!var6.isEmpty()) {
                   MutableComponent var7 = ComponentUtils.mergeStyles(var5.getTitle().copy(), Style.EMPTY.withBold(true));
@@ -138,11 +138,11 @@ public class ConfirmExperimentalFeaturesScreen extends Screen {
          private final Component message;
          private final MultiLineLabel splitMessage;
 
-         PackListEntry(Component var2, Component var3, MultiLineLabel var4) {
+         PackListEntry(final Component param2, final Component param3, final MultiLineLabel param4) {
             super();
-            this.packId = var2;
-            this.message = var3;
-            this.splitMessage = var4;
+            this.packId = nullx;
+            this.message = nullxx;
+            this.splitMessage = nullxxx;
          }
 
          @Override

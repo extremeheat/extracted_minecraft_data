@@ -273,43 +273,47 @@ public class TitleScreen extends Screen {
             var6 = Mth.clamp(var6, 0.0F, 1.0F);
             var5 = Mth.clampedMap(var6, 0.5F, 1.0F, 0.0F, 1.0F);
             this.panoramaFade = Mth.clampedMap(var6, 0.0F, 0.5F, 0.0F, 1.0F);
-
-            for (GuiEventListener var8 : this.children()) {
-               if (var8 instanceof AbstractWidget var9) {
-                  var9.setAlpha(var5);
-               }
-            }
          }
+
+         this.fadeWidgets(var5);
       }
 
       this.renderPanorama(var1, var4);
-      int var11 = Mth.ceil(var5 * 255.0F) << 24;
-      if ((var11 & -67108864) != 0) {
+      int var9 = Mth.ceil(var5 * 255.0F) << 24;
+      if ((var9 & -67108864) != 0) {
          super.render(var1, var2, var3, var4);
          this.logoRenderer.renderLogo(var1, this.width, var5);
          if (this.warningLabel != null) {
-            this.warningLabel.render(var1, var11);
+            this.warningLabel.render(var1, var9);
          }
 
          if (this.splash != null && !this.minecraft.options.hideSplashTexts().get()) {
-            this.splash.render(var1, this.width, this.font, var11);
+            this.splash.render(var1, this.width, this.font, var9);
          }
 
-         String var12 = "Minecraft " + SharedConstants.getCurrentVersion().getName();
+         String var7 = "Minecraft " + SharedConstants.getCurrentVersion().getName();
          if (this.minecraft.isDemo()) {
-            var12 = var12 + " Demo";
+            var7 = var7 + " Demo";
          } else {
-            var12 = var12 + ("release".equalsIgnoreCase(this.minecraft.getVersionType()) ? "" : "/" + this.minecraft.getVersionType());
+            var7 = var7 + ("release".equalsIgnoreCase(this.minecraft.getVersionType()) ? "" : "/" + this.minecraft.getVersionType());
          }
 
          if (Minecraft.checkModStatus().shouldReportAsModified()) {
-            var12 = var12 + I18n.get("menu.modded");
+            var7 = var7 + I18n.get("menu.modded");
          }
 
-         var1.drawString(this.font, var12, 2, this.height - 10, 16777215 | var11);
+         var1.drawString(this.font, var7, 2, this.height - 10, 16777215 | var9);
          if (this.realmsNotificationsEnabled() && var5 >= 1.0F) {
             RenderSystem.enableDepthTest();
             this.realmsNotificationsScreen.render(var1, var2, var3, var4);
+         }
+      }
+   }
+
+   private void fadeWidgets(float var1) {
+      for (GuiEventListener var3 : this.children()) {
+         if (var3 instanceof AbstractWidget var4) {
+            var4.setAlpha(var1);
          }
       }
    }

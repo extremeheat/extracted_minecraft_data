@@ -832,7 +832,7 @@ public class SurfaceRules {
          final PositionalRandomFactory var4 = var1.randomState.getOrCreateRandomFactory(this.randomName());
 
          class 1VerticalGradientCondition extends SurfaceRules.LazyYCondition {
-            _VerticalGradientCondition/* $VF was: 1VerticalGradientCondition*/(SurfaceRules.VerticalGradientConditionSource var1x) {
+            _VerticalGradientCondition/* $VF was: 1VerticalGradientCondition*/() {
                super(var1);
             }
 
@@ -851,7 +851,7 @@ public class SurfaceRules {
             }
          }
 
-         return new 1VerticalGradientCondition(this);
+         return new 1VerticalGradientCondition();
       }
    }
 

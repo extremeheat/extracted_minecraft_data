@@ -685,33 +685,33 @@ public final class NativeImage implements AutoCloseable {
       private final boolean supportedByStb;
 
       private Format(
-         int var3,
-         int var4,
-         boolean var5,
-         boolean var6,
-         boolean var7,
-         boolean var8,
-         boolean var9,
-         int var10,
-         int var11,
-         int var12,
-         int var13,
-         int var14,
-         boolean var15
+         final int param3,
+         final int param4,
+         final boolean param5,
+         final boolean param6,
+         final boolean param7,
+         final boolean param8,
+         final boolean param9,
+         final int param10,
+         final int param11,
+         final int param12,
+         final int param13,
+         final int param14,
+         final boolean param15
       ) {
-         this.components = var3;
-         this.glFormat = var4;
-         this.hasRed = var5;
-         this.hasGreen = var6;
-         this.hasBlue = var7;
-         this.hasLuminance = var8;
-         this.hasAlpha = var9;
-         this.redOffset = var10;
-         this.greenOffset = var11;
-         this.blueOffset = var12;
-         this.luminanceOffset = var13;
-         this.alphaOffset = var14;
-         this.supportedByStb = var15;
+         this.components = nullxx;
+         this.glFormat = nullxxx;
+         this.hasRed = nullxxxx;
+         this.hasGreen = nullxxxxx;
+         this.hasBlue = nullxxxxxx;
+         this.hasLuminance = nullxxxxxxx;
+         this.hasAlpha = nullxxxxxxxx;
+         this.redOffset = nullxxxxxxxxx;
+         this.greenOffset = nullxxxxxxxxxx;
+         this.blueOffset = nullxxxxxxxxxxx;
+         this.luminanceOffset = nullxxxxxxxxxxxx;
+         this.alphaOffset = nullxxxxxxxxxxxxx;
+         this.supportedByStb = nullxxxxxxxxxxxxxx;
       }
 
       public int components() {
@@ -831,8 +831,8 @@ public final class NativeImage implements AutoCloseable {
 
       private final int glFormat;
 
-      private InternalGlFormat(int var3) {
-         this.glFormat = var3;
+      private InternalGlFormat(final int param3) {
+         this.glFormat = nullxx;
       }
 
       public int glFormat() {

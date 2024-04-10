@@ -23,7 +23,7 @@ public class SetWrittenBookPagesFunction extends LootItemConditionalFunction {
             .and(
                var0.group(
                   WrittenBookContent.pagesCodec(PAGE_CODEC).fieldOf("pages").forGetter(var0x -> var0x.pages),
-                  ListOperation.codec(100).forGetter(var0x -> var0x.pageOperation)
+                  ListOperation.UNLIMITED_CODEC.forGetter(var0x -> var0x.pageOperation)
                )
             )
             .apply(var0, SetWrittenBookPagesFunction::new)
@@ -45,12 +45,12 @@ public class SetWrittenBookPagesFunction extends LootItemConditionalFunction {
 
    @VisibleForTesting
    public WrittenBookContent apply(WrittenBookContent var1) {
-      List var2 = this.pageOperation.apply(var1.pages(), this.pages, 100);
+      List var2 = this.pageOperation.apply(var1.pages(), this.pages);
       return var1.withReplacedPages(var2);
    }
 
    @Override
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<SetWrittenBookPagesFunction> getType() {
       return LootItemFunctions.SET_WRITTEN_BOOK_PAGES;
    }
 }

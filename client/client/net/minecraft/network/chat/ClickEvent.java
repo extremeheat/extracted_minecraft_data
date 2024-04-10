@@ -65,9 +65,9 @@ public class ClickEvent {
       private final boolean allowFromServer;
       private final String name;
 
-      private Action(String var3, boolean var4) {
-         this.name = var3;
-         this.allowFromServer = var4;
+      private Action(final String param3, final boolean param4) {
+         this.name = nullxx;
+         this.allowFromServer = nullxxx;
       }
 
       public boolean isAllowedFromServer() {

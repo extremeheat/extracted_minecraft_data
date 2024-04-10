@@ -71,9 +71,9 @@ public class ChannelAccess {
          return this.stopped;
       }
 
-      public ChannelHandle(Channel var2) {
+      public ChannelHandle(final Channel param2) {
          super();
-         this.channel = var2;
+         this.channel = nullx;
       }
 
       public void execute(Consumer<Channel> var1) {

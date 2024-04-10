@@ -11,6 +11,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.TooltipFlag;
 
 public record Fireworks(int flightDuration, List<FireworkExplosion> explosions) implements TooltipProvider {
@@ -28,14 +29,18 @@ public record Fireworks(int flightDuration, List<FireworkExplosion> explosions) 
 
    public Fireworks(int flightDuration, List<FireworkExplosion> explosions) {
       super();
-      this.flightDuration = flightDuration;
-      this.explosions = explosions;
+      if (explosions.size() > 256) {
+         throw new IllegalArgumentException("Got " + explosions.size() + " explosions, but maximum is 256");
+      } else {
+         this.flightDuration = flightDuration;
+         this.explosions = explosions;
+      }
    }
 
    @Override
-   public void addToTooltip(Consumer<Component> var1, TooltipFlag var2) {
+   public void addToTooltip(Item.TooltipContext var1, Consumer<Component> var2, TooltipFlag var3) {
       if (this.flightDuration > 0) {
-         var1.accept(
+         var2.accept(
             Component.translatable("item.minecraft.firework_rocket.flight")
                .append(CommonComponents.SPACE)
                .append(String.valueOf(this.flightDuration))
@@ -43,9 +48,9 @@ public record Fireworks(int flightDuration, List<FireworkExplosion> explosions) 
          );
       }
 
-      for (FireworkExplosion var4 : this.explosions) {
-         var4.addShapeNameTooltip(var1);
-         var4.addAdditionalTooltip(var1x -> var1.accept(Component.literal("  ").append(var1x)));
+      for (FireworkExplosion var5 : this.explosions) {
+         var5.addShapeNameTooltip(var2);
+         var5.addAdditionalTooltip(var1x -> var2.accept(Component.literal("  ").append(var1x)));
       }
    }
 }

@@ -13,9 +13,9 @@ public enum AttackIndicatorStatus implements OptionEnum {
    private final int id;
    private final String key;
 
-   private AttackIndicatorStatus(int var3, String var4) {
-      this.id = var3;
-      this.key = var4;
+   private AttackIndicatorStatus(final int param3, final String param4) {
+      this.id = nullxx;
+      this.key = nullxxx;
    }
 
    @Override

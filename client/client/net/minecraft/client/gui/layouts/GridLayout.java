@@ -179,9 +179,9 @@ public class GridLayout extends AbstractLayout {
       private final int columns;
       private int index;
 
-      RowHelper(int var2) {
+      RowHelper(final int param2) {
          super();
-         this.columns = var2;
+         this.columns = nullx;
       }
 
       public <T extends LayoutElement> T addChild(T var1) {

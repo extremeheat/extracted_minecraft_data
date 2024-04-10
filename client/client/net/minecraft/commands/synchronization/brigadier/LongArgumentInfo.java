@@ -50,10 +50,10 @@ public class LongArgumentInfo implements ArgumentTypeInfo<LongArgumentType, Long
       final long min;
       final long max;
 
-      Template(long var2, long var4) {
+      Template(final long param2, final long param4) {
          super();
-         this.min = var2;
-         this.max = var4;
+         this.min = nullx;
+         this.max = nullxx;
       }
 
       public LongArgumentType instantiate(CommandBuildContext var1) {

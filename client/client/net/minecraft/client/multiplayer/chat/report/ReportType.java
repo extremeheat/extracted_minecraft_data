@@ -9,8 +9,8 @@ public enum ReportType {
 
    private final String backendName;
 
-   private ReportType(String var3) {
-      this.backendName = var3.toUpperCase(Locale.ROOT);
+   private ReportType(final String param3) {
+      this.backendName = nullxx.toUpperCase(Locale.ROOT);
    }
 
    public String backendName() {

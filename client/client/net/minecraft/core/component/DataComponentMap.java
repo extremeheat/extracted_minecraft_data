@@ -54,6 +54,22 @@ public interface DataComponentMap extends Iterable<TypedDataComponent<?>> {
       }
    });
 
+   static DataComponentMap composite(final DataComponentMap var0, final DataComponentMap var1) {
+      return new DataComponentMap() {
+         @Nullable
+         @Override
+         public <T> T get(DataComponentType<? extends T> var1x) {
+            Object var2 = var1.get(var1x);
+            return (T)(var2 != null ? var2 : var0.get(var1x));
+         }
+
+         @Override
+         public Set<DataComponentType<?>> keySet() {
+            return Sets.union(var0.keySet(), var1.keySet());
+         }
+      };
+   }
+
    static DataComponentMap.Builder builder() {
       return new DataComponentMap.Builder();
    }

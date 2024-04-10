@@ -32,8 +32,8 @@ public enum SpecialGlyphs implements GlyphInfo {
       return var3;
    }
 
-   private SpecialGlyphs(Supplier<NativeImage> var3) {
-      this.image = (NativeImage)var3.get();
+   private SpecialGlyphs(final Supplier<NativeImage> param3) {
+      this.image = (NativeImage)nullxx.get();
    }
 
    @Override

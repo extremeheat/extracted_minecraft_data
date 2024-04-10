@@ -17,7 +17,7 @@ public class ApplyExplosionDecay extends LootItemConditionalFunction {
    }
 
    @Override
-   public LootItemFunctionType getType() {
+   public LootItemFunctionType<ApplyExplosionDecay> getType() {
       return LootItemFunctions.EXPLOSION_DECAY;
    }
 

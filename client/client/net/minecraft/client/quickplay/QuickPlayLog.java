@@ -123,8 +123,8 @@ public class QuickPlayLog {
       static final Codec<QuickPlayLog.Type> CODEC = StringRepresentable.fromEnum(QuickPlayLog.Type::values);
       private final String name;
 
-      private Type(String var3) {
-         this.name = var3;
+      private Type(final String param3) {
+         this.name = nullxx;
       }
 
       @Override

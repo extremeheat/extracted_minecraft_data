@@ -538,8 +538,8 @@ public class Zombie extends Monster {
    }
 
    class ZombieAttackTurtleEggGoal extends RemoveBlockGoal {
-      ZombieAttackTurtleEggGoal(PathfinderMob var2, double var3, int var5) {
-         super(Blocks.TURTLE_EGG, var2, var3, var5);
+      ZombieAttackTurtleEggGoal(final PathfinderMob param2, final double param3, final int param5) {
+         super(Blocks.TURTLE_EGG, nullx, nullxx, nullxxx);
       }
 
       @Override

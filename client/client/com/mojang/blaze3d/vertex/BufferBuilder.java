@@ -447,10 +447,10 @@ public class BufferBuilder extends DefaultedVertexConsumer implements BufferVert
       private final BufferBuilder.DrawState drawState;
       private boolean released;
 
-      RenderedBuffer(int var2, BufferBuilder.DrawState var3) {
+      RenderedBuffer(final int param2, final BufferBuilder.DrawState param3) {
          super();
-         this.pointer = var2;
-         this.drawState = var3;
+         this.pointer = nullx;
+         this.drawState = nullxx;
       }
 
       @Nullable

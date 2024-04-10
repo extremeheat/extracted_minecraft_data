@@ -150,11 +150,11 @@ public class HashCache {
       private final AtomicInteger writes = new AtomicInteger();
       private volatile boolean closed;
 
-      CacheUpdater(String var2, String var3, HashCache.ProviderCache var4) {
+      CacheUpdater(final String param2, final String param3, final HashCache.ProviderCache param4) {
          super();
-         this.provider = var2;
-         this.oldCache = var4;
-         this.newCache = new HashCache.ProviderCacheBuilder(var3);
+         this.provider = nullx;
+         this.oldCache = nullxxx;
+         this.newCache = new HashCache.ProviderCacheBuilder(nullxx);
       }
 
       private boolean shouldWrite(Path var1, HashCode var2) {

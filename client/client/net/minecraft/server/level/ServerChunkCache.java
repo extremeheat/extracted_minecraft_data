@@ -526,8 +526,8 @@ public class ServerChunkCache extends ChunkSource {
    }
 
    final class MainThreadExecutor extends BlockableEventLoop<Runnable> {
-      MainThreadExecutor(Level var2) {
-         super("Chunk source main thread executor for " + var2.dimension().location());
+      MainThreadExecutor(final Level param2) {
+         super("Chunk source main thread executor for " + nullx.dimension().location());
       }
 
       @Override

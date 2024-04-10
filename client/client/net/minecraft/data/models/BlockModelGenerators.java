@@ -5049,9 +5049,9 @@ public class BlockModelGenerators {
    class BlockEntityModelGenerator {
       private final ResourceLocation baseModel;
 
-      public BlockEntityModelGenerator(ResourceLocation var2, Block var3) {
+      public BlockEntityModelGenerator(final ResourceLocation param2, final Block param3) {
          super();
-         this.baseModel = ModelTemplates.PARTICLE_ONLY.create(var2, TextureMapping.particle(var3), BlockModelGenerators.this.modelOutput);
+         this.baseModel = ModelTemplates.PARTICLE_ONLY.create(nullx, TextureMapping.particle(nullxx), BlockModelGenerators.this.modelOutput);
       }
 
       public BlockModelGenerators.BlockEntityModelGenerator create(Block... var1) {
@@ -5088,9 +5088,9 @@ public class BlockModelGenerators {
       private ResourceLocation fullBlock;
       private final Set<Block> skipGeneratingModelsFor = new HashSet<>();
 
-      public BlockFamilyProvider(TextureMapping var2) {
+      public BlockFamilyProvider(final TextureMapping param2) {
          super();
-         this.mapping = var2;
+         this.mapping = nullx;
       }
 
       public BlockModelGenerators.BlockFamilyProvider fullBlock(Block var1, ModelTemplate var2) {
@@ -5289,9 +5289,9 @@ public class BlockModelGenerators {
    class WoodProvider {
       private final TextureMapping logMapping;
 
-      public WoodProvider(TextureMapping var2) {
+      public WoodProvider(final TextureMapping param2) {
          super();
-         this.logMapping = var2;
+         this.logMapping = nullx;
       }
 
       public BlockModelGenerators.WoodProvider wood(Block var1) {

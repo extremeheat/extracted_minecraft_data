@@ -34,10 +34,10 @@ public enum NoteBlockInstrument implements StringRepresentable {
    private final Holder<SoundEvent> soundEvent;
    private final NoteBlockInstrument.Type type;
 
-   private NoteBlockInstrument(String var3, Holder<SoundEvent> var4, NoteBlockInstrument.Type var5) {
-      this.name = var3;
-      this.soundEvent = var4;
-      this.type = var5;
+   private NoteBlockInstrument(final String param3, final Holder<SoundEvent> param4, final NoteBlockInstrument.Type param5) {
+      this.name = nullxx;
+      this.soundEvent = nullxxx;
+      this.type = nullxxxx;
    }
 
    @Override

@@ -80,7 +80,7 @@ public abstract class SingleItemRecipe implements Recipe<Container> {
             var1x -> var1x.group(
                      Codec.STRING.optionalFieldOf("group", "").forGetter(var0x -> var0x.group),
                      Ingredient.CODEC_NONEMPTY.fieldOf("ingredient").forGetter(var0x -> var0x.ingredient),
-                     ItemStack.CODEC.fieldOf("result").forGetter(var0x -> var0x.result)
+                     ItemStack.STRICT_CODEC.fieldOf("result").forGetter(var0x -> var0x.result)
                   )
                   .apply(var1x, var1::create)
          );

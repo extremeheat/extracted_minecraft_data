@@ -235,7 +235,7 @@ public final class TrialSpawner {
                         }
 
                         var18.setPersistenceRequired();
-                        var4.getEquipmentLootTable().ifPresent(var18::equip);
+                        var4.getEquipment().ifPresent(var18::equip);
                      }
 
                      if (!var1.tryAddFreshEntityWithPassengers(var20)) {
@@ -394,8 +394,8 @@ public final class TrialSpawner {
 
       public final SimpleParticleType particleType;
 
-      private FlameParticle(SimpleParticleType var3) {
-         this.particleType = var3;
+      private FlameParticle(final SimpleParticleType param3) {
+         this.particleType = nullxx;
       }
 
       public static TrialSpawner.FlameParticle decode(int var0) {

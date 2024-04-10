@@ -325,8 +325,8 @@ public class RuinedPortalPiece extends TemplateStructurePiece {
       );
       private final String name;
 
-      private VerticalPlacement(String var3) {
-         this.name = var3;
+      private VerticalPlacement(final String param3) {
+         this.name = nullxx;
       }
 
       public String getName() {

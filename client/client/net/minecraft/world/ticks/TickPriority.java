@@ -11,8 +11,8 @@ public enum TickPriority {
 
    private final int value;
 
-   private TickPriority(int var3) {
-      this.value = var3;
+   private TickPriority(final int param3) {
+      this.value = nullxx;
    }
 
    public static TickPriority byValue(int var0) {

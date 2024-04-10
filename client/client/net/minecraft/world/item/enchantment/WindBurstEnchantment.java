@@ -6,18 +6,13 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.windcharge.AbstractWindCharge;
 import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.level.Level;
 
 public class WindBurstEnchantment extends Enchantment {
-   private static final WindBurstEnchantment.WindBurstEnchantmentDamageCalculator[] damageCalculators = new WindBurstEnchantment.WindBurstEnchantmentDamageCalculator[]{
-      new WindBurstEnchantment.WindBurstEnchantmentDamageCalculator(0.5F),
-      new WindBurstEnchantment.WindBurstEnchantmentDamageCalculator(0.75F),
-      new WindBurstEnchantment.WindBurstEnchantmentDamageCalculator(1.0F)
-   };
-
    public WindBurstEnchantment() {
       super(
          Enchantment.definition(
@@ -35,11 +30,12 @@ public class WindBurstEnchantment extends Enchantment {
 
    @Override
    public void doPostItemStackHurt(LivingEntity var1, Entity var2, int var3) {
+      float var4 = 0.25F + 0.25F * (float)var3;
       var1.level()
          .explode(
             null,
             null,
-            damageCalculators[var3 - 1],
+            new WindBurstEnchantment.WindBurstEnchantmentDamageCalculator(var4),
             var1.getX(),
             var1.getY(),
             var1.getZ(),
@@ -52,6 +48,16 @@ public class WindBurstEnchantment extends Enchantment {
          );
    }
 
+   @Override
+   public boolean isTradeable() {
+      return false;
+   }
+
+   @Override
+   public boolean isDiscoverable() {
+      return false;
+   }
+
    static final class WindBurstEnchantmentDamageCalculator extends AbstractWindCharge.WindChargeDamageCalculator {
       private final float knockBackPower;
 
@@ -61,8 +67,19 @@ public class WindBurstEnchantment extends Enchantment {
       }
 
       @Override
-      public float getKnockbackMultiplier() {
-         return this.knockBackPower;
+      public float getKnockbackMultiplier(Entity var1) {
+         boolean var10000;
+         label17: {
+            if (var1 instanceof Player var3 && var3.getAbilities().flying) {
+               var10000 = true;
+               break label17;
+            }
+
+            var10000 = false;
+         }
+
+         boolean var2 = var10000;
+         return !var2 ? this.knockBackPower : 0.0F;
       }
    }
 }

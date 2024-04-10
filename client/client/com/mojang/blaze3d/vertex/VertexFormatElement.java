@@ -102,10 +102,10 @@ public class VertexFormatElement {
       private final String name;
       private final int glType;
 
-      private Type(int var3, String var4, int var5) {
-         this.size = var3;
-         this.name = var4;
-         this.glType = var5;
+      private Type(final int param3, final String param4, final int param5) {
+         this.size = nullxx;
+         this.name = nullxxx;
+         this.glType = nullxxxx;
       }
 
       public int getSize() {
@@ -154,10 +154,10 @@ public class VertexFormatElement {
       private final VertexFormatElement.Usage.SetupState setupState;
       private final VertexFormatElement.Usage.ClearState clearState;
 
-      private Usage(String var3, VertexFormatElement.Usage.SetupState var4, VertexFormatElement.Usage.ClearState var5) {
-         this.name = var3;
-         this.setupState = var4;
-         this.clearState = var5;
+      private Usage(final String param3, final VertexFormatElement.Usage.SetupState param4, final VertexFormatElement.Usage.ClearState param5) {
+         this.name = nullxx;
+         this.setupState = nullxxx;
+         this.clearState = nullxxxx;
       }
 
       void setupBufferState(int var1, int var2, int var3, long var4, int var6, int var7) {

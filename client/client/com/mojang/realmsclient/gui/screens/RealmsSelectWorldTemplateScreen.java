@@ -257,19 +257,19 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
       @Nullable
       private ImageButton trailerButton;
 
-      public Entry(WorldTemplate var2) {
+      public Entry(final WorldTemplate param2) {
          super();
-         this.template = var2;
-         if (!var2.link.isBlank()) {
+         this.template = nullx;
+         if (!nullx.link.isBlank()) {
             this.websiteButton = new ImageButton(
-               15, 15, WEBSITE_LINK_SPRITES, ConfirmLinkScreen.confirmLink(RealmsSelectWorldTemplateScreen.this, var2.link), PUBLISHER_LINK_TOOLTIP
+               15, 15, WEBSITE_LINK_SPRITES, ConfirmLinkScreen.confirmLink(RealmsSelectWorldTemplateScreen.this, nullx.link), PUBLISHER_LINK_TOOLTIP
             );
             this.websiteButton.setTooltip(Tooltip.create(PUBLISHER_LINK_TOOLTIP));
          }
 
-         if (!var2.trailer.isBlank()) {
+         if (!nullx.trailer.isBlank()) {
             this.trailerButton = new ImageButton(
-               15, 15, TRAILER_LINK_SPRITES, ConfirmLinkScreen.confirmLink(RealmsSelectWorldTemplateScreen.this, var2.trailer), TRAILER_LINK_TOOLTIP
+               15, 15, TRAILER_LINK_SPRITES, ConfirmLinkScreen.confirmLink(RealmsSelectWorldTemplateScreen.this, nullx.trailer), TRAILER_LINK_TOOLTIP
             );
             this.trailerButton.setTooltip(Tooltip.create(TRAILER_LINK_TOOLTIP));
          }
@@ -338,14 +338,14 @@ public class RealmsSelectWorldTemplateScreen extends RealmsScreen {
          this(Collections.emptyList());
       }
 
-      public WorldTemplateList(Iterable<WorldTemplate> var2) {
+      public WorldTemplateList(final Iterable<WorldTemplate> param2) {
          super(
             RealmsSelectWorldTemplateScreen.this.width,
             RealmsSelectWorldTemplateScreen.this.height - 33 - RealmsSelectWorldTemplateScreen.this.getHeaderHeight(),
             RealmsSelectWorldTemplateScreen.this.getHeaderHeight(),
             46
          );
-         var2.forEach(this::addEntry);
+         nullx.forEach(this::addEntry);
       }
 
       public void addEntry(WorldTemplate var1) {
