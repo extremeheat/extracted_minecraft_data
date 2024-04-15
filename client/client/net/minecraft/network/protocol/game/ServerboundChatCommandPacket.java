@@ -11,7 +11,7 @@ public record ServerboundChatCommandPacket(String command) implements Packet<Ser
    );
 
    private ServerboundChatCommandPacket(FriendlyByteBuf var1) {
-      this(var1.readUtf(256));
+      this(var1.readUtf());
    }
 
    public ServerboundChatCommandPacket(String command) {
@@ -20,7 +20,7 @@ public record ServerboundChatCommandPacket(String command) implements Packet<Ser
    }
 
    private void write(FriendlyByteBuf var1) {
-      var1.writeUtf(this.command, 256);
+      var1.writeUtf(this.command);
    }
 
    @Override

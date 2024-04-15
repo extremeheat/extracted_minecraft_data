@@ -224,12 +224,8 @@ public class LevelStorageSource {
       CompoundTag var3 = var2.getCompound("Data");
       int var4 = NbtUtils.getDataVersion(var3, -1);
       Dynamic var5 = DataFixTypes.LEVEL.updateToCurrentVersion(var1, new Dynamic(NbtOps.INSTANCE, var3), var4);
-      Dynamic var6 = var5.get("Player").orElseEmptyMap();
-      Dynamic var7 = DataFixTypes.PLAYER.updateToCurrentVersion(var1, var6, var4);
-      var5 = var5.set("Player", var7);
-      Dynamic var8 = var5.get("WorldGenSettings").orElseEmptyMap();
-      Dynamic var9 = DataFixTypes.WORLD_GEN_SETTINGS.updateToCurrentVersion(var1, var8, var4);
-      return var5.set("WorldGenSettings", var9);
+      var5 = var5.update("Player", var2x -> DataFixTypes.PLAYER.updateToCurrentVersion(var1, var2x, var4));
+      return var5.update("WorldGenSettings", var2x -> DataFixTypes.WORLD_GEN_SETTINGS.updateToCurrentVersion(var1, var2x, var4));
    }
 
    private LevelSummary readLevelSummary(LevelStorageSource.LevelDirectory var1, boolean var2) {

@@ -16,7 +16,7 @@ public record ServerboundChatCommandSignedPacket(
    );
 
    private ServerboundChatCommandSignedPacket(FriendlyByteBuf var1) {
-      this(var1.readUtf(256), var1.readInstant(), var1.readLong(), new ArgumentSignatures(var1), new LastSeenMessages.Update(var1));
+      this(var1.readUtf(), var1.readInstant(), var1.readLong(), new ArgumentSignatures(var1), new LastSeenMessages.Update(var1));
    }
 
    public ServerboundChatCommandSignedPacket(
@@ -31,7 +31,7 @@ public record ServerboundChatCommandSignedPacket(
    }
 
    private void write(FriendlyByteBuf var1) {
-      var1.writeUtf(this.command, 256);
+      var1.writeUtf(this.command);
       var1.writeInstant(this.timeStamp);
       var1.writeLong(this.salt);
       this.argumentSignatures.write(var1);

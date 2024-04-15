@@ -591,6 +591,10 @@ public abstract class Screen extends AbstractContainerEventHandler implements Re
       this.scheduleNarration(NARRATE_DELAY_NARRATOR_ENABLED, false);
    }
 
+   protected void clearTooltipForNextRenderPass() {
+      this.deferredTooltipRendering = null;
+   }
+
    public void setTooltipForNextRenderPass(List<FormattedCharSequence> var1) {
       this.setTooltipForNextRenderPass(var1, DefaultTooltipPositioner.INSTANCE, true);
    }

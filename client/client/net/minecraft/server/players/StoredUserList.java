@@ -108,7 +108,7 @@ public abstract class StoredUserList<K, V extends StoredUserEntry<K>> {
       this.map.values().stream().map(var0 -> Util.make(new JsonObject(), var0::serialize)).forEach(var1::add);
 
       try (BufferedWriter var2 = Files.newWriter(this.file, StandardCharsets.UTF_8)) {
-         GSON.toJson(var1, var2);
+         GSON.toJson(var1, GSON.newJsonWriter(var2));
       }
    }
 

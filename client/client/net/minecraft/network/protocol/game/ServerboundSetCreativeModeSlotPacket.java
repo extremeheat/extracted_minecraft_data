@@ -7,16 +7,20 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.PacketType;
 import net.minecraft.world.item.ItemStack;
 
-public record ServerboundSetCreativeModeSlotPacket(int slotNum, ItemStack itemStack) implements Packet<ServerGamePacketListener> {
+public record ServerboundSetCreativeModeSlotPacket(short slotNum, ItemStack itemStack) implements Packet<ServerGamePacketListener> {
    public static final StreamCodec<RegistryFriendlyByteBuf, ServerboundSetCreativeModeSlotPacket> STREAM_CODEC = StreamCodec.composite(
-      ByteBufCodecs.UNSIGNED_SHORT,
+      ByteBufCodecs.SHORT,
       ServerboundSetCreativeModeSlotPacket::slotNum,
       ItemStack.validatedStreamCodec(ItemStack.OPTIONAL_STREAM_CODEC),
       ServerboundSetCreativeModeSlotPacket::itemStack,
       ServerboundSetCreativeModeSlotPacket::new
    );
 
-   public ServerboundSetCreativeModeSlotPacket(int slotNum, ItemStack itemStack) {
+   public ServerboundSetCreativeModeSlotPacket(int var1, ItemStack var2) {
+      this((short)var1, var2);
+   }
+
+   public ServerboundSetCreativeModeSlotPacket(short slotNum, ItemStack itemStack) {
       super();
       this.slotNum = slotNum;
       this.itemStack = itemStack;

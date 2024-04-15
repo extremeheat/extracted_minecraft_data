@@ -169,6 +169,28 @@ public interface ListOperation {
       }
    }
 
+   public static record StandAlone<T>(List<T> value, ListOperation operation) {
+      public StandAlone(List<T> value, ListOperation operation) {
+         super();
+         this.value = value;
+         this.operation = operation;
+      }
+
+      public static <T> Codec<ListOperation.StandAlone<T>> codec(Codec<T> var0, int var1) {
+         return RecordCodecBuilder.create(
+            var2 -> var2.group(
+                     var0.sizeLimitedListOf(var1).fieldOf("values").forGetter(var0xx -> var0xx.value),
+                     ListOperation.codec(var1).forGetter(var0xx -> var0xx.operation)
+                  )
+                  .apply(var2, ListOperation.StandAlone::new)
+         );
+      }
+
+      public List<T> apply(List<T> var1) {
+         return this.operation.apply(var1, this.value);
+      }
+   }
+
    public static enum Type implements StringRepresentable {
       REPLACE_ALL("replace_all", ListOperation.ReplaceAll.MAP_CODEC),
       REPLACE_SECTION("replace_section", ListOperation.ReplaceSection.MAP_CODEC),

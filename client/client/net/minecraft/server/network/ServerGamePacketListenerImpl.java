@@ -558,11 +558,12 @@ public class ServerGamePacketListenerImpl
             BlockState var9 = this.player.level().getBlockState(var4);
             Direction var10 = var9.getValue(CommandBlock.FACING);
 
-            BlockState var12 = (switch (var1.getMode()) {
+            BlockState var11 = switch (var1.getMode()) {
                case SEQUENCE -> Blocks.CHAIN_COMMAND_BLOCK.defaultBlockState();
                case AUTO -> Blocks.REPEATING_COMMAND_BLOCK.defaultBlockState();
                default -> Blocks.COMMAND_BLOCK.defaultBlockState();
-            }).setValue(CommandBlock.FACING, var10).setValue(CommandBlock.CONDITIONAL, Boolean.valueOf(var1.isConditional()));
+            };
+            BlockState var12 = var11.setValue(CommandBlock.FACING, var10).setValue(CommandBlock.CONDITIONAL, Boolean.valueOf(var1.isConditional()));
             if (var12 != var9) {
                this.player.level().setBlock(var4, var12, 2);
                var5.setBlockState(var12);
@@ -1628,11 +1629,11 @@ public class ServerGamePacketListenerImpl
    public void handleContainerButtonClick(ServerboundContainerButtonClickPacket var1) {
       PacketUtils.ensureRunningOnSameThread(var1, this, this.player.serverLevel());
       this.player.resetLastActionTime();
-      if (this.player.containerMenu.containerId == var1.getContainerId() && !this.player.isSpectator()) {
+      if (this.player.containerMenu.containerId == var1.containerId() && !this.player.isSpectator()) {
          if (!this.player.containerMenu.stillValid(this.player)) {
             LOGGER.debug("Player {} interacted with invalid menu {}", this.player, this.player.containerMenu);
          } else {
-            boolean var2 = this.player.containerMenu.clickMenuButton(this.player, var1.getButtonId());
+            boolean var2 = this.player.containerMenu.clickMenuButton(this.player, var1.buttonId());
             if (var2) {
                this.player.containerMenu.broadcastChanges();
             }

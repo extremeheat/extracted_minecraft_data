@@ -168,7 +168,7 @@ public class PrimaryLevelData implements ServerLevelData, WorldData {
    public static <T> PrimaryLevelData parse(Dynamic<T> var0, LevelSettings var1, PrimaryLevelData.SpecialWorldProperty var2, WorldOptions var3, Lifecycle var4) {
       long var5 = var0.get("Time").asLong(0L);
       return new PrimaryLevelData(
-         (CompoundTag)CompoundTag.CODEC.parse(var0.get("Player").orElseEmptyMap()).result().orElse(null),
+         (CompoundTag)var0.get("Player").flatMap(CompoundTag.CODEC::parse).result().orElse(null),
          var0.get("WasModded").asBoolean(false),
          new BlockPos(var0.get("SpawnX").asInt(0), var0.get("SpawnY").asInt(0), var0.get("SpawnZ").asInt(0)),
          var0.get("SpawnAngle").asFloat(0.0F),

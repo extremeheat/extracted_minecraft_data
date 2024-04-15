@@ -282,7 +282,8 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
          .add(Attributes.MOVEMENT_SPEED, 0.30000001192092896)
          .add(Attributes.MAX_HEALTH, 10.0)
          .add(Attributes.FOLLOW_RANGE, 32.0)
-         .add(Attributes.ATTACK_DAMAGE, 2.0);
+         .add(Attributes.ATTACK_DAMAGE, 2.0)
+         .add(Attributes.SAFE_FALL_DISTANCE, 5.0);
    }
 
    @Nullable
@@ -599,11 +600,6 @@ public class Fox extends Animal implements VariantHolder<Fox.Type> {
       }
 
       super.setTarget(var1);
-   }
-
-   @Override
-   protected int calculateFallDamage(float var1, float var2) {
-      return Mth.ceil((var1 - 5.0F) * var2);
    }
 
    void wakeUp() {

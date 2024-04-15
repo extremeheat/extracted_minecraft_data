@@ -597,15 +597,13 @@ public class ItemStackComponentizationFix extends DataFix {
    }
 
    private static Dynamic<?> fixFireworkExplosion(Dynamic<?> var0) {
-      var0 = var0.renameAndFixField("Type", "shape", var0x -> {
-         return var0x.createString(switch (var0x.asInt(0)) {
-            case 1 -> "large_ball";
-            case 2 -> "star";
-            case 3 -> "creeper";
-            case 4 -> "burst";
-            default -> "small_ball";
-         });
-      });
+      var0 = var0.set("shape", var0.createString(switch (var0.get("Type").asInt(0)) {
+         case 1 -> "large_ball";
+         case 2 -> "star";
+         case 3 -> "creeper";
+         case 4 -> "burst";
+         default -> "small_ball";
+      })).remove("Type");
       var0 = var0.renameField("Colors", "colors");
       var0 = var0.renameField("FadeColors", "fade_colors");
       var0 = var0.renameField("Trail", "has_trail");

@@ -312,8 +312,12 @@ public class WorldOpenFlows {
       WorldStem var6;
       try {
          var6 = this.loadWorldStem(var2, var3, var5);
-      } catch (Exception var8) {
-         LOGGER.warn("Failed to load level data or datapacks, can't proceed with server load", var8);
+
+         for (LevelStem var8 : var6.registries().compositeAccess().registryOrThrow(Registries.LEVEL_STEM)) {
+            var8.generator().validate();
+         }
+      } catch (Exception var9) {
+         LOGGER.warn("Failed to load level data or datapacks, can't proceed with server load", var9);
          if (!var3) {
             this.minecraft.setScreen(new DatapackLoadFailureScreen(() -> {
                var1.safeClose();

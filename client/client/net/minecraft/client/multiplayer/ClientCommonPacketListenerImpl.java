@@ -82,6 +82,13 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    }
 
    @Override
+   public void onPacketError(Packet var1, Exception var2) {
+      LOGGER.error("Failed to handle packet {}, disconnecting", var1, var2);
+      ClientCommonPacketListener.super.onPacketError(var1, var2);
+      this.connection.disconnect(Component.translatable("disconnect.packetError"));
+   }
+
+   @Override
    public void handleKeepAlive(ClientboundKeepAlivePacket var1) {
       this.sendWhen(new ServerboundKeepAlivePacket(var1.getId()), () -> !RenderSystem.isFrozenAtPollEvents(), Duration.ofMinutes(1L));
    }

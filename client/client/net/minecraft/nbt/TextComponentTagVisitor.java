@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 public class TextComponentTagVisitor implements TagVisitor {
    private static final Logger LOGGER = LogUtils.getLogger();
    private static final int INLINE_LIST_THRESHOLD = 8;
+   private static final int MAX_DEPTH = 64;
    private static final ByteCollection INLINE_ELEMENT_TYPES = new ByteOpenHashSet(Arrays.asList((byte)1, (byte)2, (byte)3, (byte)4, (byte)5, (byte)6));
    private static final ChatFormatting SYNTAX_HIGHLIGHTING_KEY = ChatFormatting.AQUA;
    private static final ChatFormatting SYNTAX_HIGHLIGHTING_STRING = ChatFormatting.GREEN;
@@ -34,14 +35,21 @@ public class TextComponentTagVisitor implements TagVisitor {
    private static final String STRUCT_OPEN = "{";
    private static final String STRUCT_CLOSE = "}";
    private static final String NEWLINE = "\n";
+   private static final Component TOO_DEEP = Component.literal("<...>").withStyle(ChatFormatting.GRAY);
    private final String indentation;
+   private final int indentDepth;
    private final int depth;
    private Component result = CommonComponents.EMPTY;
 
-   public TextComponentTagVisitor(String var1, int var2) {
+   public TextComponentTagVisitor(String var1) {
+      this(var1, 0, 0);
+   }
+
+   private TextComponentTagVisitor(String var1, int var2, int var3) {
       super();
       this.indentation = var1;
-      this.depth = var2;
+      this.indentDepth = var2;
+      this.depth = var3;
    }
 
    public Component visit(Tag var1) {
@@ -149,38 +157,42 @@ public class TextComponentTagVisitor implements TagVisitor {
    public void visitList(ListTag var1) {
       if (var1.isEmpty()) {
          this.result = Component.literal("[]");
+      } else if (this.depth >= 64) {
+         this.result = Component.literal("[").append(TOO_DEEP).append("]");
       } else if (INLINE_ELEMENT_TYPES.contains(var1.getElementType()) && var1.size() <= 8) {
-         String var5 = ELEMENT_SEPARATOR + " ";
-         MutableComponent var6 = Component.literal("[");
+         String var6 = ELEMENT_SEPARATOR + " ";
+         MutableComponent var7 = Component.literal("[");
 
-         for (int var7 = 0; var7 < var1.size(); var7++) {
-            if (var7 != 0) {
-               var6.append(var5);
+         for (int var8 = 0; var8 < var1.size(); var8++) {
+            if (var8 != 0) {
+               var7.append(var6);
             }
 
-            var6.append(new TextComponentTagVisitor(this.indentation, this.depth).visit(var1.get(var7)));
+            var7.append(this.buildSubTag(var1.get(var8), false));
          }
 
-         var6.append("]");
-         this.result = var6;
+         var7.append("]");
+         this.result = var7;
       } else {
          MutableComponent var2 = Component.literal("[");
          if (!this.indentation.isEmpty()) {
             var2.append("\n");
          }
 
-         for (int var3 = 0; var3 < var1.size(); var3++) {
-            MutableComponent var4 = Component.literal(Strings.repeat(this.indentation, this.depth + 1));
-            var4.append(new TextComponentTagVisitor(this.indentation, this.depth + 1).visit(var1.get(var3)));
-            if (var3 != var1.size() - 1) {
-               var4.append(ELEMENT_SEPARATOR).append(this.indentation.isEmpty() ? " " : "\n");
+         String var3 = Strings.repeat(this.indentation, this.indentDepth + 1);
+
+         for (int var4 = 0; var4 < var1.size(); var4++) {
+            MutableComponent var5 = Component.literal(var3);
+            var5.append(this.buildSubTag(var1.get(var4), true));
+            if (var4 != var1.size() - 1) {
+               var5.append(ELEMENT_SEPARATOR).append(this.indentation.isEmpty() ? " " : "\n");
             }
 
-            var2.append(var4);
+            var2.append(var5);
          }
 
          if (!this.indentation.isEmpty()) {
-            var2.append("\n").append(Strings.repeat(this.indentation, this.depth));
+            var2.append("\n").append(Strings.repeat(this.indentation, this.indentDepth));
          }
 
          var2.append("]");
@@ -192,6 +204,8 @@ public class TextComponentTagVisitor implements TagVisitor {
    public void visitCompound(CompoundTag var1) {
       if (var1.isEmpty()) {
          this.result = Component.literal("{}");
+      } else if (this.depth >= 64) {
+         this.result = Component.literal("{").append(TOO_DEEP).append("}");
       } else {
          MutableComponent var2 = Component.literal("{");
          Object var3 = var1.getAllKeys();
@@ -205,29 +219,34 @@ public class TextComponentTagVisitor implements TagVisitor {
             var2.append("\n");
          }
 
-         Iterator var7 = var3.iterator();
+         String var8 = Strings.repeat(this.indentation, this.indentDepth + 1);
+         Iterator var5 = var3.iterator();
 
-         while (var7.hasNext()) {
-            String var5 = (String)var7.next();
-            MutableComponent var6 = Component.literal(Strings.repeat(this.indentation, this.depth + 1))
-               .append(handleEscapePretty(var5))
+         while (var5.hasNext()) {
+            String var6 = (String)var5.next();
+            MutableComponent var7 = Component.literal(var8)
+               .append(handleEscapePretty(var6))
                .append(NAME_VALUE_SEPARATOR)
                .append(" ")
-               .append(new TextComponentTagVisitor(this.indentation, this.depth + 1).visit(var1.get(var5)));
-            if (var7.hasNext()) {
-               var6.append(ELEMENT_SEPARATOR).append(this.indentation.isEmpty() ? " " : "\n");
+               .append(this.buildSubTag(var1.get(var6), true));
+            if (var5.hasNext()) {
+               var7.append(ELEMENT_SEPARATOR).append(this.indentation.isEmpty() ? " " : "\n");
             }
 
-            var2.append(var6);
+            var2.append(var7);
          }
 
          if (!this.indentation.isEmpty()) {
-            var2.append("\n").append(Strings.repeat(this.indentation, this.depth));
+            var2.append("\n").append(Strings.repeat(this.indentation, this.indentDepth));
          }
 
          var2.append("}");
          this.result = var2;
       }
+   }
+
+   private Component buildSubTag(Tag var1, boolean var2) {
+      return new TextComponentTagVisitor(this.indentation, var2 ? this.indentDepth + 1 : this.indentDepth, this.depth + 1).visit(var1);
    }
 
    protected static Component handleEscapePretty(String var0) {

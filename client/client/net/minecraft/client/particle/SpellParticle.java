@@ -11,7 +11,7 @@ import net.minecraft.util.RandomSource;
 public class SpellParticle extends TextureSheetParticle {
    private static final RandomSource RANDOM = RandomSource.create();
    private final SpriteSet sprites;
-   private float originalAlpha;
+   private float originalAlpha = 1.0F;
 
    SpellParticle(ClientLevel var1, double var2, double var4, double var6, double var8, double var10, double var12, SpriteSet var14) {
       super(var1, var2, var4, var6, 0.5 - RANDOM.nextDouble(), var10, 0.5 - RANDOM.nextDouble());

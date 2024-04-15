@@ -282,7 +282,7 @@ public class Armadillo extends Animal {
    @Override
    protected void actuallyHurt(DamageSource var1, float var2) {
       super.actuallyHurt(var1, var2);
-      if (!this.isNoAi()) {
+      if (!this.isNoAi() && !this.isDeadOrDying()) {
          if (var1.getEntity() instanceof LivingEntity) {
             this.getBrain().setMemoryWithExpiry(MemoryModuleType.DANGER_DETECTED_RECENTLY, true, 80L);
             if (this.canStayRolledUp()) {

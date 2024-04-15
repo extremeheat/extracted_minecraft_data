@@ -27,7 +27,7 @@ public class SliceShape extends VoxelShape {
    }
 
    @Override
-   protected DoubleList getCoords(Direction.Axis var1) {
+   public DoubleList getCoords(Direction.Axis var1) {
       return var1 == this.axis ? SLICE_COORDS : this.delegate.getCoords(var1);
    }
 }

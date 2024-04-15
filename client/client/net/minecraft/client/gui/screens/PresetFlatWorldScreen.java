@@ -226,7 +226,7 @@ public class PresetFlatWorldScreen extends Screen {
       var1.pose().translate(0.0F, 0.0F, 400.0F);
       var1.drawCenteredString(this.font, this.title, this.width / 2, 8, 16777215);
       var1.drawString(this.font, this.shareText, 51, 30, 10526880);
-      var1.drawString(this.font, this.listText, 51, 70, 10526880);
+      var1.drawString(this.font, this.listText, 51, 68, 10526880);
       var1.pose().popPose();
       this.export.render(var1, var2, var3, var4);
    }

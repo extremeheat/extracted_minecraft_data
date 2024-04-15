@@ -116,6 +116,7 @@ public class RealmsPopupScreen extends RealmsScreen {
       this.backgroundScreen.render(var1, -1, -1, var4);
       var1.flush();
       RenderSystem.clear(256, Minecraft.ON_OSX);
+      this.clearTooltipForNextRenderPass();
       this.renderTransparentBackground(var1);
       var1.blitSprite(BACKGROUND_SPRITE, this.left(), this.top(), 320, 172);
       if (!carouselImages.isEmpty()) {

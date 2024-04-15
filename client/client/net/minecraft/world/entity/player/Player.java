@@ -1058,63 +1058,64 @@ public abstract class Player extends LivingEntity {
 
    @Override
    protected Vec3 maybeBackOffFromEdge(Vec3 var1, MoverType var2) {
+      float var3 = this.maxUpStep();
       if (!this.abilities.flying
-         && var1.y <= 0.0
+         && !(var1.y > 0.0)
          && (var2 == MoverType.SELF || var2 == MoverType.PLAYER)
          && this.isStayingOnGroundSurface()
-         && this.isAboveGround()) {
-         double var3 = var1.x;
-         double var5 = var1.z;
-         double var7 = 0.05;
+         && this.isAboveGround(var3)) {
+         double var4 = var1.x;
+         double var6 = var1.z;
+         double var8 = 0.05;
+         double var10 = Math.signum(var4) * 0.05;
 
-         while (var3 != 0.0 && this.level().noCollision(this, this.getBoundingBox().move(var3, (double)(-this.maxUpStep()), 0.0))) {
-            if (var3 < 0.05 && var3 >= -0.05) {
-               var3 = 0.0;
-            } else if (var3 > 0.0) {
-               var3 -= 0.05;
-            } else {
-               var3 += 0.05;
+         double var12;
+         for (var12 = Math.signum(var6) * 0.05; var4 != 0.0 && this.canFallAtLeast(var4, 0.0, var3); var4 -= var10) {
+            if (Math.abs(var4) <= 0.05) {
+               var4 = 0.0;
+               break;
             }
          }
 
-         while (var5 != 0.0 && this.level().noCollision(this, this.getBoundingBox().move(0.0, (double)(-this.maxUpStep()), var5))) {
-            if (var5 < 0.05 && var5 >= -0.05) {
-               var5 = 0.0;
-            } else if (var5 > 0.0) {
-               var5 -= 0.05;
+         while (var6 != 0.0 && this.canFallAtLeast(0.0, var6, var3)) {
+            if (Math.abs(var6) <= 0.05) {
+               var6 = 0.0;
+               break;
+            }
+
+            var6 -= var12;
+         }
+
+         while (var4 != 0.0 && var6 != 0.0 && this.canFallAtLeast(var4, var6, var3)) {
+            if (Math.abs(var4) <= 0.05) {
+               var4 = 0.0;
             } else {
-               var5 += 0.05;
+               var4 -= var10;
+            }
+
+            if (Math.abs(var6) <= 0.05) {
+               var6 = 0.0;
+            } else {
+               var6 -= var12;
             }
          }
 
-         while (var3 != 0.0 && var5 != 0.0 && this.level().noCollision(this, this.getBoundingBox().move(var3, (double)(-this.maxUpStep()), var5))) {
-            if (var3 < 0.05 && var3 >= -0.05) {
-               var3 = 0.0;
-            } else if (var3 > 0.0) {
-               var3 -= 0.05;
-            } else {
-               var3 += 0.05;
-            }
-
-            if (var5 < 0.05 && var5 >= -0.05) {
-               var5 = 0.0;
-            } else if (var5 > 0.0) {
-               var5 -= 0.05;
-            } else {
-               var5 += 0.05;
-            }
-         }
-
-         var1 = new Vec3(var3, var1.y, var5);
+         return new Vec3(var4, var1.y, var6);
+      } else {
+         return var1;
       }
-
-      return var1;
    }
 
-   private boolean isAboveGround() {
-      return this.onGround()
-         || this.fallDistance < this.maxUpStep()
-            && !this.level().noCollision(this, this.getBoundingBox().move(0.0, (double)(this.fallDistance - this.maxUpStep()), 0.0));
+   private boolean isAboveGround(float var1) {
+      return this.onGround() || this.fallDistance < var1 && !this.canFallAtLeast(0.0, 0.0, var1 - this.fallDistance);
+   }
+
+   private boolean canFallAtLeast(double var1, double var3, float var5) {
+      AABB var6 = this.getBoundingBox();
+      return this.level()
+         .noCollision(
+            this, new AABB(var6.minX + var1, var6.minY - (double)var5 - 9.999999747378752E-6, var6.minZ + var3, var6.maxX + var1, var6.minY, var6.maxZ + var3)
+         );
    }
 
    public void attack(Entity var1) {

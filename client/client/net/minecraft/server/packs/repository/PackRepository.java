@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
@@ -26,6 +27,10 @@ public class PackRepository {
    public PackRepository(RepositorySource... var1) {
       super();
       this.sources = ImmutableSet.copyOf(var1);
+   }
+
+   public static String displayPackList(Collection<Pack> var0) {
+      return var0.stream().map(var0x -> var0x.getId() + (var0x.getCompatibility().isCompatible() ? "" : " (incompatible)")).collect(Collectors.joining(", "));
    }
 
    public void reload() {
