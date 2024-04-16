@@ -135,32 +135,32 @@ public class DataCommands {
                         .then(Commands.literal("set").then(var1x.create((var0xx, var1xx, var2, var3x) -> var2.set(var1xx, (Tag)Iterables.getLast(var3x)))))
                         .then(Commands.literal("merge").then(var1x.create((var0xx, var1xx, var2, var3x) -> {
                            CompoundTag var4 = new CompoundTag();
-            
+
                            for (Tag var6 : var3x) {
                               if (NbtPathArgument.NbtPath.isTooDeep(var6, 0)) {
                                  throw NbtPathArgument.ERROR_DATA_TOO_DEEP.create();
                               }
-            
+
                               if (!(var6 instanceof CompoundTag var7)) {
                                  throw ERROR_EXPECTED_OBJECT.create(var6);
                               }
-            
+
                               var4.merge(var7);
                            }
-            
+
                            List var11 = var2.getOrCreate(var1xx, CompoundTag::new);
                            int var12 = 0;
-            
+
                            for (Tag var8 : var11) {
                               if (!(var8 instanceof CompoundTag var9)) {
                                  throw ERROR_EXPECTED_OBJECT.create(var8);
                               }
-            
+
                               CompoundTag var10 = var9.copy();
                               var9.merge(var4);
                               var12 += var10.equals(var9) ? 0 : 1;
                            }
-            
+
                            return var12;
                         })))
                )
@@ -199,7 +199,7 @@ public class DataCommands {
             var1,
             var2 -> {
                RequiredArgumentBuilder var3x = Commands.argument("targetPath", NbtPathArgument.nbtPath());
-   
+
                for (DataCommands.DataProvider var5 : SOURCE_PROVIDERS) {
                   var0.accept(
                      var3x,
@@ -262,7 +262,7 @@ public class DataCommands {
                         )
                   );
                }
-   
+
                var0.accept(var3x, var1xx -> Commands.literal("value").then(Commands.argument("value", NbtTagArgument.nbtTag()).executes(var2x -> {
                      List var3xx = Collections.singletonList(NbtTagArgument.getNbtTag(var2x, "value"));
                      return manipulateData(var2x, var3, var1xx, var3xx);

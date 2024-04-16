@@ -98,7 +98,7 @@ public class SetNameFunction extends LootItemConditionalFunction {
       public static final Codec<SetNameFunction.Target> CODEC = StringRepresentable.fromEnum(SetNameFunction.Target::values);
       private final String name;
 
-      private Target(final String param3) {
+      private Target(final String nullxx) {
          this.name = nullxx;
       }
 

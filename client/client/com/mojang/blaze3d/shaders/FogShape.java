@@ -6,7 +6,7 @@ public enum FogShape {
 
    private final int index;
 
-   private FogShape(final int param3) {
+   private FogShape(final int nullxx) {
       this.index = nullxx;
    }
 

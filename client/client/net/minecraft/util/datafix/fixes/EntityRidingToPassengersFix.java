@@ -53,7 +53,7 @@ public class EntityRidingToPassengersFix extends DataFix {
                var5x -> var6x -> {
                      Optional var7x = Optional.empty();
                      Pair var8x = var6x;
-      
+
                      while (true) {
                         Either var9x = (Either)DataFixUtils.orElse(
                            var7x.map(
@@ -72,7 +72,7 @@ public class EntityRidingToPassengersFix extends DataFix {
                         if (var10x.isEmpty()) {
                            return (Pair)var7x.orElseThrow(() -> new IllegalStateException("Should always have an entity tree here"));
                         }
-      
+
                         var8x = (Pair)new Typed(var3, var5x, var10x.get())
                            .getOptional(var10)
                            .orElseThrow(() -> new IllegalStateException("Should always have an entity here"));

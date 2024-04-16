@@ -53,7 +53,7 @@ public class ChunkBedBlockEntityInjecterFix extends DataFix {
                int var6x = var5x.get("xPos").asInt(0);
                int var7 = var5x.get("zPos").asInt(0);
                ArrayList var8 = Lists.newArrayList((Iterable)var4x.getOrCreate(var5));
-      
+
                for (Dynamic var11 : var5x.get("Sections").asList(Function.identity())) {
                   int var12 = var11.get("Y").asInt(0);
                   Streams.mapWithIndex(var11.get("Blocks").asIntStream(), (var4xx, var5xx) -> {
@@ -86,7 +86,7 @@ public class ChunkBedBlockEntityInjecterFix extends DataFix {
                         }
                      );
                }
-      
+
                return !var8.isEmpty() ? var3x.set(var4, var4x.set(var5, var8)) : var3x;
             }
          )

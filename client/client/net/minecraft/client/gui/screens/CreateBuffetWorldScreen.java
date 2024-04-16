@@ -100,7 +100,7 @@ public class CreateBuffetWorldScreen extends Screen {
          final Holder.Reference<Biome> biome;
          final Component name;
 
-         public Entry(final Holder.Reference<Biome> param2) {
+         public Entry(final Holder.Reference<Biome> nullx) {
             super();
             this.biome = nullx;
             ResourceLocation var3 = nullx.key().location();

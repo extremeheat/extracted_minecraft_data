@@ -1220,13 +1220,13 @@ public class CreativeModeTabs {
             .icon(() -> new ItemStack(Items.COMPASS))
             .displayItems((var1, var2) -> {
                Set var3 = ItemStackLinkedSet.createTypeAndComponentsSet();
-      
+
                for (CreativeModeTab var5 : var0) {
                   if (var5.getType() != CreativeModeTab.Type.SEARCH) {
                      var3.addAll(var5.getSearchTabDisplayItems());
                   }
                }
-      
+
                var2.acceptAll(var3);
             })
             .backgroundSuffix("item_search.png")
@@ -1288,7 +1288,7 @@ public class CreativeModeTabs {
                   if (var0x.enabledFeatures().contains(FeatureFlags.BUNDLE)) {
                      var1.accept(Items.BUNDLE);
                   }
-         
+
                   var1.accept(Items.COMPASS);
                   var1.accept(Items.RECOVERY_COMPASS);
                   var1.accept(Items.CLOCK);
@@ -1780,11 +1780,11 @@ public class CreativeModeTabs {
                      var1.accept(Items.STRUCTURE_VOID);
                      var1.accept(Items.BARRIER);
                      var1.accept(Items.DEBUG_STICK);
-         
+
                      for (int var2 = 15; var2 >= 0; var2--) {
                         var1.accept(LightBlock.setLightOnStack(new ItemStack(Items.LIGHT), var2));
                      }
-         
+
                      var0x.holders()
                         .lookup(Registries.PAINTING_VARIANT)
                         .ifPresent(

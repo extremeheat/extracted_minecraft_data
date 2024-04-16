@@ -122,7 +122,7 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
          .thenCompose(
             var1x -> {
                ArrayList var2 = new ArrayList(var1x.size());
-      
+
                for (Entry var4 : var1x.entrySet()) {
                   var2.add(CompletableFuture.supplyAsync(() -> {
                      try {
@@ -130,7 +130,7 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
                         try (BufferedReader var1xx = ((Resource)var4.getValue()).openAsReader()) {
                            var2x = Pair.of((ResourceLocation)var4.getKey(), BlockModel.fromStream(var1xx));
                         }
-      
+
                         return var2x;
                      } catch (Exception var6) {
                         LOGGER.error("Failed to load model {}", var4.getKey(), var6);
@@ -138,7 +138,7 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
                      }
                   }, var1));
                }
-      
+
                return Util.sequence(var2)
                   .thenApply(var0xx -> var0xx.stream().filter(Objects::nonNull).collect(Collectors.toUnmodifiableMap(Pair::getFirst, Pair::getSecond)));
             }
@@ -150,12 +150,12 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
          .thenCompose(
             var1x -> {
                ArrayList var2 = new ArrayList(var1x.size());
-      
+
                for (Entry var4 : var1x.entrySet()) {
                   var2.add(CompletableFuture.supplyAsync(() -> {
                      List var1xx = (List)var4.getValue();
                      ArrayList var2x = new ArrayList(var1xx.size());
-      
+
                      for (Resource var4x : var1xx) {
                         try (BufferedReader var5 = var4x.openAsReader()) {
                            JsonObject var6 = GsonHelper.parse(var5);
@@ -164,11 +164,11 @@ public class ModelManager implements PreparableReloadListener, AutoCloseable {
                            LOGGER.error("Failed to load blockstate {} from pack {}", new Object[]{var4.getKey(), var4x.sourcePackId(), var10});
                         }
                      }
-      
+
                      return Pair.of((ResourceLocation)var4.getKey(), var2x);
                   }, var1));
                }
-      
+
                return Util.sequence(var2)
                   .thenApply(var0xx -> var0xx.stream().filter(Objects::nonNull).collect(Collectors.toUnmodifiableMap(Pair::getFirst, Pair::getSecond)));
             }

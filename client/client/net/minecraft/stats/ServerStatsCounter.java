@@ -105,7 +105,7 @@ public class ServerStatsCounter extends StatsCounter {
                            BuiltInRegistries.STAT_TYPE.getOptional(new ResourceLocation(var8)),
                            var3x -> {
                               CompoundTag var4x = var6.getCompound(var8);
-   
+
                               for (String var6x : var4x.getAllKeys()) {
                                  if (var4x.contains(var6x, 99)) {
                                     Util.ifElse(

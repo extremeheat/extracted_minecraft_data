@@ -88,7 +88,7 @@ public record AttributeModifier(UUID id, String name, double amount, AttributeMo
       private final String name;
       private final int id;
 
-      private Operation(final String param3, final int param4) {
+      private Operation(final String nullxx, final int nullxxx) {
          this.name = nullxx;
          this.id = nullxxx;
       }

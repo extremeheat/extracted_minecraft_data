@@ -208,10 +208,10 @@ public class ExperienceCommand {
       final ToIntFunction<ServerPlayer> query;
 
       private Type(
-         final String param3,
-         final BiConsumer<ServerPlayer, Integer> param4,
-         final BiPredicate<ServerPlayer, Integer> param5,
-         final ToIntFunction<ServerPlayer> param6
+         final String nullxx,
+         final BiConsumer<ServerPlayer, Integer> nullxxx,
+         final BiPredicate<ServerPlayer, Integer> nullxxxx,
+         final ToIntFunction<ServerPlayer> nullxxxxx
       ) {
          this.add = nullxxx;
          this.name = nullxx;

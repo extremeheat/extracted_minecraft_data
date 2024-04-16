@@ -22,7 +22,7 @@ public class ValidatePlayDead {
                      } else {
                         var1.set(var7 - 1);
                      }
-      
+
                      return true;
                   })
       );

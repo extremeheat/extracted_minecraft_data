@@ -178,7 +178,7 @@ public class SculkVeinBlock extends MultifaceBlock implements SculkBehaviour, Si
    class SculkVeinSpreaderConfig extends MultifaceSpreader.DefaultSpreaderConfig {
       private final MultifaceSpreader.SpreadType[] spreadTypes;
 
-      public SculkVeinSpreaderConfig(final MultifaceSpreader.SpreadType... param2) {
+      public SculkVeinSpreaderConfig(final MultifaceSpreader.SpreadType... nullx) {
          super(SculkVeinBlock.this);
          this.spreadTypes = nullx;
       }

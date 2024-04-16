@@ -127,7 +127,7 @@ public class ItemParser {
       private final StringReader reader;
       private final ItemParser.Visitor visitor;
 
-      State(final StringReader param2, final ItemParser.Visitor param3) {
+      State(final StringReader nullx, final ItemParser.Visitor nullxx) {
          super();
          this.reader = nullx;
          this.visitor = nullxx;

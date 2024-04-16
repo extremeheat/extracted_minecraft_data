@@ -121,7 +121,6 @@ public class CrafterBlock extends BaseEntityBlock {
          case DOWN -> var1.getHorizontalDirection().getOpposite();
          case UP -> var1.getHorizontalDirection();
          case NORTH, SOUTH, WEST, EAST -> Direction.UP;
-         default -> throw new MatchException(null, null);
       };
       return this.defaultBlockState()
          .setValue(ORIENTATION, FrontAndTop.fromFrontAndTop(var2, var3))

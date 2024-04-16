@@ -153,7 +153,7 @@ public class GameModeSwitcherScreen extends Screen {
       final String command;
       final ItemStack renderStack;
 
-      private GameModeIcon(final Component param3, final String param4, final ItemStack param5) {
+      private GameModeIcon(final Component nullxx, final String nullxxx, final ItemStack nullxxxx) {
          this.name = nullxx;
          this.command = nullxxx;
          this.renderStack = nullxxxx;
@@ -186,7 +186,6 @@ public class GameModeSwitcherScreen extends Screen {
             case SURVIVAL -> SURVIVAL;
             case CREATIVE -> CREATIVE;
             case ADVENTURE -> ADVENTURE;
-            default -> throw new MatchException(null, null);
          };
       }
    }
@@ -195,7 +194,7 @@ public class GameModeSwitcherScreen extends Screen {
       final GameModeSwitcherScreen.GameModeIcon icon;
       private boolean isSelected;
 
-      public GameModeSlot(final GameModeSwitcherScreen.GameModeIcon param2, final int param3, final int param4) {
+      public GameModeSlot(final GameModeSwitcherScreen.GameModeIcon nullx, final int nullxx, final int nullxxx) {
          super(nullxx, nullxxx, 26, 26, nullx.getName());
          this.icon = nullx;
       }

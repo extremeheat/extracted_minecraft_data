@@ -459,7 +459,7 @@ public class ParticleEngine implements PreparableReloadListener {
                int var21 = Math.max(2, Mth.ceil(var15 / 0.25));
                int var22 = Math.max(2, Mth.ceil(var17 / 0.25));
                int var23 = Math.max(2, Mth.ceil(var19 / 0.25));
-   
+
                for (int var24 = 0; var24 < var21; var24++) {
                   for (int var25 = 0; var25 < var22; var25++) {
                      for (int var26 = 0; var26 < var23; var26++) {

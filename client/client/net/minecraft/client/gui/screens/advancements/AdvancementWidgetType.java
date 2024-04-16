@@ -22,7 +22,9 @@ public enum AdvancementWidgetType {
    private final ResourceLocation challengeFrameSprite;
    private final ResourceLocation goalFrameSprite;
 
-   private AdvancementWidgetType(final ResourceLocation param3, final ResourceLocation param4, final ResourceLocation param5, final ResourceLocation param6) {
+   private AdvancementWidgetType(
+      final ResourceLocation nullxx, final ResourceLocation nullxxx, final ResourceLocation nullxxxx, final ResourceLocation nullxxxxx
+   ) {
       this.boxSprite = nullxx;
       this.taskFrameSprite = nullxxx;
       this.challengeFrameSprite = nullxxxx;
@@ -38,7 +40,6 @@ public enum AdvancementWidgetType {
          case TASK -> this.taskFrameSprite;
          case CHALLENGE -> this.challengeFrameSprite;
          case GOAL -> this.goalFrameSprite;
-         default -> throw new MatchException(null, null);
       };
    }
 }

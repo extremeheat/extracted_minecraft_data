@@ -30,7 +30,7 @@ public enum SymmetricGroup3 {
       }
    });
 
-   private SymmetricGroup3(final int param3, final int param4, final int param5) {
+   private SymmetricGroup3(final int nullxx, final int nullxxx, final int nullxxxx) {
       this.permutation = new int[]{nullxx, nullxxx, nullxxxx};
       this.transformation = new Matrix3f();
       this.transformation.set(this.permutation(0), 0, 1.0F);

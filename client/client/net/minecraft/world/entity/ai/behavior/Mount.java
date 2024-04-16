@@ -29,7 +29,7 @@ public class Mount {
                            var2.set(new EntityTracker(var9, true));
                            var3.set(new WalkTarget(new EntityTracker(var9, false), var0, 1));
                         }
-      
+
                         return true;
                      }
                   })

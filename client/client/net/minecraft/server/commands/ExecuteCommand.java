@@ -156,11 +156,11 @@ public class ExecuteCommand {
                                              .then(addConditionals(var2, Commands.literal("unless"), false, var1)))
                                           .then(Commands.literal("as").then(Commands.argument("targets", EntityArgument.entities()).fork(var2, var0x -> {
                                              ArrayList var1x = Lists.newArrayList();
-                                    
+
                                              for (Entity var3 : EntityArgument.getOptionalEntities(var0x, "targets")) {
                                                 var1x.add(((CommandSourceStack)var0x.getSource()).withEntity(var3));
                                              }
-                                    
+
                                              return var1x;
                                           }))))
                                        .then(
@@ -171,7 +171,7 @@ public class ExecuteCommand {
                                                       var2,
                                                       var0x -> {
                                                          ArrayList var1x = Lists.newArrayList();
-                                                
+
                                                          for (Entity var3 : EntityArgument.getOptionalEntities(var0x, "targets")) {
                                                             var1x.add(
                                                                ((CommandSourceStack)var0x.getSource())
@@ -180,7 +180,7 @@ public class ExecuteCommand {
                                                                   .withRotation(var3.getRotationVector())
                                                             );
                                                          }
-                                                
+
                                                          return var1x;
                                                       }
                                                    )
@@ -203,11 +203,11 @@ public class ExecuteCommand {
                                              ))
                                           .then(Commands.literal("as").then(Commands.argument("targets", EntityArgument.entities()).fork(var2, var0x -> {
                                              ArrayList var1x = Lists.newArrayList();
-                                    
+
                                              for (Entity var3 : EntityArgument.getOptionalEntities(var0x, "targets")) {
                                                 var1x.add(((CommandSourceStack)var0x.getSource()).withPosition(var3.position()));
                                              }
-                                    
+
                                              return var1x;
                                           }))))
                                        .then(
@@ -242,11 +242,11 @@ public class ExecuteCommand {
                                        ))
                                     .then(Commands.literal("as").then(Commands.argument("targets", EntityArgument.entities()).fork(var2, var0x -> {
                                        ArrayList var1x = Lists.newArrayList();
-                              
+
                                        for (Entity var3 : EntityArgument.getOptionalEntities(var0x, "targets")) {
                                           var1x.add(((CommandSourceStack)var0x.getSource()).withRotation(var3.getRotationVector()));
                                        }
-                              
+
                                        return var1x;
                                     })))
                               ))
@@ -259,11 +259,11 @@ public class ExecuteCommand {
                                                 .then(Commands.argument("anchor", EntityAnchorArgument.anchor()).fork(var2, var0x -> {
                                                    ArrayList var1x = Lists.newArrayList();
                                                    EntityAnchorArgument.Anchor var2x = EntityAnchorArgument.getAnchor(var0x, "anchor");
-                                          
+
                                                    for (Entity var4 : EntityArgument.getOptionalEntities(var0x, "targets")) {
                                                       var1x.add(((CommandSourceStack)var0x.getSource()).facing(var4, var2x));
                                                    }
-                                          
+
                                                    return var1x;
                                                 }))
                                           )

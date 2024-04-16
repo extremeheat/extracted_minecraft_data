@@ -73,7 +73,7 @@ public abstract class EntityLootSubProvider implements LootTableSubProvider {
                      if (var6 != BuiltInLootTables.EMPTY && var4.isEnabled(this.required) && (var5 == null || !var5.containsKey(var6))) {
                         throw new IllegalStateException(String.format(Locale.ROOT, "Missing loottable '%s' for '%s'", var6, var3x.key().location()));
                      }
-      
+
                      if (var5 != null) {
                         var5.forEach((var3xx, var4x) -> {
                            if (!var3.add(var3xx)) {

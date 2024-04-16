@@ -394,7 +394,7 @@ public final class TrialSpawner {
 
       public final SimpleParticleType particleType;
 
-      private FlameParticle(final SimpleParticleType param3) {
+      private FlameParticle(final SimpleParticleType nullxx) {
          this.particleType = nullxx;
       }
 

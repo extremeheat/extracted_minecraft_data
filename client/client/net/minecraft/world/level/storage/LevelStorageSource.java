@@ -419,7 +419,7 @@ public class LevelStorageSource {
       private final String levelId;
       private final Map<LevelResource, Path> resources = Maps.newHashMap();
 
-      LevelStorageAccess(final String param2, final Path param3) throws IOException {
+      LevelStorageAccess(final String nullx, final Path nullxx) throws IOException {
          super();
          this.levelId = nullx;
          this.levelDirectory = new LevelStorageSource.LevelDirectory(nullxx);

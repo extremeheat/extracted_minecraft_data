@@ -78,13 +78,13 @@ public class RealmsResetNormalWorldScreen extends RealmsScreen {
       var1.addChild(
          Button.builder(Component.translatable("selectWorld.experiments"), var2x -> this.minecraft.setScreen(new ExperimentsScreen(this, var2, var1xx -> {
                this.experiments.clear();
-   
+
                for (Pack var3 : var1xx.getSelectedPacks()) {
                   if (var3.getPackSource() == PackSource.FEATURE) {
                      this.experiments.add(var3.getId());
                   }
                }
-   
+
                this.minecraft.setScreen(this);
             }))).width(210).build()
       );

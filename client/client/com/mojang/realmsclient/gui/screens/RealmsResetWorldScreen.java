@@ -253,7 +253,7 @@ public class RealmsResetWorldScreen extends RealmsScreen {
       private static final int IMAGE_SIZE = 56;
       private final ResourceLocation image;
 
-      FrameButton(final Font param2, final Component param3, final ResourceLocation param4, final Button.OnPress param5) {
+      FrameButton(final Font nullx, final Component nullxx, final ResourceLocation nullxxx, final Button.OnPress nullxxxx) {
          super(0, 0, 60, 60 + 9, nullxx, nullxxxx, DEFAULT_NARRATION);
          this.image = nullxxx;
       }

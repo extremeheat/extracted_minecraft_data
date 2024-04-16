@@ -11,7 +11,7 @@ public enum EntityAttachment {
 
    private final EntityAttachment.Fallback fallback;
 
-   private EntityAttachment(final EntityAttachment.Fallback param3) {
+   private EntityAttachment(final EntityAttachment.Fallback nullxx) {
       this.fallback = nullxx;
    }
 

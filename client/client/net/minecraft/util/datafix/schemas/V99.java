@@ -182,6 +182,7 @@ public class V99 extends Schema {
       var1.registerSimple(var2, "EnderCrystal");
       var1.register(var2, "AreaEffectCloud", var1x -> DSL.optionalFields("Particle", References.PARTICLE.in(var1)));
       var1.registerSimple(var2, "ShulkerBullet");
+      var1.registerSimple(var2, "DragonFireball");
       registerMob(var1, var2, "Shulker");
       return var2;
    }

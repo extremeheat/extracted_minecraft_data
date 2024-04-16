@@ -108,7 +108,7 @@ public class ArmadilloAi {
                   if (var2 instanceof Armadillo var3 && var3.isScared()) {
                      return false;
                   }
-      
+
                   return super.checkExtraStartConditions(var1, var2);
                }
             },

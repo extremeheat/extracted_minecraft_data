@@ -51,7 +51,7 @@ public interface AbuseReportSender {
                AbuseReportRequest var4 = new AbuseReportRequest(
                   1, var1, var3, this.environment.clientInfo(), this.environment.thirdPartyServerInfo(), this.environment.realmInfo(), var2.backendName()
                );
-   
+
                try {
                   this.userApiService.reportAbuse(var4);
                   return Unit.INSTANCE;

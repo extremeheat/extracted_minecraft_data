@@ -129,7 +129,7 @@ public record FireworkExplosion(FireworkExplosion.Shape shape, IntList colors, I
       private final int id;
       private final String name;
 
-      private Shape(final int param3, final String param4) {
+      private Shape(final int nullxx, final String nullxxx) {
          this.id = nullxx;
          this.name = nullxxx;
       }

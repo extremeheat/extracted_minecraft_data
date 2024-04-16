@@ -71,7 +71,7 @@ public class ChannelAccess {
          return this.stopped;
       }
 
-      public ChannelHandle(final Channel param2) {
+      public ChannelHandle(final Channel nullx) {
          super();
          this.channel = nullx;
       }

@@ -161,7 +161,6 @@ public class Options {
             case FANCY -> Tooltip.create(GRAPHICS_TOOLTIP_FANCY);
             case FAST -> Tooltip.create(GRAPHICS_TOOLTIP_FAST);
             case FABULOUS -> Tooltip.create(GRAPHICS_TOOLTIP_FABULOUS);
-            default -> throw new MatchException(null, null);
          };
       },
       (var0, var1x) -> {
@@ -201,7 +200,6 @@ public class Options {
             case NONE -> Tooltip.create(PRIORITIZE_CHUNK_TOOLTIP_NONE);
             case PLAYER_AFFECTED -> Tooltip.create(PRIORITIZE_CHUNK_TOOLTIP_PLAYER_AFFECTED);
             case NEARBY -> Tooltip.create(PRIORITIZE_CHUNK_TOOLTIP_NEARBY);
-            default -> throw new MatchException(null, null);
          };
       },
       OptionInstance.forOptionEnum(),
@@ -374,7 +372,7 @@ public class Options {
    private final OptionInstance<Integer> biomeBlendRadius = new OptionInstance<>("options.biomeBlendRadius", OptionInstance.noTooltip(), (var0, var1x) -> {
       int var2x = var1x * 2 + 1;
       return genericValueLabel(var0, Component.translatable("options.biomeBlendRadius." + var2x));
-   }, new OptionInstance.IntRange(0, 7), 2, var0 -> Minecraft.getInstance().levelRenderer.allChanged());
+   }, new OptionInstance.IntRange(0, 7, false), 2, var0 -> Minecraft.getInstance().levelRenderer.allChanged());
    private final OptionInstance<Double> mouseWheelSensitivity = new OptionInstance<>(
       "options.mouseWheelSensitivity",
       OptionInstance.noTooltip(),
@@ -1067,7 +1065,7 @@ public class Options {
          "options.renderDistance",
          OptionInstance.noTooltip(),
          (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.chunks", var1x)),
-         new OptionInstance.IntRange(2, var3 ? 32 : 16),
+         new OptionInstance.IntRange(2, var3 ? 32 : 16, false),
          12,
          var0 -> Minecraft.getInstance().levelRenderer.needsUpdate()
       );
@@ -1075,7 +1073,7 @@ public class Options {
          "options.simulationDistance",
          OptionInstance.noTooltip(),
          (var0, var1x) -> genericValueLabel(var0, Component.translatable("options.chunks", var1x)),
-         new OptionInstance.IntRange(5, var3 ? 32 : 16),
+         new OptionInstance.IntRange(5, var3 ? 32 : 16, false),
          12,
          var0 -> {
          }
@@ -1354,7 +1352,7 @@ public class Options {
                   var1.print(var1x);
                   var1.print(':');
                }
-   
+
                @Override
                public <T> void process(String var1x, OptionInstance<T> var2) {
                   var2.codec()
@@ -1365,35 +1363,35 @@ public class Options {
                         var1.println(Options.GSON.toJson(var3));
                      });
                }
-   
+
                @Override
                public int process(String var1x, int var2) {
                   this.writePrefix(var1x);
                   var1.println(var2);
                   return var2;
                }
-   
+
                @Override
                public boolean process(String var1x, boolean var2) {
                   this.writePrefix(var1x);
                   var1.println(var2);
                   return var2;
                }
-   
+
                @Override
                public String process(String var1x, String var2) {
                   this.writePrefix(var1x);
                   var1.println(var2);
                   return var2;
                }
-   
+
                @Override
                public float process(String var1x, float var2) {
                   this.writePrefix(var1x);
                   var1.println(var2);
                   return var2;
                }
-   
+
                @Override
                public <T> T process(String var1x, T var2, Function<String, T> var3, Function<T, String> var4) {
                   this.writePrefix(var1x);

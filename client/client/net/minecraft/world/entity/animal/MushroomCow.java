@@ -258,7 +258,7 @@ public class MushroomCow extends Cow implements Shearable, VariantHolder<Mushroo
       final String type;
       final BlockState blockState;
 
-      private MushroomType(final String param3, final BlockState param4) {
+      private MushroomType(final String nullxx, final BlockState nullxxx) {
          this.type = nullxx;
          this.blockState = nullxxx;
       }

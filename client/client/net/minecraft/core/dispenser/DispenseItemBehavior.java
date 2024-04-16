@@ -178,7 +178,7 @@ public interface DispenseItemBehavior {
             @Override
             public ItemStack execute(BlockSource var1, ItemStack var2) {
                BlockPos var3 = var1.pos().relative(var1.state().getValue(DispenserBlock.FACING));
-   
+
                for (AbstractChestedHorse var6 : var1.level()
                   .getEntitiesOfClass(AbstractChestedHorse.class, new AABB(var3), var0 -> var0.isAlive() && !var0.hasChest())) {
                   if (var6.isTamed() && var6.getSlot(499).set(var2)) {
@@ -187,7 +187,7 @@ public interface DispenseItemBehavior {
                      return var2;
                   }
                }
-   
+
                return super.execute(var1, var2);
             }
          }
@@ -354,13 +354,13 @@ public interface DispenseItemBehavior {
                   if (var6 instanceof SkullBlockEntity) {
                      WitherSkullBlock.checkSpawn(var3, var5, (SkullBlockEntity)var6);
                   }
-   
+
                   var2.shrink(1);
                   this.setSuccess(true);
                } else {
                   this.setSuccess(ArmorItem.dispenseArmor(var1, var2));
                }
-   
+
                return var2;
             }
          }
@@ -396,7 +396,7 @@ public interface DispenseItemBehavior {
          Items.GLASS_BOTTLE.asItem(),
          new OptionalDispenseItemBehavior() {
             private final DefaultDispenseItemBehavior defaultDispenseItemBehavior = new DefaultDispenseItemBehavior();
-   
+
             private ItemStack takeLiquid(BlockSource var1, ItemStack var2, ItemStack var3) {
                var2.shrink(1);
                if (var2.isEmpty()) {
@@ -406,11 +406,11 @@ public interface DispenseItemBehavior {
                   if (var1.blockEntity().addItem(var3.copy()) < 0) {
                      this.defaultDispenseItemBehavior.dispense(var1, var3.copy());
                   }
-   
+
                   return var2;
                }
             }
-   
+
             @Override
             public ItemStack execute(BlockSource var1, ItemStack var2) {
                this.setSuccess(false);
@@ -501,7 +501,7 @@ public interface DispenseItemBehavior {
          Items.POTION,
          new DefaultDispenseItemBehavior() {
             private final DefaultDispenseItemBehavior defaultDispenseItemBehavior = new DefaultDispenseItemBehavior();
-   
+
             @Override
             public ItemStack execute(BlockSource var1, ItemStack var2) {
                PotionContents var3 = var2.getOrDefault(DataComponents.POTION_CONTENTS, PotionContents.EMPTY);
@@ -529,7 +529,7 @@ public interface DispenseItemBehavior {
                            );
                         }
                      }
-   
+
                      var4.playSound(null, var5, SoundEvents.BOTTLE_EMPTY, SoundSource.BLOCKS, 1.0F, 1.0F);
                      var4.gameEvent(null, GameEvent.FLUID_PLACE, var5);
                      var4.setBlockAndUpdate(var6, Blocks.MUD.defaultBlockState());

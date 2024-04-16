@@ -311,14 +311,14 @@ public class Font {
       }
 
       public StringRenderOutput(
-         final MultiBufferSource param2,
-         final float param3,
-         final float param4,
-         final int param5,
-         final boolean param6,
-         final Matrix4f param7,
-         final Font.DisplayMode param8,
-         final int param9
+         final MultiBufferSource nullx,
+         final float nullxx,
+         final float nullxxx,
+         final int nullxxxx,
+         final boolean nullxxxxx,
+         final Matrix4f nullxxxxxx,
+         final Font.DisplayMode nullxxxxxxx,
+         final int nullxxxxxxxx
       ) {
          super();
          this.bufferSource = nullx;

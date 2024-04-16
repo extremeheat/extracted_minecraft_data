@@ -10,7 +10,7 @@ public final class CubeVoxelShape extends VoxelShape {
    }
 
    @Override
-   public DoubleList getCoords(Direction.Axis var1) {
+   protected DoubleList getCoords(Direction.Axis var1) {
       return new CubePointRange(this.shape.getSize(var1));
    }
 

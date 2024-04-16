@@ -74,7 +74,6 @@ public class HeightMapRenderer implements DebugRenderer.SimpleDebugRenderer {
          case OCEAN_FLOOR -> new Vector3f(0.0F, 0.0F, 0.5F);
          case MOTION_BLOCKING -> new Vector3f(0.0F, 0.3F, 0.3F);
          case MOTION_BLOCKING_NO_LEAVES -> new Vector3f(0.0F, 0.5F, 0.5F);
-         default -> throw new MatchException(null, null);
       };
    }
 }

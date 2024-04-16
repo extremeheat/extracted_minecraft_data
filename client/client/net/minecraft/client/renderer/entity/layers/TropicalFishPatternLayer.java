@@ -42,7 +42,6 @@ public class TropicalFishPatternLayer extends RenderLayer<TropicalFish, Colorabl
       Object var12 = switch (var11.base()) {
          case SMALL -> this.modelA;
          case LARGE -> this.modelB;
-         default -> throw new MatchException(null, null);
       };
 
       ResourceLocation var13 = switch (var11) {
@@ -58,7 +57,6 @@ public class TropicalFishPatternLayer extends RenderLayer<TropicalFish, Colorabl
          case BLOCKFISH -> BLOCKFISH_TEXTURE;
          case BETTY -> BETTY_TEXTURE;
          case CLAYFISH -> CLAYFISH_TEXTURE;
-         default -> throw new MatchException(null, null);
       };
       float[] var14 = var4.getPatternColor().getTextureDiffuseColors();
       coloredCutoutModelCopyLayerRender(

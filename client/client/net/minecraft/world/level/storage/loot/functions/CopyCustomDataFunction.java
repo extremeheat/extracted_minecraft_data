@@ -187,7 +187,7 @@ public class CopyCustomDataFunction extends LootItemConditionalFunction {
 
       public abstract void merge(Tag var1, NbtPathArgument.NbtPath var2, List<Tag> var3) throws CommandSyntaxException;
 
-      MergeStrategy(final String param3) {
+      MergeStrategy(final String nullxx) {
          this.name = nullxx;
       }
 

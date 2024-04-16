@@ -100,7 +100,7 @@ public class StackedContents {
       private final BitSet data;
       private final IntList path = new IntArrayList();
 
-      public RecipePicker(final Recipe<?> param2) {
+      public RecipePicker(final Recipe<?> nullx) {
          super();
          this.recipe = nullx;
          this.ingredients.addAll(nullx.getIngredients());

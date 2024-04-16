@@ -68,7 +68,7 @@ public abstract class VoxelShape {
       return this.getCoords(var1).getDouble(var2);
    }
 
-   public abstract DoubleList getCoords(Direction.Axis var1);
+   protected abstract DoubleList getCoords(Direction.Axis var1);
 
    public boolean isEmpty() {
       return this.shape.isEmpty();

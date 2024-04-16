@@ -174,7 +174,7 @@ public class MobEffectIdFix extends DataFix {
                if (var4.equals("minecraft:suspicious_stew")) {
                   return var2x.updateTyped(var3, var0x -> var0x.update(DSL.remainderFinder(), MobEffectIdFix::fixSuspiciousStewTag));
                }
-   
+
                if (MOB_EFFECT_INSTANCE_CARRIER_ITEMS.contains(var4)) {
                   return var2x.updateTyped(
                      var3,
@@ -182,7 +182,7 @@ public class MobEffectIdFix extends DataFix {
                   );
                }
             }
-   
+
             return var2x;
          }
       );

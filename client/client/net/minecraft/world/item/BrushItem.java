@@ -139,7 +139,6 @@ public class BrushItem extends Item {
             case SOUTH -> new BrushItem.DustParticlesDelta(-1.0, 0.0, 0.1);
             case WEST -> new BrushItem.DustParticlesDelta(-0.1, 0.0, -1.0);
             case EAST -> new BrushItem.DustParticlesDelta(0.1, 0.0, 1.0);
-            default -> throw new MatchException(null, null);
          };
       }
    }

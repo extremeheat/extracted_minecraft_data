@@ -61,7 +61,7 @@ public class RegistrySynchronization {
                               .getOrThrow(var1xxx -> new IllegalArgumentException("Failed to serialize " + var5x.key() + ": " + var1xxx));
                            var7 = Optional.of(var8);
                         }
-            
+
                         var5.add(new RegistrySynchronization.PackedRegistryEntry(var5x.key().location(), var7));
                      }
                   );

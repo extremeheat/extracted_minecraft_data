@@ -120,7 +120,7 @@ public class CopyComponentsFunction extends LootItemConditionalFunction {
       public static final Codec<CopyComponentsFunction.Source> CODEC = StringRepresentable.fromValues(CopyComponentsFunction.Source::values);
       private final String name;
 
-      private Source(final String param3) {
+      private Source(final String nullxx) {
          this.name = nullxx;
       }
 

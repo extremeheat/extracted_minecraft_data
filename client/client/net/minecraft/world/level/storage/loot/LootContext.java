@@ -128,7 +128,7 @@ public class LootContext {
       private final String name;
       private final LootContextParam<? extends Entity> param;
 
-      private EntityTarget(final String param3, final LootContextParam<? extends Entity> param4) {
+      private EntityTarget(final String nullxx, final LootContextParam<? extends Entity> nullxxx) {
          this.name = nullxx;
          this.param = nullxxx;
       }

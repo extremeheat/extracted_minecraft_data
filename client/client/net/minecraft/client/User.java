@@ -64,7 +64,7 @@ public class User {
       private static final Map<String, User.Type> BY_NAME = Arrays.stream(values()).collect(Collectors.toMap(var0 -> var0.name, Function.identity()));
       private final String name;
 
-      private Type(final String param3) {
+      private Type(final String nullxx) {
          this.name = nullxx;
       }
 

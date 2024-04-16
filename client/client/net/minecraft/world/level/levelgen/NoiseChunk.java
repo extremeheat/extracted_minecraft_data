@@ -353,7 +353,6 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
             case Cache2D -> new NoiseChunk.Cache2D(var3.wrapped());
             case CacheOnce -> new NoiseChunk.CacheOnce(var3.wrapped());
             case CacheAllInCell -> new NoiseChunk.CacheAllInCell(var3.wrapped());
-            default -> throw new MatchException(null, null);
          });
       } else {
          if (this.blender != Blender.empty()) {
@@ -507,7 +506,7 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
       final DensityFunction noiseFiller;
       final double[] values;
 
-      CacheAllInCell(final DensityFunction param2) {
+      CacheAllInCell(final DensityFunction nullx) {
          super();
          this.noiseFiller = nullx;
          this.values = new double[NoiseChunk.this.cellWidth * NoiseChunk.this.cellWidth * NoiseChunk.this.cellHeight];
@@ -559,7 +558,7 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
       @Nullable
       private double[] lastArray;
 
-      CacheOnce(final DensityFunction param2) {
+      CacheOnce(final DensityFunction nullx) {
          super();
          this.function = nullx;
       }
@@ -611,7 +610,7 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
       private final DensityFunction noiseFiller;
       final double[][] values;
 
-      FlatCache(final DensityFunction param2, final boolean param3) {
+      FlatCache(final DensityFunction nullx, final boolean nullxx) {
          super();
          this.noiseFiller = nullx;
          this.values = new double[NoiseChunk.this.noiseSizeXZ + 1][NoiseChunk.this.noiseSizeXZ + 1];
@@ -689,7 +688,7 @@ public class NoiseChunk implements DensityFunction.ContextProvider, DensityFunct
       private double valueZ1;
       private double value;
 
-      NoiseInterpolator(final DensityFunction param2) {
+      NoiseInterpolator(final DensityFunction nullx) {
          super();
          this.noiseFiller = nullx;
          this.slice0 = this.allocateSlice(NoiseChunk.this.cellCountY, NoiseChunk.this.cellCountXZ);

@@ -60,7 +60,6 @@ public record MapBanner(BlockPos pos, DyeColor color, Optional<Component> name) 
          case GREEN -> MapDecorationTypes.GREEN_BANNER;
          case RED -> MapDecorationTypes.RED_BANNER;
          case BLACK -> MapDecorationTypes.BLACK_BANNER;
-         default -> throw new MatchException(null, null);
       };
    }
 

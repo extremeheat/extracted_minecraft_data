@@ -66,7 +66,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    protected final WorldSessionTelemetryManager telemetryManager;
    @Nullable
    protected final Screen postDisconnectScreen;
-   protected boolean keepResourcePacks;
+   protected boolean isTransferring;
    private final List<ClientCommonPacketListenerImpl.DeferredPacket> deferredPackets = new ArrayList<>();
    protected final Map<ResourceLocation, byte[]> serverCookies;
 
@@ -86,6 +86,13 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
       LOGGER.error("Failed to handle packet {}, disconnecting", var1, var2);
       ClientCommonPacketListener.super.onPacketError(var1, var2);
       this.connection.disconnect(Component.translatable("disconnect.packetError"));
+   }
+
+   @Override
+   public boolean shouldHandleMessage(Packet<?> var1) {
+      return ClientCommonPacketListener.super.shouldHandleMessage(var1)
+         ? true
+         : this.isTransferring && (var1 instanceof ClientboundStoreCookiePacket || var1 instanceof ClientboundTransferPacket);
    }
 
    @Override
@@ -169,27 +176,23 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
 
    @Override
    public void handleTransfer(ClientboundTransferPacket var1) {
+      this.isTransferring = true;
+      PacketUtils.ensureRunningOnSameThread(var1, this, this.minecraft);
       if (this.serverData == null) {
          throw new IllegalStateException("Cannot transfer to server from singleplayer");
       } else {
-         this.keepResourcePacks = true;
          this.connection.disconnect(Component.translatable("disconnect.transfer"));
-         this.minecraft
-            .executeIfPossible(
-               () -> {
-                  this.connection.setReadOnly();
-                  this.connection.handleDisconnection();
-                  ServerAddress var2 = new ServerAddress(var1.host(), var1.port());
-                  ConnectScreen.startConnecting(
-                     Objects.requireNonNullElseGet(this.postDisconnectScreen, TitleScreen::new),
-                     this.minecraft,
-                     var2,
-                     this.serverData,
-                     false,
-                     new TransferState(this.serverCookies)
-                  );
-               }
-            );
+         this.connection.setReadOnly();
+         this.connection.handleDisconnection();
+         ServerAddress var2 = new ServerAddress(var1.host(), var1.port());
+         ConnectScreen.startConnecting(
+            Objects.requireNonNullElseGet(this.postDisconnectScreen, TitleScreen::new),
+            this.minecraft,
+            var2,
+            this.serverData,
+            false,
+            new TransferState(this.serverCookies)
+         );
       }
    }
 
@@ -219,7 +222,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    @Override
    public void onDisconnect(Component var1) {
       this.telemetryManager.onDisconnect();
-      this.minecraft.disconnect(this.createDisconnectScreen(var1), this.keepResourcePacks);
+      this.minecraft.disconnect(this.createDisconnectScreen(var1), this.isTransferring);
       LOGGER.warn("Client disconnected with reason: {}", var1.getString());
    }
 
@@ -274,11 +277,11 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
       private final Screen parentScreen;
 
       PackConfirmScreen(
-         final Minecraft param2,
-         @Nullable final Screen param3,
-         final List<ClientCommonPacketListenerImpl.PackConfirmScreen.PendingRequest> param4,
-         final boolean param5,
-         @Nullable final Component param6
+         final Minecraft nullx,
+         @Nullable final Screen nullxx,
+         final List<ClientCommonPacketListenerImpl.PackConfirmScreen.PendingRequest> nullxxx,
+         final boolean nullxxxx,
+         @Nullable final Component nullxxxxx
       ) {
          super(
             var5 -> {
@@ -288,7 +291,7 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
                   if (ClientCommonPacketListenerImpl.this.serverData != null) {
                      ClientCommonPacketListenerImpl.this.serverData.setResourcePackStatus(ServerData.ServerPackStatus.ENABLED);
                   }
-   
+
                   var6.allowServerPacks();
                } else {
                   var6.rejectServerPacks();
@@ -298,11 +301,11 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
                      ClientCommonPacketListenerImpl.this.serverData.setResourcePackStatus(ServerData.ServerPackStatus.DISABLED);
                   }
                }
-   
+
                for (ClientCommonPacketListenerImpl.PackConfirmScreen.PendingRequest var8 : nullxxx) {
                   var6.pushPack(var8.id, var8.url, var8.hash);
                }
-   
+
                if (ClientCommonPacketListenerImpl.this.serverData != null) {
                   ServerList.saveSingleServer(ClientCommonPacketListenerImpl.this.serverData);
                }

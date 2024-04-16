@@ -23,7 +23,6 @@ public class LlamaRenderer extends MobRenderer<Llama, LlamaModel<Llama>> {
          case WHITE -> WHITE;
          case BROWN -> BROWN;
          case GRAY -> GRAY;
-         default -> throw new MatchException(null, null);
       };
    }
 }

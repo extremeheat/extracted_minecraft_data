@@ -293,7 +293,7 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
       private Path iconFile;
       private long lastClickTime;
 
-      public WorldListEntry(final WorldSelectionList param2, final LevelSummary param3) {
+      public WorldListEntry(final WorldSelectionList nullx, final LevelSummary nullxx) {
          super();
          this.minecraft = nullx.minecraft;
          this.screen = nullx.getScreen();
@@ -470,7 +470,7 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
                         this.minecraft.setScreen(new ProgressScreen(true));
                         this.doDeleteWorld();
                      }
-         
+
                      this.minecraft.setScreen(this.screen);
                   },
                   Component.translatable("selectWorld.deleteQuestion"),

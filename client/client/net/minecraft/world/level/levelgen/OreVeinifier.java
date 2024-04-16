@@ -65,7 +65,7 @@ public final class OreVeinifier {
       protected final int minY;
       protected final int maxY;
 
-      private VeinType(final BlockState param3, final BlockState param4, final BlockState param5, final int param6, final int param7) {
+      private VeinType(final BlockState nullxx, final BlockState nullxxx, final BlockState nullxxxx, final int nullxxxxx, final int nullxxxxxx) {
          this.ore = nullxx;
          this.rawOreBlock = nullxxx;
          this.filler = nullxxxx;

@@ -20,14 +20,14 @@ public class SaveOffCommand {
          (LiteralArgumentBuilder)((LiteralArgumentBuilder)Commands.literal("save-off").requires(var0x -> var0x.hasPermission(4))).executes(var0x -> {
             CommandSourceStack var1 = (CommandSourceStack)var0x.getSource();
             boolean var2 = false;
-   
+
             for (ServerLevel var4 : var1.getServer().getAllLevels()) {
                if (var4 != null && !var4.noSave) {
                   var4.noSave = true;
                   var2 = true;
                }
             }
-   
+
             if (!var2) {
                throw ERROR_ALREADY_OFF.create();
             } else {

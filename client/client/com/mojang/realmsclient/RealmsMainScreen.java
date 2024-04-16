@@ -720,7 +720,7 @@ public class RealmsMainScreen extends RealmsScreen {
       private final WidgetTooltipHolder tooltip = new WidgetTooltipHolder();
       private final RealmsServer parent;
 
-      public AvailableSnapshotEntry(final RealmsServer param2) {
+      public AvailableSnapshotEntry(final RealmsServer nullx) {
          super();
          this.parent = nullx;
          this.tooltip.set(Tooltip.create(Component.translatable("mco.snapshot.tooltip")));
@@ -777,7 +777,7 @@ public class RealmsMainScreen extends RealmsScreen {
    class ButtonEntry extends RealmsMainScreen.Entry {
       private final Button button;
 
-      public ButtonEntry(final Button param2) {
+      public ButtonEntry(final Button nullx) {
          super();
          this.button = nullx;
       }
@@ -995,7 +995,7 @@ public class RealmsMainScreen extends RealmsScreen {
       private final FrameLayout textFrame;
       private int lastEntryWidth = -1;
 
-      public NotificationMessageEntry(final Component param2, final int param3, final RealmsNotification param4) {
+      public NotificationMessageEntry(final Component nullx, final int nullxx, final RealmsNotification nullxxx) {
          super();
          this.text = nullx;
          this.frameItemHeight = nullxx;
@@ -1078,7 +1078,7 @@ public class RealmsMainScreen extends RealmsScreen {
       private final RealmsServer server;
       private final WidgetTooltipHolder tooltip = new WidgetTooltipHolder();
 
-      public ParentEntry(final RealmsServer param2) {
+      public ParentEntry(final RealmsServer nullx) {
          super();
          this.server = nullx;
          if (!nullx.expired) {
@@ -1145,7 +1145,7 @@ public class RealmsMainScreen extends RealmsScreen {
       private final RealmsServer serverData;
       private final WidgetTooltipHolder tooltip = new WidgetTooltipHolder();
 
-      public ServerEntry(final RealmsServer param2) {
+      public ServerEntry(final RealmsServer nullx) {
          super();
          this.serverData = nullx;
          boolean var3 = RealmsMainScreen.this.isSelfOwnedServer(nullx);

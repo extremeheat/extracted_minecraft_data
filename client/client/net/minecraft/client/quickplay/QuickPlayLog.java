@@ -59,7 +59,7 @@ public class QuickPlayLog {
                   } catch (IOException var3) {
                      LOGGER.error("Failed to delete quickplay log file {}", this.path, var3);
                   }
-      
+
                   QuickPlayLog.QuickPlayEntry var2 = new QuickPlayLog.QuickPlayEntry(this.worldData, Instant.now(), var1.gameMode.getPlayerMode());
                   Codec.list(QuickPlayLog.QuickPlayEntry.CODEC)
                      .encodeStart(JsonOps.INSTANCE, List.of(var2))
@@ -123,7 +123,7 @@ public class QuickPlayLog {
       static final Codec<QuickPlayLog.Type> CODEC = StringRepresentable.fromEnum(QuickPlayLog.Type::values);
       private final String name;
 
-      private Type(final String param3) {
+      private Type(final String nullxx) {
          this.name = nullxx;
       }
 

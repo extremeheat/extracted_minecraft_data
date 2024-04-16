@@ -7,7 +7,6 @@ import com.mojang.serialization.Dynamic;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -476,6 +475,10 @@ public class CompoundTag implements Tag {
       return var4;
    }
 
+   protected CompoundTag shallowCopy() {
+      return new CompoundTag(new HashMap<>(this.tags));
+   }
+
    public CompoundTag copy() {
       HashMap var1 = Maps.newHashMap(Maps.transformValues(this.tags, Tag::copy));
       return new CompoundTag(var1);
@@ -534,8 +537,8 @@ public class CompoundTag implements Tag {
       var1.visitCompound(this);
    }
 
-   protected Map<String, Tag> entries() {
-      return Collections.unmodifiableMap(this.tags);
+   protected Set<Entry<String, Tag>> entrySet() {
+      return this.tags.entrySet();
    }
 
    @Override

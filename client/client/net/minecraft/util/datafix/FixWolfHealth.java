@@ -43,7 +43,7 @@ public class FixWolfHealth extends NamedEntityFix {
             if (var1x.isTrue()) {
                var0 = var0.update("Health", var0x -> var0x.createFloat(var0x.asFloat(0.0F) * 2.0F));
             }
-   
+
             return var0;
          }
       );

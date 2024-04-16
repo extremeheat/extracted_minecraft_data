@@ -191,7 +191,7 @@ public class BlockFamily {
 
       private final String recipeGroup;
 
-      private Variant(final String param3) {
+      private Variant(final String nullxx) {
          this.recipeGroup = nullxx;
       }
 

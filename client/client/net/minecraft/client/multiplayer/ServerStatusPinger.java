@@ -154,7 +154,7 @@ public class ServerStatusPinger {
                         var1.config().setOption(ChannelOption.TCP_NODELAY, true);
                      } catch (ChannelException var3x) {
                      }
-         
+
                      var1.pipeline().addLast(new ChannelHandler[]{new LegacyServerPinger(var2, (var1x, var2xx, var3xxx, var4, var5) -> {
                         var3.setState(ServerData.State.INCOMPATIBLE);
                         var3.version = Component.literal(var2xx);

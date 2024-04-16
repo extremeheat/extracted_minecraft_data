@@ -124,7 +124,7 @@ public interface GuiSpriteScaling {
       private final String key;
       private final MapCodec<? extends GuiSpriteScaling> codec;
 
-      private Type(final String param3, final MapCodec<? extends GuiSpriteScaling> param4) {
+      private Type(final String nullxx, final MapCodec<? extends GuiSpriteScaling> nullxxx) {
          this.key = nullxx;
          this.codec = nullxxx;
       }

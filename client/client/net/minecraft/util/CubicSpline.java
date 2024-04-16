@@ -57,14 +57,14 @@ public interface CubicSpline<C, I extends ToFloatFunction<C>> extends ToFloatFun
                   float[] var2xx = new float[var1xx.size()];
                   com.google.common.collect.ImmutableList.Builder var3x = ImmutableList.builder();
                   float[] var4 = new float[var1xx.size()];
-      
+
                   for (int var5 = 0; var5 < var1xx.size(); var5++) {
                      1Point var6 = (1Point)var1xx.get(var5);
                      var2xx[var5] = var6.location();
                      var3x.add(var6.value());
                      var4[var5] = var6.derivative();
                   }
-      
+
                   return CubicSpline.Multipoint.create((I)var0xx, var2xx, var3x.build(), var4);
                })
       );

@@ -940,7 +940,6 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Targeti
          case HAND -> (ItemStack)this.handItems.get(var1.getIndex());
          case ARMOR -> (ItemStack)this.armorItems.get(var1.getIndex());
          case BODY -> this.bodyArmorItem;
-         default -> throw new MatchException(null, null);
       };
    }
 
@@ -988,7 +987,6 @@ public abstract class Mob extends LivingEntity implements EquipmentUser, Targeti
          case HAND -> this.handDropChances[var1.getIndex()];
          case ARMOR -> this.armorDropChances[var1.getIndex()];
          case BODY -> this.bodyArmorDropChance;
-         default -> throw new MatchException(null, null);
       };
    }
 

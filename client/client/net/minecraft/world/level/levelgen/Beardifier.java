@@ -90,7 +90,6 @@ public class Beardifier implements DensityFunctions.BeardifierOrMarker {
             case BURY, BEARD_THIN -> var13;
             case BEARD_BOX -> Math.max(0, Math.max(var12 - var3, var3 - var8.maxY()));
             case ENCAPSULATE -> Math.max(0, Math.max(var8.minY() - var3, var3 - var8.maxY()));
-            default -> throw new MatchException(null, null);
          };
 
          var5 += switch (var7.terrainAdjustment()) {
@@ -98,7 +97,6 @@ public class Beardifier implements DensityFunctions.BeardifierOrMarker {
             case BURY -> getBuryContribution((double)var10, (double)var14 / 2.0, (double)var11);
             case BEARD_THIN, BEARD_BOX -> getBeardContribution(var10, var14, var11, var13) * 0.8;
             case ENCAPSULATE -> getBuryContribution((double)var10 / 2.0, (double)var14 / 2.0, (double)var11 / 2.0) * 0.8;
-            default -> throw new MatchException(null, null);
          };
       }
 

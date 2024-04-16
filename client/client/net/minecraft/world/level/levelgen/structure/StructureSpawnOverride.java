@@ -28,7 +28,7 @@ public record StructureSpawnOverride(StructureSpawnOverride.BoundingBoxType boun
       public static final Codec<StructureSpawnOverride.BoundingBoxType> CODEC = StringRepresentable.fromEnum(StructureSpawnOverride.BoundingBoxType::values);
       private final String id;
 
-      private BoundingBoxType(final String param3) {
+      private BoundingBoxType(final String nullxx) {
          this.id = nullxx;
       }
 

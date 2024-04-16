@@ -55,7 +55,7 @@ public class Shoot extends Behavior<Breeze> {
             if (!var1x) {
                var2.getBrain().eraseMemory(MemoryModuleType.BREEZE_SHOOT);
             }
-   
+
             return (Boolean)var1x;
          }).orElse(false);
    }

@@ -59,6 +59,15 @@ public class ItemEnchantments implements TooltipProvider {
       super();
       this.enchantments = var1;
       this.showInTooltip = var2;
+      ObjectIterator var3 = var1.object2IntEntrySet().iterator();
+
+      while (var3.hasNext()) {
+         Entry var4 = (Entry)var3.next();
+         int var5 = var4.getIntValue();
+         if (var5 < 0 || var5 > 255) {
+            throw new IllegalArgumentException("Enchantment " + var4.getKey() + " has invalid level " + var5);
+         }
+      }
    }
 
    public int getLevel(Enchantment var1) {
@@ -155,13 +164,13 @@ public class ItemEnchantments implements TooltipProvider {
          if (var2 <= 0) {
             this.enchantments.removeInt(var1.builtInRegistryHolder());
          } else {
-            this.enchantments.put(var1.builtInRegistryHolder(), var2);
+            this.enchantments.put(var1.builtInRegistryHolder(), Math.min(var2, 255));
          }
       }
 
       public void upgrade(Enchantment var1, int var2) {
          if (var2 > 0) {
-            this.enchantments.merge(var1.builtInRegistryHolder(), var2, Integer::max);
+            this.enchantments.merge(var1.builtInRegistryHolder(), Math.min(var2, 255), Integer::max);
          }
       }
 

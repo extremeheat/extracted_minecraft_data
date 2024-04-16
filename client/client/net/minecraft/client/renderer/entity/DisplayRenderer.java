@@ -64,7 +64,6 @@ public abstract class DisplayRenderer<T extends Display, S> extends EntityRender
          case HORIZONTAL -> var4.rotationYXZ(-0.017453292F * entityYRot(var2, var3), 0.017453292F * cameraXRot(var5), 0.0F);
          case VERTICAL -> var4.rotationYXZ(-0.017453292F * cameraYrot(var5), 0.017453292F * entityXRot(var2, var3), 0.0F);
          case CENTER -> var4.rotationYXZ(-0.017453292F * cameraYrot(var5), 0.017453292F * cameraXRot(var5), 0.0F);
-         default -> throw new MatchException(null, null);
       };
    }
 
@@ -192,7 +191,6 @@ public abstract class DisplayRenderer<T extends Display, S> extends EntityRender
                case LEFT -> 0.0F;
                case RIGHT -> (float)(var18 - var21.width());
                case CENTER -> (float)var18 / 2.0F - (float)var21.width() / 2.0F;
-               default -> throw new MatchException(null, null);
             };
             this.font
                .drawInBatch(

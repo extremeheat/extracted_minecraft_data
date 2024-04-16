@@ -68,7 +68,7 @@ public class DataGenerator {
       private final String providerPrefix;
       private final PackOutput output;
 
-      PackGenerator(final boolean param2, final String param3, final PackOutput param4) {
+      PackGenerator(final boolean nullx, final String nullxx, final PackOutput nullxxx) {
          super();
          this.toRun = nullx;
          this.providerPrefix = nullxx;

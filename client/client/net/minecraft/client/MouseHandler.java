@@ -177,11 +177,11 @@ public class MouseHandler {
          (var1x, var3, var5) -> this.minecraft.execute(() -> this.onScroll(var1x, var3, var5)),
          (var1x, var3, var4) -> {
             Path[] var6 = new Path[var3];
-   
+
             for (int var7 = 0; var7 < var3; var7++) {
                var6[var7] = Paths.get(GLFWDropCallback.getName(var4, var7));
             }
-   
+
             this.minecraft.execute(() -> this.onDrop(var1x, Arrays.asList(var6)));
          }
       );

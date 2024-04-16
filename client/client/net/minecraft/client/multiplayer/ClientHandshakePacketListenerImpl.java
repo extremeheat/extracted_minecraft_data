@@ -254,7 +254,7 @@ public class ClientHandshakePacketListenerImpl implements ClientLoginPacketListe
       final Component message;
       final Set<ClientHandshakePacketListenerImpl.State> fromStates;
 
-      private State(final Component param3, final Set<ClientHandshakePacketListenerImpl.State> param4) {
+      private State(final Component nullxx, final Set<ClientHandshakePacketListenerImpl.State> nullxxx) {
          this.message = nullxx;
          this.fromStates = nullxxx;
       }

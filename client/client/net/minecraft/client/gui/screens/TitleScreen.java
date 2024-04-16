@@ -216,7 +216,7 @@ public class TitleScreen extends Screen {
                Component.translatable("menu.resetdemo"),
                var1x -> {
                   LevelStorageSource var2x = this.minecraft.getLevelSource();
-         
+
                   try (LevelStorageSource.LevelStorageAccess var3x = var2x.createAccess("Demo_World")) {
                      if (var3x.hasWorldData()) {
                         this.minecraft
@@ -324,7 +324,7 @@ public class TitleScreen extends Screen {
 
    @Override
    protected void renderPanorama(GuiGraphics var1, float var2) {
-      PANORAMA.render(var1, this.width, this.height, this.panoramaFade, var2);
+      PANORAMA.render(var1, this.width, this.height, this.panoramaFade, this.advancePanoramaTime());
    }
 
    @Override

@@ -177,7 +177,7 @@ public class ClientChunkCache extends ChunkSource {
       volatile int viewCenterZ;
       int chunkCount;
 
-      Storage(final int param2) {
+      Storage(final int nullx) {
          super();
          this.chunkRadius = nullx;
          this.viewRange = nullx * 2 + 1;

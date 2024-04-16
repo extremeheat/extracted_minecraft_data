@@ -145,7 +145,7 @@ public class ChunkHeightAndBiomeFix extends DataFix {
                         if (var10xx >= 0 && var10xx < var12.length) {
                            var9xx = var6xxx.set("biomes", var12[var10xx]);
                         }
-      
+
                         var8x.add(var7xxx);
                         if (var6xxx.get("Y").asInt(2147483647) == 0) {
                            var15.setValue((Supplier<ChunkProtoTickListFix.PoorMansPalettedContainer>)() -> {
@@ -154,10 +154,10 @@ public class ChunkHeightAndBiomeFix extends DataFix {
                               return new ChunkProtoTickListFix.PoorMansPalettedContainer(var1xxxxx, var2xxxxx);
                            });
                         }
-      
+
                         return var9xx.set("block_states", var8xx).remove("Palette").remove("BlockStates");
                      }).collect(Collectors.toCollection(ArrayList::new));
-      
+
                      for (int var11x = 0; var11x < var12.length; var11x++) {
                         int var12x = var11x + var11;
                         if (var8x.add(var12x)) {
@@ -167,7 +167,7 @@ public class ChunkHeightAndBiomeFix extends DataFix {
                            var10x.add(var13x);
                         }
                      }
-      
+
                      return Util.readTypedOrThrow(var7, var5xx.createList(var10x.stream()));
                   });
                   return var4xx.update(
@@ -176,7 +176,7 @@ public class ChunkHeightAndBiomeFix extends DataFix {
                         if (var9) {
                            var6xx = this.predictChunkStatusBeforeSurface(var6xx, var14);
                         }
-         
+
                         return updateChunkTag(
                            var6xx,
                            var9,

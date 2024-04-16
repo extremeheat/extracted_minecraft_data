@@ -29,7 +29,7 @@ public class VillagerCalmDown {
                            var2.erase();
                            var5.getBrain().updateActivityFromSchedule(var4.getDayTime(), var4.getGameTime());
                         }
-         
+
                         return true;
                      }
                )

@@ -79,7 +79,7 @@ public class ScreenNarrationCollector {
    class Output implements NarrationElementOutput {
       private final int depth;
 
-      Output(final int param2) {
+      Output(final int nullx) {
          super();
          this.depth = nullx;
       }

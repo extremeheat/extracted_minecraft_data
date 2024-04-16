@@ -70,7 +70,7 @@ public class ChunkProtoTickListFix extends DataFix {
                                        if (var5xxxx.getOptionalTyped(var6).isPresent()) {
                                           var9.setValue(Math.min(var7xxx, var9.getValue()));
                                        }
-                  
+
                                        var5xxxx.getOptionalTyped(var5)
                                           .ifPresent(
                                              var3xxxxx -> var10.put(
@@ -109,7 +109,7 @@ public class ChunkProtoTickListFix extends DataFix {
                      if (var16.isPresent()) {
                         var7xx = var7xx.set(var8, (Typed)((Pair)var16.get()).getFirst());
                      }
-      
+
                      return var7xx.update(DSL.remainderFinder(), var1xxx -> var1xxx.remove("ToBeTicked").remove("LiquidsToBeTicked").set("fluid_ticks", var14));
                   } else {
                      return var7xx;

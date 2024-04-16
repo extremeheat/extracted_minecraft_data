@@ -366,7 +366,7 @@ public class Frog extends Animal implements VariantHolder<Holder<FrogVariant>> {
    }
 
    class FrogLookControl extends LookControl {
-      FrogLookControl(final Mob param2) {
+      FrogLookControl(final Mob nullx) {
          super(nullx);
       }
 

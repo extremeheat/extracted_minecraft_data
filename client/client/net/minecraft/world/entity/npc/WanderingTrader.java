@@ -255,7 +255,7 @@ public class WanderingTrader extends AbstractVillager {
       final double stopDistance;
       final double speedModifier;
 
-      WanderToPositionGoal(final WanderingTrader param2, final double param3, final double param5) {
+      WanderToPositionGoal(final WanderingTrader nullx, final double nullxx, final double nullxxx) {
          super();
          this.trader = nullx;
          this.stopDistance = nullxx;

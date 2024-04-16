@@ -380,7 +380,7 @@ public class RegionFile implements AutoCloseable {
    class ChunkBuffer extends ByteArrayOutputStream {
       private final ChunkPos pos;
 
-      public ChunkBuffer(final ChunkPos param2) {
+      public ChunkBuffer(final ChunkPos nullx) {
          super(8096);
          super.write(0);
          super.write(0);

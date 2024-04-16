@@ -62,7 +62,7 @@ public class ItemShulkerBoxColorFix extends DataFix {
                   }
                }
             }
-   
+
             return var3x;
          }
       );

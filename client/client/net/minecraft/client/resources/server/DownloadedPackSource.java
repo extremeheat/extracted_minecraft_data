@@ -335,7 +335,6 @@ public class DownloadedPackSource implements AutoCloseable {
             ServerboundResourcePackPacket.Action var3 = switch (var2) {
                case ACCEPTED -> ServerboundResourcePackPacket.Action.ACCEPTED;
                case DOWNLOADED -> ServerboundResourcePackPacket.Action.DOWNLOADED;
-               default -> throw new MatchException(null, null);
             };
             var0.send(new ServerboundResourcePackPacket(var1, var3));
          }
@@ -350,7 +349,6 @@ public class DownloadedPackSource implements AutoCloseable {
                case DECLINED -> ServerboundResourcePackPacket.Action.DECLINED;
                case DISCARDED -> ServerboundResourcePackPacket.Action.DISCARDED;
                case ACTIVATION_FAILED -> ServerboundResourcePackPacket.Action.FAILED_RELOAD;
-               default -> throw new MatchException(null, null);
             };
             var0.send(new ServerboundResourcePackPacket(var1, var3));
          }

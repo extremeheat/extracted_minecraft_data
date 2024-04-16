@@ -309,7 +309,7 @@ public abstract class Raider extends PatrollingMonster {
       private final float hostileRadiusSqr;
       public final TargetingConditions shoutTargeting = TargetingConditions.forNonCombat().range(8.0).ignoreLineOfSight().ignoreInvisibilityTesting();
 
-      public HoldGroundAttackGoal(final AbstractIllager param2, final float param3) {
+      public HoldGroundAttackGoal(final AbstractIllager nullx, final float nullxx) {
          super();
          this.mob = nullx;
          this.hostileRadiusSqr = nullxx * nullxx;
@@ -378,7 +378,7 @@ public abstract class Raider extends PatrollingMonster {
    public class ObtainRaidLeaderBannerGoal<T extends Raider> extends Goal {
       private final T mob;
 
-      public ObtainRaidLeaderBannerGoal(final T param2) {
+      public ObtainRaidLeaderBannerGoal(final T nullx) {
          super();
          this.mob = (T)nullx;
          this.setFlags(EnumSet.of(Goal.Flag.MOVE));
@@ -421,7 +421,7 @@ public abstract class Raider extends PatrollingMonster {
    public class RaiderCelebration extends Goal {
       private final Raider mob;
 
-      RaiderCelebration(final Raider param2) {
+      RaiderCelebration(final Raider nullx) {
          super();
          this.mob = nullx;
          this.setFlags(EnumSet.of(Goal.Flag.MOVE));

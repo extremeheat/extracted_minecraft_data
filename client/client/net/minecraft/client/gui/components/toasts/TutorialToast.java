@@ -79,7 +79,7 @@ public class TutorialToast implements Toast {
 
       private final ResourceLocation sprite;
 
-      private Icons(final ResourceLocation param3) {
+      private Icons(final ResourceLocation nullxx) {
          this.sprite = nullxx;
       }
 

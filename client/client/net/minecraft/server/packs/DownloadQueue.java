@@ -50,7 +50,7 @@ public class DownloadQueue implements AutoCloseable {
          (var3x, var4) -> {
             Path var5 = this.cacheDir.resolve(var3x.toString());
             Path var6 = null;
-   
+
             try {
                var6 = HttpUtil.downloadFile(var5, var4.url, var1.headers, var1.hashFunction, var4.hash, var1.maxSize, var1.proxy, var1.listener);
                var3.downloaded.put(var3x, var6);
@@ -58,7 +58,7 @@ public class DownloadQueue implements AutoCloseable {
                LOGGER.error("Failed to download {}", var4.url, var9);
                var3.failed.add(var3x);
             }
-   
+
             try {
                this.eventLog
                   .write(

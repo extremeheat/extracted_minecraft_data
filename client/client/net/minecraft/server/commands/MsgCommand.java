@@ -27,7 +27,7 @@ public class MsgCommand {
                if (!var1x.isEmpty()) {
                   MessageArgument.resolveChatMessage(var0x, "message", var2 -> sendMessage((CommandSourceStack)var0x.getSource(), var1x, var2));
                }
-      
+
                return var1x.size();
             })))
       );

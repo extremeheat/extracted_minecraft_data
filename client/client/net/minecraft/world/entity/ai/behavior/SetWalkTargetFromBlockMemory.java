@@ -26,7 +26,7 @@ public class SetWalkTargetFromBlockMemory {
                            Vec3 var15 = null;
                            int var16 = 0;
                            short var17 = 1000;
-      
+
                            while (var15 == null || BlockPos.containing(var15).distManhattan(var10.blockPosition()) > var3) {
                               var15 = DefaultRandomPos.getPosTowards(var10, 15, 7, Vec3.atBottomCenterOf(var13.pos()), 1.5707963705062866);
                               if (++var16 == 1000) {
@@ -36,7 +36,7 @@ public class SetWalkTargetFromBlockMemory {
                                  return true;
                               }
                            }
-      
+
                            var7.set(new WalkTarget(var15, var1, var2));
                         } else if (var13.pos().distManhattan(var10.blockPosition()) > var2) {
                            var7.set(new WalkTarget(var13.pos(), var1, var2));
@@ -46,7 +46,7 @@ public class SetWalkTargetFromBlockMemory {
                         var8.erase();
                         var6.set(var11);
                      }
-      
+
                      return true;
                   })
       );

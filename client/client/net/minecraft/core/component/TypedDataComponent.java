@@ -8,9 +8,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 
 public record TypedDataComponent<T>(DataComponentType<T> type, T value) {
-   public static final StreamCodec<RegistryFriendlyByteBuf, TypedDataComponent<?>> STREAM_CODEC = new StreamCodec<RegistryFriendlyByteBuf, TypedDataComponent<?>>(
-      
-   ) {
+   public static final StreamCodec<RegistryFriendlyByteBuf, TypedDataComponent<?>> STREAM_CODEC = new StreamCodec<RegistryFriendlyByteBuf, TypedDataComponent<?>>() {
       public TypedDataComponent<?> decode(RegistryFriendlyByteBuf var1) {
          DataComponentType var2 = DataComponentType.STREAM_CODEC.decode(var1);
          return decodeTyped(var1, var2);

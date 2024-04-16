@@ -73,7 +73,7 @@ enum AdvancementTabType {
    private final int max;
 
    private AdvancementTabType(
-      final AdvancementTabType.Sprites param3, final AdvancementTabType.Sprites param4, final int param5, final int param6, final int param7
+      final AdvancementTabType.Sprites nullxx, final AdvancementTabType.Sprites nullxxx, final int nullxxxx, final int nullxxxxx, final int nullxxxxxx
    ) {
       this.selectedSprites = nullxx;
       this.unselectedSprites = nullxxx;

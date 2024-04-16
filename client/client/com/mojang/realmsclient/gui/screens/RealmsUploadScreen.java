@@ -251,20 +251,20 @@ public class RealmsUploadScreen extends RealmsScreen {
             () -> {
                File var1 = null;
                RealmsClient var2 = RealmsClient.create();
-      
+
                try {
                   if (!UPLOAD_LOCK.tryLock(1L, TimeUnit.SECONDS)) {
                      this.status = Component.translatable("mco.upload.close.failure");
                   } else {
                      UploadInfo var3 = null;
-      
+
                      for (int var4 = 0; var4 < 20; var4++) {
                         try {
                            if (this.cancelled) {
                               this.uploadCancelled();
                               return;
                            }
-      
+
                            var3 = var2.requestUploadInfo(this.realmId, UploadTokenCache.get(this.realmId));
                            if (var3 != null) {
                               break;
@@ -273,7 +273,7 @@ public class RealmsUploadScreen extends RealmsScreen {
                            Thread.sleep((long)(var18.delaySeconds * 1000));
                         }
                      }
-      
+
                      if (var3 == null) {
                         this.status = Component.translatable("mco.upload.close.failure");
                      } else {
@@ -306,7 +306,7 @@ public class RealmsUploadScreen extends RealmsScreen {
                                     if (this.backButton != null) {
                                        this.backButton.setMessage(CommonComponents.GUI_DONE);
                                     }
-      
+
                                     UploadTokenCache.invalidate(this.realmId);
                                  } else if (var1x.statusCode == 400 && var1x.errorMessage != null) {
                                     this.setErrorMessage(Component.translatable("mco.upload.failed", var1x.errorMessage));
@@ -314,14 +314,14 @@ public class RealmsUploadScreen extends RealmsScreen {
                                     this.setErrorMessage(Component.translatable("mco.upload.failed", var1x.statusCode));
                                  }
                               });
-      
+
                               while (!var24.isFinished()) {
                                  if (this.cancelled) {
                                     var24.cancel();
                                     this.uploadCancelled();
                                     return;
                                  }
-      
+
                                  try {
                                     Thread.sleep(500L);
                                  } catch (InterruptedException var17) {
@@ -366,11 +366,11 @@ public class RealmsUploadScreen extends RealmsScreen {
                      if (this.backButton != null) {
                         this.backButton.visible = true;
                      }
-      
+
                      if (this.cancelButton != null) {
                         this.cancelButton.visible = false;
                      }
-      
+
                      if (var1 != null) {
                         LOGGER.debug("Deleting file {}", var1.getAbsolutePath());
                         var1.delete();

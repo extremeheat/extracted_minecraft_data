@@ -34,7 +34,7 @@ public class TryFindLandNearWater {
                            CollisionContext var9 = CollisionContext.of(var6);
                            BlockPos var10 = var6.blockPosition();
                            BlockPos.MutableBlockPos var11 = new BlockPos.MutableBlockPos();
-         
+
                            label45:
                            for (BlockPos var13 : BlockPos.withinManhattan(var10, var0, var0, var0)) {
                               if ((var13.getX() != var10.getX() || var13.getZ() != var10.getZ())
@@ -50,7 +50,7 @@ public class TryFindLandNearWater {
                                  }
                               }
                            }
-         
+
                            var2.setValue(var7 + 40L);
                            return true;
                         }

@@ -200,7 +200,7 @@ public class RealmsBackupScreen extends RealmsScreen {
       private Button restoreButton;
       private final List<AbstractWidget> children = new ArrayList<>();
 
-      public Entry(final Backup param2) {
+      public Entry(final Backup nullx) {
          super();
          this.backup = nullx;
          this.populateChangeList(nullx);

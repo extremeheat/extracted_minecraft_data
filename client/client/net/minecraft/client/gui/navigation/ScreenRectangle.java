@@ -24,7 +24,6 @@ public record ScreenRectangle(ScreenPosition position, int width, int height) {
       return switch (var0) {
          case HORIZONTAL -> new ScreenRectangle(var1, var2, var3, var4);
          case VERTICAL -> new ScreenRectangle(var2, var1, var4, var3);
-         default -> throw new MatchException(null, null);
       };
    }
 
@@ -36,7 +35,6 @@ public record ScreenRectangle(ScreenPosition position, int width, int height) {
       return switch (var1) {
          case HORIZONTAL -> this.width;
          case VERTICAL -> this.height;
-         default -> throw new MatchException(null, null);
       };
    }
 

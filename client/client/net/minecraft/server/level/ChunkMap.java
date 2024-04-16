@@ -316,12 +316,12 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
             var4x -> {
                ArrayList var5x = Lists.newArrayList();
                int var6x = 0;
-   
+
                for (ChunkResult var8x : var4x) {
                   if (var8x == null) {
                      throw this.debugFuturesAndCreateReportedException(new IllegalStateException("At least one of the chunk futures were null"), "n/a");
                   }
-   
+
                   ChunkAccess var9x = (ChunkAccess)var8x.orElse(null);
                   if (var9x == null) {
                      int var10x = var6x;
@@ -329,11 +329,11 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
                         () -> "Unloaded " + new ChunkPos(var7 + var10x % (var2 * 2 + 1), var8 + var10x / (var2 * 2 + 1)) + " " + var8x.getError()
                      );
                   }
-   
+
                   var5x.add(var9x);
                   var6x++;
                }
-   
+
                return ChunkResult.of(var5x);
             }
          );
@@ -1242,7 +1242,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
    }
 
    class DistanceManager extends net.minecraft.server.level.DistanceManager {
-      protected DistanceManager(final Executor param2, final Executor param3) {
+      protected DistanceManager(final Executor nullx, final Executor nullxx) {
          super(nullx, nullxx);
       }
 
@@ -1271,7 +1271,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
       SectionPos lastSectionPos;
       private final Set<ServerPlayerConnection> seenBy = Sets.newIdentityHashSet();
 
-      public TrackedEntity(final Entity param2, final int param3, final int param4, final boolean param5) {
+      public TrackedEntity(final Entity nullx, final int nullxx, final int nullxxx, final boolean nullxxxx) {
          super();
          this.serverEntity = new ServerEntity(ChunkMap.this.level, nullx, nullxxx, nullxxxx, this::broadcast);
          this.entity = nullx;

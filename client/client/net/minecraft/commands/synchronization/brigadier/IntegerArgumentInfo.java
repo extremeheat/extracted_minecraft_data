@@ -50,7 +50,7 @@ public class IntegerArgumentInfo implements ArgumentTypeInfo<IntegerArgumentType
       final int min;
       final int max;
 
-      Template(final int param2, final int param3) {
+      Template(final int nullx, final int nullxx) {
          super();
          this.min = nullx;
          this.max = nullxx;

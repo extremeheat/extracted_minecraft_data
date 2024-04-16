@@ -687,19 +687,19 @@ public final class NativeImage implements AutoCloseable {
       private final boolean supportedByStb;
 
       private Format(
-         final int param3,
-         final int param4,
-         final boolean param5,
-         final boolean param6,
-         final boolean param7,
-         final boolean param8,
-         final boolean param9,
-         final int param10,
-         final int param11,
-         final int param12,
-         final int param13,
-         final int param14,
-         final boolean param15
+         final int nullxx,
+         final int nullxxx,
+         final boolean nullxxxx,
+         final boolean nullxxxxx,
+         final boolean nullxxxxxx,
+         final boolean nullxxxxxxx,
+         final boolean nullxxxxxxxx,
+         final int nullxxxxxxxxx,
+         final int nullxxxxxxxxxx,
+         final int nullxxxxxxxxxxx,
+         final int nullxxxxxxxxxxxx,
+         final int nullxxxxxxxxxxxxx,
+         final boolean nullxxxxxxxxxxxxxx
       ) {
          this.components = nullxx;
          this.glFormat = nullxxx;
@@ -833,7 +833,7 @@ public final class NativeImage implements AutoCloseable {
 
       private final int glFormat;
 
-      private InternalGlFormat(final int param3) {
+      private InternalGlFormat(final int nullxx) {
          this.glFormat = nullxx;
       }
 

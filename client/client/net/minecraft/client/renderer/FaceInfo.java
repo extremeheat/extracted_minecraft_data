@@ -55,7 +55,7 @@ public enum FaceInfo {
       return BY_FACING[var0.get3DDataValue()];
    }
 
-   private FaceInfo(final FaceInfo.VertexInfo... param3) {
+   private FaceInfo(final FaceInfo.VertexInfo... nullxx) {
       this.infos = nullxx;
    }
 

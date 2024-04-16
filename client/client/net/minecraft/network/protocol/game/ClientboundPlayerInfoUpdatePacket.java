@@ -129,7 +129,7 @@ public class ClientboundPlayerInfoUpdatePacket implements Packet<ClientGamePacke
       final ClientboundPlayerInfoUpdatePacket.Action.Reader reader;
       final ClientboundPlayerInfoUpdatePacket.Action.Writer writer;
 
-      private Action(final ClientboundPlayerInfoUpdatePacket.Action.Reader param3, final ClientboundPlayerInfoUpdatePacket.Action.Writer param4) {
+      private Action(final ClientboundPlayerInfoUpdatePacket.Action.Reader nullxx, final ClientboundPlayerInfoUpdatePacket.Action.Writer nullxxx) {
          this.reader = nullxx;
          this.writer = nullxxx;
       }

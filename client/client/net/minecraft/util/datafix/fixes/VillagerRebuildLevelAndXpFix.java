@@ -52,12 +52,12 @@ public class VillagerRebuildLevelAndXpFix extends DataFix {
                         var6x = addLevel(var3xx, var5xx);
                      }
                   }
-      
+
                   Optional var8 = var4xx.get("Xp").asNumber().result();
                   if (var8.isEmpty()) {
                      var6x = addXpFromLevel(var6x, var5xx);
                   }
-      
+
                   return var6x;
                }
             )

@@ -20,7 +20,7 @@ public enum BanReason {
 
    private final Component title;
 
-   private BanReason(final String param3) {
+   private BanReason(final String nullxx) {
       this.title = Component.translatable("gui.banned.reason." + nullxx);
    }
 

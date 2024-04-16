@@ -686,7 +686,7 @@ public final class DensityFunctions {
             var1 -> DensityFunctions.Mapped.create(this, var1), DensityFunctions.Mapped::input
          );
 
-         private Type(final String param3) {
+         private Type(final String nullxx) {
             this.name = nullxx;
          }
 
@@ -736,7 +736,7 @@ public final class DensityFunctions {
             var1 -> new DensityFunctions.Marker(this, var1), DensityFunctions.MarkerOrMarked::wrapped
          );
 
-         private Type(final String param3) {
+         private Type(final String nullxx) {
             this.name = nullxx;
          }
 
@@ -1335,7 +1335,7 @@ public final class DensityFunctions {
          );
          private final String name;
 
-         private Type(final String param3) {
+         private Type(final String nullxx) {
             this.name = nullxx;
          }
 
@@ -1407,7 +1407,7 @@ public final class DensityFunctions {
          final Double2DoubleFunction mapper;
          final double maxRarity;
 
-         private RarityValueMapper(final String param3, final Double2DoubleFunction param4, final double param5) {
+         private RarityValueMapper(final String nullxx, final Double2DoubleFunction nullxxx, final double nullxxxx) {
             this.name = nullxx;
             this.mapper = nullxxx;
             this.maxRarity = nullxxxx;

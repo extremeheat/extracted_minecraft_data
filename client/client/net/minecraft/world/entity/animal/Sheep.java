@@ -170,7 +170,6 @@ public class Sheep extends Animal implements Shearable {
             case GREEN -> BuiltInLootTables.SHEEP_GREEN;
             case RED -> BuiltInLootTables.SHEEP_RED;
             case BLACK -> BuiltInLootTables.SHEEP_BLACK;
-            default -> throw new MatchException(null, null);
          };
       }
    }

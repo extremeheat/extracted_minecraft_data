@@ -90,7 +90,7 @@ public class Sound implements Weighted<Sound> {
 
       private final String name;
 
-      private Type(final String param3) {
+      private Type(final String nullxx) {
          this.name = nullxx;
       }
 

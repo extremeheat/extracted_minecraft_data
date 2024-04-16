@@ -1338,14 +1338,14 @@ public class Gui {
       private final ResourceLocation hardcoreHalfBlinking;
 
       private HeartType(
-         final ResourceLocation param3,
-         final ResourceLocation param4,
-         final ResourceLocation param5,
-         final ResourceLocation param6,
-         final ResourceLocation param7,
-         final ResourceLocation param8,
-         final ResourceLocation param9,
-         final ResourceLocation param10
+         final ResourceLocation nullxx,
+         final ResourceLocation nullxxx,
+         final ResourceLocation nullxxxx,
+         final ResourceLocation nullxxxxx,
+         final ResourceLocation nullxxxxxx,
+         final ResourceLocation nullxxxxxxx,
+         final ResourceLocation nullxxxxxxxx,
+         final ResourceLocation nullxxxxxxxxx
       ) {
          this.full = nullxx;
          this.fullBlinking = nullxxx;

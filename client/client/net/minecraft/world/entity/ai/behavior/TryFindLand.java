@@ -37,7 +37,7 @@ public class TryFindLand {
                            BlockPos var9 = var6.blockPosition();
                            BlockPos.MutableBlockPos var10 = new BlockPos.MutableBlockPos();
                            CollisionContext var11 = CollisionContext.of(var6);
-         
+
                            for (BlockPos var13 : BlockPos.withinManhattan(var9, var0, var0, var0)) {
                               if (var13.getX() != var9.getX() || var13.getZ() != var9.getZ()) {
                                  BlockState var14 = var5x.getBlockState(var13);
@@ -53,7 +53,7 @@ public class TryFindLand {
                                  }
                               }
                            }
-         
+
                            var2.setValue(var7 + 60L);
                            return true;
                         }

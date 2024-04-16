@@ -205,7 +205,7 @@ public class Main {
                                  var8x = var18.has(var5) ? var10x.worldOptions.withBonusChest(true) : var10x.worldOptions;
                                  var9x = var10x.createDimensions(var5xx.datapackWorldgen());
                               }
-         
+
                               WorldDimensions.Complete var13x = var9x.bake(var6xx);
                               Lifecycle var11x = var13x.lifecycle().add(var5xx.datapackWorldgen().allRegistriesLifecycle());
                               return new WorldLoader.DataLoadOutput<>(
@@ -246,7 +246,7 @@ public class Main {
                if (var13x && !GraphicsEnvironment.isHeadless()) {
                   var12x.showGui();
                }
-   
+
                return var12x;
             }
          );

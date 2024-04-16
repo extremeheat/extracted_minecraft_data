@@ -54,7 +54,7 @@ public class ComponentPredicateParser {
             if (var4x != null) {
                var3x.addAll(var4x);
             }
-   
+
             return var3x.build();
          }
       );
@@ -89,7 +89,7 @@ public class ComponentPredicateParser {
          ),
          (var4x, var5x) -> {
             Object var6x = var5x.get(var12);
-   
+
             try {
                if (var6x != null) {
                   Tag var10x = var5x.getOrThrow(var14);

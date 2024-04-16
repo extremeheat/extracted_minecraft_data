@@ -69,12 +69,12 @@ public class SonicBoom extends Behavior<Warden> {
                Vec3 var4 = var2x.getEyePosition().subtract(var3x);
                Vec3 var5 = var4.normalize();
                int var6 = Mth.floor(var4.length()) + 7;
-   
+
                for (int var7 = 1; var7 < var6; var7++) {
                   Vec3 var8 = var3x.add(var5.scale((double)var7));
                   var1.sendParticles(ParticleTypes.SONIC_BOOM, var8.x, var8.y, var8.z, 1, 0.0, 0.0, 0.0, 0.0);
                }
-   
+
                var2.playSound(SoundEvents.WARDEN_SONIC_BOOM, 3.0F, 1.0F);
                if (var2x.hurt(var1.damageSources().sonicBoom(var2), 10.0F)) {
                   double var11 = 0.5 * (1.0 - var2x.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE));

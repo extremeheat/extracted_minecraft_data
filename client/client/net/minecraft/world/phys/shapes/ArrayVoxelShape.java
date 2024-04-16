@@ -37,7 +37,7 @@ public class ArrayVoxelShape extends VoxelShape {
    }
 
    @Override
-   public DoubleList getCoords(Direction.Axis var1) {
+   protected DoubleList getCoords(Direction.Axis var1) {
       switch (var1) {
          case X:
             return this.xs;

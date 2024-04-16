@@ -74,7 +74,7 @@ public class Brain<E extends LivingEntity> {
                      .flatMap(var0xx -> var0xx.getCodec().map(var1xxxx -> BuiltInRegistries.MEMORY_MODULE_TYPE.getKey((MemoryModuleType<?>)var0xx)).stream())
                      .map(var1xxx -> (T)var1x.createString(var1xxx.toString()));
                }
-      
+
                public <T> DataResult<Brain<E>> decode(DynamicOps<T> var1x, MapLike<T> var2x) {
                   MutableObject var3 = new MutableObject(DataResult.success(ImmutableList.builder()));
                   var2x.entries().forEach(var3x -> {
@@ -88,7 +88,7 @@ public class Brain<E extends LivingEntity> {
                      .orElseGet(ImmutableList::of);
                   return DataResult.success(new Brain(var0, var1, var4, var2::getValue));
                }
-      
+
                private <T, U> DataResult<Brain.MemoryValue<U>> captureRead(MemoryModuleType<U> var1x, DynamicOps<T> var2x, T var3) {
                   return var1x.getCodec()
                      .<DataResult>map(DataResult::success)
@@ -96,7 +96,7 @@ public class Brain<E extends LivingEntity> {
                      .flatMap(var2xxx -> var2xxx.parse(var2x, var3))
                      .map(var1xxx -> new Brain.MemoryValue(var1x, Optional.of(var1xxx)));
                }
-      
+
                public <T> RecordBuilder<T> encode(Brain<E> var1x, DynamicOps<T> var2x, RecordBuilder<T> var3) {
                   var1x.memories().forEach(var2xxx -> var2xxx.serialize(var2x, var3));
                   return var3;

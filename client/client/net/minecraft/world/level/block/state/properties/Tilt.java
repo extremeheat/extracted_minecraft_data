@@ -11,7 +11,7 @@ public enum Tilt implements StringRepresentable {
    private final String name;
    private final boolean causesVibration;
 
-   private Tilt(final String param3, final boolean param4) {
+   private Tilt(final String nullxx, final boolean nullxxx) {
       this.name = nullxx;
       this.causesVibration = nullxxx;
    }

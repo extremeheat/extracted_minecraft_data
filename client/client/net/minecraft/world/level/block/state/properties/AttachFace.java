@@ -9,7 +9,7 @@ public enum AttachFace implements StringRepresentable {
 
    private final String name;
 
-   private AttachFace(final String param3) {
+   private AttachFace(final String nullxx) {
       this.name = nullxx;
    }
 

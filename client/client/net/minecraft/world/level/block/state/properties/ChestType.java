@@ -9,7 +9,7 @@ public enum ChestType implements StringRepresentable {
 
    private final String name;
 
-   private ChestType(final String param3) {
+   private ChestType(final String nullxx) {
       this.name = nullxx;
    }
 

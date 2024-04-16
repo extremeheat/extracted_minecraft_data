@@ -207,7 +207,7 @@ public class VertexBuffer implements AutoCloseable {
 
       final int id;
 
-      private Usage(final int param3) {
+      private Usage(final int nullxx) {
          this.id = nullxx;
       }
    }

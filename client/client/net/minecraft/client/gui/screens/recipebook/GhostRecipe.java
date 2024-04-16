@@ -78,7 +78,7 @@ public class GhostRecipe {
       private final int x;
       private final int y;
 
-      public GhostIngredient(final Ingredient param2, final int param3, final int param4) {
+      public GhostIngredient(final Ingredient nullx, final int nullxx, final int nullxxx) {
          super();
          this.ingredient = nullx;
          this.x = nullxx;

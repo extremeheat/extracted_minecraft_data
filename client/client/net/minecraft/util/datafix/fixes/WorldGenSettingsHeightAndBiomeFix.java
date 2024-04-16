@@ -57,7 +57,7 @@ public class WorldGenSettingsHeightAndBiomeFix extends DataFix {
                                                    if (var2xxxxxx.get("large_biomes").asBoolean(false)) {
                                                       var4xx.setTrue();
                                                    }
-                     
+
                                                    return var2xxxxxx.createMap(
                                                       ImmutableMap.of(
                                                          var2xxxxxx.createString("preset"),

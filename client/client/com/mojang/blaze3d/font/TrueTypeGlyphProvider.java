@@ -147,7 +147,7 @@ public class TrueTypeGlyphProvider implements GlyphProvider {
       private final float advance;
       final int index;
 
-      Glyph(final float param2, final float param3, final int param4, final int param5, final float param6, final int param7) {
+      Glyph(final float nullx, final float nullxx, final int nullxxx, final int nullxxxx, final float nullxxxxx, final int nullxxxxxx) {
          super();
          this.width = nullxxx;
          this.height = nullxxxx;

@@ -9,7 +9,7 @@ public enum CameraType {
    private final boolean firstPerson;
    private final boolean mirrored;
 
-   private CameraType(final boolean param3, final boolean param4) {
+   private CameraType(final boolean nullxx, final boolean nullxxx) {
       this.firstPerson = nullxx;
       this.mirrored = nullxxx;
    }

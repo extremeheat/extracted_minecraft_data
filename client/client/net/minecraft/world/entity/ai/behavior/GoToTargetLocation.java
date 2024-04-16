@@ -34,7 +34,7 @@ public class GoToTargetLocation {
                      if (!var9) {
                         BehaviorUtils.setWalkAndLookTargetMemories(var5x, getNearbyPos(var5x, var8), var2, var1);
                      }
-      
+
                      return true;
                   })
       );

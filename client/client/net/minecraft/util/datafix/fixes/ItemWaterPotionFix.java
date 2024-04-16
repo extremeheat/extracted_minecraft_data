@@ -37,11 +37,11 @@ public class ItemWaterPotionFix extends DataFix {
                   if (var6.get("Potion").asString().result().isEmpty()) {
                      var6 = var6.set("Potion", var6.createString("minecraft:water"));
                   }
-   
+
                   return var2x.set(var3, var5.set(DSL.remainderFinder(), var6));
                }
             }
-   
+
             return var2x;
          }
       );

@@ -52,7 +52,7 @@ public class InteractWithDoor {
                         } else if (var1.decrementAndGet() > 0) {
                            return false;
                         }
-      
+
                         var0.setValue(var10.getNextNode());
                         Node var12 = var10.getPreviousNode();
                         Node var13 = var10.getNextNode();
@@ -63,10 +63,10 @@ public class InteractWithDoor {
                            if (!var16.isOpen(var15)) {
                               var16.setOpen(var7, var6, var15, var14, true);
                            }
-      
+
                            var11 = rememberDoorToClose(var4, var11, var6, var14);
                         }
-      
+
                         BlockPos var19 = var13.asBlockPos();
                         BlockState var17 = var6.getBlockState(var19);
                         if (var17.is(BlockTags.WOODEN_DOORS, var0xxxx -> var0xxxx.getBlock() instanceof DoorBlock)) {
@@ -76,7 +76,7 @@ public class InteractWithDoor {
                               var11 = rememberDoorToClose(var4, var11, var6, var19);
                            }
                         }
-      
+
                         var11.ifPresent(var6x -> closeDoorsThatIHaveOpenedOrPassedThrough(var6, var7, var12, var13, (Set<GlobalPos>)var6x, var2.tryGet(var5)));
                         return true;
                      } else {

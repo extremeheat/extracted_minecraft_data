@@ -283,7 +283,7 @@ public class Squid extends WaterAnimal {
    class SquidRandomMovementGoal extends Goal {
       private final Squid squid;
 
-      public SquidRandomMovementGoal(final Squid param2) {
+      public SquidRandomMovementGoal(final Squid nullx) {
          super();
          this.squid = nullx;
       }

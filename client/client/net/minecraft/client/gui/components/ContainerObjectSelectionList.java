@@ -169,7 +169,6 @@ public abstract class ContainerObjectSelectionList<E extends ContainerObjectSele
                case LEFT -> -1;
                case RIGHT -> 1;
                case UP, DOWN -> 0;
-               default -> throw new MatchException(null, null);
             };
             if (var3 == 0) {
                return null;

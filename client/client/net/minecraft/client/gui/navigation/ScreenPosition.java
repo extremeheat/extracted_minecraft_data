@@ -11,7 +11,6 @@ public record ScreenPosition(int x, int y) {
       return switch (var0) {
          case HORIZONTAL -> new ScreenPosition(var1, var2);
          case VERTICAL -> new ScreenPosition(var2, var1);
-         default -> throw new MatchException(null, null);
       };
    }
 
@@ -21,7 +20,6 @@ public record ScreenPosition(int x, int y) {
          case UP -> new ScreenPosition(this.x, this.y - 1);
          case LEFT -> new ScreenPosition(this.x - 1, this.y);
          case RIGHT -> new ScreenPosition(this.x + 1, this.y);
-         default -> throw new MatchException(null, null);
       };
    }
 
@@ -29,7 +27,6 @@ public record ScreenPosition(int x, int y) {
       return switch (var1) {
          case HORIZONTAL -> this.x;
          case VERTICAL -> this.y;
-         default -> throw new MatchException(null, null);
       };
    }
 }

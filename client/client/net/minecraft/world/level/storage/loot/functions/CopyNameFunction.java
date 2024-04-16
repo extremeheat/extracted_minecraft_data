@@ -59,7 +59,7 @@ public class CopyNameFunction extends LootItemConditionalFunction {
       private final String name;
       final LootContextParam<?> param;
 
-      private NameSource(final String param3, final LootContextParam<?> param4) {
+      private NameSource(final String nullxx, final LootContextParam<?> nullxxx) {
          this.name = nullxx;
          this.param = nullxxx;
       }

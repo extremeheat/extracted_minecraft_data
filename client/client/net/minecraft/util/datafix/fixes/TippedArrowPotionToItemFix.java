@@ -21,15 +21,15 @@ public class TippedArrowPotionToItemFix extends NamedEntityWriteReadFix {
             if (var2.isPresent()) {
                var4x = var4x.set("Potion", (Dynamic)var2.get());
             }
-   
+
             if (var3.isPresent()) {
                var4x = var4x.set("custom_potion_effects", (Dynamic)var3.get());
             }
-   
+
             if (var4.isPresent()) {
                var4x = var4x.set("CustomPotionColor", (Dynamic)var4.get());
             }
-   
+
             return var3x.set("tag", var4x);
          });
    }

@@ -89,7 +89,6 @@ public record ItemAttributeModifiers(List<ItemAttributeModifiers.Entry> modifier
                case ADD_VALUE -> var8;
                case ADD_MULTIPLIED_BASE -> var8 * var1;
                case ADD_MULTIPLIED_TOTAL -> var8 * var4;
-               default -> throw new MatchException(null, null);
             };
          }
       }

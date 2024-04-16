@@ -149,7 +149,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
    }
 
    class BeaconCancelButton extends BeaconScreen.BeaconSpriteScreenButton {
-      public BeaconCancelButton(final int param2, final int param3) {
+      public BeaconCancelButton(final int nullx, final int nullxx) {
          super(nullx, nullxx, BeaconScreen.CANCEL_SPRITE, CommonComponents.GUI_CANCEL);
       }
 
@@ -164,7 +164,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
    }
 
    class BeaconConfirmButton extends BeaconScreen.BeaconSpriteScreenButton {
-      public BeaconConfirmButton(final int param2, final int param3) {
+      public BeaconConfirmButton(final int nullx, final int nullxx) {
          super(nullx, nullxx, BeaconScreen.CONFIRM_SPRITE, CommonComponents.GUI_DONE);
       }
 
@@ -188,7 +188,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
       private Holder<MobEffect> effect;
       private TextureAtlasSprite sprite;
 
-      public BeaconPowerButton(final int param2, final int param3, final Holder<MobEffect> param4, final boolean param5, final int param6) {
+      public BeaconPowerButton(final int nullx, final int nullxx, final Holder<MobEffect> nullxxx, final boolean nullxxxx, final int nullxxxxx) {
          super(nullx, nullxx);
          this.isPrimary = nullxxxx;
          this.tier = nullxxxxx;
@@ -294,7 +294,7 @@ public class BeaconScreen extends AbstractContainerScreen<BeaconMenu> {
    }
 
    class BeaconUpgradePowerButton extends BeaconScreen.BeaconPowerButton {
-      public BeaconUpgradePowerButton(final int param2, final int param3, final Holder<MobEffect> param4) {
+      public BeaconUpgradePowerButton(final int nullx, final int nullxx, final Holder<MobEffect> nullxxx) {
          super(nullx, nullxx, nullxxx, false, 3);
       }
 

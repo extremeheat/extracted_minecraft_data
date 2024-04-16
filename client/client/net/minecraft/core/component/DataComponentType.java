@@ -52,6 +52,7 @@ public interface DataComponentType<T> {
       private Codec<T> codec;
       @Nullable
       private StreamCodec<? super RegistryFriendlyByteBuf, T> streamCodec;
+      private boolean cacheEncoding;
 
       public Builder() {
          super();
@@ -67,11 +68,17 @@ public interface DataComponentType<T> {
          return this;
       }
 
+      public DataComponentType.Builder<T> cacheEncoding() {
+         this.cacheEncoding = true;
+         return this;
+      }
+
       public DataComponentType<T> build() {
          StreamCodec var1 = Objects.requireNonNullElseGet(
             this.streamCodec, () -> ByteBufCodecs.fromCodecWithRegistries(Objects.requireNonNull(this.codec, "Missing Codec for component"))
          );
-         return new DataComponentType.Builder.SimpleType<>(this.codec, var1);
+         Codec var2 = this.cacheEncoding && this.codec != null ? DataComponents.ENCODER_CACHE.wrap(this.codec) : this.codec;
+         return new DataComponentType.Builder.SimpleType<>(var2, var1);
       }
 
       static class SimpleType<T> implements DataComponentType<T> {

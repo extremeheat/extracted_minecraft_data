@@ -76,7 +76,7 @@ public class MapRenderer implements AutoCloseable {
       private final RenderType renderType;
       private boolean requiresUpload = true;
 
-      MapInstance(final int param2, final MapItemSavedData param3) {
+      MapInstance(final int nullx, final MapItemSavedData nullxx) {
          super();
          this.data = nullxx;
          this.texture = new DynamicTexture(128, 128, true);

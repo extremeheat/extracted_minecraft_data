@@ -13,7 +13,7 @@ public enum TutorialSteps {
    private final String name;
    private final Function<Tutorial, ? extends TutorialStepInstance> constructor;
 
-   private <T extends TutorialStepInstance> TutorialSteps(final String param3, final Function<Tutorial, T> param4) {
+   private <T extends TutorialStepInstance> TutorialSteps(final String nullxx, final Function<Tutorial, T> nullxxx) {
       this.name = nullxx;
       this.constructor = nullxxx;
    }

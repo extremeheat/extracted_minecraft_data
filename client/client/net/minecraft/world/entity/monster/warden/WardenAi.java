@@ -86,7 +86,7 @@ public class WardenAi {
                if (var0.tryGet(var1).isPresent()) {
                   var1.setWithExpiry(Unit.INSTANCE, 1200L);
                }
-   
+
                return true;
             })
    );

@@ -110,7 +110,7 @@ public class RandomSequences extends SavedData {
    class DirtyMarkingRandomSource implements RandomSource {
       private final RandomSource random;
 
-      DirtyMarkingRandomSource(final RandomSource param2) {
+      DirtyMarkingRandomSource(final RandomSource nullx) {
          super();
          this.random = nullx;
       }

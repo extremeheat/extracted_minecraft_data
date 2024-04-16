@@ -6,7 +6,7 @@ public enum PacketFlow {
 
    private final String id;
 
-   private PacketFlow(final String param3) {
+   private PacketFlow(final String nullxx) {
       this.id = nullxx;
    }
 

@@ -61,7 +61,6 @@ public class WorldLoadEvent {
          case CREATIVE -> TelemetryProperty.GameMode.CREATIVE;
          case ADVENTURE -> TelemetryProperty.GameMode.ADVENTURE;
          case SPECTATOR -> TelemetryProperty.GameMode.SPECTATOR;
-         default -> throw new MatchException(null, null);
       };
    }
 

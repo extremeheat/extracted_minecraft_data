@@ -9,7 +9,7 @@ public enum SculkSensorPhase implements StringRepresentable {
 
    private final String name;
 
-   private SculkSensorPhase(final String param3) {
+   private SculkSensorPhase(final String nullxx) {
       this.name = nullxx;
    }
 

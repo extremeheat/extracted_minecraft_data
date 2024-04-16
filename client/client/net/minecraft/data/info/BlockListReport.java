@@ -46,44 +46,44 @@ public class BlockListReport implements DataProvider {
                         StateDefinition var4x = var2xx.value().getStateDefinition();
                         if (!var4x.getProperties().isEmpty()) {
                            JsonObject var5 = new JsonObject();
-            
+
                            for (Property var7 : var4x.getProperties()) {
                               JsonArray var8 = new JsonArray();
-            
+
                               for (Comparable var10 : var7.getPossibleValues()) {
                                  var8.add(Util.getPropertyName(var7, var10));
                               }
-            
+
                               var5.add(var7.getName(), var8);
                            }
-            
+
                            var3x.add("properties", var5);
                         }
-            
+
                         JsonArray var12 = new JsonArray();
                         UnmodifiableIterator var13 = var4x.getPossibleStates().iterator();
-            
+
                         while (var13.hasNext()) {
                            BlockState var15 = (BlockState)var13.next();
                            JsonObject var17 = new JsonObject();
                            JsonObject var18 = new JsonObject();
-            
+
                            for (Property var11 : var4x.getProperties()) {
                               var18.addProperty(var11.getName(), Util.getPropertyName(var11, var15.getValue(var11)));
                            }
-            
+
                            if (var18.size() > 0) {
                               var17.add("properties", var18);
                            }
-            
+
                            var17.addProperty("id", Block.getId(var15));
                            if (var15 == var2xx.value().defaultBlockState()) {
                               var17.addProperty("default", true);
                            }
-            
+
                            var12.add(var17);
                         }
-            
+
                         var3x.add("states", var12);
                         String var14 = var2xx.getRegisteredName();
                         JsonElement var16 = (JsonElement)BlockTypes.CODEC

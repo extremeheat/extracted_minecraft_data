@@ -17,7 +17,7 @@ public interface LoggedChatEvent {
       private final String serializedName;
       private final Supplier<MapCodec<? extends LoggedChatEvent>> codec;
 
-      private Type(final String param3, final Supplier<MapCodec<? extends LoggedChatEvent>> param4) {
+      private Type(final String nullxx, final Supplier<MapCodec<? extends LoggedChatEvent>> nullxxx) {
          this.serializedName = nullxx;
          this.codec = nullxxx;
       }

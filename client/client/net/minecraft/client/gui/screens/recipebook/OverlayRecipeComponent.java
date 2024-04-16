@@ -177,7 +177,7 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
       private final boolean isCraftable;
       protected final List<OverlayRecipeComponent.OverlayRecipeButton.Pos> ingredientPos = Lists.newArrayList();
 
-      public OverlayRecipeButton(final int param2, final int param3, final RecipeHolder<?> param4, final boolean param5) {
+      public OverlayRecipeButton(final int nullx, final int nullxx, final RecipeHolder<?> nullxxx, final boolean nullxxxx) {
          super(nullx, nullxx, 200, 20, CommonComponents.EMPTY);
          this.width = 24;
          this.height = 24;
@@ -246,7 +246,7 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
          public final int x;
          public final int y;
 
-         public Pos(final int param2, final int param3, final ItemStack[] param4) {
+         public Pos(final int nullx, final int nullxx, final ItemStack[] nullxxx) {
             super();
             this.x = nullx;
             this.y = nullxx;
@@ -256,7 +256,7 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
    }
 
    class OverlaySmeltingRecipeButton extends OverlayRecipeComponent.OverlayRecipeButton {
-      public OverlaySmeltingRecipeButton(final int param2, final int param3, final RecipeHolder<?> param4, final boolean param5) {
+      public OverlaySmeltingRecipeButton(final int nullx, final int nullxx, final RecipeHolder<?> nullxxx, final boolean nullxxxx) {
          super(nullx, nullxx, nullxxx, nullxxxx);
       }
 

@@ -216,7 +216,7 @@ public class TropicalFish extends AbstractSchoolingFish implements VariantHolder
 
       final int id;
 
-      private Base(final int param3) {
+      private Base(final int nullxx) {
          this.id = nullxx;
       }
    }
@@ -242,7 +242,7 @@ public class TropicalFish extends AbstractSchoolingFish implements VariantHolder
       private final TropicalFish.Base base;
       private final int packedId;
 
-      private Pattern(final String param3, final TropicalFish.Base param4, final int param5) {
+      private Pattern(final String nullxx, final TropicalFish.Base nullxxx, final int nullxxxx) {
          this.name = nullxx;
          this.base = nullxxx;
          this.packedId = nullxxx.id | nullxxxx << 8;

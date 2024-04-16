@@ -50,7 +50,7 @@ public class LongArgumentInfo implements ArgumentTypeInfo<LongArgumentType, Long
       final long min;
       final long max;
 
-      Template(final long param2, final long param4) {
+      Template(final long nullx, final long nullxx) {
          super();
          this.min = nullx;
          this.max = nullxx;

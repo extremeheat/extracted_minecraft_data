@@ -57,7 +57,7 @@ public class ClipContext {
 
       private final ClipContext.ShapeGetter shapeGetter;
 
-      private Block(final ClipContext.ShapeGetter param3) {
+      private Block(final ClipContext.ShapeGetter nullxx) {
          this.shapeGetter = nullxx;
       }
 
@@ -75,7 +75,7 @@ public class ClipContext {
 
       private final Predicate<FluidState> canPick;
 
-      private Fluid(final Predicate<FluidState> param3) {
+      private Fluid(final Predicate<FluidState> nullxx) {
          this.canPick = nullxx;
       }
 

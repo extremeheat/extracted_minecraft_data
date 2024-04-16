@@ -22,7 +22,7 @@ public class VariantProperties {
 
       final int value;
 
-      private Rotation(final int param3) {
+      private Rotation(final int nullxx) {
          this.value = nullxx;
       }
    }

@@ -153,7 +153,7 @@ public class FilterMask {
       private final String serializedName;
       private final Supplier<MapCodec<FilterMask>> codec;
 
-      private Type(final String param3, final Supplier<MapCodec<FilterMask>> param4) {
+      private Type(final String nullxx, final Supplier<MapCodec<FilterMask>> nullxxx) {
          this.serializedName = nullxx;
          this.codec = nullxxx;
       }

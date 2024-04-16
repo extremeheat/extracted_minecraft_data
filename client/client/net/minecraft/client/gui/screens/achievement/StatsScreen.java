@@ -151,7 +151,7 @@ public class StatsScreen extends Screen {
    }
 
    class GeneralStatisticsList extends ObjectSelectionList<StatsScreen.GeneralStatisticsList.Entry> {
-      public GeneralStatisticsList(final Minecraft param2) {
+      public GeneralStatisticsList(final Minecraft nullx) {
          super(nullx, StatsScreen.this.width, StatsScreen.this.height - 33 - 58, 33, 14);
          ObjectArrayList var3 = new ObjectArrayList(Stats.CUSTOM.iterator());
          var3.sort(Comparator.comparing(var0 -> I18n.get(StatsScreen.getTranslationKey((Stat<ResourceLocation>)var0))));
@@ -172,7 +172,7 @@ public class StatsScreen extends Screen {
          private final Stat<ResourceLocation> stat;
          private final Component statDisplay;
 
-         Entry(final Stat<ResourceLocation> param2) {
+         Entry(final Stat<ResourceLocation> nullx) {
             super();
             this.stat = nullx;
             this.statDisplay = Component.translatable(StatsScreen.getTranslationKey(nullx));
@@ -223,7 +223,7 @@ public class StatsScreen extends Screen {
       protected int headerPressed = -1;
       protected int sortOrder;
 
-      public ItemStatisticsList(final Minecraft param2) {
+      public ItemStatisticsList(final Minecraft nullx) {
          super(nullx, StatsScreen.this.width, StatsScreen.this.height - 33 - 58, 33, 22);
          this.blockColumns = Lists.newArrayList();
          this.blockColumns.add(Stats.BLOCK_MINED);
@@ -381,7 +381,7 @@ public class StatsScreen extends Screen {
       class ItemRow extends ObjectSelectionList.Entry<StatsScreen.ItemStatisticsList.ItemRow> {
          private final Item item;
 
-         ItemRow(final Item param2) {
+         ItemRow(final Item nullx) {
             super();
             this.item = nullx;
          }
@@ -460,7 +460,7 @@ public class StatsScreen extends Screen {
    }
 
    class MobsStatisticsList extends ObjectSelectionList<StatsScreen.MobsStatisticsList.MobRow> {
-      public MobsStatisticsList(final Minecraft param2) {
+      public MobsStatisticsList(final Minecraft nullx) {
          super(nullx, StatsScreen.this.width, StatsScreen.this.height - 33 - 58, 33, 9 * 4);
 
          for (EntityType var4 : BuiltInRegistries.ENTITY_TYPE) {
@@ -482,7 +482,7 @@ public class StatsScreen extends Screen {
          private final boolean hasKills;
          private final boolean wasKilledBy;
 
-         public MobRow(final EntityType<?> param2) {
+         public MobRow(final EntityType<?> nullx) {
             super();
             this.mobName = nullx.getDescription();
             int var3 = StatsScreen.this.stats.getValue(Stats.ENTITY_KILLED.get(nullx));

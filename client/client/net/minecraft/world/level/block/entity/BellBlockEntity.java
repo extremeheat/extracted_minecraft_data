@@ -144,7 +144,7 @@ public class BellBlockEntity extends BlockEntity {
                double var8 = (double)((float)var1.getX() + 0.5F) + 1.0 / var6 * (var4x.getX() - (double)var1.getX());
                double var10 = (double)((float)var1.getZ() + 0.5F) + 1.0 / var6 * (var4x.getZ() - (double)var1.getZ());
                int var12 = Mth.clamp((var4 - 21) / -2, 3, 15);
-      
+
                for (int var13 = 0; var13 < var12; var13++) {
                   int var14 = var3.addAndGet(5);
                   var0.addParticle(

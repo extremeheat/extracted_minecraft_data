@@ -121,7 +121,7 @@ public class MapColor {
       public final int id;
       public final int modifier;
 
-      private Brightness(final int param3, final int param4) {
+      private Brightness(final int nullxx, final int nullxxx) {
          this.id = nullxx;
          this.modifier = nullxxx;
       }

@@ -55,7 +55,7 @@ public class SkinManager {
                      if (var3x.signatureState() == SignatureState.INVALID) {
                         SkinManager.LOGGER.warn("Profile contained invalid signature for textures property (profile id: {})", var1.profileId());
                      }
-   
+
                      return var3x;
                   }
                }, Util.backgroundExecutor()).thenComposeAsync(var2 -> SkinManager.this.registerTextures(var1.profileId(), var2), var4);

@@ -87,7 +87,7 @@ public class AcquirePoi {
                                  );
                               }
                            }
-         
+
                            return true;
                         }
                      }

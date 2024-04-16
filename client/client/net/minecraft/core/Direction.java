@@ -54,13 +54,13 @@ public enum Direction implements StringRepresentable {
       .toArray(Direction[]::new);
 
    private Direction(
-      final int param3,
-      final int param4,
-      final int param5,
-      final String param6,
-      final Direction.AxisDirection param7,
-      final Direction.Axis param8,
-      final Vec3i param9
+      final int nullxx,
+      final int nullxxx,
+      final int nullxxxx,
+      final String nullxxxxx,
+      final Direction.AxisDirection nullxxxxxx,
+      final Direction.Axis nullxxxxxxx,
+      final Vec3i nullxxxxxxxx
    ) {
       this.data3d = nullxx;
       this.data2d = nullxxxx;
@@ -414,7 +414,7 @@ public enum Direction implements StringRepresentable {
       public static final StringRepresentable.EnumCodec<Direction.Axis> CODEC = StringRepresentable.fromEnum(Direction.Axis::values);
       private final String name;
 
-      Axis(final String param3) {
+      Axis(final String nullxx) {
          this.name = nullxx;
       }
 
@@ -472,7 +472,7 @@ public enum Direction implements StringRepresentable {
       private final int step;
       private final String name;
 
-      private AxisDirection(final int param3, final String param4) {
+      private AxisDirection(final int nullxx, final String nullxxx) {
          this.step = nullxx;
          this.name = nullxxx;
       }
@@ -502,7 +502,7 @@ public enum Direction implements StringRepresentable {
       private final Direction[] faces;
       private final Direction.Axis[] axis;
 
-      private Plane(final Direction[] param3, final Direction.Axis[] param4) {
+      private Plane(final Direction[] nullxx, final Direction.Axis[] nullxxx) {
          this.faces = nullxx;
          this.axis = nullxxx;
       }

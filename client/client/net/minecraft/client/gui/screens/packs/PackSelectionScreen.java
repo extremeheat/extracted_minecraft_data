@@ -217,13 +217,13 @@ public class PackSelectionScreen extends Screen {
                         protected Path createZipPack(Path var1) {
                            return var1;
                         }
-         
+
                         protected Path createDirectoryPack(Path var1) {
                            return var1;
                         }
                      };
                      ArrayList var6 = new ArrayList();
-         
+
                      for (Path var8 : var1) {
                         try {
                            Path var9 = (Path)var5.detectPackResources(var8, var6);
@@ -237,17 +237,17 @@ public class PackSelectionScreen extends Screen {
                            LOGGER.warn("Failed to check {} for packs", var8, var10);
                         }
                      }
-         
+
                      if (!var6.isEmpty()) {
                         this.minecraft.setScreen(NoticeWithLinkScreen.createPackSymlinkWarningScreen(() -> this.minecraft.setScreen(this)));
                         return;
                      }
-         
+
                      if (!var3.isEmpty()) {
                         copyPacks(this.minecraft, var3, this.packDir);
                         this.reload();
                      }
-         
+
                      if (!var4.isEmpty()) {
                         String var11 = extractPackNames(var4).collect(Collectors.joining(", "));
                         this.minecraft
@@ -261,7 +261,7 @@ public class PackSelectionScreen extends Screen {
                         return;
                      }
                   }
-         
+
                   this.minecraft.setScreen(this);
                },
                Component.translatable("pack.dropConfirm"),

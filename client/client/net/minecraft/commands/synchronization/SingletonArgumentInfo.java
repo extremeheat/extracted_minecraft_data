@@ -40,7 +40,7 @@ public class SingletonArgumentInfo<A extends ArgumentType<?>> implements Argumen
    public final class Template implements ArgumentTypeInfo.Template<A> {
       private final Function<CommandBuildContext, A> constructor;
 
-      public Template(final Function<CommandBuildContext, A> param2) {
+      public Template(final Function<CommandBuildContext, A> nullx) {
          super();
          this.constructor = nullx;
       }

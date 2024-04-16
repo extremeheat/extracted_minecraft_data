@@ -25,7 +25,6 @@ public record GlyphRenderTypes(RenderType normal, RenderType seeThrough, RenderT
          case NORMAL -> this.normal;
          case SEE_THROUGH -> this.seeThrough;
          case POLYGON_OFFSET -> this.polygonOffset;
-         default -> throw new MatchException(null, null);
       };
    }
 }

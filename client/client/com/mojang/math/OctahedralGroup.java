@@ -77,18 +77,18 @@ public enum OctahedralGroup implements StringRepresentable {
       var0 -> {
          Map var1 = Arrays.stream(values())
             .collect(Collectors.toMap(var0x -> Pair.of(var0x.permutation, var0x.packInversions()), var0x -> (OctahedralGroup)var0x));
-   
+
          for (OctahedralGroup var5 : values()) {
             for (OctahedralGroup var9 : values()) {
                BooleanList var10 = var5.packInversions();
                BooleanList var11 = var9.packInversions();
                SymmetricGroup3 var12 = var9.permutation.compose(var5.permutation);
                BooleanArrayList var13 = new BooleanArrayList(3);
-   
+
                for (int var14 = 0; var14 < 3; var14++) {
                   var13.add(var10.getBoolean(var14) ^ var11.getBoolean(var5.permutation.permutation(var14)));
                }
-   
+
                var0[var5.ordinal()][var9.ordinal()] = (OctahedralGroup)var1.get(Pair.of(var12, var13));
             }
          }
@@ -98,7 +98,7 @@ public enum OctahedralGroup implements StringRepresentable {
       .map(var0 -> Arrays.stream(values()).filter(var1 -> var0.compose(var1) == IDENTITY).findAny().get())
       .toArray(OctahedralGroup[]::new);
 
-   private OctahedralGroup(final String param3, final SymmetricGroup3 param4, final boolean param5, final boolean param6, final boolean param7) {
+   private OctahedralGroup(final String nullxx, final SymmetricGroup3 nullxxx, final boolean nullxxxx, final boolean nullxxxxx, final boolean nullxxxxxx) {
       this.name = nullxx;
       this.invertX = nullxxxx;
       this.invertY = nullxxxxx;

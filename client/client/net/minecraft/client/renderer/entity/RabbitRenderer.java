@@ -33,7 +33,6 @@ public class RabbitRenderer extends MobRenderer<Rabbit, RabbitModel<Rabbit>> {
             case SALT -> RABBIT_SALT_LOCATION;
             case WHITE_SPLOTCHED -> RABBIT_WHITE_SPLOTCHED_LOCATION;
             case EVIL -> RABBIT_EVIL_LOCATION;
-            default -> throw new MatchException(null, null);
          };
       }
    }

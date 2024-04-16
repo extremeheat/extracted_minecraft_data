@@ -21,11 +21,11 @@ public class EntityRedundantChanceTagsFix extends DataFix {
                if (isZeroList(var0x.get("HandDropChances"), 2)) {
                   var0x = var0x.remove("HandDropChances");
                }
-   
+
                if (isZeroList(var0x.get("ArmorDropChances"), 4)) {
                   var0x = var0x.remove("ArmorDropChances");
                }
-   
+
                return var0x;
             })
       );

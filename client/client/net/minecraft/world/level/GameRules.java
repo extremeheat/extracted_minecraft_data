@@ -80,7 +80,7 @@ public class GameRules {
    public static final GameRules.Key<GameRules.BooleanValue> RULE_REDUCEDDEBUGINFO = register(
       "reducedDebugInfo", GameRules.Category.MISC, GameRules.BooleanValue.create(false, (var0, var1) -> {
          int var2 = var1.get() ? 22 : 23;
-   
+
          for (ServerPlayer var4 : var0.getPlayerList().getPlayers()) {
             var4.connection.send(new ClientboundEntityEventPacket(var4, (byte)var2));
          }
@@ -350,7 +350,7 @@ public class GameRules {
 
       private final String descriptionId;
 
-      private Category(final String param3) {
+      private Category(final String nullxx) {
          this.descriptionId = nullxx;
       }
 

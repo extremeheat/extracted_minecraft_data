@@ -118,7 +118,7 @@ public class ChatSelectionScreen extends Screen {
       @Nullable
       private ChatSelectionScreen.ChatSelectionList.Heading previousHeading;
 
-      public ChatSelectionList(final Minecraft param2, final int param3) {
+      public ChatSelectionList(final Minecraft nullx, final int nullxx) {
          super(nullx, ChatSelectionScreen.this.width, ChatSelectionScreen.this.height - nullxx - 80, 40, 16);
       }
 
@@ -223,7 +223,7 @@ public class ChatSelectionScreen extends Screen {
          private static final int COLOR = -6250336;
          private final Component text;
 
-         public DividerEntry(final Component param2) {
+         public DividerEntry(final Component nullx) {
             super();
             this.text = nullx;
          }
@@ -297,7 +297,12 @@ public class ChatSelectionScreen extends Screen {
          private final boolean playerMessage;
 
          public MessageEntry(
-            final int param2, final Component param3, final Component param4, @Nullable final GuiMessageTag param5, final boolean param6, final boolean param7
+            final int nullx,
+            final Component nullxx,
+            final Component nullxxx,
+            @Nullable final GuiMessageTag nullxxxx,
+            final boolean nullxxxxx,
+            final boolean nullxxxxxx
          ) {
             super();
             this.chatId = nullx;
@@ -412,7 +417,7 @@ public class ChatSelectionScreen extends Screen {
          private final Supplier<PlayerSkin> skin;
          private final boolean canReport;
 
-         public MessageHeadingEntry(final GameProfile param2, final Component param3, final boolean param4) {
+         public MessageHeadingEntry(final GameProfile nullx, final Component nullxx, final boolean nullxxx) {
             super();
             this.heading = nullxx;
             this.canReport = nullxxx;

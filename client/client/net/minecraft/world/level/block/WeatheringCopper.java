@@ -88,7 +88,7 @@ public interface WeatheringCopper extends ChangeOverTimeBlock<WeatheringCopper.W
       public static final Codec<WeatheringCopper.WeatherState> CODEC = StringRepresentable.fromEnum(WeatheringCopper.WeatherState::values);
       private final String name;
 
-      private WeatherState(final String param3) {
+      private WeatherState(final String nullxx) {
          this.name = nullxx;
       }
 

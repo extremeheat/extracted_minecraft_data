@@ -75,7 +75,7 @@ public class ServerFunctionLibrary implements PreparableReloadListener {
                CommandSourceStack var4x = new CommandSourceStack(
                   CommandSource.NULL, Vec3.ZERO, Vec2.ZERO, null, this.functionCompilationLevel, "", CommonComponents.EMPTY, null, null
                );
-      
+
                for (Entry var6x : var2x.entrySet()) {
                   ResourceLocation var7x = (ResourceLocation)var6x.getKey();
                   ResourceLocation var8x = LISTER.fileToId(var7x);
@@ -84,7 +84,7 @@ public class ServerFunctionLibrary implements PreparableReloadListener {
                      return CommandFunction.fromLines(var8x, this.dispatcher, var4x, var4xx);
                   }, var5));
                }
-      
+
                CompletableFuture[] var9 = var3x.values().toArray(new CompletableFuture[0]);
                return CompletableFuture.allOf(var9).handle((var1xx, var2xx) -> var3x);
             }

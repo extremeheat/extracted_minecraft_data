@@ -390,7 +390,7 @@ public class CreateWorldScreen extends Screen {
             for (LevelStem var2x : var0.datapackDimensions()) {
                var2x.generator().validate();
             }
-   
+
             return (WorldCreationContext)var0;
          })
          .thenAcceptAsync(this.uiState::setSettings, this.minecraft)
@@ -417,7 +417,7 @@ public class CreateWorldScreen extends Screen {
                } else {
                   this.minecraft.setScreen(this);
                }
-      
+
                return null;
             },
             this.minecraft

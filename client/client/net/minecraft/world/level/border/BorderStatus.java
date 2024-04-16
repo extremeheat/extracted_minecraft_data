@@ -7,7 +7,7 @@ public enum BorderStatus {
 
    private final int color;
 
-   private BorderStatus(final int param3) {
+   private BorderStatus(final int nullxx) {
       this.color = nullxx;
    }
 

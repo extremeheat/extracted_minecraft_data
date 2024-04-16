@@ -108,7 +108,7 @@ public class PackSelectionModel {
    abstract class EntryBase implements PackSelectionModel.Entry {
       private final Pack pack;
 
-      public EntryBase(final Pack param2) {
+      public EntryBase(final Pack nullx) {
          super();
          this.pack = nullx;
       }
@@ -206,7 +206,7 @@ public class PackSelectionModel {
    }
 
    class SelectedPackEntry extends PackSelectionModel.EntryBase {
-      public SelectedPackEntry(final Pack param2) {
+      public SelectedPackEntry(final Pack nullx) {
          super(nullx);
       }
 
@@ -236,7 +236,7 @@ public class PackSelectionModel {
    }
 
    class UnselectedPackEntry extends PackSelectionModel.EntryBase {
-      public UnselectedPackEntry(final Pack param2) {
+      public UnselectedPackEntry(final Pack nullx) {
          super(nullx);
       }
 

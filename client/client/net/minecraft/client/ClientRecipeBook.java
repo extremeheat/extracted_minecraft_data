@@ -93,7 +93,6 @@ public class ClientRecipeBook extends RecipeBook {
             case EQUIPMENT -> RecipeBookCategories.CRAFTING_EQUIPMENT;
             case REDSTONE -> RecipeBookCategories.CRAFTING_REDSTONE;
             case MISC -> RecipeBookCategories.CRAFTING_MISC;
-            default -> throw new MatchException(null, null);
          };
       } else {
          RecipeType var2 = var1.getType();
@@ -104,7 +103,6 @@ public class ClientRecipeBook extends RecipeBook {
                   case BLOCKS -> RecipeBookCategories.FURNACE_BLOCKS;
                   case FOOD -> RecipeBookCategories.FURNACE_FOOD;
                   case MISC -> RecipeBookCategories.FURNACE_MISC;
-                  default -> throw new MatchException(null, null);
                };
             }
 

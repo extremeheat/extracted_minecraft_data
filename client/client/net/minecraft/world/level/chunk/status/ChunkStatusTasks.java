@@ -85,7 +85,7 @@ public class ChunkStatusTasks {
                   }
                }
             }
-   
+
             return (ChunkAccess)var0x;
          });
    }

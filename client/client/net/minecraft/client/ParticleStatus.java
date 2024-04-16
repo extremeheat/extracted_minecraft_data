@@ -13,7 +13,7 @@ public enum ParticleStatus implements OptionEnum {
    private final int id;
    private final String key;
 
-   private ParticleStatus(final int param3, final String param4) {
+   private ParticleStatus(final int nullxx, final String nullxxx) {
       this.id = nullxx;
       this.key = nullxxx;
    }

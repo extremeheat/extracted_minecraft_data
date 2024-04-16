@@ -2471,7 +2471,6 @@ public abstract class LivingEntity extends Entity implements Attackable {
             case HAND -> this.getLastHandItem(var5);
             case ARMOR -> this.getLastArmorItem(var5);
             case BODY -> this.lastBodyItemStack;
-            default -> throw new MatchException(null, null);
          };
          ItemStack var7 = this.getItemBySlot(var5);
          if (this.equipmentHasChanged(var6, var7)) {
@@ -3385,7 +3384,6 @@ public abstract class LivingEntity extends Entity implements Attackable {
          case FEET -> 52;
          case LEGS -> 51;
          case BODY -> 65;
-         default -> throw new MatchException(null, null);
       };
    }
 

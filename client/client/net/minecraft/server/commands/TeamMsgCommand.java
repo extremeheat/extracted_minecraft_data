@@ -44,7 +44,7 @@ public class TeamMsgCommand {
                if (!var4.isEmpty()) {
                   MessageArgument.resolveChatMessage(var0x, "message", var4x -> sendMessage(var1x, var2, var3, var4, var4x));
                }
-   
+
                return var4.size();
             }
          }))

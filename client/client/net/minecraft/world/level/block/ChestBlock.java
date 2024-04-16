@@ -64,9 +64,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
    protected static final VoxelShape WEST_AABB = Block.box(0.0, 0.0, 1.0, 15.0, 14.0, 15.0);
    protected static final VoxelShape EAST_AABB = Block.box(1.0, 0.0, 1.0, 16.0, 14.0, 15.0);
    protected static final VoxelShape AABB = Block.box(1.0, 0.0, 1.0, 15.0, 14.0, 15.0);
-   private static final DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<Container>> CHEST_COMBINER = new DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<Container>>(
-      
-   ) {
+   private static final DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<Container>> CHEST_COMBINER = new DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<Container>>() {
       public Optional<Container> acceptDouble(ChestBlockEntity var1, ChestBlockEntity var2) {
          return Optional.of(new CompoundContainer(var1, var2));
       }
@@ -79,9 +77,7 @@ public class ChestBlock extends AbstractChestBlock<ChestBlockEntity> implements 
          return Optional.empty();
       }
    };
-   private static final DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<MenuProvider>> MENU_PROVIDER_COMBINER = new DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<MenuProvider>>(
-      
-   ) {
+   private static final DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<MenuProvider>> MENU_PROVIDER_COMBINER = new DoubleBlockCombiner.Combiner<ChestBlockEntity, Optional<MenuProvider>>() {
       public Optional<MenuProvider> acceptDouble(final ChestBlockEntity var1, final ChestBlockEntity var2) {
          final CompoundContainer var3 = new CompoundContainer(var1, var2);
          return Optional.of(new MenuProvider() {

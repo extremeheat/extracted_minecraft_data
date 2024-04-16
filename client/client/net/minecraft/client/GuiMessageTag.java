@@ -58,7 +58,7 @@ public record GuiMessageTag(int indicatorColor, @Nullable GuiMessageTag.Icon ico
       public final int width;
       public final int height;
 
-      private Icon(final ResourceLocation param3, final int param4, final int param5) {
+      private Icon(final ResourceLocation nullxx, final int nullxxx, final int nullxxxx) {
          this.sprite = nullxx;
          this.width = nullxxx;
          this.height = nullxxxx;

@@ -28,13 +28,13 @@ public enum EquipmentSlotGroup implements StringRepresentable {
    private final String key;
    private final Predicate<EquipmentSlot> predicate;
 
-   private EquipmentSlotGroup(final int param3, final String param4, final Predicate<EquipmentSlot> param5) {
+   private EquipmentSlotGroup(final int nullxx, final String nullxxx, final Predicate<EquipmentSlot> nullxxxx) {
       this.id = nullxx;
       this.key = nullxxx;
       this.predicate = nullxxxx;
    }
 
-   private EquipmentSlotGroup(final int param3, final String param4, final EquipmentSlot param5) {
+   private EquipmentSlotGroup(final int nullxx, final String nullxxx, final EquipmentSlot nullxxxx) {
       this(nullxx, nullxxx, var1 -> var1 == nullxxxx);
    }
 
@@ -47,7 +47,6 @@ public enum EquipmentSlotGroup implements StringRepresentable {
          case CHEST -> CHEST;
          case HEAD -> HEAD;
          case BODY -> BODY;
-         default -> throw new MatchException(null, null);
       };
    }
 

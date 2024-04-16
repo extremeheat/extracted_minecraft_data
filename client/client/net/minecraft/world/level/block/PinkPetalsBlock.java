@@ -37,12 +37,12 @@ public class PinkPetalsBlock extends BushBlock implements BonemealableBlock {
             Block.box(0.0, 0.0, 8.0, 8.0, 3.0, 16.0)
          };
          VoxelShape var3 = Shapes.empty();
-   
+
          for (int var4 = 0; var4 < var1; var4++) {
             int var5 = Math.floorMod(var4 - var0.get2DDataValue(), 4);
             var3 = Shapes.or(var3, var2[var5]);
          }
-   
+
          return var3.singleEncompassing();
       }
    );

@@ -1434,7 +1434,6 @@ public class BlockModelGenerators {
          return switch (var2x) {
             case UPPER -> Variant.variant().with(VariantProperties.MODEL, ModelLocationUtils.getModelLocation(var1, "_top_stage_" + var1x));
             case LOWER -> Variant.variant().with(VariantProperties.MODEL, ModelLocationUtils.getModelLocation(var1, "_bottom_stage_" + var1x));
-            default -> throw new MatchException(null, null);
          };
       });
       this.blockStateOutput.accept(MultiVariantGenerator.multiVariant(var1).with(var2));
@@ -3409,7 +3408,6 @@ public class BlockModelGenerators {
                      case INACTIVE, COOLDOWN -> Variant.variant().with(VariantProperties.MODEL, var7x ? var11 : var8);
                      case WAITING_FOR_PLAYERS, ACTIVE, WAITING_FOR_REWARD_EJECTION -> Variant.variant().with(VariantProperties.MODEL, var7x ? var12 : var9);
                      case EJECTING_REWARD -> Variant.variant().with(VariantProperties.MODEL, var7x ? var13 : var10);
-                     default -> throw new MatchException(null, null);
                   };
                }))
          );
@@ -3444,7 +3442,6 @@ public class BlockModelGenerators {
                      case ACTIVE -> Variant.variant().with(VariantProperties.MODEL, var9x ? var15 : var7);
                      case UNLOCKING -> Variant.variant().with(VariantProperties.MODEL, var9x ? var16 : var8);
                      case EJECTING -> Variant.variant().with(VariantProperties.MODEL, var9x ? var17 : var9);
-                     default -> throw new MatchException(null, null);
                   };
                }))
          );
@@ -3566,11 +3563,11 @@ public class BlockModelGenerators {
                         if (var2) {
                            var3.append("_on");
                         }
-               
+
                         if (var1) {
                            var3.append("_locked");
                         }
-               
+
                         return Variant.variant().with(VariantProperties.MODEL, TextureMapping.getBlockTexture(Blocks.REPEATER, var3.toString()));
                      })
                )
@@ -5049,7 +5046,7 @@ public class BlockModelGenerators {
    class BlockEntityModelGenerator {
       private final ResourceLocation baseModel;
 
-      public BlockEntityModelGenerator(final ResourceLocation param2, final Block param3) {
+      public BlockEntityModelGenerator(final ResourceLocation nullx, final Block nullxx) {
          super();
          this.baseModel = ModelTemplates.PARTICLE_ONLY.create(nullx, TextureMapping.particle(nullxx), BlockModelGenerators.this.modelOutput);
       }
@@ -5088,7 +5085,7 @@ public class BlockModelGenerators {
       private ResourceLocation fullBlock;
       private final Set<Block> skipGeneratingModelsFor = new HashSet<>();
 
-      public BlockFamilyProvider(final TextureMapping param2) {
+      public BlockFamilyProvider(final TextureMapping nullx) {
          super();
          this.mapping = nullx;
       }
@@ -5289,7 +5286,7 @@ public class BlockModelGenerators {
    class WoodProvider {
       private final TextureMapping logMapping;
 
-      public WoodProvider(final TextureMapping param2) {
+      public WoodProvider(final TextureMapping nullx) {
          super();
          this.logMapping = nullx;
       }

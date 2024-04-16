@@ -44,7 +44,6 @@ public class PressurePlateBlock extends BasePressurePlateBlock {
       Class<Entity> var3 = switch (this.type.pressurePlateSensitivity()) {
          case EVERYTHING -> Entity.class;
          case MOBS -> LivingEntity.class;
-         default -> throw new MatchException(null, null);
       };
       return getEntityCount(var1, TOUCH_AABB.move(var2), var3) > 0 ? 15 : 0;
    }

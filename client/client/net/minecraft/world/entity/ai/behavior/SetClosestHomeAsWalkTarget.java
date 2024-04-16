@@ -69,7 +69,7 @@ public class SetClosestHomeAsWalkTarget {
                               } else if (var10.getValue() < 5) {
                                  var1.long2LongEntrySet().removeIf(var1xxxx -> var1xxxx.getLongValue() < var2.getValue());
                               }
-         
+
                               return true;
                            } else {
                               return false;

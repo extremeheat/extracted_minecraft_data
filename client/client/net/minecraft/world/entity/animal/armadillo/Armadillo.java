@@ -422,7 +422,7 @@ public class Armadillo extends Animal {
       private final int animationDuration;
       private final int id;
 
-      ArmadilloState(final String param3, final boolean param4, final int param5, final int param6) {
+      ArmadilloState(final String nullxx, final boolean nullxxx, final int nullxxxx, final int nullxxxxx) {
          this.name = nullxx;
          this.isThreatened = nullxxx;
          this.animationDuration = nullxxxx;

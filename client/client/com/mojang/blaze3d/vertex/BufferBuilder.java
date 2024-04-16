@@ -118,7 +118,6 @@ public class BufferBuilder extends DefaultedVertexConsumer implements BufferVert
       return switch (var2) {
          case SHORT -> var2x -> this.buffer.putShort(var3.getAndAdd(2), (short)var2x);
          case INT -> var2x -> this.buffer.putInt(var3.getAndAdd(4), var2x);
-         default -> throw new MatchException(null, null);
       };
    }
 
@@ -447,7 +446,7 @@ public class BufferBuilder extends DefaultedVertexConsumer implements BufferVert
       private final BufferBuilder.DrawState drawState;
       private boolean released;
 
-      RenderedBuffer(final int param2, final BufferBuilder.DrawState param3) {
+      RenderedBuffer(final int nullx, final BufferBuilder.DrawState nullxx) {
          super();
          this.pointer = nullx;
          this.drawState = nullxx;

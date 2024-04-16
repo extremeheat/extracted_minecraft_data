@@ -52,7 +52,7 @@ public abstract class Team {
          return BY_NAME.get(var0);
       }
 
-      private CollisionRule(final String param3, final int param4) {
+      private CollisionRule(final String nullxx, final int nullxxx) {
          this.name = nullxx;
          this.id = nullxxx;
       }
@@ -82,7 +82,7 @@ public abstract class Team {
          return BY_NAME.get(var0);
       }
 
-      private Visibility(final String param3, final int param4) {
+      private Visibility(final String nullxx, final int nullxxx) {
          this.name = nullxx;
          this.id = nullxxx;
       }

@@ -190,7 +190,7 @@ public class EntitySubPredicates {
       class Instance implements EntitySubPredicate {
          final HolderSet<V> variants;
 
-         Instance(final HolderSet<V> param2) {
+         Instance(final HolderSet<V> nullx) {
             super();
             this.variants = nullx;
          }
@@ -235,7 +235,7 @@ public class EntitySubPredicates {
       class Instance implements EntitySubPredicate {
          final V variant;
 
-         Instance(final V param2) {
+         Instance(final V nullx) {
             super();
             this.variant = (V)nullx;
          }

@@ -112,7 +112,7 @@ public class RealmsPlayerScreen extends RealmsScreen {
       private final Button makeOpButton;
       private final Button removeOpButton;
 
-      public Entry(final PlayerInfo param2) {
+      public Entry(final PlayerInfo nullx) {
          super();
          this.playerInfo = nullx;
          int var3 = RealmsPlayerScreen.this.serverData.players.indexOf(this.playerInfo);

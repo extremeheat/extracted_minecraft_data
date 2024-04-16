@@ -37,7 +37,7 @@ public enum DataFixTypes {
    public static final Set<TypeReference> TYPES_FOR_LEVEL_LIST;
    private final TypeReference type;
 
-   private DataFixTypes(final TypeReference param3) {
+   private DataFixTypes(final TypeReference nullxx) {
       this.type = nullxx;
    }
 

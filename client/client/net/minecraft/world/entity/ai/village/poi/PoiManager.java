@@ -264,7 +264,7 @@ public class PoiManager extends SectionStorage<PoiSection> {
 
       private final Predicate<? super PoiRecord> test;
 
-      private Occupancy(final Predicate<? super PoiRecord> param3) {
+      private Occupancy(final Predicate<? super PoiRecord> nullxx) {
          this.test = nullxx;
       }
 

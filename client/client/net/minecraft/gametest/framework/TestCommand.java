@@ -525,7 +525,7 @@ public class TestCommand {
                   if (TestCommand.saveAndExportTestStructure(var2, var4) != 0) {
                      var1.setFalse();
                   }
-   
+
                   return 1;
                }
             },

@@ -15,7 +15,7 @@ public enum PrioritizeChunkUpdates implements OptionEnum {
    private final int id;
    private final String key;
 
-   private PrioritizeChunkUpdates(final int param3, final String param4) {
+   private PrioritizeChunkUpdates(final int nullxx, final String nullxxx) {
       this.id = nullxx;
       this.key = nullxxx;
    }

@@ -32,7 +32,7 @@ public enum SpecialGlyphs implements GlyphInfo {
       return var3;
    }
 
-   private SpecialGlyphs(final Supplier<NativeImage> param3) {
+   private SpecialGlyphs(final Supplier<NativeImage> nullxx) {
       this.image = (NativeImage)nullxx.get();
    }
 

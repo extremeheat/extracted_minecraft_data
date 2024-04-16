@@ -8,7 +8,7 @@ public enum Half implements StringRepresentable {
 
    private final String name;
 
-   private Half(final String param3) {
+   private Half(final String nullxx) {
       this.name = nullxx;
    }
 

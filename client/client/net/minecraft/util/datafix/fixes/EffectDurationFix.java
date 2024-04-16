@@ -40,7 +40,7 @@ public class EffectDurationFix extends DataFix {
                      return var3x.set(var4, var7);
                   }
                }
-      
+
                return var3x;
             })
          }

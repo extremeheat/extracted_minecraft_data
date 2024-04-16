@@ -130,7 +130,6 @@ public class ChiseledBookShelfBlock extends BaseEntityBlock {
             case WEST -> Optional.of(new Vec2((float)var9, (float)var7));
             case EAST -> Optional.of(new Vec2((float)(1.0 - var9), (float)var7));
             case DOWN, UP -> Optional.empty();
-            default -> throw new MatchException(null, null);
          };
       }
    }

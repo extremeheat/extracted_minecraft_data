@@ -18,6 +18,8 @@ import java.util.function.ToDoubleFunction;
 import java.util.function.ToIntFunction;
 import java.util.stream.IntStream;
 import javax.annotation.Nullable;
+import net.minecraft.Util;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractOptionSliderButton;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.CycleButton;
@@ -272,11 +274,16 @@ public final class OptionInstance<T> {
       }
    }
 
-   public static record IntRange(int minInclusive, int maxInclusive) implements OptionInstance.IntRangeBase {
-      public IntRange(int minInclusive, int maxInclusive) {
+   public static record IntRange(int minInclusive, int maxInclusive, boolean applyValueImmediately) implements OptionInstance.IntRangeBase {
+      public IntRange(int var1, int var2) {
+         this(var1, var2, true);
+      }
+
+      public IntRange(int minInclusive, int maxInclusive, boolean applyValueImmediately) {
          super();
          this.minInclusive = minInclusive;
          this.maxInclusive = maxInclusive;
+         this.applyValueImmediately = applyValueImmediately;
       }
 
       public Optional<Integer> validateValue(Integer var1) {
@@ -347,11 +354,14 @@ public final class OptionInstance<T> {
       }
    }
 
-   static final class OptionInstanceSliderButton<N> extends AbstractOptionSliderButton {
+   public static final class OptionInstanceSliderButton<N> extends AbstractOptionSliderButton {
       private final OptionInstance<N> instance;
       private final OptionInstance.SliderableValueSet<N> values;
       private final OptionInstance.TooltipSupplier<N> tooltipSupplier;
       private final Consumer<N> onValueChanged;
+      @Nullable
+      private Long delayedApplyAt;
+      private final boolean applyValueImmediately;
 
       OptionInstanceSliderButton(
          Options var1,
@@ -362,27 +372,49 @@ public final class OptionInstance<T> {
          OptionInstance<N> var6,
          OptionInstance.SliderableValueSet<N> var7,
          OptionInstance.TooltipSupplier<N> var8,
-         Consumer<N> var9
+         Consumer<N> var9,
+         boolean var10
       ) {
          super(var1, var2, var3, var4, var5, var7.toSliderValue(var6.get()));
          this.instance = var6;
          this.values = var7;
          this.tooltipSupplier = var8;
          this.onValueChanged = var9;
+         this.applyValueImmediately = var10;
          this.updateMessage();
       }
 
       @Override
       protected void updateMessage() {
-         this.setMessage(this.instance.toString.apply(this.instance.get()));
+         this.setMessage(this.instance.toString.apply(this.values.fromSliderValue(this.value)));
          this.setTooltip(this.tooltipSupplier.apply(this.values.fromSliderValue(this.value)));
       }
 
       @Override
       protected void applyValue() {
-         this.instance.set(this.values.fromSliderValue(this.value));
-         this.options.save();
-         this.onValueChanged.accept(this.instance.get());
+         if (this.applyValueImmediately) {
+            this.applyUnsavedValue();
+         } else {
+            this.delayedApplyAt = Util.getMillis() + 600L;
+         }
+      }
+
+      public void applyUnsavedValue() {
+         Object var1 = this.values.fromSliderValue(this.value);
+         if (!Objects.equals(var1, this.instance.get())) {
+            this.instance.set((N)var1);
+            this.options.save();
+            this.onValueChanged.accept(this.instance.get());
+         }
+      }
+
+      @Override
+      public void renderWidget(GuiGraphics var1, int var2, int var3, float var4) {
+         super.renderWidget(var1, var2, var3, var4);
+         if (this.delayedApplyAt != null && Util.getMillis() >= this.delayedApplyAt) {
+            this.delayedApplyAt = null;
+            this.applyUnsavedValue();
+         }
       }
    }
 
@@ -404,11 +436,15 @@ public final class OptionInstance<T> {
 
       T fromSliderValue(double var1);
 
+      default boolean applyValueImmediately() {
+         return true;
+      }
+
       @Override
       default Function<OptionInstance<T>, AbstractWidget> createButton(
          OptionInstance.TooltipSupplier<T> var1, Options var2, int var3, int var4, int var5, Consumer<T> var6
       ) {
-         return var7 -> new OptionInstance.OptionInstanceSliderButton<>(var2, var3, var4, var5, 20, var7, this, var1, var6);
+         return var7 -> new OptionInstance.OptionInstanceSliderButton<>(var2, var3, var4, var5, 20, var7, this, var1, var6, this.applyValueImmediately());
       }
    }
 

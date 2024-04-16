@@ -16,7 +16,7 @@ public enum PlayerModelPart {
    private final String id;
    private final Component name;
 
-   private PlayerModelPart(final int param3, final String param4) {
+   private PlayerModelPart(final int nullxx, final String nullxxx) {
       this.bit = nullxx;
       this.mask = 1 << nullxx;
       this.id = nullxxx;

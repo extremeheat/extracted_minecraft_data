@@ -32,7 +32,7 @@ public enum DisplaySlot implements StringRepresentable {
    private final int id;
    private final String name;
 
-   private DisplaySlot(final int param3, final String param4) {
+   private DisplaySlot(final int nullxx, final String nullxxx) {
       this.id = nullxx;
       this.name = nullxxx;
    }
@@ -66,7 +66,6 @@ public enum DisplaySlot implements StringRepresentable {
          case YELLOW -> TEAM_YELLOW;
          case WHITE -> TEAM_WHITE;
          case BOLD, ITALIC, UNDERLINE, RESET, OBFUSCATED, STRIKETHROUGH -> null;
-         default -> throw new MatchException(null, null);
       };
    }
 }

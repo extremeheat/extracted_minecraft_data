@@ -9,6 +9,7 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -18,7 +19,8 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
 public abstract class AbstractHurtingProjectile extends Projectile {
-   public static final double DEFLECTION_SCALE = 0.05;
+   public static final double ATTACK_DEFLECTION_SCALE = 0.1;
+   public static final double BOUNCE_DEFLECTION_SCALE = 0.05;
    public double xPower;
    public double yPower;
    public double zPower;
@@ -77,7 +79,7 @@ public abstract class AbstractHurtingProjectile extends Projectile {
 
          HitResult var2 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity, this.getClipType());
          if (var2.getType() != HitResult.Type.MISS) {
-            this.hitOrDeflect(var2);
+            this.hitTargetOrDeflectSelf(var2);
          }
 
          this.checkInsideBlocks();
@@ -108,6 +110,11 @@ public abstract class AbstractHurtingProjectile extends Projectile {
       } else {
          this.discard();
       }
+   }
+
+   @Override
+   public boolean hurt(DamageSource var1, float var2) {
+      return !this.isInvulnerableTo(var1);
    }
 
    @Override
@@ -149,15 +156,6 @@ public abstract class AbstractHurtingProjectile extends Projectile {
             this.zPower = var2.getDouble(2);
          }
       }
-   }
-
-   @Override
-   protected void onPunch(Entity var1) {
-      Vec3 var2 = var1.getLookAngle();
-      this.setDeltaMovement(var2);
-      this.xPower = var2.x * 0.1;
-      this.yPower = var2.y * 0.1;
-      this.zPower = var2.z * 0.1;
    }
 
    @Override
@@ -203,9 +201,17 @@ public abstract class AbstractHurtingProjectile extends Projectile {
    }
 
    @Override
-   public void onDeflection() {
-      this.xPower = this.getDeltaMovement().x * 0.05;
-      this.yPower = this.getDeltaMovement().y * 0.05;
-      this.zPower = this.getDeltaMovement().z * 0.05;
+   protected void onDeflection(@Nullable Entity var1, boolean var2) {
+      super.onDeflection(var1, var2);
+      if (var2) {
+         this.setDeltaMovement(this.getDeltaMovement().normalize());
+         this.xPower = this.getDeltaMovement().x * 0.1;
+         this.yPower = this.getDeltaMovement().y * 0.1;
+         this.zPower = this.getDeltaMovement().z * 0.1;
+      } else {
+         this.xPower = this.getDeltaMovement().x * 0.05;
+         this.yPower = this.getDeltaMovement().y * 0.05;
+         this.zPower = this.getDeltaMovement().z * 0.05;
+      }
    }
 }

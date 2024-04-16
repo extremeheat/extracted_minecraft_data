@@ -111,13 +111,13 @@ public class LeavesFix extends DataFix {
                               return var3xxx;
                            } else {
                               ArrayList var5xx = Lists.newArrayList();
-         
+
                               for (int var6x = 0; var6x < 7; var6x++) {
                                  var5xx.add(new IntOpenHashSet());
                               }
-         
+
                               ObjectIterator var25 = var4xxx.values().iterator();
-         
+
                               while (var25.hasNext()) {
                                  LeavesFix.LeavesSection var7 = (LeavesFix.LeavesSection)var25.next();
                                  if (!var7.isSkippable()) {
@@ -133,18 +133,18 @@ public class LeavesFix extends DataFix {
                                     }
                                  }
                               }
-         
+
                               for (int var26 = 1; var26 < 7; var26++) {
                                  IntSet var27 = (IntSet)var5xx.get(var26 - 1);
                                  IntSet var28 = (IntSet)var5xx.get(var26);
                                  IntIterator var29 = var27.iterator();
-         
+
                                  while (var29.hasNext()) {
                                     int var30 = var29.nextInt();
                                     int var31 = this.getX(var30);
                                     int var12 = this.getY(var30);
                                     int var13 = this.getZ(var30);
-         
+
                                     for (int[] var17 : DIRECTIONS) {
                                        int var18 = var31 + var17[0];
                                        int var19 = var12 + var17[1];
@@ -166,7 +166,7 @@ public class LeavesFix extends DataFix {
                                     }
                                  }
                               }
-         
+
                               return var3xxx.updateTyped(
                                  var6,
                                  var1xxxx -> ((LeavesFix.LeavesSection)var4xxx.get(((Dynamic)var1xxxx.get(DSL.remainderFinder())).get("Y").asInt(0)))
@@ -181,7 +181,7 @@ public class LeavesFix extends DataFix {
                            return var1xxx.set("UpgradeData", var2xxx.set("Sides", var1xxx.createByte((byte)(var2xxx.get("Sides").asByte((byte)0) | var4xx[0]))));
                         });
                      }
-      
+
                      return var5x;
                   }
                )

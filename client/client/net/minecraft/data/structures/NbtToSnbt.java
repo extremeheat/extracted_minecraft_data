@@ -53,7 +53,7 @@ public class NbtToSnbt implements DataProvider {
                                  .toArray(CompletableFuture[]::new)
                            );
                         }
-         
+
                         return var4;
                      } catch (IOException var8) {
                         LOGGER.error("Failed to read structure input directory", var8);

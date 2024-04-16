@@ -55,7 +55,7 @@ public class EntityStorage implements EntityPersistentStorage<Entity> {
                } catch (Exception var6) {
                   LOGGER.warn("Failed to parse chunk {} position info", var1, var6);
                }
-   
+
                CompoundTag var7 = this.simpleRegionStorage.upgradeChunkTag(var2.get(), -1);
                ListTag var4 = var7.getList("Entities", 10);
                List var5 = EntityType.loadEntitiesRecursive(var4, this.level).collect(ImmutableList.toImmutableList());

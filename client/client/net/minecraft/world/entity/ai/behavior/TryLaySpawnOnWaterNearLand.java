@@ -25,7 +25,7 @@ public class TryLaySpawnOnWaterNearLand {
                   (var1x, var2, var3) -> (var2x, var3x, var4) -> {
                         if (!var3x.isInWater() && var3x.onGround()) {
                            BlockPos var6 = var3x.blockPosition().below();
-         
+
                            for (Direction var8 : Direction.Plane.HORIZONTAL) {
                               BlockPos var9 = var6.relative(var8);
                               if (var2x.getBlockState(var9).getCollisionShape(var2x, var9).getFaceShape(Direction.UP).isEmpty()
@@ -41,7 +41,7 @@ public class TryLaySpawnOnWaterNearLand {
                                  }
                               }
                            }
-         
+
                            return true;
                         } else {
                            return false;

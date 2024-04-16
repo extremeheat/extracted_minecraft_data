@@ -367,7 +367,7 @@ public class CloneCommands {
 
       private final boolean canOverlap;
 
-      private Mode(final boolean param3) {
+      private Mode(final boolean nullxx) {
          this.canOverlap = nullxx;
       }
 

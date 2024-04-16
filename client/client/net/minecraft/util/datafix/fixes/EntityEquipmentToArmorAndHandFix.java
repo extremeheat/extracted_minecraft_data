@@ -54,18 +54,18 @@ public class EntityEquipmentToArmorAndHandFix extends DataFix {
                if (!var10.isEmpty()) {
                   var5x = Either.left(Lists.newArrayList(new Object[]{var10.get(0), var11}));
                }
-   
+
                if (var10.size() > 1) {
                   ArrayList var12 = Lists.newArrayList(new Object[]{var11, var11, var11, var11});
-   
+
                   for (int var13 = 1; var13 < Math.min(var10.size(), 5); var13++) {
                      var12.set(var13 - 1, var10.get(var13));
                   }
-   
+
                   var6 = Either.left(var12);
                }
             }
-   
+
             Dynamic var15 = var8;
             Optional var16 = var8.get("DropChances").asStreamOpt().result();
             if (var16.isPresent()) {
@@ -75,7 +75,7 @@ public class EntityEquipmentToArmorAndHandFix extends DataFix {
                   Dynamic var14 = var8.createList(Stream.of(var18, 0.0F).map(var8::createFloat));
                   var8 = var8.set("HandDropChances", var14);
                }
-   
+
                if (var8.get("ArmorDropChances").result().isEmpty()) {
                   Dynamic var19 = var8.createList(
                      Stream.of(
@@ -88,10 +88,10 @@ public class EntityEquipmentToArmorAndHandFix extends DataFix {
                   );
                   var8 = var8.set("ArmorDropChances", var19);
                }
-   
+
                var8 = var8.remove("DropChances");
             }
-   
+
             return var4x.set(var4, var3, Pair.of(var5x, Pair.of(var6, Pair.of(var7, var8))));
          }
       );

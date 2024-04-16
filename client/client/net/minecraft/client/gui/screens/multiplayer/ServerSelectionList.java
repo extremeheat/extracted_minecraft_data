@@ -245,7 +245,7 @@ public class ServerSelectionList extends ObjectSelectionList<ServerSelectionList
       @Nullable
       private Component statusIconTooltip;
 
-      protected OnlineServerEntry(final JoinMultiplayerScreen param2, final ServerData param3) {
+      protected OnlineServerEntry(final JoinMultiplayerScreen nullx, final ServerData nullxx) {
          super();
          this.screen = nullx;
          this.serverData = nullxx;

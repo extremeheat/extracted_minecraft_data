@@ -37,7 +37,7 @@ public class StringArgumentSerializer implements ArgumentTypeInfo<StringArgument
    public final class Template implements ArgumentTypeInfo.Template<StringArgumentType> {
       final StringType type;
 
-      public Template(final StringType param2) {
+      public Template(final StringType nullx) {
          super();
          this.type = nullx;
       }

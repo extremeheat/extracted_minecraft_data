@@ -46,7 +46,9 @@ public enum TrialSpawnerState implements StringRepresentable {
    private final TrialSpawnerState.ParticleEmission particleEmission;
    private final boolean isCapableOfSpawning;
 
-   private TrialSpawnerState(final String param3, final int param4, final TrialSpawnerState.ParticleEmission param5, final double param6, final boolean param8) {
+   private TrialSpawnerState(
+      final String nullxx, final int nullxxx, final TrialSpawnerState.ParticleEmission nullxxxx, final double nullxxxxx, final boolean nullxxxxxx
+   ) {
       this.name = nullxx;
       this.lightLevel = nullxxx;
       this.particleEmission = nullxxxx;
@@ -57,22 +59,20 @@ public enum TrialSpawnerState implements StringRepresentable {
    TrialSpawnerState tickAndGetNext(BlockPos var1, TrialSpawner var2, ServerLevel var3) {
       TrialSpawnerData var4 = var2.getData();
       TrialSpawnerConfig var5 = var2.getConfig();
-      TrialSpawnerState var10000;
-      switch (this) {
-         case INACTIVE:
-            var10000 = var4.getOrCreateDisplayEntity(var2, var3, WAITING_FOR_PLAYERS) == null ? this : WAITING_FOR_PLAYERS;
-            break;
-         case WAITING_FOR_PLAYERS:
+
+      return switch (this) {
+         case INACTIVE -> var4.getOrCreateDisplayEntity(var2, var3, WAITING_FOR_PLAYERS) == null ? this : WAITING_FOR_PLAYERS;
+         case WAITING_FOR_PLAYERS -> {
             if (!var4.hasMobToSpawn(var2, var3.random)) {
-               var10000 = INACTIVE;
+               yield INACTIVE;
             } else {
                var4.tryDetectPlayers(var3, var1, var2);
-               var10000 = var4.detectedPlayers.isEmpty() ? this : ACTIVE;
+               yield var4.detectedPlayers.isEmpty() ? this : ACTIVE;
             }
-            break;
-         case ACTIVE:
+         }
+         case ACTIVE -> {
             if (!var4.hasMobToSpawn(var2, var3.random)) {
-               var10000 = INACTIVE;
+               yield INACTIVE;
             } else {
                int var6 = var4.countAdditionalPlayers(var1);
                var4.tryDetectPlayers(var3, var1, var2);
@@ -85,8 +85,7 @@ public enum TrialSpawnerState implements StringRepresentable {
                      var4.cooldownEndsAt = var3.getGameTime() + (long)var2.getTargetCooldownLength();
                      var4.totalMobsSpawned = 0;
                      var4.nextMobSpawnsAt = 0L;
-                     var10000 = WAITING_FOR_REWARD_EJECTION;
-                     break;
+                     yield WAITING_FOR_REWARD_EJECTION;
                   }
                } else if (var4.isReadyToSpawnNextMob(var3, var5, var6)) {
                   var2.spawnMob(var3, var1).ifPresent(var4x -> {
@@ -100,24 +99,24 @@ public enum TrialSpawnerState implements StringRepresentable {
                   });
                }
 
-               var10000 = this;
+               yield this;
             }
-            break;
-         case WAITING_FOR_REWARD_EJECTION:
+         }
+         case WAITING_FOR_REWARD_EJECTION -> {
             if (var4.isReadyToOpenShutter(var3, 40.0F, var2.getTargetCooldownLength())) {
                var3.playSound(null, var1, SoundEvents.TRIAL_SPAWNER_OPEN_SHUTTER, SoundSource.BLOCKS);
-               var10000 = EJECTING_REWARD;
+               yield EJECTING_REWARD;
             } else {
-               var10000 = this;
+               yield this;
             }
-            break;
-         case EJECTING_REWARD:
+         }
+         case EJECTING_REWARD -> {
             if (!var4.isReadyToEjectItems(var3, (float)TIME_BETWEEN_EACH_EJECTION, var2.getTargetCooldownLength())) {
-               var10000 = this;
+               yield this;
             } else if (var4.detectedPlayers.isEmpty()) {
                var3.playSound(null, var1, SoundEvents.TRIAL_SPAWNER_CLOSE_SHUTTER, SoundSource.BLOCKS);
                var4.ejectingLootTable = Optional.empty();
-               var10000 = COOLDOWN;
+               yield COOLDOWN;
             } else {
                if (var4.ejectingLootTable.isEmpty()) {
                   var4.ejectingLootTable = var5.lootTablesToEject().getRandomValue(var3.getRandom());
@@ -125,28 +124,24 @@ public enum TrialSpawnerState implements StringRepresentable {
 
                var4.ejectingLootTable.ifPresent(var3x -> var2.ejectReward(var3, var1, (ResourceKey<LootTable>)var3x));
                var4.detectedPlayers.remove(var4.detectedPlayers.iterator().next());
-               var10000 = this;
+               yield this;
             }
-            break;
-         case COOLDOWN:
+         }
+         case COOLDOWN -> {
             var4.tryDetectPlayers(var3, var1, var2);
             if (!var4.detectedPlayers.isEmpty()) {
                var4.totalMobsSpawned = 0;
                var4.nextMobSpawnsAt = 0L;
-               var10000 = ACTIVE;
+               yield ACTIVE;
             } else if (var4.isCooldownFinished(var3)) {
                var4.cooldownEndsAt = 0L;
                var2.removeOminous(var3, var1);
-               var10000 = WAITING_FOR_PLAYERS;
+               yield WAITING_FOR_PLAYERS;
             } else {
-               var10000 = this;
+               yield this;
             }
-            break;
-         default:
-            throw new MatchException(null, null);
-      }
-
-      return var10000;
+         }
+      };
    }
 
    private void spawnOminousOminousItemSpawner(ServerLevel var1, BlockPos var2, TrialSpawner var3) {

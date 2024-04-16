@@ -178,15 +178,15 @@ public class ItemPotionFix extends DataFix {
                         var7 = var7.set(var2, Pair.of(References.ITEM_NAME.typeName(), "minecraft:splash_potion"));
                      }
                   }
-   
+
                   if (var6 != 0) {
                      var4 = var4.set("Damage", var4.createShort((short)0));
                   }
-   
+
                   return var7.set(DSL.remainderFinder(), var4);
                }
             }
-   
+
             return var2x;
          }
       );

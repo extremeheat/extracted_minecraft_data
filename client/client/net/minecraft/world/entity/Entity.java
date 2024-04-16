@@ -6,10 +6,6 @@ import com.google.common.collect.Sets;
 import com.google.common.collect.UnmodifiableIterator;
 import com.google.common.collect.ImmutableList.Builder;
 import com.mojang.logging.LogUtils;
-import it.unimi.dsi.fastutil.doubles.DoubleList;
-import it.unimi.dsi.fastutil.doubles.DoubleListIterator;
-import it.unimi.dsi.fastutil.floats.FloatArraySet;
-import it.unimi.dsi.fastutil.floats.FloatArrays;
 import it.unimi.dsi.fastutil.objects.Object2DoubleArrayMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMap;
 import java.util.ArrayList;
@@ -885,68 +881,39 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       boolean var5 = var1.x != var4.x;
       boolean var6 = var1.y != var4.y;
       boolean var7 = var1.z != var4.z;
-      boolean var8 = var6 && var1.y < 0.0;
-      if (this.maxUpStep() > 0.0F && (var8 || this.onGround()) && (var5 || var7)) {
-         AABB var9 = var8 ? var2.move(0.0, var4.y, 0.0) : var2;
-         AABB var10 = var9.expandTowards(var1.x, (double)this.maxUpStep(), var1.z);
-         List var11 = collectColliders(this, this.level, var3, var10);
-         float[] var12 = collectCandidateStepUpHeights(var9, var11, this.maxUpStep());
-
-         for (float var16 : var12) {
-            Vec3 var17 = collideWithShapes(new Vec3(var1.x, (double)var16, var1.z), var9, var11);
-            if (var17.horizontalDistanceSqr() > var4.horizontalDistanceSqr()) {
-               return var17;
+      boolean var8 = this.onGround() || var6 && var1.y < 0.0;
+      if (this.maxUpStep() > 0.0F && var8 && (var5 || var7)) {
+         Vec3 var9 = collideBoundingBox(this, new Vec3(var1.x, (double)this.maxUpStep(), var1.z), var2, this.level(), var3);
+         Vec3 var10 = collideBoundingBox(this, new Vec3(0.0, (double)this.maxUpStep(), 0.0), var2.expandTowards(var1.x, 0.0, var1.z), this.level(), var3);
+         if (var10.y < (double)this.maxUpStep()) {
+            Vec3 var11 = collideBoundingBox(this, new Vec3(var1.x, 0.0, var1.z), var2.move(var10), this.level(), var3).add(var10);
+            if (var11.horizontalDistanceSqr() > var9.horizontalDistanceSqr()) {
+               var9 = var11;
             }
+         }
+
+         if (var9.horizontalDistanceSqr() > var4.horizontalDistanceSqr()) {
+            return var9.add(collideBoundingBox(this, new Vec3(0.0, -var9.y + var1.y, 0.0), var2.move(var9), this.level(), var3));
          }
       }
 
       return var4;
    }
 
-   private static float[] collectCandidateStepUpHeights(AABB var0, List<VoxelShape> var1, float var2) {
-      FloatArraySet var3 = new FloatArraySet(4);
-
-      for (VoxelShape var5 : var1) {
-         DoubleList var6 = var5.getCoords(Direction.Axis.Y);
-         DoubleListIterator var7 = var6.iterator();
-
-         while (var7.hasNext()) {
-            double var8 = (Double)var7.next();
-            float var10 = (float)(var8 - var0.minY);
-            if (!(var10 < 1.0E-5F)) {
-               if (var10 > var2) {
-                  break;
-               }
-
-               var3.add(var10);
-            }
-         }
-      }
-
-      float[] var11 = var3.toFloatArray();
-      FloatArrays.unstableSort(var11);
-      return var11;
-   }
-
    public static Vec3 collideBoundingBox(@Nullable Entity var0, Vec3 var1, AABB var2, Level var3, List<VoxelShape> var4) {
-      List var5 = collectColliders(var0, var3, var4, var2.expandTowards(var1));
-      return collideWithShapes(var1, var2, var5);
-   }
-
-   private static List<VoxelShape> collectColliders(@Nullable Entity var0, Level var1, List<VoxelShape> var2, AABB var3) {
-      Builder var4 = ImmutableList.builderWithExpectedSize(var2.size() + 1);
-      if (!var2.isEmpty()) {
-         var4.addAll(var2);
+      Builder var5 = ImmutableList.builderWithExpectedSize(var4.size() + 1);
+      if (!var4.isEmpty()) {
+         var5.addAll(var4);
       }
 
-      WorldBorder var5 = var1.getWorldBorder();
-      boolean var6 = var0 != null && var5.isInsideCloseToBorder(var0, var3);
-      if (var6) {
-         var4.add(var5.getCollisionShape());
+      WorldBorder var6 = var3.getWorldBorder();
+      boolean var7 = var0 != null && var6.isInsideCloseToBorder(var0, var2.expandTowards(var1));
+      if (var7) {
+         var5.add(var6.getCollisionShape());
       }
 
-      var4.addAll(var1.getBlockCollisions(var0, var3));
-      return var4.build();
+      var5.addAll(var3.getBlockCollisions(var0, var2.expandTowards(var1)));
+      return collideWithShapes(var1, var2, var5.build());
    }
 
    private static Vec3 collideWithShapes(Vec3 var0, AABB var1, List<VoxelShape> var2) {
@@ -2573,7 +2540,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
                         var3x = Direction.Axis.X;
                         var4x = new Vec3(0.5, 0.0, 0.0);
                      }
-      
+
                      return PortalShape.createPortalInfo(var1, var2x, var3x, var4x, this, this.getDeltaMovement(), this.getYRot(), this.getXRot());
                   }
                )
@@ -3486,7 +3453,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       final boolean sounds;
       final boolean events;
 
-      private MovementEmission(final boolean param3, final boolean param4) {
+      private MovementEmission(final boolean nullxx, final boolean nullxxx) {
          this.sounds = nullxx;
          this.events = nullxxx;
       }
@@ -3514,7 +3481,7 @@ public abstract class Entity implements SyncedDataHolder, Nameable, EntityAccess
       private final boolean destroy;
       private final boolean save;
 
-      private RemovalReason(final boolean param3, final boolean param4) {
+      private RemovalReason(final boolean nullxx, final boolean nullxxx) {
          this.destroy = nullxx;
          this.save = nullxxx;
       }

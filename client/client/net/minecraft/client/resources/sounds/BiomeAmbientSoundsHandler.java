@@ -84,7 +84,7 @@ public class BiomeAmbientSoundsHandler implements AmbientSoundHandler {
                } else {
                   this.moodiness = this.moodiness - (float)(var2.getBrightness(LightLayer.BLOCK, var4) - 1) / (float)var1x.getTickDelay();
                }
-      
+
                if (this.moodiness >= 1.0F) {
                   double var6 = (double)var4.getX() + 0.5;
                   double var8 = (double)var4.getY() + 0.5;

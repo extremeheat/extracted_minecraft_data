@@ -201,7 +201,7 @@ public interface ListOperation {
       private final String id;
       final MapCodec<? extends ListOperation> mapCodec;
 
-      private Type(final String param3, final MapCodec<? extends ListOperation> param4) {
+      private Type(final String nullxx, final MapCodec<? extends ListOperation> nullxxx) {
          this.id = nullxx;
          this.mapCodec = nullxxx;
       }

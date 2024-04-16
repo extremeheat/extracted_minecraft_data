@@ -36,7 +36,7 @@ public class StopAdmiringIfTiredOfTryingToReachItem {
                               var5.set(var11 + 1);
                            }
                         }
-      
+
                         return true;
                      }
                   })

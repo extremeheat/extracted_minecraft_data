@@ -328,7 +328,7 @@ public class InputConstants {
          var0.map.put(var2, var3);
       }
 
-      private Type(final String param3, final BiFunction<Integer, String, Component> param4) {
+      private Type(final String nullxx, final BiFunction<Integer, String, Component> nullxxx) {
          this.defaultPrefix = nullxx;
          this.displayTextSupplier = nullxxx;
       }

@@ -34,7 +34,7 @@ public record PlayerSkin(
 
       private final String id;
 
-      private Model(final String param3) {
+      private Model(final String nullxx) {
          this.id = nullxx;
       }
 

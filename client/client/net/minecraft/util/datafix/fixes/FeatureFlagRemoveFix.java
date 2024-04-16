@@ -38,7 +38,7 @@ public class FeatureFlagRemoveFix extends DataFix {
                      if (var5) {
                         var2.add(var1.createString((String)var4.get()));
                      }
-   
+
                      return !var5;
                   }
                })).map(var1::createList), var3x)

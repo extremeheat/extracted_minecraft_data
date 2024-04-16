@@ -185,7 +185,7 @@ public class DecoratedPotBlockEntity extends BlockEntity implements Randomizable
 
       public final int duration;
 
-      private WobbleStyle(final int param3) {
+      private WobbleStyle(final int nullxx) {
          this.duration = nullxx;
       }
    }

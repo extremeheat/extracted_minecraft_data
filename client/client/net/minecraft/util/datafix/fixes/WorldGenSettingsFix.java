@@ -336,13 +336,13 @@ public class WorldGenSettingsFix extends DataFix {
                                                    new WorldGenSettingsFix.StructureFeatureConfiguration(var14, var13.separation, var13.salt)
                                                 );
                                              }
-                  
+
                                              return;
                                           case "spacing":
                                              if ("oceanmonument".equals(var8)) {
                                                 setSpacing(var6, "minecraft:monument", var10, 1);
                                              }
-                  
+
                                              return;
                                        }
                                     }

@@ -27,7 +27,7 @@ public class SetHiddenState {
                         if (var13.closerThan(var7.blockPosition(), (double)var1)) {
                            var3.increment();
                         }
-      
+
                         return true;
                      } else {
                         var5.erase();

@@ -389,7 +389,7 @@ public class CommandSuggestions {
       boolean tabCycles;
       private int lastNarratedEntry;
 
-      SuggestionsList(final int param2, final int param3, final int param4, final List<Suggestion> param5, final boolean param6) {
+      SuggestionsList(final int nullx, final int nullxx, final int nullxxx, final List<Suggestion> nullxxxx, final boolean nullxxxxx) {
          super();
          int var7 = nullx - (CommandSuggestions.this.input.isBordered() ? 0 : 1);
          int var8 = CommandSuggestions.this.anchorToBottom

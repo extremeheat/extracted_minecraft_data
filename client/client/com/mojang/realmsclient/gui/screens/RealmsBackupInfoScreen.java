@@ -75,7 +75,7 @@ public class RealmsBackupInfoScreen extends RealmsScreen {
    }
 
    class BackupInfoList extends ObjectSelectionList<RealmsBackupInfoScreen.BackupInfoListEntry> {
-      public BackupInfoList(final Minecraft param2) {
+      public BackupInfoList(final Minecraft nullx) {
          super(
             nullx,
             RealmsBackupInfoScreen.this.width,
@@ -106,7 +106,7 @@ public class RealmsBackupInfoScreen extends RealmsScreen {
       private final String key;
       private final String value;
 
-      public BackupInfoListEntry(final String param2, final String param3) {
+      public BackupInfoListEntry(final String nullx, final String nullxx) {
          super();
          this.key = nullx;
          this.value = nullxx;

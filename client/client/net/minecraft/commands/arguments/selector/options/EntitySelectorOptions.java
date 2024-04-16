@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Map.Entry;
-import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.CriterionProgress;
@@ -178,26 +177,17 @@ public class EntitySelectorOptions {
             int var1 = var0.getReader().getCursor();
             String var2 = var0.getReader().readUnquotedString();
             var0.setSuggestions((var0x, var1x) -> SharedSuggestionProvider.suggest(Arrays.asList("nearest", "furthest", "random", "arbitrary"), var0x));
-            BiConsumer var10001;
-            switch (var2) {
-               case "nearest":
-                  var10001 = EntitySelectorParser.ORDER_NEAREST;
-                  break;
-               case "furthest":
-                  var10001 = EntitySelectorParser.ORDER_FURTHEST;
-                  break;
-               case "random":
-                  var10001 = EntitySelectorParser.ORDER_RANDOM;
-                  break;
-               case "arbitrary":
-                  var10001 = EntitySelector.ORDER_ARBITRARY;
-                  break;
-               default:
+
+            var0.setOrder(switch (var2) {
+               case "nearest" -> EntitySelectorParser.ORDER_NEAREST;
+               case "furthest" -> EntitySelectorParser.ORDER_FURTHEST;
+               case "random" -> EntitySelectorParser.ORDER_RANDOM;
+               case "arbitrary" -> EntitySelector.ORDER_ARBITRARY;
+               default -> {
                   var0.getReader().setCursor(var1);
                   throw ERROR_SORT_UNKNOWN.createWithContext(var0.getReader(), var2);
-            }
-
-            var0.setOrder(var10001);
+               }
+            });
             var0.setSorted(true);
          }, var0 -> !var0.isCurrentEntity() && !var0.isSorted(), Component.translatable("argument.entity.options.sort.description"));
          register("gamemode", var0 -> {

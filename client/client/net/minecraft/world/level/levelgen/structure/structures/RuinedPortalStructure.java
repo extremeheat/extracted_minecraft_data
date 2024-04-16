@@ -133,7 +133,7 @@ public class RuinedPortalStructure extends Structure {
                            .getNoiseBiome(QuartPos.fromBlock(var19.getX()), QuartPos.fromBlock(var19.getY()), QuartPos.fromBlock(var19.getZ()), var13.sampler())
                      );
                   }
-      
+
                   var10x.addPiece(new RuinedPortalPiece(var1.structureTemplateManager(), var19, var20.placement(), var2, var22, var24, var25, var9, var10));
                })
             )

@@ -125,7 +125,7 @@ public class Blender {
                            if (var9x < var9.doubleValue()) {
                               var9.setValue(var9x);
                            }
-         
+
                            double var11 = 1.0 / (var9x * var9x * var9x * var9x);
                            var8.add(var7x * var11);
                            var7.add(var11);
@@ -175,7 +175,7 @@ public class Blender {
                            if (var11x < var11.doubleValue()) {
                               var11.setValue(var11x);
                            }
-         
+
                            double var13 = 1.0 / (var11x * var11x * var11x * var11x);
                            var10.add(var9x * var13);
                            var9.add(var13);

@@ -29,7 +29,7 @@ public class StrollToPoiList {
                               var5xx.set(new WalkTarget(var14.pos(), var1, var2));
                               var5.setValue(var10 + 100L);
                            }
-      
+
                            return true;
                         } else {
                            return false;

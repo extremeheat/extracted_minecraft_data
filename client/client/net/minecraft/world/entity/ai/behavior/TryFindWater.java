@@ -31,7 +31,7 @@ public class TryFindWater {
                         BlockPos var9 = null;
                         BlockPos var10 = null;
                         BlockPos var11 = var6.blockPosition();
-      
+
                         for (BlockPos var14 : BlockPos.withinManhattan(var11, var0, var0, var0)) {
                            if (var14.getX() != var11.getX() || var14.getZ() != var11.getZ()) {
                               BlockState var15 = var6.level().getBlockState(var14.above());
@@ -41,23 +41,23 @@ public class TryFindWater {
                                     var9 = var14.immutable();
                                     break;
                                  }
-      
+
                                  if (var10 == null && !var14.closerToCenterThan(var6.position(), 1.5)) {
                                     var10 = var14.immutable();
                                  }
                               }
                            }
                         }
-      
+
                         if (var9 == null) {
                            var9 = var10;
                         }
-      
+
                         if (var9 != null) {
                            var5.set(new BlockPosTracker(var9));
                            var4.set(new WalkTarget(new BlockPosTracker(var9), var1, 0));
                         }
-      
+
                         var2.setValue(var7 + 40L);
                         return true;
                      }

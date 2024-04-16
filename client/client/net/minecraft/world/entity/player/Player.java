@@ -78,6 +78,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.warden.WardenSpawnTracker;
 import net.minecraft.world.entity.projectile.FishingHook;
 import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.entity.projectile.ProjectileDeflection;
 import net.minecraft.world.food.FoodData;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ClickAction;
@@ -1127,8 +1128,8 @@ public abstract class Player extends LivingEntity {
             var2 *= 0.2F + var4 * var4 * 0.8F;
             var3 *= var4;
             this.resetAttackStrengthTicker();
-            if (var1.getType().is(EntityTypeTags.PUNCHABLE_PROJECTILES) && var1 instanceof Projectile var25) {
-               var25.punch(this.damageSources().playerAttack(this));
+            if (var1.getType().is(EntityTypeTags.REDIRECTABLE_PROJECTILE) && var1 instanceof Projectile var25) {
+               var25.deflect(ProjectileDeflection.AIM_DEFLECT, this, this, true);
             } else {
                if (var2 > 0.0F || var3 > 0.0F) {
                   boolean var5 = var4 > 0.9F;
@@ -2146,7 +2147,7 @@ public abstract class Player extends LivingEntity {
          this.message = null;
       }
 
-      private BedSleepingProblem(final Component param3) {
+      private BedSleepingProblem(final Component nullxx) {
          this.message = nullxx;
       }
 

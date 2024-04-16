@@ -43,7 +43,7 @@ public class SetWalkTargetAwayFrom {
                               return false;
                            }
                         }
-   
+
                         for (int var16 = 0; var16 < 10; var16++) {
                            Vec3 var17 = LandRandomPos.getPosAway(var8, 16, 7, var13);
                            if (var17 != null) {
@@ -51,7 +51,7 @@ public class SetWalkTargetAwayFrom {
                               break;
                            }
                         }
-   
+
                         return true;
                      }
                   }

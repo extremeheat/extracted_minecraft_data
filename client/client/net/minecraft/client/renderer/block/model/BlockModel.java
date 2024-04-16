@@ -383,7 +383,7 @@ public class BlockModel implements UnbakedModel {
 
       private final String name;
 
-      private GuiLight(final String param3) {
+      private GuiLight(final String nullxx) {
          this.name = nullxx;
       }
 

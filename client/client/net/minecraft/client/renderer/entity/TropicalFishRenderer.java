@@ -28,7 +28,6 @@ public class TropicalFishRenderer extends MobRenderer<TropicalFish, ColorableHie
       return switch (var1.getVariant().base()) {
          case SMALL -> MODEL_A_TEXTURE;
          case LARGE -> MODEL_B_TEXTURE;
-         default -> throw new MatchException(null, null);
       };
    }
 
@@ -36,7 +35,6 @@ public class TropicalFishRenderer extends MobRenderer<TropicalFish, ColorableHie
       ColorableHierarchicalModel var7 = switch (var1.getVariant().base()) {
          case SMALL -> this.modelA;
          case LARGE -> this.modelB;
-         default -> throw new MatchException(null, null);
       };
       this.model = var7;
       float[] var8 = var1.getBaseColor().getTextureDiffuseColors();

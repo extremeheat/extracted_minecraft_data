@@ -842,7 +842,7 @@ public class Raid {
       final EntityType<? extends Raider> entityType;
       final int[] spawnsPerWaveBeforeBonus;
 
-      private RaiderType(final EntityType<? extends Raider> param3, final int[] param4) {
+      private RaiderType(final EntityType<? extends Raider> nullxx, final int[] nullxxx) {
          this.entityType = nullxx;
          this.spawnsPerWaveBeforeBonus = nullxxx;
       }

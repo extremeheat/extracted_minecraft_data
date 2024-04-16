@@ -179,7 +179,7 @@ public class EntityArgument implements ArgumentType<EntitySelector> {
          final boolean single;
          final boolean playersOnly;
 
-         Template(final boolean param2, final boolean param3) {
+         Template(final boolean nullx, final boolean nullxx) {
             super();
             this.single = nullx;
             this.playersOnly = nullxx;

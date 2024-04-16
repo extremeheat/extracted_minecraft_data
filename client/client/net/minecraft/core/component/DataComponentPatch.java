@@ -26,7 +26,7 @@ public final class DataComponentPatch {
             return EMPTY;
          } else {
             Reference2ObjectArrayMap var1 = new Reference2ObjectArrayMap(var0.size());
-   
+
             for (Entry var3 : var0.entrySet()) {
                DataComponentPatch.PatchKey var4 = (DataComponentPatch.PatchKey)var3.getKey();
                if (var4.removed()) {
@@ -35,13 +35,13 @@ public final class DataComponentPatch {
                   var1.put(var4.type(), Optional.of(var3.getValue()));
                }
             }
-   
+
             return new DataComponentPatch(var1);
          }
       }, var0 -> {
          Reference2ObjectArrayMap var1 = new Reference2ObjectArrayMap(var0.map.size());
          ObjectIterator var2 = Reference2ObjectMaps.fastIterable(var0.map).iterator();
-   
+
          while (var2.hasNext()) {
             Entry var3 = (Entry)var2.next();
             DataComponentType var4 = (DataComponentType)var3.getKey();
@@ -54,7 +54,7 @@ public final class DataComponentPatch {
                }
             }
          }
-   
+
          return var1;
       });
    public static final StreamCodec<RegistryFriendlyByteBuf, DataComponentPatch> STREAM_CODEC = new StreamCodec<RegistryFriendlyByteBuf, DataComponentPatch>() {
@@ -271,7 +271,7 @@ public final class DataComponentPatch {
                if (var1) {
                   var0 = var0.substring("!".length());
                }
-      
+
                ResourceLocation var2 = ResourceLocation.tryParse(var0);
                DataComponentType var3 = BuiltInRegistries.DATA_COMPONENT_TYPE.get(var2);
                if (var3 == null) {
@@ -298,7 +298,7 @@ public final class DataComponentPatch {
       }
 
       public Codec<?> valueCodec() {
-         return this.removed ? Codec.unit(Unit.INSTANCE) : this.type.codecOrThrow();
+         return this.removed ? Codec.EMPTY.codec() : this.type.codecOrThrow();
       }
    }
 

@@ -236,7 +236,7 @@ public class PresetFlatWorldScreen extends Screen {
    }
 
    class PresetsList extends ObjectSelectionList<PresetFlatWorldScreen.PresetsList.Entry> {
-      public PresetsList(final RegistryAccess param2, final FeatureFlagSet param3) {
+      public PresetsList(final RegistryAccess nullx, final FeatureFlagSet nullxx) {
          super(PresetFlatWorldScreen.this.minecraft, PresetFlatWorldScreen.this.width, PresetFlatWorldScreen.this.height - 117, 80, 24);
 
          for (Holder var5 : nullx.registryOrThrow(Registries.FLAT_LEVEL_GENERATOR_PRESET).getTagOrEmpty(FlatLevelGeneratorPresetTags.VISIBLE)) {
@@ -283,7 +283,7 @@ public class PresetFlatWorldScreen extends Screen {
          private final FlatLevelGeneratorPreset preset;
          private final Component name;
 
-         public Entry(final Holder<FlatLevelGeneratorPreset> param2) {
+         public Entry(final Holder<FlatLevelGeneratorPreset> nullx) {
             super();
             this.preset = (FlatLevelGeneratorPreset)nullx.value();
             this.name = nullx.unwrapKey()

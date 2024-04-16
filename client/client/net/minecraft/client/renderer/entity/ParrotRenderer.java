@@ -28,7 +28,6 @@ public class ParrotRenderer extends MobRenderer<Parrot, ParrotModel> {
          case GREEN -> GREEN;
          case YELLOW_BLUE -> YELLOW_BLUE;
          case GRAY -> GREY;
-         default -> throw new MatchException(null, null);
       };
    }
 

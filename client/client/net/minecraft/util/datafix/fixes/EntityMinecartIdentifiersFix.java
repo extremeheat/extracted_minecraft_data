@@ -41,7 +41,7 @@ public class EntityMinecartIdentifiersFix extends DataFix {
                   } else {
                      var6 = "MinecartRideable";
                   }
-   
+
                   return Pair.of(
                      var6,
                      (DataResult)var4.write()

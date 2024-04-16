@@ -18,7 +18,7 @@ public enum Rotation implements StringRepresentable {
    private final String id;
    private final OctahedralGroup rotation;
 
-   private Rotation(final String param3, final OctahedralGroup param4) {
+   private Rotation(final String nullxx, final OctahedralGroup nullxxx) {
       this.id = nullxx;
       this.rotation = nullxxx;
    }

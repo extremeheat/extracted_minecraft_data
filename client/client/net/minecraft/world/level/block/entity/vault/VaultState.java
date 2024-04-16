@@ -53,7 +53,7 @@ public enum VaultState implements StringRepresentable {
    private final String stateName;
    private final VaultState.LightLevel lightLevel;
 
-   VaultState(final String param3, final VaultState.LightLevel param4) {
+   VaultState(final String nullxx, final VaultState.LightLevel nullxxx) {
       this.stateName = nullxx;
       this.lightLevel = nullxxx;
    }
@@ -68,22 +68,17 @@ public enum VaultState implements StringRepresentable {
    }
 
    public VaultState tickAndGetNext(ServerLevel var1, BlockPos var2, VaultConfig var3, VaultServerData var4, VaultSharedData var5) {
-      VaultState var10000;
-      switch (this) {
-         case INACTIVE:
-            var10000 = updateStateForConnectedPlayers(var1, var2, var3, var4, var5, var3.activationRange());
-            break;
-         case ACTIVE:
-            var10000 = updateStateForConnectedPlayers(var1, var2, var3, var4, var5, var3.deactivationRange());
-            break;
-         case UNLOCKING:
+      return switch (this) {
+         case INACTIVE -> updateStateForConnectedPlayers(var1, var2, var3, var4, var5, var3.activationRange());
+         case ACTIVE -> updateStateForConnectedPlayers(var1, var2, var3, var4, var5, var3.deactivationRange());
+         case UNLOCKING -> {
             var4.pauseStateUpdatingUntil(var1.getGameTime() + 20L);
-            var10000 = EJECTING;
-            break;
-         case EJECTING:
+            yield EJECTING;
+         }
+         case EJECTING -> {
             if (var4.getItemsToEject().isEmpty()) {
                var4.markEjectionFinished();
-               var10000 = updateStateForConnectedPlayers(var1, var2, var3, var4, var5, var3.deactivationRange());
+               yield updateStateForConnectedPlayers(var1, var2, var3, var4, var5, var3.deactivationRange());
             } else {
                float var6 = var4.ejectionProgress();
                this.ejectResultItem(var1, var2, var4.popNextItemToEject(), var6);
@@ -91,14 +86,10 @@ public enum VaultState implements StringRepresentable {
                boolean var7 = var4.getItemsToEject().isEmpty();
                int var8 = var7 ? 20 : 20;
                var4.pauseStateUpdatingUntil(var1.getGameTime() + (long)var8);
-               var10000 = EJECTING;
+               yield EJECTING;
             }
-            break;
-         default:
-            throw new MatchException(null, null);
-      }
-
-      return var10000;
+         }
+      };
    }
 
    private static VaultState updateStateForConnectedPlayers(
@@ -132,7 +123,7 @@ public enum VaultState implements StringRepresentable {
 
       final int value;
 
-      private LightLevel(final int param3) {
+      private LightLevel(final int nullxx) {
          this.value = nullxx;
       }
    }

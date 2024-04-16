@@ -14,7 +14,7 @@ public enum NarratorStatus {
    private final int id;
    private final Component name;
 
-   private NarratorStatus(final int param3, final String param4) {
+   private NarratorStatus(final int nullxx, final String nullxxx) {
       this.id = nullxx;
       this.name = Component.translatable(nullxxx);
    }

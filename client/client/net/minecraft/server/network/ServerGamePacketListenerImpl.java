@@ -130,7 +130,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.tags.EntityTypeTags;
 import net.minecraft.util.FutureChain;
 import net.minecraft.util.Mth;
 import net.minecraft.util.SignatureValidator;
@@ -1503,32 +1502,37 @@ public class ServerGamePacketListenerImpl
                         }
                      }
                   }
-   
+
                   @Override
                   public void onInteraction(InteractionHand var1) {
                      this.performInteraction(var1, Player::interactOn);
                   }
-   
+
                   @Override
                   public void onInteraction(InteractionHand var1, Vec3 var2x) {
                      this.performInteraction(var1, (var1x, var2xxx, var3xx) -> var2xxx.interactAt(var1x, var2x, var3xx));
                   }
-   
+
                   @Override
                   public void onAttack() {
-                     if (!(var3 instanceof ItemEntity)
-                        && !(var3 instanceof ExperienceOrb)
-                        && var3 != ServerGamePacketListenerImpl.this.player
-                        && (!(var3 instanceof AbstractArrow) || var3.getType().is(EntityTypeTags.PUNCHABLE_PROJECTILES))) {
-                        ItemStack var1 = ServerGamePacketListenerImpl.this.player.getItemInHand(InteractionHand.MAIN_HAND);
-                        if (var1.isItemEnabled(var2.enabledFeatures())) {
-                           ServerGamePacketListenerImpl.this.player.attack(var3);
+                     label23:
+                     if (!(var3 instanceof ItemEntity) && !(var3 instanceof ExperienceOrb) && var3 != ServerGamePacketListenerImpl.this.player) {
+                        if (var3 instanceof AbstractArrow var1 && !var1.isAttackable()) {
+                           break label23;
                         }
-                     } else {
-                        ServerGamePacketListenerImpl.this.disconnect(Component.translatable("multiplayer.disconnect.invalid_entity_attacked"));
-                        ServerGamePacketListenerImpl.LOGGER
-                           .warn("Player {} tried to attack an invalid entity", ServerGamePacketListenerImpl.this.player.getName().getString());
+
+                        ItemStack var2x = ServerGamePacketListenerImpl.this.player.getItemInHand(InteractionHand.MAIN_HAND);
+                        if (!var2x.isItemEnabled(var2.enabledFeatures())) {
+                           return;
+                        }
+
+                        ServerGamePacketListenerImpl.this.player.attack(var3);
+                        return;
                      }
+
+                     ServerGamePacketListenerImpl.this.disconnect(Component.translatable("multiplayer.disconnect.invalid_entity_attacked"));
+                     ServerGamePacketListenerImpl.LOGGER
+                        .warn("Player {} tried to attack an invalid entity", ServerGamePacketListenerImpl.this.player.getName().getString());
                   }
                }
             );

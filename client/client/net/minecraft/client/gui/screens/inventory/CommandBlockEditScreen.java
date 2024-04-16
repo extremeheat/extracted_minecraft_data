@@ -41,7 +41,6 @@ public class CommandBlockEditScreen extends AbstractCommandBlockEditScreen {
                   case SEQUENCE -> Component.translatable("advMode.mode.sequence");
                   case AUTO -> Component.translatable("advMode.mode.auto");
                   case REDSTONE -> Component.translatable("advMode.mode.redstone");
-                  default -> throw new MatchException(null, null);
                };
             })
             .withValues(CommandBlockEntity.Mode.values())

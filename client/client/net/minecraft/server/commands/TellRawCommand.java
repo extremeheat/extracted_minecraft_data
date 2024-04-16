@@ -25,7 +25,7 @@ public class TellRawCommand {
                         .executes(
                            var0x -> {
                               int var1x = 0;
-                     
+
                               for (ServerPlayer var3 : EntityArgument.getPlayers(var0x, "targets")) {
                                  var3.sendSystemMessage(
                                     ComponentUtils.updateForEntity(
@@ -35,7 +35,7 @@ public class TellRawCommand {
                                  );
                                  var1x++;
                               }
-                     
+
                               return var1x;
                            }
                         )

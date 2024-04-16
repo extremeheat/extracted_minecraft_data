@@ -85,41 +85,34 @@ public class NbtPathArgument implements ArgumentType<NbtPathArgument.NbtPath> {
    }
 
    private static NbtPathArgument.Node parseNode(StringReader var0, boolean var1) throws CommandSyntaxException {
-      Object var10000;
-      switch (var0.peek()) {
-         case '"':
-         case '\'':
-            var10000 = readObjectNode(var0, var0.readString());
-            break;
-         case '[':
+      return (NbtPathArgument.Node)(switch (var0.peek()) {
+         case '"', '\'' -> readObjectNode(var0, var0.readString());
+         case '[' -> {
             var0.skip();
             char var4 = var0.peek();
             if (var4 == '{') {
                CompoundTag var3 = new TagParser(var0).readStruct();
                var0.expect(']');
-               var10000 = new NbtPathArgument.MatchElementNode(var3);
+               yield new NbtPathArgument.MatchElementNode(var3);
             } else if (var4 == ']') {
                var0.skip();
-               var10000 = NbtPathArgument.AllElementsNode.INSTANCE;
+               yield NbtPathArgument.AllElementsNode.INSTANCE;
             } else {
                int var5 = var0.readInt();
                var0.expect(']');
-               var10000 = new NbtPathArgument.IndexedElementNode(var5);
+               yield new NbtPathArgument.IndexedElementNode(var5);
             }
-            break;
-         case '{':
+         }
+         case '{' -> {
             if (!var1) {
                throw ERROR_INVALID_NODE.createWithContext(var0);
             }
 
             CompoundTag var2 = new TagParser(var0).readStruct();
-            var10000 = new NbtPathArgument.MatchRootObjectNode(var2);
-            break;
-         default:
-            var10000 = readObjectNode(var0, readUnquotedName(var0));
-      }
-
-      return (NbtPathArgument.Node)var10000;
+            yield new NbtPathArgument.MatchRootObjectNode(var2);
+         }
+         default -> readObjectNode(var0, readUnquotedName(var0));
+      });
    }
 
    private static NbtPathArgument.Node readObjectNode(StringReader var0, String var1) throws CommandSyntaxException {

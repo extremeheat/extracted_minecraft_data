@@ -89,12 +89,12 @@ public class ServerConnectionListener {
                                  var1.config().setOption(ChannelOption.TCP_NODELAY, true);
                               } catch (ChannelException var5) {
                               }
-               
+
                               ChannelPipeline var2 = var1.pipeline().addLast("timeout", new ReadTimeoutHandler(30));
                               if (ServerConnectionListener.this.server.repliesToStatus()) {
                                  var2.addLast("legacy_query", new LegacyQueryHandler(ServerConnectionListener.this.getServer()));
                               }
-               
+
                               Connection.configureSerialization(var2, PacketFlow.SERVERBOUND, false, null);
                               int var3 = ServerConnectionListener.this.server.getRateLimitPacketsPerSecond();
                               Object var4 = var3 > 0 ? new RateKickingConnection(var3) : new Connection(PacketFlow.SERVERBOUND);

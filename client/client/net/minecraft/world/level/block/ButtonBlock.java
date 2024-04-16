@@ -96,7 +96,6 @@ public class ButtonBlock extends FaceAttachedHorizontalDirectionalBlock {
                case WEST -> var6 ? PRESSED_WEST_AABB : WEST_AABB;
                case SOUTH -> var6 ? PRESSED_SOUTH_AABB : SOUTH_AABB;
                case NORTH, UP, DOWN -> var6 ? PRESSED_NORTH_AABB : NORTH_AABB;
-               default -> throw new MatchException(null, null);
             };
          case CEILING:
          default:

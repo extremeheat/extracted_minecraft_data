@@ -519,7 +519,7 @@ public class Axolotl extends Animal implements LerpingModel, VariantHolder<Axolo
    }
 
    class AxolotlLookControl extends SmoothSwimmingLookControl {
-      public AxolotlLookControl(final Axolotl param2, final int param3) {
+      public AxolotlLookControl(final Axolotl nullx, final int nullxx) {
          super(nullx, nullxx);
       }
 
@@ -560,7 +560,7 @@ public class Axolotl extends Animal implements LerpingModel, VariantHolder<Axolo
       private final String name;
       private final boolean common;
 
-      private Variant(final int param3, final String param4, final boolean param5) {
+      private Variant(final int nullxx, final String nullxxx, final boolean nullxxxx) {
          this.id = nullxx;
          this.name = nullxxx;
          this.common = nullxxxx;

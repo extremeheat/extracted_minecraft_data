@@ -377,7 +377,6 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
          case RIGHT, LEFT -> 0;
          case UP -> -1;
          case DOWN -> 1;
-         default -> throw new MatchException(null, null);
       };
       if (!this.children().isEmpty() && var4 != 0) {
          int var5;

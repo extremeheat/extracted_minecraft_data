@@ -47,7 +47,7 @@ public enum RecipeBookCategories {
    );
    private final List<ItemStack> itemIcons;
 
-   private RecipeBookCategories(final ItemStack... param3) {
+   private RecipeBookCategories(final ItemStack... nullxx) {
       this.itemIcons = ImmutableList.copyOf(nullxx);
    }
 
@@ -57,7 +57,6 @@ public enum RecipeBookCategories {
          case FURNACE -> FURNACE_CATEGORIES;
          case BLAST_FURNACE -> BLAST_FURNACE_CATEGORIES;
          case SMOKER -> SMOKER_CATEGORIES;
-         default -> throw new MatchException(null, null);
       };
    }
 

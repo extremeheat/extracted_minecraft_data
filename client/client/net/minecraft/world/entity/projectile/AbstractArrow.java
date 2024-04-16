@@ -202,7 +202,7 @@ public abstract class AbstractArrow extends Projectile {
             }
 
             if (var29 != null && !var1) {
-               ProjectileDeflection var32 = this.hitOrDeflect((HitResult)var29);
+               ProjectileDeflection var32 = this.hitTargetOrDeflectSelf((HitResult)var29);
                this.hasImpulse = true;
                if (var32 != ProjectileDeflection.NONE) {
                   break;
@@ -403,9 +403,8 @@ public abstract class AbstractArrow extends Projectile {
          }
       } else {
          var2.setRemainingFireTicks(var8);
-         this.setDeltaMovement(this.getDeltaMovement().scale(-0.1));
-         this.setYRot(this.getYRot() + 180.0F);
-         this.yRotO += 180.0F;
+         this.deflect(ProjectileDeflection.REVERSE, var2, this.getOwner(), false);
+         this.setDeltaMovement(this.getDeltaMovement().scale(0.2));
          if (!this.level().isClientSide && this.getDeltaMovement().lengthSqr() < 1.0E-7) {
             if (this.pickup == AbstractArrow.Pickup.ALLOWED) {
                this.spawnAtLocation(this.getPickupItem(), 0.1F);
@@ -566,7 +565,7 @@ public abstract class AbstractArrow extends Projectile {
 
    @Override
    public boolean isAttackable() {
-      return this.getType().is(EntityTypeTags.PUNCHABLE_PROJECTILES);
+      return this.getType().is(EntityTypeTags.REDIRECTABLE_PROJECTILE);
    }
 
    public void setCritArrow(boolean var1) {

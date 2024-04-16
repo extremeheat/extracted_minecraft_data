@@ -108,7 +108,7 @@ public class SectionRenderDispatcher {
                         } else {
                            var2.discardAll();
                         }
-   
+
                         this.bufferPool.release(var2);
                         this.runTask();
                      });
@@ -291,7 +291,7 @@ public class SectionRenderDispatcher {
       });
       private boolean playerChanged;
 
-      public RenderSection(final int param2, final int param3, final int param4, final int param5) {
+      public RenderSection(final int nullx, final int nullxx, final int nullxxx, final int nullxxxx) {
          super();
          this.index = nullx;
          this.setOrigin(nullxx, nullxxx, nullxxxx);
@@ -468,7 +468,7 @@ public class SectionRenderDispatcher {
          protected final AtomicBoolean isCancelled = new AtomicBoolean(false);
          protected final boolean isHighPriority;
 
-         public CompileTask(final SectionRenderDispatcher.RenderSection param1, final double param2, final boolean param4) {
+         public CompileTask(final double nullx, final boolean nullxx) {
             super();
             this.distAtCreation = nullx;
             this.isHighPriority = nullxx;
@@ -489,8 +489,8 @@ public class SectionRenderDispatcher {
          @Nullable
          protected RenderChunkRegion region;
 
-         public RebuildTask(final double param2, @Nullable final RenderChunkRegion param4, final boolean param5) {
-            super(RenderSection.this, nullx, nullxxx);
+         public RebuildTask(final double nullx, @Nullable final RenderChunkRegion nullxx, final boolean nullxxx) {
+            super(nullx, nullxxx);
             this.region = nullxx;
          }
 
@@ -658,8 +658,8 @@ public class SectionRenderDispatcher {
       class ResortTransparencyTask extends SectionRenderDispatcher.RenderSection.CompileTask {
          private final SectionRenderDispatcher.CompiledSection compiledSection;
 
-         public ResortTransparencyTask(final double param2, final SectionRenderDispatcher.CompiledSection param4) {
-            super(RenderSection.this, nullx, true);
+         public ResortTransparencyTask(final double nullx, final SectionRenderDispatcher.CompiledSection nullxx) {
+            super(nullx, true);
             this.compiledSection = nullxx;
          }
 
@@ -707,7 +707,7 @@ public class SectionRenderDispatcher {
                            if (var2x != null && !(var2x instanceof CancellationException) && !(var2x instanceof InterruptedException)) {
                               Minecraft.getInstance().delayCrash(CrashReport.forThrowable(var2x, "Rendering section"));
                            }
-   
+
                            return this.isCancelled.get()
                               ? SectionRenderDispatcher.SectionTaskResult.CANCELLED
                               : SectionRenderDispatcher.SectionTaskResult.SUCCESSFUL;

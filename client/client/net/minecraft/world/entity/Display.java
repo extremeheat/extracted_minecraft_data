@@ -522,7 +522,7 @@ public abstract class Display extends Entity {
       private final byte id;
       private final String name;
 
-      private BillboardConstraints(final byte param3, final String param4) {
+      private BillboardConstraints(final byte nullxx, final String nullxxx) {
          this.name = nullxxx;
          this.id = nullxx;
       }
@@ -1051,7 +1051,7 @@ public abstract class Display extends Entity {
          public static final Codec<Display.TextDisplay.Align> CODEC = StringRepresentable.fromEnum(Display.TextDisplay.Align::values);
          private final String name;
 
-         private Align(final String param3) {
+         private Align(final String nullxx) {
             this.name = nullxx;
          }
 

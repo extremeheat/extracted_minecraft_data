@@ -58,7 +58,7 @@ public class TrappedChestBlockEntityFix extends DataFix {
                            } else {
                               List var6x = ((Typed)var5xx.get()).getAllTyped(var11);
                               IntOpenHashSet var7x = new IntOpenHashSet();
-         
+
                               for (Typed var9x : var6x) {
                                  TrappedChestBlockEntityFix.TrappedChestSection var10x = new TrappedChestBlockEntityFix.TrappedChestSection(
                                     var9x, this.getInputSchema()
@@ -72,7 +72,7 @@ public class TrappedChestBlockEntityFix extends DataFix {
                                     }
                                  }
                               }
-         
+
                               Dynamic var13 = (Dynamic)var4xx.get(DSL.remainderFinder());
                               int var14 = var13.get("xPos").asInt(0);
                               int var15 = var13.get("zPos").asInt(0);
@@ -91,7 +91,7 @@ public class TrappedChestBlockEntityFix extends DataFix {
                                                    if (!Objects.equals(var0xxx, "minecraft:chest")) {
                                                       LOGGER.warn("Block Entity was expected to be a chest");
                                                    }
-                  
+
                                                    return "minecraft:trapped_chest";
                                                 }))
                                              : var4xxxx;

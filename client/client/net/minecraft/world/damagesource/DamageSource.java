@@ -92,7 +92,6 @@ public class DamageSource {
          case NEVER -> false;
          case WHEN_CAUSED_BY_LIVING_NON_PLAYER -> this.causingEntity instanceof LivingEntity && !(this.causingEntity instanceof Player);
          case ALWAYS -> true;
-         default -> throw new MatchException(null, null);
       };
    }
 

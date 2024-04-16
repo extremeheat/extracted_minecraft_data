@@ -65,9 +65,7 @@ public class EntitySelectorParser {
          (var1x, var2) -> Doubles.compare(var2.distanceToSqr(var0), var1x.distanceToSqr(var0))
       );
    public static final BiConsumer<Vec3, List<? extends Entity>> ORDER_RANDOM = (var0, var1) -> Collections.shuffle(var1);
-   public static final BiFunction<SuggestionsBuilder, Consumer<SuggestionsBuilder>, CompletableFuture<Suggestions>> SUGGEST_NOTHING = (var0, var1) -> var0.buildFuture(
-         
-      );
+   public static final BiFunction<SuggestionsBuilder, Consumer<SuggestionsBuilder>, CompletableFuture<Suggestions>> SUGGEST_NOTHING = (var0, var1) -> var0.buildFuture();
    private final StringReader reader;
    private final boolean allowSelectors;
    private int maxResults;

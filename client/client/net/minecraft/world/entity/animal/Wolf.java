@@ -660,7 +660,7 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
    class WolfAvoidEntityGoal<T extends LivingEntity> extends AvoidEntityGoal<T> {
       private final Wolf wolf;
 
-      public WolfAvoidEntityGoal(final Wolf param2, final Class<T> param3, final float param4, final double param5, final double param7) {
+      public WolfAvoidEntityGoal(final Wolf nullx, final Class<T> nullxx, final float nullxxx, final double nullxxxx, final double nullxxxxx) {
          super(nullx, nullxx, nullxxx, nullxxxx, nullxxxxx);
          this.wolf = nullx;
       }
@@ -697,7 +697,7 @@ public class Wolf extends TamableAnimal implements NeutralMob, VariantHolder<Hol
    }
 
    class WolfPanicGoal extends PanicGoal {
-      public WolfPanicGoal(final double param2) {
+      public WolfPanicGoal(final double nullx) {
          super(Wolf.this, nullx);
       }
 

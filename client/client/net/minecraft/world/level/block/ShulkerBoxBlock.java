@@ -272,7 +272,6 @@ public class ShulkerBoxBlock extends BaseEntityBlock {
             case RED -> Blocks.RED_SHULKER_BOX;
             case BLACK -> Blocks.BLACK_SHULKER_BOX;
             case PURPLE -> Blocks.PURPLE_SHULKER_BOX;
-            default -> throw new MatchException(null, null);
          };
       }
    }

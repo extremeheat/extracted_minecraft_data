@@ -540,9 +540,7 @@ public abstract class RenderStateShard {
       }
 
       public static final class Builder {
-         private final com.google.common.collect.ImmutableList.Builder<Triple<ResourceLocation, Boolean, Boolean>> builder = new com.google.common.collect.ImmutableList.Builder(
-            
-         );
+         private final com.google.common.collect.ImmutableList.Builder<Triple<ResourceLocation, Boolean, Boolean>> builder = new com.google.common.collect.ImmutableList.Builder();
 
          public Builder() {
             super();

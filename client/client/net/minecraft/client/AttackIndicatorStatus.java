@@ -13,7 +13,7 @@ public enum AttackIndicatorStatus implements OptionEnum {
    private final int id;
    private final String key;
 
-   private AttackIndicatorStatus(final int param3, final String param4) {
+   private AttackIndicatorStatus(final int nullxx, final String nullxxx) {
       this.id = nullxx;
       this.key = nullxxx;
    }

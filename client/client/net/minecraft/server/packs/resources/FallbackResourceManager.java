@@ -262,13 +262,13 @@ public class FallbackResourceManager implements ResourceManager {
                   if (!var3.test(var5x)) {
                      return;
                   }
-   
+
                   var4.computeIfAbsent(var5x, FallbackResourceManager.EntryStack::new).metaSources.put(var5, var4x);
                } else {
                   if (!var3.test(var3x)) {
                      return;
                   }
-   
+
                   var4.computeIfAbsent(var3x, FallbackResourceManager.EntryStack::new)
                      .fileSources
                      .add(new FallbackResourceManager.ResourceWithSource(var5, var4x));

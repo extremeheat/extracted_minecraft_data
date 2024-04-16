@@ -89,7 +89,7 @@ public class ArmorItem extends Item implements Equipable {
                   var5
                );
             }
-   
+
             return var4.build();
          }
       );
@@ -153,7 +153,7 @@ public class ArmorItem extends Item implements Equipable {
       private final String name;
       private final int durability;
 
-      private Type(final EquipmentSlot param3, final int param4, final String param5) {
+      private Type(final EquipmentSlot nullxx, final int nullxxx, final String nullxxxx) {
          this.slot = nullxx;
          this.name = nullxxxx;
          this.durability = nullxxx;

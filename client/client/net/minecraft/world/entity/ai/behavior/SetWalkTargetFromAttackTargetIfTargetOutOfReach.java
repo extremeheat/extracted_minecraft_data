@@ -37,7 +37,7 @@ public class SetWalkTargetFromAttackTargetIfTargetOutOfReach {
                         var3.set(new EntityTracker(var10, true));
                         var2.set(new WalkTarget(new EntityTracker(var10, false), (Float)var0.apply(var7), 0));
                      }
-      
+
                      return true;
                   })
       );

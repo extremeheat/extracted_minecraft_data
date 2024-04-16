@@ -49,9 +49,7 @@ public record MobEffectsPredicate(Map<Holder<MobEffect>, MobEffectsPredicate.Mob
    }
 
    public static class Builder {
-      private final com.google.common.collect.ImmutableMap.Builder<Holder<MobEffect>, MobEffectsPredicate.MobEffectInstancePredicate> effectMap = ImmutableMap.builder(
-         
-      );
+      private final com.google.common.collect.ImmutableMap.Builder<Holder<MobEffect>, MobEffectsPredicate.MobEffectInstancePredicate> effectMap = ImmutableMap.builder();
 
       public Builder() {
          super();

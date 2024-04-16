@@ -69,7 +69,7 @@ public class KeyBindsList extends ContainerObjectSelectionList<KeyBindsList.Entr
       final Component name;
       private final int width;
 
-      public CategoryEntry(final Component param2) {
+      public CategoryEntry(final Component nullx) {
          super();
          this.name = nullx;
          this.width = KeyBindsList.this.minecraft.font.width(this.name);
@@ -128,7 +128,7 @@ public class KeyBindsList extends ContainerObjectSelectionList<KeyBindsList.Entr
       private final Button resetButton;
       private boolean hasCollision = false;
 
-      KeyEntry(final KeyMapping param2, final Component param3) {
+      KeyEntry(final KeyMapping nullx, final Component nullxx) {
          super();
          this.key = nullx;
          this.name = nullxx;
