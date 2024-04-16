@@ -87,6 +87,7 @@ async function postprocess (version, oldVersion, isMajor, oldMajor) {
 }
 
 async function main () {
+  console.log('Repo details', await github.getRepoDetails())
   const currentManifest = require('./version_manifest.json')
   const latestManifest = await fetch('https://launchermeta.mojang.com/mc/game/version_manifest.json').then(r => r.json())
   const latestRelease = latestManifest.versions.find(v => v.type === 'release')
