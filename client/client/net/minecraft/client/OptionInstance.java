@@ -302,11 +302,21 @@ public final class OptionInstance<T> {
       int maxInclusive();
 
       default double toSliderValue(Integer var1) {
-         return (double)Mth.map((float)var1.intValue(), (float)this.minInclusive(), (float)this.maxInclusive(), 0.0F, 1.0F);
+         if (var1 == this.minInclusive()) {
+            return 0.0;
+         } else {
+            return var1 == this.maxInclusive()
+               ? 1.0
+               : Mth.map((double)var1.intValue() + 0.5, (double)this.minInclusive(), (double)this.maxInclusive() + 1.0, 0.0, 1.0);
+         }
       }
 
       default Integer fromSliderValue(double var1) {
-         return Mth.floor(Mth.map(var1, 0.0, 1.0, (double)this.minInclusive(), (double)this.maxInclusive()));
+         if (var1 >= 1.0) {
+            var1 = 0.9999899864196777;
+         }
+
+         return Mth.floor(Mth.map(var1, 0.0, 1.0, (double)this.minInclusive(), (double)this.maxInclusive() + 1.0));
       }
 
       default <R> OptionInstance.SliderableValueSet<R> xmap(final IntFunction<? extends R> var1, final ToIntFunction<? super R> var2) {

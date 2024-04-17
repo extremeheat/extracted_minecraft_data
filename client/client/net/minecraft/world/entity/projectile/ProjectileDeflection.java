@@ -18,15 +18,15 @@ public interface ProjectileDeflection {
    };
    ProjectileDeflection AIM_DEFLECT = (var0, var1, var2) -> {
       if (var1 != null) {
-         Vec3 var3 = var1.getLookAngle();
-         var0.setDeltaMovement(var3.scale(var0.getDeltaMovement().length()));
+         Vec3 var3 = var1.getLookAngle().normalize();
+         var0.setDeltaMovement(var3);
          var0.hurtMarked = true;
       }
    };
    ProjectileDeflection MOMENTUM_DEFLECT = (var0, var1, var2) -> {
       if (var1 != null) {
          Vec3 var3 = var1.getDeltaMovement().normalize();
-         var0.setDeltaMovement(var3.scale(var0.getDeltaMovement().length()));
+         var0.setDeltaMovement(var3);
          var0.hurtMarked = true;
       }
    };

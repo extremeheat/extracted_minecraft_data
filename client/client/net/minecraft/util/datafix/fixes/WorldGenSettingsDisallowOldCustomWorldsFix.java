@@ -5,6 +5,7 @@ import com.mojang.datafixers.OpticFinder;
 import com.mojang.datafixers.TypeRewriteRule;
 import com.mojang.datafixers.schemas.Schema;
 import com.mojang.datafixers.types.Type;
+import net.minecraft.nbt.NbtFormatException;
 
 public class WorldGenSettingsDisallowOldCustomWorldsFix extends DataFix {
    public WorldGenSettingsDisallowOldCustomWorldsFix(Schema var1) {
@@ -19,7 +20,7 @@ public class WorldGenSettingsDisallowOldCustomWorldsFix extends DataFix {
                var0x.write().map(var0xx -> var0xx.getMapValues().map(var0xxx -> {
                      var0xxx.forEach((var0xxxx, var1xx) -> {
                         if (var1xx.get("type").asString().result().isEmpty()) {
-                           throw new IllegalStateException("Unable load old custom worlds.");
+                           throw new NbtFormatException("Unable load old custom worlds.");
                         }
                      });
                      return var0xxx;

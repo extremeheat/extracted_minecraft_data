@@ -344,7 +344,7 @@ public class DataFixers {
       Schema var5 = var0.addSchema(106, V106::new);
       var0.addFixer(new MobSpawnerEntityIdentifiersFix(var5, true));
       Schema var6 = var0.addSchema(107, V107::new);
-      var0.addFixer(new EntityMinecartIdentifiersFix(var6, true));
+      var0.addFixer(new EntityMinecartIdentifiersFix(var6));
       Schema var7 = var0.addSchema(108, SAME);
       var0.addFixer(new EntityStringUuidFix(var7, true));
       Schema var8 = var0.addSchema(109, SAME);
