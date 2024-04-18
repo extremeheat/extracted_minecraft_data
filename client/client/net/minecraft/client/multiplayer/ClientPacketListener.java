@@ -803,7 +803,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
                   this.serverData,
                   this.postDisconnectScreen,
                   this.serverCookies,
-                  var2
+                  var2,
+                  this.strictErrorHandling
                )
             )
          );

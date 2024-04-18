@@ -67,6 +67,10 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
    @Nullable
    protected final Screen postDisconnectScreen;
    protected boolean isTransferring;
+   @Deprecated(
+      forRemoval = true
+   )
+   protected final boolean strictErrorHandling;
    private final List<ClientCommonPacketListenerImpl.DeferredPacket> deferredPackets = new ArrayList<>();
    protected final Map<ResourceLocation, byte[]> serverCookies;
 
@@ -79,13 +83,15 @@ public abstract class ClientCommonPacketListenerImpl implements ClientCommonPack
       this.telemetryManager = var3.telemetryManager();
       this.postDisconnectScreen = var3.postDisconnectScreen();
       this.serverCookies = var3.serverCookies();
+      this.strictErrorHandling = var3.strictErrorHandling();
    }
 
    @Override
    public void onPacketError(Packet var1, Exception var2) {
-      LOGGER.error("Failed to handle packet {}, disconnecting", var1, var2);
-      ClientCommonPacketListener.super.onPacketError(var1, var2);
-      this.connection.disconnect(Component.translatable("disconnect.packetError"));
+      LOGGER.error("Failed to handle packet {}", var1, var2);
+      if (this.strictErrorHandling) {
+         this.connection.disconnect(Component.translatable("disconnect.packetError"));
+      }
    }
 
    @Override

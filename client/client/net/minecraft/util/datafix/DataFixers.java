@@ -184,6 +184,7 @@ import net.minecraft.util.datafix.fixes.RecipesRenameningFix;
 import net.minecraft.util.datafix.fixes.RedstoneWireConnectionsFix;
 import net.minecraft.util.datafix.fixes.References;
 import net.minecraft.util.datafix.fixes.RemapChunkStatusFix;
+import net.minecraft.util.datafix.fixes.RemoveEmptyItemInBrushableBlockFix;
 import net.minecraft.util.datafix.fixes.RemoveGolemGossipFix;
 import net.minecraft.util.datafix.fixes.RenameEnchantmentsFix;
 import net.minecraft.util.datafix.fixes.RenamedCoralFansFix;
@@ -1263,9 +1264,9 @@ public class DataFixers {
       Schema var211 = var0.addSchema(3807, 1, SAME_NAMESPACED);
       var0.addFixer(new MapBannerBlockPosFormatFix(var211));
       Schema var212 = var0.addSchema(3808, V3808::new);
-      var0.addFixer(new HorseBodyArmorItemFix(var212, "minecraft:horse", "ArmorItem"));
+      var0.addFixer(new HorseBodyArmorItemFix(var212, "minecraft:horse", "ArmorItem", true));
       Schema var213 = var0.addSchema(3808, 1, V3808_1::new);
-      var0.addFixer(new HorseBodyArmorItemFix(var213, "minecraft:llama", "DecorItem"));
+      var0.addFixer(new HorseBodyArmorItemFix(var213, "minecraft:llama", "DecorItem", false));
       Schema var214 = var0.addSchema(3809, SAME_NAMESPACED);
       var0.addFixer(new ChestedHorsesInventoryZeroIndexingFix(var214));
       Schema var215 = var0.addSchema(3812, SAME_NAMESPACED);
@@ -1303,6 +1304,8 @@ public class DataFixers {
       var0.addFixer(new AddNewChoices(var227, "Added Ominous Item Spawner", References.ENTITY));
       Schema var228 = var0.addSchema(3828, SAME_NAMESPACED);
       var0.addFixer(new EmptyItemInVillagerTradeFix(var228));
+      Schema var229 = var0.addSchema(3833, SAME_NAMESPACED);
+      var0.addFixer(new RemoveEmptyItemInBrushableBlockFix(var229));
    }
 
    private static UnaryOperator<String> createRenamerNoNamespace(Map<String, String> var0) {
