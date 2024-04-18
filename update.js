@@ -40,7 +40,7 @@ async function decomp (version) {
   exec(`git push origin client${version}`)
 }
 
-async function postprocess (version, oldVersion, isMajor, oldMajor) {
+async function postprocess (repoData, version, oldVersion, isMajor, oldMajor) {
   if (isMajor) {
     console.log('Creating PR as major update from', oldMajor, version)
     const oldBranch = 'client' + oldMajor
@@ -55,7 +55,7 @@ async function postprocess (version, oldVersion, isMajor, oldMajor) {
       inputs: {
         action: 'minecraft/pcReviewUpdateChanges',
         payload: JSON.stringify({
-          repo: await github.getRepoDetails(),
+          repo: repoData,
           mode: 'release',
           oldVersion: oldMajor,
           newVersion: version,
@@ -75,7 +75,7 @@ async function postprocess (version, oldVersion, isMajor, oldMajor) {
       inputs: {
         action: 'minecraft/pcReviewUpdateChanges',
         payload: JSON.stringify({
-          repo: await github.getRepoDetails(),
+          repo: repoData,
           mode: 'snapshot',
           oldVersion: oldVersion,
           newVersion: version,
@@ -87,7 +87,8 @@ async function postprocess (version, oldVersion, isMajor, oldMajor) {
 }
 
 async function main () {
-  console.log('Repo details', await github.getRepoDetails())
+  const repoDetails = await github.getRepoDetails()
+  console.log('Repo details', repoDetails)
   const currentManifest = require('./version_manifest.json')
   const latestManifest = await fetch('https://launchermeta.mojang.com/mc/game/version_manifest.json').then(r => r.json())
   const latestRelease = latestManifest.versions.find(v => v.type === 'release')
@@ -109,7 +110,7 @@ async function main () {
     exec(`git commit -m "Update version manifest for ${latestSnapshot.id}"`)
     exec('git push origin updator')
     await decomp(latestSnapshot.id)
-    await postprocess(latestSnapshot.id, oldSnap, isRelease, oldRel)
+    await postprocess(repoDetails, latestSnapshot.id, oldSnap, isRelease, oldRel)
   }
 }
 
