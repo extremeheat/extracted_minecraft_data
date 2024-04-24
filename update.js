@@ -91,8 +91,8 @@ async function main () {
   console.log('Repo details', repoDetails)
   const currentManifest = require('./version_manifest.json')
   const latestManifest = await fetch('https://launchermeta.mojang.com/mc/game/version_manifest.json').then(r => r.json())
-  const latestRelease = latestManifest.versions.find(v => v.type === 'release')
-  const latestSnapshot = latestManifest.versions.find(v => v.type === 'snapshot')
+  const latestRelease = latestManifest.versions.find(v => v.id === latestManifest.latest.release)
+  const latestSnapshot = latestManifest.versions.find(v => v.id === latestManifest.latest.snapshot)
 
   if (currentManifest.latest.release === latestRelease.id && currentManifest.latest.snapshot === latestSnapshot.id) {
     console.log('No new version available')
