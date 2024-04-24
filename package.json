@@ -14,7 +14,7 @@
     "standard": "^17.1.0"
   },
   "dependencies": {
-    "gh-helpers": "extremeheat/gh-helpers#merge-pr",
+    "gh-helpers": "^0.3.0",
     "minecraft-java-decomp": "^1.0.0"
   }
 }
