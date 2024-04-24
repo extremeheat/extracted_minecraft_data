@@ -100,7 +100,7 @@ async function main () {
     // Store the old versions and check if this is a release update (if latest snap==latest rel). If release update we open PR otherwise we don't for snapshots
     const oldRel = currentManifest.latest.release
     const oldSnap = currentManifest.latest.snapshot
-    const isRelease = currentManifest.latest.release === currentManifest.latest.snapshot
+    const isRelease = latestManifest.latest.release === latestManifest.latest.snapshot
     console.log('New version available:', latestRelease.id, latestSnapshot.id, 'old:', oldSnap)
     fs.writeFileSync('version_manifest.json', JSON.stringify(latestManifest, null, 2))
     exec('git checkout updator')
