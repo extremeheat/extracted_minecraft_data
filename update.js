@@ -45,9 +45,9 @@ async function postprocess (repoData, version, oldVersion, isMajor, oldMajor) {
     console.log('Creating PR as major update from', oldMajor, version)
     const oldBranch = 'client' + oldMajor
     const newBranch = 'client' + version
-    const pr = await github.createPullRequest(`MC ${oldMajor} -> ${version}`, `Minecraft Java Edition ${version}<br/>`, oldBranch, newBranch)
+    const pr = await github._createPullRequestCURL(`MC ${oldMajor} -> ${version}`, `Minecraft Java Edition ${version}<br/>`, oldBranch, newBranch)
     console.log('Created PR', pr)
-    await github.sendWorkflowDispatch({
+    await github._sendWorkflowDispatchCURL({
       owner: 'extremeheat',
       repo: 'llm-services',
       workflow: 'dispatch.yml',
@@ -67,7 +67,7 @@ async function postprocess (repoData, version, oldVersion, isMajor, oldMajor) {
     // A snapshot. Get the latest commit SHA on clientlatest and send it over to workflow dispatch so it will diff and make a comment for the commit to clientlatest
     const sha = getCommitSHA('latest')
     console.log('Snapshot update!', version, 'from', oldVersion, 'Commit SHA:', sha)
-    await github.sendWorkflowDispatch({
+    await github._sendWorkflowDispatchCURL({
       owner: 'extremeheat',
       repo: 'llm-services',
       workflow: 'dispatch.yml',
