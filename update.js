@@ -45,7 +45,7 @@ async function postprocess (repoData, version, oldVersion, isMajor, oldMajor) {
     console.log('Creating PR as major update from', oldMajor, version)
     const oldBranch = 'client' + oldMajor
     const newBranch = 'client' + version
-    const pr = await github._createPullRequestCURL(`MC ${oldMajor} -> ${version}`, `Minecraft Java Edition ${version}<br/>`, oldBranch, newBranch)
+    const pr = await github._createPullRequestCURL(`MC ${oldMajor} -> ${version}`, `Minecraft Java Edition ${version}<br/>`, newBranch, oldBranch)
     console.log('Created PR', pr)
     await github._sendWorkflowDispatchCURL({
       owner: 'extremeheat',
