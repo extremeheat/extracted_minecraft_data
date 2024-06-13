@@ -2,21 +2,25 @@ package net.minecraft.world.inventory;
 
 import com.mojang.datafixers.util.Pair;
 import java.util.List;
+import java.util.Optional;
 import net.minecraft.Util;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.IdMap;
+import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
+import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.flag.FeatureFlagSet;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
@@ -93,32 +97,33 @@ public class EnchantmentMenu extends AbstractContainerMenu {
          ItemStack var2 = var1.getItem(0);
          if (!var2.isEmpty() && var2.isEnchantable()) {
             this.access.execute((var2x, var3x) -> {
-               int var4 = 0;
+               IdMap var4 = var2x.registryAccess().registryOrThrow(Registries.ENCHANTMENT).asHolderIdMap();
+               int var5 = 0;
 
-               for (BlockPos var6 : EnchantingTableBlock.BOOKSHELF_OFFSETS) {
-                  if (EnchantingTableBlock.isValidBookShelf(var2x, var3x, var6)) {
-                     var4++;
+               for (BlockPos var7 : EnchantingTableBlock.BOOKSHELF_OFFSETS) {
+                  if (EnchantingTableBlock.isValidBookShelf(var2x, var3x, var7)) {
+                     var5++;
                   }
                }
 
                this.random.setSeed((long)this.enchantmentSeed.get());
 
-               for (int var8 = 0; var8 < 3; var8++) {
-                  this.costs[var8] = EnchantmentHelper.getEnchantmentCost(this.random, var8, var4, var2);
-                  this.enchantClue[var8] = -1;
-                  this.levelClue[var8] = -1;
-                  if (this.costs[var8] < var8 + 1) {
-                     this.costs[var8] = 0;
+               for (int var9 = 0; var9 < 3; var9++) {
+                  this.costs[var9] = EnchantmentHelper.getEnchantmentCost(this.random, var9, var5, var2);
+                  this.enchantClue[var9] = -1;
+                  this.levelClue[var9] = -1;
+                  if (this.costs[var9] < var9 + 1) {
+                     this.costs[var9] = 0;
                   }
                }
 
-               for (int var9 = 0; var9 < 3; var9++) {
-                  if (this.costs[var9] > 0) {
-                     List var10 = this.getEnchantmentList(var2x.enabledFeatures(), var2, var9, this.costs[var9]);
-                     if (var10 != null && !var10.isEmpty()) {
-                        EnchantmentInstance var7 = (EnchantmentInstance)var10.get(this.random.nextInt(var10.size()));
-                        this.enchantClue[var9] = BuiltInRegistries.ENCHANTMENT.getId(var7.enchantment);
-                        this.levelClue[var9] = var7.level;
+               for (int var10 = 0; var10 < 3; var10++) {
+                  if (this.costs[var10] > 0) {
+                     List var11 = this.getEnchantmentList(var2x.registryAccess(), var2, var10, this.costs[var10]);
+                     if (var11 != null && !var11.isEmpty()) {
+                        EnchantmentInstance var8 = (EnchantmentInstance)var11.get(this.random.nextInt(var11.size()));
+                        this.enchantClue[var10] = var4.getId(var8.enchantment);
+                        this.levelClue[var10] = var8.level;
                      }
                   }
                }
@@ -150,7 +155,7 @@ public class EnchantmentMenu extends AbstractContainerMenu {
          } else {
             this.access.execute((var6, var7) -> {
                ItemStack var8 = var3;
-               List var9 = this.getEnchantmentList(var6.enabledFeatures(), var3, var2, this.costs[var2]);
+               List var9 = this.getEnchantmentList(var6.registryAccess(), var3, var2, this.costs[var2]);
                if (!var9.isEmpty()) {
                   var1.onEnchantmentPerformed(var3, var5);
                   if (var3.is(Items.BOOK)) {
@@ -188,14 +193,19 @@ public class EnchantmentMenu extends AbstractContainerMenu {
       }
    }
 
-   private List<EnchantmentInstance> getEnchantmentList(FeatureFlagSet var1, ItemStack var2, int var3, int var4) {
+   private List<EnchantmentInstance> getEnchantmentList(RegistryAccess var1, ItemStack var2, int var3, int var4) {
       this.random.setSeed((long)(this.enchantmentSeed.get() + var3));
-      List var5 = EnchantmentHelper.selectEnchantment(var1, this.random, var2, var4, false);
-      if (var2.is(Items.BOOK) && var5.size() > 1) {
-         var5.remove(this.random.nextInt(var5.size()));
-      }
+      Optional var5 = var1.registryOrThrow(Registries.ENCHANTMENT).getTag(EnchantmentTags.IN_ENCHANTING_TABLE);
+      if (var5.isEmpty()) {
+         return List.of();
+      } else {
+         List var6 = EnchantmentHelper.selectEnchantment(this.random, var2, var4, ((HolderSet.Named)var5.get()).stream());
+         if (var2.is(Items.BOOK) && var6.size() > 1) {
+            var6.remove(this.random.nextInt(var6.size()));
+         }
 
-      return var5;
+         return var6;
+      }
    }
 
    public int getGoldCount() {

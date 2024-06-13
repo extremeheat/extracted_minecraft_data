@@ -14,8 +14,10 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -23,6 +25,7 @@ import net.minecraft.world.level.block.GameMasterBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import org.slf4j.Logger;
 
 public class ServerPlayerGameMode {
@@ -158,6 +161,15 @@ public class ServerPlayerGameMode {
             float var6 = 1.0F;
             BlockState var7 = this.level.getBlockState(var1);
             if (!var7.isAir()) {
+               EnchantmentHelper.onHitBlock(
+                  this.level,
+                  this.player.getMainHandItem(),
+                  this.player,
+                  this.player,
+                  EquipmentSlot.MAINHAND,
+                  Vec3.atCenterOf(var1),
+                  () -> this.player.broadcastBreakEvent(EquipmentSlot.MAINHAND)
+               );
                var7.attack(this.level, var1, this.player);
                var6 = var7.getDestroyProgress(this.player, this.player.level(), var1);
             }
@@ -269,9 +281,9 @@ public class ServerPlayerGameMode {
          int var6 = var3.getDamageValue();
          InteractionResultHolder var7 = var3.use(var2, var1, var4);
          ItemStack var8 = (ItemStack)var7.getObject();
-         if (var8 == var3 && var8.getCount() == var5 && var8.getUseDuration() <= 0 && var8.getDamageValue() == var6) {
+         if (var8 == var3 && var8.getCount() == var5 && var8.getUseDuration(var1) <= 0 && var8.getDamageValue() == var6) {
             return var7.getResult();
-         } else if (var7.getResult() == InteractionResult.FAIL && var8.getUseDuration() > 0 && !var1.isUsingItem()) {
+         } else if (var7.getResult() == InteractionResult.FAIL && var8.getUseDuration(var1) > 0 && !var1.isUsingItem()) {
             return var7.getResult();
          } else {
             if (var3 != var8) {

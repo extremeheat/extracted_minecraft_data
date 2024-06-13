@@ -210,12 +210,7 @@ public class BlockFamilies {
       .stairs(Blocks.MOSSY_STONE_BRICK_STAIRS)
       .slab(Blocks.MOSSY_STONE_BRICK_SLAB)
       .getFamily();
-   public static final BlockFamily COPPER_BLOCK = familyBuilder(Blocks.COPPER_BLOCK)
-      .cut(Blocks.CUT_COPPER)
-      .door(Blocks.COPPER_DOOR)
-      .trapdoor(Blocks.COPPER_TRAPDOOR)
-      .dontGenerateModel()
-      .getFamily();
+   public static final BlockFamily COPPER_BLOCK = familyBuilder(Blocks.COPPER_BLOCK).cut(Blocks.CUT_COPPER).dontGenerateModel().getFamily();
    public static final BlockFamily CUT_COPPER = familyBuilder(Blocks.CUT_COPPER)
       .slab(Blocks.CUT_COPPER_SLAB)
       .stairs(Blocks.CUT_COPPER_STAIRS)
@@ -224,8 +219,6 @@ public class BlockFamilies {
       .getFamily();
    public static final BlockFamily WAXED_COPPER_BLOCK = familyBuilder(Blocks.WAXED_COPPER_BLOCK)
       .cut(Blocks.WAXED_CUT_COPPER)
-      .door(Blocks.WAXED_COPPER_DOOR)
-      .trapdoor(Blocks.WAXED_COPPER_TRAPDOOR)
       .recipeGroupPrefix("waxed_cut_copper")
       .dontGenerateModel()
       .getFamily();
@@ -236,12 +229,7 @@ public class BlockFamilies {
       .recipeGroupPrefix("waxed_cut_copper")
       .dontGenerateModel()
       .getFamily();
-   public static final BlockFamily EXPOSED_COPPER = familyBuilder(Blocks.EXPOSED_COPPER)
-      .cut(Blocks.EXPOSED_CUT_COPPER)
-      .door(Blocks.EXPOSED_COPPER_DOOR)
-      .trapdoor(Blocks.EXPOSED_COPPER_TRAPDOOR)
-      .dontGenerateModel()
-      .getFamily();
+   public static final BlockFamily EXPOSED_COPPER = familyBuilder(Blocks.EXPOSED_COPPER).cut(Blocks.EXPOSED_CUT_COPPER).dontGenerateModel().getFamily();
    public static final BlockFamily EXPOSED_CUT_COPPER = familyBuilder(Blocks.EXPOSED_CUT_COPPER)
       .slab(Blocks.EXPOSED_CUT_COPPER_SLAB)
       .stairs(Blocks.EXPOSED_CUT_COPPER_STAIRS)
@@ -250,8 +238,6 @@ public class BlockFamilies {
       .getFamily();
    public static final BlockFamily WAXED_EXPOSED_COPPER = familyBuilder(Blocks.WAXED_EXPOSED_COPPER)
       .cut(Blocks.WAXED_EXPOSED_CUT_COPPER)
-      .door(Blocks.WAXED_EXPOSED_COPPER_DOOR)
-      .trapdoor(Blocks.WAXED_EXPOSED_COPPER_TRAPDOOR)
       .recipeGroupPrefix("waxed_exposed_cut_copper")
       .dontGenerateModel()
       .getFamily();
@@ -262,12 +248,7 @@ public class BlockFamilies {
       .recipeGroupPrefix("waxed_exposed_cut_copper")
       .dontGenerateModel()
       .getFamily();
-   public static final BlockFamily WEATHERED_COPPER = familyBuilder(Blocks.WEATHERED_COPPER)
-      .cut(Blocks.WEATHERED_CUT_COPPER)
-      .door(Blocks.WEATHERED_COPPER_DOOR)
-      .trapdoor(Blocks.WEATHERED_COPPER_TRAPDOOR)
-      .dontGenerateModel()
-      .getFamily();
+   public static final BlockFamily WEATHERED_COPPER = familyBuilder(Blocks.WEATHERED_COPPER).cut(Blocks.WEATHERED_CUT_COPPER).dontGenerateModel().getFamily();
    public static final BlockFamily WEATHERED_CUT_COPPER = familyBuilder(Blocks.WEATHERED_CUT_COPPER)
       .slab(Blocks.WEATHERED_CUT_COPPER_SLAB)
       .stairs(Blocks.WEATHERED_CUT_COPPER_STAIRS)
@@ -276,8 +257,6 @@ public class BlockFamilies {
       .getFamily();
    public static final BlockFamily WAXED_WEATHERED_COPPER = familyBuilder(Blocks.WAXED_WEATHERED_COPPER)
       .cut(Blocks.WAXED_WEATHERED_CUT_COPPER)
-      .door(Blocks.WAXED_WEATHERED_COPPER_DOOR)
-      .trapdoor(Blocks.WAXED_WEATHERED_COPPER_TRAPDOOR)
       .recipeGroupPrefix("waxed_weathered_cut_copper")
       .dontGenerateModel()
       .getFamily();
@@ -288,12 +267,7 @@ public class BlockFamilies {
       .recipeGroupPrefix("waxed_weathered_cut_copper")
       .dontGenerateModel()
       .getFamily();
-   public static final BlockFamily OXIDIZED_COPPER = familyBuilder(Blocks.OXIDIZED_COPPER)
-      .cut(Blocks.OXIDIZED_CUT_COPPER)
-      .door(Blocks.OXIDIZED_COPPER_DOOR)
-      .trapdoor(Blocks.OXIDIZED_COPPER_TRAPDOOR)
-      .dontGenerateModel()
-      .getFamily();
+   public static final BlockFamily OXIDIZED_COPPER = familyBuilder(Blocks.OXIDIZED_COPPER).cut(Blocks.OXIDIZED_CUT_COPPER).dontGenerateModel().getFamily();
    public static final BlockFamily OXIDIZED_CUT_COPPER = familyBuilder(Blocks.OXIDIZED_CUT_COPPER)
       .slab(Blocks.OXIDIZED_CUT_COPPER_SLAB)
       .stairs(Blocks.OXIDIZED_CUT_COPPER_STAIRS)
@@ -302,8 +276,6 @@ public class BlockFamilies {
       .getFamily();
    public static final BlockFamily WAXED_OXIDIZED_COPPER = familyBuilder(Blocks.WAXED_OXIDIZED_COPPER)
       .cut(Blocks.WAXED_OXIDIZED_CUT_COPPER)
-      .door(Blocks.WAXED_OXIDIZED_COPPER_DOOR)
-      .trapdoor(Blocks.WAXED_OXIDIZED_COPPER_TRAPDOOR)
       .recipeGroupPrefix("waxed_oxidized_cut_copper")
       .dontGenerateModel()
       .getFamily();

@@ -8,11 +8,10 @@ import com.mojang.realmsclient.exception.RealmsServiceException;
 import com.mojang.realmsclient.exception.RetryCallException;
 import com.mojang.realmsclient.gui.screens.RealmsBrokenWorldScreen;
 import com.mojang.realmsclient.gui.screens.RealmsGenericErrorScreen;
-import com.mojang.realmsclient.gui.screens.RealmsLongConfirmationScreen;
 import com.mojang.realmsclient.gui.screens.RealmsLongRunningMcoTaskScreen;
 import com.mojang.realmsclient.gui.screens.RealmsLongRunningMcoTickTaskScreen;
+import com.mojang.realmsclient.gui.screens.RealmsPopups;
 import com.mojang.realmsclient.gui.screens.RealmsTermsScreen;
-import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
@@ -21,10 +20,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Function;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.PopupScreen;
 import net.minecraft.client.gui.screens.GenericMessageScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.resources.server.DownloadedPackSource;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import org.slf4j.Logger;
 
 public class GetServerDetailsTask extends LongRunningTask {
@@ -57,7 +58,7 @@ public class GetServerDetailsTask extends LongRunningTask {
                boolean var3 = Minecraft.getInstance().isLocalPlayer(this.server.ownerUUID);
                setScreen(
                   (Screen)(var3
-                     ? new RealmsBrokenWorldScreen(this.lastScreen, this.server.id, this.server.worldType == RealmsServer.WorldType.MINIGAME)
+                     ? new RealmsBrokenWorldScreen(this.lastScreen, this.server.id, this.server.isMinigameActive())
                      : new RealmsGenericErrorScreen(
                         Component.translatable("mco.brokenworld.nonowner.title"), Component.translatable("mco.brokenworld.nonowner.error"), this.lastScreen
                      ))
@@ -115,27 +116,17 @@ public class GetServerDetailsTask extends LongRunningTask {
       return new RealmsLongRunningMcoTickTaskScreen(this.lastScreen, new ConnectTask(this.lastScreen, this.server, var1));
    }
 
-   private RealmsLongConfirmationScreen resourcePackDownloadConfirmationScreen(RealmsServerAddress var1, UUID var2, Function<RealmsServerAddress, Screen> var3) {
-      BooleanConsumer var4 = var4x -> {
-         if (!var4x) {
-            setScreen(this.lastScreen);
-         } else {
-            setScreen(new GenericMessageScreen(APPLYING_PACK_TEXT));
-            this.scheduleResourcePackDownload(var1, var2).thenRun(() -> setScreen((Screen)var3.apply(var1))).exceptionally(var2xx -> {
-               Minecraft.getInstance().getDownloadedPackSource().cleanupAfterDisconnect();
-               LOGGER.error("Failed to download resource pack from {}", var1, var2xx);
-               setScreen(new RealmsGenericErrorScreen(Component.translatable("mco.download.resourcePack.fail"), this.lastScreen));
-               return null;
-            });
-         }
-      };
-      return new RealmsLongConfirmationScreen(
-         var4,
-         RealmsLongConfirmationScreen.Type.INFO,
-         Component.translatable("mco.configure.world.resourcepack.question.line1"),
-         Component.translatable("mco.configure.world.resourcepack.question.line2"),
-         true
-      );
+   private PopupScreen resourcePackDownloadConfirmationScreen(RealmsServerAddress var1, UUID var2, Function<RealmsServerAddress, Screen> var3) {
+      MutableComponent var4 = Component.translatable("mco.configure.world.resourcepack.question");
+      return RealmsPopups.infoPopupScreen(this.lastScreen, var4, var4x -> {
+         setScreen(new GenericMessageScreen(APPLYING_PACK_TEXT));
+         this.scheduleResourcePackDownload(var1, var2).thenRun(() -> setScreen((Screen)var3.apply(var1))).exceptionally(var2xx -> {
+            Minecraft.getInstance().getDownloadedPackSource().cleanupAfterDisconnect();
+            LOGGER.error("Failed to download resource pack from {}", var1, var2xx);
+            setScreen(new RealmsGenericErrorScreen(Component.translatable("mco.download.resourcePack.fail"), this.lastScreen));
+            return null;
+         });
+      });
    }
 
    private CompletableFuture<?> scheduleResourcePackDownload(RealmsServerAddress var1, UUID var2) {

@@ -288,7 +288,7 @@ public interface DispenseItemBehavior {
             }
 
             if (this.isSuccess()) {
-               var2.hurtAndBreak(1, var3.getRandom(), null, () -> var2.setCount(0));
+               var2.hurtAndBreak(1, var3, null, () -> var2.setCount(0));
             }
 
             return var2;
@@ -466,7 +466,7 @@ public interface DispenseItemBehavior {
             } else {
                for (Armadillo var7 : var5) {
                   if (var7.brushOffScute()) {
-                     var2.hurtAndBreak(16, var3.getRandom(), null, () -> {
+                     var2.hurtAndBreak(16, var3, null, () -> {
                         var2.shrink(1);
                         var2.setDamageValue(0);
                      });

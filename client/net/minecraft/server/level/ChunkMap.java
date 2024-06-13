@@ -585,10 +585,7 @@ public class ChunkMap extends ChunkStorage implements ChunkHolder.PlayerProvider
       Throwable var9 = var3 instanceof ReportedException var5 ? var5.getCause() : var3;
       boolean var10 = var9 instanceof Error;
       boolean var6 = var9 instanceof IOException || var9 instanceof NbtException;
-      if (!var10) {
-         if (!var6) {
-         }
-
+      if (!var10 && var6) {
          LOGGER.error("Couldn't load chunk {}", var2, var9);
          this.level.getServer().reportChunkLoadFailure(var2);
          return this.createEmptyChunk(var2);

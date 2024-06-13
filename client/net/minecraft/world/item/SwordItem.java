@@ -49,7 +49,11 @@ public class SwordItem extends TieredItem {
 
    @Override
    public boolean hurtEnemy(ItemStack var1, LivingEntity var2, LivingEntity var3) {
-      var1.hurtAndBreak(1, var3, EquipmentSlot.MAINHAND);
       return true;
+   }
+
+   @Override
+   public void postHurtEnemy(ItemStack var1, LivingEntity var2, LivingEntity var3) {
+      var1.hurtAndBreak(1, var3, EquipmentSlot.MAINHAND);
    }
 }

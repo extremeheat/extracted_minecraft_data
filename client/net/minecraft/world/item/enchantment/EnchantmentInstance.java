@@ -1,13 +1,14 @@
 package net.minecraft.world.item.enchantment;
 
+import net.minecraft.core.Holder;
 import net.minecraft.util.random.WeightedEntry;
 
 public class EnchantmentInstance extends WeightedEntry.IntrusiveBase {
-   public final Enchantment enchantment;
+   public final Holder<Enchantment> enchantment;
    public final int level;
 
-   public EnchantmentInstance(Enchantment var1, int var2) {
-      super(var1.getWeight());
+   public EnchantmentInstance(Holder<Enchantment> var1, int var2) {
+      super(((Enchantment)var1.value()).getWeight());
       this.enchantment = var1;
       this.level = var2;
    }

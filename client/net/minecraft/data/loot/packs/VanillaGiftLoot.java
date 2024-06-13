@@ -16,14 +16,15 @@ import net.minecraft.world.level.storage.loot.functions.SetPotionFunction;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 
-public class VanillaGiftLoot implements LootTableSubProvider {
-   public VanillaGiftLoot() {
+public record VanillaGiftLoot(HolderLookup.Provider registries) implements LootTableSubProvider {
+   public VanillaGiftLoot(HolderLookup.Provider registries) {
       super();
+      this.registries = registries;
    }
 
    @Override
-   public void generate(HolderLookup.Provider var1, BiConsumer<ResourceKey<LootTable>, LootTable.Builder> var2) {
-      var2.accept(
+   public void generate(BiConsumer<ResourceKey<LootTable>, LootTable.Builder> var1) {
+      var1.accept(
          BuiltInLootTables.CAT_MORNING_GIFT,
          LootTable.lootTable()
             .withPool(
@@ -38,7 +39,7 @@ public class VanillaGiftLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Items.PHANTOM_MEMBRANE).setWeight(2))
             )
       );
-      var2.accept(
+      var1.accept(
          BuiltInLootTables.ARMORER_GIFT,
          LootTable.lootTable()
             .withPool(
@@ -50,7 +51,7 @@ public class VanillaGiftLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Items.CHAINMAIL_BOOTS))
             )
       );
-      var2.accept(
+      var1.accept(
          BuiltInLootTables.BUTCHER_GIFT,
          LootTable.lootTable()
             .withPool(
@@ -63,12 +64,12 @@ public class VanillaGiftLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Items.COOKED_MUTTON))
             )
       );
-      var2.accept(
+      var1.accept(
          BuiltInLootTables.CARTOGRAPHER_GIFT,
          LootTable.lootTable()
             .withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(Items.MAP)).add(LootItem.lootTableItem(Items.PAPER)))
       );
-      var2.accept(
+      var1.accept(
          BuiltInLootTables.CLERIC_GIFT,
          LootTable.lootTable()
             .withPool(
@@ -78,7 +79,7 @@ public class VanillaGiftLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Items.LAPIS_LAZULI))
             )
       );
-      var2.accept(
+      var1.accept(
          BuiltInLootTables.FARMER_GIFT,
          LootTable.lootTable()
             .withPool(
@@ -89,14 +90,14 @@ public class VanillaGiftLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Items.COOKIE))
             )
       );
-      var2.accept(
+      var1.accept(
          BuiltInLootTables.FISHERMAN_GIFT,
          LootTable.lootTable()
             .withPool(
                LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(Items.COD)).add(LootItem.lootTableItem(Items.SALMON))
             )
       );
-      var2.accept(
+      var1.accept(
          BuiltInLootTables.FLETCHER_GIFT,
          LootTable.lootTable()
             .withPool(
@@ -170,19 +171,19 @@ public class VanillaGiftLoot implements LootTableSubProvider {
                   )
             )
       );
-      var2.accept(
+      var1.accept(
          BuiltInLootTables.LEATHERWORKER_GIFT,
          LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(Items.LEATHER)))
       );
-      var2.accept(
+      var1.accept(
          BuiltInLootTables.LIBRARIAN_GIFT,
          LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(Items.BOOK)))
       );
-      var2.accept(
+      var1.accept(
          BuiltInLootTables.MASON_GIFT,
          LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ConstantValue.exactly(1.0F)).add(LootItem.lootTableItem(Items.CLAY)))
       );
-      var2.accept(
+      var1.accept(
          BuiltInLootTables.SHEPHERD_GIFT,
          LootTable.lootTable()
             .withPool(
@@ -206,7 +207,7 @@ public class VanillaGiftLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Items.BLACK_WOOL))
             )
       );
-      var2.accept(
+      var1.accept(
          BuiltInLootTables.TOOLSMITH_GIFT,
          LootTable.lootTable()
             .withPool(
@@ -218,7 +219,7 @@ public class VanillaGiftLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Items.STONE_SHOVEL))
             )
       );
-      var2.accept(
+      var1.accept(
          BuiltInLootTables.WEAPONSMITH_GIFT,
          LootTable.lootTable()
             .withPool(
@@ -229,7 +230,7 @@ public class VanillaGiftLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Items.IRON_AXE))
             )
       );
-      var2.accept(
+      var1.accept(
          BuiltInLootTables.SNIFFER_DIGGING,
          LootTable.lootTable()
             .withPool(
@@ -239,7 +240,7 @@ public class VanillaGiftLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Items.PITCHER_POD))
             )
       );
-      var2.accept(
+      var1.accept(
          BuiltInLootTables.PANDA_SNEEZE,
          LootTable.lootTable()
             .withPool(

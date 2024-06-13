@@ -10,29 +10,46 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import net.minecraft.Util;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ExtraCodecs;
-import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.world.item.ItemStack;
 
-public record ShapedRecipePattern(int width, int height, NonNullList<Ingredient> ingredients, Optional<ShapedRecipePattern.Data> data) {
+public final class ShapedRecipePattern {
    private static final int MAX_SIZE = 3;
    public static final MapCodec<ShapedRecipePattern> MAP_CODEC = ShapedRecipePattern.Data.MAP_CODEC
       .flatXmap(
          ShapedRecipePattern::unpack,
-         var0 -> var0.data().<DataResult>map(DataResult::success).orElseGet(() -> DataResult.error(() -> "Cannot encode unpacked recipe"))
+         var0 -> var0.data.<DataResult>map(DataResult::success).orElseGet(() -> DataResult.error(() -> "Cannot encode unpacked recipe"))
       );
    public static final StreamCodec<RegistryFriendlyByteBuf, ShapedRecipePattern> STREAM_CODEC = StreamCodec.ofMember(
       ShapedRecipePattern::toNetwork, ShapedRecipePattern::fromNetwork
    );
+   private final int width;
+   private final int height;
+   private final NonNullList<Ingredient> ingredients;
+   private final Optional<ShapedRecipePattern.Data> data;
+   private final int ingredientCount;
+   private final boolean symmetrical;
 
-   public ShapedRecipePattern(int width, int height, NonNullList<Ingredient> ingredients, Optional<ShapedRecipePattern.Data> data) {
+   public ShapedRecipePattern(int var1, int var2, NonNullList<Ingredient> var3, Optional<ShapedRecipePattern.Data> var4) {
       super();
-      this.width = width;
-      this.height = height;
-      this.ingredients = ingredients;
-      this.data = data;
+      this.width = var1;
+      this.height = var2;
+      this.ingredients = var3;
+      this.data = var4;
+      int var5 = 0;
+
+      for (Ingredient var7 : var3) {
+         if (!var7.isEmpty()) {
+            var5++;
+         }
+      }
+
+      this.ingredientCount = var5;
+      this.symmetrical = Util.isSymmetrical(var1, var2, var3);
    }
 
    public static ShapedRecipePattern of(Map<Character, Ingredient> var0, String... var1) {
@@ -127,37 +144,36 @@ public record ShapedRecipePattern(int width, int height, NonNullList<Ingredient>
       return var1;
    }
 
-   public boolean matches(CraftingContainer var1) {
-      for (int var2 = 0; var2 <= var1.getWidth() - this.width; var2++) {
-         for (int var3 = 0; var3 <= var1.getHeight() - this.height; var3++) {
-            if (this.matches(var1, var2, var3, true)) {
+   public boolean matches(CraftingInput var1) {
+      if (var1.ingredientCount() != this.ingredientCount) {
+         return false;
+      } else {
+         if (var1.width() == this.width && var1.height() == this.height) {
+            if (!this.symmetrical && this.matches(var1, true)) {
                return true;
             }
 
-            if (this.matches(var1, var2, var3, false)) {
+            if (this.matches(var1, false)) {
                return true;
             }
          }
-      }
 
-      return false;
+         return false;
+      }
    }
 
-   private boolean matches(CraftingContainer var1, int var2, int var3, boolean var4) {
-      for (int var5 = 0; var5 < var1.getWidth(); var5++) {
-         for (int var6 = 0; var6 < var1.getHeight(); var6++) {
-            int var7 = var5 - var2;
-            int var8 = var6 - var3;
-            Ingredient var9 = Ingredient.EMPTY;
-            if (var7 >= 0 && var8 >= 0 && var7 < this.width && var8 < this.height) {
-               if (var4) {
-                  var9 = this.ingredients.get(this.width - var7 - 1 + var8 * this.width);
-               } else {
-                  var9 = this.ingredients.get(var7 + var8 * this.width);
-               }
+   private boolean matches(CraftingInput var1, boolean var2) {
+      for (int var3 = 0; var3 < this.height; var3++) {
+         for (int var4 = 0; var4 < this.width; var4++) {
+            Ingredient var5;
+            if (var2) {
+               var5 = this.ingredients.get(this.width - var4 - 1 + var3 * this.width);
+            } else {
+               var5 = this.ingredients.get(var4 + var3 * this.width);
             }
 
-            if (!var9.test(var1.getItem(var5 + var6 * var1.getWidth()))) {
+            ItemStack var6 = var1.getItem(var4, var3);
+            if (!var5.test(var6)) {
                return false;
             }
          }
@@ -183,6 +199,18 @@ public record ShapedRecipePattern(int width, int height, NonNullList<Ingredient>
       return new ShapedRecipePattern(var1, var2, var3, Optional.empty());
    }
 
+   public int width() {
+      return this.width;
+   }
+
+   public int height() {
+      return this.height;
+   }
+
+   public NonNullList<Ingredient> ingredients() {
+      return this.ingredients;
+   }
+
    public static record Data(Map<Character, Ingredient> key, List<String> pattern) {
       private static final Codec<List<String>> PATTERN_CODEC = Codec.STRING.listOf().comapFlatMap(var0 -> {
          if (var0.size() > 3) {
@@ -190,7 +218,7 @@ public record ShapedRecipePattern(int width, int height, NonNullList<Ingredient>
          } else if (var0.isEmpty()) {
             return DataResult.error(() -> "Invalid pattern: empty pattern not allowed");
          } else {
-            int var1 = ((String)var0.get(0)).length();
+            int var1 = ((String)var0.getFirst()).length();
 
             for (String var3 : var0) {
                if (var3.length() > 3) {

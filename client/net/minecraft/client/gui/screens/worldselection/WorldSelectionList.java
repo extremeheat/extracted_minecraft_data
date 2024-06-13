@@ -210,7 +210,7 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
    }
 
    private void notifyListUpdated() {
-      this.setScrollAmount(this.getScrollAmount());
+      this.clampScrollAmount();
       this.screen.triggerImmediateNarration(true);
    }
 
@@ -542,6 +542,7 @@ public class WorldSelectionList extends ObjectSelectionList<WorldSelectionList.E
             LevelSettings var3 = (LevelSettings)var2.getFirst();
             WorldCreationContext var4 = (WorldCreationContext)var2.getSecond();
             Path var5 = CreateWorldScreen.createTempDataPackDirFromExistingWorld(var1.getLevelPath(LevelResource.DATAPACK_DIR), this.minecraft);
+            var4.validate();
             if (var4.options().isOldCustomizedWorld()) {
                this.minecraft
                   .setScreen(

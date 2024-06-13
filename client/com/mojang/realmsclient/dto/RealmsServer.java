@@ -331,6 +331,10 @@ public class RealmsServer extends ValueObject {
       return this.parentRealmId != -1L;
    }
 
+   public boolean isMinigameActive() {
+      return this.worldType == RealmsServer.WorldType.MINIGAME;
+   }
+
    public String getWorldName(int var1) {
       return this.name + " (" + this.slots.get(var1).getSlotName(var1) + ")";
    }
@@ -342,6 +346,7 @@ public class RealmsServer extends ValueObject {
    public static enum Compatibility {
       UNVERIFIABLE,
       INCOMPATIBLE,
+      RELEASE_TYPE_INCOMPATIBLE,
       NEEDS_DOWNGRADE,
       NEEDS_UPGRADE,
       COMPATIBLE;

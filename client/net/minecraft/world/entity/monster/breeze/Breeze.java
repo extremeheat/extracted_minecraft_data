@@ -51,7 +51,7 @@ public class Breeze extends Monster {
    private int jumpTrailStartedTick = 0;
    private int soundTick = 0;
    private static final ProjectileDeflection PROJECTILE_DEFLECTION = (var0, var1, var2) -> {
-      var1.level().playLocalSound(var1, SoundEvents.BREEZE_DEFLECT, var1.getSoundSource(), 1.0F, 1.0F);
+      var1.level().playSound(null, var1, SoundEvents.BREEZE_DEFLECT, var1.getSoundSource(), 1.0F, 1.0F);
       ProjectileDeflection.REVERSE.deflect(var0, var1, var2);
    };
 

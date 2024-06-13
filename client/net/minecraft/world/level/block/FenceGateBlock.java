@@ -168,7 +168,7 @@ public class FenceGateBlock extends HorizontalDirectionalBlock {
 
    @Override
    protected void onExplosionHit(BlockState var1, Level var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
-      if (var4.getBlockInteraction() == Explosion.BlockInteraction.TRIGGER_BLOCK && !var2.isClientSide() && !var1.getValue(POWERED)) {
+      if (var4.canTriggerBlocks() && !var1.getValue(POWERED)) {
          boolean var6 = var1.getValue(OPEN);
          var2.setBlockAndUpdate(var3, var1.setValue(OPEN, Boolean.valueOf(!var6)));
          var2.playSound(

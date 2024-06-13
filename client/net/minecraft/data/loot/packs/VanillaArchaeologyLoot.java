@@ -14,14 +14,15 @@ import net.minecraft.world.level.storage.loot.functions.SetStewEffectFunction;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 
-public class VanillaArchaeologyLoot implements LootTableSubProvider {
-   public VanillaArchaeologyLoot() {
+public record VanillaArchaeologyLoot(HolderLookup.Provider registries) implements LootTableSubProvider {
+   public VanillaArchaeologyLoot(HolderLookup.Provider registries) {
       super();
+      this.registries = registries;
    }
 
    @Override
-   public void generate(HolderLookup.Provider var1, BiConsumer<ResourceKey<LootTable>, LootTable.Builder> var2) {
-      var2.accept(
+   public void generate(BiConsumer<ResourceKey<LootTable>, LootTable.Builder> var1) {
+      var1.accept(
          BuiltInLootTables.DESERT_WELL_ARCHAEOLOGY,
          LootTable.lootTable()
             .withPool(
@@ -46,7 +47,7 @@ public class VanillaArchaeologyLoot implements LootTableSubProvider {
                   )
             )
       );
-      var2.accept(
+      var1.accept(
          BuiltInLootTables.DESERT_PYRAMID_ARCHAEOLOGY,
          LootTable.lootTable()
             .withPool(
@@ -62,7 +63,7 @@ public class VanillaArchaeologyLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Items.EMERALD))
             )
       );
-      var2.accept(
+      var1.accept(
          BuiltInLootTables.TRAIL_RUINS_ARCHAEOLOGY_COMMON,
          LootTable.lootTable()
             .withPool(
@@ -101,7 +102,7 @@ public class VanillaArchaeologyLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Items.LEAD))
             )
       );
-      var2.accept(
+      var1.accept(
          BuiltInLootTables.TRAIL_RUINS_ARCHAEOLOGY_RARE,
          LootTable.lootTable()
             .withPool(
@@ -121,7 +122,7 @@ public class VanillaArchaeologyLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Items.MUSIC_DISC_RELIC))
             )
       );
-      var2.accept(
+      var1.accept(
          BuiltInLootTables.OCEAN_RUIN_WARM_ARCHAEOLOGY,
          LootTable.lootTable()
             .withPool(
@@ -139,7 +140,7 @@ public class VanillaArchaeologyLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Items.GOLD_NUGGET).setWeight(2))
             )
       );
-      var2.accept(
+      var1.accept(
          BuiltInLootTables.OCEAN_RUIN_COLD_ARCHAEOLOGY,
          LootTable.lootTable()
             .withPool(

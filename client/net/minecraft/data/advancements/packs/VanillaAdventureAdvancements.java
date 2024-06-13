@@ -20,6 +20,7 @@ import net.minecraft.advancements.critereon.DistancePredicate;
 import net.minecraft.advancements.critereon.DistanceTrigger;
 import net.minecraft.advancements.critereon.EntityEquipmentPredicate;
 import net.minecraft.advancements.critereon.EntityPredicate;
+import net.minecraft.advancements.critereon.FallAfterExplosionTrigger;
 import net.minecraft.advancements.critereon.InventoryChangeTrigger;
 import net.minecraft.advancements.critereon.ItemPredicate;
 import net.minecraft.advancements.critereon.ItemUsedOnLocationTrigger;
@@ -68,8 +69,11 @@ import net.minecraft.world.level.biome.MultiNoiseBiomeSourceParameterList;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ComparatorBlock;
+import net.minecraft.world.level.block.CopperBulbBlock;
+import net.minecraft.world.level.block.VaultBlock;
 import net.minecraft.world.level.block.entity.DecoratedPotBlockEntity;
 import net.minecraft.world.level.block.entity.PotDecorations;
+import net.minecraft.world.level.levelgen.structure.BuiltinStructures;
 import net.minecraft.world.level.storage.loot.BuiltInLootTables;
 import net.minecraft.world.level.storage.loot.predicates.AllOfCondition;
 import net.minecraft.world.level.storage.loot.predicates.AnyOfCondition;
@@ -84,6 +88,8 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
    private static final int BEDROCK_THICKNESS = 5;
    protected static final List<EntityType<?>> MOBS_TO_KILL = Arrays.asList(
       EntityType.BLAZE,
+      EntityType.BOGGED,
+      EntityType.BREEZE,
       EntityType.CAVE_SPIDER,
       EntityType.CREEPER,
       EntityType.DROWNED,
@@ -702,6 +708,193 @@ public class VanillaAdventureAdvancements implements AdvancementSubProvider {
             )
          )
          .save(var2, "adventure/brush_armadillo");
+      AdvancementHolder var16 = Advancement.Builder.advancement()
+         .parent(var3)
+         .display(
+            Blocks.CHISELED_TUFF,
+            Component.translatable("advancements.adventure.minecraft_trials_edition.title"),
+            Component.translatable("advancements.adventure.minecraft_trials_edition.description"),
+            null,
+            AdvancementType.TASK,
+            true,
+            true,
+            false
+         )
+         .addCriterion(
+            "minecraft_trials_edition",
+            PlayerTrigger.TriggerInstance.located(
+               LocationPredicate.Builder.inStructure(var1.lookupOrThrow(Registries.STRUCTURE).getOrThrow(BuiltinStructures.TRIAL_CHAMBERS))
+            )
+         )
+         .save(var2, "adventure/minecraft_trials_edition");
+      Advancement.Builder.advancement()
+         .parent(var16)
+         .display(
+            Items.COPPER_BULB,
+            Component.translatable("advancements.adventure.lighten_up.title"),
+            Component.translatable("advancements.adventure.lighten_up.description"),
+            null,
+            AdvancementType.TASK,
+            true,
+            true,
+            false
+         )
+         .addCriterion(
+            "lighten_up",
+            ItemUsedOnLocationTrigger.TriggerInstance.itemUsedOnBlock(
+               LocationPredicate.Builder.location()
+                  .setBlock(
+                     BlockPredicate.Builder.block()
+                        .of(
+                           Blocks.OXIDIZED_COPPER_BULB,
+                           Blocks.WEATHERED_COPPER_BULB,
+                           Blocks.EXPOSED_COPPER_BULB,
+                           Blocks.WAXED_OXIDIZED_COPPER_BULB,
+                           Blocks.WAXED_WEATHERED_COPPER_BULB,
+                           Blocks.WAXED_EXPOSED_COPPER_BULB
+                        )
+                        .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(CopperBulbBlock.LIT, true))
+                  ),
+               ItemPredicate.Builder.item().of(VanillaHusbandryAdvancements.WAX_SCRAPING_TOOLS)
+            )
+         )
+         .save(var2, "adventure/lighten_up");
+      AdvancementHolder var17 = Advancement.Builder.advancement()
+         .parent(var16)
+         .display(
+            Items.TRIAL_KEY,
+            Component.translatable("advancements.adventure.under_lock_and_key.title"),
+            Component.translatable("advancements.adventure.under_lock_and_key.description"),
+            null,
+            AdvancementType.TASK,
+            true,
+            true,
+            false
+         )
+         .addCriterion(
+            "under_lock_and_key",
+            ItemUsedOnLocationTrigger.TriggerInstance.itemUsedOnBlock(
+               LocationPredicate.Builder.location()
+                  .setBlock(
+                     BlockPredicate.Builder.block()
+                        .of(Blocks.VAULT)
+                        .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(VaultBlock.OMINOUS, false))
+                  ),
+               ItemPredicate.Builder.item().of(Items.TRIAL_KEY)
+            )
+         )
+         .save(var2, "adventure/under_lock_and_key");
+      Advancement.Builder.advancement()
+         .parent(var17)
+         .display(
+            Items.OMINOUS_TRIAL_KEY,
+            Component.translatable("advancements.adventure.revaulting.title"),
+            Component.translatable("advancements.adventure.revaulting.description"),
+            null,
+            AdvancementType.GOAL,
+            true,
+            true,
+            false
+         )
+         .addCriterion(
+            "revaulting",
+            ItemUsedOnLocationTrigger.TriggerInstance.itemUsedOnBlock(
+               LocationPredicate.Builder.location()
+                  .setBlock(
+                     BlockPredicate.Builder.block()
+                        .of(Blocks.VAULT)
+                        .setProperties(StatePropertiesPredicate.Builder.properties().hasProperty(VaultBlock.OMINOUS, true))
+                  ),
+               ItemPredicate.Builder.item().of(Items.OMINOUS_TRIAL_KEY)
+            )
+         )
+         .save(var2, "adventure/revaulting");
+      Advancement.Builder.advancement()
+         .parent(var16)
+         .display(
+            Items.WIND_CHARGE,
+            Component.translatable("advancements.adventure.blowback.title"),
+            Component.translatable("advancements.adventure.blowback.description"),
+            null,
+            AdvancementType.CHALLENGE,
+            true,
+            true,
+            false
+         )
+         .rewards(AdvancementRewards.Builder.experience(40))
+         .addCriterion(
+            "blowback",
+            KilledTrigger.TriggerInstance.playerKilledEntity(
+               EntityPredicate.Builder.entity().of(EntityType.BREEZE),
+               DamageSourcePredicate.Builder.damageType()
+                  .tag(TagPredicate.is(DamageTypeTags.IS_PROJECTILE))
+                  .direct(EntityPredicate.Builder.entity().of(EntityType.BREEZE_WIND_CHARGE))
+            )
+         )
+         .save(var2, "adventure/blowback");
+      Advancement.Builder.advancement()
+         .parent(var3)
+         .display(
+            Items.CRAFTER,
+            Component.translatable("advancements.adventure.crafters_crafting_crafters.title"),
+            Component.translatable("advancements.adventure.crafters_crafting_crafters.description"),
+            null,
+            AdvancementType.TASK,
+            true,
+            true,
+            false
+         )
+         .addCriterion("crafter_crafted_crafter", RecipeCraftedTrigger.TriggerInstance.crafterCraftedItem(new ResourceLocation("minecraft:crafter")))
+         .save(var2, "adventure/crafters_crafting_crafters");
+      Advancement.Builder.advancement()
+         .parent(var16)
+         .display(
+            Items.WIND_CHARGE,
+            Component.translatable("advancements.adventure.who_needs_rockets.title"),
+            Component.translatable("advancements.adventure.who_needs_rockets.description"),
+            null,
+            AdvancementType.TASK,
+            true,
+            true,
+            false
+         )
+         .addCriterion(
+            "who_needs_rockets",
+            FallAfterExplosionTrigger.TriggerInstance.fallAfterExplosion(
+               DistancePredicate.vertical(MinMaxBounds.Doubles.atLeast(7.0)), EntityPredicate.Builder.entity().of(EntityType.WIND_CHARGE)
+            )
+         )
+         .save(var2, "adventure/who_needs_rockets");
+      Advancement.Builder.advancement()
+         .parent(var16)
+         .display(
+            Items.MACE,
+            Component.translatable("advancements.adventure.overoverkill.title"),
+            Component.translatable("advancements.adventure.overoverkill.description"),
+            null,
+            AdvancementType.CHALLENGE,
+            true,
+            true,
+            false
+         )
+         .rewards(AdvancementRewards.Builder.experience(50))
+         .addCriterion(
+            "overoverkill",
+            PlayerHurtEntityTrigger.TriggerInstance.playerHurtEntityWithDamage(
+               DamagePredicate.Builder.damageInstance()
+                  .dealtDamage(MinMaxBounds.Doubles.atLeast(100.0))
+                  .type(
+                     DamageSourcePredicate.Builder.damageType()
+                        .tag(TagPredicate.is(DamageTypeTags.IS_PLAYER_ATTACK))
+                        .direct(
+                           EntityPredicate.Builder.entity()
+                              .of(EntityType.PLAYER)
+                              .equipment(EntityEquipmentPredicate.Builder.equipment().mainhand(ItemPredicate.Builder.item().of(Items.MACE)))
+                        )
+                  )
+            )
+         )
+         .save(var2, "adventure/overoverkill");
    }
 
    public static AdvancementHolder createMonsterHunterAdvancement(AdvancementHolder var0, Consumer<AdvancementHolder> var1, List<EntityType<?>> var2) {

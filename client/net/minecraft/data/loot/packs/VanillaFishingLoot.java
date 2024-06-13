@@ -28,15 +28,16 @@ import net.minecraft.world.level.storage.loot.predicates.LootItemEntityPropertyC
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 
-public class VanillaFishingLoot implements LootTableSubProvider {
-   public VanillaFishingLoot() {
+public record VanillaFishingLoot(HolderLookup.Provider registries) implements LootTableSubProvider {
+   public VanillaFishingLoot(HolderLookup.Provider registries) {
       super();
+      this.registries = registries;
    }
 
    @Override
-   public void generate(HolderLookup.Provider var1, BiConsumer<ResourceKey<LootTable>, LootTable.Builder> var2) {
-      HolderLookup.RegistryLookup var3 = var1.lookupOrThrow(Registries.BIOME);
-      var2.accept(
+   public void generate(BiConsumer<ResourceKey<LootTable>, LootTable.Builder> var1) {
+      HolderLookup.RegistryLookup var2 = this.registries.lookupOrThrow(Registries.BIOME);
+      var1.accept(
          BuiltInLootTables.FISHING,
          LootTable.lootTable()
             .withPool(
@@ -56,8 +57,8 @@ public class VanillaFishingLoot implements LootTableSubProvider {
                   .add(NestedLootTable.lootTableReference(BuiltInLootTables.FISHING_FISH).setWeight(85).setQuality(-1))
             )
       );
-      var2.accept(BuiltInLootTables.FISHING_FISH, fishingFishLootTable());
-      var2.accept(
+      var1.accept(BuiltInLootTables.FISHING_FISH, fishingFishLootTable());
+      var1.accept(
          BuiltInLootTables.FISHING_JUNK,
          LootTable.lootTable()
             .withPool(
@@ -81,7 +82,7 @@ public class VanillaFishingLoot implements LootTableSubProvider {
                               LocationPredicate.Builder.location()
                                  .setBiomes(
                                     HolderSet.direct(
-                                       var3.getOrThrow(Biomes.JUNGLE), var3.getOrThrow(Biomes.SPARSE_JUNGLE), var3.getOrThrow(Biomes.BAMBOO_JUNGLE)
+                                       var2.getOrThrow(Biomes.JUNGLE), var2.getOrThrow(Biomes.SPARSE_JUNGLE), var2.getOrThrow(Biomes.BAMBOO_JUNGLE)
                                     )
                                  )
                            )
@@ -90,7 +91,7 @@ public class VanillaFishingLoot implements LootTableSubProvider {
                   )
             )
       );
-      var2.accept(
+      var1.accept(
          BuiltInLootTables.FISHING_TREASURE,
          LootTable.lootTable()
             .withPool(
@@ -100,14 +101,14 @@ public class VanillaFishingLoot implements LootTableSubProvider {
                   .add(
                      LootItem.lootTableItem(Items.BOW)
                         .apply(SetItemDamageFunction.setDamage(UniformGenerator.between(0.0F, 0.25F)))
-                        .apply(EnchantWithLevelsFunction.enchantWithLevels(ConstantValue.exactly(30.0F)).allowTreasure())
+                        .apply(EnchantWithLevelsFunction.enchantWithLevels(this.registries, ConstantValue.exactly(30.0F)))
                   )
                   .add(
                      LootItem.lootTableItem(Items.FISHING_ROD)
                         .apply(SetItemDamageFunction.setDamage(UniformGenerator.between(0.0F, 0.25F)))
-                        .apply(EnchantWithLevelsFunction.enchantWithLevels(ConstantValue.exactly(30.0F)).allowTreasure())
+                        .apply(EnchantWithLevelsFunction.enchantWithLevels(this.registries, ConstantValue.exactly(30.0F)))
                   )
-                  .add(LootItem.lootTableItem(Items.BOOK).apply(EnchantWithLevelsFunction.enchantWithLevels(ConstantValue.exactly(30.0F)).allowTreasure()))
+                  .add(LootItem.lootTableItem(Items.BOOK).apply(EnchantWithLevelsFunction.enchantWithLevels(this.registries, ConstantValue.exactly(30.0F))))
                   .add(LootItem.lootTableItem(Items.NAUTILUS_SHELL))
             )
       );

@@ -4,6 +4,7 @@ import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.ExperienceOrb;
@@ -92,10 +93,10 @@ public class GrindstoneMenu extends AbstractContainerMenu {
             ItemEnchantments var3x = EnchantmentHelper.getEnchantmentsForCrafting(var1);
 
             for (Entry var5 : var3x.entrySet()) {
-               Enchantment var6 = (Enchantment)((Holder)var5.getKey()).value();
+               Holder var6 = (Holder)var5.getKey();
                int var7 = var5.getIntValue();
-               if (!var6.isCurse()) {
-                  var2 += var6.getMinCost(var7);
+               if (!var6.is(EnchantmentTags.CURSE)) {
+                  var2 += ((Enchantment)var6.value()).getMinCost(var7);
                }
             }
 
@@ -177,8 +178,8 @@ public class GrindstoneMenu extends AbstractContainerMenu {
          ItemEnchantments var2x = EnchantmentHelper.getEnchantmentsForCrafting(var2);
 
          for (Entry var4 : var2x.entrySet()) {
-            Enchantment var5 = (Enchantment)((Holder)var4.getKey()).value();
-            if (!var5.isCurse() || var1x.getLevel(var5) == 0) {
+            Holder var5 = (Holder)var4.getKey();
+            if (!var5.is(EnchantmentTags.CURSE) || var1x.getLevel(var5) == 0) {
                var1x.upgrade(var5, var4.getIntValue());
             }
          }
@@ -186,7 +187,7 @@ public class GrindstoneMenu extends AbstractContainerMenu {
    }
 
    private ItemStack removeNonCursesFrom(ItemStack var1) {
-      ItemEnchantments var2 = EnchantmentHelper.updateEnchantments(var1, var0 -> var0.removeIf(var0x -> !var0x.value().isCurse()));
+      ItemEnchantments var2 = EnchantmentHelper.updateEnchantments(var1, var0 -> var0.removeIf(var0x -> !var0x.is(EnchantmentTags.CURSE)));
       if (var1.is(Items.ENCHANTED_BOOK) && var2.isEmpty()) {
          var1 = var1.transmuteCopy(Items.BOOK, var1.getCount());
       }

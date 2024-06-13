@@ -9,7 +9,7 @@ import java.util.stream.Stream;
 import net.minecraft.Util;
 import net.minecraft.resources.ResourceLocation;
 
-public class IdSearchTree<T> implements RefreshableSearchTree<T> {
+public class IdSearchTree<T> implements SearchTree<T> {
    protected final Comparator<T> additionOrder;
    protected final ResourceLocationSearchTree<T> resourceLocationSearchTree;
 

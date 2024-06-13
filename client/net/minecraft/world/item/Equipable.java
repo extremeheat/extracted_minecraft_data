@@ -10,6 +10,7 @@ import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -28,7 +29,7 @@ public interface Equipable {
          return InteractionResultHolder.pass(var5);
       } else {
          ItemStack var7 = var3.getItemBySlot(var6);
-         if ((!EnchantmentHelper.hasBindingCurse(var7) || var3.isCreative()) && !ItemStack.matches(var5, var7)) {
+         if ((!EnchantmentHelper.has(var7, EnchantmentEffectComponents.PREVENT_ARMOR_CHANGE) || var3.isCreative()) && !ItemStack.matches(var5, var7)) {
             if (!var2.isClientSide()) {
                var3.awardStat(Stats.ITEM_USED.get(var1));
             }

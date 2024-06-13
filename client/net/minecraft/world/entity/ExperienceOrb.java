@@ -1,7 +1,7 @@
 package net.minecraft.world.entity;
 
 import java.util.List;
-import java.util.Map.Entry;
+import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
@@ -9,13 +9,15 @@ import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddExperienceOrbPacket;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.enchantment.EnchantedItemInUse;
+import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.phys.AABB;
@@ -224,13 +226,13 @@ public class ExperienceOrb extends Entity {
 
    @Override
    public void playerTouch(Player var1) {
-      if (!this.level().isClientSide) {
+      if (var1 instanceof ServerPlayer var2) {
          if (var1.takeXpDelay == 0) {
             var1.takeXpDelay = 2;
             var1.take(this, 1);
-            int var2 = this.repairPlayerItems(var1, this.value);
-            if (var2 > 0) {
-               var1.giveExperiencePoints(var2);
+            int var3 = this.repairPlayerItems(var2, this.value);
+            if (var3 > 0) {
+               var1.giveExperiencePoints(var3);
             }
 
             this.count--;
@@ -241,25 +243,24 @@ public class ExperienceOrb extends Entity {
       }
    }
 
-   private int repairPlayerItems(Player var1, int var2) {
-      Entry var3 = EnchantmentHelper.getRandomItemWith(Enchantments.MENDING, var1, ItemStack::isDamaged);
-      if (var3 != null) {
-         ItemStack var4 = (ItemStack)var3.getValue();
-         int var5 = Math.min(this.xpToDurability(var2), var4.getDamageValue());
-         var4.setDamageValue(var4.getDamageValue() - var5);
-         int var6 = var2 - this.durabilityToXp(var5);
-         return var6 > 0 ? this.repairPlayerItems(var1, var6) : 0;
+   private int repairPlayerItems(ServerPlayer var1, int var2) {
+      Optional var3 = EnchantmentHelper.getRandomItemWith(EnchantmentEffectComponents.REPAIR_WITH_XP, var1, ItemStack::isDamaged);
+      if (var3.isPresent()) {
+         ItemStack var4 = ((EnchantedItemInUse)var3.get()).itemStack();
+         int var5 = EnchantmentHelper.modifyDurabilityToRepairFromXp(var1.serverLevel(), var4, var2);
+         int var6 = Math.min(var5, var4.getDamageValue());
+         var4.setDamageValue(var4.getDamageValue() - var6);
+         if (var6 > 0) {
+            int var7 = var2 - var6 * var2 / var5;
+            if (var7 > 0) {
+               return this.repairPlayerItems(var1, var7);
+            }
+         }
+
+         return 0;
       } else {
          return var2;
       }
-   }
-
-   private int durabilityToXp(int var1) {
-      return var1 / 2;
-   }
-
-   private int xpToDurability(int var1) {
-      return var1 * 2;
    }
 
    public int getValue() {

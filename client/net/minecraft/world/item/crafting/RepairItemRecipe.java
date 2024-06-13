@@ -2,13 +2,11 @@ package net.minecraft.world.item.crafting;
 
 import com.mojang.datafixers.util.Pair;
 import javax.annotation.Nullable;
-import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.world.inventory.CraftingContainer;
+import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.Level;
@@ -19,11 +17,11 @@ public class RepairItemRecipe extends CustomRecipe {
    }
 
    @Nullable
-   private Pair<ItemStack, ItemStack> getItemsToCombine(CraftingContainer var1) {
+   private Pair<ItemStack, ItemStack> getItemsToCombine(CraftingInput var1) {
       ItemStack var2 = null;
       ItemStack var3 = null;
 
-      for (int var4 = 0; var4 < var1.getContainerSize(); var4++) {
+      for (int var4 = 0; var4 < var1.size(); var4++) {
          ItemStack var5 = var1.getItem(var4);
          if (!var5.isEmpty()) {
             if (var2 == null) {
@@ -51,11 +49,11 @@ public class RepairItemRecipe extends CustomRecipe {
          && var1.has(DataComponents.DAMAGE);
    }
 
-   public boolean matches(CraftingContainer var1, Level var2) {
+   public boolean matches(CraftingInput var1, Level var2) {
       return this.getItemsToCombine(var1) != null;
    }
 
-   public ItemStack assemble(CraftingContainer var1, HolderLookup.Provider var2) {
+   public ItemStack assemble(CraftingInput var1, HolderLookup.Provider var2) {
       Pair var3 = this.getItemsToCombine(var1);
       if (var3 == null) {
          return ItemStack.EMPTY;
@@ -72,7 +70,7 @@ public class RepairItemRecipe extends CustomRecipe {
          ItemEnchantments var11 = EnchantmentHelper.getEnchantmentsForCrafting(var4);
          ItemEnchantments var12 = EnchantmentHelper.getEnchantmentsForCrafting(var5);
          EnchantmentHelper.updateEnchantments(
-            var10, var3x -> var2.lookupOrThrow(Registries.ENCHANTMENT).listElements().map(Holder::value).filter(Enchantment::isCurse).forEach(var3xx -> {
+            var10, var3x -> var2.lookupOrThrow(Registries.ENCHANTMENT).listElements().filter(var0x -> var0x.is(EnchantmentTags.CURSE)).forEach(var3xx -> {
                   int var4x = Math.max(var11.getLevel(var3xx), var12.getLevel(var3xx));
                   if (var4x > 0) {
                      var3x.upgrade(var3xx, var4x);

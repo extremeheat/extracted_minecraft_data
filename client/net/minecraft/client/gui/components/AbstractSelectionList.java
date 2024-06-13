@@ -141,6 +141,7 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
    public void updateSizeAndPosition(int var1, int var2, int var3) {
       this.setSize(var1, var2);
       this.setPosition(0, var3);
+      this.clampScrollAmount();
    }
 
    protected int getMaxPosition() {
@@ -249,8 +250,16 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
       return this.scrollAmount;
    }
 
-   public void setScrollAmount(double var1) {
+   public void setClampedScrollAmount(double var1) {
       this.scrollAmount = Mth.clamp(var1, 0.0, (double)this.getMaxScroll());
+   }
+
+   public void setScrollAmount(double var1) {
+      this.setClampedScrollAmount(var1);
+   }
+
+   public void clampScrollAmount() {
+      this.setClampedScrollAmount(this.getScrollAmount());
    }
 
    public int getMaxScroll() {
@@ -312,11 +321,7 @@ public abstract class AbstractSelectionList<E extends AbstractSelectionList.Entr
 
    @Override
    public boolean mouseReleased(double var1, double var3, int var5) {
-      if (this.getFocused() != null) {
-         this.getFocused().mouseReleased(var1, var3, var5);
-      }
-
-      return false;
+      return this.getFocused() != null ? this.getFocused().mouseReleased(var1, var3, var5) : false;
    }
 
    @Override

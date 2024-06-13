@@ -7,6 +7,7 @@ import net.minecraft.tags.ItemTags;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.DispenserBlock;
@@ -37,7 +38,7 @@ public class ShieldItem extends Item implements Equipable {
    }
 
    @Override
-   public int getUseDuration(ItemStack var1) {
+   public int getUseDuration(ItemStack var1, LivingEntity var2) {
       return 72000;
    }
 

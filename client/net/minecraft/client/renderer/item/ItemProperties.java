@@ -92,7 +92,7 @@ public class ItemProperties {
          if (var2 == null) {
             return 0.0F;
          } else {
-            return var2.getUseItem() != var0x ? 0.0F : (float)(var0x.getUseDuration() - var2.getUseItemRemainingTicks()) / 20.0F;
+            return var2.getUseItem() != var0x ? 0.0F : (float)(var0x.getUseDuration(var2) - var2.getUseItemRemainingTicks()) / 20.0F;
          }
       });
       register(
@@ -168,7 +168,7 @@ public class ItemProperties {
             } else {
                return CrossbowItem.isCharged(var0x)
                   ? 0.0F
-                  : (float)(var0x.getUseDuration() - var2.getUseItemRemainingTicks()) / (float)CrossbowItem.getChargeDuration(var0x);
+                  : (float)(var0x.getUseDuration(var2) - var2.getUseItemRemainingTicks()) / (float)CrossbowItem.getChargeDuration(var0x, var2);
             }
          }
       );

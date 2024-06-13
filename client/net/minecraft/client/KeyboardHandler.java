@@ -16,11 +16,12 @@ import net.minecraft.ReportedException;
 import net.minecraft.Util;
 import net.minecraft.client.gui.components.ChatComponent;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.AccessibilityOnboardingScreen;
 import net.minecraft.client.gui.screens.PauseScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.SimpleOptionsSubScreen;
-import net.minecraft.client.gui.screens.controls.KeyBindsScreen;
 import net.minecraft.client.gui.screens.debug.GameModeSwitcherScreen;
+import net.minecraft.client.gui.screens.options.ChatOptionsScreen;
+import net.minecraft.client.gui.screens.options.controls.KeyBindsScreen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.commands.arguments.blocks.BlockStateParser;
@@ -388,8 +389,12 @@ public class KeyboardHandler {
                   boolean var10 = this.minecraft.options.narrator().get() == NarratorStatus.OFF;
                   this.minecraft.options.narrator().set(NarratorStatus.byId(this.minecraft.options.narrator().get().getId() + 1));
                   this.minecraft.options.save();
-                  if (var8 instanceof SimpleOptionsSubScreen) {
-                     ((SimpleOptionsSubScreen)var8).updateNarratorButton();
+                  if (var8 instanceof AccessibilityOnboardingScreen var11) {
+                     var11.updateNarratorButton();
+                  }
+
+                  if (var8 instanceof ChatOptionsScreen var18) {
+                     var18.updateNarratorButton();
                   }
 
                   if (var10 && var8 != null) {
@@ -419,26 +424,26 @@ public class KeyboardHandler {
          InputConstants.Key var15;
          boolean var17;
          boolean var10000;
-         label187: {
+         label191: {
             var15 = InputConstants.getKey(var3, var4);
             var17 = this.minecraft.screen == null;
-            label147:
+            label151:
             if (!var17) {
                if (this.minecraft.screen instanceof PauseScreen var12 && !var12.showsPauseMenu()) {
-                  break label147;
+                  break label151;
                }
 
                var10000 = false;
-               break label187;
+               break label191;
             }
 
             var10000 = true;
          }
 
-         boolean var11 = var10000;
+         boolean var19 = var10000;
          if (var5 == 0) {
             KeyMapping.set(var15, false);
-            if (var11 && var3 == 292) {
+            if (var19 && var3 == 292) {
                if (this.handledDebugKey) {
                   this.handledDebugKey = false;
                } else {
@@ -446,19 +451,19 @@ public class KeyboardHandler {
                }
             }
          } else {
-            boolean var18 = false;
-            if (var11) {
+            boolean var20 = false;
+            if (var19) {
                if (var3 == 293 && this.minecraft.gameRenderer != null) {
                   this.minecraft.gameRenderer.togglePostEffect();
                }
 
                if (var3 == 256) {
                   this.minecraft.pauseGame(var7);
-                  var18 |= var7;
+                  var20 |= var7;
                }
 
-               var18 |= var7 && this.handleDebugKeys(var3);
-               this.handledDebugKey |= var18;
+               var20 |= var7 && this.handleDebugKeys(var3);
+               this.handledDebugKey |= var20;
                if (var3 == 290) {
                   this.minecraft.options.hideGui = !this.minecraft.options.hideGui;
                }
@@ -469,7 +474,7 @@ public class KeyboardHandler {
             }
 
             if (var17) {
-               if (var18) {
+               if (var20) {
                   KeyMapping.set(var15, false);
                } else {
                   KeyMapping.set(var15, true);

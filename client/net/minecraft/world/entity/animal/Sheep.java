@@ -2,6 +2,7 @@ package net.minecraft.world.entity.animal;
 
 import com.google.common.collect.Maps;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -42,13 +43,11 @@ import net.minecraft.world.entity.ai.goal.TemptGoal;
 import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.CraftingContainer;
-import net.minecraft.world.inventory.TransientCraftingContainer;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
@@ -345,7 +344,7 @@ public class Sheep extends Animal implements Shearable {
    private DyeColor getOffspringColor(Animal var1, Animal var2) {
       DyeColor var3 = ((Sheep)var1).getColor();
       DyeColor var4 = ((Sheep)var2).getColor();
-      CraftingContainer var5 = makeContainer(var3, var4);
+      CraftingInput var5 = makeCraftInput(var3, var4);
       return this.level()
          .getRecipeManager()
          .getRecipeFor(RecipeType.CRAFTING, var5, this.level())
@@ -357,20 +356,7 @@ public class Sheep extends Animal implements Shearable {
          .orElseGet(() -> this.level().random.nextBoolean() ? var3 : var4);
    }
 
-   private static CraftingContainer makeContainer(DyeColor var0, DyeColor var1) {
-      TransientCraftingContainer var2 = new TransientCraftingContainer(new AbstractContainerMenu(null, -1) {
-         @Override
-         public ItemStack quickMoveStack(Player var1, int var2) {
-            return ItemStack.EMPTY;
-         }
-
-         @Override
-         public boolean stillValid(Player var1) {
-            return false;
-         }
-      }, 2, 1);
-      var2.setItem(0, new ItemStack(DyeItem.byColor(var0)));
-      var2.setItem(1, new ItemStack(DyeItem.byColor(var1)));
-      return var2;
+   private static CraftingInput makeCraftInput(DyeColor var0, DyeColor var1) {
+      return CraftingInput.of(2, 1, List.of(new ItemStack(DyeItem.byColor(var0)), new ItemStack(DyeItem.byColor(var1))));
    }
 }

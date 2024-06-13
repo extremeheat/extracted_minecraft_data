@@ -74,7 +74,7 @@ public abstract class AbstractHurtingProjectile extends Projectile {
       if (this.level().isClientSide || (var1 == null || !var1.isRemoved()) && this.level().hasChunkAt(this.blockPosition())) {
          super.tick();
          if (this.shouldBurn()) {
-            this.igniteForSeconds(1);
+            this.igniteForSeconds(1.0F);
          }
 
          HitResult var2 = ProjectileUtil.getHitResultOnMoveVector(this, this::canHitEntity, this.getClipType());

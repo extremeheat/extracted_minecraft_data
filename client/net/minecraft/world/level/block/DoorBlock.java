@@ -103,11 +103,7 @@ public class DoorBlock extends Block {
 
    @Override
    protected void onExplosionHit(BlockState var1, Level var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
-      if (var4.getBlockInteraction() == Explosion.BlockInteraction.TRIGGER_BLOCK
-         && var1.getValue(HALF) == DoubleBlockHalf.LOWER
-         && !var2.isClientSide()
-         && this.type.canOpenByWindCharge()
-         && !var1.getValue(POWERED)) {
+      if (var4.canTriggerBlocks() && var1.getValue(HALF) == DoubleBlockHalf.LOWER && this.type.canOpenByWindCharge() && !var1.getValue(POWERED)) {
          this.setOpen(null, var2, var1, var3, !this.isOpen(var1));
       }
 

@@ -73,9 +73,11 @@ public abstract class ContainerObjectSelectionList<E extends ContainerObjectSele
 
    @Override
    public void setFocused(@Nullable GuiEventListener var1) {
-      super.setFocused(var1);
-      if (var1 == null) {
-         this.setSelected(null);
+      if (this.getFocused() != var1) {
+         super.setFocused(var1);
+         if (var1 == null) {
+            this.setSelected(null);
+         }
       }
    }
 

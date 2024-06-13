@@ -2,6 +2,7 @@ package net.minecraft.data.loot.packs;
 
 import java.util.function.BiConsumer;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.loot.LootTableSubProvider;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Items;
@@ -17,24 +18,30 @@ import net.minecraft.world.level.storage.loot.functions.SetPotionFunction;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 
-public class VanillaPiglinBarterLoot implements LootTableSubProvider {
-   public VanillaPiglinBarterLoot() {
+public record VanillaPiglinBarterLoot(HolderLookup.Provider registries) implements LootTableSubProvider {
+   public VanillaPiglinBarterLoot(HolderLookup.Provider registries) {
       super();
+      this.registries = registries;
    }
 
    @Override
-   public void generate(HolderLookup.Provider var1, BiConsumer<ResourceKey<LootTable>, LootTable.Builder> var2) {
-      var2.accept(
+   public void generate(BiConsumer<ResourceKey<LootTable>, LootTable.Builder> var1) {
+      HolderLookup.RegistryLookup var2 = this.registries.lookupOrThrow(Registries.ENCHANTMENT);
+      var1.accept(
          BuiltInLootTables.PIGLIN_BARTERING,
          LootTable.lootTable()
             .withPool(
                LootPool.lootPool()
                   .setRolls(ConstantValue.exactly(1.0F))
-                  .add(LootItem.lootTableItem(Items.BOOK).setWeight(5).apply(new EnchantRandomlyFunction.Builder().withEnchantment(Enchantments.SOUL_SPEED)))
+                  .add(
+                     LootItem.lootTableItem(Items.BOOK)
+                        .setWeight(5)
+                        .apply(new EnchantRandomlyFunction.Builder().withEnchantment(var2.getOrThrow(Enchantments.SOUL_SPEED)))
+                  )
                   .add(
                      LootItem.lootTableItem(Items.IRON_BOOTS)
                         .setWeight(8)
-                        .apply(new EnchantRandomlyFunction.Builder().withEnchantment(Enchantments.SOUL_SPEED))
+                        .apply(new EnchantRandomlyFunction.Builder().withEnchantment(var2.getOrThrow(Enchantments.SOUL_SPEED)))
                   )
                   .add(LootItem.lootTableItem(Items.POTION).setWeight(8).apply(SetPotionFunction.setPotion(Potions.FIRE_RESISTANCE)))
                   .add(LootItem.lootTableItem(Items.SPLASH_POTION).setWeight(8).apply(SetPotionFunction.setPotion(Potions.FIRE_RESISTANCE)))

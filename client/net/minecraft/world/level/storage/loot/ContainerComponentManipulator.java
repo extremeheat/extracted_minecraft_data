@@ -27,7 +27,15 @@ public interface ContainerComponentManipulator<T> {
    default void modifyItems(ItemStack var1, UnaryOperator<ItemStack> var2) {
       Object var3 = var1.get(this.type());
       if (var3 != null) {
-         UnaryOperator var4 = var1x -> var1x.isEmpty() ? var1x : var2.apply(var1x);
+         UnaryOperator var4 = var1x -> {
+            if (var1x.isEmpty()) {
+               return var1x;
+            } else {
+               ItemStack var2x = var2.apply(var1x);
+               var2x.limitSize(var2x.getMaxStackSize());
+               return var2x;
+            }
+         };
          this.setContents(var1, this.getContents((T)var3).map(var4));
       }
    }

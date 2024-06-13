@@ -118,7 +118,7 @@ public class PotionItem extends Item {
    }
 
    @Override
-   public int getUseDuration(ItemStack var1) {
+   public int getUseDuration(ItemStack var1, LivingEntity var2) {
       return 32;
    }
 

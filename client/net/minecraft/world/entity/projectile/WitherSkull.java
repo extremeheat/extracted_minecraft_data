@@ -5,6 +5,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
@@ -13,6 +14,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Explosion;
 import net.minecraft.world.level.Level;
@@ -50,32 +52,33 @@ public class WitherSkull extends AbstractHurtingProjectile {
    @Override
    protected void onHitEntity(EntityHitResult var1) {
       super.onHitEntity(var1);
-      if (!this.level().isClientSide) {
-         Entity var2 = var1.getEntity();
-         boolean var4;
-         if (this.getOwner() instanceof LivingEntity var5) {
-            var4 = var2.hurt(this.damageSources().witherSkull(this, var5), 8.0F);
-            if (var4) {
-               if (var2.isAlive()) {
-                  this.doEnchantDamageEffects(var5, var2);
+      if (this.level() instanceof ServerLevel var2) {
+         Entity var8 = var1.getEntity();
+         boolean var5;
+         if (this.getOwner() instanceof LivingEntity var6) {
+            DamageSource var7 = this.damageSources().witherSkull(this, var6);
+            var5 = var8.hurt(var7, 8.0F);
+            if (var5) {
+               if (var8.isAlive()) {
+                  EnchantmentHelper.doPostAttackEffects(var2, var8, var7);
                } else {
-                  var5.heal(5.0F);
+                  var6.heal(5.0F);
                }
             }
          } else {
-            var4 = var2.hurt(this.damageSources().magic(), 5.0F);
+            var5 = var8.hurt(this.damageSources().magic(), 5.0F);
          }
 
-         if (var4 && var2 instanceof LivingEntity var7) {
-            byte var6 = 0;
+         if (var5 && var8 instanceof LivingEntity var9) {
+            byte var10 = 0;
             if (this.level().getDifficulty() == Difficulty.NORMAL) {
-               var6 = 10;
+               var10 = 10;
             } else if (this.level().getDifficulty() == Difficulty.HARD) {
-               var6 = 40;
+               var10 = 40;
             }
 
-            if (var6 > 0) {
-               var7.addEffect(new MobEffectInstance(MobEffects.WITHER, 20 * var6, 1), this.getEffectSource());
+            if (var10 > 0) {
+               var9.addEffect(new MobEffectInstance(MobEffects.WITHER, 20 * var10, 1), this.getEffectSource());
             }
          }
       }

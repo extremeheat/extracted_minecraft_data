@@ -59,7 +59,6 @@ import net.minecraft.client.resources.sounds.GuardianAttackSoundInstance;
 import net.minecraft.client.resources.sounds.MinecartSoundInstance;
 import net.minecraft.client.resources.sounds.SnifferSoundInstance;
 import net.minecraft.client.resources.sounds.TickableSoundInstance;
-import net.minecraft.client.searchtree.SearchRegistry;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.ArgumentSignatures;
@@ -274,6 +273,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.HorseInventoryMenu;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.MerchantMenu;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.alchemy.PotionBrewing;
@@ -344,6 +344,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
    private boolean seenInsecureChatWarning = false;
    private volatile boolean closed;
    private final Scoreboard scoreboard = new Scoreboard();
+   private final SessionSearchTrees searchTrees = new SessionSearchTrees();
 
    public ClientPacketListener(Minecraft var1, Connection var2, CommonListenerCookie var3) {
       super(var1, var2, var3);
@@ -1460,7 +1461,7 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       this.recipeManager.replaceRecipes(var1.getRecipes());
       ClientRecipeBook var2 = this.minecraft.player.getRecipeBook();
       var2.setupCollections(this.recipeManager.getOrderedRecipes(), this.minecraft.level.registryAccess());
-      this.minecraft.populateSearchTree(SearchRegistry.RECIPE_COLLECTIONS, var2.getCollections());
+      this.searchTrees.updateRecipes(var2, this.registryAccess);
    }
 
    @Override
@@ -1559,6 +1560,8 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
       TagCollector var2 = new TagCollector();
       var1.getTags().forEach(var2::append);
       var2.updateTags(this.registryAccess, this.connection.isMemoryConnection());
+      List var3 = List.copyOf(CreativeModeTabs.searchTab().getDisplayItems());
+      this.searchTrees.updateCreativeTags(var3);
    }
 
    @Override
@@ -2389,5 +2392,13 @@ public class ClientPacketListener extends ClientCommonPacketListenerImpl impleme
 
    public PotionBrewing potionBrewing() {
       return this.potionBrewing;
+   }
+
+   public void updateSearchTrees() {
+      this.searchTrees.rebuildAfterLanguageChange();
+   }
+
+   public SessionSearchTrees searchTrees() {
+      return this.searchTrees;
    }
 }

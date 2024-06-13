@@ -72,6 +72,7 @@ public class WindChargeItem extends Item implements ProjectileItem {
          .positionFunction((var0, var1) -> DispenserBlock.getDispensePosition(var0, 1.0, Vec3.ZERO))
          .uncertainty(6.6666665F)
          .power(1.0F)
+         .overrideDispenseEvent(1051)
          .build();
    }
 }

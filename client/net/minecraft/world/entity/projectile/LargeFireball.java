@@ -1,9 +1,12 @@
 package net.minecraft.world.entity.projectile;
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
@@ -34,13 +37,12 @@ public class LargeFireball extends Fireball {
    @Override
    protected void onHitEntity(EntityHitResult var1) {
       super.onHitEntity(var1);
-      if (!this.level().isClientSide) {
-         Entity var2 = var1.getEntity();
-         Entity var3 = this.getOwner();
-         var2.hurt(this.damageSources().fireball(this, var3), 6.0F);
-         if (var3 instanceof LivingEntity) {
-            this.doEnchantDamageEffects((LivingEntity)var3, var2);
-         }
+      if (this.level() instanceof ServerLevel var2) {
+         Entity var6 = var1.getEntity();
+         Entity var4 = this.getOwner();
+         DamageSource var5 = this.damageSources().fireball(this, var4);
+         var6.hurt(var5, 6.0F);
+         EnchantmentHelper.doPostAttackEffects(var2, var6, var5);
       }
    }
 

@@ -12,13 +12,13 @@ import com.mojang.realmsclient.dto.RealmsServer;
 import com.mojang.realmsclient.exception.RealmsServiceException;
 import com.mojang.realmsclient.gui.RealmsDataFetcher;
 import com.mojang.realmsclient.gui.RealmsServerList;
+import com.mojang.realmsclient.gui.screens.AddRealmPopupScreen;
 import com.mojang.realmsclient.gui.screens.RealmsConfigureWorldScreen;
 import com.mojang.realmsclient.gui.screens.RealmsCreateRealmScreen;
 import com.mojang.realmsclient.gui.screens.RealmsGenericErrorScreen;
-import com.mojang.realmsclient.gui.screens.RealmsLongConfirmationScreen;
 import com.mojang.realmsclient.gui.screens.RealmsLongRunningMcoTaskScreen;
 import com.mojang.realmsclient.gui.screens.RealmsPendingInvitesScreen;
-import com.mojang.realmsclient.gui.screens.RealmsPopupScreen;
+import com.mojang.realmsclient.gui.screens.RealmsPopups;
 import com.mojang.realmsclient.gui.task.DataFetcher;
 import com.mojang.realmsclient.util.RealmsPersistence;
 import com.mojang.realmsclient.util.RealmsUtil;
@@ -107,6 +107,8 @@ public class RealmsMainScreen extends RealmsScreen {
    private static final Component NO_REALMS_TEXT = Component.translatable("mco.selectServer.noRealms");
    private static final Component NO_PENDING_INVITES = Component.translatable("mco.invites.nopending");
    private static final Component PENDING_INVITES = Component.translatable("mco.invites.pending");
+   private static final Component INCOMPATIBLE_POPUP_TITLE = Component.translatable("mco.compatibility.incompatible.popup.title");
+   private static final Component INCOMPATIBLE_RELEASE_TYPE_POPUP_MESSAGE = Component.translatable("mco.compatibility.incompatible.releaseType.popup.message");
    private static final int BUTTON_WIDTH = 100;
    private static final int BUTTON_COLUMNS = 3;
    private static final int BUTTON_SPACING = 4;
@@ -541,9 +543,7 @@ public class RealmsMainScreen extends RealmsScreen {
    private void leaveClicked(@Nullable RealmsServer var1) {
       if (var1 != null && !this.minecraft.isLocalPlayer(var1.ownerUUID)) {
          MutableComponent var2 = Component.translatable("mco.configure.world.leave.question.line1");
-         MutableComponent var3 = Component.translatable("mco.configure.world.leave.question.line2");
-         this.minecraft
-            .setScreen(new RealmsLongConfirmationScreen(var2x -> this.leaveServer(var2x, var1), RealmsLongConfirmationScreen.Type.INFO, var2, var3, true));
+         this.minecraft.setScreen(RealmsPopups.infoPopupScreen(this, var2, var2x -> this.leaveServer(var1)));
       }
    }
 
@@ -552,25 +552,22 @@ public class RealmsMainScreen extends RealmsScreen {
       return this.realmSelectionList.getSelected() instanceof RealmsMainScreen.ServerEntry var1 ? var1.getServer() : null;
    }
 
-   private void leaveServer(boolean var1, final RealmsServer var2) {
-      if (var1) {
-         (new Thread("Realms-leave-server") {
-               @Override
-               public void run() {
-                  try {
-                     RealmsClient var1 = RealmsClient.create();
-                     var1.uninviteMyselfFrom(var2.id);
-                     RealmsMainScreen.this.minecraft.execute(RealmsMainScreen::refreshServerList);
-                  } catch (RealmsServiceException var2x) {
-                     RealmsMainScreen.LOGGER.error("Couldn't configure world", var2x);
-                     RealmsMainScreen.this.minecraft
-                        .execute(() -> RealmsMainScreen.this.minecraft.setScreen(new RealmsGenericErrorScreen(var2x, RealmsMainScreen.this)));
-                  }
+   private void leaveServer(final RealmsServer var1) {
+      (new Thread("Realms-leave-server") {
+            @Override
+            public void run() {
+               try {
+                  RealmsClient var1x = RealmsClient.create();
+                  var1x.uninviteMyselfFrom(var1.id);
+                  RealmsMainScreen.this.minecraft.execute(RealmsMainScreen::refreshServerList);
+               } catch (RealmsServiceException var2) {
+                  RealmsMainScreen.LOGGER.error("Couldn't configure world", var2);
+                  RealmsMainScreen.this.minecraft
+                     .execute(() -> RealmsMainScreen.this.minecraft.setScreen(new RealmsGenericErrorScreen(var2, RealmsMainScreen.this)));
                }
-            })
-            .start();
-      }
-
+            }
+         })
+         .start();
       this.minecraft.setScreen(this);
    }
 
@@ -606,7 +603,7 @@ public class RealmsMainScreen extends RealmsScreen {
       }
 
       if (this.trialsAvailable && this.addRealmButton.active) {
-         RealmsPopupScreen.renderDiamond(var1, this.addRealmButton);
+         AddRealmPopupScreen.renderDiamond(var1, this.addRealmButton);
       }
 
       switch (RealmsClient.ENVIRONMENT) {
@@ -619,7 +616,7 @@ public class RealmsMainScreen extends RealmsScreen {
    }
 
    private void openTrialAvailablePopup() {
-      this.minecraft.setScreen(new RealmsPopupScreen(this, this.trialsAvailable));
+      this.minecraft.setScreen(new AddRealmPopupScreen(this, this.trialsAvailable));
    }
 
    public static void play(@Nullable RealmsServer var0, Screen var1) {
@@ -628,7 +625,7 @@ public class RealmsMainScreen extends RealmsScreen {
 
    public static void play(@Nullable RealmsServer var0, Screen var1, boolean var2) {
       if (var0 != null) {
-         if (!isSnapshot() || var2) {
+         if (!isSnapshot() || var2 || var0.isMinigameActive()) {
             Minecraft.getInstance().setScreen(new RealmsLongRunningMcoTaskScreen(var1, new GetServerDetailsTask(var1, var0)));
             return;
          }
@@ -671,6 +668,30 @@ public class RealmsMainScreen extends RealmsScreen {
                   ),
                   Component.translatable("mco.compatibility.upgrade")
                );
+               break;
+            case INCOMPATIBLE:
+               Minecraft.getInstance()
+                  .setScreen(
+                     new PopupScreen.Builder(var1, INCOMPATIBLE_POPUP_TITLE)
+                        .setMessage(
+                           Component.translatable(
+                              "mco.compatibility.incompatible.series.popup.message",
+                              Component.literal(var0.activeVersion).withColor(-171),
+                              Component.literal(SharedConstants.getCurrentVersion().getName()).withColor(-171)
+                           )
+                        )
+                        .addButton(CommonComponents.GUI_BACK, PopupScreen::onClose)
+                        .build()
+                  );
+               break;
+            case RELEASE_TYPE_INCOMPATIBLE:
+               Minecraft.getInstance()
+                  .setScreen(
+                     new PopupScreen.Builder(var1, INCOMPATIBLE_POPUP_TITLE)
+                        .setMessage(INCOMPATIBLE_RELEASE_TYPE_POPUP_MESSAGE)
+                        .addButton(CommonComponents.GUI_BACK, PopupScreen::onClose)
+                        .build()
+                  );
          }
       }
    }
@@ -1180,7 +1201,7 @@ public class RealmsMainScreen extends RealmsScreen {
          Component var7 = RealmsMainScreen.getVersionComponent(this.serverData.activeVersion, this.serverData.isCompatible());
          int var8 = this.versionTextX(var3, var4, var7);
          this.renderClampedName(var1, this.serverData.getName(), var5, var6, var8, -1);
-         if (var7 != CommonComponents.EMPTY) {
+         if (var7 != CommonComponents.EMPTY && !this.serverData.isMinigameActive()) {
             var1.drawString(RealmsMainScreen.this.font, var7, var8, var6, -8355712, false);
          }
       }
@@ -1190,7 +1211,7 @@ public class RealmsMainScreen extends RealmsScreen {
          int var5 = this.firstLineY(var2);
          int var6 = this.secondLineY(var5);
          String var7 = this.serverData.getMinigameName();
-         if (this.serverData.worldType == RealmsServer.WorldType.MINIGAME && var7 != null) {
+         if (this.serverData.isMinigameActive() && var7 != null) {
             MutableComponent var8 = Component.literal(var7).withStyle(ChatFormatting.GRAY);
             var1.drawString(RealmsMainScreen.this.font, Component.translatable("mco.selectServer.minigameName", var8).withColor(-171), var4, var6, -1, false);
          } else {

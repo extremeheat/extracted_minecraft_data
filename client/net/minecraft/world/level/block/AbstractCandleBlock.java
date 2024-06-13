@@ -108,7 +108,7 @@ public abstract class AbstractCandleBlock extends Block {
 
    @Override
    protected void onExplosionHit(BlockState var1, Level var2, BlockPos var3, Explosion var4, BiConsumer<ItemStack, BlockPos> var5) {
-      if (var4.getBlockInteraction() == Explosion.BlockInteraction.TRIGGER_BLOCK && !var2.isClientSide() && var1.getValue(LIT)) {
+      if (var4.canTriggerBlocks() && var1.getValue(LIT)) {
          extinguish(null, var1, var2, var3);
       }
 

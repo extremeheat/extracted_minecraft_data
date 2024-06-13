@@ -6,7 +6,6 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.util.StringUtil;
 
@@ -29,21 +28,23 @@ public class RealmsSettingsScreen extends RealmsScreen {
    public void init() {
       int var1 = this.width / 2 - 106;
       String var2 = this.serverData.state == RealmsServer.State.OPEN ? "mco.configure.world.buttons.close" : "mco.configure.world.buttons.open";
-      Button var3 = Button.builder(Component.translatable(var2), var1x -> {
-         if (this.serverData.state == RealmsServer.State.OPEN) {
-            MutableComponent var2x = Component.translatable("mco.configure.world.close.question.line1");
-            MutableComponent var3x = Component.translatable("mco.configure.world.close.question.line2");
-            this.minecraft.setScreen(new RealmsLongConfirmationScreen(var1xx -> {
-               if (var1xx) {
-                  this.configureWorldScreen.closeTheWorld(this);
+      Button var3 = Button.builder(
+            Component.translatable(var2),
+            var1x -> {
+               if (this.serverData.state == RealmsServer.State.OPEN) {
+                  this.minecraft
+                     .setScreen(
+                        RealmsPopups.infoPopupScreen(
+                           this, Component.translatable("mco.configure.world.close.question.line1"), var1xx -> this.configureWorldScreen.closeTheWorld()
+                        )
+                     );
                } else {
-                  this.minecraft.setScreen(this);
+                  this.configureWorldScreen.openTheWorld(false);
                }
-            }, RealmsLongConfirmationScreen.Type.INFO, var2x, var3x, true));
-         } else {
-            this.configureWorldScreen.openTheWorld(false, this);
-         }
-      }).bounds(this.width / 2 - 53, row(0), 106, 20).build();
+            }
+         )
+         .bounds(this.width / 2 - 53, row(0), 106, 20)
+         .build();
       this.addRenderableWidget(var3);
       this.nameEdit = new EditBox(this.minecraft.font, var1, row(4), 212, 20, Component.translatable("mco.configure.world.name"));
       this.nameEdit.setMaxLength(32);

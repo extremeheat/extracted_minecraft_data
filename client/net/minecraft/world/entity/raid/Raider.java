@@ -15,11 +15,8 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.util.Mth;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -32,14 +29,10 @@ import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.entity.ai.util.DefaultRandomPos;
 import net.minecraft.world.entity.ai.village.poi.PoiManager;
 import net.minecraft.world.entity.ai.village.poi.PoiTypes;
-import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.AbstractIllager;
 import net.minecraft.world.entity.monster.PatrollingMonster;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.phys.Vec3;
@@ -128,41 +121,6 @@ public abstract class Raider extends PatrollingMonster {
             }
 
             var3.removeFromRaid(this, false);
-         }
-
-         if (!this.level().enabledFeatures().contains(FeatureFlags.UPDATE_1_21)
-            && this.isPatrolLeader()
-            && var3 == null
-            && ((ServerLevel)this.level()).getRaidAt(this.blockPosition()) == null) {
-            ItemStack var4 = this.getItemBySlot(EquipmentSlot.HEAD);
-            Player var5 = null;
-            if (var2 instanceof Player) {
-               var5 = (Player)var2;
-            } else if (var2 instanceof Wolf var7) {
-               LivingEntity var8 = var7.getOwner();
-               if (var7.isTame() && var8 instanceof Player) {
-                  var5 = (Player)var8;
-               }
-            }
-
-            if (!var4.isEmpty()
-               && ItemStack.matches(var4, Raid.getLeaderBannerInstance(this.registryAccess().lookupOrThrow(Registries.BANNER_PATTERN)))
-               && var5 != null) {
-               MobEffectInstance var10 = var5.getEffect(MobEffects.BAD_OMEN);
-               int var11 = 1;
-               if (var10 != null) {
-                  var11 += var10.getAmplifier();
-                  var5.removeEffectNoUpdate(MobEffects.BAD_OMEN);
-               } else {
-                  var11--;
-               }
-
-               var11 = Mth.clamp(var11, 0, 4);
-               MobEffectInstance var9 = new MobEffectInstance(MobEffects.BAD_OMEN, 120000, var11, false, false, true);
-               if (!this.level().getGameRules().getBoolean(GameRules.RULE_DISABLE_RAIDS)) {
-                  var5.addEffect(var9);
-               }
-            }
          }
       }
 

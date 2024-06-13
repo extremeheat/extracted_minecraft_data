@@ -34,8 +34,8 @@ public class LootContextParamSets {
       var0 -> var0.required(LootContextParams.THIS_ENTITY)
             .required(LootContextParams.ORIGIN)
             .required(LootContextParams.DAMAGE_SOURCE)
-            .optional(LootContextParams.KILLER_ENTITY)
-            .optional(LootContextParams.DIRECT_KILLER_ENTITY)
+            .optional(LootContextParams.ATTACKING_ENTITY)
+            .optional(LootContextParams.DIRECT_ATTACKING_ENTITY)
             .optional(LootContextParams.LAST_DAMAGE_PLAYER)
    );
    public static final LootContextParamSet EQUIPMENT = register(
@@ -68,8 +68,8 @@ public class LootContextParamSets {
       var0 -> var0.required(LootContextParams.THIS_ENTITY)
             .required(LootContextParams.LAST_DAMAGE_PLAYER)
             .required(LootContextParams.DAMAGE_SOURCE)
-            .required(LootContextParams.KILLER_ENTITY)
-            .required(LootContextParams.DIRECT_KILLER_ENTITY)
+            .required(LootContextParams.ATTACKING_ENTITY)
+            .required(LootContextParams.DIRECT_ATTACKING_ENTITY)
             .required(LootContextParams.ORIGIN)
             .required(LootContextParams.BLOCK_STATE)
             .required(LootContextParams.BLOCK_ENTITY)
@@ -87,6 +87,28 @@ public class LootContextParamSets {
    );
    public static final LootContextParamSet SHEARING = register(
       "shearing", var0 -> var0.required(LootContextParams.ORIGIN).optional(LootContextParams.THIS_ENTITY)
+   );
+   public static final LootContextParamSet ENCHANTED_DAMAGE = register(
+      "enchanted_damage",
+      var0 -> var0.required(LootContextParams.THIS_ENTITY)
+            .required(LootContextParams.ENCHANTMENT_LEVEL)
+            .required(LootContextParams.ORIGIN)
+            .required(LootContextParams.DAMAGE_SOURCE)
+            .optional(LootContextParams.DIRECT_ATTACKING_ENTITY)
+            .optional(LootContextParams.ATTACKING_ENTITY)
+   );
+   public static final LootContextParamSet ENCHANTED_ITEM = register(
+      "enchanted_item", var0 -> var0.required(LootContextParams.TOOL).required(LootContextParams.ENCHANTMENT_LEVEL)
+   );
+   public static final LootContextParamSet ENCHANTED_LOCATION = register(
+      "enchanted_location",
+      var0 -> var0.required(LootContextParams.THIS_ENTITY)
+            .required(LootContextParams.ENCHANTMENT_LEVEL)
+            .required(LootContextParams.ORIGIN)
+            .required(LootContextParams.ENCHANTMENT_ACTIVE)
+   );
+   public static final LootContextParamSet ENCHANTED_ENTITY = register(
+      "enchanted_entity", var0 -> var0.required(LootContextParams.THIS_ENTITY).required(LootContextParams.ENCHANTMENT_LEVEL).required(LootContextParams.ORIGIN)
    );
 
    public LootContextParamSets() {

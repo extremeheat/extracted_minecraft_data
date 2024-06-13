@@ -6,11 +6,14 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
 import java.util.ArrayList;
+import java.util.Optional;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.model.BookModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.texture.OverlayTexture;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
@@ -167,38 +170,43 @@ public class EnchantmentScreen extends AbstractContainerScreen<EnchantmentMenu> 
 
       for (int var7 = 0; var7 < 3; var7++) {
          int var8 = this.menu.costs[var7];
-         Enchantment var9 = Enchantment.byId(this.menu.enchantClue[var7]);
-         int var10 = this.menu.levelClue[var7];
-         int var11 = var7 + 1;
-         if (this.isHovering(60, 14 + 19 * var7, 108, 17, (double)var2, (double)var3) && var8 > 0 && var10 >= 0 && var9 != null) {
-            ArrayList var12 = Lists.newArrayList();
-            var12.add(Component.translatable("container.enchant.clue", var9.getFullname(var10)).withStyle(ChatFormatting.WHITE));
-            if (!var5) {
-               var12.add(CommonComponents.EMPTY);
-               if (this.minecraft.player.experienceLevel < var8) {
-                  var12.add(Component.translatable("container.enchant.level.requirement", this.menu.costs[var7]).withStyle(ChatFormatting.RED));
-               } else {
-                  MutableComponent var13;
-                  if (var11 == 1) {
-                     var13 = Component.translatable("container.enchant.lapis.one");
+         Optional var9 = this.minecraft.level.registryAccess().registryOrThrow(Registries.ENCHANTMENT).getHolder(this.menu.enchantClue[var7]);
+         if (!var9.isEmpty()) {
+            int var10 = this.menu.levelClue[var7];
+            int var11 = var7 + 1;
+            if (this.isHovering(60, 14 + 19 * var7, 108, 17, (double)var2, (double)var3) && var8 > 0 && var10 >= 0 && var9 != null) {
+               ArrayList var12 = Lists.newArrayList();
+               var12.add(
+                  Component.translatable("container.enchant.clue", Enchantment.getFullname((Holder<Enchantment>)var9.get(), var10))
+                     .withStyle(ChatFormatting.WHITE)
+               );
+               if (!var5) {
+                  var12.add(CommonComponents.EMPTY);
+                  if (this.minecraft.player.experienceLevel < var8) {
+                     var12.add(Component.translatable("container.enchant.level.requirement", this.menu.costs[var7]).withStyle(ChatFormatting.RED));
                   } else {
-                     var13 = Component.translatable("container.enchant.lapis.many", var11);
-                  }
+                     MutableComponent var13;
+                     if (var11 == 1) {
+                        var13 = Component.translatable("container.enchant.lapis.one");
+                     } else {
+                        var13 = Component.translatable("container.enchant.lapis.many", var11);
+                     }
 
-                  var12.add(var13.withStyle(var6 >= var11 ? ChatFormatting.GRAY : ChatFormatting.RED));
-                  MutableComponent var14;
-                  if (var11 == 1) {
-                     var14 = Component.translatable("container.enchant.level.one");
-                  } else {
-                     var14 = Component.translatable("container.enchant.level.many", var11);
-                  }
+                     var12.add(var13.withStyle(var6 >= var11 ? ChatFormatting.GRAY : ChatFormatting.RED));
+                     MutableComponent var14;
+                     if (var11 == 1) {
+                        var14 = Component.translatable("container.enchant.level.one");
+                     } else {
+                        var14 = Component.translatable("container.enchant.level.many", var11);
+                     }
 
-                  var12.add(var14.withStyle(ChatFormatting.GRAY));
+                     var12.add(var14.withStyle(ChatFormatting.GRAY));
+                  }
                }
-            }
 
-            var1.renderComponentTooltip(this.font, var12, var2, var3);
-            break;
+               var1.renderComponentTooltip(this.font, var12, var2, var3);
+               break;
+            }
          }
       }
    }

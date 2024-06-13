@@ -16,6 +16,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
+import net.minecraft.tags.EnchantmentTags;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
@@ -191,7 +192,7 @@ public class DecoratedPotBlock extends BaseEntityBlock implements SimpleWaterlog
    public BlockState playerWillDestroy(Level var1, BlockPos var2, BlockState var3, Player var4) {
       ItemStack var5 = var4.getMainHandItem();
       BlockState var6 = var3;
-      if (var5.is(ItemTags.BREAKS_DECORATED_POTS) && !EnchantmentHelper.hasSilkTouch(var5)) {
+      if (var5.is(ItemTags.BREAKS_DECORATED_POTS) && !EnchantmentHelper.hasTag(var5, EnchantmentTags.PREVENTS_DECORATED_POT_SHATTERING)) {
          var6 = var3.setValue(CRACKED, Boolean.valueOf(true));
          var1.setBlock(var2, var6, 4);
       }

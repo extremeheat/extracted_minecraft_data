@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Optional;
 import javax.annotation.Nullable;
 import net.minecraft.core.NonNullList;
-import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
@@ -19,7 +18,7 @@ public class RecipeCache {
       this.entries = new RecipeCache.Entry[var1];
    }
 
-   public Optional<RecipeHolder<CraftingRecipe>> get(Level var1, CraftingContainer var2) {
+   public Optional<RecipeHolder<CraftingRecipe>> get(Level var1, CraftingInput var2) {
       if (var2.isEmpty()) {
          return Optional.empty();
       } else {
@@ -27,7 +26,7 @@ public class RecipeCache {
 
          for (int var3 = 0; var3 < this.entries.length; var3++) {
             RecipeCache.Entry var4 = this.entries[var3];
-            if (var4 != null && var4.matches(var2.getItems())) {
+            if (var4 != null && var4.matches(var2.items())) {
                this.moveEntryToFront(var3);
                return Optional.ofNullable(var4.value());
             }
@@ -45,9 +44,9 @@ public class RecipeCache {
       }
    }
 
-   private Optional<RecipeHolder<CraftingRecipe>> compute(CraftingContainer var1, Level var2) {
+   private Optional<RecipeHolder<CraftingRecipe>> compute(CraftingInput var1, Level var2) {
       Optional var3 = var2.getRecipeManager().getRecipeFor(RecipeType.CRAFTING, var1, var2);
-      this.insert(var1.getItems(), (RecipeHolder<CraftingRecipe>)var3.orElse(null));
+      this.insert(var1.items(), (RecipeHolder<CraftingRecipe>)var3.orElse(null));
       return var3;
    }
 

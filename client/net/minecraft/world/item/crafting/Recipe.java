@@ -8,27 +8,26 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.world.Container;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 
-public interface Recipe<C extends Container> {
+public interface Recipe<T extends RecipeInput> {
    Codec<Recipe<?>> CODEC = BuiltInRegistries.RECIPE_SERIALIZER.byNameCodec().dispatch(Recipe::getSerializer, RecipeSerializer::codec);
    StreamCodec<RegistryFriendlyByteBuf, Recipe<?>> STREAM_CODEC = ByteBufCodecs.registry(Registries.RECIPE_SERIALIZER)
       .dispatch(Recipe::getSerializer, RecipeSerializer::streamCodec);
 
-   boolean matches(C var1, Level var2);
+   boolean matches(T var1, Level var2);
 
-   ItemStack assemble(C var1, HolderLookup.Provider var2);
+   ItemStack assemble(T var1, HolderLookup.Provider var2);
 
    boolean canCraftInDimensions(int var1, int var2);
 
    ItemStack getResultItem(HolderLookup.Provider var1);
 
-   default NonNullList<ItemStack> getRemainingItems(C var1) {
-      NonNullList var2 = NonNullList.withSize(var1.getContainerSize(), ItemStack.EMPTY);
+   default NonNullList<ItemStack> getRemainingItems(T var1) {
+      NonNullList var2 = NonNullList.withSize(var1.size(), ItemStack.EMPTY);
 
       for (int var3 = 0; var3 < var2.size(); var3++) {
          Item var4 = var1.getItem(var3).getItem();

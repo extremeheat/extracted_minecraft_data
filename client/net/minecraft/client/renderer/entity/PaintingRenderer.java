@@ -26,11 +26,9 @@ public class PaintingRenderer extends EntityRenderer<Painting> {
       var4.pushPose();
       var4.mulPose(Axis.YP.rotationDegrees(180.0F - var2));
       PaintingVariant var7 = var1.getVariant().value();
-      float var8 = 0.0625F;
-      var4.scale(0.0625F, 0.0625F, 0.0625F);
-      VertexConsumer var9 = var5.getBuffer(RenderType.entitySolid(this.getTextureLocation(var1)));
-      PaintingTextureManager var10 = Minecraft.getInstance().getPaintingTextures();
-      this.renderPainting(var4, var9, var1, var7.getWidth(), var7.getHeight(), var10.get(var7), var10.getBackSprite());
+      VertexConsumer var8 = var5.getBuffer(RenderType.entitySolid(this.getTextureLocation(var1)));
+      PaintingTextureManager var9 = Minecraft.getInstance().getPaintingTextures();
+      this.renderPainting(var4, var8, var1, var7.width(), var7.height(), var9.get(var7), var9.getBackSprite());
       var4.popPose();
       super.render(var1, var2, var3, var4, var5, var6);
    }
@@ -43,7 +41,7 @@ public class PaintingRenderer extends EntityRenderer<Painting> {
       PoseStack.Pose var8 = var1.last();
       float var9 = (float)(-var4) / 2.0F;
       float var10 = (float)(-var5) / 2.0F;
-      float var11 = 0.5F;
+      float var11 = 0.03125F;
       float var12 = var7.getU0();
       float var13 = var7.getU1();
       float var14 = var7.getV0();
@@ -56,66 +54,64 @@ public class PaintingRenderer extends EntityRenderer<Painting> {
       float var21 = var7.getU(0.0625F);
       float var22 = var7.getV0();
       float var23 = var7.getV1();
-      int var24 = var4 / 16;
-      int var25 = var5 / 16;
-      double var26 = 1.0 / (double)var24;
-      double var28 = 1.0 / (double)var25;
+      double var24 = 1.0 / (double)var4;
+      double var26 = 1.0 / (double)var5;
 
-      for (int var30 = 0; var30 < var24; var30++) {
-         for (int var31 = 0; var31 < var25; var31++) {
-            float var32 = var9 + (float)((var30 + 1) * 16);
-            float var33 = var9 + (float)(var30 * 16);
-            float var34 = var10 + (float)((var31 + 1) * 16);
-            float var35 = var10 + (float)(var31 * 16);
-            int var36 = var3.getBlockX();
-            int var37 = Mth.floor(var3.getY() + (double)((var34 + var35) / 2.0F / 16.0F));
-            int var38 = var3.getBlockZ();
-            Direction var39 = var3.getDirection();
-            if (var39 == Direction.NORTH) {
-               var36 = Mth.floor(var3.getX() + (double)((var32 + var33) / 2.0F / 16.0F));
+      for (int var28 = 0; var28 < var4; var28++) {
+         for (int var29 = 0; var29 < var5; var29++) {
+            float var30 = var9 + (float)(var28 + 1);
+            float var31 = var9 + (float)var28;
+            float var32 = var10 + (float)(var29 + 1);
+            float var33 = var10 + (float)var29;
+            int var34 = var3.getBlockX();
+            int var35 = Mth.floor(var3.getY() + (double)((var32 + var33) / 2.0F));
+            int var36 = var3.getBlockZ();
+            Direction var37 = var3.getDirection();
+            if (var37 == Direction.NORTH) {
+               var34 = Mth.floor(var3.getX() + (double)((var30 + var31) / 2.0F));
             }
 
-            if (var39 == Direction.WEST) {
-               var38 = Mth.floor(var3.getZ() - (double)((var32 + var33) / 2.0F / 16.0F));
+            if (var37 == Direction.WEST) {
+               var36 = Mth.floor(var3.getZ() - (double)((var30 + var31) / 2.0F));
             }
 
-            if (var39 == Direction.SOUTH) {
-               var36 = Mth.floor(var3.getX() - (double)((var32 + var33) / 2.0F / 16.0F));
+            if (var37 == Direction.SOUTH) {
+               var34 = Mth.floor(var3.getX() - (double)((var30 + var31) / 2.0F));
             }
 
-            if (var39 == Direction.EAST) {
-               var38 = Mth.floor(var3.getZ() + (double)((var32 + var33) / 2.0F / 16.0F));
+            if (var37 == Direction.EAST) {
+               var36 = Mth.floor(var3.getZ() + (double)((var30 + var31) / 2.0F));
             }
 
-            int var40 = LevelRenderer.getLightColor(var3.level(), new BlockPos(var36, var37, var38));
-            float var41 = var6.getU((float)(var26 * (double)(var24 - var30)));
-            float var42 = var6.getU((float)(var26 * (double)(var24 - (var30 + 1))));
-            float var43 = var6.getV((float)(var28 * (double)(var25 - var31)));
-            float var44 = var6.getV((float)(var28 * (double)(var25 - (var31 + 1))));
-            this.vertex(var8, var2, var32, var35, var42, var43, -0.5F, 0, 0, -1, var40);
-            this.vertex(var8, var2, var33, var35, var41, var43, -0.5F, 0, 0, -1, var40);
-            this.vertex(var8, var2, var33, var34, var41, var44, -0.5F, 0, 0, -1, var40);
-            this.vertex(var8, var2, var32, var34, var42, var44, -0.5F, 0, 0, -1, var40);
-            this.vertex(var8, var2, var32, var34, var13, var14, 0.5F, 0, 0, 1, var40);
-            this.vertex(var8, var2, var33, var34, var12, var14, 0.5F, 0, 0, 1, var40);
-            this.vertex(var8, var2, var33, var35, var12, var15, 0.5F, 0, 0, 1, var40);
-            this.vertex(var8, var2, var32, var35, var13, var15, 0.5F, 0, 0, 1, var40);
-            this.vertex(var8, var2, var32, var34, var16, var18, -0.5F, 0, 1, 0, var40);
-            this.vertex(var8, var2, var33, var34, var17, var18, -0.5F, 0, 1, 0, var40);
-            this.vertex(var8, var2, var33, var34, var17, var19, 0.5F, 0, 1, 0, var40);
-            this.vertex(var8, var2, var32, var34, var16, var19, 0.5F, 0, 1, 0, var40);
-            this.vertex(var8, var2, var32, var35, var16, var18, 0.5F, 0, -1, 0, var40);
-            this.vertex(var8, var2, var33, var35, var17, var18, 0.5F, 0, -1, 0, var40);
-            this.vertex(var8, var2, var33, var35, var17, var19, -0.5F, 0, -1, 0, var40);
-            this.vertex(var8, var2, var32, var35, var16, var19, -0.5F, 0, -1, 0, var40);
-            this.vertex(var8, var2, var32, var34, var21, var22, 0.5F, -1, 0, 0, var40);
-            this.vertex(var8, var2, var32, var35, var21, var23, 0.5F, -1, 0, 0, var40);
-            this.vertex(var8, var2, var32, var35, var20, var23, -0.5F, -1, 0, 0, var40);
-            this.vertex(var8, var2, var32, var34, var20, var22, -0.5F, -1, 0, 0, var40);
-            this.vertex(var8, var2, var33, var34, var21, var22, -0.5F, 1, 0, 0, var40);
-            this.vertex(var8, var2, var33, var35, var21, var23, -0.5F, 1, 0, 0, var40);
-            this.vertex(var8, var2, var33, var35, var20, var23, 0.5F, 1, 0, 0, var40);
-            this.vertex(var8, var2, var33, var34, var20, var22, 0.5F, 1, 0, 0, var40);
+            int var38 = LevelRenderer.getLightColor(var3.level(), new BlockPos(var34, var35, var36));
+            float var39 = var6.getU((float)(var24 * (double)(var4 - var28)));
+            float var40 = var6.getU((float)(var24 * (double)(var4 - (var28 + 1))));
+            float var41 = var6.getV((float)(var26 * (double)(var5 - var29)));
+            float var42 = var6.getV((float)(var26 * (double)(var5 - (var29 + 1))));
+            this.vertex(var8, var2, var30, var33, var40, var41, -0.03125F, 0, 0, -1, var38);
+            this.vertex(var8, var2, var31, var33, var39, var41, -0.03125F, 0, 0, -1, var38);
+            this.vertex(var8, var2, var31, var32, var39, var42, -0.03125F, 0, 0, -1, var38);
+            this.vertex(var8, var2, var30, var32, var40, var42, -0.03125F, 0, 0, -1, var38);
+            this.vertex(var8, var2, var30, var32, var13, var14, 0.03125F, 0, 0, 1, var38);
+            this.vertex(var8, var2, var31, var32, var12, var14, 0.03125F, 0, 0, 1, var38);
+            this.vertex(var8, var2, var31, var33, var12, var15, 0.03125F, 0, 0, 1, var38);
+            this.vertex(var8, var2, var30, var33, var13, var15, 0.03125F, 0, 0, 1, var38);
+            this.vertex(var8, var2, var30, var32, var16, var18, -0.03125F, 0, 1, 0, var38);
+            this.vertex(var8, var2, var31, var32, var17, var18, -0.03125F, 0, 1, 0, var38);
+            this.vertex(var8, var2, var31, var32, var17, var19, 0.03125F, 0, 1, 0, var38);
+            this.vertex(var8, var2, var30, var32, var16, var19, 0.03125F, 0, 1, 0, var38);
+            this.vertex(var8, var2, var30, var33, var16, var18, 0.03125F, 0, -1, 0, var38);
+            this.vertex(var8, var2, var31, var33, var17, var18, 0.03125F, 0, -1, 0, var38);
+            this.vertex(var8, var2, var31, var33, var17, var19, -0.03125F, 0, -1, 0, var38);
+            this.vertex(var8, var2, var30, var33, var16, var19, -0.03125F, 0, -1, 0, var38);
+            this.vertex(var8, var2, var30, var32, var21, var22, 0.03125F, -1, 0, 0, var38);
+            this.vertex(var8, var2, var30, var33, var21, var23, 0.03125F, -1, 0, 0, var38);
+            this.vertex(var8, var2, var30, var33, var20, var23, -0.03125F, -1, 0, 0, var38);
+            this.vertex(var8, var2, var30, var32, var20, var22, -0.03125F, -1, 0, 0, var38);
+            this.vertex(var8, var2, var31, var32, var21, var22, -0.03125F, 1, 0, 0, var38);
+            this.vertex(var8, var2, var31, var33, var21, var23, -0.03125F, 1, 0, 0, var38);
+            this.vertex(var8, var2, var31, var33, var20, var23, 0.03125F, 1, 0, 0, var38);
+            this.vertex(var8, var2, var31, var32, var20, var22, 0.03125F, 1, 0, 0, var38);
          }
       }
    }

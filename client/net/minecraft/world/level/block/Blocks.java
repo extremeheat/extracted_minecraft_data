@@ -19,7 +19,6 @@ import net.minecraft.util.valueproviders.ConstantInt;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.biome.Biome;
@@ -4807,7 +4806,6 @@ public class Blocks {
          BlockBehaviour.Properties.of()
             .mapColor(MapColor.ICE)
             .friction(0.98F)
-            .randomTicks()
             .strength(0.5F)
             .sound(SoundType.GLASS)
             .noOcclusion()
@@ -6669,18 +6667,10 @@ public class Blocks {
             .strength(1.5F, 6.0F)
       )
    );
-   public static final Block TUFF_SLAB = register(
-      "tuff_slab", new SlabBlock(BlockBehaviour.Properties.ofLegacyCopy(TUFF).requiredFeatures(FeatureFlags.UPDATE_1_21))
-   );
-   public static final Block TUFF_STAIRS = register(
-      "tuff_stairs", new StairBlock(TUFF.defaultBlockState(), BlockBehaviour.Properties.ofLegacyCopy(TUFF).requiredFeatures(FeatureFlags.UPDATE_1_21))
-   );
-   public static final Block TUFF_WALL = register(
-      "tuff_wall", new WallBlock(BlockBehaviour.Properties.ofLegacyCopy(TUFF).forceSolidOn().requiredFeatures(FeatureFlags.UPDATE_1_21))
-   );
-   public static final Block POLISHED_TUFF = register(
-      "polished_tuff", new Block(BlockBehaviour.Properties.ofLegacyCopy(TUFF).sound(SoundType.POLISHED_TUFF).requiredFeatures(FeatureFlags.UPDATE_1_21))
-   );
+   public static final Block TUFF_SLAB = register("tuff_slab", new SlabBlock(BlockBehaviour.Properties.ofLegacyCopy(TUFF)));
+   public static final Block TUFF_STAIRS = register("tuff_stairs", new StairBlock(TUFF.defaultBlockState(), BlockBehaviour.Properties.ofLegacyCopy(TUFF)));
+   public static final Block TUFF_WALL = register("tuff_wall", new WallBlock(BlockBehaviour.Properties.ofLegacyCopy(TUFF).forceSolidOn()));
+   public static final Block POLISHED_TUFF = register("polished_tuff", new Block(BlockBehaviour.Properties.ofLegacyCopy(TUFF).sound(SoundType.POLISHED_TUFF)));
    public static final Block POLISHED_TUFF_SLAB = register("polished_tuff_slab", new SlabBlock(BlockBehaviour.Properties.ofLegacyCopy(POLISHED_TUFF)));
    public static final Block POLISHED_TUFF_STAIRS = register(
       "polished_tuff_stairs", new StairBlock(POLISHED_TUFF.defaultBlockState(), BlockBehaviour.Properties.ofLegacyCopy(POLISHED_TUFF))
@@ -6688,12 +6678,8 @@ public class Blocks {
    public static final Block POLISHED_TUFF_WALL = register(
       "polished_tuff_wall", new WallBlock(BlockBehaviour.Properties.ofLegacyCopy(POLISHED_TUFF).forceSolidOn())
    );
-   public static final Block CHISELED_TUFF = register(
-      "chiseled_tuff", new Block(BlockBehaviour.Properties.ofLegacyCopy(TUFF).requiredFeatures(FeatureFlags.UPDATE_1_21))
-   );
-   public static final Block TUFF_BRICKS = register(
-      "tuff_bricks", new Block(BlockBehaviour.Properties.ofLegacyCopy(TUFF).sound(SoundType.TUFF_BRICKS).requiredFeatures(FeatureFlags.UPDATE_1_21))
-   );
+   public static final Block CHISELED_TUFF = register("chiseled_tuff", new Block(BlockBehaviour.Properties.ofLegacyCopy(TUFF)));
+   public static final Block TUFF_BRICKS = register("tuff_bricks", new Block(BlockBehaviour.Properties.ofLegacyCopy(TUFF).sound(SoundType.TUFF_BRICKS)));
    public static final Block TUFF_BRICK_SLAB = register("tuff_brick_slab", new SlabBlock(BlockBehaviour.Properties.ofLegacyCopy(TUFF_BRICKS)));
    public static final Block TUFF_BRICK_STAIRS = register(
       "tuff_brick_stairs", new StairBlock(TUFF_BRICKS.defaultBlockState(), BlockBehaviour.Properties.ofLegacyCopy(TUFF_BRICKS))
@@ -6809,28 +6795,17 @@ public class Blocks {
       "cut_copper", new WeatheringCopperFullBlock(WeatheringCopper.WeatherState.UNAFFECTED, BlockBehaviour.Properties.ofFullCopy(COPPER_BLOCK))
    );
    public static final Block OXIDIZED_CHISELED_COPPER = register(
-      "oxidized_chiseled_copper",
-      new WeatheringCopperFullBlock(
-         WeatheringCopper.WeatherState.OXIDIZED, BlockBehaviour.Properties.ofFullCopy(OXIDIZED_COPPER).requiredFeatures(FeatureFlags.UPDATE_1_21)
-      )
+      "oxidized_chiseled_copper", new WeatheringCopperFullBlock(WeatheringCopper.WeatherState.OXIDIZED, BlockBehaviour.Properties.ofFullCopy(OXIDIZED_COPPER))
    );
    public static final Block WEATHERED_CHISELED_COPPER = register(
       "weathered_chiseled_copper",
-      new WeatheringCopperFullBlock(
-         WeatheringCopper.WeatherState.WEATHERED, BlockBehaviour.Properties.ofFullCopy(WEATHERED_COPPER).requiredFeatures(FeatureFlags.UPDATE_1_21)
-      )
+      new WeatheringCopperFullBlock(WeatheringCopper.WeatherState.WEATHERED, BlockBehaviour.Properties.ofFullCopy(WEATHERED_COPPER))
    );
    public static final Block EXPOSED_CHISELED_COPPER = register(
-      "exposed_chiseled_copper",
-      new WeatheringCopperFullBlock(
-         WeatheringCopper.WeatherState.EXPOSED, BlockBehaviour.Properties.ofFullCopy(EXPOSED_COPPER).requiredFeatures(FeatureFlags.UPDATE_1_21)
-      )
+      "exposed_chiseled_copper", new WeatheringCopperFullBlock(WeatheringCopper.WeatherState.EXPOSED, BlockBehaviour.Properties.ofFullCopy(EXPOSED_COPPER))
    );
    public static final Block CHISELED_COPPER = register(
-      "chiseled_copper",
-      new WeatheringCopperFullBlock(
-         WeatheringCopper.WeatherState.UNAFFECTED, BlockBehaviour.Properties.ofFullCopy(COPPER_BLOCK).requiredFeatures(FeatureFlags.UPDATE_1_21)
-      )
+      "chiseled_copper", new WeatheringCopperFullBlock(WeatheringCopper.WeatherState.UNAFFECTED, BlockBehaviour.Properties.ofFullCopy(COPPER_BLOCK))
    );
    public static final Block WAXED_OXIDIZED_CHISELED_COPPER = register(
       "waxed_oxidized_chiseled_copper", new Block(BlockBehaviour.Properties.ofFullCopy(OXIDIZED_CHISELED_COPPER))
@@ -6917,7 +6892,6 @@ public class Blocks {
             .noOcclusion()
             .requiresCorrectToolForDrops()
             .pushReaction(PushReaction.DESTROY)
-            .requiredFeatures(FeatureFlags.UPDATE_1_21)
       )
    );
    public static final Block EXPOSED_COPPER_DOOR = register(
@@ -6967,7 +6941,6 @@ public class Blocks {
             .requiresCorrectToolForDrops()
             .noOcclusion()
             .isValidSpawn(Blocks::never)
-            .requiredFeatures(FeatureFlags.UPDATE_1_21)
       )
    );
    public static final Block EXPOSED_COPPER_TRAPDOOR = register(
@@ -7020,7 +6993,6 @@ public class Blocks {
             .isRedstoneConductor(Blocks::never)
             .isSuffocating(Blocks::never)
             .isViewBlocking(Blocks::never)
-            .requiredFeatures(FeatureFlags.UPDATE_1_21)
       )
    );
    public static final Block EXPOSED_COPPER_GRATE = register(
@@ -7062,7 +7034,6 @@ public class Blocks {
             .requiresCorrectToolForDrops()
             .isRedstoneConductor(Blocks::never)
             .lightLevel(litBlockEmission(15))
-            .requiredFeatures(FeatureFlags.UPDATE_1_21)
       )
    );
    public static final Block EXPOSED_COPPER_BULB = register(
@@ -7387,9 +7358,7 @@ public class Blocks {
          BlockBehaviour.Properties.of().mapColor(MapColor.TERRACOTTA_RED).strength(0.0F, 0.0F).pushReaction(PushReaction.DESTROY).noOcclusion()
       )
    );
-   public static final Block CRAFTER = register(
-      "crafter", new CrafterBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(1.5F, 3.5F).requiredFeatures(FeatureFlags.UPDATE_1_21))
-   );
+   public static final Block CRAFTER = register("crafter", new CrafterBlock(BlockBehaviour.Properties.of().mapColor(MapColor.STONE).strength(1.5F, 3.5F)));
    public static final Block TRIAL_SPAWNER = register(
       "trial_spawner",
       new TrialSpawnerBlock(
@@ -7402,7 +7371,6 @@ public class Blocks {
             .sound(SoundType.TRIAL_SPAWNER)
             .isViewBlocking(Blocks::never)
             .noOcclusion()
-            .requiredFeatures(FeatureFlags.UPDATE_1_21)
       )
    );
    public static final Block VAULT = register(
@@ -7417,7 +7385,6 @@ public class Blocks {
             .lightLevel(var0 -> var0.getValue(VaultBlock.STATE).lightLevel())
             .strength(50.0F)
             .isViewBlocking(Blocks::never)
-            .requiredFeatures(FeatureFlags.UPDATE_1_21)
       )
    );
    public static final Block HEAVY_CORE = register(
@@ -7430,7 +7397,6 @@ public class Blocks {
             .strength(10.0F)
             .pushReaction(PushReaction.NORMAL)
             .explosionResistance(1200.0F)
-            .requiredFeatures(FeatureFlags.UPDATE_1_21)
       )
    );
 

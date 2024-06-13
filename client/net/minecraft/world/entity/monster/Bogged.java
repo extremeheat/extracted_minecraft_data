@@ -1,6 +1,7 @@
 package net.minecraft.world.entity.monster;
 
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
+import javax.annotation.Nullable;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
@@ -109,13 +110,13 @@ public class Bogged extends AbstractSkeleton implements Shearable {
    }
 
    @Override
-   protected AbstractArrow getArrow(ItemStack var1, float var2) {
-      AbstractArrow var3 = super.getArrow(var1, var2);
-      if (var3 instanceof Arrow var4) {
-         var4.addEffect(new MobEffectInstance(MobEffects.POISON, 100));
+   protected AbstractArrow getArrow(ItemStack var1, float var2, @Nullable ItemStack var3) {
+      AbstractArrow var4 = super.getArrow(var1, var2, var3);
+      if (var4 instanceof Arrow var5) {
+         var5.addEffect(new MobEffectInstance(MobEffects.POISON, 100));
       }
 
-      return var3;
+      return var4;
    }
 
    @Override

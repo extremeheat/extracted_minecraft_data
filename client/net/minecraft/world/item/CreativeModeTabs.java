@@ -15,7 +15,9 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.InstrumentTags;
@@ -53,7 +55,7 @@ public class CreativeModeTabs {
    private static final ResourceKey<CreativeModeTab> OP_BLOCKS = createKey("op_blocks");
    private static final ResourceKey<CreativeModeTab> INVENTORY = createKey("inventory");
    private static final Comparator<Holder<PaintingVariant>> PAINTING_COMPARATOR = Comparator.comparing(
-      Holder::value, Comparator.<PaintingVariant>comparingInt(var0 -> var0.getHeight() * var0.getWidth()).thenComparing(PaintingVariant::getWidth)
+      Holder::value, Comparator.comparingInt(PaintingVariant::area).thenComparing(PaintingVariant::width)
    );
    @Nullable
    private static CreativeModeTab.ItemDisplayParameters CACHED_PARAMETERS;
@@ -998,9 +1000,10 @@ public class CreativeModeTabs {
                   var0x.holders()
                      .lookup(Registries.PAINTING_VARIANT)
                      .ifPresent(
-                        var1x -> generatePresetPaintings(
+                        var2 -> generatePresetPaintings(
                               var1,
-                              (HolderLookup.RegistryLookup<PaintingVariant>)var1x,
+                              var0x.holders(),
+                              (HolderLookup.RegistryLookup<PaintingVariant>)var2,
                               var0xxx -> var0xxx.is(PaintingVariantTags.PLACEABLE),
                               CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS
                            )
@@ -1348,7 +1351,10 @@ public class CreativeModeTabs {
                   var1.accept(Items.MUSIC_DISC_STRAD);
                   var1.accept(Items.MUSIC_DISC_WARD);
                   var1.accept(Items.MUSIC_DISC_11);
+                  var1.accept(Items.MUSIC_DISC_CREATOR_MUSIC_BOX);
                   var1.accept(Items.MUSIC_DISC_WAIT);
+                  var1.accept(Items.MUSIC_DISC_CREATOR);
+                  var1.accept(Items.MUSIC_DISC_PRECIPICE);
                   var1.accept(Items.MUSIC_DISC_OTHERSIDE);
                   var1.accept(Items.MUSIC_DISC_RELIC);
                   var1.accept(Items.MUSIC_DISC_5);
@@ -1663,9 +1669,9 @@ public class CreativeModeTabs {
                      ItemTags.CROSSBOW_ENCHANTABLE,
                      ItemTags.VANISHING_ENCHANTABLE
                   );
-                  var0x.holders().lookup(Registries.ENCHANTMENT).ifPresent(var3 -> {
-                     generateEnchantmentBookTypesOnlyMaxLevel(var1, var3, var2, CreativeModeTab.TabVisibility.PARENT_TAB_ONLY, var0x.enabledFeatures());
-                     generateEnchantmentBookTypesAllLevels(var1, var3, var2, CreativeModeTab.TabVisibility.SEARCH_TAB_ONLY, var0x.enabledFeatures());
+                  var0x.holders().lookup(Registries.ENCHANTMENT).ifPresent(var2x -> {
+                     generateEnchantmentBookTypesOnlyMaxLevel(var1, var2x, var2, CreativeModeTab.TabVisibility.PARENT_TAB_ONLY);
+                     generateEnchantmentBookTypesAllLevels(var1, var2x, var2, CreativeModeTab.TabVisibility.SEARCH_TAB_ONLY);
                   });
                }
             )
@@ -1788,9 +1794,10 @@ public class CreativeModeTabs {
                      var0x.holders()
                         .lookup(Registries.PAINTING_VARIANT)
                         .ifPresent(
-                           var1x -> generatePresetPaintings(
+                           var2x -> generatePresetPaintings(
                                  var1,
-                                 (HolderLookup.RegistryLookup<PaintingVariant>)var1x,
+                                 var0x.holders(),
+                                 (HolderLookup.RegistryLookup<PaintingVariant>)var2x,
                                  var0xxx -> !var0xxx.is(PaintingVariantTags.PLACEABLE),
                                  CreativeModeTab.TabVisibility.PARENT_AND_SEARCH_TABS
                               )
@@ -1842,25 +1849,21 @@ public class CreativeModeTabs {
    }
 
    private static void generateEnchantmentBookTypesOnlyMaxLevel(
-      CreativeModeTab.Output var0, HolderLookup<Enchantment> var1, Set<TagKey<Item>> var2, CreativeModeTab.TabVisibility var3, FeatureFlagSet var4
+      CreativeModeTab.Output var0, HolderLookup<Enchantment> var1, Set<TagKey<Item>> var2, CreativeModeTab.TabVisibility var3
    ) {
       var1.listElements()
-         .map(Holder::value)
-         .filter(var1x -> var1x.isEnabled(var4))
-         .filter(var1x -> var2.contains(var1x.getSupportedItems()))
-         .map(var0x -> EnchantedBookItem.createForEnchantment(new EnchantmentInstance(var0x, var0x.getMaxLevel())))
+         .filter(var1x -> ((Enchantment)var1x.value()).getSupportedItems().unwrapKey().filter(var2::contains).isPresent())
+         .map(var0x -> EnchantedBookItem.createForEnchantment(new EnchantmentInstance(var0x, ((Enchantment)var0x.value()).getMaxLevel())))
          .forEach(var2x -> var0.accept(var2x, var3));
    }
 
    private static void generateEnchantmentBookTypesAllLevels(
-      CreativeModeTab.Output var0, HolderLookup<Enchantment> var1, Set<TagKey<Item>> var2, CreativeModeTab.TabVisibility var3, FeatureFlagSet var4
+      CreativeModeTab.Output var0, HolderLookup<Enchantment> var1, Set<TagKey<Item>> var2, CreativeModeTab.TabVisibility var3
    ) {
       var1.listElements()
-         .map(Holder::value)
-         .filter(var1x -> var1x.isEnabled(var4))
-         .filter(var1x -> var2.contains(var1x.getSupportedItems()))
+         .filter(var1x -> ((Enchantment)var1x.value()).getSupportedItems().unwrapKey().filter(var2::contains).isPresent())
          .flatMap(
-            var0x -> IntStream.rangeClosed(var0x.getMinLevel(), var0x.getMaxLevel())
+            var0x -> IntStream.rangeClosed(((Enchantment)var0x.value()).getMinLevel(), ((Enchantment)var0x.value()).getMaxLevel())
                   .mapToObj(var1x -> EnchantedBookItem.createForEnchantment(new EnchantmentInstance(var0x, var1x)))
          )
          .forEach(var2x -> var0.accept(var2x, var3));
@@ -1904,20 +1907,22 @@ public class CreativeModeTabs {
 
    private static void generatePresetPaintings(
       CreativeModeTab.Output var0,
-      HolderLookup.RegistryLookup<PaintingVariant> var1,
-      Predicate<Holder<PaintingVariant>> var2,
-      CreativeModeTab.TabVisibility var3
+      HolderLookup.Provider var1,
+      HolderLookup.RegistryLookup<PaintingVariant> var2,
+      Predicate<Holder<PaintingVariant>> var3,
+      CreativeModeTab.TabVisibility var4
    ) {
-      var1.listElements()
-         .filter(var2)
+      RegistryOps var5 = var1.createSerializationContext(NbtOps.INSTANCE);
+      var2.listElements()
+         .filter(var3)
          .sorted(PAINTING_COMPARATOR)
          .forEach(
-            var2x -> {
-               CustomData var3x = ((CustomData)CustomData.EMPTY.update(Painting.VARIANT_MAP_CODEC, var2x).getOrThrow())
+            var3x -> {
+               CustomData var4x = ((CustomData)CustomData.EMPTY.update(var5, Painting.VARIANT_MAP_CODEC, var3x).getOrThrow())
                   .update(var0xx -> var0xx.putString("id", "minecraft:painting"));
-               ItemStack var4 = new ItemStack(Items.PAINTING);
-               var4.set(DataComponents.ENTITY_DATA, var3x);
-               var0.accept(var4, var3);
+               ItemStack var5x = new ItemStack(Items.PAINTING);
+               var5x.set(DataComponents.ENTITY_DATA, var4x);
+               var0.accept(var5x, var4);
             }
          );
    }

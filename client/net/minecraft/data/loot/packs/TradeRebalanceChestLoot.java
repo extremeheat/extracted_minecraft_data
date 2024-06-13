@@ -2,6 +2,7 @@ package net.minecraft.data.loot.packs;
 
 import java.util.function.BiConsumer;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.loot.LootTableSubProvider;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.InstrumentTags;
@@ -23,14 +24,16 @@ import net.minecraft.world.level.storage.loot.functions.SetPotionFunction;
 import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import net.minecraft.world.level.storage.loot.providers.number.UniformGenerator;
 
-public class TradeRebalanceChestLoot implements LootTableSubProvider {
-   public TradeRebalanceChestLoot() {
+public record TradeRebalanceChestLoot(HolderLookup.Provider registries) implements LootTableSubProvider {
+   public TradeRebalanceChestLoot(HolderLookup.Provider registries) {
       super();
+      this.registries = registries;
    }
 
    @Override
-   public void generate(HolderLookup.Provider var1, BiConsumer<ResourceKey<LootTable>, LootTable.Builder> var2) {
-      var2.accept(
+   public void generate(BiConsumer<ResourceKey<LootTable>, LootTable.Builder> var1) {
+      HolderLookup.RegistryLookup var2 = this.registries.lookupOrThrow(Registries.ENCHANTMENT);
+      var1.accept(
          BuiltInLootTables.ABANDONED_MINESHAFT,
          LootTable.lootTable()
             .withPool(
@@ -39,7 +42,7 @@ public class TradeRebalanceChestLoot implements LootTableSubProvider {
                   .add(LootItem.lootTableItem(Items.GOLDEN_APPLE).setWeight(20))
                   .add(LootItem.lootTableItem(Items.ENCHANTED_GOLDEN_APPLE))
                   .add(LootItem.lootTableItem(Items.NAME_TAG).setWeight(30))
-                  .add(LootItem.lootTableItem(Items.BOOK).setWeight(10).apply(EnchantRandomlyFunction.randomApplicableEnchantment()))
+                  .add(LootItem.lootTableItem(Items.BOOK).setWeight(10).apply(EnchantRandomlyFunction.randomApplicableEnchantment(this.registries)))
                   .add(LootItem.lootTableItem(Items.IRON_PICKAXE).setWeight(5))
                   .add(EmptyLootItem.emptyItem().setWeight(5))
             )
@@ -71,16 +74,21 @@ public class TradeRebalanceChestLoot implements LootTableSubProvider {
                LootPool.lootPool()
                   .setRolls(ConstantValue.exactly(1.0F))
                   .add(EmptyLootItem.emptyItem().setWeight(4))
-                  .add(LootItem.lootTableItem(Items.BOOK).setWeight(1).apply(new EnchantRandomlyFunction.Builder().withEnchantment(Enchantments.EFFICIENCY)))
+                  .add(
+                     LootItem.lootTableItem(Items.BOOK)
+                        .setWeight(1)
+                        .apply(new EnchantRandomlyFunction.Builder().withEnchantment(var2.getOrThrow(Enchantments.EFFICIENCY)))
+                  )
             )
       );
-      var2.accept(BuiltInLootTables.ANCIENT_CITY, ancientCityLootTable());
-      var2.accept(BuiltInLootTables.DESERT_PYRAMID, desertPyramidLootTable());
-      var2.accept(BuiltInLootTables.JUNGLE_TEMPLE, jungleTempleLootTable());
-      var2.accept(BuiltInLootTables.PILLAGER_OUTPOST, pillagerOutpostLootTable());
+      var1.accept(BuiltInLootTables.ANCIENT_CITY, this.ancientCityLootTable());
+      var1.accept(BuiltInLootTables.DESERT_PYRAMID, this.desertPyramidLootTable());
+      var1.accept(BuiltInLootTables.JUNGLE_TEMPLE, this.jungleTempleLootTable());
+      var1.accept(BuiltInLootTables.PILLAGER_OUTPOST, this.pillagerOutpostLootTable());
    }
 
-   public static LootTable.Builder pillagerOutpostLootTable() {
+   public LootTable.Builder pillagerOutpostLootTable() {
+      HolderLookup.RegistryLookup var1 = this.registries.lookupOrThrow(Registries.ENCHANTMENT);
       return LootTable.lootTable()
          .withPool(LootPool.lootPool().setRolls(UniformGenerator.between(0.0F, 1.0F)).add(LootItem.lootTableItem(Items.CROSSBOW)))
          .withPool(
@@ -103,7 +111,7 @@ public class TradeRebalanceChestLoot implements LootTableSubProvider {
                .add(LootItem.lootTableItem(Items.ARROW).setWeight(4).apply(SetItemCountFunction.setCount(UniformGenerator.between(2.0F, 7.0F))))
                .add(LootItem.lootTableItem(Items.TRIPWIRE_HOOK).setWeight(3).apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 3.0F))))
                .add(LootItem.lootTableItem(Items.IRON_INGOT).setWeight(3).apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 3.0F))))
-               .add(LootItem.lootTableItem(Items.BOOK).setWeight(1).apply(EnchantRandomlyFunction.randomApplicableEnchantment()))
+               .add(LootItem.lootTableItem(Items.BOOK).setWeight(1).apply(EnchantRandomlyFunction.randomApplicableEnchantment(this.registries)))
          )
          .withPool(
             LootPool.lootPool()
@@ -125,11 +133,16 @@ public class TradeRebalanceChestLoot implements LootTableSubProvider {
             LootPool.lootPool()
                .setRolls(ConstantValue.exactly(1.0F))
                .add(EmptyLootItem.emptyItem().setWeight(1))
-               .add(LootItem.lootTableItem(Items.BOOK).setWeight(2).apply(new EnchantRandomlyFunction.Builder().withEnchantment(Enchantments.QUICK_CHARGE)))
+               .add(
+                  LootItem.lootTableItem(Items.BOOK)
+                     .setWeight(2)
+                     .apply(new EnchantRandomlyFunction.Builder().withEnchantment(var1.getOrThrow(Enchantments.QUICK_CHARGE)))
+               )
          );
    }
 
-   public static LootTable.Builder desertPyramidLootTable() {
+   public LootTable.Builder desertPyramidLootTable() {
+      HolderLookup.RegistryLookup var1 = this.registries.lookupOrThrow(Registries.ENCHANTMENT);
       return LootTable.lootTable()
          .withPool(
             LootPool.lootPool()
@@ -145,7 +158,7 @@ public class TradeRebalanceChestLoot implements LootTableSubProvider {
                .add(LootItem.lootTableItem(Items.IRON_HORSE_ARMOR).setWeight(15))
                .add(LootItem.lootTableItem(Items.GOLDEN_HORSE_ARMOR).setWeight(10))
                .add(LootItem.lootTableItem(Items.DIAMOND_HORSE_ARMOR).setWeight(5))
-               .add(LootItem.lootTableItem(Items.BOOK).setWeight(10).apply(EnchantRandomlyFunction.randomApplicableEnchantment()))
+               .add(LootItem.lootTableItem(Items.BOOK).setWeight(10).apply(EnchantRandomlyFunction.randomApplicableEnchantment(this.registries)))
                .add(LootItem.lootTableItem(Items.GOLDEN_APPLE).setWeight(20))
                .add(LootItem.lootTableItem(Items.ENCHANTED_GOLDEN_APPLE).setWeight(2))
                .add(EmptyLootItem.emptyItem().setWeight(15))
@@ -168,11 +181,16 @@ public class TradeRebalanceChestLoot implements LootTableSubProvider {
                      .setWeight(1)
                      .apply(SetItemCountFunction.setCount(ConstantValue.exactly(2.0F)))
                )
-               .add(LootItem.lootTableItem(Items.BOOK).setWeight(2).apply(new EnchantRandomlyFunction.Builder().withEnchantment(Enchantments.UNBREAKING)))
+               .add(
+                  LootItem.lootTableItem(Items.BOOK)
+                     .setWeight(2)
+                     .apply(new EnchantRandomlyFunction.Builder().withEnchantment(var1.getOrThrow(Enchantments.UNBREAKING)))
+               )
          );
    }
 
-   public static LootTable.Builder ancientCityLootTable() {
+   public LootTable.Builder ancientCityLootTable() {
+      HolderLookup.RegistryLookup var1 = this.registries.lookupOrThrow(Registries.ENCHANTMENT);
       return LootTable.lootTable()
          .withPool(
             LootPool.lootPool()
@@ -189,7 +207,7 @@ public class TradeRebalanceChestLoot implements LootTableSubProvider {
                      .setWeight(2)
                      .apply(SetItemCountFunction.setCount(ConstantValue.exactly(1.0F)))
                      .apply(SetItemDamageFunction.setDamage(UniformGenerator.between(0.8F, 1.0F)))
-                     .apply(EnchantWithLevelsFunction.enchantWithLevels(UniformGenerator.between(30.0F, 50.0F)).allowTreasure())
+                     .apply(EnchantWithLevelsFunction.enchantWithLevels(this.registries, UniformGenerator.between(30.0F, 50.0F)))
                )
                .add(LootItem.lootTableItem(Items.LEAD).setWeight(2).apply(SetItemCountFunction.setCount(ConstantValue.exactly(1.0F))))
                .add(LootItem.lootTableItem(Items.DIAMOND_HORSE_ARMOR).setWeight(2).apply(SetItemCountFunction.setCount(ConstantValue.exactly(1.0F))))
@@ -199,9 +217,13 @@ public class TradeRebalanceChestLoot implements LootTableSubProvider {
                .add(
                   LootItem.lootTableItem(Items.DIAMOND_LEGGINGS)
                      .setWeight(2)
-                     .apply(EnchantWithLevelsFunction.enchantWithLevels(UniformGenerator.between(30.0F, 50.0F)).allowTreasure())
+                     .apply(EnchantWithLevelsFunction.enchantWithLevels(this.registries, UniformGenerator.between(30.0F, 50.0F)))
                )
-               .add(LootItem.lootTableItem(Items.BOOK).setWeight(3).apply(new EnchantRandomlyFunction.Builder().withEnchantment(Enchantments.SWIFT_SNEAK)))
+               .add(
+                  LootItem.lootTableItem(Items.BOOK)
+                     .setWeight(3)
+                     .apply(new EnchantRandomlyFunction.Builder().withEnchantment(var1.getOrThrow(Enchantments.SWIFT_SNEAK)))
+               )
                .add(LootItem.lootTableItem(Items.SCULK).setWeight(3).apply(SetItemCountFunction.setCount(UniformGenerator.between(4.0F, 10.0F))))
                .add(LootItem.lootTableItem(Items.SCULK_SENSOR).setWeight(3).apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 3.0F))))
                .add(LootItem.lootTableItem(Items.CANDLE).setWeight(3).apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 4.0F))))
@@ -211,7 +233,7 @@ public class TradeRebalanceChestLoot implements LootTableSubProvider {
                .add(
                   LootItem.lootTableItem(Items.IRON_LEGGINGS)
                      .setWeight(3)
-                     .apply(EnchantWithLevelsFunction.enchantWithLevels(UniformGenerator.between(20.0F, 39.0F)).allowTreasure())
+                     .apply(EnchantWithLevelsFunction.enchantWithLevels(this.registries, UniformGenerator.between(20.0F, 39.0F)))
                )
                .add(LootItem.lootTableItem(Items.ECHO_SHARD).setWeight(4).apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 3.0F))))
                .add(LootItem.lootTableItem(Items.DISC_FRAGMENT_5).setWeight(4).apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 3.0F))))
@@ -221,7 +243,7 @@ public class TradeRebalanceChestLoot implements LootTableSubProvider {
                      .apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 3.0F)))
                      .apply(SetPotionFunction.setPotion(Potions.STRONG_REGENERATION))
                )
-               .add(LootItem.lootTableItem(Items.BOOK).setWeight(5).apply(EnchantRandomlyFunction.randomApplicableEnchantment()))
+               .add(LootItem.lootTableItem(Items.BOOK).setWeight(5).apply(EnchantRandomlyFunction.randomApplicableEnchantment(this.registries)))
                .add(LootItem.lootTableItem(Items.BOOK).setWeight(5).apply(SetItemCountFunction.setCount(UniformGenerator.between(3.0F, 10.0F))))
                .add(LootItem.lootTableItem(Items.BONE).setWeight(5).apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 15.0F))))
                .add(LootItem.lootTableItem(Items.SOUL_TORCH).setWeight(5).apply(SetItemCountFunction.setCount(UniformGenerator.between(1.0F, 15.0F))))
@@ -231,13 +253,18 @@ public class TradeRebalanceChestLoot implements LootTableSubProvider {
             LootPool.lootPool()
                .setRolls(ConstantValue.exactly(1.0F))
                .add(EmptyLootItem.emptyItem().setWeight(71))
-               .add(LootItem.lootTableItem(Items.BOOK).setWeight(4).apply(new EnchantRandomlyFunction.Builder().withEnchantment(Enchantments.MENDING)))
+               .add(
+                  LootItem.lootTableItem(Items.BOOK)
+                     .setWeight(4)
+                     .apply(new EnchantRandomlyFunction.Builder().withEnchantment(var1.getOrThrow(Enchantments.MENDING)))
+               )
                .add(LootItem.lootTableItem(Items.WARD_ARMOR_TRIM_SMITHING_TEMPLATE).setWeight(4))
                .add(LootItem.lootTableItem(Items.SILENCE_ARMOR_TRIM_SMITHING_TEMPLATE).setWeight(1))
          );
    }
 
-   public static LootTable.Builder jungleTempleLootTable() {
+   public LootTable.Builder jungleTempleLootTable() {
+      HolderLookup.RegistryLookup var1 = this.registries.lookupOrThrow(Registries.ENCHANTMENT);
       return LootTable.lootTable()
          .withPool(
             LootPool.lootPool()
@@ -253,7 +280,7 @@ public class TradeRebalanceChestLoot implements LootTableSubProvider {
                .add(LootItem.lootTableItem(Items.IRON_HORSE_ARMOR))
                .add(LootItem.lootTableItem(Items.GOLDEN_HORSE_ARMOR))
                .add(LootItem.lootTableItem(Items.DIAMOND_HORSE_ARMOR))
-               .add(LootItem.lootTableItem(Items.BOOK).apply(EnchantWithLevelsFunction.enchantWithLevels(ConstantValue.exactly(30.0F)).allowTreasure()))
+               .add(LootItem.lootTableItem(Items.BOOK).apply(EnchantWithLevelsFunction.enchantWithLevels(this.registries, ConstantValue.exactly(30.0F))))
          )
          .withPool(
             LootPool.lootPool()
@@ -269,7 +296,7 @@ public class TradeRebalanceChestLoot implements LootTableSubProvider {
             LootPool.lootPool()
                .setRolls(ConstantValue.exactly(1.0F))
                .add(EmptyLootItem.emptyItem().setWeight(1))
-               .add(LootItem.lootTableItem(Items.BOOK).apply(new EnchantRandomlyFunction.Builder().withEnchantment(Enchantments.UNBREAKING)))
+               .add(LootItem.lootTableItem(Items.BOOK).apply(new EnchantRandomlyFunction.Builder().withEnchantment(var1.getOrThrow(Enchantments.UNBREAKING))))
          );
    }
 }

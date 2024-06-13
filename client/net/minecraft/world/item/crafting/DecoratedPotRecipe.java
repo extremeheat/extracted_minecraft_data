@@ -2,7 +2,6 @@ package net.minecraft.world.item.crafting;
 
 import net.minecraft.core.HolderLookup;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
@@ -14,11 +13,11 @@ public class DecoratedPotRecipe extends CustomRecipe {
       super(var1);
    }
 
-   public boolean matches(CraftingContainer var1, Level var2) {
-      if (!this.canCraftInDimensions(var1.getWidth(), var1.getHeight())) {
+   public boolean matches(CraftingInput var1, Level var2) {
+      if (!this.canCraftInDimensions(var1.width(), var1.height())) {
          return false;
       } else {
-         for (int var3 = 0; var3 < var1.getContainerSize(); var3++) {
+         for (int var3 = 0; var3 < var1.size(); var3++) {
             ItemStack var4 = var1.getItem(var3);
             switch (var3) {
                case 1:
@@ -43,7 +42,7 @@ public class DecoratedPotRecipe extends CustomRecipe {
       }
    }
 
-   public ItemStack assemble(CraftingContainer var1, HolderLookup.Provider var2) {
+   public ItemStack assemble(CraftingInput var1, HolderLookup.Provider var2) {
       PotDecorations var3 = new PotDecorations(var1.getItem(1).getItem(), var1.getItem(3).getItem(), var1.getItem(5).getItem(), var1.getItem(7).getItem());
       return DecoratedPotBlockEntity.createDecoratedPotItem(var3);
    }

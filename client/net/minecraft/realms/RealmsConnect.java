@@ -57,7 +57,7 @@ public class RealmsConnect {
                      RealmsConnect.this.connection, var3, var1.toServerData(var4), RealmsConnect.this.onlineScreen, false, null, var0 -> {
                      }, null
                   );
-                  if (var1.worldType == RealmsServer.WorldType.MINIGAME) {
+                  if (var1.isMinigameActive()) {
                      var2.setMinigameName(var1.minigameName);
                   }
 

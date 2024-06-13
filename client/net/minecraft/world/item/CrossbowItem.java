@@ -1,20 +1,26 @@
 package net.minecraft.world.item;
 
 import com.google.common.collect.Lists;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 import javax.annotation.Nullable;
 import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.CriteriaTriggers;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
+import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -24,15 +30,15 @@ import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.entity.projectile.FireworkRocketEntity;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.component.ChargedProjectiles;
+import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
-import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
 public class CrossbowItem extends ProjectileWeaponItem {
-   private static final int MAX_CHARGE_DURATION = 25;
+   private static final float MAX_CHARGE_DURATION = 1.25F;
    public static final int DEFAULT_RANGE = 8;
    private boolean startSoundPlayed = false;
    private boolean midLoadSoundPlayed = false;
@@ -41,6 +47,9 @@ public class CrossbowItem extends ProjectileWeaponItem {
    private static final float ARROW_POWER = 3.15F;
    private static final float FIREWORK_POWER = 1.6F;
    public static final float MOB_ARROW_POWER = 1.6F;
+   private static final CrossbowItem.ChargingSounds DEFAULT_SOUNDS = new CrossbowItem.ChargingSounds(
+      Optional.of(SoundEvents.CROSSBOW_LOADING_START), Optional.of(SoundEvents.CROSSBOW_LOADING_MIDDLE), Optional.of(SoundEvents.CROSSBOW_LOADING_END)
+   );
 
    public CrossbowItem(Item.Properties var1) {
       super(var1);
@@ -79,19 +88,23 @@ public class CrossbowItem extends ProjectileWeaponItem {
 
    @Override
    public void releaseUsing(ItemStack var1, Level var2, LivingEntity var3, int var4) {
-      int var5 = this.getUseDuration(var1) - var4;
-      float var6 = getPowerForTime(var5, var1);
+      int var5 = this.getUseDuration(var1, var3) - var4;
+      float var6 = getPowerForTime(var5, var1, var3);
       if (var6 >= 1.0F && !isCharged(var1) && tryLoadProjectiles(var3, var1)) {
-         var2.playSound(
-            null,
-            var3.getX(),
-            var3.getY(),
-            var3.getZ(),
-            SoundEvents.CROSSBOW_LOADING_END,
-            var3.getSoundSource(),
-            1.0F,
-            1.0F / (var2.getRandom().nextFloat() * 0.5F + 1.0F) + 0.2F
-         );
+         CrossbowItem.ChargingSounds var7 = this.getChargingSounds(var1);
+         var7.end()
+            .ifPresent(
+               var2x -> var2.playSound(
+                     null,
+                     var3.getX(),
+                     var3.getY(),
+                     var3.getZ(),
+                     var2x.value(),
+                     var3.getSoundSource(),
+                     1.0F,
+                     1.0F / (var2.getRandom().nextFloat() * 0.5F + 1.0F) + 0.2F
+                  )
+            );
       }
    }
 
@@ -150,7 +163,6 @@ public class CrossbowItem extends ProjectileWeaponItem {
       } else {
          Projectile var6 = super.createProjectile(var1, var2, var3, var4, var5);
          if (var6 instanceof AbstractArrow var7) {
-            var7.setShotFromCrossbow(true);
             var7.setSoundEvent(SoundEvents.CROSSBOW_HIT);
          }
 
@@ -164,13 +176,13 @@ public class CrossbowItem extends ProjectileWeaponItem {
    }
 
    public void performShooting(Level var1, LivingEntity var2, InteractionHand var3, ItemStack var4, float var5, float var6, @Nullable LivingEntity var7) {
-      if (!var1.isClientSide()) {
-         ChargedProjectiles var8 = var4.set(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
-         if (var8 != null && !var8.isEmpty()) {
-            this.shoot(var1, var2, var3, var4, var8.getItems(), var5, var6, var2 instanceof Player, var7);
-            if (var2 instanceof ServerPlayer var9) {
-               CriteriaTriggers.SHOT_CROSSBOW.trigger(var9, var4);
-               var9.awardStat(Stats.ITEM_USED.get(var4.getItem()));
+      if (var1 instanceof ServerLevel var8) {
+         ChargedProjectiles var9 = var4.set(DataComponents.CHARGED_PROJECTILES, ChargedProjectiles.EMPTY);
+         if (var9 != null && !var9.isEmpty()) {
+            this.shoot(var8, var2, var3, var4, var9.getItems(), var5, var6, var2 instanceof Player, var7);
+            if (var2 instanceof ServerPlayer var10) {
+               CriteriaTriggers.SHOT_CROSSBOW.trigger(var10, var4);
+               var10.awardStat(Stats.ITEM_USED.get(var4.getItem()));
             }
          }
       }
@@ -188,35 +200,39 @@ public class CrossbowItem extends ProjectileWeaponItem {
    @Override
    public void onUseTick(Level var1, LivingEntity var2, ItemStack var3, int var4) {
       if (!var1.isClientSide) {
-         int var5 = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.QUICK_CHARGE, var3);
-         SoundEvent var6 = this.getStartSound(var5);
-         SoundEvent var7 = var5 == 0 ? SoundEvents.CROSSBOW_LOADING_MIDDLE : null;
-         float var8 = (float)(var3.getUseDuration() - var4) / (float)getChargeDuration(var3);
-         if (var8 < 0.2F) {
+         CrossbowItem.ChargingSounds var5 = this.getChargingSounds(var3);
+         float var6 = (float)(var3.getUseDuration(var2) - var4) / (float)getChargeDuration(var3, var2);
+         if (var6 < 0.2F) {
             this.startSoundPlayed = false;
             this.midLoadSoundPlayed = false;
          }
 
-         if (var8 >= 0.2F && !this.startSoundPlayed) {
+         if (var6 >= 0.2F && !this.startSoundPlayed) {
             this.startSoundPlayed = true;
-            var1.playSound(null, var2.getX(), var2.getY(), var2.getZ(), var6, SoundSource.PLAYERS, 0.5F, 1.0F);
+            var5.start().ifPresent(var2x -> var1.playSound(null, var2.getX(), var2.getY(), var2.getZ(), var2x.value(), SoundSource.PLAYERS, 0.5F, 1.0F));
          }
 
-         if (var8 >= 0.5F && var7 != null && !this.midLoadSoundPlayed) {
+         if (var6 >= 0.5F && !this.midLoadSoundPlayed) {
             this.midLoadSoundPlayed = true;
-            var1.playSound(null, var2.getX(), var2.getY(), var2.getZ(), var7, SoundSource.PLAYERS, 0.5F, 1.0F);
+            var5.mid().ifPresent(var2x -> var1.playSound(null, var2.getX(), var2.getY(), var2.getZ(), var2x.value(), SoundSource.PLAYERS, 0.5F, 1.0F));
          }
       }
    }
 
    @Override
-   public int getUseDuration(ItemStack var1) {
-      return getChargeDuration(var1) + 3;
+   public int getUseDuration(ItemStack var1, LivingEntity var2) {
+      return getChargeDuration(var1, var2) + 3;
    }
 
-   public static int getChargeDuration(ItemStack var0) {
-      int var1 = EnchantmentHelper.getItemEnchantmentLevel(Enchantments.QUICK_CHARGE, var0);
-      return var1 == 0 ? 25 : 25 - 5 * var1;
+   public static int getChargeDuration(ItemStack var0, LivingEntity var1) {
+      float var2;
+      if (var1.level() instanceof ServerLevel var3) {
+         var2 = EnchantmentHelper.modifyCrossbowChargingTime(var3, var0, var1, 1.25F);
+      } else {
+         var2 = 1.25F;
+      }
+
+      return Mth.floor(var2 * 20.0F);
    }
 
    @Override
@@ -224,26 +240,17 @@ public class CrossbowItem extends ProjectileWeaponItem {
       return UseAnim.CROSSBOW;
    }
 
-   private SoundEvent getStartSound(int var1) {
-      switch (var1) {
-         case 1:
-            return SoundEvents.CROSSBOW_QUICK_CHARGE_1;
-         case 2:
-            return SoundEvents.CROSSBOW_QUICK_CHARGE_2;
-         case 3:
-            return SoundEvents.CROSSBOW_QUICK_CHARGE_3;
-         default:
-            return SoundEvents.CROSSBOW_LOADING_START;
-      }
+   CrossbowItem.ChargingSounds getChargingSounds(ItemStack var1) {
+      return EnchantmentHelper.pickHighestLevel(var1, EnchantmentEffectComponents.CROSSBOW_CHARGING_SOUNDS).orElse(DEFAULT_SOUNDS);
    }
 
-   private static float getPowerForTime(int var0, ItemStack var1) {
-      float var2 = (float)var0 / (float)getChargeDuration(var1);
-      if (var2 > 1.0F) {
-         var2 = 1.0F;
+   private static float getPowerForTime(int var0, ItemStack var1, LivingEntity var2) {
+      float var3 = (float)var0 / (float)getChargeDuration(var1, var2);
+      if (var3 > 1.0F) {
+         var3 = 1.0F;
       }
 
-      return var2;
+      return var3;
    }
 
    @Override
@@ -274,5 +281,23 @@ public class CrossbowItem extends ProjectileWeaponItem {
    @Override
    public int getDefaultProjectileRange() {
       return 8;
+   }
+
+   public static record ChargingSounds(Optional<Holder<SoundEvent>> start, Optional<Holder<SoundEvent>> mid, Optional<Holder<SoundEvent>> end) {
+      public static final Codec<CrossbowItem.ChargingSounds> CODEC = RecordCodecBuilder.create(
+         var0 -> var0.group(
+                  SoundEvent.CODEC.optionalFieldOf("start").forGetter(CrossbowItem.ChargingSounds::start),
+                  SoundEvent.CODEC.optionalFieldOf("mid").forGetter(CrossbowItem.ChargingSounds::mid),
+                  SoundEvent.CODEC.optionalFieldOf("end").forGetter(CrossbowItem.ChargingSounds::end)
+               )
+               .apply(var0, CrossbowItem.ChargingSounds::new)
+      );
+
+      public ChargingSounds(Optional<Holder<SoundEvent>> start, Optional<Holder<SoundEvent>> mid, Optional<Holder<SoundEvent>> end) {
+         super();
+         this.start = start;
+         this.mid = mid;
+         this.end = end;
+      }
    }
 }

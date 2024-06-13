@@ -3,7 +3,9 @@ package net.minecraft.util;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
+import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 public interface ProblemReporter {
@@ -47,6 +49,20 @@ public interface ProblemReporter {
 
       public Multimap<String, String> get() {
          return ImmutableMultimap.copyOf(this.problems);
+      }
+
+      public Optional<String> getReport() {
+         Multimap var1 = this.get();
+         if (!var1.isEmpty()) {
+            String var2 = var1.asMap()
+               .entrySet()
+               .stream()
+               .map(var0 -> "  at " + (String)var0.getKey() + ": " + String.join("; ", (Iterable<? extends CharSequence>)var0.getValue()))
+               .collect(Collectors.joining("\n"));
+            return Optional.of(var2);
+         } else {
+            return Optional.empty();
+         }
       }
    }
 }

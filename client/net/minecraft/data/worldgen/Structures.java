@@ -343,5 +343,30 @@ public class Structures {
             Heightmap.Types.WORLD_SURFACE_WG
          )
       );
+      var0.register(
+         BuiltinStructures.TRIAL_CHAMBERS,
+         new JigsawStructure(
+            structure(
+               var1.getOrThrow(BiomeTags.HAS_TRIAL_CHAMBERS),
+               Arrays.stream(MobCategory.values())
+                  .collect(
+                     Collectors.toMap(
+                        var0x -> (MobCategory)var0x,
+                        var0x -> new StructureSpawnOverride(StructureSpawnOverride.BoundingBoxType.PIECE, WeightedRandomList.create())
+                     )
+                  ),
+               GenerationStep.Decoration.UNDERGROUND_STRUCTURES,
+               TerrainAdjustment.ENCAPSULATE
+            ),
+            var2.getOrThrow(TrialChambersStructurePools.START),
+            Optional.empty(),
+            20,
+            UniformHeight.of(VerticalAnchor.absolute(-40), VerticalAnchor.absolute(-20)),
+            false,
+            Optional.empty(),
+            116,
+            TrialChambersStructurePools.ALIAS_BINDINGS
+         )
+      );
    }
 }

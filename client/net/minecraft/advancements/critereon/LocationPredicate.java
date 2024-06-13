@@ -23,7 +23,8 @@ public record LocationPredicate(
    Optional<Boolean> smokey,
    Optional<LightPredicate> light,
    Optional<BlockPredicate> block,
-   Optional<FluidPredicate> fluid
+   Optional<FluidPredicate> fluid,
+   Optional<Boolean> canSeeSky
 ) {
    public static final Codec<LocationPredicate> CODEC = RecordCodecBuilder.create(
       var0 -> var0.group(
@@ -34,7 +35,8 @@ public record LocationPredicate(
                Codec.BOOL.optionalFieldOf("smokey").forGetter(LocationPredicate::smokey),
                LightPredicate.CODEC.optionalFieldOf("light").forGetter(LocationPredicate::light),
                BlockPredicate.CODEC.optionalFieldOf("block").forGetter(LocationPredicate::block),
-               FluidPredicate.CODEC.optionalFieldOf("fluid").forGetter(LocationPredicate::fluid)
+               FluidPredicate.CODEC.optionalFieldOf("fluid").forGetter(LocationPredicate::fluid),
+               Codec.BOOL.optionalFieldOf("can_see_sky").forGetter(LocationPredicate::canSeeSky)
             )
             .apply(var0, LocationPredicate::new)
    );
@@ -47,7 +49,8 @@ public record LocationPredicate(
       Optional<Boolean> smokey,
       Optional<LightPredicate> light,
       Optional<BlockPredicate> block,
-      Optional<FluidPredicate> fluid
+      Optional<FluidPredicate> fluid,
+      Optional<Boolean> canSeeSky
    ) {
       super();
       this.position = position;
@@ -58,6 +61,7 @@ public record LocationPredicate(
       this.light = light;
       this.block = block;
       this.fluid = fluid;
+      this.canSeeSky = canSeeSky;
    }
 
    public boolean matches(ServerLevel var1, double var2, double var4, double var6) {
@@ -73,10 +77,12 @@ public record LocationPredicate(
                if (!this.smokey.isPresent() || var9 && this.smokey.get() == CampfireBlock.isSmokeyPos(var1, var8)) {
                   if (this.light.isPresent() && !this.light.get().matches(var1, var8)) {
                      return false;
+                  } else if (this.block.isPresent() && !this.block.get().matches(var1, var8)) {
+                     return false;
                   } else {
-                     return this.block.isPresent() && !this.block.get().matches(var1, var8)
+                     return this.fluid.isPresent() && !this.fluid.get().matches(var1, var8)
                         ? false
-                        : !this.fluid.isPresent() || this.fluid.get().matches(var1, var8);
+                        : !this.canSeeSky.isPresent() || this.canSeeSky.get() == var1.canSeeSky(var8);
                   }
                } else {
                   return false;
@@ -101,6 +107,7 @@ public record LocationPredicate(
       private Optional<LightPredicate> light = Optional.empty();
       private Optional<BlockPredicate> block = Optional.empty();
       private Optional<FluidPredicate> fluid = Optional.empty();
+      private Optional<Boolean> canSeeSky = Optional.empty();
 
       public Builder() {
          super();
@@ -176,9 +183,14 @@ public record LocationPredicate(
          return this;
       }
 
+      public LocationPredicate.Builder setCanSeeSky(boolean var1) {
+         this.canSeeSky = Optional.of(var1);
+         return this;
+      }
+
       public LocationPredicate build() {
          Optional var1 = LocationPredicate.PositionPredicate.of(this.x, this.y, this.z);
-         return new LocationPredicate(var1, this.biomes, this.structures, this.dimension, this.smokey, this.light, this.block, this.fluid);
+         return new LocationPredicate(var1, this.biomes, this.structures, this.dimension, this.smokey, this.light, this.block, this.fluid, this.canSeeSky);
       }
    }
 

@@ -1,44 +1,55 @@
 package net.minecraft.world.item.enchantment;
 
 import com.google.common.collect.Lists;
+import com.mojang.datafixers.util.Pair;
 import it.unimi.dsi.fastutil.objects.Object2IntMap.Entry;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import net.minecraft.Util;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
 import net.minecraft.util.random.WeightedRandom;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.flag.FeatureFlagSet;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.providers.EnchantmentProvider;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.storage.loot.LootContext;
+import net.minecraft.world.phys.Vec3;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.apache.commons.lang3.mutable.MutableFloat;
-import org.apache.commons.lang3.mutable.MutableInt;
+import org.apache.commons.lang3.mutable.MutableObject;
 
 public class EnchantmentHelper {
-   private static final float SWIFT_SNEAK_EXTRA_FACTOR = 0.15F;
-
    public EnchantmentHelper() {
       super();
    }
 
-   public static int getItemEnchantmentLevel(Enchantment var0, ItemStack var1) {
+   public static int getItemEnchantmentLevel(Holder<Enchantment> var0, ItemStack var1) {
       ItemEnchantments var2 = var1.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
       return var2.getLevel(var0);
    }
@@ -78,192 +89,315 @@ public class EnchantmentHelper {
          || !var0.getOrDefault(DataComponents.STORED_ENCHANTMENTS, ItemEnchantments.EMPTY).isEmpty();
    }
 
-   public static float getSweepingDamageRatio(int var0) {
-      return 1.0F - 1.0F / (float)(var0 + 1);
+   public static int processDurabilityChange(ServerLevel var0, ItemStack var1, int var2) {
+      MutableFloat var3 = new MutableFloat((float)var2);
+      runIterationOnItem(var1, (var3x, var4) -> var3x.value().modifyDurabilityChange(var0, var4, var1, var3));
+      return var3.intValue();
    }
 
-   private static void runIterationOnItem(EnchantmentHelper.EnchantmentVisitor var0, ItemStack var1) {
-      ItemEnchantments var2 = var1.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
-
-      for (Entry var4 : var2.entrySet()) {
-         var0.accept((Enchantment)((Holder)var4.getKey()).value(), var4.getIntValue());
-      }
+   public static int processAmmoUse(ServerLevel var0, ItemStack var1, ItemStack var2, int var3) {
+      MutableFloat var4 = new MutableFloat((float)var3);
+      runIterationOnItem(var1, (var3x, var4x) -> var3x.value().modifyAmmoCount(var0, var4x, var2, var4));
+      return var4.intValue();
    }
 
-   private static void runIterationOnInventory(EnchantmentHelper.EnchantmentVisitor var0, Iterable<ItemStack> var1) {
-      for (ItemStack var3 : var1) {
-         runIterationOnItem(var0, var3);
-      }
+   public static int processBlockExperience(ServerLevel var0, ItemStack var1, int var2) {
+      MutableFloat var3 = new MutableFloat((float)var2);
+      runIterationOnItem(var1, (var3x, var4) -> var3x.value().modifyBlockExperience(var0, var4, var1, var3));
+      return var3.intValue();
    }
 
-   public static int getDamageProtection(Iterable<ItemStack> var0, DamageSource var1) {
-      MutableInt var2 = new MutableInt();
-      runIterationOnInventory((var2x, var3) -> var2.add(var2x.getDamageProtection(var3, var1)), var0);
-      return var2.intValue();
-   }
-
-   public static float getDamageBonus(ItemStack var0, @Nullable EntityType<?> var1) {
-      MutableFloat var2 = new MutableFloat();
-      runIterationOnItem((var2x, var3) -> var2.add(var2x.getDamageBonus(var3, var1)), var0);
-      return var2.floatValue();
-   }
-
-   public static float getSweepingDamageRatio(LivingEntity var0) {
-      int var1 = getEnchantmentLevel(Enchantments.SWEEPING_EDGE, var0);
-      return var1 > 0 ? getSweepingDamageRatio(var1) : 0.0F;
-   }
-
-   public static float calculateArmorBreach(@Nullable Entity var0, float var1) {
-      if (var0 instanceof LivingEntity var2) {
-         int var3 = getEnchantmentLevel(Enchantments.BREACH, var2);
-         if (var3 > 0) {
-            return BreachEnchantment.calculateArmorBreach((float)var3, var1);
-         }
-      }
-
-      return var1;
-   }
-
-   public static void doPostHurtEffects(LivingEntity var0, Entity var1) {
-      EnchantmentHelper.EnchantmentVisitor var2 = (var2x, var3) -> var2x.doPostHurt(var0, var1, var3);
-      if (var0 != null) {
-         runIterationOnInventory(var2, var0.getAllSlots());
-      }
-
-      if (var1 instanceof Player) {
-         runIterationOnItem(var2, var0.getMainHandItem());
-      }
-   }
-
-   public static void doPostDamageEffects(LivingEntity var0, Entity var1) {
-      EnchantmentHelper.EnchantmentVisitor var2 = (var2x, var3) -> var2x.doPostAttack(var0, var1, var3);
-      if (var0 != null) {
-         runIterationOnInventory(var2, var0.getAllSlots());
-      }
-
-      if (var0 instanceof Player) {
-         runIterationOnItem(var2, var0.getMainHandItem());
-      }
-   }
-
-   public static void doPostItemStackHurtEffects(LivingEntity var0, Entity var1, ItemEnchantments var2) {
-      for (Entry var4 : var2.entrySet()) {
-         ((Enchantment)((Holder)var4.getKey()).value()).doPostItemStackHurt(var0, var1, var4.getIntValue());
-      }
-   }
-
-   public static int getEnchantmentLevel(Enchantment var0, LivingEntity var1) {
-      Collection var2 = var0.getSlotItems(var1).values();
-      if (var2 == null) {
-         return 0;
+   public static int processMobExperience(ServerLevel var0, @Nullable Entity var1, Entity var2, int var3) {
+      if (var1 instanceof LivingEntity var4) {
+         MutableFloat var5 = new MutableFloat((float)var3);
+         runIterationOnEquipment(var4, (var3x, var4x, var5x) -> var3x.value().modifyMobExperience(var0, var4x, var5x.itemStack(), var2, var5));
+         return var5.intValue();
       } else {
-         int var3 = 0;
-
-         for (ItemStack var5 : var2) {
-            int var6 = getItemEnchantmentLevel(var0, var5);
-            if (var6 > var3) {
-               var3 = var6;
-            }
-         }
-
          return var3;
       }
    }
 
-   public static float getSneakingSpeedBonus(LivingEntity var0) {
-      return (float)getEnchantmentLevel(Enchantments.SWIFT_SNEAK, var0) * 0.15F;
+   private static void runIterationOnItem(ItemStack var0, EnchantmentHelper.EnchantmentVisitor var1) {
+      ItemEnchantments var2 = var0.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
+
+      for (Entry var4 : var2.entrySet()) {
+         var1.accept((Holder<Enchantment>)var4.getKey(), var4.getIntValue());
+      }
    }
 
-   public static int getKnockbackBonus(LivingEntity var0) {
-      return getEnchantmentLevel(Enchantments.KNOCKBACK, var0);
-   }
+   private static void runIterationOnItem(ItemStack var0, EquipmentSlot var1, LivingEntity var2, EnchantmentHelper.EnchantmentInSlotVisitor var3) {
+      if (!var0.isEmpty()) {
+         ItemEnchantments var4 = var0.get(DataComponents.ENCHANTMENTS);
+         if (var4 != null && !var4.isEmpty()) {
+            EnchantedItemInUse var5 = new EnchantedItemInUse(var0, var1, var2);
 
-   public static int getFireAspect(LivingEntity var0) {
-      return getEnchantmentLevel(Enchantments.FIRE_ASPECT, var0);
-   }
-
-   public static int getRespiration(LivingEntity var0) {
-      return getEnchantmentLevel(Enchantments.RESPIRATION, var0);
-   }
-
-   public static int getDepthStrider(LivingEntity var0) {
-      return getEnchantmentLevel(Enchantments.DEPTH_STRIDER, var0);
-   }
-
-   public static int getBlockEfficiency(LivingEntity var0) {
-      return getEnchantmentLevel(Enchantments.EFFICIENCY, var0);
-   }
-
-   public static int getFishingLuckBonus(ItemStack var0) {
-      return getItemEnchantmentLevel(Enchantments.LUCK_OF_THE_SEA, var0);
-   }
-
-   public static int getFishingSpeedBonus(ItemStack var0) {
-      return getItemEnchantmentLevel(Enchantments.LURE, var0);
-   }
-
-   public static int getMobLooting(LivingEntity var0) {
-      return getEnchantmentLevel(Enchantments.LOOTING, var0);
-   }
-
-   public static boolean hasAquaAffinity(LivingEntity var0) {
-      return getEnchantmentLevel(Enchantments.AQUA_AFFINITY, var0) > 0;
-   }
-
-   public static boolean hasFrostWalker(LivingEntity var0) {
-      return getEnchantmentLevel(Enchantments.FROST_WALKER, var0) > 0;
-   }
-
-   public static boolean hasSoulSpeed(LivingEntity var0) {
-      return getEnchantmentLevel(Enchantments.SOUL_SPEED, var0) > 0;
-   }
-
-   public static boolean hasBindingCurse(ItemStack var0) {
-      return getItemEnchantmentLevel(Enchantments.BINDING_CURSE, var0) > 0;
-   }
-
-   public static boolean hasVanishingCurse(ItemStack var0) {
-      return getItemEnchantmentLevel(Enchantments.VANISHING_CURSE, var0) > 0;
-   }
-
-   public static boolean hasSilkTouch(ItemStack var0) {
-      return getItemEnchantmentLevel(Enchantments.SILK_TOUCH, var0) > 0;
-   }
-
-   public static int getLoyalty(ItemStack var0) {
-      return getItemEnchantmentLevel(Enchantments.LOYALTY, var0);
-   }
-
-   public static int getRiptide(ItemStack var0) {
-      return getItemEnchantmentLevel(Enchantments.RIPTIDE, var0);
-   }
-
-   public static boolean hasChanneling(ItemStack var0) {
-      return getItemEnchantmentLevel(Enchantments.CHANNELING, var0) > 0;
-   }
-
-   @Nullable
-   public static java.util.Map.Entry<EquipmentSlot, ItemStack> getRandomItemWith(Enchantment var0, LivingEntity var1) {
-      return getRandomItemWith(var0, var1, var0x -> true);
-   }
-
-   @Nullable
-   public static java.util.Map.Entry<EquipmentSlot, ItemStack> getRandomItemWith(Enchantment var0, LivingEntity var1, Predicate<ItemStack> var2) {
-      Map var3 = var0.getSlotItems(var1);
-      if (var3.isEmpty()) {
-         return null;
-      } else {
-         ArrayList var4 = Lists.newArrayList();
-
-         for (java.util.Map.Entry var6 : var3.entrySet()) {
-            ItemStack var7 = (ItemStack)var6.getValue();
-            if (!var7.isEmpty() && getItemEnchantmentLevel(var0, var7) > 0 && var2.test(var7)) {
-               var4.add(var6);
+            for (Entry var7 : var4.entrySet()) {
+               Holder var8 = (Holder)var7.getKey();
+               if (((Enchantment)var8.value()).matchingSlot(var1)) {
+                  var3.accept(var8, var7.getIntValue(), var5);
+               }
             }
          }
-
-         return var4.isEmpty() ? null : (java.util.Map.Entry)var4.get(var1.getRandom().nextInt(var4.size()));
       }
+   }
+
+   private static void runIterationOnEquipment(LivingEntity var0, EnchantmentHelper.EnchantmentInSlotVisitor var1) {
+      for (EquipmentSlot var5 : EquipmentSlot.values()) {
+         runIterationOnItem(var0.getItemBySlot(var5), var5, var0, var1);
+      }
+   }
+
+   public static boolean isImmuneToDamage(ServerLevel var0, LivingEntity var1, DamageSource var2) {
+      MutableBoolean var3 = new MutableBoolean();
+      runIterationOnEquipment(var1, (var4, var5, var6) -> var3.setValue(var3.isTrue() || var4.value().isImmuneToDamage(var0, var5, var1, var2)));
+      return var3.isTrue();
+   }
+
+   public static float getDamageProtection(ServerLevel var0, LivingEntity var1, DamageSource var2) {
+      MutableFloat var3 = new MutableFloat(0.0F);
+      runIterationOnEquipment(var1, (var4, var5, var6) -> var4.value().modifyDamageProtection(var0, var5, var6.itemStack(), var1, var2, var3));
+      return var3.floatValue();
+   }
+
+   public static float modifyDamage(ServerLevel var0, ItemStack var1, Entity var2, DamageSource var3, float var4) {
+      MutableFloat var5 = new MutableFloat(var4);
+      runIterationOnItem(var1, (var5x, var6) -> var5x.value().modifyDamage(var0, var6, var1, var2, var3, var5));
+      return var5.floatValue();
+   }
+
+   public static float modifyFallBasedDamage(ServerLevel var0, ItemStack var1, Entity var2, DamageSource var3, float var4) {
+      MutableFloat var5 = new MutableFloat(var4);
+      runIterationOnItem(var1, (var5x, var6) -> var5x.value().modifyFallBasedDamage(var0, var6, var1, var2, var3, var5));
+      return var5.floatValue();
+   }
+
+   public static float modifyArmorEffectiveness(ServerLevel var0, ItemStack var1, Entity var2, DamageSource var3, float var4) {
+      MutableFloat var5 = new MutableFloat(var4);
+      runIterationOnItem(var1, (var5x, var6) -> var5x.value().modifyArmorEffectivness(var0, var6, var1, var2, var3, var5));
+      return var5.floatValue();
+   }
+
+   public static float modifyKnockback(ServerLevel var0, ItemStack var1, Entity var2, DamageSource var3, float var4) {
+      MutableFloat var5 = new MutableFloat(var4);
+      runIterationOnItem(var1, (var5x, var6) -> var5x.value().modifyKnockback(var0, var6, var1, var2, var3, var5));
+      return var5.floatValue();
+   }
+
+   public static void doPostAttackEffects(ServerLevel var0, Entity var1, DamageSource var2) {
+      if (var1 instanceof LivingEntity var3) {
+         runIterationOnEquipment(var3, (var3x, var4, var5x) -> var3x.value().doPostAttack(var0, var4, var5x, EnchantmentTarget.VICTIM, var1, var2));
+      }
+
+      if (var2.getEntity() instanceof LivingEntity var5) {
+         runIterationOnItem(
+            var5.getMainHandItem(),
+            EquipmentSlot.MAINHAND,
+            var5,
+            (var3x, var4, var5x) -> var3x.value().doPostAttack(var0, var4, var5x, EnchantmentTarget.ATTACKER, var1, var2)
+         );
+      }
+   }
+
+   public static void runLocationChangedEffects(ServerLevel var0, LivingEntity var1) {
+      runIterationOnEquipment(var1, (var2, var3, var4) -> var2.value().runLocationChangedEffects(var0, var3, var4, var1));
+   }
+
+   public static void runLocationChangedEffects(ServerLevel var0, ItemStack var1, LivingEntity var2, EquipmentSlot var3) {
+      runIterationOnItem(var1, var3, var2, (var2x, var3x, var4) -> var2x.value().runLocationChangedEffects(var0, var3x, var4, var2));
+   }
+
+   public static void stopLocationBasedEffects(LivingEntity var0) {
+      runIterationOnEquipment(var0, (var1, var2, var3) -> var1.value().stopLocationBasedEffects(var2, var3, var0));
+   }
+
+   public static void stopLocationBasedEffects(ItemStack var0, LivingEntity var1, EquipmentSlot var2) {
+      runIterationOnItem(var0, var2, var1, (var1x, var2x, var3) -> var1x.value().stopLocationBasedEffects(var2x, var3, var1));
+   }
+
+   public static void tickEffects(ServerLevel var0, LivingEntity var1) {
+      runIterationOnEquipment(var1, (var2, var3, var4) -> var2.value().tick(var0, var3, var4, var1));
+   }
+
+   public static int getEnchantmentLevel(Holder<Enchantment> var0, LivingEntity var1) {
+      Collection var2 = ((Enchantment)var0.value()).getSlotItems(var1).values();
+      int var3 = 0;
+
+      for (ItemStack var5 : var2) {
+         int var6 = getItemEnchantmentLevel(var0, var5);
+         if (var6 > var3) {
+            var3 = var6;
+         }
+      }
+
+      return var3;
+   }
+
+   public static int processProjectileCount(ServerLevel var0, ItemStack var1, Entity var2, int var3) {
+      MutableFloat var4 = new MutableFloat((float)var3);
+      runIterationOnItem(var1, (var4x, var5) -> var4x.value().modifyProjectileCount(var0, var5, var1, var2, var4));
+      return Math.max(0, var4.intValue());
+   }
+
+   public static float processProjectileSpread(ServerLevel var0, ItemStack var1, Entity var2, float var3) {
+      MutableFloat var4 = new MutableFloat(var3);
+      runIterationOnItem(var1, (var4x, var5) -> var4x.value().modifyProjectileSpread(var0, var5, var1, var2, var4));
+      return Math.max(0.0F, var4.floatValue());
+   }
+
+   public static int getPiercingCount(ServerLevel var0, ItemStack var1, ItemStack var2) {
+      MutableFloat var3 = new MutableFloat(0.0F);
+      runIterationOnItem(var1, (var3x, var4) -> var3x.value().modifyPiercingCount(var0, var4, var2, var3));
+      return Math.max(0, var3.intValue());
+   }
+
+   public static void onProjectileSpawned(ServerLevel var0, ItemStack var1, AbstractArrow var2, Runnable var3) {
+      LivingEntity var4 = var2.getOwner() instanceof LivingEntity var5 ? var5 : null;
+      EnchantedItemInUse var7 = new EnchantedItemInUse(var1, null, var4, var3);
+      runIterationOnItem(var1, (var3x, var4x) -> var3x.value().onProjectileSpawned(var0, var4x, var7, var2));
+   }
+
+   public static void onHitBlock(
+      ServerLevel var0, ItemStack var1, @Nullable LivingEntity var2, Entity var3, @Nullable EquipmentSlot var4, Vec3 var5, Runnable var6
+   ) {
+      EnchantedItemInUse var7 = new EnchantedItemInUse(var1, var4, var2, var6);
+      runIterationOnItem(var1, (var4x, var5x) -> var4x.value().onHitBlock(var0, var5x, var7, var3, var5));
+   }
+
+   public static int modifyDurabilityToRepairFromXp(ServerLevel var0, ItemStack var1, int var2) {
+      MutableFloat var3 = new MutableFloat((float)var2);
+      runIterationOnItem(var1, (var3x, var4) -> var3x.value().modifyDurabilityToRepairFromXp(var0, var4, var1, var3));
+      return Math.max(0, var3.intValue());
+   }
+
+   public static float processEquipmentDropChance(ServerLevel var0, LivingEntity var1, DamageSource var2, float var3) {
+      MutableFloat var4 = new MutableFloat(var3);
+      RandomSource var5 = var1.getRandom();
+      runIterationOnEquipment(var1, (var5x, var6, var7x) -> {
+         LootContext var8 = Enchantment.damageContext(var0, var6, var1, var2);
+         var5x.value().getEffects(EnchantmentEffectComponents.EQUIPMENT_DROPS).forEach(var5xx -> {
+            if (var5xx.enchanted() == EnchantmentTarget.VICTIM && var5xx.affected() == EnchantmentTarget.VICTIM && var5xx.matches(var8)) {
+               var4.setValue(var5xx.effect().process(var7x.itemStack(), var6, var5, var4.floatValue()));
+            }
+         });
+      });
+      if (var2.getEntity() instanceof LivingEntity var7) {
+         runIterationOnEquipment(var7, (var5x, var6, var7x) -> {
+            LootContext var8 = Enchantment.damageContext(var0, var6, var1, var2);
+            var5x.value().getEffects(EnchantmentEffectComponents.EQUIPMENT_DROPS).forEach(var5xx -> {
+               if (var5xx.enchanted() == EnchantmentTarget.ATTACKER && var5xx.affected() == EnchantmentTarget.VICTIM && var5xx.matches(var8)) {
+                  var4.setValue(var5xx.effect().process(var7x.itemStack(), var6, var5, var4.floatValue()));
+               }
+            });
+         });
+      }
+
+      return var4.floatValue();
+   }
+
+   public static void forEachModifier(ItemStack var0, EquipmentSlot var1, BiConsumer<Holder<Attribute>, AttributeModifier> var2) {
+      runIterationOnItem(var0, (var2x, var3) -> var2x.value().getEffects(EnchantmentEffectComponents.ATTRIBUTES).forEach(var4 -> {
+            if (((Enchantment)var2x.value()).matchingSlot(var1)) {
+               var2.accept(var4.attribute(), var4.getModifier(var3));
+            }
+         }));
+   }
+
+   public static int getFishingLuckBonus(ServerLevel var0, ItemStack var1, Entity var2) {
+      MutableFloat var3 = new MutableFloat(0.0F);
+      runIterationOnItem(var1, (var4, var5) -> var4.value().modifyFishingLuckBonus(var0, var5, var1, var2, var3));
+      return Math.max(0, var3.intValue());
+   }
+
+   public static float getFishingTimeReduction(ServerLevel var0, ItemStack var1, Entity var2) {
+      MutableFloat var3 = new MutableFloat(0.0F);
+      runIterationOnItem(var1, (var4, var5) -> var4.value().modifyFishingTimeReduction(var0, var5, var1, var2, var3));
+      return Math.max(0.0F, var3.floatValue());
+   }
+
+   public static int getTridentReturnToOwnerAcceleration(ServerLevel var0, ItemStack var1, Entity var2) {
+      MutableFloat var3 = new MutableFloat(0.0F);
+      runIterationOnItem(var1, (var4, var5) -> var4.value().modifyTridentReturnToOwnerAcceleration(var0, var5, var1, var2, var3));
+      return Math.max(0, var3.intValue());
+   }
+
+   public static float modifyCrossbowChargingTime(ServerLevel var0, ItemStack var1, Entity var2, float var3) {
+      MutableFloat var4 = new MutableFloat(var3);
+      runIterationOnItem(var1, (var3x, var4x) -> var3x.value().modifyCrossbowChargeTime(var0, var4x, var1, var4));
+      return Math.max(0.0F, var4.floatValue());
+   }
+
+   public static float getTridentSpinAttackStrength(ServerLevel var0, ItemStack var1, LivingEntity var2) {
+      MutableFloat var3 = new MutableFloat(0.0F);
+      runIterationOnEquipment(var2, (var4, var5, var6) -> var4.value().modifyTridentSpinAttackStrength(var0, var5, var1, var2, var3));
+      return var3.floatValue();
+   }
+
+   public static boolean hasTag(ItemStack var0, TagKey<Enchantment> var1) {
+      ItemEnchantments var2 = var0.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
+
+      for (Entry var4 : var2.entrySet()) {
+         Holder var5 = (Holder)var4.getKey();
+         if (var5.is(var1)) {
+            return true;
+         }
+      }
+
+      return false;
+   }
+
+   public static boolean has(ItemStack var0, DataComponentType<?> var1) {
+      MutableBoolean var2 = new MutableBoolean(false);
+      runIterationOnItem(var0, (var2x, var3) -> {
+         if (var2x.value().effects().has(var1)) {
+            var2.setTrue();
+         }
+      });
+      return var2.booleanValue();
+   }
+
+   public static <T> Optional<T> pickHighestLevel(ItemStack var0, DataComponentType<List<T>> var1) {
+      Pair var2 = getHighestLevel(var0, var1);
+      if (var2 != null) {
+         List var3 = (List)var2.getFirst();
+         int var4 = (Integer)var2.getSecond();
+         return Optional.of((T)var3.get(Math.min(var4, var3.size()) - 1));
+      } else {
+         return Optional.empty();
+      }
+   }
+
+   @Nullable
+   public static <T> Pair<T, Integer> getHighestLevel(ItemStack var0, DataComponentType<T> var1) {
+      MutableObject var2 = new MutableObject();
+      runIterationOnItem(var0, (var2x, var3) -> {
+         if (var2.getValue() == null || (Integer)((Pair)var2.getValue()).getSecond() < var3) {
+            Object var4 = var2x.value().effects().get(var1);
+            if (var4 != null) {
+               var2.setValue(Pair.of(var4, var3));
+            }
+         }
+      });
+      return (Pair<T, Integer>)var2.getValue();
+   }
+
+   public static Optional<EnchantedItemInUse> getRandomItemWith(DataComponentType<?> var0, LivingEntity var1, Predicate<ItemStack> var2) {
+      ArrayList var3 = new ArrayList();
+
+      for (EquipmentSlot var7 : EquipmentSlot.values()) {
+         ItemStack var8 = var1.getItemBySlot(var7);
+         if (var2.test(var8)) {
+            ItemEnchantments var9 = var8.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
+
+            for (Entry var11 : var9.entrySet()) {
+               Holder var12 = (Holder)var11.getKey();
+               if (((Enchantment)var12.value()).effects().has(var0) && ((Enchantment)var12.value()).matchingSlot(var7)) {
+                  var3.add(new EnchantedItemInUse(var8, var7, var1));
+               }
+            }
+         }
+      }
+
+      return Util.getRandomSafe(var3, var1.getRandom());
    }
 
    public static int getEnchantmentCost(RandomSource var0, int var1, int var2, ItemStack var3) {
@@ -285,64 +419,67 @@ public class EnchantmentHelper {
       }
    }
 
-   public static ItemStack enchantItem(FeatureFlagSet var0, RandomSource var1, ItemStack var2, int var3, boolean var4) {
-      List var5 = selectEnchantment(var0, var1, var2, var3, var4);
-      if (var2.is(Items.BOOK)) {
-         var2 = new ItemStack(Items.ENCHANTED_BOOK);
-      }
-
-      for (EnchantmentInstance var7 : var5) {
-         var2.enchant(var7.enchantment, var7.level);
-      }
-
-      return var2;
+   public static ItemStack enchantItem(RandomSource var0, ItemStack var1, int var2, RegistryAccess var3, Optional<? extends HolderSet<Enchantment>> var4) {
+      return enchantItem(
+         var0,
+         var1,
+         var2,
+         var4.map(HolderSet::stream).orElseGet(() -> var3.registryOrThrow(Registries.ENCHANTMENT).holders().map(var0xx -> (Holder<Enchantment>)var0xx))
+      );
    }
 
-   public static List<EnchantmentInstance> selectEnchantment(FeatureFlagSet var0, RandomSource var1, ItemStack var2, int var3, boolean var4) {
-      ArrayList var5 = Lists.newArrayList();
-      Item var6 = var2.getItem();
-      int var7 = var6.getEnchantmentValue();
-      if (var7 <= 0) {
-         return var5;
-      } else {
-         var3 += 1 + var1.nextInt(var7 / 4 + 1) + var1.nextInt(var7 / 4 + 1);
-         float var8 = (var1.nextFloat() + var1.nextFloat() - 1.0F) * 0.15F;
-         var3 = Mth.clamp(Math.round((float)var3 + (float)var3 * var8), 1, 2147483647);
-         List var9 = getAvailableEnchantmentResults(var0, var3, var2, var4);
-         if (!var9.isEmpty()) {
-            WeightedRandom.getRandomItem(var1, var9).ifPresent(var5::add);
+   public static ItemStack enchantItem(RandomSource var0, ItemStack var1, int var2, Stream<Holder<Enchantment>> var3) {
+      List var4 = selectEnchantment(var0, var1, var2, var3);
+      if (var1.is(Items.BOOK)) {
+         var1 = new ItemStack(Items.ENCHANTED_BOOK);
+      }
 
-            while (var1.nextInt(50) <= var3) {
-               if (!var5.isEmpty()) {
-                  filterCompatibleEnchantments(var9, Util.lastOf(var5));
+      for (EnchantmentInstance var6 : var4) {
+         var1.enchant(var6.enchantment, var6.level);
+      }
+
+      return var1;
+   }
+
+   public static List<EnchantmentInstance> selectEnchantment(RandomSource var0, ItemStack var1, int var2, Stream<Holder<Enchantment>> var3) {
+      ArrayList var4 = Lists.newArrayList();
+      Item var5 = var1.getItem();
+      int var6 = var5.getEnchantmentValue();
+      if (var6 <= 0) {
+         return var4;
+      } else {
+         var2 += 1 + var0.nextInt(var6 / 4 + 1) + var0.nextInt(var6 / 4 + 1);
+         float var7 = (var0.nextFloat() + var0.nextFloat() - 1.0F) * 0.15F;
+         var2 = Mth.clamp(Math.round((float)var2 + (float)var2 * var7), 1, 2147483647);
+         List var8 = getAvailableEnchantmentResults(var2, var1, var3);
+         if (!var8.isEmpty()) {
+            WeightedRandom.getRandomItem(var0, var8).ifPresent(var4::add);
+
+            while (var0.nextInt(50) <= var2) {
+               if (!var4.isEmpty()) {
+                  filterCompatibleEnchantments(var8, Util.lastOf(var4));
                }
 
-               if (var9.isEmpty()) {
+               if (var8.isEmpty()) {
                   break;
                }
 
-               WeightedRandom.getRandomItem(var1, var9).ifPresent(var5::add);
-               var3 /= 2;
+               WeightedRandom.getRandomItem(var0, var8).ifPresent(var4::add);
+               var2 /= 2;
             }
          }
 
-         return var5;
+         return var4;
       }
    }
 
    public static void filterCompatibleEnchantments(List<EnchantmentInstance> var0, EnchantmentInstance var1) {
-      Iterator var2 = var0.iterator();
-
-      while (var2.hasNext()) {
-         if (!var1.enchantment.isCompatibleWith(((EnchantmentInstance)var2.next()).enchantment)) {
-            var2.remove();
-         }
-      }
+      var0.removeIf(var1x -> !Enchantment.areCompatible(var1.enchantment, var1x.enchantment));
    }
 
-   public static boolean isEnchantmentCompatible(Collection<Holder<Enchantment>> var0, Enchantment var1) {
+   public static boolean isEnchantmentCompatible(Collection<Holder<Enchantment>> var0, Holder<Enchantment> var1) {
       for (Holder var3 : var0) {
-         if (!((Enchantment)var3.value()).isCompatibleWith(var1)) {
+         if (!Enchantment.areCompatible(var3, var1)) {
             return false;
          }
       }
@@ -350,26 +487,36 @@ public class EnchantmentHelper {
       return true;
    }
 
-   public static List<EnchantmentInstance> getAvailableEnchantmentResults(FeatureFlagSet var0, int var1, ItemStack var2, boolean var3) {
-      ArrayList var4 = Lists.newArrayList();
-      boolean var5 = var2.is(Items.BOOK);
+   public static List<EnchantmentInstance> getAvailableEnchantmentResults(int var0, ItemStack var1, Stream<Holder<Enchantment>> var2) {
+      ArrayList var3 = Lists.newArrayList();
+      boolean var4 = var1.is(Items.BOOK);
+      var2.filter(var2x -> ((Enchantment)var2x.value()).isPrimaryItem(var1) || var4).forEach(var2x -> {
+         Enchantment var3x = (Enchantment)var2x.value();
 
-      for (Enchantment var7 : BuiltInRegistries.ENCHANTMENT) {
-         if (var7.isEnabled(var0) && (!var7.isTreasureOnly() || var3) && var7.isDiscoverable() && (var5 || var7.canEnchant(var2) && var7.isPrimaryItem(var2))) {
-            for (int var8 = var7.getMaxLevel(); var8 > var7.getMinLevel() - 1; var8--) {
-               if (var1 >= var7.getMinCost(var8) && var1 <= var7.getMaxCost(var8)) {
-                  var4.add(new EnchantmentInstance(var7, var8));
-                  break;
-               }
+         for (int var4x = var3x.getMaxLevel(); var4x >= var3x.getMinLevel(); var4x--) {
+            if (var0 >= var3x.getMinCost(var4x) && var0 <= var3x.getMaxCost(var4x)) {
+               var3.add(new EnchantmentInstance((Holder<Enchantment>)var2x, var4x));
+               break;
             }
          }
-      }
+      });
+      return var3;
+   }
 
-      return var4;
+   public static void enchantItemFromProvider(ItemStack var0, ResourceKey<EnchantmentProvider> var1, Level var2, BlockPos var3, RandomSource var4) {
+      EnchantmentProvider var5 = var2.registryAccess().registryOrThrow(Registries.ENCHANTMENT_PROVIDER).get(var1);
+      if (var5 != null) {
+         updateEnchantments(var0, var5x -> var5.enchant(var0, var5x, var4, var2, var3));
+      }
+   }
+
+   @FunctionalInterface
+   interface EnchantmentInSlotVisitor {
+      void accept(Holder<Enchantment> var1, int var2, EnchantedItemInUse var3);
    }
 
    @FunctionalInterface
    interface EnchantmentVisitor {
-      void accept(Enchantment var1, int var2);
+      void accept(Holder<Enchantment> var1, int var2);
    }
 }

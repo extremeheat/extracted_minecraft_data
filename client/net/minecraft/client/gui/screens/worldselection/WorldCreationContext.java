@@ -74,6 +74,12 @@ public record WorldCreationContext(
       return this.worldgenRegistries.compositeAccess();
    }
 
+   public void validate() {
+      for (LevelStem var2 : this.datapackDimensions()) {
+         var2.generator().validate();
+      }
+   }
+
    @FunctionalInterface
    public interface DimensionsUpdater extends BiFunction<RegistryAccess.Frozen, WorldDimensions, WorldDimensions> {
    }

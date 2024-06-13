@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
+import net.minecraft.util.ExtraCodecs;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
@@ -24,6 +25,7 @@ import net.minecraft.world.scores.PlayerTeam;
 public record EntityPredicate(
    Optional<EntityTypePredicate> entityType,
    Optional<DistancePredicate> distanceToPlayer,
+   Optional<MovementPredicate> movement,
    Optional<LocationPredicate> location,
    Optional<LocationPredicate> steppingOnLocation,
    Optional<MobEffectsPredicate> effects,
@@ -31,6 +33,7 @@ public record EntityPredicate(
    Optional<EntityFlagsPredicate> flags,
    Optional<EntityEquipmentPredicate> equipment,
    Optional<EntitySubPredicate> subPredicate,
+   Optional<Integer> periodicTick,
    Optional<EntityPredicate> vehicle,
    Optional<EntityPredicate> passenger,
    Optional<EntityPredicate> targetedEntity,
@@ -43,6 +46,7 @@ public record EntityPredicate(
             var1 -> var1.group(
                      EntityTypePredicate.CODEC.optionalFieldOf("type").forGetter(EntityPredicate::entityType),
                      DistancePredicate.CODEC.optionalFieldOf("distance").forGetter(EntityPredicate::distanceToPlayer),
+                     MovementPredicate.CODEC.optionalFieldOf("movement").forGetter(EntityPredicate::movement),
                      LocationPredicate.CODEC.optionalFieldOf("location").forGetter(EntityPredicate::location),
                      LocationPredicate.CODEC.optionalFieldOf("stepping_on").forGetter(EntityPredicate::steppingOnLocation),
                      MobEffectsPredicate.CODEC.optionalFieldOf("effects").forGetter(EntityPredicate::effects),
@@ -50,6 +54,7 @@ public record EntityPredicate(
                      EntityFlagsPredicate.CODEC.optionalFieldOf("flags").forGetter(EntityPredicate::flags),
                      EntityEquipmentPredicate.CODEC.optionalFieldOf("equipment").forGetter(EntityPredicate::equipment),
                      EntitySubPredicate.CODEC.optionalFieldOf("type_specific").forGetter(EntityPredicate::subPredicate),
+                     ExtraCodecs.POSITIVE_INT.optionalFieldOf("periodic_tick").forGetter(EntityPredicate::periodicTick),
                      var0.optionalFieldOf("vehicle").forGetter(EntityPredicate::vehicle),
                      var0.optionalFieldOf("passenger").forGetter(EntityPredicate::passenger),
                      var0.optionalFieldOf("targeted_entity").forGetter(EntityPredicate::targetedEntity),
@@ -64,6 +69,7 @@ public record EntityPredicate(
    public EntityPredicate(
       Optional<EntityTypePredicate> entityType,
       Optional<DistancePredicate> distanceToPlayer,
+      Optional<MovementPredicate> movement,
       Optional<LocationPredicate> location,
       Optional<LocationPredicate> steppingOnLocation,
       Optional<MobEffectsPredicate> effects,
@@ -71,6 +77,7 @@ public record EntityPredicate(
       Optional<EntityFlagsPredicate> flags,
       Optional<EntityEquipmentPredicate> equipment,
       Optional<EntitySubPredicate> subPredicate,
+      Optional<Integer> periodicTick,
       Optional<EntityPredicate> vehicle,
       Optional<EntityPredicate> passenger,
       Optional<EntityPredicate> targetedEntity,
@@ -80,6 +87,7 @@ public record EntityPredicate(
       super();
       this.entityType = entityType;
       this.distanceToPlayer = distanceToPlayer;
+      this.movement = movement;
       this.location = location;
       this.steppingOnLocation = steppingOnLocation;
       this.effects = effects;
@@ -87,6 +95,7 @@ public record EntityPredicate(
       this.flags = flags;
       this.equipment = equipment;
       this.subPredicate = subPredicate;
+      this.periodicTick = periodicTick;
       this.vehicle = vehicle;
       this.passenger = passenger;
       this.targetedEntity = targetedEntity;
@@ -129,12 +138,20 @@ public record EntityPredicate(
             return false;
          }
 
+         if (this.movement.isPresent()) {
+            Vec3 var4 = var3.getDeltaMovement();
+            Vec3 var5 = var4.scale(20.0);
+            if (!this.movement.get().matches(var5.x, var5.y, var5.z, (double)var3.fallDistance)) {
+               return false;
+            }
+         }
+
          if (this.location.isPresent() && !this.location.get().matches(var1, var3.getX(), var3.getY(), var3.getZ())) {
             return false;
          } else {
             if (this.steppingOnLocation.isPresent()) {
-               Vec3 var4 = Vec3.atCenterOf(var3.getOnPos());
-               if (!this.steppingOnLocation.get().matches(var1, var4.x(), var4.y(), var4.z())) {
+               Vec3 var6 = Vec3.atCenterOf(var3.getOnPos());
+               if (!this.steppingOnLocation.get().matches(var1, var6.x(), var6.y(), var6.z())) {
                   return false;
                }
             }
@@ -153,10 +170,12 @@ public record EntityPredicate(
                return false;
             } else if (this.targetedEntity.isPresent() && !this.targetedEntity.get().matches(var1, var2, var3 instanceof Mob ? ((Mob)var3).getTarget() : null)) {
                return false;
+            } else if (this.periodicTick.isPresent() && var3.tickCount % this.periodicTick.get() != 0) {
+               return false;
             } else {
                if (this.team.isPresent()) {
-                  PlayerTeam var5 = var3.getTeam();
-                  if (var5 == null || !this.team.get().equals(var5.getName())) {
+                  PlayerTeam var7 = var3.getTeam();
+                  if (var7 == null || !this.team.get().equals(var7.getName())) {
                      return false;
                   }
                }
@@ -178,6 +197,8 @@ public record EntityPredicate(
    public static class Builder {
       private Optional<EntityTypePredicate> entityType = Optional.empty();
       private Optional<DistancePredicate> distanceToPlayer = Optional.empty();
+      private Optional<DistancePredicate> fallDistance = Optional.empty();
+      private Optional<MovementPredicate> movement = Optional.empty();
       private Optional<LocationPredicate> location = Optional.empty();
       private Optional<LocationPredicate> steppingOnLocation = Optional.empty();
       private Optional<MobEffectsPredicate> effects = Optional.empty();
@@ -185,6 +206,7 @@ public record EntityPredicate(
       private Optional<EntityFlagsPredicate> flags = Optional.empty();
       private Optional<EntityEquipmentPredicate> equipment = Optional.empty();
       private Optional<EntitySubPredicate> subPredicate = Optional.empty();
+      private Optional<Integer> periodicTick = Optional.empty();
       private Optional<EntityPredicate> vehicle = Optional.empty();
       private Optional<EntityPredicate> passenger = Optional.empty();
       private Optional<EntityPredicate> targetedEntity = Optional.empty();
@@ -216,6 +238,11 @@ public record EntityPredicate(
 
       public EntityPredicate.Builder distance(DistancePredicate var1) {
          this.distanceToPlayer = Optional.of(var1);
+         return this;
+      }
+
+      public EntityPredicate.Builder moving(MovementPredicate var1) {
+         this.movement = Optional.of(var1);
          return this;
       }
 
@@ -259,6 +286,11 @@ public record EntityPredicate(
          return this;
       }
 
+      public EntityPredicate.Builder periodicTick(int var1) {
+         this.periodicTick = Optional.of(var1);
+         return this;
+      }
+
       public EntityPredicate.Builder vehicle(EntityPredicate.Builder var1) {
          this.vehicle = Optional.of(var1.build());
          return this;
@@ -288,6 +320,7 @@ public record EntityPredicate(
          return new EntityPredicate(
             this.entityType,
             this.distanceToPlayer,
+            this.movement,
             this.location,
             this.steppingOnLocation,
             this.effects,
@@ -295,6 +328,7 @@ public record EntityPredicate(
             this.flags,
             this.equipment,
             this.subPredicate,
+            this.periodicTick,
             this.vehicle,
             this.passenger,
             this.targetedEntity,

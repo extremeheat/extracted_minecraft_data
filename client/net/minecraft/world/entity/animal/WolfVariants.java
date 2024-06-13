@@ -23,6 +23,7 @@ public class WolfVariants {
    public static final ResourceKey<WolfVariant> WOODS = createKey("woods");
    public static final ResourceKey<WolfVariant> CHESTNUT = createKey("chestnut");
    public static final ResourceKey<WolfVariant> STRIPED = createKey("striped");
+   public static final ResourceKey<WolfVariant> DEFAULT = PALE;
 
    public WolfVariants() {
       super();
@@ -49,7 +50,7 @@ public class WolfVariants {
 
    public static Holder<WolfVariant> getSpawnVariant(RegistryAccess var0, Holder<Biome> var1) {
       Registry var2 = var0.registryOrThrow(Registries.WOLF_VARIANT);
-      return var2.holders().filter(var1x -> var1x.value().biomes().contains(var1)).findFirst().orElse(var2.getHolderOrThrow(PALE));
+      return var2.holders().filter(var1x -> var1x.value().biomes().contains(var1)).findFirst().or(() -> var2.getHolder(DEFAULT)).or(var2::getAny).orElseThrow();
    }
 
    public static void bootstrap(BootstrapContext<WolfVariant> var0) {

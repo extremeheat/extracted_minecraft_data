@@ -130,4 +130,12 @@ public interface BlockPredicate extends BiPredicate<WorldGenLevel, BlockPos> {
    static BlockPredicate alwaysTrue() {
       return TrueBlockPredicate.INSTANCE;
    }
+
+   static BlockPredicate unobstructed(Vec3i var0) {
+      return new UnobstructedPredicate(var0);
+   }
+
+   static BlockPredicate unobstructed() {
+      return unobstructed(Vec3i.ZERO);
+   }
 }

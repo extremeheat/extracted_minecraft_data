@@ -37,22 +37,30 @@ public interface DataComponentMap extends Iterable<TypedDataComponent<?>> {
          return Collections.emptyIterator();
       }
    };
-   Codec<DataComponentMap> CODEC = DataComponentType.VALUE_MAP_CODEC.flatComapMap(DataComponentMap.Builder::buildFromMapTrusted, var0 -> {
-      int var1 = var0.size();
-      if (var1 == 0) {
-         return DataResult.success(Reference2ObjectMaps.emptyMap());
-      } else {
-         Reference2ObjectArrayMap var2 = new Reference2ObjectArrayMap(var1);
+   Codec<DataComponentMap> CODEC = makeCodecFromMap(DataComponentType.VALUE_MAP_CODEC);
 
-         for (TypedDataComponent var4 : var0) {
-            if (!var4.type().isTransient()) {
-               var2.put(var4.type(), var4.value());
+   static Codec<DataComponentMap> makeCodec(Codec<DataComponentType<?>> var0) {
+      return makeCodecFromMap(Codec.dispatchedMap(var0, DataComponentType::codecOrThrow));
+   }
+
+   static Codec<DataComponentMap> makeCodecFromMap(Codec<Map<DataComponentType<?>, Object>> var0) {
+      return var0.flatComapMap(DataComponentMap.Builder::buildFromMapTrusted, var0x -> {
+         int var1 = var0x.size();
+         if (var1 == 0) {
+            return DataResult.success(Reference2ObjectMaps.emptyMap());
+         } else {
+            Reference2ObjectArrayMap var2 = new Reference2ObjectArrayMap(var1);
+
+            for (TypedDataComponent var4 : var0x) {
+               if (!var4.type().isTransient()) {
+                  var2.put(var4.type(), var4.value());
+               }
             }
-         }
 
-         return DataResult.success(var2);
-      }
-   });
+            return DataResult.success(var2);
+         }
+      });
+   }
 
    static DataComponentMap composite(final DataComponentMap var0, final DataComponentMap var1) {
       return new DataComponentMap() {

@@ -29,7 +29,6 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -247,15 +246,6 @@ public class Cat extends TamableAnimal implements VariantHolder<Holder<CatVarian
       }
 
       super.usePlayerItem(var1, var2, var3);
-   }
-
-   private float getAttackDamage() {
-      return (float)this.getAttributeValue(Attributes.ATTACK_DAMAGE);
-   }
-
-   @Override
-   public boolean doHurtTarget(Entity var1) {
-      return var1.hurt(this.damageSources().mobAttack(this), this.getAttackDamage());
    }
 
    @Override

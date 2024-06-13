@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.tags.ItemTags;
-import net.minecraft.world.inventory.CraftingContainer;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.DyedItemColor;
@@ -15,11 +14,11 @@ public class ArmorDyeRecipe extends CustomRecipe {
       super(var1);
    }
 
-   public boolean matches(CraftingContainer var1, Level var2) {
+   public boolean matches(CraftingInput var1, Level var2) {
       ItemStack var3 = ItemStack.EMPTY;
       ArrayList var4 = Lists.newArrayList();
 
-      for (int var5 = 0; var5 < var1.getContainerSize(); var5++) {
+      for (int var5 = 0; var5 < var1.size(); var5++) {
          ItemStack var6 = var1.getItem(var5);
          if (!var6.isEmpty()) {
             if (var6.is(ItemTags.DYEABLE)) {
@@ -41,11 +40,11 @@ public class ArmorDyeRecipe extends CustomRecipe {
       return !var3.isEmpty() && !var4.isEmpty();
    }
 
-   public ItemStack assemble(CraftingContainer var1, HolderLookup.Provider var2) {
+   public ItemStack assemble(CraftingInput var1, HolderLookup.Provider var2) {
       ArrayList var3 = Lists.newArrayList();
       ItemStack var4 = ItemStack.EMPTY;
 
-      for (int var5 = 0; var5 < var1.getContainerSize(); var5++) {
+      for (int var5 = 0; var5 < var1.size(); var5++) {
          ItemStack var6 = var1.getItem(var5);
          if (!var6.isEmpty()) {
             if (var6.is(ItemTags.DYEABLE)) {

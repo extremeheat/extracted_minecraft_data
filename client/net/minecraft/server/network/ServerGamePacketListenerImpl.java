@@ -941,7 +941,7 @@ public class ServerGamePacketListenerImpl
                            this.player.resetFallDistance();
                         }
 
-                        if (var1.isOnGround() || this.player.isInLiquid() || this.player.onClimbable() || this.player.isSpectator() || var27 || var34) {
+                        if (var1.isOnGround() || this.player.hasLandedInLiquid() || this.player.onClimbable() || this.player.isSpectator() || var27 || var34) {
                            this.player.resetCurrentImpulseContext();
                         }
 

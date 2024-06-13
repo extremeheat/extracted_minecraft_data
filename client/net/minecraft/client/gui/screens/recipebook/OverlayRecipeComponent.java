@@ -3,7 +3,6 @@ package net.minecraft.client.gui.screens.recipebook;
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.minecraft.client.Minecraft;
@@ -58,7 +57,7 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
          this.isFurnaceMenu = true;
       }
 
-      boolean var8 = var1.player.getRecipeBook().isFiltering((RecipeBookMenu<?>)var1.player.containerMenu);
+      boolean var8 = var1.player.getRecipeBook().isFiltering((RecipeBookMenu<?, ?>)var1.player.containerMenu);
       List var9 = var2.getDisplayRecipes(true);
       List var10 = var8 ? Collections.emptyList() : var2.getDisplayRecipes(false);
       int var11 = var9.size();
@@ -195,11 +194,10 @@ public class OverlayRecipeComponent implements Renderable, GuiEventListener {
          this.defaultButtonNarrationText(var1);
       }
 
-      @Override
-      public void addItemToSlot(Iterator<Ingredient> var1, int var2, int var3, int var4, int var5) {
-         ItemStack[] var6 = ((Ingredient)var1.next()).getItems();
+      public void addItemToSlot(Ingredient var1, int var2, int var3, int var4, int var5) {
+         ItemStack[] var6 = var1.getItems();
          if (var6.length != 0) {
-            this.ingredientPos.add(new OverlayRecipeComponent.OverlayRecipeButton.Pos(3 + var5 * 7, 3 + var4 * 7, var6));
+            this.ingredientPos.add(new OverlayRecipeComponent.OverlayRecipeButton.Pos(3 + var4 * 7, 3 + var5 * 7, var6));
          }
       }
 

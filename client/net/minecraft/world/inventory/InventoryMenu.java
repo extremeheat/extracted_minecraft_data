@@ -1,6 +1,7 @@
 package net.minecraft.world.inventory;
 
 import com.mojang.datafixers.util.Pair;
+import java.util.Map;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -9,11 +10,11 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.StackedContents;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.CraftingInput;
+import net.minecraft.world.item.crafting.CraftingRecipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
-public class InventoryMenu extends RecipeBookMenu<CraftingContainer> {
+public class InventoryMenu extends RecipeBookMenu<CraftingInput, CraftingRecipe> {
    public static final int CONTAINER_ID = 0;
    public static final int RESULT_SLOT = 0;
    public static final int CRAFT_SLOT_START = 1;
@@ -33,9 +34,16 @@ public class InventoryMenu extends RecipeBookMenu<CraftingContainer> {
    public static final ResourceLocation EMPTY_ARMOR_SLOT_LEGGINGS = new ResourceLocation("item/empty_armor_slot_leggings");
    public static final ResourceLocation EMPTY_ARMOR_SLOT_BOOTS = new ResourceLocation("item/empty_armor_slot_boots");
    public static final ResourceLocation EMPTY_ARMOR_SLOT_SHIELD = new ResourceLocation("item/empty_armor_slot_shield");
-   static final ResourceLocation[] TEXTURE_EMPTY_SLOTS = new ResourceLocation[]{
-      EMPTY_ARMOR_SLOT_BOOTS, EMPTY_ARMOR_SLOT_LEGGINGS, EMPTY_ARMOR_SLOT_CHESTPLATE, EMPTY_ARMOR_SLOT_HELMET
-   };
+   private static final Map<EquipmentSlot, ResourceLocation> TEXTURE_EMPTY_SLOTS = Map.of(
+      EquipmentSlot.FEET,
+      EMPTY_ARMOR_SLOT_BOOTS,
+      EquipmentSlot.LEGS,
+      EMPTY_ARMOR_SLOT_LEGGINGS,
+      EquipmentSlot.CHEST,
+      EMPTY_ARMOR_SLOT_CHESTPLATE,
+      EquipmentSlot.HEAD,
+      EMPTY_ARMOR_SLOT_HELMET
+   );
    private static final EquipmentSlot[] SLOT_IDS = new EquipmentSlot[]{EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET};
    private final CraftingContainer craftSlots = new TransientCraftingContainer(this, 2, 2);
    private final ResultContainer resultSlots = new ResultContainer();
@@ -54,52 +62,26 @@ public class InventoryMenu extends RecipeBookMenu<CraftingContainer> {
          }
       }
 
-      for (int var6 = 0; var6 < 4; var6++) {
-         final EquipmentSlot var9 = SLOT_IDS[var6];
-         this.addSlot(new Slot(var1, 39 - var6, 8, 8 + var6 * 18) {
-            @Override
-            public void setByPlayer(ItemStack var1, ItemStack var2) {
-               InventoryMenu.onEquipItem(var3, var9, var1, var2);
-               super.setByPlayer(var1, var2);
-            }
-
-            @Override
-            public int getMaxStackSize() {
-               return 1;
-            }
-
-            @Override
-            public boolean mayPlace(ItemStack var1) {
-               return var9 == Mob.getEquipmentSlotForItem(var1);
-            }
-
-            @Override
-            public boolean mayPickup(Player var1) {
-               ItemStack var2 = this.getItem();
-               return !var2.isEmpty() && !var1.isCreative() && EnchantmentHelper.hasBindingCurse(var2) ? false : super.mayPickup(var1);
-            }
-
-            @Override
-            public Pair<ResourceLocation, ResourceLocation> getNoItemIcon() {
-               return Pair.of(InventoryMenu.BLOCK_ATLAS, InventoryMenu.TEXTURE_EMPTY_SLOTS[var9.getIndex()]);
-            }
-         });
+      for (int var7 = 0; var7 < 4; var7++) {
+         EquipmentSlot var10 = SLOT_IDS[var7];
+         ResourceLocation var6 = TEXTURE_EMPTY_SLOTS.get(var10);
+         this.addSlot(new ArmorSlot(var1, var3, var10, 39 - var7, 8, 8 + var7 * 18, var6));
       }
 
-      for (int var7 = 0; var7 < 3; var7++) {
-         for (int var10 = 0; var10 < 9; var10++) {
-            this.addSlot(new Slot(var1, var10 + (var7 + 1) * 9, 8 + var10 * 18, 84 + var7 * 18));
+      for (int var8 = 0; var8 < 3; var8++) {
+         for (int var11 = 0; var11 < 9; var11++) {
+            this.addSlot(new Slot(var1, var11 + (var8 + 1) * 9, 8 + var11 * 18, 84 + var8 * 18));
          }
       }
 
-      for (int var8 = 0; var8 < 9; var8++) {
-         this.addSlot(new Slot(var1, var8, 8 + var8 * 18, 142));
+      for (int var9 = 0; var9 < 9; var9++) {
+         this.addSlot(new Slot(var1, var9, 8 + var9 * 18, 142));
       }
 
       this.addSlot(new Slot(var1, 40, 77, 62) {
          @Override
          public void setByPlayer(ItemStack var1, ItemStack var2) {
-            InventoryMenu.onEquipItem(var3, EquipmentSlot.OFFHAND, var1, var2);
+            var3.onEquipItem(EquipmentSlot.OFFHAND, var2, var1);
             super.setByPlayer(var1, var2);
          }
 
@@ -108,10 +90,6 @@ public class InventoryMenu extends RecipeBookMenu<CraftingContainer> {
             return Pair.of(InventoryMenu.BLOCK_ATLAS, InventoryMenu.EMPTY_ARMOR_SLOT_SHIELD);
          }
       });
-   }
-
-   static void onEquipItem(Player var0, EquipmentSlot var1, ItemStack var2, ItemStack var3) {
-      var0.onEquipItem(var1, var3, var2);
    }
 
    public static boolean isHotbarSlot(int var0) {
@@ -130,13 +108,13 @@ public class InventoryMenu extends RecipeBookMenu<CraftingContainer> {
    }
 
    @Override
-   public boolean recipeMatches(RecipeHolder<? extends Recipe<CraftingContainer>> var1) {
-      return var1.value().matches(this.craftSlots, this.owner.level());
+   public boolean recipeMatches(RecipeHolder<CraftingRecipe> var1) {
+      return ((CraftingRecipe)var1.value()).matches(this.craftSlots.asCraftInput(), this.owner.level());
    }
 
    @Override
    public void slotsChanged(Container var1) {
-      CraftingMenu.slotChangedCraftingGrid(this, this.owner.level(), this.owner, this.craftSlots, this.resultSlots);
+      CraftingMenu.slotChangedCraftingGrid(this, this.owner.level(), this.owner, this.craftSlots, this.resultSlots, null);
    }
 
    @Override

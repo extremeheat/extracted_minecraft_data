@@ -133,7 +133,7 @@ public class ParticleTypes {
    public static final SimpleParticleType TRIAL_SPAWNER_DETECTED_PLAYER_OMINOUS = register("trial_spawner_detection_ominous", true);
    public static final SimpleParticleType VAULT_CONNECTION = register("vault_connection", true);
    public static final ParticleType<BlockParticleOption> DUST_PILLAR = register(
-      "dust_pillar", true, BlockParticleOption::codec, BlockParticleOption::streamCodec
+      "dust_pillar", false, BlockParticleOption::codec, BlockParticleOption::streamCodec
    );
    public static final SimpleParticleType OMINOUS_SPAWNING = register("ominous_spawning", true);
    public static final SimpleParticleType RAID_OMEN = register("raid_omen", false);

@@ -38,8 +38,11 @@ import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.animal.WolfVariant;
+import net.minecraft.world.entity.decoration.PaintingVariant;
 import net.minecraft.world.item.armortrim.TrimMaterial;
 import net.minecraft.world.item.armortrim.TrimPattern;
+import net.minecraft.world.item.enchantment.Enchantment;
+import net.minecraft.world.item.enchantment.providers.EnchantmentProvider;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.biome.MultiNoiseBiomeSourceParameterList;
 import net.minecraft.world.level.block.entity.BannerPattern;
@@ -84,10 +87,13 @@ public class RegistryDataLoader {
       new RegistryDataLoader.RegistryData<>(Registries.FLAT_LEVEL_GENERATOR_PRESET, FlatLevelGeneratorPreset.DIRECT_CODEC),
       new RegistryDataLoader.RegistryData<>(Registries.TRIM_PATTERN, TrimPattern.DIRECT_CODEC),
       new RegistryDataLoader.RegistryData<>(Registries.TRIM_MATERIAL, TrimMaterial.DIRECT_CODEC),
-      new RegistryDataLoader.RegistryData<>(Registries.WOLF_VARIANT, WolfVariant.DIRECT_CODEC),
+      new RegistryDataLoader.RegistryData<>(Registries.WOLF_VARIANT, WolfVariant.DIRECT_CODEC, true),
+      new RegistryDataLoader.RegistryData<>(Registries.PAINTING_VARIANT, PaintingVariant.DIRECT_CODEC, true),
       new RegistryDataLoader.RegistryData<>(Registries.DAMAGE_TYPE, DamageType.DIRECT_CODEC),
       new RegistryDataLoader.RegistryData<>(Registries.MULTI_NOISE_BIOME_SOURCE_PARAMETER_LIST, MultiNoiseBiomeSourceParameterList.DIRECT_CODEC),
-      new RegistryDataLoader.RegistryData<>(Registries.BANNER_PATTERN, BannerPattern.DIRECT_CODEC)
+      new RegistryDataLoader.RegistryData<>(Registries.BANNER_PATTERN, BannerPattern.DIRECT_CODEC),
+      new RegistryDataLoader.RegistryData<>(Registries.ENCHANTMENT, Enchantment.DIRECT_CODEC),
+      new RegistryDataLoader.RegistryData<>(Registries.ENCHANTMENT_PROVIDER, EnchantmentProvider.DIRECT_CODEC)
    );
    public static final List<RegistryDataLoader.RegistryData<?>> DIMENSION_REGISTRIES = List.of(
       new RegistryDataLoader.RegistryData<>(Registries.LEVEL_STEM, LevelStem.CODEC)
@@ -97,10 +103,12 @@ public class RegistryDataLoader {
       new RegistryDataLoader.RegistryData<>(Registries.CHAT_TYPE, ChatType.DIRECT_CODEC),
       new RegistryDataLoader.RegistryData<>(Registries.TRIM_PATTERN, TrimPattern.DIRECT_CODEC),
       new RegistryDataLoader.RegistryData<>(Registries.TRIM_MATERIAL, TrimMaterial.DIRECT_CODEC),
-      new RegistryDataLoader.RegistryData<>(Registries.WOLF_VARIANT, WolfVariant.DIRECT_CODEC),
+      new RegistryDataLoader.RegistryData<>(Registries.WOLF_VARIANT, WolfVariant.DIRECT_CODEC, true),
+      new RegistryDataLoader.RegistryData<>(Registries.PAINTING_VARIANT, PaintingVariant.DIRECT_CODEC, true),
       new RegistryDataLoader.RegistryData<>(Registries.DIMENSION_TYPE, DimensionType.DIRECT_CODEC),
       new RegistryDataLoader.RegistryData<>(Registries.DAMAGE_TYPE, DamageType.DIRECT_CODEC),
-      new RegistryDataLoader.RegistryData<>(Registries.BANNER_PATTERN, BannerPattern.DIRECT_CODEC)
+      new RegistryDataLoader.RegistryData<>(Registries.BANNER_PATTERN, BannerPattern.DIRECT_CODEC),
+      new RegistryDataLoader.RegistryData<>(Registries.ENCHANTMENT, Enchantment.DIRECT_CODEC)
    );
 
    public RegistryDataLoader() {
@@ -120,7 +128,7 @@ public class RegistryDataLoader {
       return load((var2x, var3x) -> var2x.loadFromNetwork(var0, var1, var3x), var2, var3);
    }
 
-   public static RegistryAccess.Frozen load(RegistryDataLoader.LoadingFunction var0, RegistryAccess var1, List<RegistryDataLoader.RegistryData<?>> var2) {
+   private static RegistryAccess.Frozen load(RegistryDataLoader.LoadingFunction var0, RegistryAccess var1, List<RegistryDataLoader.RegistryData<?>> var2) {
       HashMap var3 = new HashMap();
       List var4 = var2.stream().map(var1x -> var1x.create(Lifecycle.stable(), var3)).collect(Collectors.toUnmodifiableList());
       RegistryOps.RegistryInfoLookup var5 = createContext(var1, var4);
@@ -132,6 +140,10 @@ public class RegistryDataLoader {
             var2x.freeze();
          } catch (Exception var4x) {
             var3.put(var2x.key(), var4x);
+         }
+
+         if (var1x.data.requiredNonEmpty && var2x.size() == 0) {
+            var3.put(var2x.key(), new IllegalStateException("Registry must be non-empty"));
          }
       });
       if (!var3.isEmpty()) {
@@ -286,12 +298,17 @@ public class RegistryDataLoader {
       void apply(RegistryDataLoader.Loader<?> var1, RegistryOps.RegistryInfoLookup var2);
    }
 
-   public static record RegistryData<T>(ResourceKey<? extends Registry<T>> key, Codec<T> elementCodec) {
+   public static record RegistryData<T>(ResourceKey<? extends Registry<T>> key, Codec<T> elementCodec, boolean requiredNonEmpty) {
 
-      public RegistryData(ResourceKey<? extends Registry<T>> key, Codec<T> elementCodec) {
+      RegistryData(ResourceKey<? extends Registry<T>> var1, Codec<T> var2) {
+         this(var1, var2, false);
+      }
+
+      public RegistryData(ResourceKey<? extends Registry<T>> key, Codec<T> elementCodec, boolean requiredNonEmpty) {
          super();
          this.key = key;
          this.elementCodec = elementCodec;
+         this.requiredNonEmpty = requiredNonEmpty;
       }
 
       RegistryDataLoader.Loader<T> create(Lifecycle var1, Map<ResourceKey<?>, Exception> var2) {

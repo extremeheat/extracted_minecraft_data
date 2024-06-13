@@ -18,7 +18,6 @@ import net.minecraft.client.gui.screens.ConfirmLinkScreen;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.realms.RealmsScreen;
 import net.minecraft.util.CommonLinks;
 import org.slf4j.Logger;
@@ -62,20 +61,27 @@ public class RealmsSubscriptionInfoScreen extends RealmsScreen {
             .build()
       );
       if (this.serverData.expired) {
-         this.addRenderableWidget(Button.builder(Component.translatable("mco.configure.world.delete.button"), var1 -> {
-            MutableComponent var2 = Component.translatable("mco.configure.world.delete.question.line1");
-            MutableComponent var3 = Component.translatable("mco.configure.world.delete.question.line2");
-            this.minecraft.setScreen(new RealmsLongConfirmationScreen(this::deleteRealm, RealmsLongConfirmationScreen.Type.WARNING, var2, var3, true));
-         }).bounds(this.width / 2 - 100, row(10), 200, 20).build());
+         this.addRenderableWidget(
+            Button.builder(
+                  Component.translatable("mco.configure.world.delete.button"),
+                  var1 -> this.minecraft
+                        .setScreen(
+                           RealmsPopups.warningPopupScreen(
+                              this, Component.translatable("mco.configure.world.delete.question.line1"), var1x -> this.deleteRealm()
+                           )
+                        )
+               )
+               .bounds(this.width / 2 - 100, row(10), 200, 20)
+               .build()
+         );
       } else if (RealmsMainScreen.isSnapshot() && this.serverData.parentWorldName != null) {
          this.addRenderableWidget(
             new FittingMultiLineTextWidget(
-                  this.width / 2 - 100, row(8), 200, 46, Component.translatable("mco.snapshot.subscription.info", this.serverData.parentWorldName), this.font
-               )
-               .setColor(-6250336)
+               this.width / 2 - 100, row(8), 200, 46, Component.translatable("mco.snapshot.subscription.info", this.serverData.parentWorldName), this.font
+            )
          );
       } else {
-         this.addRenderableWidget(new FittingMultiLineTextWidget(this.width / 2 - 100, row(8), 200, 46, RECURRING_INFO, this.font).setColor(-6250336));
+         this.addRenderableWidget(new FittingMultiLineTextWidget(this.width / 2 - 100, row(8), 200, 46, RECURRING_INFO, this.font));
       }
 
       this.addRenderableWidget(Button.builder(CommonComponents.GUI_BACK, var1 -> this.onClose()).bounds(this.width / 2 - 100, row(12), 200, 20).build());
@@ -86,25 +92,22 @@ public class RealmsSubscriptionInfoScreen extends RealmsScreen {
       return CommonComponents.joinLines(SUBSCRIPTION_TITLE, SUBSCRIPTION_START_LABEL, this.startDate, TIME_LEFT_LABEL, this.daysLeft);
    }
 
-   private void deleteRealm(boolean var1) {
-      if (var1) {
-         (new Thread("Realms-delete-realm") {
-               @Override
-               public void run() {
-                  try {
-                     RealmsClient var1 = RealmsClient.create();
-                     var1.deleteRealm(RealmsSubscriptionInfoScreen.this.serverData.id);
-                  } catch (RealmsServiceException var2) {
-                     RealmsSubscriptionInfoScreen.LOGGER.error("Couldn't delete world", var2);
-                  }
-
-                  RealmsSubscriptionInfoScreen.this.minecraft
-                     .execute(() -> RealmsSubscriptionInfoScreen.this.minecraft.setScreen(RealmsSubscriptionInfoScreen.this.mainScreen));
+   private void deleteRealm() {
+      (new Thread("Realms-delete-realm") {
+            @Override
+            public void run() {
+               try {
+                  RealmsClient var1 = RealmsClient.create();
+                  var1.deleteRealm(RealmsSubscriptionInfoScreen.this.serverData.id);
+               } catch (RealmsServiceException var2) {
+                  RealmsSubscriptionInfoScreen.LOGGER.error("Couldn't delete world", var2);
                }
-            })
-            .start();
-      }
 
+               RealmsSubscriptionInfoScreen.this.minecraft
+                  .execute(() -> RealmsSubscriptionInfoScreen.this.minecraft.setScreen(RealmsSubscriptionInfoScreen.this.mainScreen));
+            }
+         })
+         .start();
       this.minecraft.setScreen(this);
    }
 

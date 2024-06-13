@@ -135,6 +135,7 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.ServerItemCooldowns;
 import net.minecraft.world.item.WrittenBookItem;
 import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.trading.MerchantOffers;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.GameRules;
@@ -622,7 +623,7 @@ public class ServerPlayer extends Player {
    public void trackStartFallingPosition() {
       if (this.fallDistance > 0.0F && this.startingToFallPosition == null) {
          this.startingToFallPosition = this.position();
-         if (this.currentImpulseImpactPos != null) {
+         if (this.currentImpulseImpactPos != null && this.currentImpulseImpactPos.y <= this.startingToFallPosition.y) {
             CriteriaTriggers.FALL_AFTER_EXPLOSION.trigger(this, this.currentImpulseImpactPos, this.currentExplosionCause);
          }
       }
@@ -997,9 +998,9 @@ public class ServerPlayer extends Player {
    }
 
    @Override
-   protected void onChangedBlock(BlockPos var1) {
+   protected void onChangedBlock(ServerLevel var1, BlockPos var2) {
       if (!this.isSpectator()) {
-         super.onChangedBlock(var1);
+         super.onChangedBlock(var1, var2);
       }
    }
 
@@ -1437,6 +1438,7 @@ public class ServerPlayer extends Player {
    }
 
    public boolean setGameMode(GameType var1) {
+      boolean var2 = this.isSpectator();
       if (!this.gameMode.changeGameModeForPlayer(var1)) {
          return false;
       } else {
@@ -1444,8 +1446,12 @@ public class ServerPlayer extends Player {
          if (var1 == GameType.SPECTATOR) {
             this.removeEntitiesOnShoulder();
             this.stopRiding();
+            EnchantmentHelper.stopLocationBasedEffects(this);
          } else {
             this.setCamera(this);
+            if (var2) {
+               EnchantmentHelper.runLocationChangedEffects(this.serverLevel(), this);
+            }
          }
 
          this.onUpdateAbilities();
@@ -1886,5 +1892,16 @@ public class ServerPlayer extends Player {
    @Nullable
    public BlockPos getRaidOmenPosition() {
       return this.raidOmenPosition;
+   }
+
+   @Override
+   public void setOnGroundWithKnownMovement(boolean var1, Vec3 var2) {
+      super.setOnGroundWithKnownMovement(var1, var2);
+      this.setDeltaMovement(var2);
+   }
+
+   @Override
+   protected float getEnchantedDamage(Entity var1, float var2, DamageSource var3) {
+      return EnchantmentHelper.modifyDamage(this.serverLevel(), this.getMainHandItem(), var1, var3, var2);
    }
 }

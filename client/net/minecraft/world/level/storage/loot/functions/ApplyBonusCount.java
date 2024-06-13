@@ -12,7 +12,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import net.minecraft.core.Holder;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.ExtraCodecs;
 import net.minecraft.util.RandomSource;
@@ -38,12 +37,7 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
    );
    public static final MapCodec<ApplyBonusCount> CODEC = RecordCodecBuilder.mapCodec(
       var0 -> commonFields(var0)
-            .and(
-               var0.group(
-                  BuiltInRegistries.ENCHANTMENT.holderByNameCodec().fieldOf("enchantment").forGetter(var0x -> var0x.enchantment),
-                  FORMULA_CODEC.forGetter(var0x -> var0x.formula)
-               )
-            )
+            .and(var0.group(Enchantment.CODEC.fieldOf("enchantment").forGetter(var0x -> var0x.enchantment), FORMULA_CODEC.forGetter(var0x -> var0x.formula)))
             .apply(var0, ApplyBonusCount::new)
    );
    private final Holder<Enchantment> enchantment;
@@ -69,7 +63,7 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
    public ItemStack run(ItemStack var1, LootContext var2) {
       ItemStack var3 = var2.getParamOrNull(LootContextParams.TOOL);
       if (var3 != null) {
-         int var4 = EnchantmentHelper.getItemEnchantmentLevel(this.enchantment.value(), var3);
+         int var4 = EnchantmentHelper.getItemEnchantmentLevel(this.enchantment, var3);
          int var5 = this.formula.calculateNewCount(var2.getRandom(), var1.getCount(), var4);
          var1.setCount(var5);
       }
@@ -77,20 +71,20 @@ public class ApplyBonusCount extends LootItemConditionalFunction {
       return var1;
    }
 
-   public static LootItemConditionalFunction.Builder<?> addBonusBinomialDistributionCount(Enchantment var0, float var1, int var2) {
-      return simpleBuilder(var3 -> new ApplyBonusCount(var3, var0.builtInRegistryHolder(), new ApplyBonusCount.BinomialWithBonusCount(var2, var1)));
+   public static LootItemConditionalFunction.Builder<?> addBonusBinomialDistributionCount(Holder<Enchantment> var0, float var1, int var2) {
+      return simpleBuilder(var3 -> new ApplyBonusCount(var3, var0, new ApplyBonusCount.BinomialWithBonusCount(var2, var1)));
    }
 
-   public static LootItemConditionalFunction.Builder<?> addOreBonusCount(Enchantment var0) {
-      return simpleBuilder(var1 -> new ApplyBonusCount(var1, var0.builtInRegistryHolder(), new ApplyBonusCount.OreDrops()));
+   public static LootItemConditionalFunction.Builder<?> addOreBonusCount(Holder<Enchantment> var0) {
+      return simpleBuilder(var1 -> new ApplyBonusCount(var1, var0, new ApplyBonusCount.OreDrops()));
    }
 
-   public static LootItemConditionalFunction.Builder<?> addUniformBonusCount(Enchantment var0) {
-      return simpleBuilder(var1 -> new ApplyBonusCount(var1, var0.builtInRegistryHolder(), new ApplyBonusCount.UniformBonusCount(1)));
+   public static LootItemConditionalFunction.Builder<?> addUniformBonusCount(Holder<Enchantment> var0) {
+      return simpleBuilder(var1 -> new ApplyBonusCount(var1, var0, new ApplyBonusCount.UniformBonusCount(1)));
    }
 
-   public static LootItemConditionalFunction.Builder<?> addUniformBonusCount(Enchantment var0, int var1) {
-      return simpleBuilder(var2 -> new ApplyBonusCount(var2, var0.builtInRegistryHolder(), new ApplyBonusCount.UniformBonusCount(var1)));
+   public static LootItemConditionalFunction.Builder<?> addUniformBonusCount(Holder<Enchantment> var0, int var1) {
+      return simpleBuilder(var2 -> new ApplyBonusCount(var2, var0, new ApplyBonusCount.UniformBonusCount(var1)));
    }
 
    static record BinomialWithBonusCount(int extraRounds, float probability) implements ApplyBonusCount.Formula {

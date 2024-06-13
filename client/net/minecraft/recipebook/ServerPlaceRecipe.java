@@ -1,15 +1,12 @@
 package net.minecraft.recipebook;
 
 import com.google.common.collect.Lists;
-import com.mojang.logging.LogUtils;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntListIterator;
 import java.util.ArrayList;
-import java.util.Iterator;
 import javax.annotation.Nullable;
 import net.minecraft.network.protocol.game.ClientboundPlaceGhostRecipePacket;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.StackedContents;
 import net.minecraft.world.inventory.RecipeBookMenu;
@@ -17,20 +14,20 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
-import org.slf4j.Logger;
+import net.minecraft.world.item.crafting.RecipeInput;
 
-public class ServerPlaceRecipe<C extends Container> implements PlaceRecipe<Integer> {
-   private static final Logger LOGGER = LogUtils.getLogger();
+public class ServerPlaceRecipe<I extends RecipeInput, R extends Recipe<I>> implements PlaceRecipe<Integer> {
+   private static final int ITEM_NOT_FOUND = -1;
    protected final StackedContents stackedContents = new StackedContents();
    protected Inventory inventory;
-   protected RecipeBookMenu<C> menu;
+   protected RecipeBookMenu<I, R> menu;
 
-   public ServerPlaceRecipe(RecipeBookMenu<C> var1) {
+   public ServerPlaceRecipe(RecipeBookMenu<I, R> var1) {
       super();
       this.menu = var1;
    }
 
-   public void recipeClicked(ServerPlayer var1, @Nullable RecipeHolder<? extends Recipe<C>> var2, boolean var3) {
+   public void recipeClicked(ServerPlayer var1, @Nullable RecipeHolder<R> var2, boolean var3) {
       if (var2 != null && var1.getRecipeBook().contains(var2)) {
          this.inventory = var1.getInventory();
          if (this.testClearGrid() || var1.isCreative()) {
@@ -61,7 +58,7 @@ public class ServerPlaceRecipe<C extends Container> implements PlaceRecipe<Integ
       this.menu.clearCraftingContent();
    }
 
-   protected void handleRecipeClicked(RecipeHolder<? extends Recipe<C>> var1, boolean var2) {
+   protected void handleRecipeClicked(RecipeHolder<R> var1, boolean var2) {
       boolean var3 = this.menu.recipeMatches(var1);
       int var4 = this.stackedContents.getBiggestCraftableStack(var1, null);
       if (var3) {
@@ -99,13 +96,17 @@ public class ServerPlaceRecipe<C extends Container> implements PlaceRecipe<Integ
       }
    }
 
-   @Override
-   public void addItemToSlot(Iterator<Integer> var1, int var2, int var3, int var4, int var5) {
+   public void addItemToSlot(Integer var1, int var2, int var3, int var4, int var5) {
       Slot var6 = this.menu.getSlot(var2);
-      ItemStack var7 = StackedContents.fromStackingIndex((Integer)var1.next());
+      ItemStack var7 = StackedContents.fromStackingIndex(var1);
       if (!var7.isEmpty()) {
-         for (int var8 = 0; var8 < var3; var8++) {
-            this.moveItemToGrid(var6, var7);
+         int var8 = var3;
+
+         while (var8 > 0) {
+            var8 = this.moveItemToGrid(var6, var7, var8);
+            if (var8 == -1) {
+               return;
+            }
          }
       }
    }
@@ -134,23 +135,28 @@ public class ServerPlaceRecipe<C extends Container> implements PlaceRecipe<Integ
       return var4;
    }
 
-   protected void moveItemToGrid(Slot var1, ItemStack var2) {
-      int var3 = this.inventory.findSlotMatchingUnusedItem(var2);
-      if (var3 != -1) {
-         ItemStack var4 = this.inventory.getItem(var3);
-         if (!var4.isEmpty()) {
-            if (var4.getCount() > 1) {
-               this.inventory.removeItem(var3, 1);
-            } else {
-               this.inventory.removeItemNoUpdate(var3);
-            }
-
-            if (var1.getItem().isEmpty()) {
-               var1.set(var4.copyWithCount(1));
-            } else {
-               var1.getItem().grow(1);
-            }
+   protected int moveItemToGrid(Slot var1, ItemStack var2, int var3) {
+      int var4 = this.inventory.findSlotMatchingUnusedItem(var2);
+      if (var4 == -1) {
+         return -1;
+      } else {
+         ItemStack var5 = this.inventory.getItem(var4);
+         int var6;
+         if (var3 < var5.getCount()) {
+            this.inventory.removeItem(var4, var3);
+            var6 = var3;
+         } else {
+            this.inventory.removeItemNoUpdate(var4);
+            var6 = var5.getCount();
          }
+
+         if (var1.getItem().isEmpty()) {
+            var1.set(var5.copyWithCount(var6));
+         } else {
+            var1.getItem().grow(var6);
+         }
+
+         return var3 - var6;
       }
    }
 
